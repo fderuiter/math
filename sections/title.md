@@ -1,0 +1,1 @@
+# The Equation of Maternal Favoritism: A Satirical Mathematical Approach to Determining the Favorite Child

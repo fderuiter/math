@@ -1,0 +1,3 @@
+## 1. Introduction
+
+Parental favoritism has long been a source of sibling rivalry and family dynamics discussions. While often considered a subjective experience, this paper aims to humorously quantify maternal favoritism through an intricate mathematical formula. By blending complex mathematical constructs with absurd assumptions, we attempt to capture the multifaceted nature of favoritism in a way that is both entertaining and thought-provoking.
