@@ -1,0 +1,1 @@
+searchState.loadedDescShard("math_explorer", 0, "Algebra\nNumber Theory\nA placeholder function to demonstrate module structure.\nA placeholder function to check for primality.")
