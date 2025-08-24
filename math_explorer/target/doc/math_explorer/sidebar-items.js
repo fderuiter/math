@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["algebra","number_theory"]};
