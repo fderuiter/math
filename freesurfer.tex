@@ -1,0 +1,111 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\geometry{margin=1in}
+
+\title{Core Formulas of Freesurfer}
+\author{Jules}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section{Surface Reconstruction: Energy Minimization}
+
+The reconstruction of the cortical surface is framed as an energy minimization problem. A deformable model (a mesh) is iteratively adjusted to minimize a total energy function, $E_{total}$, which balances surface smoothness with fidelity to the MRI data.
+
+\begin{equation}
+E_{total}(S) = E_{internal}(S) + E_{external}(S)
+\end{equation}
+
+\subsection{Internal Energy ($E_{internal}$)}
+This term enforces the \textbf{smoothness} of the surface, $S$. It's often modeled like a thin plate, penalizing stretching and bending. A simplified form is:
+\begin{equation}
+E_{internal}(S) = \int_{S} \alpha(s) \left\| \frac{\partial S}{\partial s} \right\|^2 + \beta(s) \left\| \frac{\partial^2 S}{\partial s^2} \right\|^2 ds
+\end{equation}
+\begin{itemize}
+    \item The first term, weighted by $\alpha$, represents the \textbf{tension} (resistance to stretching).
+    \item The second term, weighted by $\beta$, represents the \textbf{rigidity} (resistance to bending).
+\end{itemize}
+
+\subsection{External Energy ($E_{external}$)}
+This term pulls the surface toward the desired anatomical boundary (e.g., the white matter/gray matter interface). It's based on the image intensity, $I$, and is strongest where the image gradient, $\nabla I$, is high.
+\begin{equation}
+E_{external}(S) = - \int_{S} \left| \nabla (G_{\sigma} * I(s)) \right|^2 ds
+\end{equation}
+\begin{itemize}
+    \item $I(s)$ is the image intensity at a point $s$ on the surface.
+    \item $G_{\sigma} * I$ represents the image convolved with a Gaussian kernel, which smooths the data.
+    \item The negative sign ensures the energy is minimized when the surface is at a location of a strong intensity gradient.
+\end{itemize}
+
+The surface is evolved using \textbf{gradient descent}, where the position of the surface at time $t+1$ is updated based on the functional derivative of the energy:
+\begin{equation}
+S_{t+1} = S_t - \gamma \frac{\delta E_{total}}{\delta S}
+\end{equation}
+where $\gamma$ is the learning rate.
+
+\section{Subcortical Segmentation: Bayesian Classification}
+
+Automated segmentation of structures like the hippocampus and thalamus relies on a probabilistic atlas and Bayesian classification. The goal is to find the most probable anatomical label, $L$, for each voxel, given its intensity, $I$, and its location within a coordinate system.
+
+The core formula is \textbf{Bayes' theorem}:
+\begin{equation}
+P(L_i | I_i) = \frac{P(I_i | L_i) \cdot P(L_i)}{\sum_{L} P(I_i | L) \cdot P(L)} \propto P(I_i | L_i) \cdot P(L_i)
+\end{equation}
+\begin{itemize}
+    \item $P(L_i | I_i)$ is the \textbf{posterior probability}: the probability of label $L_i$ given the observed intensity $I_i$.
+    \item $P(I_i | L_i)$ is the \textbf{likelihood}: the probability of observing intensity $I_i$ if the true label is $L_i$. This is learned from a manually labeled training set, often modeled as a Gaussian mixture.
+    \item $P(L_i)$ is the \textbf{spatial prior}: the probability of label $L_i$ occurring at this specific location, irrespective of intensity. This is derived from the probabilistic atlas. Freesurfer enhances this prior using a \textbf{Markov Random Field (MRF)}, which adds a term that encourages neighboring voxels to have the same label, ensuring spatial coherence.
+\end{itemize}
+
+\section{Cortical Thickness Calculation}
+
+Cortical thickness is not a single formula but an algorithmic measurement based on the shortest distance between the white matter surface ($S_w$) and the pial surface ($S_p$).
+
+For a vertex $v_w$ on the white surface, the distance to the pial surface is found. For the corresponding vertex $v_p$ on the pial surface, the distance to the white surface is found. The thickness, $T$, at that location is the average of these two measurements.
+
+\begin{equation}
+T(v) = \frac{1}{2} \left( \min_{p \in S_p} \|v_w - p\| + \min_{w \in S_w} \|v_p - w\| \right)
+\end{equation}
+\begin{itemize}
+    \item $\min_{p \in S_p} \|v_w - p\|$ calculates the shortest Euclidean distance from the white matter vertex $v_w$ to any point on the pial surface $S_p$.
+    \item $\min_{w \in S_w} \|v_p - w\|$ calculates the shortest Euclidean distance from the pial vertex $v_p$ to any point on the white matter surface $S_w$.
+\end{itemize}
+
+\section{Statistical Analysis: The General Linear Model (GLM)}
+
+To test for group differences or correlations with variables like age, Freesurfer applies the GLM at every vertex on the cortical surface.
+
+The model is expressed in matrix form as:
+\begin{equation}
+Y = X\beta + \epsilon
+\end{equation}
+\begin{itemize}
+    \item $Y$ is the \textbf{data vector} (e.g., cortical thickness values at one vertex for all subjects).
+    \item $X$ is the \textbf{design matrix}, where each row represents a subject and each column represents a predictor variable (e.g., group membership, age, sex).
+    \item $\beta$ is the \textbf{parameter vector} of weights that are estimated. These values represent the magnitude of the effect of each predictor.
+    \item $\epsilon$ is the \textbf{error vector} (residuals).
+\end{itemize}
+
+The parameters $\beta$ are estimated using the \textbf{ordinary least squares} solution:
+\begin{equation}
+\hat{\beta} = (X^T X)^{-1} X^T Y
+\end{equation}
+
+To test a specific hypothesis (e.g., is there a difference between two groups?), a \textbf{contrast vector} $c$ is used to define the hypothesis, and a \textbf{t-statistic} is calculated:
+\begin{equation}
+t = \frac{c^T \hat{\beta}}{\sqrt{\hat{\sigma}^2 c^T (X^T X)^{-1} c}}
+\end{equation}
+\begin{itemize}
+    \item $\hat{\sigma}^2$ is the estimated variance of the residuals.
+\end{itemize}
+This calculation is repeated for all vertices, producing a statistical map on the brain surface.
+
+\end{document}
