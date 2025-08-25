@@ -1,0 +1,99 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\geometry{margin=1in}
+
+\title{Mathematical Models of Cannibalism}
+\author{Jules}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{The McKendrick-von Foerster Equation}
+
+This equation is a cornerstone of age-structured population modeling and is adapted in the paper to model cannibalism.
+
+\textbf{Formula:}
+\begin{equation}
+\frac{\partial n(t, a)}{\partial t} + \frac{\partial n(t, a)}{\partial a} = -\mu(t, a) n(t, a)
+\end{equation}
+\textbf{Boundary Condition:}
+\begin{equation}
+n(t, 0) = b(t)
+\end{equation}
+
+\textbf{Description of Variables:}
+\begin{itemize}
+    \item \(n(t, a)\): The number of individuals of age \(a\) at time \(t\).
+    \item \(\mu(t, a)\): The per capita death rate of individuals of age \(a\) at time \(t\).
+    \item \(b(t)\): The birth rate of the population at time \(t\).
+\end{itemize}
+
+\section{Death Rate Equation}
+
+This equation, from the model by Diekmann et al., provides a specific formulation for the death rate, incorporating both natural mortality and cannibalism.
+
+\textbf{Formula:}
+\begin{equation}
+\mu(t, a) = \nu(a) + C(a)k(t)\Phi(c(t))
+\end{equation}
+
+\textbf{Description of Variables:}
+\begin{itemize}
+    \item \(\mu(t, a)\): The per capita death rate.
+    \item \(\nu(a)\): The natural death rate for an individual of age \(a\).
+    \item \(C(a)\): The attack rate of cannibals on individuals of age \(a\).
+    \item \(k(t)\): The total number of cannibals at time \(t\).
+    \item \(\Phi(c(t))\): A density-dependent correction factor, which accounts for how the cannibalism rate might change with the density of the cannibal population \(c(t)\).
+\end{itemize}
+
+\section{Juvenile and Adult Dynamics Equations}
+
+These equations, from the model by van den Bosch et al., separate the population into juvenile and adult stages to model cannibalism where adults prey on juveniles.
+
+\textbf{Juvenile Dynamics Equation:}
+\begin{equation}
+\frac{\partial n(t, a)}{\partial t} + \frac{\partial n(t, a)}{\partial a} = -[I_t + C(a)A(t)]n(t, a)
+\end{equation}
+
+\textbf{Adult Dynamics Equation:}
+\begin{equation}
+\frac{dA}{dt} = n(t, \alpha) - f(I(t))A(t)
+\end{equation}
+
+\textbf{Description of Variables:}
+\begin{itemize}
+    \item \(n(t, a)\): The number of juvenile individuals of age \(a\) at time \(t\).
+    \item \(I_t\): The per capita natural death rate of juveniles.
+    \item \(C(a)\): The attack rate of an adult on a juvenile of age \(a\).
+    \item \(A(t)\): The total number of adults at time \(t\).
+    \item \(\alpha\): The age at which juveniles mature into adults.
+    \item \(f(I(t))\): The per capita death rate of adults, which is a function of their energy intake \(I(t)\).
+\end{itemize}
+
+\section{Two-Dimensional ODE Model for Cannibalism}
+
+This model simplifies the population into two groups: "normal" individuals and "cannibalistic" individuals, using a system of ordinary differential equations.
+
+\textbf{Formulas:}
+\begin{align}
+\frac{dN}{dt} &= \beta_N(N, C)N + \beta_C(N, C)C - K(N)N - \phi(N, C) - \mu_N(N, C)N \\
+\frac{dC}{dt} &= K(N)N - \mu_C(N, C)C
+\end{align}
+
+\textbf{Description of Variables:}
+\begin{itemize}
+    \item \(N\): The number of normal individuals.
+    \item \(C\): The number of cannibalistic individuals.
+    \item \(\beta_N(N, C)\) and \(\beta_C(N, C)\): The birth rates of normal and cannibalistic individuals, respectively, which can depend on the numbers of both types of individuals.
+    \item \(K(N)\): The rate at which normal individuals become cannibals, which can depend on the number of normal individuals.
+    \item \(\phi(N, C)\): A term representing the loss of normal individuals due to cannibalism.
+    \item \(\mu_N(N, C)\) and \(\mu_C(N, C)\): The death rates of normal and cannibalistic individuals, respectively.
+\end{itemize}
+
+\end{document}

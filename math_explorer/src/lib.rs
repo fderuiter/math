@@ -3,6 +3,7 @@ pub mod favoritism;
 pub mod number_theory;
 pub mod quantum;
 pub mod freesurfer;
+pub mod cannibalism;
 
 #[cfg(test)]
 mod tests {
