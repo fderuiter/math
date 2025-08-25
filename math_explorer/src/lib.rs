@@ -2,6 +2,7 @@ pub mod algebra;
 pub mod favoritism;
 pub mod number_theory;
 pub mod quantum;
+pub mod freesurfer;
 
 #[cfg(test)]
 mod tests {
