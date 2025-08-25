@@ -1,0 +1,61 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\geometry{margin=1in}
+
+\title{Proof of Coupling of Irreducible Spherical Tensors}
+\author{Jules}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+You’re seeing the standard proof that **coupling two irreducible spherical tensors gives another irreducible tensor**.
+
+Let $X^{(k_1)}_{q_1}$ and $Z^{(k_2)}_{q_2}$ be irreducible tensor operators of ranks $k_1$ and $k_2$. Define the coupled operator
+\begin{equation}
+T^{(k)}_q = \sum_{q_1 q_2} \langle k_1 k_2; q_1 q_2 | k q\rangle\, X^{(k_1)}_{q_1} Z^{(k_2)}_{q_2},
+\end{equation}
+using Clebsch–Gordan (CG) coefficients.
+
+The goal is to show that $T^{(k)}_q$ transforms under rotations like a tensor of rank-$k$:
+\begin{equation}
+\mathcal D^\dagger(R)\,T^{(k)}_q\,\mathcal D(R)=\sum_{q'} D^{(k)}_{q q'}(R)\,T^{(k)}_{q'}.
+\end{equation}
+
+The steps are as follows:
+
+\begin{enumerate}
+    \item Rotate the product and rotate each factor. The transformation properties of the irreducible tensor operators are:
+    \begin{align}
+    \mathcal D^\dagger X^{(k_1)}_{q_1}\mathcal D &= \sum_{q_1'} D^{(k_1)}_{q_1' q_1}(R)\,X^{(k_1)}_{q_1'}, \\
+    \mathcal D^\dagger Z^{(k_2)}_{q_2}\mathcal D &= \sum_{q_2'} D^{(k_2)}_{q_2' q_2}(R)\,Z^{(k_2)}_{q_2'}.
+    \end{align}
+
+    \item Use the **CG series** for products of $D$-matrices:
+    \begin{equation}
+    D^{(k_1)}_{q_1' q_1}(R) D^{(k_2)}_{q_2' q_2}(R)
+    = \sum_{k',q'} \langle k_1 k_2; q_1' q_2'|k' q'\rangle
+    \langle k_1 k_2; q_1 q_2|k' q\rangle
+    D^{(k')}_{q' q}(R).
+    \end{equation}
+
+    \item Sum over $q_1,q_2$ and use the **orthogonality of CG coefficients**:
+    \begin{equation}
+    \sum_{q_1 q_2}\langle k_1 k_2; q_1 q_2|k q\rangle
+    \langle k_1 k_2; q_1 q_2|k' q'\rangle
+    =\delta_{k k'}\delta_{q q'}.
+    \end{equation}
+
+    \item Combining these steps, what remains is:
+    \begin{equation}
+    \mathcal D^\dagger T^{(k)}_q \mathcal D=\sum_{q'} D^{(k)}_{q q'}(R)\,T^{(k)}_{q'},
+    \end{equation}
+    which shows that $T^{(k)}$ is an irreducible tensor of rank $k$.
+\end{enumerate}
+
+Conceptually, this is the operator version of **adding angular momenta**; it corresponds to the direct-product representation $k_1\otimes k_2$.
