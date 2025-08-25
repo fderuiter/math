@@ -1,3 +1,0 @@
-**Abstract**
-
-This paper humorously proposes a complex formula for determining the favorite child in any given family, specifically focusing on maternal favoritism. By examining an array of whimsical variables, we derive an exaggerated quantitative method to measure parental bias with mathematical precision. The study explores both subjective and objective factors contributing to favoritism and offers theoretical implications for sibling rivalry, all while maintaining a light-hearted tone.
