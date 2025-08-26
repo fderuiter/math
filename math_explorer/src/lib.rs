@@ -4,6 +4,7 @@ pub mod number_theory;
 pub mod quantum;
 pub mod freesurfer;
 pub mod cannibalism;
+pub mod win_ratio;
 
 #[cfg(test)]
 mod tests {
