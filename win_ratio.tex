@@ -1,0 +1,132 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\title{Win Ratio Analysis}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Body Mass Index (BMI)}
+
+The paper begins by introducing the concept of a composite outcome, using the \textbf{Body Mass Index (BMI)} as a familiar example. BMI is a single value derived from two different measurements (weight and height).
+
+The formula is defined as:
+\begin{equation}
+BMI = \frac{\text{body weight (kg)}}{\text{square of height (m}^2\text{)}}
+\end{equation}
+
+\section{Sample Win Ratio (Matched-Pairs Approach)}
+
+The core of the win ratio method involves comparing pairs of patients from a treatment group and a control group. The \textbf{sample win ratio}, denoted as $R$, is the ratio of the total number of "wins" to the total number of "losses" for the treatment group.
+
+The formula for the sample win ratio is:
+\begin{equation}
+R = \frac{N_w}{N_l}
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $N_w$ represents the total number of \textbf{wins} for the treatment group.
+    \item $N_l$ represents the total number of \textbf{losses} for the treatment group.
+\end{itemize}
+
+These totals are calculated from pairwise comparisons based on prioritized outcomes (e.g., a fatal event like death and a non-fatal event like hospitalization). The number of wins and losses are determined as follows:
+\begin{align}
+N_w &= N_b + N_d \\
+N_l &= N_a + N_c
+\end{align}
+
+The variables correspond to the number of pairs in these categories:
+\begin{itemize}
+    \item $N_a$: The patient in the \textbf{treatment group dies first} (a loss).
+    \item $N_b$: The patient in the \textbf{control group dies first} (a win).
+    \item $N_c$: If death isn't comparable, the patient in the \textbf{treatment group is hospitalized first} (a loss).
+    \item $N_d$: If death isn't comparable, the patient in the \textbf{control group is hospitalized first} (a win).
+\end{itemize}
+
+A win ratio greater than 1 suggests the treatment is beneficial.
+
+\section{Confidence Interval and Significance Test}
+
+To determine the statistical significance of the sample win ratio from the matched-pairs approach, a \textbf{95\% confidence interval (CI)} and a \textbf{p-value} can be calculated.
+
+\begin{enumerate}
+    \item \textbf{Calculate the proportion of wins} ($p_w$):
+    \begin{equation}
+    p_w = \frac{N_w}{N_w + N_l}
+    \end{equation}
+
+    \item \textbf{Calculate the lower ($p_L$) and upper ($p_U$) bounds} for this proportion:
+    \begin{align}
+    p_L &= p_w - 1.96\sqrt{\frac{p_w(1-p_w)}{N_w + N_l}} \\
+    p_U &= p_w + 1.96\sqrt{\frac{p_w(1-p_w)}{N_w + N_l}}
+    \end{align}
+
+    \item \textbf{The 95\% CI for the win ratio} is then given by:
+    \begin{equation}
+    \left[ \frac{p_L}{1-p_L}, \frac{p_U}{1-p_U} \right]
+    \end{equation}
+
+    \item For a \textbf{significance test}, the following statistic has an asymptotic standardized normal distribution under the null hypothesis (no difference between groups):
+    \begin{equation}
+    \frac{p_w - 0.5}{\sqrt{\frac{p_w(1-p_w)}{N_w+N_l}}}
+    \end{equation}
+\end{enumerate}
+
+\section{Probability Win Ratio}
+
+The concept can be extended from a sample statistic to a \textbf{probability win ratio}, which is an unknown constant or parameter, denoted as $PR(c)$. This avoids the complex process of matching and comparing every subject.
+
+The probability win ratio is the ratio of the win probability, $W(c)$, to the loss probability, $L(c)$, over a specified time interval $[0, c]$.
+
+\begin{equation}
+PR(c) = \frac{W(c)}{L(c)}
+\end{equation}
+
+The \textbf{win and loss probabilities} are defined by the following integral equations:
+\begin{equation}
+W(c) = -\int_{0}^{c}S_{1}(t)dS_{0}(t)-S_{1}(c)S_{0}(c)\int_{0}^{c}G_{1}(x|c)dG_{0}(x|c)
+\end{equation}
+\begin{equation}
+L(c) = -\int_{0}^{c}S_{0}(t)dS_{1}(t)-S_{1}(c)S_{0}(c)\int_{0}^{c}G_{0}(x|c)dG_{1}(x|c)
+\end{equation}
+
+Where the key components are:
+\begin{itemize}
+    \item $S_j(t) = Pr[T_j > t]$: The \textbf{marginal survival function} of the time to the fatal event (T) for group $j$ (where $j=0$ for control and $j=1$ for treatment). This is the probability that a person in group $j$ survives past time $t$.
+    \item $G_j(x|c) = Pr[X_j > x | T_j > c]$: The \textbf{conditional survival function} of the time to the non-fatal event (X), given survival past time $c$. This is the probability that a person who has survived past time $c$ does not experience the non-fatal event before time $x$.
+\end{itemize}
+
+A probability win ratio of 1.5, for example, means there is a 50\% increase in the chance of a "win" for a patient in the treatment group compared to the control group.
+
+\section{Mathematics of the Simulation Study}
+
+The paper includes a simulation study based on specific assumptions about the data.
+
+\begin{itemize}
+    \item \textbf{Joint survival function for the control group ($S_0(t,x)$):}
+    \begin{equation}
+    S_0(t,x) = \exp[-(\lambda_1 t + \lambda_2 x)^\alpha], \quad t>0, x>0, 0 < \alpha \le 1
+    \end{equation}
+
+    \item \textbf{Joint survival function for the treatment group ($S_1(t,x)$):}
+    \begin{equation}
+    S_1(t,x) = \exp[-(\theta \lambda_1 t + \theta \lambda_2 x)^\alpha], \quad t>0, x>0, 0 < \alpha \le 1, \theta > 0
+    \end{equation}
+\end{itemize}
+
+Under these assumptions, the win ratio parameter in the absence of censoring is directly related to the parameters $\theta$ and $\alpha$:
+\begin{equation}
+PR_W = \frac{1}{\theta^\alpha}
+\end{equation}
+
+Here:
+\begin{itemize}
+    \item $\alpha$ describes the \textbf{correlation} between the fatal (T) and non-fatal (X) events. The events become independent when $\alpha=1$.
+    \item $\theta$ is a parameter representing the treatment effect.
+\end{itemize}
+
+\end{document}
