@@ -1,4 +1,4 @@
-use math_explorer::freesurfer::*;
+use math_explorer::applied::freesurfer::*;
 use nalgebra::{DMatrix, DVector};
 
 #[test]

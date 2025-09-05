@@ -1,17 +1,13 @@
-pub mod algebra;
-pub mod favoritism;
-pub mod number_theory;
-pub mod quantum;
-pub mod freesurfer;
-pub mod cannibalism;
-pub mod win_ratio;
+pub mod applied;
+pub mod physics;
+pub mod pure_math;
 
 #[cfg(test)]
 mod tests {
-    use super::algebra;
-    use super::favoritism::{self, FavoritismInputs};
-    use super::number_theory;
-    use super::quantum;
+    use super::pure_math::algebra;
+    use super::applied::favoritism::{self, FavoritismInputs};
+    use super::pure_math::number_theory;
+    use super::physics::quantum;
 
     #[test]
     fn test_algebra_placeholder() {

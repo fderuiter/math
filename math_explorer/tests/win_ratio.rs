@@ -1,4 +1,4 @@
-use math_explorer::win_ratio::{bmi, sample_win_ratio, probability_win_ratio, simulation};
+use math_explorer::applied::win_ratio::{bmi, sample_win_ratio, probability_win_ratio, simulation};
 
 const FLOAT_TOLERANCE: f64 = 1e-3;
 

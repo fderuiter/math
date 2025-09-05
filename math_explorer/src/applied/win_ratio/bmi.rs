@@ -26,7 +26,8 @@
 /// ```
 /// let weight = 70.0; // kg
 /// let height = 1.75; // m
-/// let bmi = math_explorer::win_ratio::bmi::calculate_bmi(weight, height);
+/// use math_explorer::applied::win_ratio::bmi::calculate_bmi;
+/// let bmi = calculate_bmi(weight, height);
 /// assert!((bmi - 22.857).abs() < 1e-3);
 /// ```
 pub fn calculate_bmi(weight_kg: f64, height_m: f64) -> f64 {
