@@ -12,7 +12,7 @@
 /// # Examples
 ///
 /// ```
-/// use math_explorer::number_theory::is_prime_placeholder;
+/// use math_explorer::pure_math::number_theory::is_prime_placeholder;
 /// assert!(is_prime_placeholder(2));
 /// assert!(!is_prime_placeholder(4));
 /// ```

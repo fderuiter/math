@@ -12,7 +12,7 @@
 /// # Examples
 ///
 /// ```
-/// use math_explorer::algebra::placeholder_add;
+/// use math_explorer::pure_math::algebra::placeholder_add;
 /// assert_eq!(placeholder_add(2, 2), 4);
 /// ```
 pub fn placeholder_add(a: u64, b: u64) -> u64 {

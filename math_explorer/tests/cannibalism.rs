@@ -1,4 +1,4 @@
-use math_explorer::cannibalism;
+use math_explorer::applied::cannibalism;
 
 #[test]
 fn test_mckendrick_von_foerster() {
