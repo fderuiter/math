@@ -1,13 +1,38 @@
-// Battery degradation model based on depth-of-discharge (DoD).
-// This module provides functions to estimate battery cycle life and capacity fade.
-// The model is based on a power law fit to experimental data for Li-ion batteries.
-//
-// For details on the model, see the project's README.md or the original request.
-//
-// Key functions:
-// - n70(d): Calculates the number of equivalent full cycles to 70% capacity for a given DoD.
-// - capacity(n, d): Calculates the remaining capacity after n equivalent full cycles at a given DoD.
-// - cycles_to_capacity(target_capacity, d): Calculates the number of cycles to reach a specific capacity level.
+//! Battery degradation model based on depth-of-discharge (DoD).
+//!
+//! This module provides functions to estimate battery cycle life and capacity fade
+//! for Li-ion batteries. The model is based on a power law fit to experimental data.
+//!
+//! # How to Use
+//!
+//! 1.  Determine your charge window (e.g., 20% to 80%) to find the depth-of-discharge `d`.
+//!     For a window `[L, U]`, the DoD is `d = U - L`. For 20-80%, `d = 60`.
+//! 2.  Use the `n70(d)` function to calculate the cycle life to 70% capacity for your DoD.
+//! 3.  Use `capacity(n, d)` to plot capacity over time, or `cycles_to_capacity(target, d)`
+//!     to predict when the battery will reach a specific capacity.
+//!
+//! All cycle counts (`n`) are in "equivalent full cycles" (EFC). For example, ten 10%
+//! discharges are equivalent to one full cycle (1 EFC).
+//!
+//! # Model Details
+//!
+//! The model uses a power law `N₇₀(d) = α * d^β` fit to the following anchor data
+//! for cycles to 70% capacity (N₇₀):
+//!
+//! - (DoD=100%, N₇₀=300)
+//! - (DoD=80%, N₇₀=400)
+//! - (DoD=60%, N₇₀=600)
+//! - (DoD=40%, N₇₀=1000)
+//! - (DoD=20%, N₇₀=2000)
+//! - (DoD=10%, N₇₀=6000)
+//!
+//! The least squares fit resulted in `α ≈ 1.019e5` and `β ≈ -1.2639`.
+//!
+//! # Limits
+//!
+//! This is a DoD-only model. It does not account for other factors that affect battery
+//! aging, such as heat, high charge/discharge rates, or calendar aging (time-based decay).
+//! The results should be treated as order-of-magnitude estimates, not guarantees.
 
 const ALPHA: f64 = 1.019e5;
 const BETA: f64 = -1.2639;
