@@ -1,3 +1,4 @@
+pub mod battery_degradation;
 pub mod cannibalism;
 pub mod favoritism;
 pub mod freesurfer;
