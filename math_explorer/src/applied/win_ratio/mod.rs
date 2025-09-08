@@ -7,3 +7,4 @@ pub mod bmi;
 pub mod sample_win_ratio;
 pub mod probability_win_ratio;
 pub mod simulation;
+pub mod pair_comparison;
