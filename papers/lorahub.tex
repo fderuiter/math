@@ -8,7 +8,7 @@
 \geometry{margin=1in}
 
 \title{Rust Implementation of LoraHub's Mathematical Core}
-\author{Jules}
+\author{Frederick de Ruiter}
 \date{\today}
 
 \lstset{
@@ -31,7 +31,7 @@
 
 \section{Introduction}
 
-Low-Rank Adaptation (LoRA) has emerged as an efficient technique for fine-tuning large pre-trained models. LoraHub extends this by proposing a method to combine multiple specialized LoRA modules to achieve generalization on new, unseen tasks without additional training. The central idea is to find an optimal linear combination of the weights of existing LoRA modules.
+Low-Rank Adaptation (LoRA) has emerged as an efficient technique for fine-tuning large pre-trained models. LoraHub extends this by proposing a method to combine multiple specialized LoRA modules to achieve generalization on new, unseen tasks without additional training \cite{huang2023lorahub}. The central idea is to find an optimal linear combination of the weights of existing LoRA modules.
 
 The core of LoraHub is a mathematical optimization problem. Given a set of LoRA modules (represented by their state dictionaries, which are collections of tensors), the goal is to find a set of scalar weights that, when used to combine the modules, minimizes an objective function on a few examples from a new task.
 
@@ -39,7 +39,7 @@ This paper documents a Rust implementation of the mathematical functions require
 
 \section{Mathematical Formulation}
 
-The LoraHub algorithm can be broken down into two key mathematical components:
+The LoraHub algorithm \cite{huang2023lorahub} can be broken down into two key mathematical components:
 
 \begin{enumerate}
     \item \textbf{LoRA Combination:} The combined LoRA module is a weighted sum of the individual modules. If we let $S_i$ be the state dictionary (a set of tensors) for the $i$-th LoRA module and $w_i$ be its corresponding weight, the final combined state dictionary $S_f$ is given by:
@@ -57,7 +57,7 @@ The LoraHub algorithm can be broken down into two key mathematical components:
 
 \section{Rust Implementation}
 
-We implement these concepts in Rust, creating a new module within the `math_explorer` project.
+We implement these concepts in Rust, creating a new module within the `math_explorer` project. This implementation relies on the `nalgebra` library for its linear algebra capabilities \cite{nalgebra}.
 
 \subsection{Combining LoRA Modules}
 
@@ -115,5 +115,19 @@ pub fn calculate_objective_score(weights: &[f64], mock_loss: f64, alpha: f64) ->
 \section{Conclusion}
 
 We have successfully implemented the mathematical core of the LoraHub framework in Rust. This implementation provides a foundation for building a full LoraHub-style model composition system in Rust. The code is modular, tested, and integrated into the `math_explorer` project, aligning with its goal of providing a library of mathematical algorithms. The next steps would involve integrating this mathematical core with a machine learning framework in Rust to replicate the full behavior of LoraHub.
+
+\begin{thebibliography}{9}
+
+\bibitem{huang2023lorahub}
+Chengsong Huang, Qian Liu, Bill Yuchen Lin, Tianyu Pang, Chao Du, and Min Lin.
+\newblock LoraHub: Efficient Cross-Task Generalization via Dynamic LoRA Composition.
+\newblock {\em arXiv preprint arXiv:2307.13269}, 2023.
+
+\bibitem{nalgebra}
+S{\'e}bastien Crozet et al.
+\newblock \textit{nalgebra}: linear algebra library for Rust.
+\newblock \url{https://nalgebra.org}, 2024.
+
+\end{thebibliography}
 
 \end{document}
