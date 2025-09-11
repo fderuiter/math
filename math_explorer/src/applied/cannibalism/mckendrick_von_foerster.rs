@@ -14,7 +14,7 @@
 /// # Returns
 ///
 /// The rate of change of the number of individuals.
-pub fn mckendrick_von_foerster(t: f64, a: f64, mu: f64, n: f64) -> f64 {
+pub fn mckendrick_von_foerster(_t: f64, _a: f64, mu: f64, n: f64) -> f64 {
     // This is a placeholder implementation.
     // The actual implementation would involve solving a partial differential equation.
     -mu * n
@@ -29,7 +29,7 @@ pub fn mckendrick_von_foerster(t: f64, a: f64, mu: f64, n: f64) -> f64 {
 /// # Returns
 ///
 /// The birth rate of the population at time t.
-pub fn birth_rate(t: f64) -> f64 {
+pub fn birth_rate(_t: f64) -> f64 {
     // This is a placeholder implementation.
     // The actual implementation would depend on the specific model.
     100.0 // Placeholder value

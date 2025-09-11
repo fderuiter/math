@@ -21,3 +21,10 @@ pub mod partitions;
 pub fn is_prime_placeholder(n: u64) -> bool {
     n == 2
 }
+
+pub mod class_number;
+pub mod hurwitz_kronecker;
+pub mod primes;
+
+pub use primes::is_prime;
+pub use primes::primes_up_to;
