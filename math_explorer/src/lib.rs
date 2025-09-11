@@ -18,9 +18,12 @@ mod tests {
     }
 
     #[test]
-    fn test_number_theory_placeholder() {
-        assert!(number_theory::is_prime_placeholder(2));
-        assert!(!number_theory::is_prime_placeholder(10));
+    fn test_number_theory_is_prime() {
+        assert!(number_theory::is_prime(2));
+        assert!(number_theory::is_prime(3));
+        assert!(!number_theory::is_prime(4));
+        assert!(number_theory::is_prime(5));
+        assert!(!number_theory::is_prime(10));
     }
 
     #[test]
