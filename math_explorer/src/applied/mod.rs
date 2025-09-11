@@ -6,3 +6,4 @@ pub mod win_ratio;
 pub mod pharmacokinetics;
 pub mod lorahub;
 pub mod grpo;
+pub mod generative_turbulence;
