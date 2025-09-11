@@ -14,3 +14,6 @@ statrs = "0.17.0"
 [[test]]
 name = "elliptic_curves"
 path = "tests/elliptic_curves.rs"
+
+[dev-dependencies]
+approx = "0.5.1"

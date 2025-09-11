@@ -1,3 +1,4 @@
+pub mod ai;
 pub mod applied;
 pub mod physics;
 pub mod pure_math;
@@ -100,6 +101,42 @@ mod tests {
         let objective_score = lorahub::calculate_objective_score(&weights_for_reg, mock_loss, alpha);
         // Expected: 1.5 + 0.2 = 1.7
         assert!((objective_score - 1.7).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_find_favorite_child() {
+        use super::applied::favoritism::favorite_child::{find_favorite_child, Child};
+        use nalgebra::DVector;
+
+        // Child A: The baseline child
+        let child_a = Child {
+            name: "Child A".to_string(),
+            inputs: FavoritismInputs::default(),
+        };
+
+        // Child B: The clear favorite with superior attributes
+        let mut inputs_b = FavoritismInputs::default();
+        inputs_b.wealth = 10.0; // More wealth
+        inputs_b.emotional_sensitivity = 10.0; // More sensitive
+        inputs_b.compliments = DVector::from_vec(vec![20.0, 10.0, 15.0]); // Gives more compliments
+        let child_b = Child {
+            name: "Child B".to_string(),
+            inputs: inputs_b,
+        };
+
+        // Child C: The slacker
+        let mut inputs_c = FavoritismInputs::default();
+        inputs_c.helped_during_crisis = false; // Didn't help in a crisis
+        inputs_c.time_since_last_contact = 30.0; // Hasn't called in a month
+        let child_c = Child {
+            name: "Child C".to_string(),
+            inputs: inputs_c,
+        };
+
+        let children = vec![child_a.clone(), child_b.clone(), child_c.clone()];
+        let favorite = find_favorite_child(&children).unwrap();
+
+        assert_eq!(favorite.name, "Child B");
     }
 }
 
