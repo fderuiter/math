@@ -1,0 +1,171 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\title{A Rust Implementation and Verification of Partition Function Congruences}
+\author{Jules}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper presents a robust and efficient Rust implementation of the mathematical framework for partition function congruences, as described by Nath and Saikia. We detail the design and implementation of a q-series arithmetic library in Rust and use it to construct the seven restricted partition functions introduced by Pushpa and Vasuki. The correctness of the implementation is verified by testing the theorems and congruences from the source paper. This work provides a computational tool for number theorists and demonstrates the suitability of Rust for symbolic computation in mathematical research.
+\end{abstract}
+
+\section{Introduction}
+
+The theory of integer partitions, which seeks to understand the number of ways a positive integer can be written as a sum of positive integers, has been a cornerstone of number theory and combinatorics since its formal inception by Leonhard Euler in the 18th century. Euler laid the groundwork by introducing the concept of generating functions, a powerful tool that transforms combinatorial problems into the realm of analysis. The field saw a revolutionary advancement with the work of Srinivasa Ramanujan, whose discovery of striking and unexpected congruences for the partition function, such as $p(5n+4) \equiv 0 \pmod{5}$, unveiled a deep and previously hidden arithmetic structure. Ramanujan's work initiated a new era of research focused on the arithmetic properties of partition functions, a line of inquiry that remains active and fruitful to this day.
+
+In a recent contribution to this field, Pushpa and Vasuki \cite{pushpa2022eisenstein} introduced seven novel restricted partition functions while investigating Eisenstein series identities. This work was extended by Nath and Saikia \cite{nath2025arithmetic}, who established several infinite families of congruences and other arithmetic properties for these new functions, employing a blend of elementary q-series manipulations and the modern theory of modular forms. Their work, which includes the proof of a conjecture by Dasappa et al., provides a rich and complex mathematical framework ripe for computational exploration and verification.
+
+This paper details the design, implementation, and verification of a comprehensive Rust library built to explore the mathematical objects and theorems presented by Nath and Saikia. The primary contribution of this work is a robust and efficient software tool for performing q-series arithmetic, which serves as the foundation for constructing the generating functions for the seven partition functions. We leverage the performance and safety guarantees of the Rust programming language to create a reliable computational library for number theorists. The correctness of our implementation is not merely asserted but is demonstrated through a rigorous testing framework that programmatically verifies the main theorems and congruences from the source paper.
+
+The remainder of this paper is organized as follows. Section 2 provides a brief overview of the necessary mathematical background, including definitions from partition theory and q-series. Section 3 delves into the details of our Rust implementation, discussing the design of the core data structures and algorithms. Section 4 presents the results of our verification process, showcasing how the implemented library successfully confirms the theoretical results. Finally, Section 5 offers concluding remarks and discusses potential avenues for future work.
+
+\section{Mathematical Background}
+
+To understand the context of our implementation, we first review the essential mathematical concepts from the theory of partitions and q-series, as presented in the work of Nath and Saikia \cite{nath2025arithmetic}.
+
+\subsection{Partitions and Generating Functions}
+
+A \textit{partition} of a positive integer $n$ is a non-increasing sequence of positive integers $\lambda = (\lambda_1, \lambda_2, \ldots, \lambda_k)$ that sum to $n$. The number of partitions of $n$ is denoted by $p(n)$. For example, the partitions of 4 are (4), (3,1), (2,2), (2,1,1), and (1,1,1,1), so $p(4)=5$. The function $p(n)$ grows rapidly, and its study is a central theme in combinatorics and number theory.
+
+The primary tool for studying partition functions is the generating function, a concept introduced by Euler. The generating function for $p(n)$ is given by the infinite product:
+\begin{equation}
+\sum_{n=0}^{\infty} p(n)q^n = \prod_{k=1}^{\infty} \frac{1}{1-q^k}
+\end{equation}
+where we adopt the convention that $p(0)=1$. This remarkable identity connects the combinatorial nature of partitions to the analytical world of infinite products and power series.
+
+\subsection{q-Series Notation}
+
+The study of partition identities and congruences is greatly facilitated by the language of q-series. The fundamental building block is the \textit{q-Pochhammer symbol}, defined as:
+\begin{equation}
+(a;q)_\infty = \prod_{i=0}^{\infty} (1 - aq^i)
+\end{equation}
+Using this notation, the generating function for $p(n)$ can be compactly written as $1/(q;q)_\infty$. For convenience, and following the convention in the literature, we define the function $f_k$ as a product of Dedekind eta functions:
+\begin{equation}
+f_k := (q^k; q^k)_\infty = \prod_{i=1}^{\infty} (1 - q^{ki})
+\end{equation}
+This notation allows for the elegant expression of complex generating functions.
+
+\subsection{The Seven Partition Functions of Pushpa and Vasuki}
+
+The work that motivates our implementation is centered on seven restricted partition functions introduced by Pushpa and Vasuki \cite{pushpa2022eisenstein}. Their generating functions are defined as products and quotients of the $f_k$ functions. We list them here as they are defined in Nath and Saikia \cite{nath2025arithmetic}:
+
+\begin{align}
+\sum_{n=0}^{\infty} P^*(n)q^n &= f_1^4 f_5^4 \\
+\sum_{n=0}^{\infty} M(n)q^n &= \frac{f_2^5 f_5^5}{f_1 f_{10}} \\
+\sum_{n=0}^{\infty} T^*(n)q^n &= \frac{f_1^5 f_{10}^5}{f_2 f_5} \\
+\sum_{n=0}^{\infty} A(n)q^n &= \frac{f_2^6 f_7^6}{f_1^2} \\
+\sum_{n=0}^{\infty} B(n)q^n &= \frac{f_1^6 f_{14}^4}{f_2^2 f_7^2} \\
+\sum_{n=0}^{\infty} K(n)q^n &= f_1^2 f_2^2 f_7^2 f_{14}^2 \\
+\sum_{n=0}^{\infty} L(n)q^n &= \frac{f_1^5 f_7^5}{f_2 f_{14}}
+\end{align}
+
+\subsection{Key Theorems and Congruences}
+
+Nath and Saikia proved a number of congruences for these partition functions. Our implementation programmatically verifies these theorems, and the tests serve as a strong validation of the correctness of our q-series arithmetic library. We state two of the key theorems here, which are used in our verification tests.
+
+\textbf{Theorem 1.} (Nath and Saikia \cite{nath2025arithmetic}) For all $n \ge 0$, we have
+\begin{align}
+P^*(2n+1) &\equiv 0 \pmod{4} \\
+P^*(4n+3) &\equiv 0 \pmod{8} \\
+P^*(16n+7) &= 0
+\end{align}
+
+\textbf{Theorem 2.} (Nath and Saikia \cite{nath2025arithmetic}) For all $n \ge 0$, we have
+\begin{equation}
+P^*(16n+15) = -64 \cdot P^*(n)
+\end{equation}
+
+These theorems, among others in the source paper, provide concrete, verifiable properties that any correct computational model of these functions must satisfy.
+
+\section{Rust Implementation Details}
+
+To create a computational tool for exploring the partition functions described, we chose the Rust programming language. The choice was motivated by Rust's emphasis on performance, memory safety, and correctness, which are all critical for developing reliable mathematical software. This section details the architecture and design of our Rust library.
+
+\subsection{The \texttt{QSeries} Data Structure}
+
+The fundamental object in our library is the q-series. We represent a q-series as a struct called \texttt{QSeries}, which contains a vector of its coefficients.
+\begin{verbatim}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QSeries {
+    pub coeffs: Vec<i64>,
+}
+\end{verbatim}
+The vector \texttt{coeffs} stores the coefficients of the series, where the index of the vector corresponds to the power of $q$. For example, the series $1 - q - q^2$ would be represented by a vector `vec![1, -1, -1]`. The precision of the series is determined by the length of this vector.
+
+\subsection{Arithmetic Operations}
+
+We implemented the standard arithmetic operations for \texttt{QSeries} by overloading the `Add`, `Mul`, and `Div` traits from Rust's standard library. This allows for natural and idiomatic expression of q-series arithmetic. For example, two series can be multiplied with the `*` operator. The implementations follow the standard algorithms for polynomial arithmetic, with careful handling of series precision. All operations are designed to work with references to avoid unnecessary copying of data.
+
+\subsection{The Eta Product \texttt{f\_k}}
+
+The generating functions for the partition functions are all defined in terms of the eta product $f_k = (q^k; q^k)_\infty$. We implemented a function \texttt{f\_k(k: usize, precision: usize) -> QSeries} that computes this infinite product up to a given precision. The function uses an efficient in-place algorithm to multiply the series by successive terms of the form $(1 - q^{ni})$.
+
+\subsection{Exponentiation}
+
+Since the generating functions often involve powers of $f_k$ functions, we implemented an efficient `pow` method for the \texttt{QSeries} struct. This method uses the exponentiation by squaring algorithm to compute powers of a q-series in logarithmic time relative to the exponent, which is significantly more efficient than repeated multiplication.
+
+\subsection{Generating Functions}
+
+With the core arithmetic in place, we implemented a function for each of the seven partition generating functions. These functions, such as \texttt{gen\_p\_star(precision: usize)}, encapsulate the mathematical definitions from Section 2.3 and return the corresponding \texttt{QSeries} object. This design provides a clean and high-level API for users of the library.
+
+\section{Verification and Results}
+
+A key contribution of this work is not just the implementation of the mathematical framework, but also its rigorous verification. In computational mathematics, it is crucial to demonstrate that the software correctly implements the theoretical model. We achieve this through a comprehensive test suite built using Rust's integrated testing framework.
+
+\subsection{Test Suite Structure}
+
+Our test suite is divided into two main categories:
+\begin{itemize}
+    \item \textbf{Unit Tests:} These tests verify the correctness of the core arithmetic operations (\texttt{Add}, \texttt{Mul}, \texttt{Div}, \texttt{pow}) and the \texttt{f\_k} function. They test basic properties and known identities to ensure the foundational components of the library are reliable.
+    \item \textbf{Integration Tests:} These tests verify the higher-level generating functions and the main theorems from the source paper. They ensure that the combination of the core components correctly models the mathematical theory.
+\end{itemize}
+
+\subsection{Verification of Theorems}
+
+The most critical part of our verification process is the testing of the theorems from Nath and Saikia \cite{nath2025arithmetic}. We have implemented test cases that programmatically check these theorems for a range of values. For example, to verify Theorem 1, which states that $P^*(2n+1) \equiv 0 \pmod{4}$, our test generates the series for $P^*(n)$ up to a certain precision and then asserts that this congruence holds for all applicable coefficients.
+
+Similarly, to verify Theorem 2, $P^*(16n+15) = -64 \cdot P^*(n)$, the test computes the coefficients of the $P^*(n)$ series and checks that this identity holds for all $n$ within the precision of the series. The successful execution of these tests provides strong evidence for the correctness of our implementation.
+
+\subsection{Computed Results}
+
+To provide further evidence of correctness, we present a table of the first few coefficients for each of the seven partition functions, as computed by our library. These values can be independently verified and serve as a reference.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & $P^*(n)$ & $M(n)$ & $T^*(n)$ & $A(n)$ & $B(n)$ & $K(n)$ & $L(n)$ \\
+\hline
+0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+1 & -4 & 1 & -5 & 2 & -6 & -2 & -5 \\
+2 & 2 & -3 & 6 & -1 & 11 & -3 & 6 \\
+3 & 8 & -2 & 5 & -2 & -2 & 6 & 5 \\
+4 & -5 & 0 & -8 & -1 & -7 & 2 & -8 \\
+5 & -8 & -8 & -5 & -6 & -10 & 0 & -6 \\
+6 & 6 & 1 & -12 & 0 & 6 & -1 & -7 \\
+\hline
+\end{tabular}
+\caption{First 7 coefficients of the seven partition functions.}
+\label{tab:coeffs}
+\end{table}
+
+The values in Table \ref{tab:coeffs} are consistent with our test suite and provide a snapshot of the output of our library. The successful verification of the theorems from the source paper, combined with these computed values, gives us high confidence in the fidelity of our Rust implementation.
+
+\section{Conclusion}
+
+In this paper, we have presented a comprehensive Rust implementation for the exploration of seven restricted partition functions recently introduced by Pushpa and Vasuki. Our work provides a bridge between the theoretical results established by Nath and Saikia and the practical, computational verification of these theorems. We have developed a reusable library for q-series arithmetic, demonstrating that Rust's performance and safety features make it an excellent choice for symbolic computation in number theory.
+
+The correctness of our implementation is supported by a rigorous test suite that verifies several of the key theorems and congruences from the source paper. The successful verification of these properties gives us high confidence in the fidelity of our library. The performance of the implementation is excellent for series of moderate precision, and the use of efficient algorithms like exponentiation by squaring ensures that the library is practical for research purposes.
+
+There are several promising avenues for future work. The current implementation is focused on elementary q-series manipulations. A natural extension would be to implement more advanced algorithms, such as Radu's algorithm for discovering and proving Ramanujan-type congruences, which would significantly expand the capabilities of the library. Furthermore, the library could be extended to support other types of partition functions and related combinatorial objects. Finally, publishing the library as an open-source crate would make it available to the wider mathematical community, fostering further research and collaboration.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
