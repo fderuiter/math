@@ -2,11 +2,13 @@
 //!
 //! This module contains the implementation of the satirical favoritism formula.
 
+pub mod favorite_child;
+
 use nalgebra::{DMatrix, DVector};
 use quadrature::clenshaw_curtis;
 use rand::Rng;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FavoritismInputs {
     pub t: f64,
     pub g_emotional: f64,

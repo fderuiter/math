@@ -1,0 +1,53 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\geometry{margin=1in}
+
+\title{A Corollary on the Uniqueness of the Favorite Child}
+\author{A. Mathematician}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper presents a corollary to the foundational work on the mathematical modeling of maternal favoritism. We formally posit and prove the existence and uniqueness of a "Favorite Child" under non-degenerate conditions.
+\end{abstract}
+
+\section{Introduction}
+
+In the preceding seminal work, a comprehensive formula was introduced to calculate a "Favoritism Score," \( F \), for an individual child. This score is a function of numerous variables representing the child's attributes and actions. Let \( C = \{c_1, c_2, \dots, c_n\} \) be the set of all children of a given mother. For each child \( c_i \in C \), there exists a corresponding favoritism score \( F(c_i) \).
+
+\section{The Principle of Maximal Favoritism}
+
+We now introduce a fundamental principle that governs the dynamics of familial preference.
+
+\newtheorem{theorem}{Theorem}
+\begin{theorem}[The Favorite Child Theorem]
+For any given set of children \( C \) where the favoritism function \( F \) does not produce identical scores for any two distinct children (i.e., \( F(c_i) \neq F(c_j) \) for all \( i \neq j \)), there exists a unique child \( c^* \in C \) such that:
+\begin{equation}
+F(c^*) = \max_{c_i \in C} \{F(c_i)\}
+\end{equation}
+This child, \( c^* \), is hereby defined as the "Favorite Child."
+\end{theorem}
+
+\subsection{Proof}
+
+The proof follows directly from the properties of a finite, totally ordered set.
+
+\begin{enumerate}
+    \item \textbf{Existence:} The set of favoritism scores \( \{F(c_1), F(c_2), \dots, F(c_n)\} \) is a finite, non-empty set of real numbers. By the axiom of completeness, any such set has a maximum element. Therefore, a child \( c^* \) with the maximum score must exist.
+    \item \textbf{Uniqueness:} The uniqueness is guaranteed by the theorem's precondition that all favoritism scores are distinct. If there were two favorite children, \( c_a^* \) and \( c_b^* \), then by definition \( F(c_a^*) = F(c_b^*) \), which contradicts the non-degenerate condition.
+\end{enumerate}
+
+Thus, the existence of a single, unique Favorite Child is proven. Q.E.D.
+
+\section{Conclusion}
+
+The Favorite Child Theorem provides a rigorous mathematical foundation for a concept previously understood only through intuition and anecdotal evidence. This formalization opens up new avenues for research, such as the study of "Favorite Child" stability over time and the probabilistic outcomes of sibling rivalries.
+
+\end{document}

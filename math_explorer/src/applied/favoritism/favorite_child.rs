@@ -1,0 +1,31 @@
+use super::{calculate_favoritism_score, FavoritismInputs};
+
+/// Represents a child with a name and a set of attributes for favoritism calculation.
+#[derive(Debug, Clone)]
+pub struct Child {
+    pub name: String,
+    pub inputs: FavoritismInputs,
+}
+
+/// Determines the favorite child from a list of children based on the favoritism score.
+///
+/// This function iterates through a slice of `Child` structs, calculates the favoritism
+/// score for each, and returns the child with the highest score.
+///
+/// # Arguments
+///
+/// * `children` - A slice of `Child` structs.
+///
+/// # Returns
+///
+/// An `Option` containing a reference to the `Child` with the highest favoritism score.
+/// Returns `None` if the slice is empty.
+pub fn find_favorite_child(children: &[Child]) -> Option<&Child> {
+    children
+        .iter()
+        .max_by(|a, b| {
+            let score_a = calculate_favoritism_score(&a.inputs);
+            let score_b = calculate_favoritism_score(&b.inputs);
+            score_a.partial_cmp(&score_b).unwrap_or(std::cmp::Ordering::Equal)
+        })
+}
