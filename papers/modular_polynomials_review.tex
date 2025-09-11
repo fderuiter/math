@@ -1,0 +1,108 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+
+\title{A Review of "Divisibility of the coefficients of modular polynomials" by Florian Breuer}
+\author{Frederick de Ruiter}
+\date{\today}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\ord}{\mathrm{ord}}
+\newcommand{\nrd}{\mathrm{nrd}}
+\newcommand{\Aut}{\mathrm{Aut}}
+\newcommand{\End}{\mathrm{End}}
+\newcommand{\Isom}{\mathrm{Isom}}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    This paper provides a comprehensive review of Florian Breuer's work, "Divisibility of the coefficients of modular polynomials." We summarize the main theorems, which establish strong lower bounds on the $p$-adic valuations of the coefficients of classical modular polynomials $\Phi_N(X,Y)$. We further explore the methodologies employed in the proofs, including the use of elliptic curve deformation theory and an interpolation lemma. Finally, we discuss the significance of these findings in the context of computational number theory and the study of elliptic curves with complex multiplication.
+\end{abstract}
+
+\section{Introduction}
+
+The classical modular polynomial $\Phi_N(X,Y)$ is a fundamental object in number theory that encodes the relationship between $j$-invariants of elliptic curves connected by a cyclic isogeny of degree $N$. While its coefficients are known to be integers, they grow notoriously large, posing significant computational challenges. Breuer's paper addresses a remarkable property of these coefficients: their high divisibility by small prime powers.
+
+The central thesis of the paper is that the coefficients of $\Phi_N(X+J, Y+J)$ for certain algebraic integers $J$ (notably $J=0$ and $J=1728$) are highly divisible by primes $p$ where $J$ corresponds to a supersingular $j$-invariant in characteristic $p$. This review will delve into the specific bounds provided and the elegant techniques used to derive them.
+
+\section{Main Results}
+
+The paper's primary contributions are encapsulated in two main theorems that provide explicit lower bounds on the $p$-adic valuations of the coefficients of modular polynomials.
+
+\begin{definition}[Modular Polynomial]
+The classical modular polynomial $\Phi_N(X,Y) \in \Z[X,Y]$ is the minimal polynomial of the function $j(N\tau)$ over the field $\Q(j(\tau))$. It has the property that $\Phi_N(j_1, j_2) = 0$ if and only if there is a cyclic isogeny of degree $N$ between the elliptic curves with $j$-invariants $j_1$ and $j_2$. The degree of $\Phi_N$ in each variable is $\psi(N) = N \prod_{p|N}(1+1/p)$.
+\end{definition}
+
+Let the expansion of the modular polynomial be $\Phi_N(X,Y) = \sum_{i,j} a_{i,j} X^i Y^j$.
+
+\begin{theorem}[Breuer, Theorem 1.1]
+    Let $N > 1$. For $i+j < \psi(N)$, the following hold:
+    \begin{enumerate}
+        \item If $2 \nmid N$, then $v_2(a_{i,j}) \geq 15(\psi(N) - i - j)$.
+        \item If $3 \nmid N$, then $v_3(a_{i,j}) \geq 3(\psi(N) - i - j)$; moreover, $v_3(a_{i,j}) \geq \lceil\frac{9}{2}(\psi(N)-i-j)\rceil$ if $N \equiv 1 \pmod 3$.
+        \item If $5 \nmid N$, then $v_5(a_{i,j}) \geq 3(\psi(N) - i - j)$.
+    \end{enumerate}
+\end{theorem}
+
+A similar theorem is presented for the case where the polynomial is centered at $J=1728$.
+
+\begin{theorem}[Breuer, Theorem 1.2]
+    Let $N > 1$ and write $\Phi_N(X+1728, Y+1728) = \sum_{i,j} a_{i,j} X^i Y^j$. For $i+j < \psi(N)$, the following hold:
+    \begin{enumerate}
+        \item If $2 \nmid N$, then $v_2(a_{i,j}) \geq 9(\psi(N) - i - j)$; moreover, $v_2(a_{i,j}) \geq 10(\psi(N)-i-j)$ if $N \equiv 1 \pmod 4$.
+        \item If $3 \nmid N$, then $v_3(a_{i,j}) \geq 6(\psi(N) - i - j)$.
+        \item If $7 \nmid N$, then $v_7(a_{i,j}) \geq 2(\psi(N) - i - j)$.
+    \end{enumerate}
+\end{theorem}
+
+These theorems are special cases of a more general result (Theorem 2.1 in the paper) that applies to an elliptic curve $E/K$ with good reduction and $j$-invariant $J=j(E)$.
+
+\section{Proof Methodology}
+
+The proofs of these theorems are elegant and rely on a combination of algebraic and geometric techniques. The core strategy involves constructing specific deformations of elliptic curves and then applying an interpolation lemma to bound the valuations of the polynomial coefficients.
+
+\subsection{Interpolation Lemma}
+A key tool is a lemma (Lemma 2.2) concerning the coefficients of a polynomial $f(Y) \in K[Y]$ over a complete valued field $K$. If one has a set of interpolation points $y_0, \dots, y_d$ with specific valuation properties, then the valuations of the coefficients of $f$ are bounded by the valuations of $f(y_k)$.
+
+\subsection{Deformation of Elliptic Curves}
+The main part of the proof involves constructing a family of elliptic curves $E_k$ whose $j$-invariants $j_k$ serve as the interpolation points for the lemma. These curves are constructed as deformations of a base elliptic curve $E$ with $j$-invariant $J$. The deformations are carefully chosen so that the $j_k$ are "close" to $J$ in the $p$-adic sense, and the valuations $v(j_k - j_l)$ are constant for $k \neq l$.
+
+\subsection{Isogeny Properties and Vélu's Formulas}
+The proof requires analyzing the behavior of isogenies under these deformations. For a given curve $E_k$, the roots of $\Phi_N(X, j_k)$ are the $j$-invariants of curves $\tilde{E}_k$ that are $N$-isogenous to $E_k$. The paper uses properties of isogenies, including Vélu's formulas, to show that if $j(\tilde{E}_k)$ is close to $j(E_k)$, its valuation is bounded by a value related to the size of the automorphism group of the reduced curve, which connects back to the constants (e.g., 15, 9, 6) in the main theorems.
+
+\section{Significance and Applications}
+
+The results in Breuer's paper have both theoretical and practical implications.
+\begin{itemize}
+    \item \textbf{Computational Number Theory}: The coefficients of $\Phi_N(X,Y)$ can be enormous. Knowing that they are divisible by large powers of small primes allows for more efficient storage by only storing the non-trivial part of the coefficients. This also has potential applications in algorithms that compute modular polynomials using the Chinese Remainder Theorem (CRT), as it might reduce the number of primes needed for the CRT reconstruction.
+    \item \textbf{Theory of Elliptic Curves}: The paper provides a beautiful illustration of the connection between the arithmetic of elliptic curves (isogenies, complex multiplication, reduction modulo $p$) and the algebraic properties of modular polynomials. The divisibility properties are shown to be a direct consequence of the supersingular reduction of the corresponding elliptic curves.
+\end{itemize}
+
+The paper also provides an analysis of the numbers $C_J(N,v)$, which count the number of cyclic $N$-isogenies that reduce to endomorphisms. This connects the algebraic properties of the polynomial to the structure of the endomorphism ring of the reduced curve, distinguishing between the ordinary and supersingular cases.
+
+\section{Conclusion}
+
+Florian Breuer's paper "Divisibility of the coefficients of modular polynomials" provides a deep and insightful analysis of the arithmetic properties of modular polynomials. By skillfully combining techniques from algebraic number theory and the geometry of elliptic curves, the paper establishes strong, explicit bounds on the divisibility of their coefficients. These results are not only of theoretical interest but also have direct applications in computational number theory. The work stands as a significant contribution to our understanding of modular forms and elliptic curves.
+
+\begin{thebibliography}{9}
+    \bibitem{breuer2025}
+    F. Breuer, "Divisibility of the coefficients of modular polynomials," arXiv:2509.06423v1 [math.NT], 2025.
+\end{thebibliography}
+
+\end{document}
