@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+
+\title{Self-Calibration of Large Language Models for Enhanced Test-Time Efficiency}
+\author{Frederick de Ruiter}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The computational cost of inference in large language models (LLMs) presents a significant bottleneck, particularly in applications requiring extensive sampling. This paper introduces a novel "Self-Calibration" mechanism designed to improve the test-time efficiency of LLMs. The core of this work lies in enabling a model to better estimate its own confidence, which in turn facilitates more sophisticated and efficient sampling strategies. We propose a new confidence metric, the Soft Self-Consistency Score, which leverages the internal consistency of multiple sampled responses to a given prompt. To further refine these confidence estimates, we introduce a Dynamic Temperature scaling factor based on the entropy of the answer distribution. The ultimate goal is to train the model to predict these confidence scores directly, a process we frame as a knowledge distillation problem. The training objective is to minimize the Kullback-Leibler (KL) divergence between the model's predicted confidence distribution and a target distribution derived from our proposed scoring mechanism. This Self-Calibration framework allows for more efficient inference through strategies such as confidence-based early stopping, without compromising the quality of the generated output.
+\end{abstract}
+
+\section{Introduction}
+Large language models (LLMs) have demonstrated remarkable capabilities across a wide range of natural language tasks. However, their deployment in real-world scenarios is often hampered by the substantial computational resources required for inference. Techniques like self-consistency \cite{wang2022self} have been shown to improve reasoning accuracy by sampling multiple generation paths and selecting the most consistent answer. While effective, this approach exacerbates the computational burden by a factor of the number of samples.
+
+To mitigate this, we propose a method for making sampling-based approaches more efficient. The key insight is that not all prompts require the same number of samples to arrive at a confident answer. By enabling the model to recognize when it has reached a high-confidence conclusion, we can dynamically halt the sampling process, thereby saving significant computational resources. This requires the model to have a reliable measure of its own confidence.
+
+This paper presents "Self-Calibration," a framework to train an LLM to accurately predict its own confidence on a given task. Our contributions are threefold:
+\begin{enumerate}
+    \item We introduce the \textbf{Soft Self-Consistency Score}, a novel metric for evaluating the correctness of a generated response without requiring human-annotated labels.
+    \item We propose a \textbf{Dynamic Temperature} mechanism that adjusts the confidence landscape based on the diversity of sampled answers, allowing for better discrimination between high and low-confidence states.
+    \item We formulate a new \textbf{training objective} based on knowledge distillation, where the model learns to predict the soft self-consistency scores, effectively internalizing a measure of its own uncertainty.
+\end{enumerate}
+By integrating this mechanism, an LLM can achieve a similar or even better performance with a fraction of the computational cost, making advanced inference strategies more practical.
+
+\section{Methodology}
+Our proposed Self-Calibration mechanism is composed of three main mathematical components: a novel confidence scoring function, a dynamic temperature for score calibration, and a distillation-based training objective.
+
+\subsection{Soft Self-Consistency Score}
+To quantify the correctness of a model's generation without access to ground-truth labels, we introduce the Soft Self-Consistency Score. This score is based on the intuition that if the model generates multiple responses that converge on the same final answer, that answer is more likely to be correct. Unlike traditional self-consistency, which relies on a simple majority vote, our score is "soft" as it is weighted by the generation probability of each response.
+
+Let $Y = \{y_1, y_2, \dots, y_N\}$ be a set of $N$ responses sampled from the model for a given prompt. Let $A(y)$ be a function that extracts the final answer from a response $y$, and let $P(y)$ be the probability of generating response $y$. The Soft Self-Consistency Score $S(y)$ for a given response $y \in Y$ is defined as the sum of probabilities of all responses in the set that share the same final answer:
+\begin{equation}
+S(y) = \sum_{y' \in Y, A(y')=A(y)} P(y')
+\end{equation}
+This score provides a continuous measure of confidence in the answer provided by response $y$. High scores indicate that the model frequently and confidently arrives at the same answer.
+
+\subsection{Dynamic Temperature}
+The raw Soft Self-Consistency Scores can be further refined to better distinguish between high-confidence and low-confidence scenarios. We introduce a Dynamic Temperature, $\tau$, which is adjusted based on the diversity of the answers generated. The intuition is that if the model produces many different answers, it is in a state of high uncertainty, and the confidence scores should be tempered to reflect this.
+
+We measure the diversity of answers using the Shannon entropy of the answer distribution. Let $\mathcal{A}$ be the set of all unique answers produced across the $N$ samples, and let $p_a$ be the proportion of times a specific answer $a \in \mathcal{A}$ appears. The entropy $H$ is calculated as:
+\begin{equation}
+H = - \sum_{a \in \mathcal{A}} p_a \log p_a
+\end{equation}
+A high entropy indicates a wide distribution of answers (high uncertainty), while a low entropy indicates that the model is converging on one or a few answers (high certainty). The temperature $\tau$ is then defined as a function of this entropy. For simplicity, a linear mapping can be used:
+\begin{equation}
+\tau(H) = \tau_0 + kH
+\end{equation}
+where $\tau_0$ is a base temperature and $k$ is a scaling factor. This dynamic temperature will be used to sharpen or soften the final probability distribution over the sampled responses.
+
+\subsection{Training Objective}
+The ultimate goal of Self-Calibration is to train the model to predict its confidence directly, obviating the need for expensive multi-sampling at test time. We frame this as a knowledge distillation problem, where the model learns to predict the Soft Self-Consistency Scores.
+
+We define a target probability distribution, $P$, over the sampled responses $Y$. This distribution is derived by applying a softmax function to the Soft Self-Consistency Scores, scaled by the dynamic temperature $\tau$:
+\begin{equation}
+P(y) = \frac{\exp(S(y)/\tau)}{\sum_{y' \in Y} \exp(S(y')/\tau)}
+\end{equation}
+Let $Q$ be the model's predicted probability distribution over the same set of responses. The training objective is to minimize the Kullback-Leibler (KL) divergence between the model's predicted distribution $Q$ and the target distribution $P$:
+\begin{equation}
+\mathcal{L} = D_{KL}(Q || P) = \sum_{y \in Y} Q(y) \log\left(\frac{Q(y)}{P(y)}\right)
+\end{equation}
+By minimizing this loss, the student model learns to internalize the confidence estimation process of the teacher (the scoring mechanism), leading to a calibrated model that can predict its own confidence more accurately.
+
+\section{Conclusion}
+We have presented a Self-Calibration framework for large language models that enhances test-time efficiency. By introducing a Soft Self-Consistency Score and a Dynamic Temperature, we can generate a reliable, label-free confidence signal. The proposed KL divergence-based training objective allows the model to distill this signal, learning to predict its own uncertainty. This work paves the way for more intelligent and resource-efficient inference strategies, such as adaptive sampling, which are crucial for the practical deployment of large-scale language models. Future work will involve exploring more sophisticated temperature mappings and evaluating the impact of this framework on a diverse set of reasoning tasks.
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{wang2022self}
+Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E., Narang, S., Chowdhery, A., \& Zhou, D. (2022).
+\textit{Self-Consistency Improves Chain of Thought Reasoning in Language Models}.
+arXiv preprint arXiv:2203.11171.
+\end{thebibliography}
+
+\end{document}
