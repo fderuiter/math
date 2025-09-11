@@ -11,5 +11,9 @@ wigner-symbols = "0.5.0"
 rug = "1.28.0"
 statrs = "0.17.0"
 
+[[test]]
+name = "elliptic_curves"
+path = "tests/elliptic_curves.rs"
+
 [dev-dependencies]
 approx = "0.5.1"
