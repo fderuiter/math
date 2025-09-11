@@ -15,5 +15,9 @@ statrs = "0.17.0"
 name = "elliptic_curves"
 path = "tests/elliptic_curves.rs"
 
+[[test]]
+name = "algorithmic_information"
+path = "tests/algorithmic_information.rs"
+
 [dev-dependencies]
 approx = "0.5.1"
