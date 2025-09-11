@@ -4,6 +4,8 @@
 //! It will include algorithms for primality testing, factorization, modular arithmetic,
 //! and other number-theoretic functions.
 
+pub mod partitions;
+
 /// A placeholder function to check for primality.
 ///
 /// This function is a stand-in for a more robust primality test.
