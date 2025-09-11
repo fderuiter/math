@@ -1,0 +1,78 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{A Computational Framework for Exploring Algorithmic Information Bounds in Geometric Measure Theory}
+\author{Jules}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper introduces a new open-source Rust library for the computational exploration of concepts from the paper "Algorithmic Information Bounds for Distances and Orthogonal Projections" by Cholak et al. We present the design of the library, which includes modules for geometric primitives, Kolmogorov complexity approximations, and an implementation of the paper's core Combinatorial Lemma. We demonstrate the library's utility by providing numerical experiments that explore the information-theoretic bounds and the resulting Hausdorff dimension inequalities.
+\end{abstract}
+
+\section{Introduction}
+% Overview of the problem
+% Motivation for the work
+% Summary of the paper's structure
+
+\section{Mathematical Preliminaries}
+% Review of Kolmogorov complexity
+% Review of Hausdorff dimension
+% Review of the point-to-set principle
+% Statement of the key theorems from the source paper
+
+\section{Implementation Design}
+
+The core of our computational framework is a new Rust library, developed as a module within the `math_explorer` crate. The library is designed to be modular and extensible, with a clear separation of concerns that reflects the mathematical concepts from the source paper. The main modules are `geometry`, `kolmogorov`, and `combinatorics`.
+
+\subsection{The `geometry` Module}
+
+The `geometry` module provides the foundational data structures for representing geometric objects. To handle the high-precision arithmetic required by the theoretical framework, we use the `rug` library, which provides arbitrary-precision rational numbers (`rug::Rational`).
+
+\begin{itemize}
+    \item \texttt{Point2D}: A type alias for a 2D vector of `Rational` numbers, representing a point in $\mathbb{R}^2$.
+    \item \texttt{Line}: A struct representing a line in 2D space, defined by an origin point and a direction vector.
+    \item \texttt{DyadicRational}: A struct representing a dyadic rational number of the form $m/2^r$.
+    \item \texttt{DyadicPoint2D}: A struct representing a point with dyadic rational coordinates.
+\end{itemize}
+
+The module also provides functions for essential geometric operations, such as calculating Euclidean distances and projecting points onto lines.
+
+\subsection{The `kolmogorov` Module}
+
+The `kolmogorov` module provides functions for working with computable approximations of Kolmogorov complexity. As prefix Kolmogorov complexity ($K$) is not computable, we implement functions that compute upper bounds and approximations as used in the paper.
+
+\begin{itemize}
+    \item \texttt{prefix\_kolmogorov\_approx}: This function computes an upper bound for $K(n)$ for a given integer $n$, based on the inequality $K(n) \le \log_2(n) + 2\log_2(\log_2(n)) + O(1)$.
+    \item \texttt{k\_floor\_r}: This function approximates the complexity of a point at a given precision $r$ by computing the complexity of its truncated binary expansion, $K(\lfloor x \rfloor_r)$. This is a key technique used in the paper to bridge the gap between the uncomputable nature of $K$ and the need for concrete calculations.
+\end{itemize}
+
+\subsection{The `combinatorics` Module}
+
+The `combinatorics` module implements the Combinatorial Lemma (Lemma 1) from the source paper. This lemma is the algorithmic heart of the paper's main proofs.
+
+\begin{itemize}
+    \item \texttt{combinatorial\_lemma}: This generic function takes as input the sets $X$ and $V$, the collection of subsets $N_v$, and the similarity relations $\sim_d$, and it performs a search to find a pair of points $(u, v)$ that satisfies the lemma's conclusion. While the lemma's proof is a non-constructive counting argument, our implementation provides a constructive way to find such a pair, albeit with a computational cost that depends on the size of the sets.
+\end{itemize}
+
+This modular design allows for future extensions and provides a solid foundation for the numerical experiments presented in the next section.
+
+\section{Numerical Experiments and Results}
+% Experiments for Theorem 2 (distances)
+% Experiments for Theorem 3 (projections)
+% Experiments for Theorem 4 (pinned distance sets)
+
+\section{Conclusion and Future Work}
+% Summary of contributions
+% Directions for future research
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

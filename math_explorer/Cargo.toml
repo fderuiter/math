@@ -13,6 +13,7 @@ statrs = "0.17.0"
 tch = "0.20.0"
 ndarray = "0.15.6"
 hdf5 = "0.8.1"
+petgraph = "0.6.4"
 
 [[test]]
 name = "elliptic_curves"
@@ -21,6 +22,8 @@ path = "tests/elliptic_curves.rs"
 [[test]]
 name = "generative_turbulence"
 path = "tests/generative_turbulence.rs"
+name = "algorithmic_information"
+path = "tests/algorithmic_information.rs"
 
 [dev-dependencies]
 approx = "0.5.1"
