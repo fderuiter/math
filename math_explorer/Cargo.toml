@@ -16,5 +16,9 @@ petgraph = "0.6.4"
 name = "elliptic_curves"
 path = "tests/elliptic_curves.rs"
 
+[[test]]
+name = "algorithmic_information"
+path = "tests/algorithmic_information.rs"
+
 [dev-dependencies]
 approx = "0.5.1"
