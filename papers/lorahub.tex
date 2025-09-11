@@ -1,0 +1,133 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\geometry{margin=1in}
+
+\title{Rust Implementation of LoraHub's Mathematical Core}
+\author{Frederick de Ruiter}
+\date{\today}
+
+\lstset{
+    language=Rust,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{green!50!black},
+    breaklines=true,
+    frame=single
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    This paper details the Rust implementation of the core mathematical principles behind LoraHub, a framework for the dynamic composition of Low-Rank Adaptation (LoRA) modules. We translate the mathematical concepts from the original LoraHub paper into a robust and efficient Rust implementation, leveraging the `nalgebra` library for linear algebra operations. The focus is on the two primary components: the weighted combination of LoRA tensors and the formulation of the objective function used for optimization.
+\end{abstract}
+
+\section{Introduction}
+
+Low-Rank Adaptation (LoRA) has emerged as an efficient technique for fine-tuning large pre-trained models. LoraHub extends this by proposing a method to combine multiple specialized LoRA modules to achieve generalization on new, unseen tasks without additional training \cite{huang2023lorahub}. The central idea is to find an optimal linear combination of the weights of existing LoRA modules.
+
+The core of LoraHub is a mathematical optimization problem. Given a set of LoRA modules (represented by their state dictionaries, which are collections of tensors), the goal is to find a set of scalar weights that, when used to combine the modules, minimizes an objective function on a few examples from a new task.
+
+This paper documents a Rust implementation of the mathematical functions required for this process.
+
+\section{Mathematical Formulation}
+
+The LoraHub algorithm \cite{huang2023lorahub} can be broken down into two key mathematical components:
+
+\begin{enumerate}
+    \item \textbf{LoRA Combination:} The combined LoRA module is a weighted sum of the individual modules. If we let $S_i$ be the state dictionary (a set of tensors) for the $i$-th LoRA module and $w_i$ be its corresponding weight, the final combined state dictionary $S_f$ is given by:
+    \begin{equation}
+        S_f = \sum_{i=1}^{N} w_i S_i
+    \end{equation}
+    This operation is performed for each tensor within the state dictionaries.
+
+    \item \textbf{Objective Function:} The optimal weights are found by minimizing an objective function. This function is typically the sum of a loss term and a regularization term:
+    \begin{equation}
+        \text{Objective}(w) = \text{Loss}(S_f) + \lambda R(w)
+    \end{equation}
+    where $\text{Loss}(S_f)$ is the model's loss on the new task using the combined LoRA, $R(w)$ is a regularization function on the weights, and $\lambda$ is a regularization parameter. LoraHub uses L1 regularization to encourage sparsity.
+\end{enumerate}
+
+\section{Rust Implementation}
+
+We implement these concepts in Rust, creating a new module within the `math_explorer` project. This implementation relies on the `nalgebra` library for its linear algebra capabilities \cite{nalgebra}.
+
+\subsection{Combining LoRA Modules}
+
+The `combine_loras` function takes a slice of LoRA state dictionaries and a slice of weights and returns their weighted sum. A `LoraStateDict` is represented as a `HashMap<String, DMatrix<f64>>`.
+
+\begin{lstlisting}
+pub fn combine_loras(loras: &[LoraStateDict], weights: &[f64]) -> Result<LoraStateDict, &'static str> {
+    if loras.is_empty() || weights.is_empty() {
+        return Err("Input loras or weights cannot be empty.");
+    }
+    if loras.len() != weights.len() {
+        return Err("The number of loras and weights must be the same.");
+    }
+
+    let first_lora = &loras[0];
+    let mut final_state_dict: LoraStateDict = first_lora
+        .iter()
+        .map(|(key, tensor)| (key.clone(), tensor * weights[0]))
+        .collect();
+
+    for (i, lora_state_dict) in loras.iter().enumerate().skip(1) {
+        let keys: Vec<String> = final_state_dict.keys().cloned().collect();
+        for key in keys {
+            if let Some(tensor) = lora_state_dict.get(&key) {
+                if let Some(final_tensor) = final_state_dict.get_mut(&key) {
+                    *final_tensor += tensor * weights[i];
+                }
+            }
+        }
+    }
+
+    Ok(final_state_dict)
+}
+\end{lstlisting}
+
+\subsection{Objective Function}
+
+The objective function is implemented by `calculate_objective_score`, which combines a (mock) loss value with the L1 regularization term.
+
+\begin{lstlisting}
+pub fn l1_regularization(weights: &[f64], alpha: f64) -> f64 {
+    if weights.is_empty() {
+        return 0.0;
+    }
+    let sum_abs = weights.iter().map(|w| w.abs()).sum::<f64>();
+    alpha * sum_abs / (weights.len() as f64)
+}
+
+pub fn calculate_objective_score(weights: &[f64], mock_loss: f64, alpha: f64) -> f64 {
+    let regularization_term = l1_regularization(weights, alpha);
+    mock_loss + regularization_term
+}
+\end{lstlisting}
+
+\section{Conclusion}
+
+We have successfully implemented the mathematical core of the LoraHub framework in Rust. This implementation provides a foundation for building a full LoraHub-style model composition system in Rust. The code is modular, tested, and integrated into the `math_explorer` project, aligning with its goal of providing a library of mathematical algorithms. The next steps would involve integrating this mathematical core with a machine learning framework in Rust to replicate the full behavior of LoraHub.
+
+\begin{thebibliography}{9}
+
+\bibitem{huang2023lorahub}
+Chengsong Huang, Qian Liu, Bill Yuchen Lin, Tianyu Pang, Chao Du, and Min Lin.
+\newblock LoraHub: Efficient Cross-Task Generalization via Dynamic LoRA Composition.
+\newblock {\em arXiv preprint arXiv:2307.13269}, 2023.
+
+\bibitem{nalgebra}
+S{\'e}bastien Crozet et al.
+\newblock \textit{nalgebra}: linear algebra library for Rust.
+\newblock \url{https://nalgebra.org}, 2024.
+
+\end{thebibliography}
+
+\end{document}

@@ -8,6 +8,8 @@ mod tests {
     use super::applied::favoritism::{self, FavoritismInputs};
     use super::pure_math::number_theory;
     use super::physics::quantum;
+    use super::applied::lorahub;
+    use nalgebra::DMatrix;
 
     #[test]
     fn test_algebra_placeholder() {
@@ -59,5 +61,44 @@ mod tests {
         let coeff = quantum::clebsch_gordan(j1, m1, j2, m2, j, m);
         let expected = 1.0;
         assert!((coeff - expected).abs() < 1e-9, "Expected {}, got {}", expected, coeff);
+    }
+
+    #[test]
+    fn test_lorahub_functions() {
+        // Create two dummy LoRA state dicts
+        let mut lora1 = lorahub::LoraStateDict::new();
+        lora1.insert("tensor_a".to_string(), DMatrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]));
+        lora1.insert("tensor_b".to_string(), DMatrix::from_vec(2, 2, vec![0.1, 0.2, 0.3, 0.4]));
+
+        let mut lora2 = lorahub::LoraStateDict::new();
+        lora2.insert("tensor_a".to_string(), DMatrix::from_vec(2, 2, vec![5.0, 6.0, 7.0, 8.0]));
+        lora2.insert("tensor_b".to_string(), DMatrix::from_vec(2, 2, vec![0.5, 0.6, 0.7, 0.8]));
+
+        let loras = vec![lora1, lora2];
+        let weights = vec![0.5, 0.5];
+
+        // Test combine_loras
+        let combined = lorahub::combine_loras(&loras, &weights).unwrap();
+        let expected_a = DMatrix::from_vec(2, 2, vec![3.0, 4.0, 5.0, 6.0]);
+        let expected_b = DMatrix::from_vec(2, 2, vec![0.3, 0.4, 0.5, 0.6]);
+        assert_eq!(combined.get("tensor_a").unwrap(), &expected_a);
+
+        // Compare tensor_b with a tolerance for floating point precision
+        let combined_b = combined.get("tensor_b").unwrap();
+        let tolerance = 1e-9;
+        assert!((combined_b - &expected_b).abs().max() < tolerance, "Tensor B is not within tolerance");
+
+        // Test L1 regularization
+        let weights_for_reg = vec![-1.0, 2.0, -3.0];
+        let alpha = 0.1;
+        let l1_term = lorahub::l1_regularization(&weights_for_reg, alpha);
+        // Expected: 0.1 * (| -1| + |2| + |-3|) / 3 = 0.1 * 6 / 3 = 0.2
+        assert!((l1_term - 0.2).abs() < 1e-9);
+
+        // Test objective score
+        let mock_loss = 1.5;
+        let objective_score = lorahub::calculate_objective_score(&weights_for_reg, mock_loss, alpha);
+        // Expected: 1.5 + 0.2 = 1.7
+        assert!((objective_score - 1.7).abs() < 1e-9);
     }
 }
