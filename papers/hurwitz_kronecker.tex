@@ -1,0 +1,172 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+
+\title{A Rust Implementation and Verification of a Summation Formula for the Hurwitz-Kronecker Class Number}
+\author{Jules}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper presents a robust and efficient implementation in the Rust programming language of a novel summation formula for the Hurwitz-Kronecker class number, recently introduced by Tsai Yi-Ju. We provide a detailed exposition of the underlying mathematical concepts, including the theory of binary quadratic forms and class numbers. We then describe the architecture of our Rust implementation, which is designed for clarity, correctness, and performance. Finally, we present the results of our verification of the formula for a wide range of prime numbers, confirming its validity and demonstrating the correctness of our implementation.
+\end{abstract}
+
+\section{Introduction}
+
+The study of class numbers of quadratic fields is a classical and deep area of number theory, with connections to many other fields of mathematics. The Hurwitz-Kronecker class number, which generalizes the class number of an imaginary quadratic order, appears in various contexts, from the theory of modular forms to the counting of elliptic curves over finite fields.
+
+Recently, Tsai Yi-Ju presented a new and elegant summation formula involving the Hurwitz-Kronecker class number \cite{tsai2025montgomery}. The formula is given by:
+
+\begin{equation}
+\sum_{t^2 < p} H_w(t^2 - p) = \frac{p - 2}{3}
+\end{equation}
+
+where $p$ is any prime number greater than 3.
+
+The goal of this paper is twofold. First, we aim to provide a clear and detailed exposition of the mathematical concepts needed to understand this formula. Second, we present a complete and robust implementation of the formula in the Rust programming language. This implementation serves as a practical tool for working with the formula and as a means of verifying its correctness for a large range of primes.
+
+\section{Mathematical Background}
+
+\subsection{Imaginary Quadratic Fields and Orders}
+
+An imaginary quadratic field is a field of the form $\mathbb{Q}(\sqrt{d})$ where $d$ is a square-free negative integer. An order in such a field is a subring which is also a free $\mathbb{Z}$-module of rank 2. Every order has a discriminant, which is a negative integer $D \equiv 0 \text{ or } 1 \pmod{4}$. For any such $D$, there is a unique order of discriminant $D$.
+
+\subsection{Binary Quadratic Forms and the Class Group}
+
+A binary quadratic form is a polynomial of the form $f(x, y) = ax^2 + bxy + cy^2$ with integer coefficients $a, b, c$. The discriminant of the form is $D = b^2 - 4ac$. We are interested in forms that are primitive (i.e., $\gcd(a, b, c) = 1$) and positive-definite (i.e., $D < 0$ and $a > 0$).
+
+Two forms are equivalent if they can be transformed into one another by a linear change of variables with integer coefficients and determinant 1. This equivalence relation partitions the set of forms of a given discriminant into a finite number of equivalence classes. This set of classes forms a finite abelian group under a composition law defined by Gauss, called the class group. The order of this group is the class number, denoted $h(D)$.
+
+A form is called reduced if $|b| \le a \le c$, and if either $|b| = a$ or $a = c$, then $b \ge 0$. For a given discriminant $D < 0$, the class number $h(D)$ is equal to the number of reduced, primitive, positive-definite forms of discriminant $D$. This provides a practical algorithm for computing the class number, as described in the classic work of Cohen \cite{cohen1993course}.
+
+\subsection{The Hurwitz-Kronecker Class Number}
+
+The Hurwitz-Kronecker class number $H_w(D)$ is a weighted sum of class numbers of orders. It is defined for any integer $D$. For $D < 0$, it is defined as:
+
+\begin{equation}
+H_w(D) = \sum_{f^2 | D} \frac{h(D/f^2)}{w(D/f^2)}
+\end{equation}
+
+where the sum is over all squares $f^2$ dividing $D$, and $w(d)$ is the number of units in the quadratic order of discriminant $d$. The paper \cite{tsai2025montgomery} uses a slightly different but equivalent definition, which we adopt for our implementation. Let $h(d)$ be the class number of discriminant $d$. Then we define $h_w(d)$ as:
+
+\begin{equation}
+h_w(d) =
+\begin{cases}
+h(d)/3 & \text{if } d = -3 \\
+h(d)/2 & \text{if } d = -4 \\
+h(d) & \text{if } d < 0, d \equiv 0, 1 \pmod{4}, d \neq -3, -4 \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+Then the Hurwitz-Kronecker class number $H_w(D)$ for $D < 0$ is given by:
+
+\begin{equation}
+H_w(D) = \sum_{f^2 | D} h_w(D/f^2)
+\end{equation}
+
+For $D=0$, $H_w(0) = -1/12$. For $D>0$, $H_w(D)=0$.
+
+\section{The Summation Formula}
+
+The main result of \cite{tsai2025montgomery} is the following theorem:
+
+\newtheorem{theorem}{Theorem}
+\begin{theorem}
+For any prime $p > 3$, the following formula holds:
+\begin{equation}
+\sum_{t^2 < p} H_w(t^2 - p) = \frac{p - 2}{3}
+\end{equation}
+\end{theorem}
+
+The proof of this theorem is based on counting the number of points on Montgomery elliptic curves over a finite field $\mathbb{F}_p$. The number of such curves with a given number of points is related to the Hurwitz-Kronecker class number. By summing over all possible numbers of points, one can obtain the formula.
+
+\section{Rust Implementation}
+
+We have developed a Rust implementation to compute and verify the summation formula. The code is organized into a library with a modular structure.
+
+\subsection{Module Structure}
+
+The core logic is located in the `math_explorer::pure_math::number_theory` module, which is further divided into:
+\begin{itemize}
+    \item \texttt{primes}: For generating prime numbers.
+    \item \texttt{class\_number}: For computing the class number $h(D)$.
+    \item \texttt{hurwitz\_kronecker}: For computing $h_w(d)$, $H_w(D)$, and verifying the summation formula.
+\end{itemize}
+
+\subsection{Key Functions}
+
+The main functions are:
+
+\begin{verbatim}
+// In class_number.rs
+pub fn class_number(d: i64) -> u64
+
+// In hurwitz_kronecker.rs
+pub fn weighted_class_number(d: i64) -> f64
+pub fn hurwitz_class_number(d: i64) -> f64
+pub fn verify_summation_formula(p: u64) -> bool
+\end{verbatim}
+
+The `class_number` function is implemented by counting the number of reduced, primitive, positive-definite binary quadratic forms of a given discriminant, following the algorithm described in \cite{cohen1993course}.
+
+\section{Verification and Results}
+
+We have written a comprehensive test suite for our implementation. The tests cover the correctness of the class number calculation for known discriminants, as well as the verification of the summation formula for small primes.
+
+All tests pass, confirming the correctness of our implementation. We have verified the formula for all primes up to 100. A sample of the results is shown in Table 1.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+Prime $p$ & Sum & $(p-2)/3$ \\
+\hline
+5 & 1.0 & 1.0 \\
+7 & 1.666... & 1.666... \\
+11 & 3.0 & 3.0 \\
+13 & 3.666... & 3.666... \\
+17 & 5.0 & 5.0 \\
+19 & 5.666... & 5.666... \\
+\hline
+\end{tabular}
+\caption{Verification of the summation formula for small primes.}
+\end{table}
+
+\section{Conclusion}
+
+In this paper, we have presented a complete and robust Rust implementation of a novel summation formula for the Hurwitz-Kronecker class number. We have provided a detailed explanation of the mathematical background and the structure of our implementation. Our work serves as a practical tool for further research on this topic and as a confirmation of the validity of the formula.
+
+Future work could involve optimizing the class number algorithm for larger discriminants and exploring other related formulas in the theory of modular forms and elliptic curves.
+
+\begin{thebibliography}{9}
+
+\bibitem{tsai2025montgomery}
+Tsai Yi-Ju,
+\textit{A Novel Summation Formula for the Hurwitz-Kronecker Class Number},
+arXiv:2509.08281v1, 2025.
+
+\bibitem{cohen1993course}
+Henri Cohen,
+\textit{A Course in Computational Algebraic Number Theory},
+Springer-Verlag, 1993.
+
+\bibitem{brown2008elliptic}
+Brittany Brown et al.,
+\textit{Elliptic curves, modular forms, and sums of Hurwitz class numbers},
+Journal of Number Theory 128.6 (2008): 1847-1863.
+
+\bibitem{zagier1975nombres}
+Don Zagier,
+\textit{Nombres de classes et formes modulaires de poids 3/2},
+Seminaire de Théorie des Nombres de Bordeaux 4 (1974-1975): 1-2.
+
+\end{thebibliography}
+
+\end{document}
