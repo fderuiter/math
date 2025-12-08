@@ -144,21 +144,38 @@ mod tests {
     }
 }
 
+/// The self-calibration module.
 pub mod self_calibration {
+    /// Types used in self-calibration.
     pub mod types {
+        /// Represents a response from a model.
         #[derive(Debug, Clone, PartialEq)]
         pub struct Response {
+            /// The text of the response.
             pub text: String,
+            /// The probability assigned by the model.
             pub probability: f64,
+            /// The extracted answer.
             pub answer: Answer,
         }
+        /// Type alias for an answer string.
         pub type Answer = String;
     }
 
+    /// Scoring functions.
     pub mod scoring {
         use super::types::{Answer, Response};
         use std::collections::HashMap;
 
+        /// Calculates the soft self-consistency scores for a set of responses.
+        ///
+        /// # Arguments
+        ///
+        /// * `responses` - A slice of responses.
+        ///
+        /// # Returns
+        ///
+        /// A vector of scores corresponding to each response.
         pub fn calculate_soft_self_consistency_scores(responses: &[Response]) -> Vec<f64> {
             let mut answer_probabilities: HashMap<&Answer, f64> = HashMap::new();
             for response in responses {
@@ -192,10 +209,20 @@ pub mod self_calibration {
         }
     }
 
+    /// Temperature scaling functions.
     pub mod temperature {
         use super::types::{Answer, Response};
         use std::collections::HashMap;
 
+        /// Calculates the entropy of the answer distribution.
+        ///
+        /// # Arguments
+        ///
+        /// * `responses` - A slice of responses.
+        ///
+        /// # Returns
+        ///
+        /// The entropy value.
         pub fn calculate_answer_entropy(responses: &[Response]) -> f64 {
             if responses.is_empty() { return 0.0; }
             let mut answer_counts: HashMap<&Answer, usize> = HashMap::new();
@@ -211,6 +238,15 @@ pub mod self_calibration {
             entropy
         }
 
+        /// Maps entropy to a temperature value.
+        ///
+        /// # Arguments
+        ///
+        /// * `entropy` - The entropy value.
+        ///
+        /// # Returns
+        ///
+        /// The temperature value.
         pub fn map_entropy_to_temperature(entropy: f64) -> f64 {
             1.0 + 0.5 * entropy
         }
@@ -233,6 +269,7 @@ pub mod self_calibration {
         }
     }
 
+    /// Training functions.
     pub mod training {
         use super::scoring::calculate_soft_self_consistency_scores;
         use super::temperature::{calculate_answer_entropy, map_entropy_to_temperature};
@@ -264,6 +301,16 @@ pub mod self_calibration {
             }
         }
 
+        /// Calculates the KL divergence loss between the predicted distribution and the target distribution.
+        ///
+        /// # Arguments
+        ///
+        /// * `responses` - A slice of responses (used to calculate target distribution).
+        /// * `predicted_dist` - The predicted probability distribution.
+        ///
+        /// # Returns
+        ///
+        /// The KL divergence loss.
         pub fn calculate_kl_divergence_loss(responses: &[Response], predicted_dist: &[f64]) -> f64 {
             if responses.len() != predicted_dist.len() {
                 panic!("Distributions have different lengths.");

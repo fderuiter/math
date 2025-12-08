@@ -14,22 +14,38 @@ const OUTPUT_SIZE: usize = 148;
 /// Configuration for the CERA model.
 #[derive(Clone, Debug)]
 pub struct CeraConfig {
+    /// Learning rate for the optimizer.
     pub learning_rate: f32,
+    /// Weight for the prediction loss term.
     pub lambda_pred: f32,
+    /// Weight for the Earth Mover's Distance (EMD) loss term.
     pub lambda_emd: f32,
+    /// Number of training epochs.
     pub epochs: usize,
+    /// Batch size for training.
     pub batch_size: usize,
 }
 
 /// The main CERA model.
 pub struct Cera {
+    /// The autoencoder component.
     pub autoencoder: Autoencoder,
+    /// The predictor component.
     pub predictor: Predictor,
+    /// The model configuration.
     pub config: CeraConfig,
 }
 
 impl Cera {
     /// Creates a new CERA model with the given configuration.
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The configuration struct.
+    ///
+    /// # Returns
+    ///
+    /// A new `Cera` instance.
     pub fn new(config: CeraConfig) -> Self {
         let autoencoder = Autoencoder::new(IN_CHANNELS, LATENT_CHANNELS);
         let predictor_input_size = NUM_LEVELS * ALIGNED_CHANNELS;
@@ -69,6 +85,15 @@ impl Cera {
 
     /// Reshapes a batch of latent vectors for the predictor.
     /// From (batch_size * num_levels, channels) to (batch_size, num_levels * channels).
+    ///
+    /// # Arguments
+    ///
+    /// * `latent_matrix` - The matrix of latent vectors.
+    /// * `batch_size` - The number of samples in the batch.
+    ///
+    /// # Returns
+    ///
+    /// The reshaped matrix ready for the predictor.
     fn reshape_for_predictor(&self, latent_matrix: &DMatrix<f32>, batch_size: usize) -> DMatrix<f32> {
         let mut reshaped_data = Vec::with_capacity(batch_size * NUM_LEVELS * ALIGNED_CHANNELS);
         for i in 0..batch_size {
@@ -84,6 +109,12 @@ impl Cera {
     }
 
     /// Trains the CERA model on synthetic data.
+    ///
+    /// # Arguments
+    ///
+    /// * `control_inputs` - Input data for the control climate.
+    /// * `control_targets` - Target outputs for the control climate.
+    /// * `warm_inputs` - Input data for the warm climate.
     pub fn train(
         &mut self,
         control_inputs: &DMatrix<f32>,
@@ -142,6 +173,14 @@ impl Cera {
     }
 
     /// Makes a prediction using the trained CERA model.
+    ///
+    /// # Arguments
+    ///
+    /// * `inputs` - Input data matrix.
+    ///
+    /// # Returns
+    ///
+    /// The predicted output matrix.
     pub fn predict(&self, inputs: &DMatrix<f32>) -> DMatrix<f32> {
         let batch_size = inputs.nrows() / NUM_LEVELS;
         let latent = self.autoencoder.encoder.forward(inputs);

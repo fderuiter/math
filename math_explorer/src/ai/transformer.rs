@@ -9,13 +9,28 @@ use nalgebra::{DMatrix, RowDVector};
 /// A single Encoder layer, containing self-attention and a feed-forward network,
 /// with residual connections and layer normalization.
 pub struct EncoderLayer {
+    /// The multi-head self-attention mechanism.
     pub self_attn: MultiHeadAttention,
+    /// The position-wise feed-forward network.
     pub feed_forward: FeedForward,
+    /// Layer normalization applied after the attention mechanism.
     pub norm1: LayerNorm,
+    /// Layer normalization applied after the feed-forward network.
     pub norm2: LayerNorm,
 }
 
 impl EncoderLayer {
+    /// Creates a new `EncoderLayer` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `d_model`: The dimension of the model's embeddings and hidden states.
+    /// * `h`: The number of attention heads.
+    /// * `d_ff`: The dimension of the inner layer of the feed-forward network.
+    ///
+    /// # Returns
+    ///
+    /// A new `EncoderLayer` instance initialized with the given parameters.
     pub fn new(d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             self_attn: MultiHeadAttention::new(d_model, h),
@@ -25,6 +40,16 @@ impl EncoderLayer {
         }
     }
 
+    /// Performs the forward pass of the encoder layer.
+    ///
+    /// # Arguments
+    ///
+    /// * `x`: The input matrix of shape (sequence_length, d_model).
+    /// * `mask`: Optional mask for the self-attention mechanism.
+    ///
+    /// # Returns
+    ///
+    /// The output matrix of shape (sequence_length, d_model).
     pub fn forward(&self, x: &DMatrix<f64>, mask: Option<&DMatrix<f64>>) -> DMatrix<f64> {
         let attn_output = self.self_attn.forward(x, x, x, mask);
         let x_plus_attn = x + attn_output;
@@ -93,10 +118,23 @@ mod tests {
 
 /// The full Encoder, composed of a stack of identical EncoderLayers.
 pub struct Encoder {
+    /// A vector of `EncoderLayer` instances.
     pub layers: Vec<EncoderLayer>,
 }
 
 impl Encoder {
+    /// Creates a new `Encoder` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `num_layers`: The number of encoder layers to stack.
+    /// * `d_model`: The dimension of the model.
+    /// * `h`: The number of attention heads.
+    /// * `d_ff`: The dimension of the feed-forward network.
+    ///
+    /// # Returns
+    ///
+    /// A new `Encoder` instance.
     pub fn new(num_layers: usize, d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             layers: (0..num_layers)
@@ -105,6 +143,16 @@ impl Encoder {
         }
     }
 
+    /// Performs the forward pass through all encoder layers.
+    ///
+    /// # Arguments
+    ///
+    /// * `x`: The input matrix.
+    /// * `mask`: Optional mask for attention.
+    ///
+    /// # Returns
+    ///
+    /// The output matrix after passing through all layers.
     pub fn forward(&self, mut x: DMatrix<f64>, mask: Option<&DMatrix<f64>>) -> DMatrix<f64> {
         for layer in &self.layers {
             x = layer.forward(&x, mask);
@@ -118,15 +166,32 @@ impl Encoder {
 
 /// A single Decoder layer.
 pub struct DecoderLayer {
+    /// The masked multi-head self-attention mechanism.
     pub self_attn: MultiHeadAttention,
+    /// The multi-head cross-attention mechanism.
     pub cross_attn: MultiHeadAttention,
+    /// The position-wise feed-forward network.
     pub feed_forward: FeedForward,
+    /// Layer normalization applied after the self-attention mechanism.
     pub norm1: LayerNorm,
+    /// Layer normalization applied after the cross-attention mechanism.
     pub norm2: LayerNorm,
+    /// Layer normalization applied after the feed-forward network.
     pub norm3: LayerNorm,
 }
 
 impl DecoderLayer {
+    /// Creates a new `DecoderLayer` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `d_model`: The dimension of the model.
+    /// * `h`: The number of attention heads.
+    /// * `d_ff`: The dimension of the feed-forward network.
+    ///
+    /// # Returns
+    ///
+    /// A new `DecoderLayer` instance.
     pub fn new(d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             self_attn: MultiHeadAttention::new(d_model, h),
@@ -138,6 +203,18 @@ impl DecoderLayer {
         }
     }
 
+    /// Performs the forward pass of the decoder layer.
+    ///
+    /// # Arguments
+    ///
+    /// * `x`: The input matrix (e.g., target sequence embeddings).
+    /// * `enc_output`: The output matrix from the encoder.
+    /// * `self_attn_mask`: Optional mask for the self-attention mechanism.
+    /// * `cross_attn_mask`: Optional mask for the cross-attention mechanism.
+    ///
+    /// # Returns
+    ///
+    /// The output matrix.
     pub fn forward(
         &self,
         x: &DMatrix<f64>,
@@ -168,10 +245,23 @@ impl DecoderLayer {
 
 /// The full Decoder, composed of a stack of identical DecoderLayers.
 pub struct Decoder {
+    /// A vector of `DecoderLayer` instances.
     pub layers: Vec<DecoderLayer>,
 }
 
 impl Decoder {
+    /// Creates a new `Decoder` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `num_layers`: The number of decoder layers.
+    /// * `d_model`: The dimension of the model.
+    /// * `h`: The number of attention heads.
+    /// * `d_ff`: The dimension of the feed-forward network.
+    ///
+    /// # Returns
+    ///
+    /// A new `Decoder` instance.
     pub fn new(num_layers: usize, d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             layers: (0..num_layers)
@@ -180,6 +270,18 @@ impl Decoder {
         }
     }
 
+    /// Performs the forward pass through all decoder layers.
+    ///
+    /// # Arguments
+    ///
+    /// * `x`: The input matrix.
+    /// * `enc_output`: The output from the encoder.
+    /// * `self_attn_mask`: Optional mask for self-attention.
+    /// * `cross_attn_mask`: Optional mask for cross-attention.
+    ///
+    /// # Returns
+    ///
+    /// The output matrix.
     pub fn forward(
         &self,
         mut x: DMatrix<f64>,
@@ -198,7 +300,9 @@ impl Decoder {
 
 /// The full Transformer model.
 pub struct Transformer {
+    /// The encoder component of the transformer.
     pub encoder: Encoder,
+    /// The decoder component of the transformer.
     pub decoder: Decoder,
     // Note: In a full implementation, this would also include embedding layers,
     // positional encoding addition, and a final linear layer + softmax.
@@ -206,12 +310,24 @@ pub struct Transformer {
 
 /// Layer Normalization.
 pub struct LayerNorm {
+    /// Small constant for numerical stability.
     epsilon: f64,
+    /// Learnable scale parameter.
     gamma: RowDVector<f64>,
+    /// Learnable shift parameter.
     beta: RowDVector<f64>,
 }
 
 impl LayerNorm {
+    /// Creates a new `LayerNorm` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `d_model`: The dimension of the model.
+    ///
+    /// # Returns
+    ///
+    /// A new `LayerNorm` instance.
     pub fn new(d_model: usize) -> Self {
         Self {
             epsilon: 1e-6,
@@ -220,6 +336,15 @@ impl LayerNorm {
         }
     }
 
+    /// Applies layer normalization to the input.
+    ///
+    /// # Arguments
+    ///
+    /// * `x`: The input matrix.
+    ///
+    /// # Returns
+    ///
+    /// The normalized matrix.
     pub fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         let mut output = DMatrix::zeros(x.nrows(), x.ncols());
         for r in 0..x.nrows() {

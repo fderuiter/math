@@ -5,11 +5,22 @@ use nalgebra::{DMatrix, DVector, RealField};
 /// Represents a 3D surface mesh.
 /// For this example, it's a collection of vertices.
 pub struct Surface {
+    /// A vector of vertices, where each vertex is a `[x, y, z]` array of f64.
     pub vertices: Vec<[f64; 3]>,
 }
 
 /// Calculates a simplified internal energy of the surface (smoothness).
 /// This is a placeholder for the integral form.
+///
+/// # Arguments
+///
+/// * `surface` - The surface mesh.
+/// * `alpha` - Weight for the tension term.
+/// * `beta` - Weight for the rigidity term.
+///
+/// # Returns
+///
+/// The calculated internal energy value.
 pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
     // A simple placeholder: sum of squared distances between adjacent vertices
     // to simulate tension and rigidity.
@@ -25,6 +36,15 @@ pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
 
 /// Calculates a simplified external energy based on an image gradient.
 /// This is a placeholder for the integral over the image gradient.
+///
+/// # Arguments
+///
+/// * `surface` - The surface mesh.
+/// * `image_gradient_strength` - A scalar representing the average strength of the image gradient.
+///
+/// # Returns
+///
+/// The calculated external energy value.
 pub fn external_energy(surface: &Surface, image_gradient_strength: f64) -> f64 {
     // Placeholder: assumes a constant gradient strength for simplicity.
     // The energy is lower if the gradient is stronger.
@@ -33,6 +53,12 @@ pub fn external_energy(surface: &Surface, image_gradient_strength: f64) -> f64 {
 
 /// Evolves the surface one step using gradient descent.
 /// This is a conceptual implementation. A real implementation would be much more complex.
+///
+/// # Arguments
+///
+/// * `surface` - The surface mesh to evolve.
+/// * `learning_rate` - The step size for the gradient descent.
+/// * `gradient_strength` - The strength of the gradient to apply.
 pub fn evolve_surface(surface: &mut Surface, learning_rate: f64, gradient_strength: f64) {
     // In a real scenario, we'd compute the functional derivative of the energy.
     // Here, we just move each vertex slightly in a simulated direction.

@@ -4,6 +4,11 @@ use nalgebra::{DMatrix, DVector};
 use crate::climate::tensor_ops::{conv1d};
 
 /// A simple leaky ReLU activation function.
+///
+/// # Arguments
+///
+/// * `x` - The matrix to apply the activation to (in-place).
+/// * `alpha` - The negative slope coefficient.
 pub fn leaky_relu(x: &mut DMatrix<f32>, alpha: f32) {
     x.iter_mut().for_each(|val| {
         if *val < 0.0 {
@@ -14,15 +19,28 @@ pub fn leaky_relu(x: &mut DMatrix<f32>, alpha: f32) {
 
 /// A single layer for the Encoder or Decoder, consisting of a convolution and activation.
 pub struct ConvLayer {
+    /// The convolution kernel matrix.
     pub kernel: DMatrix<f32>,
+    /// The bias vector.
     pub bias: DVector<f32>,
     // Store dimensions for clarity
+    #[allow(dead_code)]
     in_channels: usize,
+    #[allow(dead_code)]
     out_channels: usize,
 }
 
 impl ConvLayer {
     /// Creates a new convolutional layer with random initialization.
+    ///
+    /// # Arguments
+    ///
+    /// * `in_channels` - Number of input channels.
+    /// * `out_channels` - Number of output channels.
+    ///
+    /// # Returns
+    ///
+    /// A new `ConvLayer`.
     pub fn new(in_channels: usize, out_channels: usize) -> Self {
         // Simple random initialization using from_fn
         let kernel = DMatrix::from_fn(out_channels, in_channels, |_, _| rand::random::<f32>() * 2.0 - 1.0);
@@ -34,12 +52,22 @@ impl ConvLayer {
 
 /// The encoder component of the autoencoder.
 pub struct Encoder {
+    /// The stack of convolutional layers.
     pub layers: Vec<ConvLayer>,
 }
 
 impl Encoder {
     /// Creates a new encoder with a hardcoded architecture.
     /// Input (2 channels) -> 64 -> 64 -> Latent (3 channels)
+    ///
+    /// # Arguments
+    ///
+    /// * `in_channels` - Number of input channels.
+    /// * `latent_channels` - Dimension of the latent space.
+    ///
+    /// # Returns
+    ///
+    /// A new `Encoder`.
     pub fn new(in_channels: usize, latent_channels: usize) -> Self {
         let layers = vec![
             ConvLayer::new(in_channels, 64),
@@ -50,6 +78,14 @@ impl Encoder {
     }
 
     /// Encodes the input data into a latent representation.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - The input data matrix.
+    ///
+    /// # Returns
+    ///
+    /// The latent representation matrix.
     pub fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = input.clone();
         for (i, layer) in self.layers.iter().enumerate() {
@@ -65,12 +101,22 @@ impl Encoder {
 
 /// The decoder component of the autoencoder.
 pub struct Decoder {
+    /// The stack of convolutional layers.
     pub layers: Vec<ConvLayer>,
 }
 
 impl Decoder {
     /// Creates a new decoder with a hardcoded architecture.
     /// Latent (3 channels) -> 64 -> 64 -> Output (2 channels)
+    ///
+    /// # Arguments
+    ///
+    /// * `latent_channels` - Dimension of the latent space.
+    /// * `out_channels` - Number of output channels.
+    ///
+    /// # Returns
+    ///
+    /// A new `Decoder`.
     pub fn new(latent_channels: usize, out_channels: usize) -> Self {
         let layers = vec![
             ConvLayer::new(latent_channels, 64),
@@ -81,6 +127,14 @@ impl Decoder {
     }
 
     /// Reconstructs the input data from the latent representation.
+    ///
+    /// # Arguments
+    ///
+    /// * `latent_representation` - The latent representation matrix.
+    ///
+    /// # Returns
+    ///
+    /// The reconstructed data matrix.
     pub fn forward(&self, latent_representation: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = latent_representation.clone();
         for (i, layer) in self.layers.iter().enumerate() {
@@ -95,13 +149,24 @@ impl Decoder {
 
 /// The autoencoder model for the CERA framework.
 pub struct Autoencoder {
+    /// The encoder component.
     pub encoder: Encoder,
+    /// The decoder component.
     pub decoder: Decoder,
 }
 
 impl Autoencoder {
     /// Creates a new autoencoder.
     /// The paper specifies 2 input channels and 3 latent channels.
+    ///
+    /// # Arguments
+    ///
+    /// * `in_channels` - Number of input channels.
+    /// * `latent_channels` - Dimension of the latent space.
+    ///
+    /// # Returns
+    ///
+    /// A new `Autoencoder`.
     pub fn new(in_channels: usize, latent_channels: usize) -> Self {
         // The decoder's input is the encoder's output, and vice versa.
         let encoder = Encoder::new(in_channels, latent_channels);
@@ -110,6 +175,14 @@ impl Autoencoder {
     }
 
     /// Performs a forward pass through the autoencoder.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - The input data matrix.
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing `(latent_representation, reconstruction)`.
     pub fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
