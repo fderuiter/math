@@ -8,29 +8,52 @@ use nalgebra::{DMatrix, DVector};
 use quadrature::clenshaw_curtis;
 use rand::Rng;
 
+/// Input parameters for the favoritism calculation.
 #[derive(Debug, Clone)]
 pub struct FavoritismInputs {
+    /// Time period over which proximity is integrated.
     pub t: f64,
+    /// Emotional value of gifts.
     pub g_emotional: f64,
+    /// Practical value of gifts.
     pub g_practical: f64,
+    /// Initial contact frequency factor.
     pub f_initial: f64,
+    /// Weight assigned based on birth order (e.g., oldest, youngest).
     pub birth_order_weight: f64,
+    /// Score for major life events shared.
     pub major_life_events: f64,
+    /// Whether the child helped during a crisis.
     pub helped_during_crisis: bool,
+    /// Whether the child is active on social media (visibility).
     pub active_on_social_media: bool,
+    /// Decay constant for lack of contact.
     pub decay_constant: f64,
+    /// Time since the last contact occurred.
     pub time_since_last_contact: f64,
+    /// Intelligence score.
     pub intelligence: f64,
+    /// Emotional sensitivity score.
     pub emotional_sensitivity: f64,
+    /// Wealth score.
     pub wealth: f64,
+    /// Talent score.
     pub talent: f64,
+    /// Weight for intelligence.
     pub w_i: f64,
+    /// Weight for emotional sensitivity.
     pub w_es: f64,
+    /// Weight for wealth.
     pub w_w: f64,
+    /// Weight for talent.
     pub w_t: f64,
+    /// Distances of siblings (used for the denominator).
     pub sibling_distances: Vec<f64>,
+    /// Vector of compliment scores.
     pub compliments: DVector<f64>,
+    /// Weights corresponding to each compliment.
     pub compliment_weights: DVector<f64>,
+    /// Initial distance/proximity factor.
     pub x_0: f64,
 }
 
@@ -63,6 +86,19 @@ impl Default for FavoritismInputs {
     }
 }
 
+/// Calculates the favoritism score based on the provided inputs.
+///
+/// The formula combines integrals of proximity and emotional support, gift value,
+/// compliments, personality traits, and various other factors, scaled by a
+/// random perturbation `r`.
+///
+/// # Arguments
+///
+/// * `inputs` - A reference to a `FavoritismInputs` struct containing all necessary parameters.
+///
+/// # Returns
+///
+/// A `f64` representing the calculated favoritism score. Higher is better.
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
     let mut rng = rand::thread_rng();
     let r = rng.gen_range(0.9..1.1);

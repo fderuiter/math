@@ -8,15 +8,29 @@ use crate::climate::autoencoder::{ConvLayer, leaky_relu}; // Re-use from autoenc
 /// The predictor takes the flattened, aligned latent representation from the
 /// autoencoder's encoder and maps it to the target output variables.
 pub struct Predictor {
+    /// The stack of layers (using `ConvLayer` for simplicity as dense layers).
     pub layers: Vec<ConvLayer>,
     // Store dimensions for clarity
+    /// The size of the input vector.
+    #[allow(dead_code)]
     input_size: usize,
+    /// The size of the output vector.
+    #[allow(dead_code)]
     output_size: usize,
 }
 
 impl Predictor {
     /// Creates a new predictor model with a hardcoded architecture.
     /// Input (60) -> 128 -> 128 -> 128 -> 128 -> Output (148)
+    ///
+    /// # Arguments
+    ///
+    /// * `input_size` - The dimension of the input vector.
+    /// * `output_size` - The dimension of the output vector.
+    ///
+    /// # Returns
+    ///
+    /// A new `Predictor` instance.
     pub fn new(input_size: usize, output_size: usize) -> Self {
         let layers = vec![
             ConvLayer::new(input_size, 128),
@@ -33,6 +47,10 @@ impl Predictor {
     /// # Arguments
     ///
     /// * `input` - The flattened latent representation, with shape (batch_size, input_size).
+    ///
+    /// # Returns
+    ///
+    /// The predicted output matrix of shape (batch_size, output_size).
     pub fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = input.clone();
         for (i, layer) in self.layers.iter().enumerate() {

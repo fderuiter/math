@@ -1,5 +1,4 @@
 use math_explorer::pure_math::algorithmic_information::{combinatorics::*, geometry::*, kolmogorov::*};
-use nalgebra::SVector;
 use rug::{Integer, Rational};
 use std::collections::{HashMap, HashSet};
 

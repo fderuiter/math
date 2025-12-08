@@ -3,6 +3,15 @@
 use nalgebra::DMatrix;
 
 /// Computes the Mean Squared Error (MSE) between two matrices.
+///
+/// # Arguments
+///
+/// * `y_true` - The ground truth values.
+/// * `y_pred` - The predicted values.
+///
+/// # Returns
+///
+/// The mean squared error.
 pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> f32 {
     assert_eq!(y_true.shape(), y_pred.shape(), "Matrices must have the same shape for MSE.");
     let diff = y_true - y_pred;
@@ -18,6 +27,10 @@ pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> f32 {
 ///
 /// * `z1` - The first set of distributions, with shape (n_samples, n_distributions).
 /// * `z2` - The second set of distributions, with shape (n_samples, n_distributions).
+///
+/// # Returns
+///
+/// The average Earth Mover's Distance.
 pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
     assert_eq!(z1.shape(), z2.shape(), "Matrices must have the same shape for EMD.");
     if z1.ncols() == 0 {
@@ -45,6 +58,18 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
 /// Computes the combined loss for the CERA framework.
 /// The total loss is a weighted sum of the reconstruction loss, the prediction
 /// loss, and the EMD loss.
+///
+/// # Arguments
+///
+/// * `reconstruction_loss` - The MSE of the autoencoder reconstruction.
+/// * `prediction_loss` - The MSE of the predictor output.
+/// * `emd_loss` - The Earth Mover's Distance between latent representations.
+/// * `lambda_pred` - The weight for the prediction loss.
+/// * `lambda_emd` - The weight for the EMD loss.
+///
+/// # Returns
+///
+/// The total weighted loss.
 pub fn cera_loss(
     reconstruction_loss: f32,
     prediction_loss: f32,
