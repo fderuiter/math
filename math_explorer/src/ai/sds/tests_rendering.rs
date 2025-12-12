@@ -1,0 +1,59 @@
+use nalgebra::{Matrix4, Vector3};
+use approx::assert_relative_eq;
+use std::f64::consts::PI;
+use crate::ai::sds::rendering::{generate_ray_bundle, stratified_sampling, volume_integration};
+
+#[test]
+fn test_generate_ray_bundle() {
+    let width = 10;
+    let height = 10;
+    let fov_y = PI / 2.0; // 90 degrees
+    let pose = Matrix4::identity();
+
+    let bundle = generate_ray_bundle(&pose, width, height, fov_y);
+
+    assert_eq!(bundle.rays.len(), width * height);
+
+    // Center pixel should have direction roughly (0, 0, -1)
+    let center_idx = (height / 2) * width + (width / 2);
+    let center_ray = bundle.rays[center_idx];
+
+    assert_relative_eq!(center_ray.origin.x, 0.0);
+    assert_relative_eq!(center_ray.origin.y, 0.0);
+    assert_relative_eq!(center_ray.origin.z, 0.0);
+
+    // Approx check direction
+    assert!(center_ray.direction.z < 0.0);
+}
+
+#[test]
+fn test_stratified_sampling() {
+    let t_near = 0.0;
+    let t_far = 10.0;
+    let n_samples = 10;
+
+    let samples = stratified_sampling(t_near, t_far, n_samples);
+    assert_eq!(samples.len(), n_samples);
+
+    for i in 0..n_samples {
+        let t = samples[i];
+        let bin_start = t_near + i as f64;
+        let bin_end = t_near + (i + 1) as f64;
+        assert!(t >= bin_start && t <= bin_end);
+    }
+}
+
+#[test]
+fn test_volume_integration() {
+    // Test with a single opaque sample
+    let densities = vec![1000.0]; // Opaque
+    let colors = vec![Vector3::new(1.0, 0.0, 0.0)]; // Red
+    let deltas = vec![0.1];
+
+    let color = volume_integration(&densities, &colors, &deltas);
+
+    // Should be close to red
+    assert!(color.x > 0.9);
+    assert!(color.y < 0.1);
+    assert!(color.z < 0.1);
+}

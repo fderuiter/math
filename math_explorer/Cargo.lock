@@ -201,6 +201,7 @@ dependencies = [
  "petgraph",
  "quadrature",
  "rand",
+ "rand_distr",
  "rug",
  "statrs",
  "wigner-symbols",
