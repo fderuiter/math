@@ -1,13 +1,8 @@
 // Implementation of the Position-wise Feed-Forward Network.
 
 use nalgebra::{DMatrix, RowDVector};
-
-/// Applies the Rectified Linear Unit (ReLU) activation function element-wise, in-place.
-/// ReLU(x) = max(0, x)
-fn relu(matrix: &mut DMatrix<f64>) {
-    // The apply method takes a closure that mutates the element.
-    matrix.apply(|x| *x = x.max(0.0));
-}
+use super::activations::relu;
+use super::utils::AddRowVector;
 
 /// A Position-wise Feed-Forward Network (FFN) as described in "Attention Is All You Need".
 ///
@@ -60,37 +55,10 @@ impl FeedForward {
     }
 }
 
-/// An extension trait for `DMatrix` to allow broadcasting addition of a row vector.
-trait AddRowVector {
-    /// Adds a row vector to every row of the matrix.
-    fn add_row_vector_to_all_rows(&mut self, row_vector: &RowDVector<f64>);
-}
-
-impl AddRowVector for DMatrix<f64> {
-    fn add_row_vector_to_all_rows(&mut self, row_vector: &RowDVector<f64>) {
-        assert_eq!(
-            self.ncols(),
-            row_vector.len(),
-            "Matrix columns must match row vector length for broadcasting."
-        );
-        for mut row in self.row_iter_mut() {
-            row += row_vector;
-        }
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_relu() {
-        let mut matrix = DMatrix::from_row_slice(1, 4, &[-1.0, 0.0, 1.0, -2.0]);
-        relu(&mut matrix);
-        let expected = DMatrix::from_row_slice(1, 4, &[0.0, 0.0, 1.0, 0.0]);
-        assert_eq!(matrix, expected);
-    }
 
     #[test]
     fn test_feed_forward_dims() {

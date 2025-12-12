@@ -6,9 +6,12 @@
 /// - Positional Encodings.
 /// - A full Transformer implementation.
 /// - Score Distillation Sampling (SDS) and NeRF.
+pub mod activations;
 pub mod attention;
 pub mod feed_forward;
+pub mod normalization;
 pub mod positional_encoding;
-pub mod transformer;
 pub mod sds;
 pub mod self_calibration;
+pub mod transformer;
+pub mod utils;
