@@ -1,7 +1,7 @@
-use nalgebra::{Matrix4, Vector3};
-use approx::assert_relative_eq;
-use std::f64::consts::PI;
 use crate::ai::sds::rendering::{generate_ray_bundle, stratified_sampling, volume_integration};
+use approx::assert_relative_eq;
+use nalgebra::{Matrix4, Vector3};
+use std::f64::consts::PI;
 
 #[test]
 fn test_generate_ray_bundle() {

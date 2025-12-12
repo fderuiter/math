@@ -28,7 +28,10 @@ pub type LoraStateDict = HashMap<String, DMatrix<f64>>;
 /// # Returns
 /// A `Result` containing the combined `LoraStateDict`, or an error message
 /// if the inputs are invalid (e.g., mismatched lengths or empty).
-pub fn combine_loras(loras: &[LoraStateDict], weights: &[f64]) -> Result<LoraStateDict, &'static str> {
+pub fn combine_loras(
+    loras: &[LoraStateDict],
+    weights: &[f64],
+) -> Result<LoraStateDict, &'static str> {
     if loras.is_empty() || weights.is_empty() {
         return Err("Input loras or weights cannot be empty.");
     }

@@ -20,7 +20,12 @@ pub struct SimulationParams {
 impl SimulationParams {
     /// Creates a new `SimulationParams`.
     pub fn new(lambda1: f64, lambda2: f64, alpha: f64, theta: f64) -> Self {
-        Self { lambda1, lambda2, alpha, theta }
+        Self {
+            lambda1,
+            lambda2,
+            alpha,
+            theta,
+        }
     }
 }
 
@@ -33,7 +38,8 @@ pub fn joint_survival_function_control(t: f64, x: f64, params: &SimulationParams
 
 /// Joint survival function for the treatment group, S1(t,x).
 pub fn joint_survival_function_treatment(t: f64, x: f64, params: &SimulationParams) -> f64 {
-    (-(params.theta * params.lambda1 * t + params.theta * params.lambda2 * x).powf(params.alpha)).exp()
+    (-(params.theta * params.lambda1 * t + params.theta * params.lambda2 * x).powf(params.alpha))
+        .exp()
 }
 
 // --- Win Ratio Parameter ---
@@ -57,20 +63,33 @@ pub fn marginal_survival_t_treatment(t: f64, params: &SimulationParams) -> f64 {
 
 /// PDF for T in the control group, f0(t).
 pub fn pdf_t_control(t: f64, params: &SimulationParams) -> f64 {
-    if t < 0.0 { return 0.0; }
-    if t == 0.0 { return 0.0; } // Handle t=0 case for t.powf(alpha - 1.0)
+    if t < 0.0 {
+        return 0.0;
+    }
+    if t == 0.0 {
+        return 0.0;
+    } // Handle t=0 case for t.powf(alpha - 1.0)
     let l1_alpha = params.lambda1.powf(params.alpha);
-    params.alpha * l1_alpha * t.powf(params.alpha - 1.0) * (-(l1_alpha * t.powf(params.alpha))).exp()
+    params.alpha
+        * l1_alpha
+        * t.powf(params.alpha - 1.0)
+        * (-(l1_alpha * t.powf(params.alpha))).exp()
 }
 
 /// PDF for T in the treatment group, f1(t).
 pub fn pdf_t_treatment(t: f64, params: &SimulationParams) -> f64 {
-    if t < 0.0 { return 0.0; }
-    if t == 0.0 { return 0.0; }
+    if t < 0.0 {
+        return 0.0;
+    }
+    if t == 0.0 {
+        return 0.0;
+    }
     let th_l1_alpha = (params.theta * params.lambda1).powf(params.alpha);
-    params.alpha * th_l1_alpha * t.powf(params.alpha - 1.0) * (-(th_l1_alpha * t.powf(params.alpha))).exp()
+    params.alpha
+        * th_l1_alpha
+        * t.powf(params.alpha - 1.0)
+        * (-(th_l1_alpha * t.powf(params.alpha))).exp()
 }
-
 
 // --- Derived Functions for X (Non-Fatal Event) given T > c ---
 
@@ -90,18 +109,26 @@ pub fn conditional_survival_x_given_t_treatment(x: f64, c: f64, params: &Simulat
 
 /// Conditional PDF for X in the control group, f0(x|c).
 pub fn pdf_x_given_t_control(x: f64, c: f64, params: &SimulationParams) -> f64 {
-    if x < 0.0 { return 0.0; }
+    if x < 0.0 {
+        return 0.0;
+    }
     let term = params.lambda1 * c + params.lambda2 * x;
-    if term < 0.0 { return 0.0; }
+    if term < 0.0 {
+        return 0.0;
+    }
     let g0 = conditional_survival_x_given_t_control(x, c, params);
     params.alpha * params.lambda2 * term.powf(params.alpha - 1.0) * g0
 }
 
 /// Conditional PDF for X in the treatment group, f1(x|c).
 pub fn pdf_x_given_t_treatment(x: f64, c: f64, params: &SimulationParams) -> f64 {
-    if x < 0.0 { return 0.0; }
+    if x < 0.0 {
+        return 0.0;
+    }
     let term = params.theta * params.lambda1 * c + params.theta * params.lambda2 * x;
-    if term < 0.0 { return 0.0; }
+    if term < 0.0 {
+        return 0.0;
+    }
     let g1 = conditional_survival_x_given_t_treatment(x, c, params);
     params.alpha * params.theta * params.lambda2 * term.powf(params.alpha - 1.0) * g1
 }

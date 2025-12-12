@@ -79,7 +79,6 @@ impl AddRowVector for DMatrix<f64> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

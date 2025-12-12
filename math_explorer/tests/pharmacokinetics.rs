@@ -15,7 +15,7 @@ fn get_d_amphetamine_params() -> PKParameters {
     let ka_d = solve_ka(t_max_target, ke_d, 1.0, 100, TOLERANCE).expect("Failed to solve for ka_d");
 
     PKParameters {
-        f: 1.0, // Assume 100% bioavailability for simplicity.
+        f: 1.0,  // Assume 100% bioavailability for simplicity.
         d: 20.0, // Assume a 20mg dose for testing.
         ka: ka_d,
         ke: ke_d,
@@ -109,8 +109,20 @@ fn test_enantiomer_model_ir() {
     let c_total = model.concentration_ir_single_dose(t);
 
     // Expected value is C_d(t) + C_l(t) with scaled doses.
-    let c_d = concentration_bateman(&PKParameters { d: model.d_params.d * model.f_d, ..model.d_params }, t);
-    let c_l = concentration_bateman(&PKParameters { d: model.l_params.d * model.f_l, ..model.l_params }, t);
+    let c_d = concentration_bateman(
+        &PKParameters {
+            d: model.d_params.d * model.f_d,
+            ..model.d_params
+        },
+        t,
+    );
+    let c_l = concentration_bateman(
+        &PKParameters {
+            d: model.l_params.d * model.f_l,
+            ..model.l_params
+        },
+        t,
+    );
     let expected_c = c_d + c_l;
 
     assert!((c_total - expected_c).abs() < TOLERANCE);

@@ -128,7 +128,9 @@ pub fn solve_ka(
 
     for _ in 0..max_iter {
         // Ensure ka remains in a valid domain
-        if ka <= 0.0 { return None; }
+        if ka <= 0.0 {
+            return None;
+        }
 
         // Handle ka being very close to ke, which is a singularity for the derivative
         if (ka - ke).abs() < 1e-9 {
@@ -186,8 +188,20 @@ impl EnantiomerModel {
     /// Calculates the total concentration of both enantiomers at time `t` for a single IR dose.
     pub fn concentration_ir_single_dose(&self, t: f64) -> f64 {
         // Calculate concentration for each enantiomer, scaling the dose by its fraction
-        let c_d = concentration_bateman(&PKParameters { d: self.d_params.d * self.f_d, ..self.d_params }, t);
-        let c_l = concentration_bateman(&PKParameters { d: self.l_params.d * self.f_l, ..self.l_params }, t);
+        let c_d = concentration_bateman(
+            &PKParameters {
+                d: self.d_params.d * self.f_d,
+                ..self.d_params
+            },
+            t,
+        );
+        let c_l = concentration_bateman(
+            &PKParameters {
+                d: self.l_params.d * self.f_l,
+                ..self.l_params
+            },
+            t,
+        );
         c_d + c_l
     }
 
@@ -223,7 +237,14 @@ impl EnantiomerModel {
     }
 
     /// Calculates the total concentration for multiple XR doses using superposition.
-    pub fn concentration_xr_multiple_doses(&self, dose_times: &[f64], lag_time: f64, f1: f64, f2: f64, t: f64) -> f64 {
+    pub fn concentration_xr_multiple_doses(
+        &self,
+        dose_times: &[f64],
+        lag_time: f64,
+        f1: f64,
+        f2: f64,
+        t: f64,
+    ) -> f64 {
         dose_times
             .iter()
             .map(|&dose_time| {

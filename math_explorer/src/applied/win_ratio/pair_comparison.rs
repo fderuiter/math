@@ -37,7 +37,11 @@ pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (
 
 /// Simulate the matched pair comparison.
 pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-    assert_eq!(group1.len(), group2.len(), "Groups must be of equal length for matched pairs.");
+    assert_eq!(
+        group1.len(),
+        group2.len(),
+        "Groups must be of equal length for matched pairs."
+    );
     let mut wins = 0;
     let mut losses = 0;
     for (subj1, subj2) in group1.iter().zip(group2.iter()) {
@@ -85,7 +89,11 @@ pub fn calculate_statistics(wins: i32, losses: i32) -> Option<WinRatioStats> {
         return Some(WinRatioStats {
             win_ratio,
             ci_low: if p_win == 1.0 { win_ratio } else { 0.0 },
-            ci_high: if p_win == 1.0 { std::f64::INFINITY } else { win_ratio },
+            ci_high: if p_win == 1.0 {
+                std::f64::INFINITY
+            } else {
+                win_ratio
+            },
             p_value: 0.0, // Or a very small number, depending on interpretation.
         });
     }

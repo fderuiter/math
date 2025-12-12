@@ -1,7 +1,7 @@
 //! This module defines the predictor model for the CERA framework.
 
-use nalgebra::DMatrix;
-use crate::climate::autoencoder::{ConvLayer, leaky_relu}; // Re-use from autoencoder module
+use crate::climate::autoencoder::{ConvLayer, leaky_relu};
+use nalgebra::DMatrix; // Re-use from autoencoder module
 
 /// A multi-layer perceptron (MLP) used as the predictor in the CERA framework.
 ///
@@ -39,7 +39,11 @@ impl Predictor {
             ConvLayer::new(128, 128),
             ConvLayer::new(128, output_size), // No activation on the final layer
         ];
-        Self { layers, input_size, output_size }
+        Self {
+            layers,
+            input_size,
+            output_size,
+        }
     }
 
     /// Performs a forward pass through the predictor.

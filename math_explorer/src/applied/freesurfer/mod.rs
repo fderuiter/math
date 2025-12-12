@@ -27,7 +27,7 @@ pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
     let mut energy = 0.0;
     for i in 0..surface.vertices.len() - 1 {
         let p1 = DVector::from_vec(surface.vertices[i].to_vec());
-        let p2 = DVector::from_vec(surface.vertices[i+1].to_vec());
+        let p2 = DVector::from_vec(surface.vertices[i + 1].to_vec());
         let diff = p2 - p1;
         energy += diff.norm_squared();
     }
@@ -48,7 +48,7 @@ pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
 pub fn external_energy(surface: &Surface, image_gradient_strength: f64) -> f64 {
     // Placeholder: assumes a constant gradient strength for simplicity.
     // The energy is lower if the gradient is stronger.
-    - (surface.vertices.len() as f64) * image_gradient_strength.powi(2)
+    -(surface.vertices.len() as f64) * image_gradient_strength.powi(2)
 }
 
 /// Evolves the surface one step using gradient descent.
@@ -70,7 +70,6 @@ pub fn evolve_surface(surface: &mut Surface, learning_rate: f64, gradient_streng
     }
 }
 
-
 // --- 2. Subcortical Segmentation: Bayesian Classification ---
 
 /// Calculates the posterior probability for a single voxel label.
@@ -87,17 +86,18 @@ pub fn bayesian_classification(likelihood: f64, prior: f64) -> f64 {
     likelihood * prior
 }
 
-
 // --- 3. Cortical Thickness Calculation ---
 
 /// Calculates the shortest Euclidean distance from a point to a surface.
 fn point_to_surface_distance(point: &[f64; 3], surface: &Surface) -> f64 {
-    surface.vertices.iter()
+    surface
+        .vertices
+        .iter()
         .map(|v| {
             let dx = point[0] - v[0];
             let dy = point[1] - v[1];
             let dz = point[2] - v[2];
-            (dx*dx + dy*dy + dz*dz).sqrt()
+            (dx * dx + dy * dy + dz * dz).sqrt()
         })
         .fold(f64::INFINITY, f64::min)
 }
@@ -116,13 +116,12 @@ pub fn cortical_thickness(
     v_w: &[f64; 3],
     v_p: &[f64; 3],
     white_surface: &Surface,
-    pial_surface: &Surface
+    pial_surface: &Surface,
 ) -> f64 {
     let dist_w_to_p = point_to_surface_distance(v_w, pial_surface);
     let dist_p_to_w = point_to_surface_distance(v_p, white_surface);
     0.5 * (dist_w_to_p + dist_p_to_w)
 }
-
 
 // --- 4. Statistical Analysis: The General Linear Model (GLM) ---
 
@@ -135,7 +134,10 @@ pub fn cortical_thickness(
 ///
 /// # Returns
 /// The estimated beta parameters, or an error if the matrix is not invertible.
-pub fn estimate_beta<T: RealField>(x: &DMatrix<T>, y: &DVector<T>) -> Result<DVector<T>, &'static str> {
+pub fn estimate_beta<T: RealField>(
+    x: &DMatrix<T>,
+    y: &DVector<T>,
+) -> Result<DVector<T>, &'static str> {
     let xt = x.transpose();
     let xtx = &xt * x;
     let xtx_inv = xtx.try_inverse().ok_or("X^T * X is not invertible")?;
@@ -158,7 +160,7 @@ pub fn t_statistic<T: RealField + Copy>(
     c: &DVector<T>,
     beta: &DVector<T>,
     x: &DMatrix<T>,
-    residual_variance: T
+    residual_variance: T,
 ) -> Result<T, &'static str> {
     let xtx = x.transpose() * x;
     let xtx_inv = xtx.try_inverse().ok_or("X^T * X is not invertible")?;
@@ -166,7 +168,7 @@ pub fn t_statistic<T: RealField + Copy>(
     let numerator = c.dot(beta);
 
     let variance_term = c.transpose() * xtx_inv * c;
-    let denominator = (residual_variance * variance_term[(0,0)]).sqrt();
+    let denominator = (residual_variance * variance_term[(0, 0)]).sqrt();
 
     if denominator == T::zero() {
         return Err("Denominator is zero, t-statistic is undefined.");

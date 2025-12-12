@@ -5,7 +5,7 @@
 //! The implementation is based on the paper "Arithmetic properties of partition
 //! functions introduced by Pushpa and Vasuki" by Nath and Saikia.
 
-use std::ops::{Add, Mul, Div};
+use std::ops::{Add, Div, Mul};
 
 /// Represents a q-series, a power series in q.
 /// The vector `coeffs` stores the coefficients, where the index represents the power of q.
@@ -147,7 +147,6 @@ impl Div for &QSeries {
         QSeries { coeffs: new_coeffs }
     }
 }
-
 
 /// Computes the q-series for f_k = (q^k; q^k)_inf up to a given precision.
 /// f_k = product_{i>=1} (1 - q^(k*i))

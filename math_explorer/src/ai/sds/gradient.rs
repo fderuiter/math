@@ -13,10 +13,7 @@ pub fn compute_residual(
 /// 4.2 Weighting Scheme
 /// Input: Residual, Timestep weighting w(t).
 /// Operation: delta_sds = w(t) * residual
-pub fn apply_weighting(
-    residual: &DMatrix<f64>,
-    weight: f64,
-) -> DMatrix<f64> {
+pub fn apply_weighting(residual: &DMatrix<f64>, weight: f64) -> DMatrix<f64> {
     residual * weight
 }
 

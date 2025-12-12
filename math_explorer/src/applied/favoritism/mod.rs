@@ -103,19 +103,21 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
     let mut rng = rand::thread_rng();
     let r = rng.gen_range(0.9..1.1);
 
-    let proximity_integral = clenshaw_curtis::integrate(|_t| 1.0 / inputs.x_0, 0.0, inputs.t, 1e-9).integral;
+    let proximity_integral =
+        clenshaw_curtis::integrate(|_t| 1.0 / inputs.x_0, 0.0, inputs.t, 1e-9).integral;
 
     let emotional_support_integral = clenshaw_curtis::integrate(
-        |_t| {
-            clenshaw_curtis::integrate(|_x| 8.0, 0.0, 1.0, 1e-9).integral
-        },
+        |_t| clenshaw_curtis::integrate(|_x| 8.0, 0.0, 1.0, 1e-9).integral,
         0.0,
         inputs.t,
         1e-9,
     )
     .integral;
 
-    let gift_matrix = DMatrix::from_diagonal(&DVector::from_vec(vec![inputs.g_emotional, inputs.g_practical]));
+    let gift_matrix = DMatrix::from_diagonal(&DVector::from_vec(vec![
+        inputs.g_emotional,
+        inputs.g_practical,
+    ]));
     let gift_matrix_determinant = gift_matrix.determinant();
 
     let compliment_score = inputs.compliments.dot(&inputs.compliment_weights);
@@ -127,8 +129,16 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
         + inputs.w_w * inputs.wealth
         + inputs.w_t * inputs.talent;
 
-    let h = if inputs.helped_during_crisis { 1.5 } else { 1.0 };
-    let s = if inputs.active_on_social_media { 1.3 } else { 1.0 };
+    let h = if inputs.helped_during_crisis {
+        1.5
+    } else {
+        1.0
+    };
+    let s = if inputs.active_on_social_media {
+        1.3
+    } else {
+        1.0
+    };
     let d = (-inputs.decay_constant * inputs.time_since_last_contact).exp();
 
     let sibling_proximity_integral = clenshaw_curtis::integrate(

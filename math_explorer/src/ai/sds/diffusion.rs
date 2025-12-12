@@ -1,6 +1,6 @@
+use nalgebra::DMatrix;
 use rand::Rng;
 use rand_distr::{Distribution, Normal};
-use nalgebra::DMatrix;
 
 /// 2.1 Time Sampling
 /// Input: None.

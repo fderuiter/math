@@ -55,7 +55,10 @@ pub fn calculate_log_mass_from_distance(distance: f64, galaxy_type: &GalaxyType)
 ///
 /// # Returns
 /// The calculated apparent magnitude, or `None` if the formula is not applicable for the given type.
-pub fn calculate_apparent_magnitude_from_distance(distance: f64, galaxy_type: &GalaxyType) -> Option<f64> {
+pub fn calculate_apparent_magnitude_from_distance(
+    distance: f64,
+    galaxy_type: &GalaxyType,
+) -> Option<f64> {
     match galaxy_type {
         GalaxyType::All => Some(0.0206 * distance + 16.0010),
         GalaxyType::TypeCode10 => Some(0.0140 * distance + 16.575),
@@ -71,7 +74,10 @@ pub fn calculate_apparent_magnitude_from_distance(distance: f64, galaxy_type: &G
 ///
 /// # Returns
 /// The calculated logarithm of the mass.
-pub fn calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v: f64, galaxy_type: &GalaxyType) -> f64 {
+pub fn calculate_log_mass_from_absolute_magnitude(
+    absolute_magnitude_v: f64,
+    galaxy_type: &GalaxyType,
+) -> f64 {
     match galaxy_type {
         GalaxyType::All | GalaxyType::TypeCode10 => -0.6670 * absolute_magnitude_v - 1.4975,
         GalaxyType::TypeCode9_5To9_9 => -0.3837 * absolute_magnitude_v - 2.2864,

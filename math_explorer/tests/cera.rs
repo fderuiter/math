@@ -6,7 +6,9 @@ const NUM_LEVELS: usize = 30;
 const OUTPUT_SIZE: usize = 148;
 
 fn generate_synthetic_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMatrix<f32>) {
-    let inputs = DMatrix::from_fn(n_samples * NUM_LEVELS, IN_CHANNELS, |_, _| rand::random::<f32>() + offset);
+    let inputs = DMatrix::from_fn(n_samples * NUM_LEVELS, IN_CHANNELS, |_, _| {
+        rand::random::<f32>() + offset
+    });
     let targets = DMatrix::from_fn(n_samples, OUTPUT_SIZE, |_, _| rand::random());
     (inputs, targets)
 }
@@ -41,11 +43,22 @@ fn test_cera_integration() {
 
     // 6. Assertions to verify the output
     // Check that the prediction has the correct dimensions
-    assert_eq!(prediction.nrows(), n_test_samples, "Prediction should have the same number of rows as test samples.");
-    assert_eq!(prediction.ncols(), OUTPUT_SIZE, "Prediction should have the correct number of output features.");
+    assert_eq!(
+        prediction.nrows(),
+        n_test_samples,
+        "Prediction should have the same number of rows as test samples."
+    );
+    assert_eq!(
+        prediction.ncols(),
+        OUTPUT_SIZE,
+        "Prediction should have the correct number of output features."
+    );
 
     // Check that the prediction is not just zeros or NaNs
-    assert!(prediction.iter().all(|&x| x.is_finite()), "Prediction contains non-finite values.");
+    assert!(
+        prediction.iter().all(|&x| x.is_finite()),
+        "Prediction contains non-finite values."
+    );
     assert!(prediction.norm() > 0.0, "Prediction is a zero matrix.");
 
     // Optional: Check if the model has learned anything.
@@ -54,5 +67,8 @@ fn test_cera_integration() {
     let fresh_prediction = fresh_cera.predict(&test_inputs);
 
     let difference = (&prediction - &fresh_prediction).abs().sum();
-    assert!(difference > 1e-6, "Trained model's prediction should be different from an untrained model's.");
+    assert!(
+        difference > 1e-6,
+        "Trained model's prediction should be different from an untrained model's."
+    );
 }

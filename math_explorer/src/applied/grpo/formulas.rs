@@ -83,7 +83,11 @@ fn bleu_precision(candidate: &str, reference: &str, n: usize) -> f64 {
     let reference_ngrams = ngrams(reference, n);
 
     if candidate_ngrams.is_empty() {
-        return if reference_ngrams.is_empty() { 1.0 } else { 0.0 };
+        return if reference_ngrams.is_empty() {
+            1.0
+        } else {
+            0.0
+        };
     }
 
     let intersection = candidate_ngrams.intersection(&reference_ngrams).count();
@@ -96,7 +100,9 @@ fn simple_bleu(candidate: &str, reference: &str) -> f64 {
     let p3 = bleu_precision(candidate, reference, 3);
     let p4 = bleu_precision(candidate, reference, 4);
 
-    if p1 == 0.0 { return 0.0; }
+    if p1 == 0.0 {
+        return 0.0;
+    }
 
     let candidate_len = candidate.split_whitespace().count();
     if candidate_len == 0 {
@@ -112,7 +118,6 @@ fn simple_bleu(candidate: &str, reference: &str) -> f64 {
 
     brevity_penalty * (p1 * p2 * p3 * p4).powf(0.25)
 }
-
 
 /// Pairwise distance between questions using a simplified BLEU score.
 ///

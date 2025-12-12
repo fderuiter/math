@@ -1,9 +1,9 @@
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
-use nalgebra::{DMatrix, DVector};
 use crate::climate::autoencoder::Autoencoder;
+use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
 use crate::climate::predictor::Predictor;
-use crate::climate::loss::{cera_loss, mse_loss, earth_movers_distance};
+use nalgebra::{DMatrix, DVector};
 
 const IN_CHANNELS: usize = 2;
 const LATENT_CHANNELS: usize = 3;
@@ -50,7 +50,11 @@ impl Cera {
         let autoencoder = Autoencoder::new(IN_CHANNELS, LATENT_CHANNELS);
         let predictor_input_size = NUM_LEVELS * ALIGNED_CHANNELS;
         let predictor = Predictor::new(predictor_input_size, OUTPUT_SIZE);
-        Self { autoencoder, predictor, config }
+        Self {
+            autoencoder,
+            predictor,
+            config,
+        }
     }
 
     /// Placeholder for the backpropagation and optimization step.
@@ -64,20 +68,26 @@ impl Cera {
     fn optimizer_step(&mut self) {
         let lr = self.config.learning_rate;
         for layer in self.autoencoder.encoder.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
+            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
+                rand::random::<f32>() - 0.5
+            });
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
             layer.kernel -= grad_k * lr;
             layer.bias -= grad_b * lr;
         }
         for layer in self.autoencoder.decoder.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
+            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
+                rand::random::<f32>() - 0.5
+            });
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
             layer.kernel -= grad_k * lr;
             layer.bias -= grad_b * lr;
         }
         for layer in self.predictor.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
+            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
+                rand::random::<f32>() - 0.5
+            });
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
             layer.kernel -= grad_k * lr;
             layer.bias -= grad_b * lr;
         }
@@ -94,7 +104,11 @@ impl Cera {
     /// # Returns
     ///
     /// The reshaped matrix ready for the predictor.
-    fn reshape_for_predictor(&self, latent_matrix: &DMatrix<f32>, batch_size: usize) -> DMatrix<f32> {
+    fn reshape_for_predictor(
+        &self,
+        latent_matrix: &DMatrix<f32>,
+        batch_size: usize,
+    ) -> DMatrix<f32> {
         let mut reshaped_data = Vec::with_capacity(batch_size * NUM_LEVELS * ALIGNED_CHANNELS);
         for i in 0..batch_size {
             let start_row = i * NUM_LEVELS;
@@ -131,19 +145,24 @@ impl Cera {
                 // --- Create batches ---
                 let input_start = i * batch_size * NUM_LEVELS;
                 let input_rows = batch_size * NUM_LEVELS;
-                let control_input_batch = control_inputs.rows(input_start, input_rows).clone_owned();
+                let control_input_batch =
+                    control_inputs.rows(input_start, input_rows).clone_owned();
                 let warm_input_batch = warm_inputs.rows(input_start, input_rows).clone_owned();
 
                 let target_start = i * batch_size;
-                let control_target_batch = control_targets.rows(target_start, batch_size).clone_owned();
+                let control_target_batch =
+                    control_targets.rows(target_start, batch_size).clone_owned();
 
                 // --- Forward pass ---
-                let (control_latent, control_recon) = self.autoencoder.forward(&control_input_batch);
+                let (control_latent, control_recon) =
+                    self.autoencoder.forward(&control_input_batch);
                 let (warm_latent, warm_recon) = self.autoencoder.forward(&warm_input_batch);
 
                 // --- Reshape and predict ---
-                let control_aligned_latent = control_latent.columns(0, ALIGNED_CHANNELS).clone_owned();
-                let predictor_input = self.reshape_for_predictor(&control_aligned_latent, batch_size);
+                let control_aligned_latent =
+                    control_latent.columns(0, ALIGNED_CHANNELS).clone_owned();
+                let predictor_input =
+                    self.reshape_for_predictor(&control_aligned_latent, batch_size);
                 let prediction = self.predictor.forward(&predictor_input);
 
                 // --- Calculate losses ---
@@ -168,7 +187,11 @@ impl Cera {
                 self.optimizer_step();
                 total_loss += loss;
             }
-            println!("Epoch {}, Average Loss: {}", epoch, total_loss / n_batches as f32);
+            println!(
+                "Epoch {}, Average Loss: {}",
+                epoch,
+                total_loss / n_batches as f32
+            );
         }
     }
 
@@ -196,7 +219,9 @@ mod tests {
     use nalgebra::DMatrix;
 
     fn generate_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMatrix<f32>) {
-        let inputs = DMatrix::from_fn(n_samples * NUM_LEVELS, IN_CHANNELS, |_, _| rand::random::<f32>() + offset);
+        let inputs = DMatrix::from_fn(n_samples * NUM_LEVELS, IN_CHANNELS, |_, _| {
+            rand::random::<f32>() + offset
+        });
         let targets = DMatrix::from_fn(n_samples, OUTPUT_SIZE, |_, _| rand::random());
         (inputs, targets)
     }

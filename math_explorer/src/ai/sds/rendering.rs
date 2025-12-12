@@ -1,6 +1,6 @@
 use nalgebra::{Matrix4, Vector3};
-use std::f64::consts::PI;
 use rand::Rng;
+use std::f64::consts::PI;
 
 /// Represents a single ray: r(t) = o + t * d
 #[derive(Debug, Clone, Copy)]
@@ -19,7 +19,12 @@ pub struct RayBundle {
 /// 1.1 Ray Bundle Generation
 /// Input: Camera Pose matrix P (4x4), Image resolution (H, W).
 /// Output: Ray Bundle (origins and directions).
-pub fn generate_ray_bundle(pose: &Matrix4<f64>, width: usize, height: usize, fov_y: f64) -> RayBundle {
+pub fn generate_ray_bundle(
+    pose: &Matrix4<f64>,
+    width: usize,
+    height: usize,
+    fov_y: f64,
+) -> RayBundle {
     let mut rays = Vec::with_capacity(width * height);
     let aspect_ratio = width as f64 / height as f64;
 
@@ -65,17 +70,17 @@ pub fn generate_ray_bundle(pose: &Matrix4<f64>, width: usize, height: usize, fov
         }
     }
 
-    RayBundle { rays, width, height }
+    RayBundle {
+        rays,
+        width,
+        height,
+    }
 }
 
 /// 1.2 Stratified Sampling
 /// Input: Near plane t_n, Far plane t_f, Number of samples N.
 /// Output: Sample points along rays.
-pub fn stratified_sampling(
-    t_near: f64,
-    t_far: f64,
-    n_samples: usize,
-) -> Vec<f64> {
+pub fn stratified_sampling(t_near: f64, t_far: f64, n_samples: usize) -> Vec<f64> {
     let mut rng = rand::thread_rng();
     let bin_size = (t_far - t_near) / n_samples as f64;
     let mut samples = Vec::with_capacity(n_samples);
