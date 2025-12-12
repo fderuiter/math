@@ -1,7 +1,6 @@
-## 2025-12-12 - [Module Extraction: AI Self-Calibration]
-**Problem:** `lib.rs` was becoming a "God File" containing mixed domains, specifically a large inline `self_calibration` module unrelated to the root library concerns.
-**Decision:** Extracted the `self_calibration` module into its own file `src/ai/self_calibration.rs`.
-**Consequence:**
-- `lib.rs` is reduced to an entry point and re-export hub.
-- `self_calibration` is correctly grouped under the `ai` domain.
-- Public API `math_explorer::self_calibration` is preserved via re-export.
+# Architectural Decision Records
+
+## 2024-12-12 - Extracted Transformer Module
+**Problem:** `math_explorer/src/ai/transformer.rs` was a large file (12K) containing multiple distinct components (`Encoder`, `Decoder`, `Transformer`, `LayerNorm`, `EncoderLayer`, `DecoderLayer`), violating the Single Responsibility Principle and making navigation difficult.
+**Decision:** Applied the **Module Extraction** pattern. Split the file into a directory `math_explorer/src/ai/transformer/` with submodules `layer_norm.rs`, `encoder.rs`, `decoder.rs`, and `model.rs`. Created a `mod.rs` to re-export types, preserving the original API.
+**Consequence:** Improved cohesion and testability. The `transformer` module is now scalable and easier to read. Import paths remain backward compatible via re-exports.
