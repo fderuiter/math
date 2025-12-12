@@ -2,6 +2,9 @@ use rand::Rng;
 use rand_distr::{Distribution, Normal};
 use nalgebra::DMatrix;
 
+const DEFAULT_BETA_START: f64 = 0.0001;
+const DEFAULT_BETA_END: f64 = 0.02;
+
 /// 2.1 Time Sampling
 /// Input: None.
 /// Operation: Select a random integer timestep t ~ U{1, ..., T}.
@@ -22,8 +25,8 @@ pub struct NoiseSchedule {
 impl NoiseSchedule {
     pub fn new(timesteps: usize) -> Self {
         // Linear schedule for betas as an example (e.g. 1e-4 to 0.02)
-        let beta_start = 0.0001;
-        let beta_end = 0.02;
+        let beta_start = DEFAULT_BETA_START;
+        let beta_end = DEFAULT_BETA_END;
         let mut betas = Vec::with_capacity(timesteps);
         let mut alphas = Vec::with_capacity(timesteps);
         let mut alpha_bars = Vec::with_capacity(timesteps);
