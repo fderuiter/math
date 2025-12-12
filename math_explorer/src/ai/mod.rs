@@ -5,7 +5,9 @@
 /// - Position-wise Feed-Forward Networks.
 /// - Positional Encodings.
 /// - A full Transformer implementation.
+/// - Score Distillation Sampling (SDS) and NeRF.
 pub mod attention;
 pub mod feed_forward;
 pub mod positional_encoding;
 pub mod transformer;
+pub mod sds;
