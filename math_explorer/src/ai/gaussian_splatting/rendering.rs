@@ -47,7 +47,7 @@ pub fn evaluate_gaussian_opacity(
     if det.abs() < 1e-6 {
         return 0.0;
     }
-    let inv_cov = gaussian.covariance.try_inverse().unwrap_or_else(|| Matrix2::identity());
+    let inv_cov = gaussian.covariance.try_inverse().unwrap_or_else(Matrix2::identity);
 
     // Power = -0.5 * d^T * Sigma^-1 * d
     let power = -0.5 * (diff.transpose() * inv_cov * diff)[(0, 0)];

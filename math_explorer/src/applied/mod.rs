@@ -9,3 +9,4 @@ pub mod pharmacokinetics;
 pub mod lorahub;
 pub mod grpo;
 pub mod isosurface;
+pub mod clinical_trials;
