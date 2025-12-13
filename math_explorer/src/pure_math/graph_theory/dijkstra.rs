@@ -98,11 +98,10 @@ where
         // "Greedy Selection": Select vertex u with minimum distance estimate.
 
         // Check if we found a shorter path to u already (lazy deletion from PQ)
-        if let Some(&current_d) = distances.get(&u) {
-            if d_u > current_d {
+        if let Some(&current_d) = distances.get(&u)
+            && d_u > current_d {
                 continue;
             }
-        }
 
         // u is now effectively in S (Settled Vertices) because d[u] is minimal.
 

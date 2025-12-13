@@ -389,7 +389,7 @@ pub fn radix_sort(data: &[u64]) -> SortingResult<u64> {
 fn counting_sort_for_radix(arr: &mut [u64], exp: u64, stats: &mut SortingStats) {
     let n = arr.len();
     let mut output = vec![0; n];
-    let mut count = vec![0; 10];
+    let mut count = [0; 10];
 
     // Store count of occurrences in count[]
     for &x in arr.iter() {
