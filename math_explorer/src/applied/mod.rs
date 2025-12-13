@@ -11,3 +11,4 @@ pub mod game_theory;
 pub mod grpo;
 pub mod isosurface;
 pub mod clinical_trials;
+pub mod algorithms;
