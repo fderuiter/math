@@ -5,12 +5,6 @@ use crate::climate::autoencoder::Autoencoder;
 use crate::climate::predictor::Predictor;
 use crate::climate::loss::{cera_loss, mse_loss, earth_movers_distance};
 
-const IN_CHANNELS: usize = 2;
-const LATENT_CHANNELS: usize = 3;
-const ALIGNED_CHANNELS: usize = 2; // As per paper, 1 channel is non-aligned
-const NUM_LEVELS: usize = 30;
-const OUTPUT_SIZE: usize = 148;
-
 /// Configuration for the CERA model.
 #[derive(Clone, Debug)]
 pub struct CeraConfig {
@@ -24,6 +18,16 @@ pub struct CeraConfig {
     pub epochs: usize,
     /// Batch size for training.
     pub batch_size: usize,
+    /// Number of input channels.
+    pub in_channels: usize,
+    /// Dimension of the latent space.
+    pub latent_channels: usize,
+    /// Number of channels used for alignment/prediction.
+    pub aligned_channels: usize,
+    /// Number of vertical levels (or time steps) in the input.
+    pub num_levels: usize,
+    /// Size of the output vector.
+    pub output_size: usize,
 }
 
 /// The main CERA model.
@@ -45,12 +49,25 @@ impl Cera {
     ///
     /// # Returns
     ///
-    /// A new `Cera` instance.
-    pub fn new(config: CeraConfig) -> Self {
-        let autoencoder = Autoencoder::new(IN_CHANNELS, LATENT_CHANNELS);
-        let predictor_input_size = NUM_LEVELS * ALIGNED_CHANNELS;
-        let predictor = Predictor::new(predictor_input_size, OUTPUT_SIZE);
-        Self { autoencoder, predictor, config }
+    /// A result containing the new `Cera` instance or an error message.
+    pub fn new(config: CeraConfig) -> Result<Self, String> {
+        if config.aligned_channels > config.latent_channels {
+            return Err(format!(
+                "aligned_channels ({}) cannot be greater than latent_channels ({})",
+                config.aligned_channels, config.latent_channels
+            ));
+        }
+        if config.aligned_channels == 0 {
+             return Err("aligned_channels must be greater than 0".to_string());
+        }
+        if config.num_levels == 0 {
+             return Err("num_levels must be greater than 0".to_string());
+        }
+
+        let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
+        let predictor_input_size = config.num_levels * config.aligned_channels;
+        let predictor = Predictor::new(predictor_input_size, config.output_size);
+        Ok(Self { autoencoder, predictor, config })
     }
 
     /// Placeholder for the backpropagation and optimization step.
@@ -95,17 +112,19 @@ impl Cera {
     ///
     /// The reshaped matrix ready for the predictor.
     fn reshape_for_predictor(&self, latent_matrix: &DMatrix<f32>, batch_size: usize) -> DMatrix<f32> {
-        let mut reshaped_data = Vec::with_capacity(batch_size * NUM_LEVELS * ALIGNED_CHANNELS);
+        let num_levels = self.config.num_levels;
+        let aligned_channels = self.config.aligned_channels;
+        let mut reshaped_data = Vec::with_capacity(batch_size * num_levels * aligned_channels);
         for i in 0..batch_size {
-            let start_row = i * NUM_LEVELS;
-            let sample_latent = latent_matrix.rows(start_row, NUM_LEVELS);
+            let start_row = i * num_levels;
+            let sample_latent = latent_matrix.rows(start_row, num_levels);
             for r in sample_latent.row_iter() {
                 for element in r.iter() {
                     reshaped_data.push(*element);
                 }
             }
         }
-        DMatrix::from_row_slice(batch_size, NUM_LEVELS * ALIGNED_CHANNELS, &reshaped_data)
+        DMatrix::from_row_slice(batch_size, num_levels * aligned_channels, &reshaped_data)
     }
 
     /// Trains the CERA model on synthetic data.
@@ -122,15 +141,18 @@ impl Cera {
         warm_inputs: &DMatrix<f32>,
     ) {
         let batch_size = self.config.batch_size;
-        let n_samples = control_inputs.nrows() / NUM_LEVELS;
+        let num_levels = self.config.num_levels;
+        let aligned_channels = self.config.aligned_channels;
+
+        let n_samples = control_inputs.nrows() / num_levels;
         let n_batches = n_samples / batch_size;
 
         for epoch in 0..self.config.epochs {
             let mut total_loss = 0.0;
             for i in 0..n_batches {
                 // --- Create batches ---
-                let input_start = i * batch_size * NUM_LEVELS;
-                let input_rows = batch_size * NUM_LEVELS;
+                let input_start = i * batch_size * num_levels;
+                let input_rows = batch_size * num_levels;
                 let control_input_batch = control_inputs.rows(input_start, input_rows).clone_owned();
                 let warm_input_batch = warm_inputs.rows(input_start, input_rows).clone_owned();
 
@@ -142,7 +164,7 @@ impl Cera {
                 let (warm_latent, warm_recon) = self.autoencoder.forward(&warm_input_batch);
 
                 // --- Reshape and predict ---
-                let control_aligned_latent = control_latent.columns(0, ALIGNED_CHANNELS).clone_owned();
+                let control_aligned_latent = control_latent.columns(0, aligned_channels).clone_owned();
                 let predictor_input = self.reshape_for_predictor(&control_aligned_latent, batch_size);
                 let prediction = self.predictor.forward(&predictor_input);
 
@@ -153,7 +175,7 @@ impl Cera {
 
                 let prediction_loss = mse_loss(&control_target_batch, &prediction);
 
-                let warm_aligned_latent = warm_latent.columns(0, ALIGNED_CHANNELS).clone_owned();
+                let warm_aligned_latent = warm_latent.columns(0, aligned_channels).clone_owned();
                 let emd_loss = earth_movers_distance(&control_aligned_latent, &warm_aligned_latent);
 
                 let loss = cera_loss(
@@ -182,9 +204,12 @@ impl Cera {
     ///
     /// The predicted output matrix.
     pub fn predict(&self, inputs: &DMatrix<f32>) -> DMatrix<f32> {
-        let batch_size = inputs.nrows() / NUM_LEVELS;
+        let num_levels = self.config.num_levels;
+        let aligned_channels = self.config.aligned_channels;
+        let batch_size = inputs.nrows() / num_levels;
+
         let latent = self.autoencoder.encoder.forward(inputs);
-        let aligned_latent = latent.columns(0, ALIGNED_CHANNELS).clone_owned();
+        let aligned_latent = latent.columns(0, aligned_channels).clone_owned();
         let predictor_input = self.reshape_for_predictor(&aligned_latent, batch_size);
         self.predictor.forward(&predictor_input)
     }
@@ -195,9 +220,14 @@ mod tests {
     use super::*;
     use nalgebra::DMatrix;
 
+    // Helper constant for tests
+    const TEST_NUM_LEVELS: usize = 30;
+    const TEST_IN_CHANNELS: usize = 2;
+    const TEST_OUTPUT_SIZE: usize = 148;
+
     fn generate_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMatrix<f32>) {
-        let inputs = DMatrix::from_fn(n_samples * NUM_LEVELS, IN_CHANNELS, |_, _| rand::random::<f32>() + offset);
-        let targets = DMatrix::from_fn(n_samples, OUTPUT_SIZE, |_, _| rand::random());
+        let inputs = DMatrix::from_fn(n_samples * TEST_NUM_LEVELS, TEST_IN_CHANNELS, |_, _| rand::random::<f32>() + offset);
+        let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| rand::random());
         (inputs, targets)
     }
 
@@ -209,9 +239,14 @@ mod tests {
             lambda_emd: 0.01,
             epochs: 2, // Keep it short for testing
             batch_size: 4,
+            in_channels: TEST_IN_CHANNELS,
+            latent_channels: 3,
+            aligned_channels: 2,
+            num_levels: TEST_NUM_LEVELS,
+            output_size: TEST_OUTPUT_SIZE,
         };
 
-        let mut cera = Cera::new(config);
+        let mut cera = Cera::new(config).expect("Failed to create CERA model");
 
         let n_samples = 16;
         let (control_inputs, control_targets) = generate_data(n_samples, 0.0);
@@ -223,6 +258,23 @@ mod tests {
         let prediction = cera.predict(&test_inputs);
 
         assert_eq!(prediction.nrows(), 4);
-        assert_eq!(prediction.ncols(), OUTPUT_SIZE);
+        assert_eq!(prediction.ncols(), TEST_OUTPUT_SIZE);
+    }
+
+    #[test]
+    fn test_cera_invalid_config() {
+        let config = CeraConfig {
+            learning_rate: 0.001,
+            lambda_pred: 0.1,
+            lambda_emd: 0.01,
+            epochs: 1,
+            batch_size: 1,
+            in_channels: 2,
+            latent_channels: 3,
+            aligned_channels: 4, // Invalid: > latent_channels
+            num_levels: 30,
+            output_size: 10,
+        };
+        assert!(Cera::new(config).is_err());
     }
 }
