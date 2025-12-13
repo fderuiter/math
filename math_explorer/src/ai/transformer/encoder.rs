@@ -1,6 +1,6 @@
 use nalgebra::DMatrix;
-use crate::ai::attention::MultiHeadAttention;
-use crate::ai::feed_forward::FeedForward;
+use super::attention::MultiHeadAttention;
+use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
 
 /// A single Encoder layer, containing self-attention and a feed-forward network,
