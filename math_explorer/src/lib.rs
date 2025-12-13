@@ -82,8 +82,10 @@ mod tests {
         let loras = vec![lora1, lora2];
         let weights = vec![0.5, 0.5];
 
-        // Test combine_loras
-        let combined = lorahub::combine_loras(&loras, &weights).unwrap();
+        let ensemble = lorahub::LoraEnsemble::new(loras);
+
+        // Test combine
+        let combined = ensemble.combine(&weights).unwrap();
         let expected_a = DMatrix::from_vec(2, 2, vec![3.0, 4.0, 5.0, 6.0]);
         let expected_b = DMatrix::from_vec(2, 2, vec![0.3, 0.4, 0.5, 0.6]);
         assert_eq!(combined.get("tensor_a").unwrap(), &expected_a);
@@ -93,17 +95,21 @@ mod tests {
         let tolerance = 1e-9;
         assert!((combined_b - &expected_b).abs().max() < tolerance, "Tensor B is not within tolerance");
 
-        // Test L1 regularization
+        // Test objective score
         let weights_for_reg = vec![-1.0, 2.0, -3.0];
         let alpha = 0.1;
-        let l1_term = lorahub::l1_regularization(&weights_for_reg, alpha);
-        // Expected: 0.1 * (| -1| + |2| + |-3|) / 3 = 0.1 * 6 / 3 = 0.2
-        assert!((l1_term - 0.2).abs() < 1e-9);
 
-        // Test objective score
+        // We can create a temporary ensemble for testing regularization logic if needed,
+        // or just use the existing one since evaluate_objective is independent of stored modules
+        // but it is an instance method.
+        let ensemble_for_reg = lorahub::LoraEnsemble::new(vec![]);
+
+        // Note: L1 regularization was an implementation detail helper, now we test the full objective.
         let mock_loss = 1.5;
-        let objective_score = lorahub::calculate_objective_score(&weights_for_reg, mock_loss, alpha);
-        // Expected: 1.5 + 0.2 = 1.7
+        let objective_score = ensemble_for_reg.evaluate_objective(&weights_for_reg, mock_loss, alpha);
+
+        // Expected Reg: 0.1 * (| -1| + |2| + |-3|) / 3 = 0.1 * 6 / 3 = 0.2
+        // Expected Score: 1.5 + 0.2 = 1.7
         assert!((objective_score - 1.7).abs() < 1e-9);
     }
 

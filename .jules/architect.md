@@ -24,3 +24,8 @@ Consequence: The model is now flexible and can be instantiated with arbitrary di
 Problem: The `math_explorer/src/ai/self_calibration.rs` file contained multiple internal modules (`types`, `scoring`, `temperature`, `training`) within a single file, violating the "One Class/Concept Per File" principle and making the file difficult to navigate.
 Decision: Extract internal modules into their own files within a new `math_explorer/src/ai/self_calibration/` directory.
 Consequence: Improves modularity and discoverability. The public API is preserved via `mod.rs` re-exports, so no breaking changes for external consumers.
+
+## 2025-05-15 - [Refactoring LoraHub to Ensemble Pattern]
+**Problem:** `lorahub.rs` used a procedural style with loose functions (`combine_loras`), passing large state dictionaries as arguments repeatedly and mixing logic with simple data structures.
+**Decision:** Extracted `lorahub` into a submodule and encapsulated logic in `LoraEnsemble` struct.
+**Consequence:** Improved cohesion; state validation happens once (or is cleaner); API is more object-oriented.
