@@ -1,3 +1,6 @@
+pub mod attention;
+pub mod feed_forward;
+pub mod positional_encoding;
 pub mod layer_norm;
 pub mod encoder;
 pub mod decoder;

@@ -18,3 +18,11 @@
 **Problem:** `math_explorer/src/pure_math/number_theory/partitions.rs` coupled a general-purpose power series implementation (`QSeries`) with specific partition function logic, violating separation of concerns and limiting reuse.
 **Decision:** Applied **Module Extraction**. Moved `QSeries` and its arithmetic implementations to `math_explorer/src/pure_math/number_theory/q_series.rs`. Re-exported `QSeries` in `partitions.rs` to maintain backward compatibility.
 **Consequence:** `QSeries` is now a reusable component for other number theory domains (e.g., modular forms, elliptic curves). `partitions.rs` is focused on partition theory. API remains stable.
+
+## 2025-05-27 - Consolidated AI Primitives and Transformer Architecture
+**Problem:** The `src/ai` module lacked cohesion, with transformer components (`attention.rs`, `feed_forward.rs`, `positional_encoding.rs`) floating at the top level alongside unrelated modules. Additionally, reusable primitives like `relu`, `softmax`, and `AddRowVector` were scattered or duplicated, hindering reuse.
+**Decision:**
+1. **Module Extraction & Consolidation:** Moved transformer-specific components into `src/ai/transformer/`.
+2. **Refactoring:** Extracted reusable math primitives into `src/ai/activations.rs` and `src/ai/utils.rs`.
+3. **Refactoring:** Updated `FeedForward` and `MultiHeadAttention` to use these central primitives.
+**Consequence:** The `ai` module structure now reflects the logical hierarchy. Transformer components are encapsulated. Primitives are reusable across other AI models (e.g., SDS, future Neural Networks). Backward compatibility is maintained via public modules, though internal structure is cleaner.
