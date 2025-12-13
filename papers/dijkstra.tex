@@ -1,0 +1,120 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\title{Dijkstra's Algorithm: Mathematical Formulation and Implementation}
+\author{Math Explorer Team}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Dijkstra's Algorithm is a greedy algorithm that solves the single-source shortest path problem for a directed or undirected graph with non-negative edge weights. This document details the formal definitions, variables, core mechanism, and proof of correctness, as implemented in the \texttt{math\_explorer} library.
+
+\section{Formal Definitions}
+Let $G = (V, E)$ be a weighted graph where:
+\begin{itemize}
+    \item $V$ is the set of vertices (nodes).
+    \item $E$ is the set of edges.
+    \item $w: E \rightarrow \mathbb{R}_{\ge 0}$ is a weight function that assigns a non-negative real number to every edge $(u, v) \in E$.
+\end{itemize}
+
+\textbf{Goal:} Find the shortest path distance $\delta(s, v)$ from a source vertex $s \in V$ to every other vertex $v \in V$.
+
+\section{The Variables}
+To mathematically describe the state of the algorithm at any step, we maintain three data structures:
+
+\begin{enumerate}
+    \item \textbf{Distance Estimate ($d[v]$):}
+    An upper bound on the weight of the shortest path from source $s$ to vertex $v$.
+    \begin{itemize}
+        \item Initially, $d[s] = 0$ and $d[v] = \infty$ for all $v \neq s$.
+    \end{itemize}
+
+    \item \textbf{Predecessor ($\pi[v]$):}
+    The vertex that immediately precedes $v$ on the shortest path currently known. This allows us to reconstruct the path later.
+
+    \item \textbf{The Set of "Settled" Vertices ($S$):}
+    The set of vertices for which the shortest path has already been determined.
+    \begin{itemize}
+        \item Invariant: For every vertex $u \in S$, we guarantee that $d[u] = \delta(s, u)$.
+    \end{itemize}
+\end{enumerate}
+
+\section{The Core Mechanism: Edge Relaxation}
+The heart of the mathematics in Dijkstra's algorithm is the Triangle Inequality.
+For any edge $(u, v)$ with weight $w(u, v)$, the shortest path to $v$ cannot be longer than the shortest path to $u$ plus the edge weight between them. If we find a path that violates this, we "relax" the edge to correct it.
+
+\textbf{The Relaxation Condition:}
+If $d[v] > d[u] + w(u, v)$, then we update:
+\[ d[v] = d[u] + w(u, v) \]
+\[ \pi[v] = u \]
+
+This operation decreases the upper bound $d[v]$ and tightens it closer to the true shortest path $\delta(s, v)$.
+
+\section{Mathematical Execution of the Algorithm}
+\begin{enumerate}
+    \item \textbf{Initialization:}
+    \begin{itemize}
+        \item $d[s] = 0$, $d[v] = \infty$ for $v \neq s$.
+        \item $S = \emptyset$
+        \item $Q = V$ (Priority Queue of all vertices)
+    \end{itemize}
+
+    \item \textbf{Greedy Selection:}
+    While $Q$ is not empty:
+    \begin{itemize}
+        \item Select the vertex $u \in Q$ with the minimum distance estimate $d[u]$.
+        \item Add $u$ to $S$.
+        \item \textbf{Relaxation Sweep:}
+        For each neighbor $v$ of $u$:
+        \begin{itemize}
+            \item Apply the Relaxation Condition.
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\section{Proof of Correctness}
+To prove Dijkstra's algorithm works, we must prove the Invariant:
+\begin{quote}
+    At the moment a vertex $u$ is added to set $S$, $d[u] = \delta(s, u)$.
+\end{quote}
+
+\textbf{Proof by Contradiction:}
+\begin{enumerate}
+    \item Assume the purpose of the algorithm fails. That means there exists some vertex $u$ such that when $u$ is added to $S$, $d[u] > \delta(s, u)$.
+    \item Let $u$ be the first such vertex where this error occurs.
+    \item Because $u$ is the first error, all previous vertices in $S$ have correct distances.
+    \item Consider the true shortest path from $s$ to $u$. Since $s \in S$ (correct) and $u \notin S$ (incorrect), there must be an edge $(x, y)$ on this path where $x \in S$ and $y \notin S$.
+    \item Because $x$ is in $S$, $d[x]$ is correct ($d[x] = \delta(s, x)$).
+    \item When $x$ was processed, the edge $(x, y)$ was relaxed. Thus, $d[y] = \delta(s, y)$.
+    \item Since edge weights are non-negative ($w \ge 0$), the distance to $y$ must be less than or equal to the distance to $u$:
+    \[ \delta(s, u) = \delta(s, y) + \text{path}(y, u) \ge \delta(s, y) \]
+    \item Contradiction: The algorithm selected $u$ before $y$ (because it adds the minimum $d$ to $S$). This implies $d[u] \le d[y]$.
+    Combined with step 7, this forces $d[y] = d[u]$, which means $d[u]$ was actually correct.
+\end{enumerate}
+
+\textbf{Crucial Note:} This proof relies on $w \ge 0$. If negative weights exist, step 7 fails (a path can get shorter by adding more edges), which is why Dijkstra fails on negative edge weights.
+
+\section{Time Complexity}
+The complexity depends on how we implement the Priority Queue $Q$.
+\begin{itemize}
+    \item \textbf{Logic:}
+    \begin{itemize}
+        \item Every vertex is extracted from $Q$ once: $|V|$ operations.
+        \item Every edge is relaxed once: $|E|$ operations.
+    \end{itemize}
+    \item \textbf{Using a Binary Heap (Current Implementation):}
+    \begin{itemize}
+        \item Extract Min: $O(\log V)$
+        \item Decrease Key (Relaxation): $O(\log V)$
+        \item Total: $O(|V|\log V + |E|\log V) = O((|V| + |E|) \log V)$
+    \end{itemize}
+\end{itemize}
+
+\end{document}
