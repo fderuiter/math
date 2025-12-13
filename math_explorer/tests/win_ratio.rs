@@ -140,12 +140,15 @@ fn test_probability_win_ratio_with_simulation() {
     let s0_at_c = s0(c);
     let s1_at_c = s1(c);
 
+    // Create context
+    let ctx = probability_win_ratio::ProbabilityWinRatioContext::new(s0_at_c, s1_at_c, c, error_tolerance);
+
     // Calculate win and loss probabilities using numerical integration
-    let win_prob = probability_win_ratio::calculate_win_probability(
-        s1, pdf_t0, g1_given_c, pdf_x0_given_c, s0_at_c, s1_at_c, c, error_tolerance
+    let win_prob = ctx.calculate_win_probability(
+        s1, pdf_t0, g1_given_c, pdf_x0_given_c
     );
-    let loss_prob = probability_win_ratio::calculate_loss_probability(
-        s0, pdf_t1, g0_given_c, pdf_x1_given_c, s0_at_c, s1_at_c, c, error_tolerance
+    let loss_prob = ctx.calculate_loss_probability(
+        s0, pdf_t1, g0_given_c, pdf_x1_given_c
     );
 
     // Calculate probability win ratio
