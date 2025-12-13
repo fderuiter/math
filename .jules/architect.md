@@ -19,3 +19,8 @@ Problem: The CERA model in `src/climate/cera.rs` relied on hardcoded `const` val
 Decision: Applied the "Configuration Object" pattern by refactoring `CeraConfig` to include all architectural dimensions (`in_channels`, `latent_channels`, `num_levels`, etc.) and updating `Cera::new` and internal methods to use these dynamic values.
 Consequence: The model is now flexible and can be instantiated with arbitrary dimensions. The trade-off is slightly more verbose initialization in tests and usage code, requiring all dimensions to be specified in the config.
 
+
+## 2024-10-25 - [Self-Calibration Module Extraction]
+Problem: The `math_explorer/src/ai/self_calibration.rs` file contained multiple internal modules (`types`, `scoring`, `temperature`, `training`) within a single file, violating the "One Class/Concept Per File" principle and making the file difficult to navigate.
+Decision: Extract internal modules into their own files within a new `math_explorer/src/ai/self_calibration/` directory.
+Consequence: Improves modularity and discoverability. The public API is preserved via `mod.rs` re-exports, so no breaking changes for external consumers.
