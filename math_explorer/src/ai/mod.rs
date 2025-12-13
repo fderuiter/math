@@ -7,6 +7,7 @@
 /// - A full Transformer implementation.
 /// - Score Distillation Sampling (SDS) and NeRF.
 pub mod activations;
+pub mod gaussian_splatting;
 pub mod transformer;
 pub mod sds;
 pub mod self_calibration;
