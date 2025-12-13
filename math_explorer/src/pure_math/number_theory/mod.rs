@@ -5,6 +5,7 @@
 //! and other number-theoretic functions.
 
 pub mod partitions;
+pub mod q_series;
 
 /// A placeholder function to check for primality.
 ///
