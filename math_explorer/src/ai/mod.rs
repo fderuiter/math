@@ -6,11 +6,13 @@
 /// - Positional Encodings.
 /// - A full Transformer implementation.
 /// - Score Distillation Sampling (SDS) and NeRF.
+/// - 3D Gaussian Splatting (3DGS).
 pub mod activations;
 pub mod transformer;
 pub mod sds;
 pub mod self_calibration;
 pub mod utils;
+pub mod gaussian_splatting;
 
 // Re-export transformer components for backward compatibility.
 pub use transformer::attention;

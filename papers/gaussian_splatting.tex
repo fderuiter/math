@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{Mathematical Foundations of 3D Gaussian Splatting}
+\author{Math Explorer AI}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper documents the mathematical framework for 3D Gaussian Splatting (3DGS), a novel method for real-time radiance field rendering. We detail the explicit scene representation using anisotropic Gaussians, the projective geometry involved in splatting 3D ellipsoids to 2D, the differential rasterization process, and the adaptive density control mechanisms.
+\end{abstract}
+
+\section{Introduction}
+3D Gaussian Splatting represents a paradigm shift from implicit neural representations (like NeRFs) to explicit, point-based representations. This shift allows for significantly faster training and real-time rendering speeds (often $>$ 100 FPS) by leveraging rasterization instead of expensive volumetric ray-marching.
+
+\section{Scene Representation}
+The scene is represented as a collection of 3D Gaussians. Each Gaussian $G(x)$ is defined by a covariance matrix $\Sigma$ and a mean vector $\mu$:
+\begin{equation}
+G(x) = \exp\left(-\frac{1}{2} (x - \mu)^T \Sigma^{-1} (x - \mu)\right)
+\end{equation}
+
+\subsection{Covariance Parameterization}
+To ensure the covariance matrix $\Sigma$ remains positive semi-definite during optimization, it is decomposed into a scaling matrix $S$ and a rotation matrix $R$:
+\begin{equation}
+\Sigma = R S S^T R^T
+\end{equation}
+where $S = \text{diag}(s_x, s_y, s_z)$ and $R$ is derived from a unit quaternion $q$.
+
+\section{Projective Geometry}
+The core operation of 3DGS is the projection of 3D Gaussians onto the 2D image plane. This is achieved using a local affine approximation of the perspective projection.
+
+\subsection{Jacobian Approximation}
+Given a viewing transformation $W$ (World to Camera) and a projective transformation, the 2D covariance matrix $\Sigma'$ is approximated as:
+\begin{equation}
+\Sigma' = J W \Sigma W^T J^T
+\end{equation}
+where $J$ is the Jacobian of the projective transformation evaluated at the Gaussian's mean in camera space. For a pinhole camera model with focal lengths $f_x, f_y$, the Jacobian is:
+\begin{equation}
+J = \begin{bmatrix}
+f_x/z & 0 & -f_x x / z^2 \\
+0 & f_y/z & -f_y y / z^2
+\end{bmatrix}
+\end{equation}
+
+\section{Differential Rasterization}
+Rendering is performed via a tile-based rasterizer. Gaussians are sorted by depth, and the color $C$ of a pixel is computed by alpha blending:
+\begin{equation}
+C = \sum_{i \in N} c_i \alpha_i \prod_{j=1}^{i-1} (1 - \alpha_j)
+\end{equation}
+where $c_i$ is the color of the $i$-th Gaussian (often modeled with Spherical Harmonics) and $\alpha_i$ is its opacity evaluated at the pixel coordinate.
+
+\section{Adaptive Density Control}
+The density of Gaussians is adaptively controlled during training.
+\begin{itemize}
+    \item \textbf{Cloning}: Used for small Gaussians in high-gradient regions (under-reconstruction).
+    \item \textbf{Splitting}: Used for large Gaussians in high-gradient regions (over-reconstruction).
+    \item \textbf{Pruning}: Gaussians with low opacity are removed to maintain efficiency.
+\end{itemize}
+
+\section{Conclusion}
+We have implemented the core mathematical components of 3D Gaussian Splatting, including the covariance parameterization, projective math, and rasterization logic, providing a foundation for high-performance neural rendering in Rust.
+
+\begin{thebibliography}{9}
+\bibitem{kerbl20233dgs}
+Kerbl, B., Kopanas, G., Leimkühler, T., \& Drettakis, G. (2023). 3D Gaussian Splatting for Real-Time Radiance Field Rendering. \textit{ACM Transactions on Graphics (TOG)}, 42(4).
+\end{thebibliography}
+
+\end{document}
