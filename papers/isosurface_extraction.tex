@@ -1,0 +1,71 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{graphicx}
+
+\title{Isosurface Extraction: Bridging Discrete Data to Continuous Geometry via Marching Cubes}
+\author{Jules (AI Assistant)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper explores the mathematical and algorithmic foundations of converting volumetric data (scalar fields) into polygonal surface meshes, a process known as Isosurface Extraction. We detail the implementation of the Marching Cubes algorithm, a standard technique in medical imaging (MRI/CT) and scientific visualization. We discuss the discrete topology of the voxel grid, the combinatorial classification of surface intersections, linear interpolation for geometric reconstruction, and gradient-based surface normal approximation.
+\end{abstract}
+
+\section{Introduction}
+In fields ranging from medical diagnostics to geological modeling, data is often captured as a 3D grid of scalar values---a discrete scalar field. To visualize or analyze the boundaries within this data (e.g., bone vs. tissue in an MRI), we must extract a continuous surface $S$ representing a specific isovalue $T$.
+
+Mathematically, we seek the set of points:
+\[ S = \{ (x,y,z) \in \mathbb{R}^3 \mid V(x,y,z) = T \} \]
+where $V$ is the interpolation of the discrete samples.
+
+\section{Mathematical Representation}
+\subsection{The Scalar Field}
+The input is a 3D matrix (Voxel Grid) where each point $(i,j,k)$ holds a scalar value $c_{i,j,k}$. This represents a function sampled at integer coordinates.
+\[ V(i,j,k) = c_{i,j,k} \]
+
+\subsection{The Isosurface Problem}
+Since the data is discrete, the exact surface passes between grid points. The core challenge is to reconstruct the geometry between these points based on the assumption that the field varies continuously (usually linearly) between samples.
+
+\section{The Marching Cubes Algorithm}
+The Marching Cubes algorithm iterates through the volume one "cube" (formed by 8 adjacent voxels) at a time.
+
+\subsection{Topological Classification}
+For a threshold $T$, each of the 8 corners of a cube is classified as either "inside" ($V < T$) or "outside" ($V \ge T$). This binary state yields an 8-bit integer index:
+\[ \text{Index} = \sum_{n=0}^{7} (\mathbb{I}(V_n < T) \cdot 2^n) \]
+where $\mathbb{I}$ is the indicator function.
+This results in $2^8 = 256$ possible topological configurations. A lookup table maps this index to the set of edges intersected by the surface.
+
+\subsection{Geometric Reconstruction}
+Once the intersected edges are identified, the exact vertex position $P$ on an edge connecting $P_1$ and $P_2$ with values $V_1$ and $V_2$ is found via Linear Interpolation (Lerp):
+\[ P = P_1 + \frac{T - V_1}{V_2 - V_1} (P_2 - P_1) \]
+This ensures the mesh is smooth and accurately follows the scalar gradient.
+
+\subsection{Surface Normals}
+To render the surface with proper lighting, we calculate the surface normal $\vec{n}$. In a continuous field, $\vec{n} = -\frac{\nabla V}{|\nabla V|}$.
+We approximate the gradient $\nabla V$ using Central Differences. For example, the x-component at grid point $(x,y,z)$ is:
+\[ G_x \approx \frac{V(x+1,y,z) - V(x-1,y,z)}{2} \]
+The normal at the surface vertex is then interpolated from the gradients at the edge endpoints.
+
+\section{Implementation Details}
+The implementation provided in `math\_explorer` uses Rust for safety and performance.
+\begin{itemize}
+    \item \textbf{VoxelGrid}: A flattened 1D vector storing the 3D data for cache efficiency.
+    \item \textbf{Lookup Tables}: Precomputed static arrays for edge connections and triangle configurations to avoid runtime conditional logic.
+    \item \textbf{Interpolation}: A robust linear interpolation function handles edge cases where $V_1 \approx V_2$.
+\end{itemize}
+
+\section{Conclusion}
+Isosurface extraction is a critical bridge between raw data and human perception. The Marching Cubes algorithm provides a robust, efficient method for this transformation, relying on discrete mathematics and linear algebra to construct topologically consistent surfaces.
+
+\section{References}
+\begin{enumerate}
+    \item Lorensen, W. E., \& Cline, H. E. (1987). Marching cubes: A high resolution 3D surface construction algorithm. \textit{ACM SIGGRAPH Computer Graphics}, 21(4), 163-169.
+    \item Bourke, P. (1994). Polygonising a scalar field. \textit{http://paulbourke.net/geometry/polygonise/}
+\end{enumerate}
+
+\end{document}
