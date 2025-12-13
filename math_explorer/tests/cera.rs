@@ -2,6 +2,8 @@ use math_explorer::climate::cera::{Cera, CeraConfig};
 use nalgebra::DMatrix;
 
 const IN_CHANNELS: usize = 2;
+const LATENT_CHANNELS: usize = 3;
+const ALIGNED_CHANNELS: usize = 2;
 const NUM_LEVELS: usize = 30;
 const OUTPUT_SIZE: usize = 148;
 
@@ -20,10 +22,15 @@ fn test_cera_integration() {
         lambda_emd: 0.01,
         epochs: 3, // Use a few epochs for the integration test
         batch_size: 2,
+        in_channels: IN_CHANNELS,
+        latent_channels: LATENT_CHANNELS,
+        aligned_channels: ALIGNED_CHANNELS,
+        num_levels: NUM_LEVELS,
+        output_size: OUTPUT_SIZE,
     };
 
     // 2. Initialize the CERA model
-    let mut cera = Cera::new(config.clone());
+    let mut cera = Cera::new(config.clone()).unwrap();
 
     // 3. Generate synthetic data for training and testing
     let n_train_samples = 8;
@@ -50,7 +57,7 @@ fn test_cera_integration() {
 
     // Optional: Check if the model has learned anything.
     // A simple check is to see if the predictions are different from what a fresh model would predict.
-    let fresh_cera = Cera::new(config);
+    let fresh_cera = Cera::new(config).unwrap();
     let fresh_prediction = fresh_cera.predict(&test_inputs);
 
     let difference = (&prediction - &fresh_prediction).abs().sum();
