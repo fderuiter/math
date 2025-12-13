@@ -13,3 +13,8 @@
 3.  **Generic Promotion:** Refactored `SuperpositionModel` and `TwoPulseModel` to be generic wrappers over any `PharmacokineticModel`.
 4.  **Composition:** Refactored `EnantiomerModel` to use these generic components internally while maintaining its original API.
 **Consequence:** The system is now composable (e.g., one can easily model superposition of any drug model). The code is more DRY (superposition logic is written once). Backward compatibility was strictly maintained.
+
+## 2025-12-13 - Extracted QSeries Module
+**Problem:** `math_explorer/src/pure_math/number_theory/partitions.rs` coupled a general-purpose power series implementation (`QSeries`) with specific partition function logic, violating separation of concerns and limiting reuse.
+**Decision:** Applied **Module Extraction**. Moved `QSeries` and its arithmetic implementations to `math_explorer/src/pure_math/number_theory/q_series.rs`. Re-exported `QSeries` in `partitions.rs` to maintain backward compatibility.
+**Consequence:** `QSeries` is now a reusable component for other number theory domains (e.g., modular forms, elliptic curves). `partitions.rs` is focused on partition theory. API remains stable.
