@@ -71,7 +71,7 @@ impl MultiHeadAttention {
     /// In a real model, the weight matrices would be initialized randomly.
     /// Here, they are initialized as zeros for simplicity.
     pub fn new(d_model: usize, h: usize) -> Self {
-        assert!(d_model % h == 0, "d_model must be divisible by the number of heads h");
+        assert!(d_model.is_multiple_of(h), "d_model must be divisible by the number of heads h");
         let d_k = d_model / h;
 
         Self {

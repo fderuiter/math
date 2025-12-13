@@ -76,9 +76,7 @@ impl DecoderLayer {
         // 3. Feed-forward network
         let ff_output = self.feed_forward.forward(&normed_cross_attn);
         let normed_cross_attn_plus_ff = &normed_cross_attn + ff_output;
-        let output = self.norm3.forward(&normed_cross_attn_plus_ff);
-
-        output
+        self.norm3.forward(&normed_cross_attn_plus_ff)
     }
 }
 

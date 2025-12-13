@@ -53,7 +53,7 @@ pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i3
 /// Calculate the win ratio.
 pub fn calculate_win_ratio(wins: i32, losses: i32) -> f64 {
     if losses == 0 {
-        std::f64::INFINITY
+        f64::INFINITY
     } else {
         wins as f64 / losses as f64
     }
@@ -85,7 +85,7 @@ pub fn calculate_statistics(wins: i32, losses: i32) -> Option<WinRatioStats> {
         return Some(WinRatioStats {
             win_ratio,
             ci_low: if p_win == 1.0 { win_ratio } else { 0.0 },
-            ci_high: if p_win == 1.0 { std::f64::INFINITY } else { win_ratio },
+            ci_high: if p_win == 1.0 { f64::INFINITY } else { win_ratio },
             p_value: 0.0, // Or a very small number, depending on interpretation.
         });
     }

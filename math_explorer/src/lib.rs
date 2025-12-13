@@ -120,9 +120,9 @@ mod tests {
 
         // Child B: The clear favorite with superior attributes
         let mut inputs_b = FavoritismInputs::default();
-        inputs_b.wealth = 10.0; // More wealth
-        inputs_b.emotional_sensitivity = 10.0; // More sensitive
-        inputs_b.compliments = DVector::from_vec(vec![20.0, 10.0, 15.0]); // Gives more compliments
+        inputs_b.personality.wealth = 10.0; // More wealth
+        inputs_b.personality.emotional_sensitivity = 10.0; // More sensitive
+        inputs_b.compliments.compliments = DVector::from_vec(vec![20.0, 10.0, 15.0]); // Gives more compliments
         let child_b = Child {
             name: "Child B".to_string(),
             inputs: inputs_b,
@@ -130,8 +130,8 @@ mod tests {
 
         // Child C: The slacker
         let mut inputs_c = FavoritismInputs::default();
-        inputs_c.helped_during_crisis = false; // Didn't help in a crisis
-        inputs_c.time_since_last_contact = 30.0; // Hasn't called in a month
+        inputs_c.social.helped_during_crisis = false; // Didn't help in a crisis
+        inputs_c.contact.time_since_last_contact = 30.0; // Hasn't called in a month
         let child_c = Child {
             name: "Child C".to_string(),
             inputs: inputs_c,
