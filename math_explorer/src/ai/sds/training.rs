@@ -1,6 +1,33 @@
 use nalgebra::DMatrix;
+use crate::ai::sds::rendering::{NeRFModel, RayBundle};
 
-/// 5.2 Optimizer Step (Adam)
+/// Module 5.1: Jacobian-Vector Product
+/// Input: SDS Gradient delta_SDS, Rendered Image x_render, NeRF Weights theta.
+/// Operation: We need dL/dtheta. By chain rule, this is delta_SDS * dx_render/dtheta.
+/// Modern autodiff engines (PyTorch) handle this by calling .backward() on the rendered image with delta_SDS as the incoming gradient.
+/// Output: Gradient accumulator for theta.
+pub trait DifferentiableNeRF: NeRFModel {
+    /// Computes the gradient of the loss with respect to the model parameters,
+    /// given the gradient of the loss with respect to the output image.
+    /// This corresponds to the `backward` pass in an autodiff framework.
+    ///
+    /// # Arguments
+    /// * `bundle` - The ray bundle used for the forward pass.
+    /// * `image_grad` - The gradient of the loss w.r.t the rendered image (delta_SDS).
+    ///
+    /// # Returns
+    /// * `DMatrix<f64>` - The gradient vector for the model parameters (theta).
+    fn backward(
+        &self,
+        bundle: &RayBundle,
+        image_grad: &DMatrix<f64>,
+    ) -> DMatrix<f64>;
+}
+
+/// Module 5.2: Optimizer Step
+/// Input: Weights theta, Gradients nabla_theta, Learning Rate eta.
+/// Operation: Update weights (e.g., using Adam optimizer).
+/// Output: Updated NeRF Model.
 /// Simplified Adam implementation for a single parameter tensor (e.g., NeRF weights).
 /// theta_{t+1} = theta_t - eta * m_t / (sqrt(v_t) + epsilon)
 pub struct AdamOptimizer {

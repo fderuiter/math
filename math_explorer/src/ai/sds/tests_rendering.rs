@@ -1,7 +1,7 @@
 use nalgebra::{Matrix4, Vector3};
 use approx::assert_relative_eq;
 use std::f64::consts::PI;
-use crate::ai::sds::rendering::{generate_ray_bundle, stratified_sampling, volume_integration};
+use crate::ai::sds::rendering::{generate_ray_bundle, stratified_sampling, volume_integration, render_image, NeRFModel};
 
 #[test]
 fn test_generate_ray_bundle() {
@@ -56,4 +56,33 @@ fn test_volume_integration() {
     assert!(color.x > 0.9);
     assert!(color.y < 0.1);
     assert!(color.z < 0.1);
+}
+
+struct MockNeRF;
+impl NeRFModel for MockNeRF {
+    fn query(&self, _pos: &Vector3<f64>, _dir: &Vector3<f64>) -> (f64, Vector3<f64>) {
+        // Return constant density and color (Green)
+        (10.0, Vector3::new(0.0, 1.0, 0.0))
+    }
+}
+
+#[test]
+fn test_render_image() {
+    let width = 4;
+    let height = 4;
+    let fov_y = PI / 2.0;
+    let pose = Matrix4::identity();
+    let bundle = generate_ray_bundle(&pose, width, height, fov_y);
+    let model = MockNeRF;
+
+    let image = render_image(&bundle, &model, 0.1, 2.0, 5);
+
+    assert_eq!(image.nrows(), height);
+    assert_eq!(image.ncols(), width);
+
+    // Check a pixel, should be green-ish
+    let pixel = image[(0, 0)];
+    assert!(pixel.y > 0.8);
+    assert!(pixel.x < 0.1);
+    assert!(pixel.z < 0.1);
 }

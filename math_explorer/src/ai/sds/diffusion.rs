@@ -5,17 +5,19 @@ use nalgebra::DMatrix;
 const DEFAULT_BETA_START: f64 = 0.0001;
 const DEFAULT_BETA_END: f64 = 0.02;
 
-/// 2.1 Time Sampling
+/// Module 2.1: Time Sampling
 /// Input: None.
-/// Operation: Select a random integer timestep t ~ U{1, ..., T}.
+/// Operation: Select a random integer timestep t.
+/// Output: Timestep scalar t.
 pub fn sample_timestep(max_timesteps: usize) -> usize {
     let mut rng = rand::thread_rng();
     rng.gen_range(1..=max_timesteps)
 }
 
-/// 2.2 Noise Schedule Lookup
+/// Module 2.2: Noise Schedule Lookup
 /// Input: Timestep t.
-/// Output: Signal scale (sqrt(alpha_bar)), Noise scale (sqrt(1 - alpha_bar)).
+/// Operation: Retrieve pre-defined noise variance coefficients beta_t and calculate cumulative product alpha_bar_t.
+/// Output: Signal scale sqrt(alpha_bar_t) and Noise scale sqrt(1 - alpha_bar_t).
 pub struct NoiseSchedule {
     pub betas: Vec<f64>,
     pub alphas: Vec<f64>,
@@ -64,9 +66,10 @@ impl NoiseSchedule {
     }
 }
 
-/// 2.3 Noise Injection
-/// Input: Rendered Image (flattened or tensor), Noise epsilon.
-/// Operation: z_t = signal_scale * x + noise_scale * epsilon
+/// Module 2.3: Noise Injection
+/// Input: Rendered Image x_render, Random Gaussian Noise epsilon ~ N(0, I).
+/// Operation: Linear combination (interpolation).
+/// Output: Noisy Latent Image z_t (scaled to diffusion model resolution).
 pub fn inject_noise(
     image: &DMatrix<f64>,
     noise: &DMatrix<f64>,
