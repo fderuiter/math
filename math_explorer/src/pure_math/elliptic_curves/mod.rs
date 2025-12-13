@@ -25,13 +25,13 @@ pub fn prime_factors(mut n: u64) -> HashMap<u64, u32> {
     if n == 0 {
         return factors;
     }
-    while n % 2 == 0 {
+    while n.is_multiple_of(2) {
         *factors.entry(2).or_insert(0) += 1;
         n /= 2;
     }
     let mut i = 3;
     while i * i <= n {
-        while n % i == 0 {
+        while n.is_multiple_of(i) {
             *factors.entry(i).or_insert(0) += 1;
             n /= i;
         }
@@ -120,18 +120,18 @@ pub fn theorem_1_1_bounds(n: u64, i: u64, j: u64) -> Theorem11Bounds {
     }
     let diff = psi_n - i - j;
 
-    let v2 = if n % 2 != 0 { Some(15 * diff) } else { None };
-    let v3 = if n % 3 != 0 {
+    let v2 = if !n.is_multiple_of(2) { Some(15 * diff) } else { None };
+    let v3 = if !n.is_multiple_of(3) {
         if n % 3 == 1 {
             // Integer arithmetic for ceil(9 * diff / 2)
-            Some((9 * diff + 1) / 2)
+            Some((9 * diff).div_ceil(2))
         } else {
             Some(3 * diff)
         }
     } else {
         None
     };
-    let v5 = if n % 5 != 0 { Some(3 * diff) } else { None };
+    let v5 = if !n.is_multiple_of(5) { Some(3 * diff) } else { None };
 
     Theorem11Bounds {
         v2_bound: v2,
@@ -178,7 +178,7 @@ pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Theorem12Bounds {
     }
     let diff = psi_n - i - j;
 
-    let v2 = if n % 2 != 0 {
+    let v2 = if !n.is_multiple_of(2) {
         if n % 4 == 1 {
             Some(10 * diff)
         } else {
@@ -187,8 +187,8 @@ pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Theorem12Bounds {
     } else {
         None
     };
-    let v3 = if n % 3 != 0 { Some(6 * diff) } else { None };
-    let v7 = if n % 7 != 0 { Some(2 * diff) } else { None };
+    let v3 = if !n.is_multiple_of(3) { Some(6 * diff) } else { None };
+    let v7 = if !n.is_multiple_of(7) { Some(2 * diff) } else { None };
 
     Theorem12Bounds {
         v2_bound: v2,

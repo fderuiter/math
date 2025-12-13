@@ -41,7 +41,7 @@ pub fn conv1d(
 ///
 /// * `input` - The input tensor, with shape (N, in_channels).
 /// * `kernel` - The convolutional kernel (weights), with shape (in_channels, out_channels).
-///            Note that this is the kernel of the corresponding non-transposed conv layer.
+///   Note that this is the kernel of the corresponding non-transposed conv layer.
 /// * `bias` - The bias term, with shape (out_channels).
 ///
 /// # Returns

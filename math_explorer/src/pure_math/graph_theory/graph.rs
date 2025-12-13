@@ -9,6 +9,12 @@ pub struct Graph<N, E> {
     pub graph: PetgraphGraph<N, E, Undirected>,
 }
 
+impl<N, E> Default for Graph<N, E> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N, E> Graph<N, E> {
     /// Creates a new empty graph.
     pub fn new() -> Self {

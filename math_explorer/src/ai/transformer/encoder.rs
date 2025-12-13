@@ -54,9 +54,7 @@ impl EncoderLayer {
 
         let ff_output = self.feed_forward.forward(&normed_attn);
         let normed_attn_plus_ff = &normed_attn + ff_output;
-        let output = self.norm2.forward(&normed_attn_plus_ff);
-
-        output
+        self.norm2.forward(&normed_attn_plus_ff)
     }
 }
 

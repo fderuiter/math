@@ -5,6 +5,8 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
+pub type SimilarityFn<U> = Box<dyn Fn(&U, &U) -> bool>;
+
 /// Implements the Combinatorial Lemma (Lemma 1).
 ///
 /// # Arguments
@@ -22,7 +24,7 @@ pub fn combinatorial_lemma<T, U>(
     x_set: &HashSet<T>,
     v_set: &HashSet<U>,
     n_v: &HashMap<U, HashSet<T>>,
-    sim: &HashMap<T, Box<dyn Fn(&U, &U) -> bool>>,
+    sim: &HashMap<T, SimilarityFn<U>>,
     alpha: f64,
 ) -> Option<(U, U)>
 where
@@ -47,10 +49,10 @@ where
 
             let mut count = 0;
             for d in intersection {
-                if let Some(sim_d) = sim.get(&d) {
-                    if !sim_d(u, v) {
-                        count += 1;
-                    }
+                if let Some(sim_d) = sim.get(&d)
+                    && !sim_d(u, v)
+                {
+                    count += 1;
                 }
             }
 
