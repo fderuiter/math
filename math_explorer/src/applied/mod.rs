@@ -7,5 +7,6 @@ pub mod freesurfer;
 pub mod win_ratio;
 pub mod pharmacokinetics;
 pub mod lorahub;
+pub mod game_theory;
 pub mod grpo;
 pub mod isosurface;
