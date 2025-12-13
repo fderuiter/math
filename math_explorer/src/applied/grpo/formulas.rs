@@ -1,7 +1,10 @@
 use statrs::statistics::{Data, Distribution};
-use std::collections::HashSet;
 
 const EPSILON_NORM: f64 = 1e-8;
+
+// Re-export moved functions to maintain backward compatibility
+pub use super::metrics::{pairwise_distance_bleu};
+pub use super::rewards::{uncertainty_reward, repetition_penalty, composite_reward, binary_reward};
 
 /// Calculates the response-level advantage using z-score normalization.
 ///
@@ -55,120 +58,6 @@ pub fn clipped_surrogate_objective(
         .sum();
 
     -(1.0 / g) * sum + beta * kl_divergence
-}
-
-/// The uncertainty reward function.
-///
-/// # Arguments
-///
-/// * `p_hat` - The estimated probability of the model's prediction.
-///
-/// # Returns
-///
-/// The uncertainty reward, which is higher when `p_hat` is close to 0.5.
-pub fn uncertainty_reward(p_hat: f64) -> f64 {
-    1.0 - 2.0 * (p_hat - 0.5).abs()
-}
-
-fn ngrams(s: &str, n: usize) -> HashSet<String> {
-    s.split_whitespace()
-        .collect::<Vec<&str>>()
-        .windows(n)
-        .map(|w| w.join(" "))
-        .collect()
-}
-
-fn bleu_precision(candidate: &str, reference: &str, n: usize) -> f64 {
-    let candidate_ngrams = ngrams(candidate, n);
-    let reference_ngrams = ngrams(reference, n);
-
-    if candidate_ngrams.is_empty() {
-        return if reference_ngrams.is_empty() { 1.0 } else { 0.0 };
-    }
-
-    let intersection = candidate_ngrams.intersection(&reference_ngrams).count();
-    intersection as f64 / candidate_ngrams.len() as f64
-}
-
-fn simple_bleu(candidate: &str, reference: &str) -> f64 {
-    let p1 = bleu_precision(candidate, reference, 1);
-    let p2 = bleu_precision(candidate, reference, 2);
-    let p3 = bleu_precision(candidate, reference, 3);
-    let p4 = bleu_precision(candidate, reference, 4);
-
-    if p1 == 0.0 { return 0.0; }
-
-    let candidate_len = candidate.split_whitespace().count();
-    if candidate_len == 0 {
-        return 0.0;
-    }
-    let reference_len = reference.split_whitespace().count();
-
-    let brevity_penalty = if candidate_len > reference_len {
-        1.0
-    } else {
-        (1.0 - reference_len as f64 / candidate_len as f64).exp()
-    };
-
-    brevity_penalty * (p1 * p2 * p3 * p4).powf(0.25)
-}
-
-
-/// Pairwise distance between questions using a simplified BLEU score.
-///
-/// # Arguments
-///
-/// * `question_i` - The first question string.
-/// * `question_j` - The second question string.
-///
-/// # Returns
-///
-/// The distance between the questions (1.0 - BLEU score).
-pub fn pairwise_distance_bleu(question_i: &str, question_j: &str) -> f64 {
-    let score = simple_bleu(question_i, question_j);
-    1.0 - score
-}
-
-/// The repetition penalty for a question.
-///
-/// # Arguments
-///
-/// * `cluster_size` - The size of the cluster the question belongs to.
-/// * `batch_size` - The total batch size.
-/// * `lambda` - A scaling factor for the penalty.
-///
-/// # Returns
-///
-/// The calculated repetition penalty.
-pub fn repetition_penalty(cluster_size: usize, batch_size: usize, lambda: f64) -> f64 {
-    lambda * (cluster_size as f64 / batch_size as f64)
-}
-
-/// The composite reward for a valid question.
-///
-/// # Arguments
-///
-/// * `uncertainty_reward` - The calculated uncertainty reward.
-/// * `repetition_penalty` - The calculated repetition penalty.
-///
-/// # Returns
-///
-/// The composite reward, which is non-negative.
-pub fn composite_reward(uncertainty_reward: f64, repetition_penalty: f64) -> f64 {
-    (uncertainty_reward - repetition_penalty).max(0.0)
-}
-
-/// The binary reward for a generation x_i.
-///
-/// # Arguments
-///
-/// * `satisfies_check` - A boolean indicating if the generation satisfies the correctness check.
-///
-/// # Returns
-///
-/// 1 if the check is satisfied, 0 otherwise.
-pub fn binary_reward(satisfies_check: bool) -> i32 {
-    if satisfies_check { 1 } else { 0 }
 }
 
 /// The Solver's empirical accuracy for a question x.

@@ -18,3 +18,8 @@
 **Problem:** `math_explorer/src/pure_math/number_theory/partitions.rs` coupled a general-purpose power series implementation (`QSeries`) with specific partition function logic, violating separation of concerns and limiting reuse.
 **Decision:** Applied **Module Extraction**. Moved `QSeries` and its arithmetic implementations to `math_explorer/src/pure_math/number_theory/q_series.rs`. Re-exported `QSeries` in `partitions.rs` to maintain backward compatibility.
 **Consequence:** `QSeries` is now a reusable component for other number theory domains (e.g., modular forms, elliptic curves). `partitions.rs` is focused on partition theory. API remains stable.
+
+## 2024-10-24 - Extract GRPO Metrics and Rewards
+**Problem:** `math_explorer/src/applied/grpo/formulas.rs` is a mixed-domain file containing logic for string metrics (BLEU), reinforcement learning rewards, and core GRPO optimization formulas. This violates separation of concerns.
+**Decision:** Apply "Module Extraction". Split `formulas.rs` into `metrics.rs` (string processing), `rewards.rs` (RL signals), and keep `formulas.rs` for core optimization objectives.
+**Consequence:** Improves cohesion and makes it easier to reuse metrics or reward functions independently. Adds a few more files to the file tree.
