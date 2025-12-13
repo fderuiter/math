@@ -1,8 +1,9 @@
 use nalgebra::DMatrix;
 
-/// 4.1 Residual Calculation
-/// Input: Predicted Noise (final), Added Noise (epsilon).
-/// Operation: grad_2d = epsilon_final - epsilon
+/// Module 4.1: Residual Calculation
+/// Input: Predicted Noise (final), Added Noise epsilon (from Module 2.3).
+/// Operation: Simple subtraction.
+/// Output: The raw error tensor in latent space.
 pub fn compute_residual(
     predicted_noise: &DMatrix<f64>,
     added_noise: &DMatrix<f64>,
@@ -10,9 +11,10 @@ pub fn compute_residual(
     predicted_noise - added_noise
 }
 
-/// 4.2 Weighting Scheme
-/// Input: Residual, Timestep weighting w(t).
-/// Operation: delta_sds = w(t) * residual
+/// Module 4.2: Weighting Scheme
+/// Input: Raw error grad_2D, Timestep t.
+/// Operation: Apply weighting w(t) to normalize gradient magnitude across different noise levels.
+/// Output: The weighted gradient vector.
 pub fn apply_weighting(
     residual: &DMatrix<f64>,
     weight: f64,
@@ -20,13 +22,14 @@ pub fn apply_weighting(
     residual * weight
 }
 
-/// 4.3 The "Detach" Operation
-/// In Rust's ownership model or typical tensor libraries (like Torch), "detach" stops gradient tracking.
-/// Since we are implementing the math explicitly here using DMatrix (which doesn't have an autodiff graph attached by default),
-/// the result is effectively already detached unless we were building a graph.
-/// This function serves as an explicit marker for the operation.
+/// Module 4.3: The "Detach" Operation (Crucial)
+/// Input: delta_SDS.
+/// Operation: Stop gradients. We treat this tensor as a constant target for the backward pass.
+/// We do not want to backpropagate into the U-Net weights.
+/// Output: A fixed gradient tensor ready for backprop.
 pub fn detach(tensor: DMatrix<f64>) -> DMatrix<f64> {
     // Identity function in this context, but signifies logical break in gradient graph.
+    // In a real framework, this would call .detach().
     tensor
 }
 

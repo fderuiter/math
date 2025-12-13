@@ -1,4 +1,4 @@
-use nalgebra::{Matrix4, Vector3};
+use nalgebra::{DMatrix, Matrix4, Vector3};
 use std::f64::consts::PI;
 use rand::Rng;
 
@@ -16,9 +16,10 @@ pub struct RayBundle {
     pub height: usize,
 }
 
-/// 1.1 Ray Bundle Generation
+/// Module 1.1: Ray Bundle Generation
 /// Input: Camera Pose matrix P (4x4), Image resolution (H, W).
-/// Output: Ray Bundle (origins and directions).
+/// Operation: For every pixel (u, v), compute the ray origin o and direction d.
+/// Output: Ray Bundle R (origins and directions).
 pub fn generate_ray_bundle(pose: &Matrix4<f64>, width: usize, height: usize, fov_y: f64) -> RayBundle {
     let mut rays = Vec::with_capacity(width * height);
     let aspect_ratio = width as f64 / height as f64;
@@ -68,9 +69,10 @@ pub fn generate_ray_bundle(pose: &Matrix4<f64>, width: usize, height: usize, fov
     RayBundle { rays, width, height }
 }
 
-/// 1.2 Stratified Sampling
-/// Input: Near plane t_n, Far plane t_f, Number of samples N.
-/// Output: Sample points along rays.
+/// Module 1.2: Stratified Sampling
+/// Input: Ray Bundle R, Near plane t_n, Far plane t_f, Number of samples N.
+/// Operation: Divide the ray into N bins and sample a distance t_i uniformly within each bin.
+/// Output: Sample points along rays r(t_i) = o + t_i * d.
 pub fn stratified_sampling(
     t_near: f64,
     t_far: f64,
@@ -88,8 +90,8 @@ pub fn stratified_sampling(
     samples
 }
 
-/// 1.3 Positional Encoding
-/// gamma(p)
+/// Module 1.3: MLP Query & Positional Encoding (Helper)
+/// Operation 1 (Encoding): Map inputs to higher dimensions using gamma(.) (Fourier features).
 pub fn positional_encoding(p: f64, l: usize) -> Vec<f64> {
     let mut encoded = Vec::with_capacity(2 * l);
     for i in 0..l {
@@ -100,14 +102,16 @@ pub fn positional_encoding(p: f64, l: usize) -> Vec<f64> {
     encoded
 }
 
-/// Trait for the MLP Query
+/// Module 1.3: MLP Query Interface
+/// Operation 2 (Inference): Pass through MLP.
+/// Output: Raw Density sigma and Color c for every sample point.
 pub trait NeRFModel {
     fn query(&self, pos: &Vector3<f64>, dir: &Vector3<f64>) -> (f64, Vector3<f64>);
 }
 
-/// 1.4 Volume Integration
-/// Input: Densities, Colors, Interval distances.
-/// Output: Rendered Color.
+/// Module 1.4: Volume Integration (Compositing) Helper
+/// Input: Densities sigma_i, Colors c_i, Interval distances delta_i.
+/// Operation: Compute weights w_i and sum.
 pub fn volume_integration(
     densities: &[f64],
     colors: &[Vector3<f64>],
@@ -121,10 +125,16 @@ pub fn volume_integration(
         let color = colors[i];
         let delta = deltas[i];
 
+        // Alpha: alpha_i = 1 - exp(-sigma_i * delta_i)
         let alpha = 1.0 - (-sigma * delta).exp();
+
+        // Weight w_i = T_i * alpha_i
         let weight = transmittance * alpha;
 
+        // Pixel Color accumulation
         final_color += weight * color;
+
+        // Transmittance: T_{i+1} = T_i * (1 - alpha_i)
         transmittance *= 1.0 - alpha;
 
         if transmittance < 1e-4 {
@@ -133,6 +143,55 @@ pub fn volume_integration(
     }
 
     final_color
+}
+
+/// Module 1.4: Volume Integration (Full Image)
+/// Input: RayBundle, Model, sampling parameters.
+/// Output: Rendered Image x_render (HxWx3).
+/// Note: Returns a DMatrix of Vector3 for simplicity in this library context,
+/// representing the HxW grid of RGB colors.
+pub fn render_image<M: NeRFModel + ?Sized>(
+    bundle: &RayBundle,
+    model: &M,
+    t_near: f64,
+    t_far: f64,
+    n_samples: usize,
+) -> DMatrix<Vector3<f64>> {
+    let mut image_data = Vec::with_capacity(bundle.width * bundle.height);
+
+    for ray in &bundle.rays {
+        let ts = stratified_sampling(t_near, t_far, n_samples);
+        let mut densities = Vec::with_capacity(n_samples);
+        let mut colors = Vec::with_capacity(n_samples);
+        let mut deltas = Vec::with_capacity(n_samples);
+
+        for i in 0..n_samples {
+            let t = ts[i];
+            let pos = ray.origin + t * ray.direction;
+
+            // Query model (Module 1.3)
+            let (sigma, c) = model.query(&pos, &ray.direction);
+
+            densities.push(sigma);
+            colors.push(c);
+
+            // Calculate delta (distance to next sample)
+            // For the last sample, we can assume a default large distance or same as previous
+            let next_t = if i < n_samples - 1 {
+                ts[i+1]
+            } else if i > 0 {
+                t + (t - ts[i-1])
+            } else {
+                t + 1.0 // Default delta for single sample case
+            };
+            deltas.push(next_t - t);
+        }
+
+        let pixel_color = volume_integration(&densities, &colors, &deltas);
+        image_data.push(pixel_color);
+    }
+
+    DMatrix::from_vec(bundle.height, bundle.width, image_data)
 }
 
 #[cfg(test)]
