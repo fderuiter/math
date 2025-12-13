@@ -12,6 +12,7 @@ rug = "1.28.0"
 statrs = "0.17.0"
 petgraph = "0.6.4"
 rand_distr = "0.4.3"
+num-complex = "0.4.6"
 
 [[test]]
 name = "elliptic_curves"
