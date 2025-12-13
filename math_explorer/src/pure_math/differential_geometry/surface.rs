@@ -1,0 +1,141 @@
+use nalgebra::{Point3, Vector3, Matrix2};
+
+/// Represents a parametric surface $r(u, v)$ in $\mathbb{R}^3$.
+pub trait ParametricSurface {
+    /// Returns the 3D point at parameters $(u, v)$.
+    fn position(&self, u: f64, v: f64) -> Point3<f64>;
+
+    /// Returns the partial derivative $\frac{\partial r}{\partial u}$.
+    /// Default implementation uses finite differences.
+    fn partial_u(&self, u: f64, v: f64) -> Vector3<f64> {
+        let h = 1e-6;
+        (self.position(u + h, v) - self.position(u - h, v)) / (2.0 * h)
+    }
+
+    /// Returns the partial derivative $\frac{\partial r}{\partial v}$.
+    /// Default implementation uses finite differences.
+    fn partial_v(&self, u: f64, v: f64) -> Vector3<f64> {
+        let h = 1e-6;
+        (self.position(u, v + h) - self.position(u, v - h)) / (2.0 * h)
+    }
+
+    /// Returns the unit normal vector $\mathbf{n} = \frac{r_u \times r_v}{|r_u \times r_v|}$.
+    fn unit_normal(&self, u: f64, v: f64) -> Vector3<f64> {
+        let ru = self.partial_u(u, v);
+        let rv = self.partial_v(u, v);
+        let cross = ru.cross(&rv);
+        cross.normalize()
+    }
+
+    /// Computes the First Fundamental Form coefficients $(E, F, G)$.
+    /// $E = r_u \cdot r_u$
+    /// $F = r_u \cdot r_v$
+    /// $G = r_v \cdot r_v$
+    fn first_fundamental_form(&self, u: f64, v: f64) -> (f64, f64, f64) {
+        let ru = self.partial_u(u, v);
+        let rv = self.partial_v(u, v);
+        (ru.dot(&ru), ru.dot(&rv), rv.dot(&rv))
+    }
+
+    /// Computes the Second Fundamental Form coefficients $(L, M, N)$.
+    /// $L = r_{uu} \cdot n$
+    /// $M = r_{uv} \cdot n$
+    /// $N = r_{vv} \cdot n$
+    fn second_fundamental_form(&self, u: f64, v: f64) -> (f64, f64, f64) {
+        let h = 1e-5;
+        let n = self.unit_normal(u, v);
+
+        // Second derivatives via finite differences
+        // r_uu = (r(u+h) - 2r(u) + r(u-h)) / h^2
+        let p = self.position(u, v);
+        let pu_plus = self.position(u + h, v);
+        let pu_minus = self.position(u - h, v);
+        let ruu = (pu_plus.coords - p.coords * 2.0 + pu_minus.coords) / (h * h);
+
+        // r_vv
+        let pv_plus = self.position(u, v + h);
+        let pv_minus = self.position(u, v - h);
+        let rvv = (pv_plus.coords - p.coords * 2.0 + pv_minus.coords) / (h * h);
+
+        // r_uv
+        let puv_pp = self.position(u + h, v + h);
+        let puv_mm = self.position(u - h, v - h);
+        let puv_pm = self.position(u + h, v - h);
+        let puv_mp = self.position(u - h, v + h);
+        let ruv = (puv_pp.coords - puv_mp.coords - puv_pm.coords + puv_mm.coords) / (4.0 * h * h); // Central difference mixed
+
+        (ruu.dot(&n), ruv.dot(&n), rvv.dot(&n))
+    }
+
+    /// Computes the Gaussian Curvature $K = \frac{LN - M^2}{EG - F^2}$.
+    fn gaussian_curvature(&self, u: f64, v: f64) -> f64 {
+        let (e, f, g) = self.first_fundamental_form(u, v);
+        let (l, m, n) = self.second_fundamental_form(u, v);
+
+        let det_g = e * g - f * f;
+        let det_ii = l * n - m * m;
+
+        det_ii / det_g
+    }
+
+    /// Computes the Mean Curvature $H = \frac{EN - 2FM + GL}{2(EG - F^2)}$.
+    fn mean_curvature(&self, u: f64, v: f64) -> f64 {
+        let (e, f, g) = self.first_fundamental_form(u, v);
+        let (l, m, n) = self.second_fundamental_form(u, v);
+
+        let det_g = e * g - f * f;
+
+        (e * n - 2.0 * f * m + g * l) / (2.0 * det_g)
+    }
+
+    /// Computes the metric tensor $g_{ij}$ and its inverse $g^{ij}$.
+    /// Returns (g_det, g_inv)
+    fn metric_tensor_inverse(&self, u: f64, v: f64) -> (f64, Matrix2<f64>) {
+        let (e, f, g) = self.first_fundamental_form(u, v);
+        let det = e * g - f * f;
+        let inv = Matrix2::new(g, -f, -f, e) / det;
+        (det, inv)
+    }
+
+    /// Differential area element $\sqrt{EG - F^2}$.
+    fn area_element(&self, u: f64, v: f64) -> f64 {
+        let (e, f, g) = self.first_fundamental_form(u, v);
+        (e * g - f * f).sqrt()
+    }
+}
+
+/// A Sphere of radius R.
+pub struct Sphere {
+    pub radius: f64,
+}
+
+impl ParametricSurface for Sphere {
+    fn position(&self, u: f64, v: f64) -> Point3<f64> {
+        // u = theta (azimuthal), v = phi (polar)
+        // x = R sin(v) cos(u)
+        // y = R sin(v) sin(u)
+        // z = R cos(v)
+        let x = self.radius * v.sin() * u.cos();
+        let y = self.radius * v.sin() * u.sin();
+        let z = self.radius * v.cos();
+        Point3::new(x, y, z)
+    }
+
+    // Optional: Override derivatives for analytical precision if needed
+}
+
+/// A Torus with major radius R and minor radius r.
+pub struct Torus {
+    pub major_radius: f64,
+    pub minor_radius: f64,
+}
+
+impl ParametricSurface for Torus {
+    fn position(&self, u: f64, v: f64) -> Point3<f64> {
+        // u \in [0, 2pi), v \in [0, 2pi)
+        let x = (self.major_radius + self.minor_radius * v.cos()) * u.cos();
+        let y = (self.major_radius + self.minor_radius * v.cos()) * u.sin();
+        let z = self.minor_radius * v.sin();
+        Point3::new(x, y, z)
+    }
+}
