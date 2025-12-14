@@ -26,11 +26,11 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
         let du = (range_u.1 - range_u.0) / (nu as f64 - 1.0);
         let dv = (range_v.1 - range_v.0) / (nv as f64 - 1.0);
 
-        for i in 0..nu {
-            for j in 0..nv {
+        for (i, row) in grid.iter_mut().enumerate().take(nu) {
+            for (j, val) in row.iter_mut().enumerate().take(nv) {
                 let u = range_u.0 + i as f64 * du;
                 let v = range_v.0 + j as f64 * dv;
-                grid[i][j] = initial_condition(u, v);
+                *val = initial_condition(u, v);
             }
         }
 
@@ -63,6 +63,7 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
             grid[i_idx][j_idx]
         };
 
+        #[allow(clippy::needless_range_loop)]
         for i in 0..nu {
             for j in 0..nv {
                 let u = self.range_u.0 + i as f64 * du;
