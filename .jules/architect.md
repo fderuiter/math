@@ -39,3 +39,8 @@ Consequence: Improves code organization and maintainability. The public API is p
 **Problem:** `src/climate/cera.rs` was a "God File" combining model definition (`Cera`), configuration (`CeraConfig`), and training loop logic (`train`, `optimizer_step`), violating Separation of Concerns.
 **Decision:** Extracted `CeraConfig` to `src/climate/config.rs` and training logic to `src/climate/training.rs` (introducing `CeraTrainer`). `Cera` struct remains in `cera.rs` as a pure model definition.
 **Consequence:** Improved modularity and testability. Training logic is now decoupled from the model architecture. Callers must use `CeraTrainer` to train the model, which is a cleaner API.
+
+## 2025-12-14 - [Favoritism Module Extraction]
+**Problem:** `math_explorer/src/applied/favoritism/mod.rs` was a "God Module" containing all parameter struct definitions and the scoring logic, mixing data type definitions with algorithmic implementation.
+**Decision:** Extract parameter structs to `types.rs` and scoring logic to `scoring.rs`, leaving `mod.rs` to handle re-exports.
+**Consequence:** Improved file-level modularity and separation of concerns. Types and Logic are now physically separated, making the code easier to navigate and maintain.
