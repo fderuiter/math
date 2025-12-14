@@ -29,3 +29,8 @@ Consequence: Improves modularity and discoverability. The public API is preserve
 **Problem:** `lorahub.rs` used a procedural style with loose functions (`combine_loras`), passing large state dictionaries as arguments repeatedly and mixing logic with simple data structures.
 **Decision:** Extracted `lorahub` into a submodule and encapsulated logic in `LoraEnsemble` struct.
 **Consequence:** Improved cohesion; state validation happens once (or is cleaner); API is more object-oriented.
+
+## 2025-05-21 - [Sorting Algorithms Module Extraction]
+Problem: `math_explorer/src/applied/algorithms/sorting.rs` was a large file (~420 lines) mixing statistical tracking, information theory, comparison sorts, and non-comparison sorts, violating the Single Responsibility Principle.
+Decision: Extracted `sorting.rs` into a module directory `math_explorer/src/applied/algorithms/sorting/` with dedicated submodules: `stats.rs`, `theory.rs`, `elementary.rs`, `divide_conquer.rs`, `heap.rs`, and `linear.rs`.
+Consequence: Improves code organization and maintainability. The public API is preserved via `mod.rs` re-exports, ensuring backward compatibility.
