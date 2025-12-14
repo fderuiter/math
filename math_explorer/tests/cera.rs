@@ -1,4 +1,5 @@
 use math_explorer::climate::cera::{Cera, CeraConfig};
+use math_explorer::climate::training::CeraTrainer;
 use nalgebra::DMatrix;
 
 const IN_CHANNELS: usize = 2;
@@ -39,7 +40,8 @@ fn test_cera_integration() {
 
     // 4. Train the model
     // This will print the loss for each epoch to the console.
-    cera.train(&control_inputs, &control_targets, &warm_inputs);
+    let mut trainer = CeraTrainer::new(&mut cera);
+    trainer.train(&control_inputs, &control_targets, &warm_inputs);
 
     // 5. Generate test data and make a prediction
     let n_test_samples = 4;

@@ -72,6 +72,7 @@ pub struct BestResponseCorrespondence {
     /// but for Nash we usually check the joint strategy x = (x1, x2).
     /// Let's implement a correspondence for a function f(x) -> {y | y minimizes distance to some target(x)}.
     /// Or simply, let's use a function where \phi(x) = { y | ||y - f(x)|| < epsilon }.
+    #[allow(clippy::type_complexity)]
     pub mapping: Box<dyn Fn(&DVector<f64>) -> DVector<f64>>,
     pub tolerance: f64,
 }

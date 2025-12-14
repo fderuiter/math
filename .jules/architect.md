@@ -34,3 +34,8 @@ Consequence: Improves modularity and discoverability. The public API is preserve
 Problem: `math_explorer/src/applied/algorithms/sorting.rs` was a large file (~420 lines) mixing statistical tracking, information theory, comparison sorts, and non-comparison sorts, violating the Single Responsibility Principle.
 Decision: Extracted `sorting.rs` into a module directory `math_explorer/src/applied/algorithms/sorting/` with dedicated submodules: `stats.rs`, `theory.rs`, `elementary.rs`, `divide_conquer.rs`, `heap.rs`, and `linear.rs`.
 Consequence: Improves code organization and maintainability. The public API is preserved via `mod.rs` re-exports, ensuring backward compatibility.
+
+## 2025-06-25 - [Decomposition of CERA Climate Model]
+**Problem:** `src/climate/cera.rs` was a "God File" combining model definition (`Cera`), configuration (`CeraConfig`), and training loop logic (`train`, `optimizer_step`), violating Separation of Concerns.
+**Decision:** Extracted `CeraConfig` to `src/climate/config.rs` and training logic to `src/climate/training.rs` (introducing `CeraTrainer`). `Cera` struct remains in `cera.rs` as a pure model definition.
+**Consequence:** Improved modularity and testability. Training logic is now decoupled from the model architecture. Callers must use `CeraTrainer` to train the model, which is a cleaner API.

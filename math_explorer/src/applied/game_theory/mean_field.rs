@@ -146,12 +146,11 @@ impl MeanFieldGame1D {
                     let d2m_dx2 = (m[(i + 1, n)] - 2.0 * m[(i, n)] + m[(i - 1, n)]) / (self.dx * self.dx);
 
                     // Upwind for drift term
-                    let drift_flux;
-                    if v > 0.0 {
-                         drift_flux = (m[(i, n)] * v - m[(i - 1, n)] * v) / self.dx;
+                    let drift_flux = if v > 0.0 {
+                         (m[(i, n)] * v - m[(i - 1, n)] * v) / self.dx
                     } else {
-                         drift_flux = (m[(i + 1, n)] * v - m[(i, n)] * v) / self.dx;
-                    }
+                         (m[(i + 1, n)] * v - m[(i, n)] * v) / self.dx
+                    };
 
                     let rhs = -drift_flux + self.viscosity * d2m_dx2;
                     m[(i, n + 1)] = m[(i, n)] + self.dt * rhs;

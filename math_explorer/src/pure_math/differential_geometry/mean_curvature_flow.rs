@@ -95,6 +95,7 @@ impl MeanCurvatureFlow {
 
         let mut new_points = self.surface.points.clone();
 
+        #[allow(clippy::needless_range_loop)]
         for i in 0..nu {
             for j in 0..nv {
                 // Velocity = Mean Curvature Vector

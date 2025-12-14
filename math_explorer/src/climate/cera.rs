@@ -1,34 +1,10 @@
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
-use nalgebra::{DMatrix, DVector};
+use nalgebra::DMatrix;
 use crate::climate::autoencoder::Autoencoder;
 use crate::climate::predictor::Predictor;
-use crate::climate::loss::{cera_loss, mse_loss, earth_movers_distance};
-
-/// Configuration for the CERA model.
-#[derive(Clone, Debug)]
-pub struct CeraConfig {
-    /// Learning rate for the optimizer.
-    pub learning_rate: f32,
-    /// Weight for the prediction loss term.
-    pub lambda_pred: f32,
-    /// Weight for the Earth Mover's Distance (EMD) loss term.
-    pub lambda_emd: f32,
-    /// Number of training epochs.
-    pub epochs: usize,
-    /// Batch size for training.
-    pub batch_size: usize,
-    /// Number of input channels.
-    pub in_channels: usize,
-    /// Dimension of the latent space.
-    pub latent_channels: usize,
-    /// Number of channels used for alignment/prediction.
-    pub aligned_channels: usize,
-    /// Number of vertical levels (or time steps) in the input.
-    pub num_levels: usize,
-    /// Size of the output vector.
-    pub output_size: usize,
-}
+// Re-export CeraConfig for backward compatibility (or convenience)
+pub use crate::climate::config::CeraConfig;
 
 /// The main CERA model.
 pub struct Cera {
@@ -70,36 +46,6 @@ impl Cera {
         Ok(Self { autoencoder, predictor, config })
     }
 
-    /// Placeholder for the backpropagation and optimization step.
-    ///
-    /// **CRITICAL NOTE:** This function is a placeholder and does **not** perform
-    /// real backpropagation or gradient descent. It simulates a weight update by
-    /// subtracting small random values from the weights. This is done to allow
-    /// the end-to-end testing of the model's architecture and data flow.
-    /// A full implementation would require a proper autograd engine to compute
-    /// gradients and an optimizer (e.g., Adam) to update the weights.
-    fn optimizer_step(&mut self) {
-        let lr = self.config.learning_rate;
-        for layer in self.autoencoder.encoder.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * lr;
-            layer.bias -= grad_b * lr;
-        }
-        for layer in self.autoencoder.decoder.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * lr;
-            layer.bias -= grad_b * lr;
-        }
-        for layer in self.predictor.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * lr;
-            layer.bias -= grad_b * lr;
-        }
-    }
-
     /// Reshapes a batch of latent vectors for the predictor.
     /// From (batch_size * num_levels, channels) to (batch_size, num_levels * channels).
     ///
@@ -127,73 +73,6 @@ impl Cera {
         DMatrix::from_row_slice(batch_size, num_levels * aligned_channels, &reshaped_data)
     }
 
-    /// Trains the CERA model on synthetic data.
-    ///
-    /// # Arguments
-    ///
-    /// * `control_inputs` - Input data for the control climate.
-    /// * `control_targets` - Target outputs for the control climate.
-    /// * `warm_inputs` - Input data for the warm climate.
-    pub fn train(
-        &mut self,
-        control_inputs: &DMatrix<f32>,
-        control_targets: &DMatrix<f32>,
-        warm_inputs: &DMatrix<f32>,
-    ) {
-        let batch_size = self.config.batch_size;
-        let num_levels = self.config.num_levels;
-        let aligned_channels = self.config.aligned_channels;
-
-        let n_samples = control_inputs.nrows() / num_levels;
-        let n_batches = n_samples / batch_size;
-
-        for epoch in 0..self.config.epochs {
-            let mut total_loss = 0.0;
-            for i in 0..n_batches {
-                // --- Create batches ---
-                let input_start = i * batch_size * num_levels;
-                let input_rows = batch_size * num_levels;
-                let control_input_batch = control_inputs.rows(input_start, input_rows).clone_owned();
-                let warm_input_batch = warm_inputs.rows(input_start, input_rows).clone_owned();
-
-                let target_start = i * batch_size;
-                let control_target_batch = control_targets.rows(target_start, batch_size).clone_owned();
-
-                // --- Forward pass ---
-                let (control_latent, control_recon) = self.autoencoder.forward(&control_input_batch);
-                let (warm_latent, warm_recon) = self.autoencoder.forward(&warm_input_batch);
-
-                // --- Reshape and predict ---
-                let control_aligned_latent = control_latent.columns(0, aligned_channels).clone_owned();
-                let predictor_input = self.reshape_for_predictor(&control_aligned_latent, batch_size);
-                let prediction = self.predictor.forward(&predictor_input);
-
-                // --- Calculate losses ---
-                let recon_loss_control = mse_loss(&control_input_batch, &control_recon);
-                let recon_loss_warm = mse_loss(&warm_input_batch, &warm_recon);
-                let reconstruction_loss = (recon_loss_control + recon_loss_warm) / 2.0;
-
-                let prediction_loss = mse_loss(&control_target_batch, &prediction);
-
-                let warm_aligned_latent = warm_latent.columns(0, aligned_channels).clone_owned();
-                let emd_loss = earth_movers_distance(&control_aligned_latent, &warm_aligned_latent);
-
-                let loss = cera_loss(
-                    reconstruction_loss,
-                    prediction_loss,
-                    emd_loss,
-                    self.config.lambda_pred,
-                    self.config.lambda_emd,
-                );
-
-                // --- Backward pass and optimization ---
-                self.optimizer_step();
-                total_loss += loss;
-            }
-            println!("Epoch {}, Average Loss: {}", epoch, total_loss / n_batches as f32);
-        }
-    }
-
     /// Makes a prediction using the trained CERA model.
     ///
     /// # Arguments
@@ -219,6 +98,7 @@ impl Cera {
 mod tests {
     use super::*;
     use nalgebra::DMatrix;
+    use crate::climate::training::CeraTrainer; // Import Trainer
 
     // Helper constant for tests
     const TEST_NUM_LEVELS: usize = 30;
@@ -252,7 +132,9 @@ mod tests {
         let (control_inputs, control_targets) = generate_data(n_samples, 0.0);
         let (warm_inputs, _) = generate_data(n_samples, 1.0); // Warm climate has a different distribution
 
-        cera.train(&control_inputs, &control_targets, &warm_inputs);
+        // Use Trainer
+        let mut trainer = CeraTrainer::new(&mut cera);
+        trainer.train(&control_inputs, &control_targets, &warm_inputs);
 
         let (test_inputs, _) = generate_data(4, 0.5);
         let prediction = cera.predict(&test_inputs);
