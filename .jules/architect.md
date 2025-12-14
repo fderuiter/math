@@ -40,6 +40,10 @@ Consequence: Improves code organization and maintainability. The public API is p
 **Decision:** Extracted `CeraConfig` to `src/climate/config.rs` and training logic to `src/climate/training.rs` (introducing `CeraTrainer`). `Cera` struct remains in `cera.rs` as a pure model definition.
 **Consequence:** Improved modularity and testability. Training logic is now decoupled from the model architecture. Callers must use `CeraTrainer` to train the model, which is a cleaner API.
 
+## 2025-06-25 - [Freesurfer Module Extraction]
+**Problem:** `src/applied/freesurfer/mod.rs` was a "God Module" containing four distinct mathematical domains: surface mesh operations, Bayesian segmentation, cortical thickness geometry, and GLM statistics.
+**Decision:** Extracted these domains into separate submodules: `surface.rs`, `segmentation.rs`, `thickness.rs`, and `glm.rs`. The `mod.rs` file now acts as a facade, re-exporting the public API.
+**Consequence:** Significantly improved separation of concerns. Each module now focuses on a single mathematical domain, making the code easier to test, read, and maintain. Backward compatibility is preserved via re-exports.
 ## 2025-12-14 - [Favoritism Module Extraction]
 **Problem:** `math_explorer/src/applied/favoritism/mod.rs` was a "God Module" containing all parameter struct definitions and the scoring logic, mixing data type definitions with algorithmic implementation.
 **Decision:** Extract parameter structs to `types.rs` and scoring logic to `scoring.rs`, leaving `mod.rs` to handle re-exports.
