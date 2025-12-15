@@ -1,10 +1,12 @@
-/// The `chaos` module explores Deterministic Chaos, covering continuous flows, discrete maps,
-/// and methods to quantify chaos (Lyapunov exponents and Fractal Dimensions).
-///
-/// Chaos theory studies the behavior of dynamical systems that are highly sensitive to initial conditions.
-/// This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
-/// states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
-/// in general.
+//! The `chaos` module explores Deterministic Chaos, covering continuous flows, discrete maps,
+//! and methods to quantify chaos (Lyapunov exponents and Fractal Dimensions).
+//!
+//! Chaos theory studies the behavior of dynamical systems that are highly sensitive to initial conditions.
+//! This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
+//! states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
+//! in general.
+
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
 
 /// Discrete Chaos (The Logistic Map)
 pub mod logistic {
@@ -81,6 +83,7 @@ pub mod logistic {
 
 /// Continuous Chaos (The Lorenz System)
 pub mod lorenz {
+    use super::*;
     use nalgebra::Vector3;
 
     /// Represents the state of the Lorenz system $(x, y, z)$.
@@ -95,6 +98,18 @@ pub mod lorenz {
             LorenzState {
                 vec: Vector3::new(x, y, z),
             }
+        }
+    }
+
+    impl From<LorenzState> for Vec<f64> {
+        fn from(state: LorenzState) -> Self {
+            vec![state.vec.x, state.vec.y, state.vec.z]
+        }
+    }
+
+    impl From<&LorenzState> for Vec<f64> {
+        fn from(state: &LorenzState) -> Self {
+            vec![state.vec.x, state.vec.y, state.vec.z]
         }
     }
 
@@ -125,33 +140,31 @@ pub mod lorenz {
             }
         }
 
-        /// Calculates the derivative at a given state.
-        fn derivatives(&self, state: &Vector3<f64>) -> Vector3<f64> {
-            let x = state.x;
-            let y = state.y;
-            let z = state.z;
-
-            let dx = self.sigma * (y - x);
-            let dy = x * (self.rho - z) - y;
-            let dz = x * y - self.beta * z;
-
-            Vector3::new(dx, dy, dz)
-        }
-
         /// Advances the system by time `dt` using the Runge-Kutta 4 (RK4) method.
         ///
         /// RK4 is chosen over Euler integration because chaotic systems are extremely sensitive to errors;
         /// Euler's method introduces local truncation errors that accumulate rapidly, leading to
         /// false trajectories.
         pub fn step(&mut self, dt: f64) {
-            let y = self.state.vec;
+             let current_state_vec: Vec<f64> = (&self.state).into();
+             // Time `t` is irrelevant for autonomous systems like Lorenz.
+             let new_state_vec = RungeKutta4::step(self, 0.0, &current_state_vec, dt);
 
-            let k1 = self.derivatives(&y);
-            let k2 = self.derivatives(&(y + k1 * (dt * 0.5)));
-            let k3 = self.derivatives(&(y + k2 * (dt * 0.5)));
-            let k4 = self.derivatives(&(y + k3 * dt));
+             self.state.vec = Vector3::new(new_state_vec[0], new_state_vec[1], new_state_vec[2]);
+        }
+    }
 
-            self.state.vec = y + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * (dt / 6.0);
+    impl OdeSystem for LorenzSystem {
+        fn derivative(&self, _t: f64, state: &[f64]) -> Vec<f64> {
+            let x = state[0];
+            let y = state[1];
+            let z = state[2];
+
+            let dx = self.sigma * (y - x);
+            let dy = x * (self.rho - z) - y;
+            let dz = x * y - self.beta * z;
+
+            vec![dx, dy, dz]
         }
     }
 }
@@ -294,8 +307,7 @@ pub mod fractals {
 
             // Because data is sorted by X, we only look ahead.
             // We can stop as soon as the X-distance exceeds epsilon.
-            for j in (i + 1)..n {
-                let p2 = sorted_traj[j];
+            for p2 in sorted_traj.iter().skip(i + 1) {
                 let dx = p2.x - p1.x; // p2.x >= p1.x due to sort
 
                 if dx > epsilon {

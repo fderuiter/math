@@ -188,7 +188,7 @@ pub mod analytics {
 
             // Safety check to keep x within bounds
             if next_x <= 0.0 {
-                 x = x / 2.0; // Backtrack towards 0
+                 x /= 2.0; // Backtrack towards 0
             } else if next_x > n {
                  x = (x + n) / 2.0; // Backtrack towards N
             } else {

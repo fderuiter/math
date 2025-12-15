@@ -280,7 +280,7 @@ pub mod evolution {
         /// # Returns
         /// The new frequency of Hawks.
         pub fn update_frequencies(&self, hawk_freq: f64, dt: f64) -> Result<f64, String> {
-            if hawk_freq < 0.0 || hawk_freq > 1.0 {
+            if !(0.0..=1.0).contains(&hawk_freq) {
                 return Err("Frequency must be between 0.0 and 1.0".to_string());
             }
 
@@ -308,13 +308,10 @@ pub mod evolution {
             let dp_h = p_h * (fit_h - phi);
 
             // Update
-            let mut new_p_h = p_h + dp_h * dt;
+            let new_p_h = p_h + dp_h * dt;
 
             // Clamp to [0, 1] to handle numerical drift
-            if new_p_h < 0.0 { new_p_h = 0.0; }
-            if new_p_h > 1.0 { new_p_h = 1.0; }
-
-            Ok(new_p_h)
+            Ok(new_p_h.clamp(0.0, 1.0))
         }
     }
 }

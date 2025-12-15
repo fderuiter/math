@@ -79,10 +79,10 @@ pub mod liquid_drop {
         let z_val = atomic_number.value();
         let n_val = mass_number.value() - z_val;
 
-        let delta = if z_val % 2 == 0 && n_val % 2 == 0 {
+        let delta = if z_val as u64 % 2 == 0 && n_val as u64 % 2 == 0 {
             // Even Z, Even N
             constants::liquid_drop_constants::DELTA_COEFF * a.powf(-0.5)
-        } else if z_val % 2 != 0 && n_val % 2 != 0 {
+        } else if z_val as u64 % 2 != 0 && n_val as u64 % 2 != 0 {
             // Odd Z, Odd N
             -constants::liquid_drop_constants::DELTA_COEFF * a.powf(-0.5)
         } else {
