@@ -4,6 +4,8 @@
 //! It will include structures like groups, rings, fields, vector spaces,
 //! and algorithms related to them.
 
+pub mod monads;
+
 /// A placeholder function to demonstrate module structure.
 ///
 /// This function adds two unsigned 64-bit integers. It's a stand-in for
