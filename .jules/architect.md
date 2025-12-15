@@ -54,3 +54,8 @@ Consequence: Improves code organization and maintainability. The public API is p
 **Problem:** `QSeries` struct in `pure_math/number_theory/q_series.rs` was hardcoded to use `Vec<i64>` for coefficients. This limited the library's ability to support arbitrary precision integers (`BigInt`) or modular arithmetic, which are essential for advanced number theory.
 **Decision:** Refactored `QSeries` to `QSeries<T>` and introduced a `Ring` trait in `pure_math/algebra/traits.rs` to define the required algebraic operations.
 **Consequence:** `QSeries` is now generic and extensible. Backward compatibility for `partitions.rs` was preserved via a type alias `type QSeries = QSeries<i64>`. Future users can instantiate `QSeries` with `rug::Integer` or other Ring types.
+
+## 2026-01-01 - [Statistical Mechanics Module Extraction]
+**Problem:** `math_explorer/src/physics/stat_mech.rs` was a "God File" (~460 lines) containing four distinct mathematical domains: Ensemble Theory, Quantum Statistics, Ising Model Simulation, and Non-Equilibrium Dynamics.
+**Decision:** Extracted these domains into a new directory `math_explorer/src/physics/stat_mech/` with submodules `ensembles.rs`, `quantum_stats.rs`, `ising.rs`, and `dynamics.rs`. Created `mod.rs` to re-export the API.
+**Consequence:** Improved modularity and navigability. Distinct physical theories are now separated. The public API structure is preserved via re-exports.
