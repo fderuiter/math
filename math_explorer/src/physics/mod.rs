@@ -16,3 +16,4 @@ pub mod standard_model;
 pub mod solid_state;
 pub mod mri;
 pub mod stat_mech;
+pub mod medical;
