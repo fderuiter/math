@@ -1,6 +1,7 @@
 pub mod ai;
 pub mod applied;
 pub mod climate;
+pub mod biology;
 pub mod physics;
 pub mod pure_math;
 pub mod epidemiology;
