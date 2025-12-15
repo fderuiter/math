@@ -5,26 +5,25 @@
 //! The implementation is based on the paper "Arithmetic properties of partition
 //! functions introduced by Pushpa and Vasuki" by Nath and Saikia.
 
-// Re-export QSeries so that users of this module (like tests) can still access it via
-// math_explorer::pure_math::number_theory::partitions::QSeries
-// This also brings QSeries into scope for this module.
-pub use crate::pure_math::number_theory::q_series::QSeries;
+// Define QSeries as a type alias for QSeries<i64> to preserve backward compatibility
+// and allow specific usage in this module.
+pub type QSeries = crate::pure_math::number_theory::q_series::QSeries<i64>;
 
 /// Computes the q-series for f_k = (q^k; q^k)_inf up to a given precision.
 /// f_k = product_{i>=1} (1 - q^(k*i))
 pub fn f_k(k: usize, precision: usize) -> QSeries {
     if k == 0 {
-        return QSeries::from_vec(vec![0; precision]);
+        return QSeries::from_vec(vec![0i64; precision]);
     }
     if precision == 0 {
         return QSeries::new();
     }
     if k >= precision {
-        let mut coeffs = vec![0; precision];
+        let mut coeffs = vec![0i64; precision];
         coeffs[0] = 1;
         return QSeries { coeffs };
     }
-    let mut coeffs = vec![0; precision];
+    let mut coeffs = vec![0i64; precision];
     coeffs[0] = 1;
 
     for i in 1.. {
