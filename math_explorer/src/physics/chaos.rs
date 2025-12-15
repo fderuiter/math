@@ -281,10 +281,32 @@ pub mod fractals {
         let mut count = 0;
         let epsilon_sq = epsilon * epsilon;
 
+        // Profiler Optimization: Sort by X-coordinate to prune search space.
+        // This reduces complexity from O(N^2) to O(N * k) where k is the neighborhood size.
+        // For small epsilon (the relevant case for fractal dimension), this yields massive speedups.
+
+        let mut sorted_traj = trajectory.to_vec();
+        // Use unstable_sort_by for speed; floating point sort handles NaN by treating as equal (safe assumption here).
+        sorted_traj.sort_unstable_by(|a, b| a.x.partial_cmp(&b.x).unwrap_or(std::cmp::Ordering::Equal));
+
         for i in 0..n {
+            let p1 = sorted_traj[i];
+
+            // Because data is sorted by X, we only look ahead.
+            // We can stop as soon as the X-distance exceeds epsilon.
             for j in (i + 1)..n {
-                let dist_sq = (trajectory[i] - trajectory[j]).norm_squared();
-                if dist_sq < epsilon_sq {
+                let p2 = sorted_traj[j];
+                let dx = p2.x - p1.x; // p2.x >= p1.x due to sort
+
+                if dx > epsilon {
+                    break;
+                }
+
+                let dy = p1.y - p2.y;
+                let dz = p1.z - p2.z;
+
+                // Manual squared distance check to avoid Vector3 overhead in the hot loop
+                if dx * dx + dy * dy + dz * dz < epsilon_sq {
                     count += 1;
                 }
             }
