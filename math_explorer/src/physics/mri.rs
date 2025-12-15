@@ -17,8 +17,6 @@ use std::f64::consts::PI;
 
 /// Quantum Foundations of MRI.
 pub mod proton {
-    use super::*;
-
     /// Gyromagnetic Ratio for Hydrogen in rad/s/T.
     /// $\gamma \approx 2.675 \times 10^8$ rad/s/T.
     pub const GYROMAGNETIC_RATIO: f64 = 2.675e8;

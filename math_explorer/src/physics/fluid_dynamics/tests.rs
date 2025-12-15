@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
     use nalgebra::{Vector3, Matrix3};
     use crate::physics::fluid_dynamics::{
         types::{FluidProperties, FlowState},
