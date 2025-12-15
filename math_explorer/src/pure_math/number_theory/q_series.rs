@@ -4,22 +4,23 @@
 //! (power series in q), which are fundamental in the theory of partitions and
 //! other areas of number theory.
 
+use crate::pure_math::algebra::Ring;
 use std::ops::{Add, Mul, Div};
 
 /// Represents a q-series, a power series in q.
 /// The vector `coeffs` stores the coefficients, where the index represents the power of q.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QSeries {
-    pub coeffs: Vec<i64>,
+pub struct QSeries<T: Ring> {
+    pub coeffs: Vec<T>,
 }
 
-impl Default for QSeries {
+impl<T: Ring> Default for QSeries<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl QSeries {
+impl<T: Ring> QSeries<T> {
     /// Creates a new empty QSeries.
     pub fn new() -> Self {
         QSeries { coeffs: vec![] }
@@ -33,13 +34,13 @@ impl QSeries {
     }
 
     /// Creates a QSeries from a vector of coefficients.
-    pub fn from_vec(coeffs: Vec<i64>) -> Self {
+    pub fn from_vec(coeffs: Vec<T>) -> Self {
         QSeries { coeffs }
     }
 
     /// Gets the coefficient of q^n.
-    pub fn get_coeff(&self, n: usize) -> i64 {
-        self.coeffs.get(n).cloned().unwrap_or(0)
+    pub fn get_coeff(&self, n: usize) -> T {
+        self.coeffs.get(n).cloned().unwrap_or_else(T::zero)
     }
 
     /// Truncates the series to a given precision.
@@ -48,12 +49,12 @@ impl QSeries {
     }
 
     /// Computes the power of a QSeries using exponentiation by squaring.
-    pub fn pow(&self, exp: u32) -> QSeries {
+    pub fn pow(&self, exp: u32) -> QSeries<T> {
         let precision = self.coeffs.len();
         if exp == 0 {
-            let mut coeffs = vec![0; precision];
+            let mut coeffs = vec![T::zero(); precision];
             if precision > 0 {
-                coeffs[0] = 1;
+                coeffs[0] = T::one();
             }
             return QSeries::from_vec(coeffs);
         }
@@ -61,9 +62,9 @@ impl QSeries {
         let mut base = self.clone();
         let mut e = exp;
 
-        let mut result_coeffs = vec![0; precision];
+        let mut result_coeffs = vec![T::zero(); precision];
         if precision > 0 {
-            result_coeffs[0] = 1;
+            result_coeffs[0] = T::one();
         }
         let mut result = QSeries::from_vec(result_coeffs);
 
@@ -78,10 +79,10 @@ impl QSeries {
     }
 }
 
-impl Add for &QSeries {
-    type Output = QSeries;
+impl<T: Ring> Add for &QSeries<T> {
+    type Output = QSeries<T>;
 
-    fn add(self, other: Self) -> QSeries {
+    fn add(self, other: Self) -> QSeries<T> {
         let len1 = self.coeffs.len();
         let len2 = other.coeffs.len();
         let max_len = std::cmp::max(len1, len2);
@@ -95,22 +96,23 @@ impl Add for &QSeries {
     }
 }
 
-impl Mul for &QSeries {
-    type Output = QSeries;
+impl<T: Ring> Mul for &QSeries<T> {
+    type Output = QSeries<T>;
 
-    fn mul(self, other: Self) -> QSeries {
+    fn mul(self, other: Self) -> QSeries<T> {
         let len1 = self.coeffs.len();
         let len2 = other.coeffs.len();
         if len1 == 0 || len2 == 0 {
             return QSeries::new();
         }
         let precision = std::cmp::max(len1, len2);
-        let mut new_coeffs = vec![0; precision];
+        let mut new_coeffs = vec![T::zero(); precision];
 
         for i in 0..len1 {
             for j in 0..len2 {
                 if i + j < precision {
-                    new_coeffs[i + j] += self.coeffs[i] * other.coeffs[j];
+                    let product = self.coeffs[i].clone() * other.coeffs[j].clone();
+                    new_coeffs[i + j] += product;
                 }
             }
         }
@@ -119,36 +121,36 @@ impl Mul for &QSeries {
     }
 }
 
-impl Div for &QSeries {
-    type Output = QSeries;
+impl<T: Ring> Div for &QSeries<T> {
+    type Output = QSeries<T>;
 
-    fn div(self, other: Self) -> QSeries {
+    fn div(self, other: Self) -> QSeries<T> {
         let len1 = self.coeffs.len();
         let len2 = other.coeffs.len();
         if len2 == 0 {
             panic!("Division by zero QSeries");
         }
         let b0 = other.get_coeff(0);
-        if b0 == 0 {
+        if b0.is_zero() {
             panic!("Division by a QSeries with zero constant term");
         }
 
         let precision = len1;
-        let mut new_coeffs = vec![0; precision];
+        let mut new_coeffs = vec![T::zero(); precision];
 
         for n in 0..precision {
-            let mut sum_val = 0;
-            // Use iterator to avoid indexing check and satisfy clippy
-            for (i, &coeff) in new_coeffs.iter().enumerate().take(n) {
-                 sum_val += coeff * other.get_coeff(n - i);
+            let mut sum_val = T::zero();
+            // Use iterator to avoid indexing check
+            for (i, coeff) in new_coeffs.iter().enumerate().take(n) {
+                 sum_val += coeff.clone() * other.get_coeff(n - i);
             }
 
             let numerator = self.get_coeff(n) - sum_val;
-            if numerator % b0 != 0 {
+            if (numerator.clone() % b0.clone()) != T::zero() {
                 // This can happen in intermediate calculations.
                 // The final result should have integer coefficients.
             }
-            new_coeffs[n] = numerator / b0;
+            new_coeffs[n] = numerator / b0.clone();
         }
 
         QSeries { coeffs: new_coeffs }
@@ -161,21 +163,21 @@ mod tests {
 
     #[test]
     fn test_qseries_add() {
-        let s1 = QSeries::from_vec(vec![1, 2, 3]);
-        let s2 = QSeries::from_vec(vec![4, 5, 6, 7]);
+        let s1 = QSeries::from_vec(vec![1i64, 2, 3]);
+        let s2 = QSeries::from_vec(vec![4i64, 5, 6, 7]);
         let s3 = &s1 + &s2;
         assert_eq!(s3.coeffs, vec![5, 7, 9, 7]);
     }
 
     #[test]
     fn test_qseries_mul() {
-        let s1 = QSeries::from_vec(vec![1, 1]); // 1+q
-        let s2 = QSeries::from_vec(vec![1, 1]); // 1+q
+        let s1 = QSeries::from_vec(vec![1i64, 1]); // 1+q
+        let s2 = QSeries::from_vec(vec![1i64, 1]); // 1+q
         let s3 = &s1 * &s2; // (1+q)^2 = 1+2q+q^2
         assert_eq!(s3.coeffs, vec![1, 2]); // Truncated to precision 2 based on input length
 
-        let s4 = QSeries::from_vec(vec![1, 1, 1]); // 1+q+q^2
-        let s5 = QSeries::from_vec(vec![1, -1, 0]); // 1-q
+        let s4 = QSeries::from_vec(vec![1i64, 1, 1]); // 1+q+q^2
+        let s5 = QSeries::from_vec(vec![1i64, -1, 0]); // 1-q
         let s6 = &s4 * &s5; // (1-q^3) = 1
         assert_eq!(s6.coeffs, vec![1, 0, 0]);
     }
@@ -183,8 +185,8 @@ mod tests {
     #[test]
     fn test_qseries_div() {
         // 1 / (1-q) = 1+q+q^2+...
-        let one = QSeries::from_vec(vec![1,0,0,0,0]);
-        let one_minus_q = QSeries::from_vec(vec![1,-1]);
+        let one = QSeries::from_vec(vec![1i64,0,0,0,0]);
+        let one_minus_q = QSeries::from_vec(vec![1i64,-1]);
         let geom_series = &one / &one_minus_q;
         assert_eq!(geom_series.coeffs, vec![1,1,1,1,1]);
     }

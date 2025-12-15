@@ -44,7 +44,13 @@ Consequence: Improves code organization and maintainability. The public API is p
 **Problem:** `src/applied/freesurfer/mod.rs` was a "God Module" containing four distinct mathematical domains: surface mesh operations, Bayesian segmentation, cortical thickness geometry, and GLM statistics.
 **Decision:** Extracted these domains into separate submodules: `surface.rs`, `segmentation.rs`, `thickness.rs`, and `glm.rs`. The `mod.rs` file now acts as a facade, re-exporting the public API.
 **Consequence:** Significantly improved separation of concerns. Each module now focuses on a single mathematical domain, making the code easier to test, read, and maintain. Backward compatibility is preserved via re-exports.
+
 ## 2025-12-14 - [Favoritism Module Extraction]
 **Problem:** `math_explorer/src/applied/favoritism/mod.rs` was a "God Module" containing all parameter struct definitions and the scoring logic, mixing data type definitions with algorithmic implementation.
 **Decision:** Extract parameter structs to `types.rs` and scoring logic to `scoring.rs`, leaving `mod.rs` to handle re-exports.
 **Consequence:** Improved file-level modularity and separation of concerns. Types and Logic are now physically separated, making the code easier to navigate and maintain.
+
+## 2025-12-15 - [Generic Promotion for Q-Series]
+**Problem:** `QSeries` struct in `pure_math/number_theory/q_series.rs` was hardcoded to use `Vec<i64>` for coefficients. This limited the library's ability to support arbitrary precision integers (`BigInt`) or modular arithmetic, which are essential for advanced number theory.
+**Decision:** Refactored `QSeries` to `QSeries<T>` and introduced a `Ring` trait in `pure_math/algebra/traits.rs` to define the required algebraic operations.
+**Consequence:** `QSeries` is now generic and extensible. Backward compatibility for `partitions.rs` was preserved via a type alias `type QSeries = QSeries<i64>`. Future users can instantiate `QSeries` with `rug::Integer` or other Ring types.
