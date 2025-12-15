@@ -1,0 +1,98 @@
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nalgebra::{Vector3, Matrix3};
+    use crate::physics::fluid_dynamics::{
+        types::{FluidProperties, FlowState},
+        conservation::{material_derivative_scalar, navier_stokes_time_derivative, continuity_divergence},
+        analysis::{reynolds_number, flow_regime, bernoulli_constant, FlowRegime},
+    };
+
+    #[test]
+    fn test_fluid_properties() {
+        let water = FluidProperties::water();
+        assert!((water.density - 998.2).abs() < 1e-6);
+        assert!((water.dynamic_viscosity - 1.002e-3).abs() < 1e-6);
+
+        let nu = water.kinematic_viscosity();
+        assert!((nu - 1.002e-3 / 998.2).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_material_derivative() {
+        let velocity = Vector3::new(1.0, 2.0, 3.0);
+        let gradient = Vector3::new(0.1, 0.2, 0.3);
+        let local_change = 0.5;
+
+        // D/Dt = 0.5 + 1*0.1 + 2*0.2 + 3*0.3 = 0.5 + 0.1 + 0.4 + 0.9 = 1.9
+        let result = material_derivative_scalar(local_change, velocity, gradient);
+        assert!((result - 1.9).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_reynolds_number() {
+        let props = FluidProperties::new(1000.0, 0.001); // Water-like
+        let u = 2.0;
+        let l = 0.5;
+
+        // Re = 1000 * 2 * 0.5 / 0.001 = 1000 / 0.001 = 1,000,000
+        let re = reynolds_number(&props, u, l);
+        assert!((re - 1_000_000.0).abs() < 1e-9);
+        assert_eq!(flow_regime(re), FlowRegime::Turbulent);
+
+        let re_laminar = reynolds_number(&props, 0.001, 0.1);
+        // Re = 1000 * 0.001 * 0.1 / 0.001 = 100.0
+        assert_eq!(flow_regime(re_laminar), FlowRegime::Laminar);
+    }
+
+    #[test]
+    fn test_bernoulli() {
+        let rho = 1000.0;
+        let g = 9.81;
+        let state = FlowState::new(Vector3::new(10.0, 0.0, 0.0), 101325.0);
+        let h = 5.0;
+
+        // P + 0.5 rho v^2 + rho g h
+        // 101325 + 500 * 100 + 1000 * 9.81 * 5
+        // 101325 + 50000 + 49050 = 200375
+        let constant = bernoulli_constant(&state, rho, h, g);
+        assert!((constant - 200375.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_navier_stokes_simple_couette() {
+        // Simulating a point in Couette flow (steady, parallel plates).
+        // u = (u(y), 0, 0)
+        // No pressure gradient.
+        // No body force.
+        // Expect du/dt = 0 if steady state solution is plugged in?
+        // Actually this function calculates acceleration.
+        // For steady fully developed flow, acceleration should be zero.
+
+        // Let's test term calculation correctness.
+        let props = FluidProperties::new(1.0, 1.0); // rho=1, mu=1 -> nu=1
+        let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
+
+        // Uniform velocity field -> gradient is zero
+        let vel_grad = Matrix3::zeros();
+        let p_grad = Vector3::zeros();
+        let lap_vel = Vector3::zeros();
+        let g = Vector3::zeros();
+
+        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        assert_eq!(accel, Vector3::zeros());
+
+        // Add pressure gradient in X
+        // -1/rho * grad_p
+        let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
+        let accel_p = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
+        // -2.0 / 1.0 = -2.0
+        assert!((accel_p.x - (-2.0)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_continuity() {
+        assert_eq!(continuity_divergence(0.0), 0.0);
+        assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+}
