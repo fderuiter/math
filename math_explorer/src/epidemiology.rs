@@ -15,11 +15,12 @@
 //! $R_0$ is defined as the expected number of secondary infections produced by a single infected
 //! individual in a completely susceptible population.
 
-use nalgebra::DMatrix;
-use rand::Rng;
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
 
 /// Deterministic Compartmental Models.
 pub mod compartmental {
+    use super::*;
+
     /// SIR Model: Susceptible, Infectious, Recovered.
     ///
     /// Equations:
@@ -51,25 +52,16 @@ pub mod compartmental {
         /// Advances the state by dt using Runge-Kutta 4.
         pub fn step(&mut self, dt: f64) {
             let state = vec![self.s, self.i, self.r];
-            let k1 = self.deriv(&state);
-            let k2 = self.deriv(&vec_add(&state, &vec_scale(&k1, dt / 2.0)));
-            let k3 = self.deriv(&vec_add(&state, &vec_scale(&k2, dt / 2.0)));
-            let k4 = self.deriv(&vec_add(&state, &vec_scale(&k3, dt)));
+            let new_state = RungeKutta4::step(self, 0.0, &state, dt);
 
-            let delta = vec_scale(
-                &vec_add(
-                    &vec_add(&k1, &vec_scale(&k2, 2.0)),
-                    &vec_add(&vec_scale(&k3, 2.0), &k4),
-                ),
-                dt / 6.0,
-            );
-
-            self.s += delta[0];
-            self.i += delta[1];
-            self.r += delta[2];
+            self.s = new_state[0];
+            self.i = new_state[1];
+            self.r = new_state[2];
         }
+    }
 
-        fn deriv(&self, state: &[f64]) -> Vec<f64> {
+    impl OdeSystem for SIRModel {
+        fn derivative(&self, _t: f64, state: &[f64]) -> Vec<f64> {
             let s = state[0];
             let i = state[1];
             // let r = state[2];
@@ -115,26 +107,17 @@ pub mod compartmental {
 
         pub fn step(&mut self, dt: f64) {
             let state = vec![self.s, self.e, self.i, self.r];
-            let k1 = self.deriv(&state);
-            let k2 = self.deriv(&vec_add(&state, &vec_scale(&k1, dt / 2.0)));
-            let k3 = self.deriv(&vec_add(&state, &vec_scale(&k2, dt / 2.0)));
-            let k4 = self.deriv(&vec_add(&state, &vec_scale(&k3, dt)));
+            let new_state = RungeKutta4::step(self, 0.0, &state, dt);
 
-            let delta = vec_scale(
-                &vec_add(
-                    &vec_add(&k1, &vec_scale(&k2, 2.0)),
-                    &vec_add(&vec_scale(&k3, 2.0), &k4),
-                ),
-                dt / 6.0,
-            );
-
-            self.s += delta[0];
-            self.e += delta[1];
-            self.i += delta[2];
-            self.r += delta[3];
+            self.s = new_state[0];
+            self.e = new_state[1];
+            self.i = new_state[2];
+            self.r = new_state[3];
         }
+    }
 
-        fn deriv(&self, state: &[f64]) -> Vec<f64> {
+    impl OdeSystem for SEIRModel {
+        fn derivative(&self, _t: f64, state: &[f64]) -> Vec<f64> {
             let s = state[0];
             let e = state[1];
             let i = state[2];
@@ -156,14 +139,6 @@ pub mod compartmental {
         } else {
             beta / gamma
         }
-    }
-
-    fn vec_add(a: &[f64], b: &[f64]) -> Vec<f64> {
-        a.iter().zip(b.iter()).map(|(x, y)| x + y).collect()
-    }
-
-    fn vec_scale(a: &[f64], s: f64) -> Vec<f64> {
-        a.iter().map(|x| x * s).collect()
     }
 }
 
