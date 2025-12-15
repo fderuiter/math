@@ -7,5 +7,6 @@
 /// - MRI (Magnetic Resonance Imaging) simulation.
 pub mod quantum;
 pub mod astrophysics;
+pub mod high_energy;
 pub mod fluid_dynamics;
 pub mod mri;
