@@ -7,3 +7,4 @@
 pub mod quantum;
 pub mod astrophysics;
 pub mod fluid_dynamics;
+pub mod standard_model;
