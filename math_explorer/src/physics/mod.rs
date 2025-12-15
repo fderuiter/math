@@ -5,3 +5,4 @@
 /// - Quantum mechanics (angular momentum coupling).
 pub mod quantum;
 pub mod astrophysics;
+pub mod high_energy;
