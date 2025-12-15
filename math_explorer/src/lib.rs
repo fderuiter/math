@@ -3,6 +3,7 @@ pub mod applied;
 pub mod climate;
 pub mod physics;
 pub mod pure_math;
+pub mod epidemiology;
 
 #[cfg(test)]
 mod tests {
