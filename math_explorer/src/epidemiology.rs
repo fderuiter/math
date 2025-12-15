@@ -15,7 +15,7 @@
 //! $R_0$ is defined as the expected number of secondary infections produced by a single infected
 //! individual in a completely susceptible population.
 
-use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, VecState};
 
 /// Deterministic Compartmental Models.
 pub mod compartmental {
@@ -51,26 +51,27 @@ pub mod compartmental {
 
         /// Advances the state by dt using Runge-Kutta 4.
         pub fn step(&mut self, dt: f64) {
-            let state = vec![self.s, self.i, self.r];
+            // Convert to VecState for the generic solver
+            let state = VecState(vec![self.s, self.i, self.r]);
             let new_state = RungeKutta4::step(self, 0.0, &state, dt);
 
-            self.s = new_state[0];
-            self.i = new_state[1];
-            self.r = new_state[2];
+            self.s = new_state.0[0];
+            self.i = new_state.0[1];
+            self.r = new_state.0[2];
         }
     }
 
-    impl OdeSystem for SIRModel {
-        fn derivative(&self, _t: f64, state: &[f64]) -> Vec<f64> {
-            let s = state[0];
-            let i = state[1];
-            // let r = state[2];
+    impl OdeSystem<VecState> for SIRModel {
+        fn derivative(&self, _t: f64, state: &VecState) -> VecState {
+            let s = state.0[0];
+            let i = state.0[1];
+            // let r = state.0[2];
 
             let ds = -self.beta * s * i / self.n;
             let di = self.beta * s * i / self.n - self.gamma * i;
             let dr = self.gamma * i;
 
-            vec![ds, di, dr]
+            VecState(vec![ds, di, dr])
         }
     }
 
@@ -106,22 +107,22 @@ pub mod compartmental {
         }
 
         pub fn step(&mut self, dt: f64) {
-            let state = vec![self.s, self.e, self.i, self.r];
+            let state = VecState(vec![self.s, self.e, self.i, self.r]);
             let new_state = RungeKutta4::step(self, 0.0, &state, dt);
 
-            self.s = new_state[0];
-            self.e = new_state[1];
-            self.i = new_state[2];
-            self.r = new_state[3];
+            self.s = new_state.0[0];
+            self.e = new_state.0[1];
+            self.i = new_state.0[2];
+            self.r = new_state.0[3];
         }
     }
 
-    impl OdeSystem for SEIRModel {
-        fn derivative(&self, _t: f64, state: &[f64]) -> Vec<f64> {
-            let s = state[0];
-            let e = state[1];
-            let i = state[2];
-            // let r = state[3];
+    impl OdeSystem<VecState> for SEIRModel {
+        fn derivative(&self, _t: f64, state: &VecState) -> VecState {
+            let s = state.0[0];
+            let e = state.0[1];
+            let i = state.0[2];
+            // let r = state.0[3];
 
             let new_exposed = self.beta * s * i / self.n;
             let ds = -new_exposed;
@@ -129,7 +130,7 @@ pub mod compartmental {
             let di = self.sigma * e - self.gamma * i;
             let dr = self.gamma * i;
 
-            vec![ds, de, di, dr]
+            VecState(vec![ds, de, di, dr])
         }
     }
 
@@ -188,7 +189,7 @@ pub mod analytics {
 
             // Safety check to keep x within bounds
             if next_x <= 0.0 {
-                 x = x / 2.0; // Backtrack towards 0
+                 x /= 2.0; // Backtrack towards 0
             } else if next_x > n {
                  x = (x + n) / 2.0; // Backtrack towards N
             } else {

@@ -1,10 +1,10 @@
-/// The `chaos` module explores Deterministic Chaos, covering continuous flows, discrete maps,
-/// and methods to quantify chaos (Lyapunov exponents and Fractal Dimensions).
-///
-/// Chaos theory studies the behavior of dynamical systems that are highly sensitive to initial conditions.
-/// This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
-/// states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
-/// in general.
+//! The `chaos` module explores Deterministic Chaos, covering continuous flows, discrete maps,
+//! and methods to quantify chaos (Lyapunov exponents and Fractal Dimensions).
+//!
+//! Chaos theory studies the behavior of dynamical systems that are highly sensitive to initial conditions.
+//! This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
+//! states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
+//! in general.
 
 /// Discrete Chaos (The Logistic Map)
 pub mod logistic {
@@ -82,6 +82,7 @@ pub mod logistic {
 /// Continuous Chaos (The Lorenz System)
 pub mod lorenz {
     use nalgebra::Vector3;
+    use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
 
     /// Represents the state of the Lorenz system $(x, y, z)$.
     #[derive(Debug, Clone, Copy)]
@@ -125,8 +126,17 @@ pub mod lorenz {
             }
         }
 
+        /// Advances the system by time `dt` using the Runge-Kutta 4 (RK4) method.
+        ///
+        /// This now delegates to the generic `RungeKutta4` solver, ensuring DRY and type safety.
+        pub fn step(&mut self, dt: f64) {
+             self.state.vec = RungeKutta4::step(self, 0.0, &self.state.vec, dt);
+        }
+    }
+
+    impl OdeSystem<Vector3<f64>> for LorenzSystem {
         /// Calculates the derivative at a given state.
-        fn derivatives(&self, state: &Vector3<f64>) -> Vector3<f64> {
+        fn derivative(&self, _t: f64, state: &Vector3<f64>) -> Vector3<f64> {
             let x = state.x;
             let y = state.y;
             let z = state.z;
@@ -137,30 +147,14 @@ pub mod lorenz {
 
             Vector3::new(dx, dy, dz)
         }
-
-        /// Advances the system by time `dt` using the Runge-Kutta 4 (RK4) method.
-        ///
-        /// RK4 is chosen over Euler integration because chaotic systems are extremely sensitive to errors;
-        /// Euler's method introduces local truncation errors that accumulate rapidly, leading to
-        /// false trajectories.
-        pub fn step(&mut self, dt: f64) {
-            let y = self.state.vec;
-
-            let k1 = self.derivatives(&y);
-            let k2 = self.derivatives(&(y + k1 * (dt * 0.5)));
-            let k3 = self.derivatives(&(y + k2 * (dt * 0.5)));
-            let k4 = self.derivatives(&(y + k3 * dt));
-
-            self.state.vec = y + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * (dt / 6.0);
-        }
     }
 }
 
 /// Quantifying Chaos (Lyapunov Exponents)
 pub mod metrics {
     use super::logistic::LogisticMap;
-    use super::lorenz::LorenzSystem;
     use nalgebra::Vector3;
+    use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
 
     /// Calculates the Lyapunov Exponent for the Logistic Map.
     ///
@@ -178,10 +172,6 @@ pub mod metrics {
             let x = map.state;
             let derivative = r * (1.0 - 2.0 * x);
             // Handle singularity at x = 0.5 (f'(x) = 0).
-            // In numerical simulations, if we hit exactly 0.5, log is -inf.
-            // We'll treat it as a very large negative number or skip,
-            // but effectively it means superstable orbit.
-            // Here we just use the raw value, but callers should avoid x0=0.5.
             sum_logs += derivative.abs().ln();
             map.next();
         }
@@ -189,26 +179,29 @@ pub mod metrics {
         sum_logs / n as f64
     }
 
-    /// Calculates the largest Lyapunov Exponent for the Lorenz system using a simplified Wolf's algorithm.
+    /// Calculates the largest Lyapunov Exponent for a 3D continuous dynamical system.
     ///
-    /// This method tracks two trajectories separated by a tiny distance and measures how fast they diverge.
-    /// To prevent the distance from becoming too large (which would invalidate the local linearization assumption),
-    /// the second trajectory is periodically renormalized (reset) towards the first one.
+    /// This uses Wolf's algorithm, tracking two trajectories separated by a tiny distance
+    /// and periodically renormalizing the shadow trajectory.
     ///
     /// # Arguments
-    /// * `system` - The Lorenz system configuration (constants and initial state).
+    /// * `system` - The dynamical system implementing `OdeSystem<Vector3<f64>>`.
+    /// * `initial_state` - The starting state for the main trajectory.
     /// * `time_step` - The simulation time step `dt`.
     /// * `iterations` - Number of renormalization steps to perform.
-    /// * `evolution_time_per_step` - Time to evolve before measuring and renormalizing (should be a multiple of time_step).
+    /// * `evolution_time` - Time to evolve before measuring and renormalizing.
     ///
     /// # Returns
     /// Estimated largest Lyapunov exponent.
-    pub fn lorenz_lyapunov(
-        mut system: LorenzSystem,
+    pub fn lorenz_lyapunov<S>(
+        system: &S,
+        initial_state: Vector3<f64>,
         time_step: f64,
         iterations: usize,
         evolution_time: f64,
-    ) -> Result<f64, String> {
+    ) -> Result<f64, String>
+    where S: OdeSystem<Vector3<f64>> + ?Sized
+    {
         let d0 = 1e-8;
         let steps_per_iter = (evolution_time / time_step).round() as usize;
 
@@ -216,17 +209,12 @@ pub mod metrics {
             return Err("evolution_time must be greater than time_step".to_string());
         }
 
-        // Create shadow system
-        let mut shadow_system = LorenzSystem {
-            state: super::lorenz::LorenzState {
-                vec: system.state.vec + Vector3::new(d0, 0.0, 0.0), // Perturb x slightly
-            },
-            ..system
-        };
+        let mut current_state = initial_state;
+        let mut shadow_state = current_state + Vector3::new(d0, 0.0, 0.0);
 
-        // If distance is different from d0 (due to vector direction), normalize it strictly to d0
-        let initial_diff = shadow_system.state.vec - system.state.vec;
-        shadow_system.state.vec = system.state.vec + initial_diff.normalize() * d0;
+        // Normalize initial separation
+        let initial_diff = shadow_state - current_state;
+        shadow_state = current_state + initial_diff.normalize() * d0;
 
         let mut sum_log_divergence = 0.0;
         let mut total_time = 0.0;
@@ -234,12 +222,12 @@ pub mod metrics {
         for _ in 0..iterations {
             // Evolve both systems
             for _ in 0..steps_per_iter {
-                system.step(time_step);
-                shadow_system.step(time_step);
+                current_state = RungeKutta4::step(system, 0.0, &current_state, time_step);
+                shadow_state = RungeKutta4::step(system, 0.0, &shadow_state, time_step);
             }
 
             // Measure distance
-            let dist_vec = shadow_system.state.vec - system.state.vec;
+            let dist_vec = shadow_state - current_state;
             let d_t = dist_vec.norm();
 
             if d_t == 0.0 {
@@ -251,7 +239,7 @@ pub mod metrics {
 
             // Rescale: Reset shadow system to be distance d0 away from system
             // along the direction of the current separation.
-            shadow_system.state.vec = system.state.vec + dist_vec.normalize() * d0;
+            shadow_state = current_state + dist_vec.normalize() * d0;
         }
 
         Ok(sum_log_divergence / total_time)
@@ -294,8 +282,7 @@ pub mod fractals {
 
             // Because data is sorted by X, we only look ahead.
             // We can stop as soon as the X-distance exceeds epsilon.
-            for j in (i + 1)..n {
-                let p2 = sorted_traj[j];
+            for p2 in sorted_traj.iter().skip(i + 1) {
                 let dx = p2.x - p1.x; // p2.x >= p1.x due to sort
 
                 if dx > epsilon {

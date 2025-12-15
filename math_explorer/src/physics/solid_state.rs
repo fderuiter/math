@@ -294,7 +294,7 @@ pub mod bcs {
         let e_k = (xi_k.powi(2) + delta.powi(2)).sqrt();
         let v_sq = 0.5 * (1.0 - xi_k / e_k);
         // Ensure within [0, 1] for numerical safety
-        let v_sq = v_sq.max(0.0).min(1.0);
+        let v_sq = v_sq.clamp(0.0, 1.0);
         let u_sq = 1.0 - v_sq;
 
         (u_sq.sqrt(), v_sq.sqrt())
