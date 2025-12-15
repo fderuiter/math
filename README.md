@@ -83,18 +83,18 @@ Here are a few examples of how to use the library in your Rust code.
 ### AI & Transformers
 
 ```rust
-use math_explorer::ai::transformer::Transformer;
+use math_explorer::ai::transformer::Encoder;
 use nalgebra::DMatrix;
 
-// Initialize a small Transformer model
+// Initialize a small Encoder stack
 // (num_layers, d_model, heads, d_feed_forward)
-let transformer = Transformer::new(2, 512, 8, 2048);
+let encoder = Encoder::new(2, 512, 8, 2048);
 
 // Create dummy input (sequence_length=10, d_model=512)
 let input = DMatrix::zeros(10, 512);
 
 // Forward pass through the encoder
-let encoded = transformer.encoder.forward(input, None);
+let encoded = encoder.forward(input, None);
 ```
 
 ### Applied Mathematics (Favoritism)
@@ -105,8 +105,8 @@ Calculate who the favorite child is based on a complex set of inputs!
 use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 let mut inputs = FavoritismInputs::default();
-inputs.wealth = 10.0;             // High wealth
-inputs.helped_during_crisis = true; // Very helpful
+inputs.personality.wealth = 10.0;          // High wealth
+inputs.social.helped_during_crisis = true; // Very helpful
 
 let score = calculate_favoritism_score(&inputs);
 println!("Favoritism Score: {}", score);
