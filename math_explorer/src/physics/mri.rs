@@ -157,6 +157,9 @@ pub mod reconstruction {
     ///
     /// Computes $S(k_x, k_y) = \sum_{x,y} \rho(x,y) e^{-i 2\pi (k_x x + k_y y)}$
     ///
+    /// **Optimization:** This implementation uses Row-Column decomposition to reduce complexity
+    /// from $O(N^4)$ to $O(N^3)$, treating the 2D DFT as separable 1D DFTs.
+    ///
     /// # Arguments
     /// * `density` - 2D matrix representing the spin density $\rho(x,y)$.
     ///
@@ -165,21 +168,41 @@ pub mod reconstruction {
     pub fn simulate_signal_2d(density: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
         let rows = density.nrows();
         let cols = density.ncols();
+
+        // Intermediate step: Row-wise DFT
+        // temp[x, k_y] = sum_y density[x, y] * exp(-i 2pi k_y y / cols)
+        let mut temp = DMatrix::zeros(rows, cols);
+
+        for x in 0..rows {
+            for k_col in 0..cols {
+                let mut sum = Complex::new(0.0, 0.0);
+                let phase_step = -2.0 * PI * (k_col as f64) / (cols as f64);
+
+                for y in 0..cols {
+                    let rho = density[(x, y)];
+                    let phase = phase_step * (y as f64);
+                    // Use from_polar for efficiency (sincos) instead of exp(i*phase)
+                    let exponential = Complex::from_polar(1.0, phase);
+                    sum += rho * exponential;
+                }
+                temp[(x, k_col)] = sum;
+            }
+        }
+
+        // Final step: Column-wise DFT on temp
+        // signal[k_x, k_y] = sum_x temp[x, k_y] * exp(-i 2pi k_x x / rows)
         let mut signal = DMatrix::zeros(rows, cols);
 
-        for k_row in 0..rows {
-            for k_col in 0..cols {
-                let kx = k_row as f64 / rows as f64;
-                let ky = k_col as f64 / cols as f64;
+        for k_col in 0..cols {
+            for k_row in 0..rows {
                 let mut sum = Complex::new(0.0, 0.0);
+                let phase_step = -2.0 * PI * (k_row as f64) / (rows as f64);
 
                 for x in 0..rows {
-                    for y in 0..cols {
-                        let rho = density[(x, y)];
-                        let phase = -2.0 * PI * (kx * (x as f64) + ky * (y as f64));
-                        let exponential = Complex::new(0.0, phase).exp();
-                        sum += rho * exponential;
-                    }
+                    let val = temp[(x, k_col)];
+                    let phase = phase_step * (x as f64);
+                    let exponential = Complex::from_polar(1.0, phase);
+                    sum += val * exponential;
                 }
                 signal[(k_row, k_col)] = sum;
             }
@@ -191,6 +214,8 @@ pub mod reconstruction {
     ///
     /// Computes $\rho(x,y) = \sum_{k_x, k_y} S(k_x, k_y) e^{+i 2\pi (k_x x + k_y y)}$
     ///
+    /// **Optimization:** Uses Row-Column decomposition ($O(N^3)$).
+    ///
     /// # Arguments
     /// * `k_space` - 2D matrix of k-space samples $S(k_x, k_y)$.
     ///
@@ -200,30 +225,45 @@ pub mod reconstruction {
     pub fn inverse_dft_2d(k_space: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
         let rows = k_space.nrows();
         let cols = k_space.ncols();
-        let mut image = DMatrix::zeros(rows, cols);
 
-        for x in 0..rows {
+        // Intermediate step: Row-wise IDFT (over k_y to y)
+        // temp[k_x, y] = sum_{k_y} k_space[k_x, k_y] * exp(i 2pi k_y y / cols)
+        let mut temp = DMatrix::zeros(rows, cols);
+
+        for k_row in 0..rows {
             for y in 0..cols {
                 let mut sum = Complex::new(0.0, 0.0);
+                let phase_step = 2.0 * PI * (y as f64) / (cols as f64);
+
+                for k_col in 0..cols {
+                    let s = k_space[(k_row, k_col)];
+                    let phase = phase_step * (k_col as f64);
+                    let exponential = Complex::from_polar(1.0, phase);
+                    sum += s * exponential;
+                }
+                temp[(k_row, y)] = sum;
+            }
+        }
+
+        // Final step: Column-wise IDFT (over k_x to x)
+        // image[x, y] = sum_{k_x} temp[k_x, y] * exp(i 2pi k_x x / rows)
+        let mut image = DMatrix::zeros(rows, cols);
+
+        for y in 0..cols {
+            for x in 0..rows {
+                let mut sum = Complex::new(0.0, 0.0);
+                let phase_step = 2.0 * PI * (x as f64) / (rows as f64);
 
                 for k_row in 0..rows {
-                    for k_col in 0..cols {
-                        let s = k_space[(k_row, k_col)];
-                        let kx = k_row as f64 / rows as f64;
-                        let ky = k_col as f64 / cols as f64;
-
-                        let phase = 2.0 * PI * (kx * (x as f64) + ky * (y as f64));
-                        let exponential = Complex::new(0.0, phase).exp();
-                        sum += s * exponential;
-                    }
+                    let val = temp[(k_row, y)];
+                    let phase = phase_step * (k_row as f64);
+                    let exponential = Complex::from_polar(1.0, phase);
+                    sum += val * exponential;
                 }
-                // Typically IDFT has 1/N factor, but the formula provided in prompt
-                // did not explicitly include it: "Formula: rho = sum S e^{+...}"
-                // However, without normalization, the values will scale up.
-                // We will follow the prompt's formula literally.
                 image[(x, y)] = sum;
             }
         }
+
         image
     }
 }
