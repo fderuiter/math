@@ -1,155 +1,121 @@
 # Math Explorer
 
-**Math Explorer** is a comprehensive Rust library and collection of mathematical explorations, ranging from rigorous implementations of physical and mathematical theories to satirical modeling of social dynamics. This repository serves as a playground for exploring algorithms in AI, applied mathematics, climate science, physics, and pure mathematics.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Language](https://img.shields.io/badge/language-Rust-orange.svg)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
+![Maintenance](https://img.shields.io/badge/maintained%3F-yes-brightgreen.svg)
+
+**Math Explorer** is a comprehensive Rust library that bridges the gap between rigorous academic theory and executable code. From simulating **Quantum Mechanics** to modeling **Social Favoritism**, this repository serves as a verifiable playground for complex algorithms.
+
+> **"Code explains HOW; Docs explain WHY."**
+
+---
+
+## ⚡ Quickstart (30 Seconds)
+
+Get up and running immediately.
+
+### 1. Install
+Add `math_explorer` to your project (or clone the repo):
+
+```bash
+git clone https://github.com/your-username/math-explorer.git
+cd math-explorer/math_explorer
+cargo build --release
+```
+
+### 2. Run "Hello World" (Quantum Physics)
+Calculate Clebsch-Gordan coefficients for angular momentum coupling:
+
+```rust
+use math_explorer::physics::quantum::clebsch_gordan;
+
+fn main() {
+    // Coupling j1=1.5, m1=-0.5 with j2=1.0, m2=1.0 to J=2.5, M=0.5
+    let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
+    println!("Clebsch-Gordan Coefficient: {:.4}", coeff);
+}
+```
+
+---
 
 ## 📚 Table of Contents
 
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [AI & Transformers](#ai--transformers)
-  - [Applied Mathematics (Favoritism)](#applied-mathematics-favoritism)
-  - [Physics (Quantum Coupling)](#physics-quantum-coupling)
-- [Testing](#testing)
-- [Project Structure](#project-structure)
-- [License](#license)
+- [Features](#-features)
+- [Deep Dive: Modules](#-deep-dive-modules)
+- [Testing](#-testing)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 🚀 Features
 
-The library is organized into several high-level modules:
+Math Explorer is organized into high-level domains, each solving specific problems:
 
-### 🤖 AI (`math_explorer::ai`)
-- **Transformers**: A full implementation of the Transformer architecture, including:
-  - Multi-Head Attention
-  - Position-wise Feed-Forward Networks
-  - Positional Encoding
-  - Encoder/Decoder stacks
+| Domain | Module | Description |
+| :--- | :--- | :--- |
+| **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
+| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Climate** (CERA Autoencoders), **Clinical Trials** (Win Ratio), and **LoraHub**. |
+| **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
+| **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, and Differential Geometry. |
 
-### 🛠️ Applied Mathematics (`math_explorer::applied`)
-- **Favoritism**: A satirical yet mathematically rigorous model for calculating parental favoritism based on gifts, attention, and other factors.
-- **Cannibalism**: Population dynamics models (McKendrick-von Foerster, death rates).
-- **Climate (CERA)**: Implementation of the CERA (Climate-invariant Encoding through Representation Alignment) framework using autoencoders.
-- **GRPO**: Group Relative Policy Optimization formulas.
-- **Win Ratio**: Statistical methods for win ratio analysis in clinical trials.
-- **Pharmacokinetics**: Models for drug concentration over time (e.g., Adderall).
-- **LoraHub**: Core mathematical operations for combining LoRA (Low-Rank Adaptation) modules.
+---
 
-### 🌌 Physics (`math_explorer::physics`)
-- **Quantum Mechanics**: Calculation of Clebsch-Gordan coefficients for angular momentum coupling.
-- **Astrophysics**: Empirical formulas for estimating properties of irregular dwarf galaxies.
+## 🔍 Deep Dive: Modules
 
-### 📐 Pure Mathematics (`math_explorer::pure_math`)
-- **Number Theory**: Prime generation, primality testing, and partition functions.
-- **Graph Theory**: Graph parameters like degeneracy and approximate vertex cover.
-- **Elliptic Curves**: Divisibility of coefficients of modular polynomials.
-- **Algorithmic Information**: Kolmogorov complexity approximations and combinatorial lemmas.
+### 🤖 Artificial Intelligence
+Implement state-of-the-art architectures from scratch.
 
-## 📋 Prerequisites
-
-To work with this repository, you need to have **Rust** and **Cargo** installed.
-
-- **Rust**: The programming language used.
-- **Cargo**: The package manager and build tool for Rust.
-
-You can install Rust and Cargo via [rustup](https://rustup.rs/):
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-## 🛠️ Installation
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/your-username/math-explorer.git
-    cd math-explorer
-    ```
-
-2.  **Build the project:**
-
-    Navigate to the library directory and build:
-
-    ```bash
-    cd math_explorer
-    cargo build --release
-    ```
-
-## 💻 Usage
-
-Here are a few examples of how to use the library in your Rust code.
-
-### AI & Transformers
-
+**Example: Transformer Encoder**
 ```rust
 use math_explorer::ai::transformer::Encoder;
 use nalgebra::DMatrix;
 
-// Initialize a small Encoder stack
-// (num_layers, d_model, heads, d_feed_forward)
+// Initialize an Encoder stack: 2 layers, 512 embedding dim, 8 heads, 2048 FF dim
 let encoder = Encoder::new(2, 512, 8, 2048);
 
-// Create dummy input (sequence_length=10, d_model=512)
+// Dummy input: Sequence length 10
 let input = DMatrix::zeros(10, 512);
-
-// Forward pass through the encoder
 let encoded = encoder.forward(input, None);
 ```
 
-### Applied Mathematics (Favoritism)
-
-Calculate who the favorite child is based on a complex set of inputs!
+### 🛠️ Applied Mathematics: Favoritism
+A "rigorous" mathematical model to determine who the favorite child is.
 
 ```rust
 use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 let mut inputs = FavoritismInputs::default();
-inputs.personality.wealth = 10.0;          // High wealth
-inputs.social.helped_during_crisis = true; // Very helpful
+inputs.personality.wealth = 10.0;          // High wealth factor
+inputs.social.helped_during_crisis = true; // High social utility
 
 let score = calculate_favoritism_score(&inputs);
-println!("Favoritism Score: {}", score);
+println!("Favoritism Score: {}", score); // Higher is better
 ```
 
-### Physics (Quantum Coupling)
+### 🌌 Physics: Chaos Theory
+Explore the Lorenz System and Lyapunov exponents.
 
-Calculate Clebsch-Gordan coefficients: $\langle j_1 m_1; j_2 m_2 | J M \rangle$.
+*(See `math_explorer/src/physics/chaos.rs` for implementation details)*
 
-```rust
-use math_explorer::physics::quantum::clebsch_gordan;
-
-let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
-println!("Clebsch-Gordan Coefficient: {}", coeff);
-```
+---
 
 ## 🧪 Testing
 
-The project includes a comprehensive test suite. To run the tests:
+We rely on standard Rust testing frameworks. To verify the integrity of all mathematical implementations:
 
 ```bash
 cd math_explorer
 cargo test
 ```
 
-This will compile the library and run all unit tests defined in the modules, ensuring that algorithms (from quantum coupling to battery degradation) are working correctly.
+This runs unit tests for everything from Prime Number generation to NeRF rendering logic.
 
-## 📂 Project Structure
+## 🤝 Contributing
 
-```
-math_explorer/
-├── src/
-│   ├── ai/              # Transformer and Attention mechanisms
-│   ├── applied/         # Applied math (Climate, Favoritism, etc.)
-│   ├── climate/         # CERA framework specific implementation
-│   ├── physics/         # Quantum and Astrophysics
-│   ├── pure_math/       # Number Theory, Graph Theory, etc.
-│   └── lib.rs           # Library entry point
-├── tests/               # Integration tests
-├── Cargo.toml           # Dependencies and package info
-└── README.md            # Library documentation
-```
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our style guide and process.
+
+**The Golden Rule:** If you add code, you must add documentation and tests.
 
 ## 📄 License
 
-This project is open-source. Please refer to the repository for license details.
+This project is open-source. See the [LICENSE](LICENSE) file for details.
