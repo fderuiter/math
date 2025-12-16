@@ -13,6 +13,12 @@ pub mod logistic {
     ///
     /// The map is defined by the recurrence relation:
     /// $x_{n+1} = r x_n (1 - x_n)$
+
+    /// Number of iterations to discard as transient before collecting attractor points.
+    pub const TRANSIENT_STEPS: usize = 100;
+    /// Number of points to collect for the attractor visualization.
+    pub const ATTRACTOR_POINTS: usize = 50;
+
     pub struct LogisticMap {
         /// The growth rate parameter $r$.
         /// - For $r < 3$, the population eventually settles into a stable value.
@@ -63,12 +69,12 @@ pub mod logistic {
             let mut map = LogisticMap::new(r, 0.5); // Start with a generic seed like 0.5
 
             // Discard transient
-            for _ in 0..100 {
+            for _ in 0..TRANSIENT_STEPS {
                 map.next();
             }
 
             // Collect attractor points
-            for _ in 0..50 {
+            for _ in 0..ATTRACTOR_POINTS {
                 if let Some(x) = map.next() {
                     points.push((r, x));
                 }
@@ -109,9 +115,13 @@ pub mod lorenz {
     /// These equations originally modeled atmospheric convection but became the seminal example of deterministic chaos.
     #[derive(Debug, Clone, Copy)]
     pub struct LorenzSystem {
+        /// The Prandtl number $\sigma$, representing the ratio of momentum diffusivity to thermal diffusivity.
         pub sigma: f64,
+        /// The Rayleigh number $\rho$, representing the temperature difference driving the convection.
         pub rho: f64,
+        /// The geometric factor $\beta$, related to the aspect ratio of the convection rolls.
         pub beta: f64,
+        /// The current state of the system.
         pub state: LorenzState,
     }
 
