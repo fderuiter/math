@@ -13,7 +13,7 @@ When you submit a PR, you aren't just merging code; you are merging knowledge. E
 1.  **Fork the repository** on GitHub.
 2.  **Clone your fork** locally:
     ```bash
-    git clone https://github.com/your-username/math-explorer.git
+    git clone https://github.com/fderuiter/math-explorer.git
     cd math-explorer
     ```
 3.  **Create a branch** for your feature or fix:

@@ -19,7 +19,7 @@ Get up and running immediately.
 Add `math_explorer` to your project (or clone the repo):
 
 ```bash
-git clone https://github.com/your-username/math-explorer.git
+git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer/math_explorer
 cargo build --release
 ```
