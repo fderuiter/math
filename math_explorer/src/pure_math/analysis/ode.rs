@@ -74,6 +74,33 @@ impl RungeKutta4 {
     }
 }
 
+/// Euler's Method Solver.
+///
+/// A first-order fixed-step integrator: $y_{n+1} = y_n + f(t_n, y_n) \cdot \Delta t$.
+/// Less accurate than RK4 but faster and simpler.
+pub struct Euler;
+
+impl Euler {
+    /// Performs a single integration step using Euler's method.
+    ///
+    /// # Arguments
+    /// * `system` - The ODE system to solve.
+    /// * `t` - The current time.
+    /// * `state` - The current state vector.
+    /// * `dt` - The time step size.
+    ///
+    /// # Returns
+    /// The new state vector after time `dt`.
+    pub fn step<State, S>(system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        State: VectorOperations,
+        S: OdeSystem<State> + ?Sized,
+    {
+        let derivative = system.derivative(t, state);
+        state.clone() + derivative * dt
+    }
+}
+
 // Implement VectorOperations for Vec<f64> requires a wrapper or manual impl?
 // Vec<f64> does NOT implement Add<Output=Vec<f64>> directly. It implements Add<&Vec<f64>> etc.
 // But we need value-based Add for the trait bound `Add<Output=Self>`.
