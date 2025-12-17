@@ -97,6 +97,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 let mut cube_index = 0;
                 let mut corner_values = [0.0; 8];
                 let mut corner_pos = [Point3D::new(0.0,0.0,0.0); 8];
+                // Profiler Note: Initializing normals here is wasteful if edge_flags == 0.
+                // We will compute them lazily later.
                 let mut corner_normals = [Point3D::new(0.0,0.0,0.0); 8];
 
                 for i in 0..8 {
@@ -116,14 +118,21 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                         grid.origin.y + (oy as f32) * grid.voxel_size.y,
                         grid.origin.z + (oz as f32) * grid.voxel_size.z,
                     );
-
-                    corner_normals[i] = get_gradient(grid, ox, oy, oz);
                 }
 
                 // 2. Check if the cube is entirely inside or outside
                 let edge_flags = CUBE_EDGE_FLAGS[cube_index];
                 if edge_flags == 0 {
                     continue;
+                }
+
+                // Profiler Optimization: Lazy Gradient Computation
+                // Only compute gradients if the cube contains a surface intersection.
+                for i in 0..8 {
+                    let ox = x + VERTEX_OFFSET[i][0];
+                    let oy = y + VERTEX_OFFSET[i][1];
+                    let oz = z + VERTEX_OFFSET[i][2];
+                    corner_normals[i] = get_gradient(grid, ox, oy, oz);
                 }
 
                 // 3. Compute intersection points on required edges
