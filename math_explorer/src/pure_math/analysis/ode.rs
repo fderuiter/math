@@ -37,11 +37,66 @@ pub trait OdeSystem<State: VectorOperations> {
     fn derivative(&self, t: f64, state: &State) -> State;
 }
 
+/// A trait defining a numerical ODE solver strategy.
+///
+/// This allows different integration schemes (e.g., Euler, Runge-Kutta) to be swapped
+/// interchangeably, adhering to the Strategy Pattern.
+pub trait Solver<State: VectorOperations> {
+    /// Advances the system state by one time step `dt`.
+    ///
+    /// # Arguments
+    /// * `system` - The ODE system defining the derivatives.
+    /// * `t` - The current time.
+    /// * `state` - The current state vector.
+    /// * `dt` - The time step size.
+    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized;
+}
+
+/// Euler's Method Solver.
+///
+/// A simple first-order integrator: $y_{n+1} = y_n + f(t_n, y_n) \cdot \Delta t$.
+/// Fast but less accurate; useful for stiff systems or performance-critical approximations.
+pub struct Euler;
+
+impl<State: VectorOperations> Solver<State> for Euler {
+    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized,
+    {
+        let derivative = system.derivative(t, state);
+        state.clone() + derivative * dt
+    }
+}
+
 /// Runge-Kutta 4th Order Solver.
 ///
 /// A classic fixed-step integrator for ODEs.
 /// It is generic over the `State` type, allowing for zero-cost abstractions.
 pub struct RungeKutta4;
+
+impl<State: VectorOperations> Solver<State> for RungeKutta4 {
+    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized,
+    {
+        // Re-use the static logic (duplicated here to avoid self-borrowing quirks, though straightforward).
+        // delta = (k1 + 2k2 + 2k3 + k4) * dt / 6
+
+        let k1 = system.derivative(t, state);
+        let k2 = system.derivative(t + dt / 2.0, &(state.clone() + k1.clone() * (dt / 2.0)));
+        let k3 = system.derivative(t + dt / 2.0, &(state.clone() + k2.clone() * (dt / 2.0)));
+        let k4 = system.derivative(t + dt, &(state.clone() + k3.clone() * dt));
+
+        let k2_2 = k2 * 2.0;
+        let k3_2 = k3 * 2.0;
+        let sum_k = k1 + k2_2 + k3_2 + k4;
+        let delta = sum_k * (dt / 6.0);
+
+        state.clone() + delta
+    }
+}
 
 impl RungeKutta4 {
     /// Performs a single integration step.
@@ -59,68 +114,8 @@ impl RungeKutta4 {
         State: VectorOperations,
         S: OdeSystem<State> + ?Sized,
     {
-        let k1 = system.derivative(t, state);
-        let k2 = system.derivative(t + dt / 2.0, &(state.clone() + k1.clone() * (dt / 2.0)));
-        let k3 = system.derivative(t + dt / 2.0, &(state.clone() + k2.clone() * (dt / 2.0)));
-        let k4 = system.derivative(t + dt, &(state.clone() + k3.clone() * dt));
-
-        // delta = (k1 + 2k2 + 2k3 + k4) * dt / 6
-        let k2_2 = k2 * 2.0;
-        let k3_2 = k3 * 2.0;
-        let sum_k = k1 + k2_2 + k3_2 + k4;
-        let delta = sum_k * (dt / 6.0);
-
-        state.clone() + delta
-    }
-}
-
-// Implement VectorOperations for Vec<f64> requires a wrapper or manual impl?
-// Vec<f64> does NOT implement Add<Output=Vec<f64>> directly. It implements Add<&Vec<f64>> etc.
-// But we need value-based Add for the trait bound `Add<Output=Self>`.
-//
-// This is a common issue with Rust's orphan rules and standard types.
-// `Vec<f64> + Vec<f64>` is not implemented in std.
-//
-// To support `Vec<f64>`, we need a wrapper or helper.
-// However, the `epidemiology` module uses `Vec<f64>`.
-//
-// OPTION: We can define a wrapper in `epidemiology.rs` or here.
-// But to avoid "Tuple Soup", let's encourage using a Newtype.
-//
-// For backward compatibility with the existing `Vec<f64>` usage in `epidemiology.rs` (which I must fix),
-// I will provide a `VecState` wrapper here that implements the necessary ops.
-
-/// A wrapper around `Vec<f64>` that implements `VectorOperations`.
-/// Use this when you need a heap-allocated state vector.
-#[derive(Debug, Clone)]
-pub struct VecState(pub Vec<f64>);
-
-impl Add for VecState {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self {
-        let res: Vec<f64> = self.0.iter().zip(rhs.0.iter()).map(|(a, b)| a + b).collect();
-        VecState(res)
-    }
-}
-
-impl Mul<f64> for VecState {
-    type Output = Self;
-
-    fn mul(self, rhs: f64) -> Self {
-        VecState(self.0.iter().map(|x| x * rhs).collect())
-    }
-}
-
-// Convenience conversion
-impl From<Vec<f64>> for VecState {
-    fn from(v: Vec<f64>) -> Self {
-        VecState(v)
-    }
-}
-
-impl From<VecState> for Vec<f64> {
-    fn from(v: VecState) -> Self {
-        v.0
+        // Delegate to the trait implementation via a temporary instance
+        let solver = RungeKutta4;
+        solver.solve(system, t, state, dt)
     }
 }
