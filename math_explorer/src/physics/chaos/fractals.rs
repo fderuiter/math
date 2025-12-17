@@ -1,0 +1,58 @@
+//! Fractal Dimension (Correlation Dimension)
+
+use nalgebra::Vector3;
+
+/// Calculates the Correlation Sum $C(\epsilon)$ for the Grassberger-Procaccia algorithm.
+///
+/// The Correlation Dimension is a measure of the dimensionality of the space occupied by a set of random points,
+/// often referred to as a type of fractal dimension.
+///
+/// $C(\epsilon) = \frac{1}{N^2} \sum_{i, j} \Theta(\epsilon - |x_i - x_j|)$
+/// where $\Theta$ is the Heaviside step function.
+///
+/// Note: This implementation returns the normalized count (proportion of pairs closer than $\epsilon$).
+/// The actual dimension would be the slope of $\ln(C(\epsilon))$ vs $\ln(\epsilon)$.
+pub fn correlation_dimension(trajectory: &[Vector3<f64>], epsilon: f64) -> f64 {
+    let n = trajectory.len();
+    if n < 2 {
+        return 0.0;
+    }
+
+    let mut count = 0;
+    let epsilon_sq = epsilon * epsilon;
+
+    // Profiler Optimization: Sort by X-coordinate to prune search space.
+    // This reduces complexity from O(N^2) to O(N * k) where k is the neighborhood size.
+    // For small epsilon (the relevant case for fractal dimension), this yields massive speedups.
+
+    let mut sorted_traj = trajectory.to_vec();
+    // Use unstable_sort_by for speed; floating point sort handles NaN by treating as equal (safe assumption here).
+    sorted_traj.sort_unstable_by(|a, b| a.x.partial_cmp(&b.x).unwrap_or(std::cmp::Ordering::Equal));
+
+    for i in 0..n {
+        let p1 = sorted_traj[i];
+
+        // Because data is sorted by X, we only look ahead.
+        // We can stop as soon as the X-distance exceeds epsilon.
+        for p2 in sorted_traj.iter().skip(i + 1) {
+            let dx = p2.x - p1.x; // p2.x >= p1.x due to sort
+
+            if dx > epsilon {
+                break;
+            }
+
+            let dy = p1.y - p2.y;
+            let dz = p1.z - p2.z;
+
+            // Manual squared distance check to avoid Vector3 overhead in the hot loop
+            if dx * dx + dy * dy + dz * dz < epsilon_sq {
+                count += 1;
+            }
+        }
+    }
+
+    // Multiply by 2 because of symmetry (pair (i,j) and (j,i)), and divide by total possible pairs N*(N-1)
+    // C(eps) = (2 * count) / (N * (N - 1))
+
+    (2.0 * count as f64) / ((n * (n - 1)) as f64)
+}
