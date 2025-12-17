@@ -7,13 +7,13 @@
 //! in general.
 
 /// Discrete Chaos (The Logistic Map)
+///
+/// This module implements the Logistic Map, a classic example of how complex, chaotic behavior
+/// can arise from very simple non-linear dynamical equations.
+///
+/// The map is defined by the recurrence relation:
+/// $x_{n+1} = r x_n (1 - x_n)$
 pub mod logistic {
-    /// A struct representing the Logistic Map, a classic example of how complex, chaotic behavior
-    /// can arise from very simple non-linear dynamical equations.
-    ///
-    /// The map is defined by the recurrence relation:
-    /// $x_{n+1} = r x_n (1 - x_n)$
-
     /// Number of iterations to discard as transient before collecting attractor points.
     pub const TRANSIENT_STEPS: usize = 100;
     /// Number of points to collect for the attractor visualization.

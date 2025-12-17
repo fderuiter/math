@@ -18,6 +18,8 @@ use rand::Rng;
 /// A `f64` representing the calculated favoritism score. Higher is better.
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
     let mut rng = rand::thread_rng();
+    // r: Stochastic Perturbation (Parental Mood)
+    // Adds a ±10% random variation to the final score to simulate human unpredictability.
     let r = rng.gen_range(0.9..1.1);
 
     let proximity_integral = clenshaw_curtis::integrate(|_t| 1.0 / inputs.time.x_0, 0.0, inputs.time.t, 1e-9).integral;
@@ -44,8 +46,16 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
         + inputs.personality.w_w * inputs.personality.wealth
         + inputs.personality.w_t * inputs.personality.talent;
 
+    // h: Crisis Multiplier (Hero Factor)
+    // Helping during a crisis boosts the score by 50%.
     let h = if inputs.social.helped_during_crisis { 1.5 } else { 1.0 };
+
+    // s: Visibility Multiplier (Social Media)
+    // Publicly praising parents boosts the score by 30%.
     let s = if inputs.social.active_on_social_media { 1.3 } else { 1.0 };
+
+    // d: Decay Factor (Memory Loss)
+    // The memory of good deeds decays exponentially over time without contact.
     let d = (-inputs.contact.decay_constant * inputs.contact.time_since_last_contact).exp();
 
     let sibling_proximity_integral = clenshaw_curtis::integrate(
