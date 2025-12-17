@@ -5,3 +5,5 @@
 ## 2025-05-23 - [ODE Solver Extraction] **Violation:** `SIRModel` and `SEIRModel` violated DRY by duplicating RK4 integration logic. **Refactor:** Extracted `RungeKutta4` into `analysis::ode` module using the Strategy Pattern (via `OdeSystem` trait). **Trade-off:** Generic solver adds a trait boundary vs flexibility to swap solvers and models independently.
 
 ## 2025-06-12 - [Epidemiology Decomposition & Strong Typing] **Violation:** `epidemiology.rs` was a God File and used `VecState` (allocating wrapper) for `SIRModel`, violating SRP and Performance. **Refactor:** Decomposed into `epidemiology/` submodules. Implemented strongly-typed `SIRState` implementing `VectorOperations` for zero-allocation ODE solving. **Trade-off:** More files and boilerplate for `Add`/`Mul` vs Type Safety and Performance.
+
+## 2025-06-13 - [Solver Strategy Pattern] **Violation:** `lorenz_lyapunov` and `LorenzSystem` were tightly coupled to `RungeKutta4`, violating OCP and DIP. **Refactor:** Introduced `Solver` trait and implemented `Euler` and `RungeKutta4`. Refactored usage to accept `impl Solver`. **Trade-off:** Generic bounds complexity vs Ability to swap solvers dynamically.

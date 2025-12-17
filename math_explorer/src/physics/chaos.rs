@@ -8,17 +8,16 @@
 
 /// Discrete Chaos (The Logistic Map)
 pub mod logistic {
-    /// A struct representing the Logistic Map, a classic example of how complex, chaotic behavior
-    /// can arise from very simple non-linear dynamical equations.
-    ///
-    /// The map is defined by the recurrence relation:
-    /// $x_{n+1} = r x_n (1 - x_n)$
-
     /// Number of iterations to discard as transient before collecting attractor points.
     pub const TRANSIENT_STEPS: usize = 100;
     /// Number of points to collect for the attractor visualization.
     pub const ATTRACTOR_POINTS: usize = 50;
 
+    /// A struct representing the Logistic Map, a classic example of how complex, chaotic behavior
+    /// can arise from very simple non-linear dynamical equations.
+    ///
+    /// The map is defined by the recurrence relation:
+    /// $x_{n+1} = r x_n (1 - x_n)$
     pub struct LogisticMap {
         /// The growth rate parameter $r$.
         /// - For $r < 3$, the population eventually settles into a stable value.
@@ -88,7 +87,7 @@ pub mod logistic {
 /// Continuous Chaos (The Lorenz System)
 pub mod lorenz {
     use nalgebra::Vector3;
-    use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
+    use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
 
     /// Represents the state of the Lorenz system $(x, y, z)$.
     #[derive(Debug, Clone, Copy)]
@@ -142,6 +141,13 @@ pub mod lorenz {
         pub fn step(&mut self, dt: f64) {
              self.state.vec = RungeKutta4::step(self, 0.0, &self.state.vec, dt);
         }
+
+        /// Advances the system by time `dt` using a provided solver strategy.
+        ///
+        /// This allows the user to switch integrators (e.g., Euler, RK4) dynamically.
+        pub fn step_with<S: Solver<Vector3<f64>>>(&mut self, solver: &S, dt: f64) {
+            self.state.vec = solver.solve(self, 0.0, &self.state.vec, dt);
+        }
     }
 
     impl OdeSystem<Vector3<f64>> for LorenzSystem {
@@ -164,7 +170,7 @@ pub mod lorenz {
 pub mod metrics {
     use super::logistic::LogisticMap;
     use nalgebra::Vector3;
-    use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
+    use crate::pure_math::analysis::ode::{OdeSystem, Solver};
 
     /// Calculates the Lyapunov Exponent for the Logistic Map.
     ///
@@ -203,14 +209,17 @@ pub mod metrics {
     ///
     /// # Returns
     /// Estimated largest Lyapunov exponent.
-    pub fn lorenz_lyapunov<S>(
+    pub fn lorenz_lyapunov<S, Sol>(
         system: &S,
+        solver: &Sol,
         initial_state: Vector3<f64>,
         time_step: f64,
         iterations: usize,
         evolution_time: f64,
     ) -> Result<f64, String>
-    where S: OdeSystem<Vector3<f64>> + ?Sized
+    where
+        S: OdeSystem<Vector3<f64>> + ?Sized,
+        Sol: Solver<Vector3<f64>>,
     {
         let d0 = 1e-8;
         let steps_per_iter = (evolution_time / time_step).round() as usize;
@@ -232,8 +241,8 @@ pub mod metrics {
         for _ in 0..iterations {
             // Evolve both systems
             for _ in 0..steps_per_iter {
-                current_state = RungeKutta4::step(system, 0.0, &current_state, time_step);
-                shadow_state = RungeKutta4::step(system, 0.0, &shadow_state, time_step);
+                current_state = solver.solve(system, 0.0, &current_state, time_step);
+                shadow_state = solver.solve(system, 0.0, &shadow_state, time_step);
             }
 
             // Measure distance
@@ -369,6 +378,37 @@ mod tests {
             assert!(r >= 3.0 && r <= 4.0);
             assert!(x >= 0.0 && x <= 1.0);
         }
+    }
+
+    #[test]
+    fn test_lorenz_lyapunov_strategy() {
+        use crate::pure_math::analysis::ode::{RungeKutta4, Euler};
+        let state = lorenz::LorenzState::new(1.0, 1.0, 1.0);
+        let system = lorenz::LorenzSystem::default_chaotic(state);
+
+        // Test with RK4
+        let lambda_rk4 = metrics::lorenz_lyapunov(
+            &system,
+            &RungeKutta4,
+            na::Vector3::new(10.0, 10.0, 10.0),
+            0.01,
+            100,
+            1.0
+        ).unwrap();
+
+        assert!(lambda_rk4 > 0.0, "Lorenz with RK4 should be chaotic, got {}", lambda_rk4);
+
+        // Test with Euler (less accurate, but should run)
+        let lambda_euler = metrics::lorenz_lyapunov(
+            &system,
+            &Euler,
+            na::Vector3::new(10.0, 10.0, 10.0),
+            0.0001, // Euler needs smaller step for stability
+            100,
+            1.0
+        ).unwrap();
+
+        assert!(lambda_euler > 0.0, "Lorenz with Euler should be chaotic, got {}", lambda_euler);
     }
 
     #[test]
