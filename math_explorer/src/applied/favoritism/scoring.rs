@@ -17,20 +17,28 @@ use rand::Rng;
 ///
 /// A `f64` representing the calculated favoritism score. Higher is better.
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
+    // SECURITY: Input validation to prevent Division by Zero and Infinity propagation.
+    const EPSILON: f64 = 1e-9;
+
+    // Ensure x_0 is not zero or too close to it.
+    let safe_x0 = if inputs.time.x_0.abs() < EPSILON { EPSILON } else { inputs.time.x_0 };
+    // Ensure t is non-negative.
+    let safe_t = inputs.time.t.max(0.0);
+
     let mut rng = rand::thread_rng();
     // r: Stochastic Perturbation (Parental Mood)
     // Adds a ±10% random variation to the final score to simulate human unpredictability.
     let r = rng.gen_range(0.9..1.1);
 
-    let proximity_integral = clenshaw_curtis::integrate(|_t| 1.0 / inputs.time.x_0, 0.0, inputs.time.t, 1e-9).integral;
+    let proximity_integral = clenshaw_curtis::integrate(|_t| 1.0 / safe_x0, 0.0, safe_t, EPSILON).integral;
 
     let emotional_support_integral = clenshaw_curtis::integrate(
         |_t| {
-            clenshaw_curtis::integrate(|_x| 8.0, 0.0, 1.0, 1e-9).integral
+            clenshaw_curtis::integrate(|_x| 8.0, 0.0, 1.0, EPSILON).integral
         },
         0.0,
-        inputs.time.t,
-        1e-9,
+        safe_t,
+        EPSILON,
     )
     .integral;
 
@@ -39,7 +47,8 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
 
     let compliment_score = inputs.compliments.compliments.dot(&inputs.compliments.compliment_weights);
 
-    let frequency_term = (1.0 + inputs.contact.f_initial).ln();
+    // Ensure log input is positive
+    let frequency_term = (1.0 + inputs.contact.f_initial).max(EPSILON).ln();
 
     let personality_score = inputs.personality.w_i * inputs.personality.intelligence
         + inputs.personality.w_es * inputs.personality.emotional_sensitivity
@@ -64,12 +73,16 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
                 .family
                 .sibling_distances
                 .iter()
-                .map(|distance| 1.0 / distance)
+                .map(|distance| {
+                    // Prevent division by zero for individual sibling distances
+                    let safe_distance = if distance.abs() < EPSILON { EPSILON } else { *distance };
+                    1.0 / safe_distance
+                })
                 .sum()
         },
         0.0,
-        inputs.time.t,
-        1e-9,
+        safe_t,
+        EPSILON,
     )
     .integral;
 
@@ -86,7 +99,13 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
         * d
         * r;
 
-    let denominator = sibling_proximity_integral;
+    // Prevent division by zero if there are no siblings or integral is zero.
+    // If no siblings, assume minimal competition (denominator = 1.0 equivalent).
+    let denominator = if sibling_proximity_integral.abs() < EPSILON {
+        1.0
+    } else {
+        sibling_proximity_integral
+    };
 
     numerator / denominator
 }
