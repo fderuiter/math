@@ -11,6 +11,8 @@ pub type QSeries = crate::pure_math::number_theory::q_series::QSeries<i64>;
 
 /// Computes the q-series for f_k = (q^k; q^k)_inf up to a given precision.
 /// f_k = product_{i>=1} (1 - q^(k*i))
+///
+/// This implementation uses Euler's Pentagonal Number Theorem for O(sqrt(N)) efficiency.
 pub fn f_k(k: usize, precision: usize) -> QSeries {
     if k == 0 {
         return QSeries::from_vec(vec![0i64; precision]);
@@ -18,24 +20,62 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
     if precision == 0 {
         return QSeries::new();
     }
-    if k >= precision {
-        let mut coeffs = vec![0i64; precision];
-        coeffs[0] = 1;
-        return QSeries { coeffs };
-    }
+
+    // We want to construct the series sum_{m=-inf}^{inf} (-1)^m q^{k * m(3m-1)/2}
+    // The pentagonal numbers are p_m = m(3m-1)/2 for m = 0, 1, -1, 2, -2, ...
+    // m = 0 -> p = 0, coeff = 1
+    // m = 1 -> p = 1, coeff = -1
+    // m = -1 -> p = 2, coeff = -1
+    // m = 2 -> p = 5, coeff = 1
+    // m = -2 -> p = 7, coeff = 1
+
     let mut coeffs = vec![0i64; precision];
+
+    // m = 0 case
     coeffs[0] = 1;
 
-    for i in 1.. {
-        let power = i * k;
-        if power >= precision {
+    // Iterate m from 1 upwards.
+    // We handle pairs m and -m together.
+    // Generalized pentagonal numbers: p(m) = m(3m-1)/2
+    // p(m) = (3m^2 - m)/2
+    // p(-m) = (-m(-3m-1))/2 = (3m^2 + m)/2
+
+    let mut m = 1;
+    loop {
+        let p_pos = (m * (3 * m - 1)) / 2;
+        let p_neg = (m * (3 * m + 1)) / 2;
+
+        // The power in q is k * p
+        let idx_pos = k.checked_mul(p_pos as usize);
+        let idx_neg = k.checked_mul(p_neg as usize);
+
+        let mut added = false;
+
+        let sign = if m % 2 == 0 { 1 } else { -1 };
+
+        if let Some(idx) = idx_pos {
+            if idx < precision {
+                coeffs[idx] = sign;
+                added = true;
+            }
+        }
+
+        if let Some(idx) = idx_neg {
+            if idx < precision {
+                coeffs[idx] = sign;
+                added = true;
+            }
+        }
+
+        if !added {
+            // Since p(m) grows quadratically, if both p_pos and p_neg exceed precision,
+            // all subsequent terms will also exceed precision.
             break;
         }
-        // This is multiplication by (1 - q^power)
-        for j in (power..precision).rev() {
-            coeffs[j] -= coeffs[j - power];
-        }
+
+        m += 1;
     }
+
     QSeries { coeffs }
 }
 
@@ -142,4 +182,60 @@ pub fn gen_l(precision: usize) -> QSeries {
     let denominator = &f2 * &f14;
 
     &numerator / &denominator
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Re-implementation of the naive O(N^2) algorithm for verification purposes
+    fn f_k_slow(k: usize, precision: usize) -> QSeries {
+        if k == 0 {
+            return QSeries::from_vec(vec![0i64; precision]);
+        }
+        if precision == 0 {
+            return QSeries::new();
+        }
+        if k >= precision {
+            let mut coeffs = vec![0i64; precision];
+            coeffs[0] = 1;
+            return QSeries { coeffs };
+        }
+        let mut coeffs = vec![0i64; precision];
+        coeffs[0] = 1;
+
+        for i in 1.. {
+            let power = i * k;
+            if power >= precision {
+                break;
+            }
+            // This is multiplication by (1 - q^power)
+            for j in (power..precision).rev() {
+                coeffs[j] -= coeffs[j - power];
+            }
+        }
+        QSeries { coeffs }
+    }
+
+    #[test]
+    fn test_f_k_correctness() {
+        let precision = 100;
+        let k = 1;
+
+        let fast = f_k(k, precision);
+        let slow = f_k_slow(k, precision);
+
+        assert_eq!(fast.coeffs, slow.coeffs, "Optimized f_k does not match naive implementation");
+    }
+
+    #[test]
+    fn test_f_k_large_k() {
+        let precision = 100;
+        let k = 5; // Pentagonal numbers will be scaled by 5
+
+        let fast = f_k(k, precision);
+        let slow = f_k_slow(k, precision);
+
+        assert_eq!(fast.coeffs, slow.coeffs, "Optimized f_k does not match naive implementation for k=5");
+    }
 }
