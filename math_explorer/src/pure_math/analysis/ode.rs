@@ -20,6 +20,36 @@ pub trait VectorOperations: Sized + Clone + Add<Output = Self> + Mul<f64, Output
 // Blanket implementation for any type that satisfies the bounds.
 impl<T> VectorOperations for T where T: Sized + Clone + Add<Output = Self> + Mul<f64, Output = Self> {}
 
+/// A wrapper around `Vec<f64>` that implements `VectorOperations`.
+/// Use this when you need a heap-allocated state vector.
+#[derive(Debug, Clone, PartialEq)]
+pub struct VecState(pub Vec<f64>);
+
+impl Add for VecState {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self {
+        // In a production system, we might want to check for length mismatch.
+        // For now, zip will truncate to the shorter length, but states should be consistent.
+        let new_data: Vec<f64> = self.0.iter()
+            .zip(rhs.0.iter())
+            .map(|(a, b)| a + b)
+            .collect();
+        VecState(new_data)
+    }
+}
+
+impl Mul<f64> for VecState {
+    type Output = Self;
+
+    fn mul(self, scalar: f64) -> Self {
+        let new_data: Vec<f64> = self.0.iter()
+            .map(|val| val * scalar)
+            .collect();
+        VecState(new_data)
+    }
+}
+
 /// A trait defining a system of Ordinary Differential Equations.
 ///
 /// $$ \frac{d\vec{y}}{dt} = f(t, \vec{y}) $$
