@@ -1,0 +1,27 @@
+//! # Medical Physics: Treatment Planning
+//!
+//! This module implements core algorithms for Radiation Therapy Treatment Planning (RTTP).
+//! It covers four main domains:
+//!
+//! 1.  **Calibration**: Converting CT imaging data (Hounsfield Units) into physical density for dose calculation.
+//! 2.  **Dose Calculation**: Modeling how radiation interacts with matter using convolution/superposition principles.
+//! 3.  **Inverse Planning**: Optimizing beam intensities (IMRT/VMAT) to maximize tumor control while sparing healthy tissue.
+//! 4.  **Evaluation**: Quantifying plan quality using Dose-Volume Histograms (DVH) and biological modeling (TCP).
+//!
+//! ## Context
+//!
+//! In radiation therapy, the goal is to deliver a lethal dose of radiation to a tumor (PTV - Planning Target Volume)
+//! while minimizing the dose to surrounding Organs At Risk (OARs). This is an inverse problem where we solve for
+//! the optimal beam fluence map that results in the desired 3D dose distribution.
+//!
+//! ## Units
+//!
+//! - **Dose**: Gray (Gy), where 1 Gy = 1 J/kg.
+//! - **Distance**: Centimeters (cm).
+//! - **Density**: g/cm³.
+//! - **Hounsfield Units (HU)**: Dimensionless scale where Water = 0, Air = -1000.
+
+pub mod calibration;
+pub mod dose_calculation;
+pub mod optimization;
+pub mod evaluation;
