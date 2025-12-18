@@ -3,34 +3,44 @@ use super::decoder::Decoder;
 
 /// The full Transformer model container.
 ///
-/// This struct currently acts as a container for the Encoder and Decoder components.
-/// In a production-ready implementation, it would likely also manage:
-/// - Input and Output Embeddings
-/// - Positional Encodings (applied before the Encoder/Decoder)
-/// - Final Linear Projection and Softmax
+/// # 🏗️ Architecture
 ///
-/// # Usage
+/// This struct acts as a **high-level container** for the `Encoder` and `Decoder` stacks.
+/// It provides the structural skeleton of a Transformer but leaves specific pipeline details
+/// (like embedding generation) to the user or wrapping frameworks.
 ///
-/// Since this struct does not currently implement a `new` method or a `forward` pass
-/// coordinating both components, users are encouraged to instantiate `Encoder`
-/// and `Decoder` separately or construct this struct manually if needed.
+/// ## ⚠️ Scope & Limitations
+///
+/// In a production-ready implementation (like BERT or GPT), this struct would typically also manage:
+/// *   **Embeddings**: Converting token IDs to vectors (`Input Embeddings`).
+/// *   **Positional Encodings**: Injecting sequence order information (e.g., Sinusoidal or Learned).
+/// *   **Head**: The final Linear Projection and Softmax layer for token prediction.
+///
+/// This implementation focuses strictly on the **Attention & Feed-Forward** backbone.
+///
+/// # 🚀 Usage
+///
+/// Since this struct does not currently coordinate a unified `forward` pass (as that depends on
+/// whether you are doing Seq2Seq, Causal LM, or Masked LM), you should instantiate components manually:
 ///
 /// ```rust
 /// use math_explorer::ai::transformer::{Transformer, Encoder, Decoder};
 ///
+/// // 1. Configure Layers
 /// let encoder = Encoder::new(6, 512, 8, 2048);
 /// let decoder = Decoder::new(6, 512, 8, 2048);
 ///
+/// // 2. Assemble Model
 /// let model = Transformer {
 ///     encoder,
 ///     decoder,
 /// };
+///
+/// // 3. (User Responsibility) Add Embeddings & Positional Encoding here...
 /// ```
 pub struct Transformer {
-    /// The encoder component of the transformer.
+    /// The stack of Encoder layers (Self-Attention + Feed-Forward).
     pub encoder: Encoder,
-    /// The decoder component of the transformer.
+    /// The stack of Decoder layers (Masked Self-Attention + Cross-Attention + Feed-Forward).
     pub decoder: Decoder,
-    // Note: In a full implementation, this would also include embedding layers,
-    // positional encoding addition, and a final linear layer + softmax.
 }

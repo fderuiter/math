@@ -6,3 +6,8 @@
 1. The `applied/mod.rs` acts as a catalog with one-line descriptions for every submodule.
 2. The `favoritism` module gets a "Deep Dive" treatment (Theory + Diagram) as a gold standard example.
 **Outcome:** Reduced cognitive load for users browsing the API; explicit humor/satire warnings for `favoritism`.
+
+## 2025-12-17 - Crate-Level Documentation Revamp
+**Gap:** The `math_explorer/README.md` was effectively "abandonware", listing incorrect modules (`algebra`, `number_theory`) and providing no usage context, confusing users who navigated directly to the crate folder.
+**Strategy:** Mirror the Root README structure but scoped to the crate. Define clear boundaries: Root README = Project Vision; Crate README = Developer Implementation Details.
+**Outcome:** Established a reliable "Front Door" for the library crate, matching the actual codebase state.
