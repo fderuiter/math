@@ -90,11 +90,23 @@ pub fn calculate_statistics(wins: i32, losses: i32) -> Option<WinRatioStats> {
         });
     }
 
-    let ci_low_p = p_win - 1.96 * se;
-    let ci_high_p = p_win + 1.96 * se;
+    let ci_low_p = (p_win - 1.96 * se).max(0.0);
+    // Clamp the upper bound to slightly less than 1.0 to avoid division by zero
+    // or negative results when converting to ratio.
+    // If the upper bound of p is 1, the ratio upper bound is infinity.
+    let ci_high_p = (p_win + 1.96 * se).min(1.0);
 
-    let ci_low = ci_low_p / (1.0 - ci_low_p);
-    let ci_high = ci_high_p / (1.0 - ci_high_p);
+    let ci_low = if ci_low_p == 1.0 {
+        f64::INFINITY
+    } else {
+        ci_low_p / (1.0 - ci_low_p)
+    };
+
+    let ci_high = if ci_high_p == 1.0 {
+        f64::INFINITY
+    } else {
+        ci_high_p / (1.0 - ci_high_p)
+    };
 
     let z_score = (p_win - 0.5) / se;
     let normal = Normal::new(0.0, 1.0).unwrap();
