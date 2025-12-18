@@ -1,4 +1,4 @@
-use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
 use std::ops::{Add, Mul};
 
 /// State for the SIR Model.
@@ -62,6 +62,11 @@ impl SIRModel {
     /// Advances the state by dt using Runge-Kutta 4.
     pub fn step(&mut self, dt: f64) {
         self.state = RungeKutta4::step(self, 0.0, &self.state, dt);
+    }
+
+    /// Advances the state by dt using a provided solver strategy.
+    pub fn step_with<S: Solver<SIRState>>(&mut self, solver: &S, dt: f64) {
+        self.state = solver.solve(self, 0.0, &self.state, dt);
     }
 }
 
@@ -144,6 +149,11 @@ impl SEIRModel {
     pub fn step(&mut self, dt: f64) {
         self.state = RungeKutta4::step(self, 0.0, &self.state, dt);
     }
+
+    /// Advances the state by dt using a provided solver strategy.
+    pub fn step_with<S: Solver<SEIRState>>(&mut self, solver: &S, dt: f64) {
+        self.state = solver.solve(self, 0.0, &self.state, dt);
+    }
 }
 
 impl OdeSystem<SEIRState> for SEIRModel {
@@ -173,6 +183,7 @@ pub fn basic_reproduction_number(beta: f64, gamma: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pure_math::analysis::ode::{Euler, RungeKutta4};
 
     #[test]
     fn test_threshold_theorem() {
@@ -185,5 +196,46 @@ mod tests {
         model.step(0.1);
 
         assert!(model.state.i < initial_i, "Infected should decrease when R0 < 1");
+    }
+
+    #[test]
+    fn test_sir_step_with_rk4() {
+        let n = 1000.0;
+        let i0 = 10.0;
+        let mut model_std = SIRModel::new(n, i0, 0.5, 0.1);
+        let mut model_with = SIRModel::new(n, i0, 0.5, 0.1);
+
+        let dt = 0.1;
+        model_std.step(dt);
+        model_with.step_with(&RungeKutta4, dt);
+
+        assert_eq!(model_std.state, model_with.state, "step and step_with(RK4) should yield identical results");
+    }
+
+    #[test]
+    fn test_seir_step_with_rk4() {
+        let n = 1000.0;
+        let i0 = 10.0;
+        let mut model_std = SEIRModel::new(n, i0, 0.5, 0.2, 0.1);
+        let mut model_with = SEIRModel::new(n, i0, 0.5, 0.2, 0.1);
+
+        let dt = 0.1;
+        model_std.step(dt);
+        model_with.step_with(&RungeKutta4, dt);
+
+        assert_eq!(model_std.state, model_with.state, "step and step_with(RK4) should yield identical results");
+    }
+
+    #[test]
+    fn test_sir_step_with_euler() {
+        let n = 1000.0;
+        let i0 = 10.0;
+        let mut model = SIRModel::new(n, i0, 0.5, 0.1);
+
+        // Euler is less accurate but should still run without panic
+        model.step_with(&Euler, 0.1);
+
+        assert!(model.state.s <= n);
+        assert!(model.state.i >= 0.0);
     }
 }
