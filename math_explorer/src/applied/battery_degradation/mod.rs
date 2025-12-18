@@ -34,9 +34,11 @@
 //! aging, such as heat, high charge/discharge rates, or calendar aging (time-based decay).
 //! The results should be treated as order-of-magnitude estimates, not guarantees.
 
-const ALPHA: f64 = 1.019e5;
-const BETA: f64 = -1.2639;
-const LN_0_7: f64 = -0.3566749439387324; // ln(0.7)
+pub mod model;
+pub mod types;
+
+pub use model::PowerLawModel;
+pub use types::{Capacity, Cycles, DepthOfDischarge};
 
 /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
 /// for a given depth-of-discharge (DoD).
@@ -48,8 +50,14 @@ const LN_0_7: f64 = -0.3566749439387324; // ln(0.7)
 /// # Returns
 ///
 /// The estimated number of cycles to reach 70% capacity.
+#[deprecated(since = "0.2.0", note = "Use `PowerLawModel::standard().n70(DepthOfDischarge::new(d))` instead")]
 pub fn n70(d: f64) -> f64 {
-    ALPHA * d.powf(BETA)
+    // Avoid panics for legacy users who might be passing bad values (though unlikely to work well)
+    // We clamp to 0-100 to be safe
+    let d_clamped = d.clamp(0.0, 100.0);
+    PowerLawModel::standard()
+        .n70(DepthOfDischarge::new(d_clamped))
+        .as_f64()
 }
 
 /// Calculates the remaining battery capacity after a number of cycles.
@@ -62,9 +70,13 @@ pub fn n70(d: f64) -> f64 {
 /// # Returns
 ///
 /// The battery capacity as a fraction of its initial capacity (e.g., 0.9 for 90%).
+#[deprecated(since = "0.2.0", note = "Use `PowerLawModel::standard().capacity(...)` instead")]
 pub fn capacity(n: f64, d: f64) -> f64 {
-    let n70_val = n70(d);
-    0.7_f64.powf(n / n70_val)
+    let d_clamped = d.clamp(0.0, 100.0);
+    let n_clamped = n.max(0.0);
+    PowerLawModel::standard()
+        .capacity(Cycles::new(n_clamped), DepthOfDischarge::new(d_clamped))
+        .as_f64()
 }
 
 /// Calculates the number of equivalent full cycles to reach a target capacity.
@@ -77,7 +89,11 @@ pub fn capacity(n: f64, d: f64) -> f64 {
 /// # Returns
 ///
 /// The estimated number of cycles to reach the target capacity.
+#[deprecated(since = "0.2.0", note = "Use `PowerLawModel::standard().cycles_to_capacity(...)` instead")]
 pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
-    let n70_val = n70(d);
-    (target_capacity.ln() / LN_0_7) * n70_val
+    let d_clamped = d.clamp(0.0, 100.0);
+    let target_clamped = target_capacity.clamp(0.0, 1.0);
+    PowerLawModel::standard()
+        .cycles_to_capacity(Capacity::new(target_clamped), DepthOfDischarge::new(d_clamped))
+        .as_f64()
 }
