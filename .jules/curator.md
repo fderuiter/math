@@ -11,3 +11,10 @@
 **Gap:** The `math_explorer/README.md` was effectively "abandonware", listing incorrect modules (`algebra`, `number_theory`) and providing no usage context, confusing users who navigated directly to the crate folder.
 **Strategy:** Mirror the Root README structure but scoped to the crate. Define clear boundaries: Root README = Project Vision; Crate README = Developer Implementation Details.
 **Outcome:** Established a reliable "Front Door" for the library crate, matching the actual codebase state.
+
+## 2025-12-18 - Clinical Trials Elevation & Cannibalism Clarification
+**Gap:** `clinical_trials` was a hidden gem with full implementation but zero docs. `cannibalism` was a confusing placeholder.
+**Strategy:**
+1. Applied "Hub and Spoke" to `clinical_trials`: Added Mermaid workflow and full example.
+2. Labeled `cannibalism` as "Theoretical" with a warning about placeholder status to manage user expectations.
+**Outcome:** Bridged the gap between code reality and user perception. High-value code is now visible; low-value code is honestly labeled.
