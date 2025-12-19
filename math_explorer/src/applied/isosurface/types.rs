@@ -37,6 +37,7 @@ pub struct VoxelGrid {
 }
 
 impl VoxelGrid {
+    #[inline]
     pub fn get(&self, x: usize, y: usize, z: usize) -> f32 {
         if x >= self.width || y >= self.height || z >= self.depth {
             return 0.0; // Boundary condition
