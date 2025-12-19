@@ -109,11 +109,14 @@ impl<T: Ring> Mul for &QSeries<T> {
         let mut new_coeffs = vec![T::zero(); precision];
 
         for i in 0..len1 {
-            for j in 0..len2 {
-                if i + j < precision {
-                    let product = self.coeffs[i].clone() * other.coeffs[j].clone();
-                    new_coeffs[i + j] += product;
-                }
+            // Optimization: Only iterate j where i + j < precision, avoiding the if check
+            // and unnecessary iterations.
+            let remaining = precision.saturating_sub(i);
+            let limit = std::cmp::min(len2, remaining);
+
+            for j in 0..limit {
+                let product = self.coeffs[i].clone() * other.coeffs[j].clone();
+                new_coeffs[i + j] += product;
             }
         }
 
