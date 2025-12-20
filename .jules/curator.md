@@ -18,3 +18,11 @@
 1. Applied "Hub and Spoke" to `clinical_trials`: Added Mermaid workflow and full example.
 2. Labeled `cannibalism` as "Theoretical" with a warning about placeholder status to manage user expectations.
 **Outcome:** Bridged the gap between code reality and user perception. High-value code is now visible; low-value code is honestly labeled.
+
+## 2025-12-19 - Battery Degradation Modernization
+**Gap:** The `battery_degradation` module relied on deprecated, top-level functions (`n70`, `capacity`) and lacked context about units and model limitations.
+**Strategy:**
+1. Applied "Hub and Spoke" pattern to `applied/battery_degradation/mod.rs`.
+2. Promoted `PowerLawModel` as the primary API with a Quickstart guide.
+3. Added rich docstrings and examples to `model.rs` and `types.rs`.
+**Outcome:** Improved type safety visibility (users now see `DepthOfDischarge` immediately) and clarified the physical constraints of the model.

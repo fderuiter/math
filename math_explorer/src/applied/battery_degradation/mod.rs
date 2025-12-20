@@ -1,44 +1,50 @@
-//! Battery degradation model based on depth-of-discharge (DoD).
+//! # Battery Degradation
 //!
-//! This module provides functions to estimate battery cycle life and capacity fade
-//! for Li-ion batteries. The model is based on a power law fit to experimental data.
+//! A physics-informed model for estimating the cycle life and capacity fade of Lithium-Ion batteries.
 //!
-//! # How to Use
+//! ## 🧠 The Theory
 //!
-//! 1.  Determine your charge window (e.g., 20% to 80%) to find the depth-of-discharge `d`.
-//!     For a window `[L, U]`, the DoD is `d = U - L`. For 20-80%, `d = 60`.
-//! 2.  Use the `n70(d)` function to calculate the cycle life to 70% capacity for your DoD.
-//! 3.  Use `capacity(n, d)` to plot capacity over time, or `cycles_to_capacity(target, d)`
-//!     to predict when the battery will reach a specific capacity.
+//! Batteries degrade as they are charged and discharged. The rate of degradation depends heavily on the
+//! **Depth of Discharge (DoD)**—how much of the battery's capacity is used in a cycle. Shallow cycles
+//! (e.g., 60% to 40%) cause significantly less wear than deep cycles (e.g., 100% to 0%).
 //!
-//! All cycle counts (`n`) are in "equivalent full cycles" (EFC). For example, ten 10%
-//! discharges are equivalent to one full cycle (1 EFC).
+//! This module implements a **Power Law Model** ($N_{70} = \alpha \cdot d^\beta$), fitted to experimental
+//! data, to predict:
 //!
-//! # Model Details
+//! 1.  **Cycle Life ($N_{70}$)**: The number of cycles until the battery hits 70% of its original capacity.
+//! 2.  **Capacity Fade**: The remaining capacity after a given number of cycles.
 //!
-//! The model uses a power law `N₇₀(d) = α * d^β` fit to the following anchor data
-//! for cycles to 70% capacity (N₇₀):
+//! ## 🚀 Quickstart
 //!
-//! - (DoD=100%, N₇₀=300)
-//! - (DoD=80%, N₇₀=400)
-//! - (DoD=60%, N₇₀=600)
-//! - (DoD=40%, N₇₀=1000)
-//! - (DoD=20%, N₇₀=2000)
-//! - (DoD=10%, N₇₀=6000)
+//! ```rust
+//! use math_explorer::applied::battery_degradation::{PowerLawModel, DepthOfDischarge, Cycles};
 //!
-//! The least squares fit resulted in `α ≈ 1.019e5` and `β ≈ -1.2639`.
+//! fn main() {
+//!     // 1. Define your usage pattern: 80% Depth of Discharge (e.g., 100% -> 20%)
+//!     let dod = DepthOfDischarge::new(80.0);
 //!
-//! # Limits
+//!     // 2. Initialize the standard Li-ion model
+//!     let model = PowerLawModel::standard();
 //!
-//! This is a DoD-only model. It does not account for other factors that affect battery
-//! aging, such as heat, high charge/discharge rates, or calendar aging (time-based decay).
-//! The results should be treated as order-of-magnitude estimates, not guarantees.
+//!     // 3. Calculate life expectancy
+//!     let cycles_to_70 = model.n70(dod);
+//!
+//!     println!("At 80% DoD, expected life is {}", cycles_to_70);
+//! }
+//! ```
+//!
+//! ## ⚠️ Constraints
+//!
+//! *   **DoD-Only**: This model accounts for mechanical stress due to cycling depth. It does *not* account for
+//!     temperature, C-rate (charging speed), or calendar aging.
+//! *   **Estimation**: Results are statistical estimates based on curve fitting, not guarantees.
 
 pub mod model;
 pub mod types;
 
-pub use model::PowerLawModel;
-pub use types::{Capacity, Cycles, DepthOfDischarge};
+// Re-export core components for easier access (Hub and Spoke)
+pub use model::*;
+pub use types::*;
 
 /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
 /// for a given depth-of-discharge (DoD).

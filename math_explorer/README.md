@@ -13,7 +13,7 @@ The core library for the **Math Explorer** project. This crate provides a collec
 The library is organized into high-level domains:
 
 - **`ai`**: Artificial Intelligence primitives, including Transformer components (Attention, Encoder/Decoder), NeRF-Diffusion, and Self-Calibration loops.
-- **`applied`**: Mathematical models applied to specific domains like **Clinical Trials** (Win Ratio), **Game Theory**, **Favoritism** (Satire), and **Isosurface Extraction**.
+- **`applied`**: Mathematical models applied to specific domains like **Battery Degradation** (Power Law), **Clinical Trials** (Win Ratio), **Game Theory**, **Favoritism** (Satire), and **Isosurface Extraction**.
 - **`biology`**: Biological modeling, including **Neuroscience** (Hodgkin-Huxley) and **Morphogenesis**.
 - **`climate`**: Climate modeling tools, featuring the **CERA** autoencoder framework.
 - **`epidemiology`**: Disease modeling, from standard **SIR/SEIR** compartmental models to stochastic network dynamics.
