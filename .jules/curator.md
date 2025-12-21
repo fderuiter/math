@@ -18,3 +18,18 @@
 1. Applied "Hub and Spoke" to `clinical_trials`: Added Mermaid workflow and full example.
 2. Labeled `cannibalism` as "Theoretical" with a warning about placeholder status to manage user expectations.
 **Outcome:** Bridged the gap between code reality and user perception. High-value code is now visible; low-value code is honestly labeled.
+
+## 2025-12-19 - 3D Gaussian Splatting Documentation
+**Gap:** The `gaussian_splatting` module was a "Blank Page" with no context, forcing users to read raw code to understand the pipeline.
+**Strategy:** Applied "Hub and Spoke" pattern:
+1.  Created a rich `mod.rs` with LaTeX formulation and a Mermaid pipeline diagram.
+2.  Provided a clear conceptual example of the Scene -> Project -> Render flow.
+**Outcome:** Users can now understand the difference between NeRF and Splatting at a glance.
+
+## 2025-12-19 - Root Readme Refactor
+**Gap:** The root `README.md` was minimal and didn't sell the project. It lacked the "30-Second Rule" compliance.
+**Strategy:**
+1.  Added Badges and a strong Hook/Value Proposition.
+2.  Added a clear "Quick Start" section.
+3.  Delegated technical details to the inner `math_explorer/README.md`.
+**Outcome:** Improved onboarding experience and clear separation of concerns between Project Root and Crate Root.

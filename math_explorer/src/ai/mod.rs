@@ -1,13 +1,17 @@
-/// The AI module contains implementations of various machine learning models and concepts.
-///
-/// It currently includes:
-/// - Attention mechanisms (Scaled Dot-Product and Multi-Head Attention).
-/// - Position-wise Feed-Forward Networks.
-/// - Positional Encodings.
-/// - A full Transformer implementation.
-/// - Score Distillation Sampling (SDS) and NeRF.
-/// - 3D Gaussian Splatting (3DGS).
-/// - Foundational Mathematics of Deep Learning (Linear Algebra, Calculus, Probability, Optimization).
+//! # Artificial Intelligence
+//!
+//! Primitives and full systems for Modern AI, ranging from foundational Deep Learning theory
+//! to state-of-the-art 3D reconstruction and generative models.
+//!
+//! ## Modules
+//!
+//! - **`transformer`**: The backbone of LLMs. Includes `Attention`, `Encoder`, `Decoder`.
+//! - **`gaussian_splatting`**: Real-time 3D scene representation using rasterized Gaussians.
+//! - **`sds`**: Score Distillation Sampling (NeRF-Diffusion hybrid) for 3D generation.
+//! - **`deep_learning_theory`**: Educational implementations of Backprop, SGD, and Softmax from scratch.
+//! - **`self_calibration`**: Logic for AI agents to self-assess and tune hyperparameters.
+//! - **`activations`**: Common activation functions (ReLU, GeLU, Softmax).
+
 pub mod activations;
 pub mod transformer;
 pub mod sds;
