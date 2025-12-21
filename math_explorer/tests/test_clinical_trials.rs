@@ -1,4 +1,6 @@
 use math_explorer::applied::clinical_trials::{design, sample_size, hypothesis_testing, analysis, survival_analysis};
+use rand::{SeedableRng, rngs::StdRng};
+use math_explorer::applied::clinical_trials::design::AllocationStrategy;
 
 #[test]
 fn test_simple_randomization() {
@@ -86,4 +88,29 @@ fn test_kaplan_meier() {
 
     assert_eq!(curve[2].time, 3.0);
     assert!((curve[2].survival_probability - 0.50).abs() < 1e-9);
+}
+
+#[test]
+fn test_deterministic_randomization() {
+    let mut rng = StdRng::seed_from_u64(42);
+    let strategy = design::BlockRandomization::new(4);
+    let n = 8;
+
+    // With seed 42, we expect a specific shuffle.
+    // Block 1: [T, T, C, C] -> shuffled
+    // Block 2: [T, T, C, C] -> shuffled
+
+    let assignments = strategy.allocate(n, &mut rng).unwrap();
+
+    assert_eq!(assignments.len(), 8);
+    let t_count = assignments.iter().filter(|&&g| g == design::Group::Treatment).count();
+    let c_count = assignments.iter().filter(|&&g| g == design::Group::Control).count();
+
+    assert_eq!(t_count, 4);
+    assert_eq!(c_count, 4);
+
+    // Verify repeatability
+    let mut rng2 = StdRng::seed_from_u64(42);
+    let assignments2 = strategy.allocate(n, &mut rng2).unwrap();
+    assert_eq!(assignments, assignments2);
 }
