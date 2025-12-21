@@ -18,6 +18,10 @@ pub struct TuringSystem {
     pub d_v: f64,
     /// Grid spacing
     pub dx: f64,
+
+    // Double buffering scratchpads
+    next_u: Vec<f64>,
+    next_v: Vec<f64>,
 }
 
 impl TuringSystem {
@@ -28,6 +32,8 @@ impl TuringSystem {
             d_u,
             d_v,
             dx,
+            next_u: vec![0.0; size],
+            next_v: vec![0.0; size],
         }
     }
 
@@ -36,41 +42,76 @@ impl TuringSystem {
     /// f(u,v) = a - u + u^2 v
     pub fn step(&mut self, dt: f64) {
         let n = self.u.len();
-        let mut new_u = self.u.clone();
-        let mut new_v = self.v.clone();
+        if n == 0 { return; }
 
-        let a = 0.01; // Feed rate / constant
-        let b = 0.05; // Another constant
-        // Using Schnakenberg-like kinetics for demonstration if not strictly specified beyond "f(u,v) = ..."
+        // Ensure buffers are correct size
+        if self.next_u.len() != n { self.next_u.resize(n, 0.0); }
+        if self.next_v.len() != n { self.next_v.resize(n, 0.0); }
 
-        for i in 0..n {
-            // Laplacian with periodic boundary or zero-flux?
-            // Zero flux (Neumann) is safer for 1D patterns usually, or periodic.
-            // Using simple indices with clamping for Neumann-ish or just simple handling.
-            let u_curr = self.u[i];
-            let v_curr = self.v[i];
+        // Constants
+        let a = 0.01;
+        let b = 0.05;
+        let inv_dx2 = 1.0 / (self.dx * self.dx);
+        let d_u = self.d_u;
+        let d_v = self.d_v;
 
-            let idx_prev = if i == 0 { 0 } else { i - 1 }; // Zero flux approx (u_-1 = u_0) -> deriv is 0
-            let idx_next = if i == n - 1 { n - 1 } else { i + 1 };
+        // Reaction-Diffusion update function
+        // Inline ensures no function call overhead
+        let update_cell = |i: usize, u_curr: f64, v_curr: f64, u_prev: f64, v_prev: f64, u_next: f64, v_next: f64, next_u: &mut [f64], next_v: &mut [f64]| {
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx2;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx2;
 
-            // Laplacian: (u_{i+1} - 2u_i + u_{i-1}) / dx^2
-            // If i=0, u_{i-1} is u_0 -> (u_1 - 2u_0 + u_0) = u_1 - u_0.
-            // This corresponds to forward difference at boundary, effectively zero flux if we consider ghost points.
-            // Standard 3-point stencil.
-            let lap_u = (self.u[idx_next] - 2.0 * u_curr + self.u[idx_prev]) / (self.dx * self.dx);
-            let lap_v = (self.v[idx_next] - 2.0 * v_curr + self.v[idx_prev]) / (self.dx * self.dx);
+            let uv2 = u_curr * u_curr * v_curr;
+            let reaction_u = a - u_curr + uv2;
+            let reaction_v = b - uv2;
 
-            // Reaction terms
-            // u_t = ... + a - u + u^2 v
-            // v_t = ... + b - u^2 v (Schnakenberg)
-            let reaction_u = a - u_curr + u_curr.powi(2) * v_curr;
-            let reaction_v = b - u_curr.powi(2) * v_curr;
+            next_u[i] = u_curr + dt * (d_u * lap_u + reaction_u);
+            next_v[i] = v_curr + dt * (d_v * lap_v + reaction_v);
+        };
 
-            new_u[i] = u_curr + dt * (self.d_u * lap_u + reaction_u);
-            new_v[i] = v_curr + dt * (self.d_v * lap_v + reaction_v);
+        if n == 1 {
+            // Special case for n=1: u_prev=u[0], u_next=u[0] (Neumann)
+            let u0 = self.u[0];
+            let v0 = self.v[0];
+            update_cell(0, u0, v0, u0, v0, u0, v0, &mut self.next_u, &mut self.next_v);
+        } else {
+            // General case n >= 2
+
+            // Boundary i = 0
+            {
+                let u0 = self.u[0];
+                let v0 = self.v[0];
+                let u1 = self.u[1];
+                let v1 = self.v[1];
+                // u_prev = u0, u_next = u1
+                update_cell(0, u0, v0, u0, v0, u1, v1, &mut self.next_u, &mut self.next_v);
+            }
+
+            // Inner loop 1..n-1
+            for i in 1..n-1 {
+                let u_curr = self.u[i];
+                let v_curr = self.v[i];
+                let u_prev = self.u[i - 1];
+                let v_prev = self.v[i - 1];
+                let u_next = self.u[i + 1];
+                let v_next = self.v[i + 1];
+                update_cell(i, u_curr, v_curr, u_prev, v_prev, u_next, v_next, &mut self.next_u, &mut self.next_v);
+            }
+
+            // Boundary i = n-1
+            {
+                let i = n - 1;
+                let u_curr = self.u[i];
+                let v_curr = self.v[i];
+                let u_prev = self.u[i - 1];
+                let v_prev = self.v[i - 1];
+                // u_next = u_curr
+                update_cell(i, u_curr, v_curr, u_prev, v_prev, u_curr, v_curr, &mut self.next_u, &mut self.next_v);
+            }
         }
 
-        self.u = new_u;
-        self.v = new_v;
+        // Swap buffers
+        std::mem::swap(&mut self.u, &mut self.next_u);
+        std::mem::swap(&mut self.v, &mut self.next_v);
     }
 }
