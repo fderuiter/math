@@ -1,0 +1,63 @@
+//! Quantum Foundations of MRI.
+
+/// Gyromagnetic Ratio for Hydrogen in rad/s/T.
+/// $\gamma \approx 2.675 \times 10^8$ rad/s/T.
+pub const GYROMAGNETIC_RATIO: f64 = 2.675e8;
+
+/// Reduced Planck constant in J·s.
+pub const H_BAR: f64 = 1.0545718e-34;
+
+/// Boltzmann constant in J/K.
+pub const K_B: f64 = 1.380649e-23;
+
+/// Calculates the Larmor frequency $\omega_0$ for a given magnetic field $B_0$.
+///
+/// # Arguments
+/// * `b0` - Magnetic field strength in Tesla.
+///
+/// # Returns
+/// * Larmor frequency in rad/s.
+pub fn larmor_frequency(b0: f64) -> f64 {
+    GYROMAGNETIC_RATIO * b0
+}
+
+/// Calculates the Boltzmann magnetization population ratio $N_-/N_+$.
+///
+/// The ratio is given by $e^{-\frac{\hbar \gamma B_0}{k_B T}}$.
+///
+/// # Arguments
+/// * `temperature` - Temperature in Kelvin.
+/// * `b0` - Magnetic field strength in Tesla.
+///
+/// # Returns
+/// * Population ratio or an error if temperature is invalid (<= 0).
+pub fn boltzmann_ratio(temperature: f64, b0: f64) -> Result<f64, String> {
+    if temperature <= 0.0 {
+        return Err("Temperature must be positive".to_string());
+    }
+    let exponent = -(H_BAR * GYROMAGNETIC_RATIO * b0) / (K_B * temperature);
+    Ok(exponent.exp())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::f64::consts::PI;
+    use approx::assert_relative_eq;
+
+    #[test]
+    fn test_larmor_frequency() {
+        // Verify Larmor frequency of Hydrogen at 1.5 Tesla
+        // Expected: ~ 63.87 MHz -> 63.87e6 * 2pi rad/s
+        let b0 = 1.5;
+        let omega = larmor_frequency(b0);
+        let freq_hz = omega / (2.0 * PI);
+
+        // 63.87 MHz is approx 63,857,000 Hz based on gamma/2pi = 42.57 MHz/T
+        // 42.57 * 1.5 = 63.855
+        // Using gamma = 2.675e8:
+        // f = 2.675e8 * 1.5 / 2pi = 4.0125e8 / 6.283... = 63.856 MHz
+
+        assert_relative_eq!(freq_hz, 63.856e6, epsilon = 1.0e5);
+    }
+}
