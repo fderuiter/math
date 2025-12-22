@@ -4,6 +4,7 @@
 //! focusing on the seven restricted partition functions introduced by Pushpa and Vasuki.
 //! The implementation is based on the paper "Arithmetic properties of partition
 //! functions introduced by Pushpa and Vasuki" by Nath and Saikia.
+#![allow(clippy::collapsible_if)]
 
 // Define QSeries as a type alias for QSeries<i64> to preserve backward compatibility
 // and allow specific usage in this module.
