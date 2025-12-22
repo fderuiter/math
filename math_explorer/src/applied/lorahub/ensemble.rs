@@ -9,6 +9,31 @@ use super::types::LoraStateDict;
 /// This struct replaces the free-standing `combine_loras` functions, moving towards
 /// a more object-oriented approach where the data (the modules) and the operations
 /// (combination) are coupled.
+///
+/// # Examples
+///
+/// ```
+/// use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
+/// use nalgebra::DMatrix;
+///
+/// // Create two simple LoRA state dictionaries
+/// let mut lora1 = LoraStateDict::new();
+/// lora1.insert("layer1".to_string(), DMatrix::from_element(2, 2, 1.0));
+///
+/// let mut lora2 = LoraStateDict::new();
+/// lora2.insert("layer1".to_string(), DMatrix::from_element(2, 2, 2.0));
+///
+/// // Create an ensemble
+/// let ensemble = LoraEnsemble::new(vec![lora1, lora2]);
+///
+/// // Combine with equal weights
+/// let weights = vec![0.5, 0.5];
+/// let combined = ensemble.combine(&weights).expect("Combination failed");
+///
+/// // Verify result: 0.5 * 1.0 + 0.5 * 2.0 = 1.5
+/// let result = combined.get("layer1").unwrap();
+/// assert_eq!(result[(0, 0)], 1.5);
+/// ```
 pub struct LoraEnsemble {
     modules: Vec<LoraStateDict>,
 }
