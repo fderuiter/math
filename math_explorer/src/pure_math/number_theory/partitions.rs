@@ -53,6 +53,7 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
 
         let sign = if m % 2 == 0 { 1 } else { -1 };
 
+        #[allow(clippy::collapsible_if)]
         if let Some(idx) = idx_pos {
             if idx < precision {
                 coeffs[idx] = sign;
@@ -60,6 +61,7 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
             }
         }
 
+        #[allow(clippy::collapsible_if)]
         if let Some(idx) = idx_neg {
             if idx < precision {
                 coeffs[idx] = sign;
