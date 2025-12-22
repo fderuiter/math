@@ -18,3 +18,11 @@
 1. Applied "Hub and Spoke" to `clinical_trials`: Added Mermaid workflow and full example.
 2. Labeled `cannibalism` as "Theoretical" with a warning about placeholder status to manage user expectations.
 **Outcome:** Bridged the gap between code reality and user perception. High-value code is now visible; low-value code is honestly labeled.
+
+## 2025-12-18 - Climate (CERA) Documentation & Categorization
+**Gap:** The `climate` module (CERA framework) was miscategorized in the README as part of `applied`, and its `mod.rs` was nearly empty, hiding a complex and interesting architecture.
+**Strategy:**
+1.  Apply "Hub and Spoke" pattern to `climate/mod.rs`, explaining the purpose (Climate-invariant Encoding) and components (Autoencoder, Predictor, Loss).
+2.  Add a runnable "Hello World" example in `climate/mod.rs` to lower the barrier to entry.
+3.  Fix the README to correctly categorize `math_explorer::climate` as a top-level domain.
+**Outcome:** CERA is now a first-class citizen in the documentation, and the API surface is accurately reflected in the "Front Door".
