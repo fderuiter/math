@@ -204,21 +204,42 @@ pub mod reconstruction {
         let cols = matrix.ncols();
         let pi_factor = if inverse { 2.0 * PI } else { -2.0 * PI };
 
+        // Precompute twiddle factors for ROWS pass (length = cols)
+        let mut twiddles_cols = Vec::with_capacity(cols);
+        for j in 0..cols {
+            let phase = pi_factor * (j as f64) / (cols as f64);
+            twiddles_cols.push(Complex::from_polar(1.0, phase));
+        }
+
+        // Precompute twiddle factors for COLS pass (length = rows)
+        let mut twiddles_rows = Vec::with_capacity(rows);
+        for j in 0..rows {
+            let phase = pi_factor * (j as f64) / (rows as f64);
+            twiddles_rows.push(Complex::from_polar(1.0, phase));
+        }
+
         // Intermediate step: Transform rows
         // For each row `r`, compute transform into `temp[r, :]`.
         let mut temp = DMatrix::zeros(rows, cols);
+        let mut row_buf = vec![Complex::new(0.0, 0.0); cols];
 
         for r in 0..rows {
+            // Optimization: Copy row to contiguous buffer to improve cache locality
+            // Reading `matrix[(r, c)]` jumps by stride `rows` in column-major storage.
+            // By copying once, the inner loop reads contiguous memory.
+            for c in 0..cols {
+                row_buf[c] = matrix[(r, c)];
+            }
+
             for k in 0..cols {
                 // Output column index (frequency or space)
                 let mut sum = Complex::new(0.0, 0.0);
-                let phase_step = pi_factor * (k as f64) / (cols as f64);
 
                 for n in 0..cols {
                     // Input column index
-                    let val = matrix[(r, n)];
-                    let phase = phase_step * (n as f64);
-                    sum += val * Complex::from_polar(1.0, phase);
+                    let val = row_buf[n];
+                    // Optimization: Use precomputed twiddles instead of recomputing sin/cos
+                    sum += val * twiddles_cols[(k * n) % cols];
                 }
                 temp[(r, k)] = sum;
             }
@@ -226,19 +247,18 @@ pub mod reconstruction {
 
         // Final step: Transform columns of temp
         // For each column `c`, compute transform into `result[:, c]`.
+        // `temp` is column-major, so `temp[(n, c)]` (varying n) is contiguous. No buffering needed.
         let mut result = DMatrix::zeros(rows, cols);
 
         for c in 0..cols {
             for k in 0..rows {
                 // Output row index
                 let mut sum = Complex::new(0.0, 0.0);
-                let phase_step = pi_factor * (k as f64) / (rows as f64);
 
                 for n in 0..rows {
                     // Input row index
                     let val = temp[(n, c)];
-                    let phase = phase_step * (n as f64);
-                    sum += val * Complex::from_polar(1.0, phase);
+                    sum += val * twiddles_rows[(k * n) % rows];
                 }
                 result[(k, c)] = sum;
             }
