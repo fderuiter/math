@@ -11,9 +11,9 @@ pub enum ParticleType {
 /// Calculates the occupancy probability / average occupation number.
 ///
 /// Formulas:
-/// - Maxwell-Boltzmann: <n> = e^(-beta(epsilon - mu))
-/// - Fermi-Dirac: <n> = 1 / (e^(beta(epsilon - mu)) + 1)
-/// - Bose-Einstein: <n> = 1 / (e^(beta(epsilon - mu)) - 1)
+/// - Maxwell-Boltzmann: `⟨n⟩ = e^(-beta(epsilon - mu))`
+/// - Fermi-Dirac: `⟨n⟩ = 1 / (e^(beta(epsilon - mu)) + 1)`
+/// - Bose-Einstein: `⟨n⟩ = 1 / (e^(beta(epsilon - mu)) - 1)`
 ///
 /// # Arguments
 /// * `particle_type` - The type of particle (Boson, Fermion, Classical).

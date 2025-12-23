@@ -2,9 +2,9 @@
 //!
 //! This module implements enzyme kinetics using the Michaelis-Menten framework.
 //! The core equation describes the rate of enzymatic reactions by relating reaction rate $v$
-//! to substrate concentration $[S]$.
+//! to substrate concentration `[S]`.
 //!
-//! $$ v = \frac{V_{max}[S]}{K_m + [S]} $$
+//! $$ v = \frac{V_{max}\[S\]}{K_m + \[S\]} $$
 //!
 //! where:
 //! - $V_{max}$ is the maximum rate achieved by the system, at maximum (saturating) substrate concentrations.
@@ -27,12 +27,12 @@ impl EnzymeReaction {
         Ok(Self { v_max, k_m })
     }
 
-    /// Calculates the reaction velocity for a given substrate concentration $[S]$.
+    /// Calculates the reaction velocity for a given substrate concentration `[S]`.
     ///
-    /// Formula: $v = V_{max} \frac{[S]}{K_m + [S]}$
+    /// Formula: $v = V_{max} \frac{\[S\]}{K_m + \[S\]}$
     ///
     /// # Arguments
-    /// * `substrate_conc` - The concentration of the substrate ($[S]$).
+    /// * `substrate_conc` - The concentration of the substrate (`[S]`).
     ///
     /// # Returns
     /// The reaction velocity. Returns an error if concentration is negative.
