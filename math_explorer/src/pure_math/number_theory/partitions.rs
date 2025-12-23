@@ -13,6 +13,7 @@ pub type QSeries = crate::pure_math::number_theory::q_series::QSeries<i64>;
 /// f_k = product_{i>=1} (1 - q^(k*i))
 ///
 /// This implementation uses Euler's Pentagonal Number Theorem for O(sqrt(N)) efficiency.
+#[allow(clippy::collapsible_if)]
 pub fn f_k(k: usize, precision: usize) -> QSeries {
     if k == 0 {
         return QSeries::from_vec(vec![0i64; precision]);
