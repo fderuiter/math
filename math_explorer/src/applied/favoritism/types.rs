@@ -1,4 +1,5 @@
 use nalgebra::DVector;
+use std::fmt;
 
 /// Time and proximity related parameters.
 ///
@@ -202,4 +203,18 @@ pub struct FavoritismInputs {
     pub compliments: ComplimentParams,
     /// Family context (siblings).
     pub family: FamilyParams,
+}
+
+impl fmt::Display for FavoritismInputs {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Strategy [Wealth: {:.1}, Gifts (P/E): {:.1}/{:.1}, Contact: {:.1} days ago, Crisis Aid: {}]",
+            self.personality.wealth,
+            self.gifts.g_practical,
+            self.gifts.g_emotional,
+            self.contact.time_since_last_contact,
+            if self.social.helped_during_crisis { "Yes" } else { "No" }
+        )
+    }
 }
