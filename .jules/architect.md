@@ -7,3 +7,8 @@
 **Problem:** `math_explorer/src/physics/medical.rs` contained four distinct Treatment Planning domains (Calibration, Dose, Optimization, Evaluation) in a single file, violating the Single Responsibility Principle and limiting scalability.
 **Decision:** Applied "Module Extraction" to split `medical.rs` into a directory-based module `math_explorer/src/physics/medical/` with dedicated submodules.
 **Consequence:** Improved navigability and allows independent evolution of dose algorithms and optimization strategies.
+
+## 2026-05-22 - [MRI Physics Domain Decomposition]
+**Problem:** `math_explorer/src/physics/mri.rs` was a "God File" combining Quantum Mechanics, Classical Dynamics, Spatial Encoding, and Signal Processing in a single 200+ line file.
+**Decision:** Applied "Module Extraction" to split `mri.rs` into `math_explorer/src/physics/mri/` with submodules `proton.rs`, `bloch.rs`, `scanner.rs`, and `reconstruction.rs`.
+**Consequence:** Separation of quantum/classical physics from signal processing logic. Enabled distinct testing of physics kernels vs image reconstruction algorithms. API compatibility preserved via `mod.rs`.
