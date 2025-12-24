@@ -54,13 +54,27 @@ impl AdamOptimizer {
     }
 
     pub fn step(&mut self, params: &DMatrix<f64>, grads: &DMatrix<f64>) -> DMatrix<f64> {
-        self.t += 1;
-
-        // Initialize state if needed
-        if self.m.is_none() {
-            self.m = Some(DMatrix::zeros(params.nrows(), params.ncols()));
-            self.v = Some(DMatrix::zeros(params.nrows(), params.ncols()));
+        // SECURITY: Ensure gradient dimensions match parameter dimensions to prevent Logic Errors.
+        if params.shape() != grads.shape() {
+            panic!("AdamOptimizer: params shape {:?} does not match grads shape {:?}", params.shape(), grads.shape());
         }
+
+        // Check for dimension mismatch with internal state (e.g. if optimizer is reused for a different tensor).
+        // If dimensions change, we must reset the optimizer state to avoid Panics or Undefined Behavior.
+        let (nrows, ncols) = params.shape();
+        let reset_needed = if let Some(ref m) = self.m {
+            m.shape() != (nrows, ncols)
+        } else {
+            true
+        };
+
+        if reset_needed {
+            self.m = Some(DMatrix::zeros(nrows, ncols));
+            self.v = Some(DMatrix::zeros(nrows, ncols));
+            self.t = 0; // Reset time step for new parameters
+        }
+
+        self.t += 1;
 
         let m = self.m.as_mut().unwrap();
         let v = self.v.as_mut().unwrap();
