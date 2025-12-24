@@ -8,6 +8,24 @@ First off, thank you for considering contributing to Math Explorer! It's people 
 
 When you submit a PR, you aren't just merging code; you are merging knowledge. Ensure your contributions are accessible to others.
 
+## 🔄 Contribution Workflow
+
+```mermaid
+graph TD
+    Start([Start]) --> Fork[Fork Repository]
+    Fork --> Branch[Create Feature Branch]
+    Branch --> Code[Write Code]
+    Code --> Test[Write & Run Tests]
+    Test --> Docs[Write Documentation]
+    Docs --> Verify{Verify locally?}
+    Verify -->|No| Code
+    Verify -->|Yes| Push[Push to Origin]
+    Push --> PR[Open Pull Request]
+    PR --> Review[Code Review]
+    Review -->|Changes Requested| Code
+    Review -->|Approved| Merge([Merge & Celebration])
+```
+
 ## 🚀 Getting Started
 
 1.  **Fork the repository** on GitHub.
@@ -41,6 +59,7 @@ We follow the **Curator's Philosophy**:
 *   **Public API**: Every public struct, enum, and function must have a docstring (`///`).
 *   **Examples**: Include runnable examples in your docstrings using generic code blocks or doctests.
 *   **Clarity**: Avoid fluff words ("simple", "easy"). Be precise.
+*   **Diagrams**: Use [Mermaid.js](https://mermaid.js.org/) for complex flows.
 
 Example:
 

@@ -1,20 +1,70 @@
-//! The `chaos` module explores Deterministic Chaos, covering continuous flows, discrete maps,
-//! and methods to quantify chaos (Lyapunov exponents and Fractal Dimensions).
+//! # Deterministic Chaos
 //!
-//! Chaos theory studies the behavior of dynamical systems that are highly sensitive to initial conditions.
-//! This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
-//! states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
-//! in general.
+//! The `chaos` module explores dynamical systems that are highly sensitive to initial conditions.
+//! It covers continuous flows (Lorenz System), discrete maps (Logistic Map), and methods to
+//! quantify chaos (Lyapunov exponents, Fractal Dimensions).
+//!
+//! ## Core Concepts
+//!
+//! ### The Lorenz System
+//!
+//! A system of three ordinary differential equations (ODEs) originally derived by Edward Lorenz
+//! for atmospheric convection. It is famous for having chaotic solutions for certain parameter values.
+//!
+//! $$
+//! \begin{cases}
+//! \frac{dx}{dt} = \sigma (y - x) \\
+//! \frac{dy}{dt} = x (\rho - z) - y \\
+//! \frac{dz}{dt} = xy - \beta z
+//! \end{cases}
+//! $$
+//!
+//! ### System Architecture
+//!
+//! This module uses the **Strategy Pattern** to decouple the dynamical system definition from the
+//! numerical solver.
+//!
+//! ```mermaid
+//! classDiagram
+//!     class OdeSystem {
+//!         <<trait>>
+//!         +differentiate(state, t) -> derivative
+//!     }
+//!     class Solver {
+//!         <<trait>>
+//!         +step(system, state, dt) -> new_state
+//!     }
+//!     class LorenzSystem {
+//!         +sigma: f64
+//!         +rho: f64
+//!         +beta: f64
+//!     }
+//!     class RungeKutta4 {
+//!         +step()
+//!     }
+//!     class Euler {
+//!         +step()
+//!     }
+//!
+//!     OdeSystem <|-- LorenzSystem
+//!     Solver <|-- RungeKutta4
+//!     Solver <|-- Euler
+//!     LorenzSystem ..> Solver : used by step_with()
+//! ```
+//!
+//! ## Submodules
+//!
+//! - **logistic**: The Logistic Map (Discrete chaos, Bifurcation diagrams).
+//! - **lorenz**: The Lorenz System (Continuous chaos, Butterfly attractor).
+//! - **metrics**: Tools for quantification (Lyapunov Exponents).
+//! - **fractals**: Geometric analysis (Correlation Dimension).
 
 pub mod logistic;
 pub mod lorenz;
 pub mod metrics;
 pub mod fractals;
 
-// Re-export specific items to maintain backward compatibility if needed,
-// but the plan says "Extract `logistic` module to `math_explorer/src/physics/chaos/logistic.rs`".
-// The original `chaos.rs` had `pub mod logistic`, `pub mod lorenz`, `pub mod metrics`, `pub mod fractals`.
-// So we just need to declare them as pub mod.
+// Re-export specific items to maintain backward compatibility if needed.
 
 #[cfg(test)]
 mod tests {
