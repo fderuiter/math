@@ -1,6 +1,7 @@
 use math_explorer::applied::game_theory::equilibrium::{BoxSet, ConvexSet, FixedPointVerifier, BestResponseCorrespondence};
 use math_explorer::applied::game_theory::mean_field::MeanFieldGame1D;
-use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
+use math_explorer::applied::game_theory::evolutionary::{ReplicatorDynamics, MatrixGame};
+use math_explorer::pure_math::analysis::ode::RungeKutta4;
 use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
 use nalgebra::{DVector, DMatrix};
 use statrs::distribution::Uniform;
@@ -33,8 +34,10 @@ fn test_mean_field_integration() {
 #[test]
 fn test_evolutionary_integration() {
     let payoff = DMatrix::from_row_slice(2, 2, &[3.0, 0.0, 5.0, 1.0]); // Prisoner's Dilemma-ish
-    let system = ReplicatorDynamics::new(payoff);
-    let traj = system.simulate(DVector::from_vec(vec![0.5, 0.5]), 1.0, 0.1);
+    let game = MatrixGame::new(payoff);
+    let system = ReplicatorDynamics::new(game);
+    let solver = RungeKutta4;
+    let traj = system.simulate(DVector::from_vec(vec![0.5, 0.5]), 1.0, 0.1, &solver);
     assert!(traj.len() > 0);
 }
 
