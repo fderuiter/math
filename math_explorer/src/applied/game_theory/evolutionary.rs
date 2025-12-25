@@ -1,4 +1,5 @@
 use nalgebra::{DMatrix, DVector};
+use crate::pure_math::analysis::ode::{OdeSystem, Solver, RungeKutta4};
 
 /// Represents an Evolutionary Game with Replicator Dynamics.
 /// dx_i/dt = x_i * ( fitness_i(x) - average_fitness(x) )
@@ -8,6 +9,12 @@ pub struct ReplicatorDynamics {
     pub payoff_matrix: DMatrix<f64>,
 }
 
+impl OdeSystem<DVector<f64>> for ReplicatorDynamics {
+    fn derivative(&self, _t: f64, x: &DVector<f64>) -> DVector<f64> {
+        self.calculate_derivative(x)
+    }
+}
+
 impl ReplicatorDynamics {
     pub fn new(payoff_matrix: DMatrix<f64>) -> Self {
         assert_eq!(payoff_matrix.nrows(), payoff_matrix.ncols(), "Payoff matrix must be square");
@@ -15,7 +22,10 @@ impl ReplicatorDynamics {
     }
 
     /// Computes the time derivative dx/dt for the population state x.
-    pub fn derivative(&self, x: &DVector<f64>) -> DVector<f64> {
+    /// Renamed to calculate_derivative to avoid conflict with OdeSystem::derivative,
+    /// though inherent methods usually take precedence. Kept public for backward compat if needed,
+    /// but the trait is the preferred interface.
+    pub fn calculate_derivative(&self, x: &DVector<f64>) -> DVector<f64> {
         let fitness_vector = &self.payoff_matrix * x;
         let average_fitness = x.dot(&fitness_vector);
 
@@ -26,12 +36,30 @@ impl ReplicatorDynamics {
         dxdt
     }
 
-    /// Simulates the dynamics over time using Runge-Kutta 4 method.
+    /// Backward-compatible wrapper for calculate_derivative.
+    #[deprecated(note = "Use OdeSystem::derivative instead")]
+    pub fn derivative(&self, x: &DVector<f64>) -> DVector<f64> {
+        self.calculate_derivative(x)
+    }
+
+    /// Simulates the dynamics over time using Runge-Kutta 4 method (default).
     pub fn simulate(
         &self,
         initial_population: DVector<f64>,
         time_horizon: f64,
         dt: f64,
+    ) -> Vec<(f64, DVector<f64>)> {
+        self.simulate_with(initial_population, time_horizon, dt, &RungeKutta4)
+    }
+
+    /// Simulates the dynamics with a provided solver strategy.
+    /// This allows swapping integrators (e.g., Euler vs RK4) for performance or stability studies.
+    pub fn simulate_with<S: Solver<DVector<f64>>>(
+        &self,
+        initial_population: DVector<f64>,
+        time_horizon: f64,
+        dt: f64,
+        solver: &S,
     ) -> Vec<(f64, DVector<f64>)> {
         let steps = (time_horizon / dt).ceil() as usize;
         let mut trajectory = Vec::with_capacity(steps + 1);
@@ -41,12 +69,7 @@ impl ReplicatorDynamics {
         trajectory.push((current_t, current_x.clone()));
 
         for _ in 0..steps {
-            let k1 = self.derivative(&current_x);
-            let k2 = self.derivative(&(&current_x + 0.5 * dt * &k1));
-            let k3 = self.derivative(&(&current_x + 0.5 * dt * &k2));
-            let k4 = self.derivative(&(&current_x + dt * &k3));
-
-            current_x += (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+            current_x = solver.solve(self, current_t, &current_x, dt);
             current_t += dt;
 
             // Normalize to prevent numerical drift from simplex
