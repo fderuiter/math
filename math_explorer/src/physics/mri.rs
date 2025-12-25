@@ -192,7 +192,7 @@ pub mod scanner {
 pub mod reconstruction {
     use super::*;
 
-    /// Helper to perform a separable 2D DFT/IDFT.
+    /// Helper to perform a separable 2D DFT/IDFT using Matrix Multiplication.
     ///
     /// Applies 1D transform to rows, then to columns.
     ///
@@ -204,54 +204,40 @@ pub mod reconstruction {
         let cols = matrix.ncols();
         let pi_factor = if inverse { 2.0 * PI } else { -2.0 * PI };
 
-        // Intermediate step: Transform rows
-        // For each row `r`, compute transform into `temp[r, :]`.
-        let mut temp = DMatrix::zeros(rows, cols);
+        // Optimization: Use Matrix Multiplication instead of nested loops.
+        // The DFT is a linear transformation.
+        // Row transform: T = M * W_cols
+        // Col transform: R = W_rows * T
+        // Total: R = W_rows * M * W_cols
 
-        for r in 0..rows {
-            for k in 0..cols {
-                // Output column index (frequency or space)
-                let mut sum = Complex::new(0.0, 0.0);
-                let phase_step = pi_factor * (k as f64) / (cols as f64);
+        // 1. Construct Column DFT Matrix W_cols (CxC)
+        // W[n, k] = exp(i * phase * n * k / N)
+        // This handles the row-wise transform (matrix * W)
+        let w_cols = DMatrix::from_fn(cols, cols, |n, k| {
+            let phase = pi_factor * (n as f64) * (k as f64) / (cols as f64);
+            Complex::from_polar(1.0, phase)
+        });
 
-                for n in 0..cols {
-                    // Input column index
-                    let val = matrix[(r, n)];
-                    let phase = phase_step * (n as f64);
-                    sum += val * Complex::from_polar(1.0, phase);
-                }
-                temp[(r, k)] = sum;
-            }
-        }
+        // 2. Intermediate step: Transform rows
+        let temp = matrix * w_cols;
 
-        // Final step: Transform columns of temp
-        // For each column `c`, compute transform into `result[:, c]`.
-        let mut result = DMatrix::zeros(rows, cols);
+        // 3. Construct Row DFT Matrix W_rows (RxR)
+        // W[k, n] = exp(i * phase * k * n / N)
+        // This handles the column-wise transform (W * temp)
+        let w_rows = DMatrix::from_fn(rows, rows, |k, n| {
+            let phase = pi_factor * (k as f64) * (n as f64) / (rows as f64);
+            Complex::from_polar(1.0, phase)
+        });
 
-        for c in 0..cols {
-            for k in 0..rows {
-                // Output row index
-                let mut sum = Complex::new(0.0, 0.0);
-                let phase_step = pi_factor * (k as f64) / (rows as f64);
-
-                for n in 0..rows {
-                    // Input row index
-                    let val = temp[(n, c)];
-                    let phase = phase_step * (n as f64);
-                    sum += val * Complex::from_polar(1.0, phase);
-                }
-                result[(k, c)] = sum;
-            }
-        }
-
-        result
+        // 4. Final step: Transform columns
+        w_rows * temp
     }
 
     /// Simulates the raw signal $S(k)$ measured from a 2D slice of spin density.
     ///
     /// Computes $S(k_x, k_y) = \sum_{x,y} \rho(x,y) e^{-i 2\pi (k_x x + k_y y)}$
     ///
-    /// **Optimization:** Uses Row-Column decomposition via shared helper ($O(N^3)$).
+    /// **Optimization:** Uses Matrix Multiplication ($O(N^3)$) which is heavily optimized by `nalgebra`.
     ///
     /// # Arguments
     /// * `density` - 2D matrix representing the spin density $\rho(x,y)$.
@@ -266,7 +252,7 @@ pub mod reconstruction {
     ///
     /// Computes $\rho(x,y) = \sum_{k_x, k_y} S(k_x, k_y) e^{+i 2\pi (k_x x + k_y y)}$
     ///
-    /// **Optimization:** Uses Row-Column decomposition via shared helper ($O(N^3)$).
+    /// **Optimization:** Uses Matrix Multiplication ($O(N^3)$) which is heavily optimized by `nalgebra`.
     ///
     /// # Arguments
     /// * `k_space` - 2D matrix of k-space samples $S(k_x, k_y)$.
