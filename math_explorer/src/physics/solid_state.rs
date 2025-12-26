@@ -53,6 +53,107 @@ pub mod second_quantization {
         }
     }
 
+    /// Defines the statistical behavior of particles (Fermions, Bosons, Anyons, etc.).
+    /// This trait allows extending the system with new particle types without modifying core logic.
+    pub trait ParticleStatistics {
+        /// Validates and returns the new occupation number after a creation operation.
+        fn apply_creation(&self, current_occupation: u8) -> Result<u8, String>;
+
+        /// Validates if a specific occupation count is allowed.
+        fn validate_set(&self, count: u8) -> Result<(), String>;
+
+        /// Calculates the commutation relation value between two operators.
+        /// Returns {A, B} for Fermions, [A, B] for Bosons.
+        fn commutation(&self, op1: &Operator, op2: &Operator) -> f64;
+    }
+
+    /// Standard Fermion Statistics (Pauli Exclusion).
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct FermionStats;
+
+    impl ParticleStatistics for FermionStats {
+        fn apply_creation(&self, current: u8) -> Result<u8, String> {
+            if current >= 1 {
+                Err("Pauli Exclusion: State already occupied".to_string())
+            } else {
+                Ok(1)
+            }
+        }
+
+        fn validate_set(&self, count: u8) -> Result<(), String> {
+            if count > 1 {
+                Err("Pauli Exclusion Principle: Fermions cannot occupy same state > 1".to_string())
+            } else {
+                Ok(())
+            }
+        }
+
+        fn commutation(&self, op1: &Operator, op2: &Operator) -> f64 {
+            // Fermions: Anti-commutator {A, B} = AB + BA
+            match (op1.op_type, op2.op_type) {
+                (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation) |
+                (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
+                    if op1.index == op2.index { 1.0 } else { 0.0 }
+                }
+                _ => 0.0,
+            }
+        }
+    }
+
+    /// Standard Boson Statistics.
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct BosonStats;
+
+    impl ParticleStatistics for BosonStats {
+        fn apply_creation(&self, current: u8) -> Result<u8, String> {
+            if current == u8::MAX {
+                Err("Boson saturation (u8 max)".to_string())
+            } else {
+                Ok(current + 1)
+            }
+        }
+
+        fn validate_set(&self, _count: u8) -> Result<(), String> {
+            Ok(())
+        }
+
+        fn commutation(&self, op1: &Operator, op2: &Operator) -> f64 {
+            // Bosons: Commutator [A, B] = AB - BA
+            match (op1.op_type, op2.op_type) {
+                (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation) => {
+                     if op1.index == op2.index { 1.0 } else { 0.0 }
+                },
+                (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
+                     if op1.index == op2.index { -1.0 } else { 0.0 }
+                },
+                _ => 0.0,
+            }
+        }
+    }
+
+    impl ParticleStatistics for ParticleType {
+        fn apply_creation(&self, current: u8) -> Result<u8, String> {
+            match self {
+                ParticleType::Fermion => FermionStats.apply_creation(current),
+                ParticleType::Boson => BosonStats.apply_creation(current),
+            }
+        }
+
+        fn validate_set(&self, count: u8) -> Result<(), String> {
+            match self {
+                ParticleType::Fermion => FermionStats.validate_set(count),
+                ParticleType::Boson => BosonStats.validate_set(count),
+            }
+        }
+
+        fn commutation(&self, op1: &Operator, op2: &Operator) -> f64 {
+            match self {
+                ParticleType::Fermion => FermionStats.commutation(op1, op2),
+                ParticleType::Boson => BosonStats.commutation(op1, op2),
+            }
+        }
+    }
+
     /// Fock State representation using occupation numbers.
     /// |n_1, n_2, ..., n_M>
     #[derive(Debug, Clone, PartialEq, Eq)]
@@ -71,39 +172,35 @@ pub mod second_quantization {
             }
         }
 
-        /// Sets the occupation number of a specific state directly.
-        pub fn set_occupation(&mut self, index: usize, count: u8, p_type: ParticleType) -> Result<(), String> {
+        /// Sets the occupation number using a specific strategy.
+        pub fn set_occupation_with_strategy<S: ParticleStatistics>(&mut self, index: usize, count: u8, strategy: &S) -> Result<(), String> {
             if index >= self.occupations.len() {
                 return Err(format!("Index {} out of bounds", index));
             }
-            if p_type == ParticleType::Fermion && count > 1 {
-                return Err("Pauli Exclusion Principle: Fermions cannot occupy same state > 1".to_string());
-            }
+            strategy.validate_set(count)?;
             self.occupations[index] = count;
+            Ok(())
+        }
+
+        /// Sets the occupation number of a specific state directly.
+        pub fn set_occupation(&mut self, index: usize, count: u8, p_type: ParticleType) -> Result<(), String> {
+            self.set_occupation_with_strategy(index, count, &p_type)
+        }
+
+        /// Tries to add a particle to the state (Apply creation operator) using a strategy.
+        pub fn create_particle_with_strategy<S: ParticleStatistics>(&mut self, index: usize, strategy: &S) -> Result<(), String> {
+            if index >= self.occupations.len() {
+                return Err(format!("Index {} out of bounds", index));
+            }
+            let current = self.occupations[index];
+            let new_val = strategy.apply_creation(current)?;
+            self.occupations[index] = new_val;
             Ok(())
         }
 
         /// Tries to add a particle to the state (Apply creation operator).
         pub fn create_particle(&mut self, index: usize, p_type: ParticleType) -> Result<(), String> {
-            if index >= self.occupations.len() {
-                return Err(format!("Index {} out of bounds", index));
-            }
-            let current = self.occupations[index];
-            match p_type {
-                ParticleType::Fermion => {
-                    if current >= 1 {
-                        return Err("Pauli Exclusion: State already occupied".to_string());
-                    }
-                    self.occupations[index] = 1;
-                },
-                ParticleType::Boson => {
-                    if current == u8::MAX {
-                        return Err("Boson saturation (u8 max)".to_string());
-                    }
-                    self.occupations[index] += 1;
-                }
-            }
-            Ok(())
+            self.create_particle_with_strategy(index, &p_type)
         }
     }
 
@@ -112,34 +209,8 @@ pub mod second_quantization {
     /// Returns the value of:
     /// * `{op1, op2}` for Fermions. Expected to be `delta_{ij}` for {c, c^\dagger}.
     /// * `[op1, op2]` for Bosons. Expected to be `delta_{ij}` for [a, a^\dagger].
-    pub fn check_commutation(op1: &Operator, op2: &Operator, p_type: ParticleType) -> f64 {
-        match p_type {
-            ParticleType::Fermion => {
-                // Fermions: Anti-commutator {A, B} = AB + BA
-                // {c_i, c_j^\dagger} = delta_{ij}
-                match (op1.op_type, op2.op_type) {
-                    (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation) |
-                    (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
-                        if op1.index == op2.index { 1.0 } else { 0.0 }
-                    }
-                    _ => 0.0, // {c, c} = 0, {c^\dagger, c^\dagger} = 0
-                }
-            }
-            ParticleType::Boson => {
-                // Bosons: Commutator [A, B] = AB - BA
-                // [a_i, a_j^\dagger] = delta_{ij}
-                // [a_i^\dagger, a_j] = -delta_{ij}
-                match (op1.op_type, op2.op_type) {
-                    (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation) => {
-                         if op1.index == op2.index { 1.0 } else { 0.0 }
-                    },
-                    (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
-                         if op1.index == op2.index { -1.0 } else { 0.0 }
-                    },
-                    _ => 0.0, // [a, a] = 0, [a^\dagger, a^\dagger] = 0
-                }
-            }
-        }
+    pub fn check_commutation<S: ParticleStatistics>(op1: &Operator, op2: &Operator, strategy: S) -> f64 {
+        strategy.commutation(op1, op2)
     }
 }
 
