@@ -54,7 +54,10 @@ Math Explorer is organized into high-level domains, each solving specific proble
 | Domain | Module | Description |
 | :--- | :--- | :--- |
 | **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
-| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Climate** (CERA Autoencoders), **Clinical Trials** (Win Ratio), and **LoraHub**. |
+| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), and **LoraHub**. |
+| **🧬 Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Kinetics** (Michaelis-Menten), and **Morphogenesis** (Turing Patterns). |
+| **🌍 Climate** | `math_explorer::climate` | **CERA Framework** for climate-invariant machine learning and auto-encoding. |
+| **🦠 Epidemiology** | `math_explorer::epidemiology` | **SIR/SEIR Models**, Network propagation, and Stochastic dynamics. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
 | **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, and Differential Geometry. |
 
@@ -95,7 +98,7 @@ println!("Favoritism Score: {}", score); // Higher is better
 ### 🌌 Physics: Chaos Theory
 Explore the Lorenz System and Lyapunov exponents.
 
-*(See `math_explorer/src/physics/chaos.rs` for implementation details)*
+*(See `math_explorer/src/physics/chaos/mod.rs` for implementation details)*
 
 ---
 

@@ -3,6 +3,7 @@
 use nalgebra::DMatrix;
 use crate::climate::autoencoder::Autoencoder;
 use crate::climate::predictor::Predictor;
+use crate::climate::loss::{cera_loss, mse_loss, earth_movers_distance};
 // Re-export CeraConfig for backward compatibility (or convenience)
 pub use crate::climate::config::CeraConfig;
 
@@ -91,6 +92,39 @@ impl Cera {
         let aligned_latent = latent.columns(0, aligned_channels).clone_owned();
         let predictor_input = self.reshape_for_predictor(&aligned_latent, batch_size);
         self.predictor.forward(&predictor_input)
+    }
+
+    /// Performs a single training step and returns the loss.
+    ///
+    /// This is a convenience method for demonstration purposes (e.g. in documentation).
+    /// It performs a forward pass and calculates loss but DOES NOT update weights
+    /// (backpropagation is mocked/simulated in `CeraTrainer`).
+    ///
+    /// # Arguments
+    /// * `inputs` - Input data matrix.
+    /// * `targets` - Target values for prediction.
+    /// * `labels` - Unused in this simplified signature, but kept for API consistency if needed.
+    ///
+    /// # Returns
+    /// Total loss (Reconstruction + Prediction + Alignment)
+    pub fn train_step(&mut self, inputs: &DMatrix<f32>, targets: &DMatrix<f32>, _labels: &DMatrix<f32>) -> f32 {
+         // This is a simplified forward pass similar to what happens in Trainer
+         // Assuming inputs act as both control and warm for this single step demo to avoid EMD errors on mismatched sizes
+         let num_levels = self.config.num_levels;
+         let batch_size = inputs.nrows() / num_levels;
+         let aligned_channels = self.config.aligned_channels;
+
+         let (latent, recon) = self.autoencoder.forward(inputs);
+         let aligned_latent = latent.columns(0, aligned_channels).clone_owned();
+         let predictor_input = self.reshape_for_predictor(&aligned_latent, batch_size);
+         let prediction = self.predictor.forward(&predictor_input);
+
+         let recon_loss = mse_loss(inputs, &recon);
+         let pred_loss = mse_loss(targets, &prediction);
+         // For a single batch of same data, EMD is 0
+         let emd_loss = 0.0;
+
+         cera_loss(recon_loss, pred_loss, emd_loss, self.config.lambda_pred, self.config.lambda_emd)
     }
 }
 
