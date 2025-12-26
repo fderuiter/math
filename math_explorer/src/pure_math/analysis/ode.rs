@@ -28,25 +28,32 @@ pub struct VecState(pub Vec<f64>);
 impl Add for VecState {
     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self {
-        // In a production system, we might want to check for length mismatch.
-        // For now, zip will truncate to the shorter length, but states should be consistent.
-        let new_data: Vec<f64> = self.0.iter()
-            .zip(rhs.0.iter())
-            .map(|(a, b)| a + b)
-            .collect();
-        VecState(new_data)
+    fn add(mut self, rhs: Self) -> Self {
+        // Reuse self's allocation.
+        // Truncate to the minimum length to match zip behavior (but states should be consistent).
+        let len = std::cmp::min(self.0.len(), rhs.0.len());
+        self.0.truncate(len);
+
+        for (i, val) in self.0.iter_mut().enumerate() {
+            // Safety: we truncated to min length, so i is valid for both.
+            // But we use safe indexing for correctness.
+            if let Some(r) = rhs.0.get(i) {
+                *val += r;
+            }
+        }
+        self
     }
 }
 
 impl Mul<f64> for VecState {
     type Output = Self;
 
-    fn mul(self, scalar: f64) -> Self {
-        let new_data: Vec<f64> = self.0.iter()
-            .map(|val| val * scalar)
-            .collect();
-        VecState(new_data)
+    fn mul(mut self, scalar: f64) -> Self {
+        // Reuse self's allocation.
+        for val in self.0.iter_mut() {
+            *val *= scalar;
+        }
+        self
     }
 }
 
