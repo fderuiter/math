@@ -18,3 +18,10 @@
 1. Applied "Hub and Spoke" to `clinical_trials`: Added Mermaid workflow and full example.
 2. Labeled `cannibalism` as "Theoretical" with a warning about placeholder status to manage user expectations.
 **Outcome:** Bridged the gap between code reality and user perception. High-value code is now visible; low-value code is honestly labeled.
+
+## 2025-12-19 - Biology Module Hub-and-Spoke
+**Gap:** The `biology` module is a collection of disjointed files (`neuroscience`, `morphogenesis`, `evolution`) with no central narrative connecting them. Users miss the connection between molecular kinetics and population dynamics.
+**Strategy:**
+1. Convert `biology/mod.rs` into a "Hub" cataloging the scales of life (Cellular -> Tissue -> Population).
+2. Deep dive into `neuroscience.rs` with a Mermaid diagram of the Hodgkin-Huxley gating variables, making the invisible ion flows visible.
+**Outcome:** A unified interface for biological modeling, allowing users to navigate by scale.

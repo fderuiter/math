@@ -1,13 +1,59 @@
-//! Neuroscience (Hodgkin-Huxley)
+//! # Neuroscience: Hodgkin-Huxley Model
 //!
-//! This module implements the Hodgkin-Huxley model for a neuron's action potential.
-//! The model describes how action potentials in neurons are initiated and propagated.
+//! A mathematical model that describes how action potentials in neurons are initiated and propagated.
 //! It is a set of nonlinear differential equations that approximates the electrical characteristics
-//! of excitable cells such as neurons and cardiac myocytes.
+//! of excitable cells.
 //!
-//! The current through the membrane is given by:
-//! $$ I = C_m \frac{dV}{dt} + I_{ion} $$
-//! where $I_{ion}$ includes Sodium ($Na^+$), Potassium ($K^+$), and Leak ($L$) currents.
+//! ## 🧠 The Model
+//!
+//! The membrane potential $V$ is controlled by the flow of ions across the membrane.
+//! The total current $I$ is given by:
+//!
+//! $$ C_m \frac{dV}{dt} = I_{ext} - I_{Na} - I_K - I_L $$
+//!
+//! Where the ionic currents are defined by voltage-dependent gating variables:
+//!
+//! * **Sodium ($Na^+$)**: Controlled by activation ($m$) and inactivation ($h$).
+//! * **Potassium ($K^+$)**: Controlled by activation ($n$).
+//! * **Leak ($L$)**: Passive flow.
+//!
+//! ## 📊 Gating Dynamics
+//!
+//! ```mermaid
+//! graph LR
+//!     subgraph Sodium["Sodium (Na+) Channel"]
+//!         M[m: Activation] -- Fast --> O_Na[Open Probability: m³h]
+//!         H[h: Inactivation] -- Slow --> O_Na
+//!     end
+//!     subgraph Potassium["Potassium (K+) Channel"]
+//!         N[n: Activation] -- Slow --> O_K[Open Probability: n⁴]
+//!     end
+//!
+//!     O_Na --> |Depolarization| V[Membrane Potential]
+//!     O_K --> |Repolarization| V
+//! ```
+//!
+//! ## 🚀 Usage
+//!
+//! ```rust
+//! use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+//!
+//! // 1. Initialize a neuron at resting potential (-65 mV)
+//! let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
+//!
+//! // 2. Simulate 10ms with a current injection
+//! let dt = 0.01; // 0.01 ms time step
+//! let steps = 1000;
+//! let current_injection = 20.0; // µA/cm²
+//!
+//! for i in 0..steps {
+//!     neuron.update(dt, current_injection);
+//!
+//!     if i % 100 == 0 {
+//!         println!("Time: {:.2} ms, Voltage: {:.2} mV", i as f64 * dt, neuron.v);
+//!     }
+//! }
+//! ```
 
 /// Represents the state of a Hodgkin-Huxley neuron.
 pub struct HodgkinHuxleyNeuron {
@@ -25,18 +71,19 @@ pub struct HodgkinHuxleyNeuron {
 }
 
 impl HodgkinHuxleyNeuron {
+    /// Creates a new neuron state.
+    ///
+    /// # Arguments
+    /// * `v_initial` - Initial membrane potential (e.g., -65.0 mV).
     pub fn new(v_initial: f64) -> Self {
         // Initialize gating variables to equilibrium at v_initial
-        // For simplicity, we can start them at some standard values or calculate steady state.
-        // Let's start with standard resting values approx.
         let v_rest = -65.0;
         Self {
             v: v_initial,
-            n: 0.32,
+            n: 0.32, // Approximate steady state at rest
             m: 0.05,
             h: 0.6,
             v_rest,
-
         }
     }
 
@@ -80,7 +127,12 @@ impl HodgkinHuxleyNeuron {
     }
 
     /// Updates the neuron state by a time step `dt` with external current `i_ext`.
-    /// Uses Euler integration for simplicity as requested/implied.
+    ///
+    /// Uses Euler integration to solve the differential equations.
+    ///
+    /// # Arguments
+    /// * `dt` - Time step in milliseconds (ms).
+    /// * `i_ext` - External current injection ($\mu A / cm^2$).
     pub fn update(&mut self, dt: f64, i_ext: f64) {
         // Constants
         let g_na = 120.0;
@@ -91,15 +143,14 @@ impl HodgkinHuxleyNeuron {
         let e_l = self.v_rest + 10.6;
 
         // Calculate currents
-        // I_tot equation from prompt: I_ext - g_Na m^3 h (V - E_Na) - g_K n^4 (V - E_K) - g_L (V - E_L)
-        // Note: Standard HH usually has C_m * dV/dt = I_ext - I_ionic
-        // Assuming C_m = 1.0 uF/cm^2
-
+        // I_ion = g_Na m^3 h (V - E_Na) + g_K n^4 (V - E_K) + g_L (V - E_L)
         let i_na = g_na * self.m.powi(3) * self.h * (self.v - e_na);
         let i_k = g_k * self.n.powi(4) * (self.v - e_k);
         let i_l = g_l * (self.v - e_l);
 
-        let dv_dt = i_ext - i_na - i_k - i_l; // Assuming C_m = 1
+        // dV/dt = (I_ext - I_ion) / C_m
+        // Assuming C_m = 1.0 uF/cm^2
+        let dv_dt = i_ext - i_na - i_k - i_l;
 
         self.v += dv_dt * dt;
 
