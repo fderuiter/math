@@ -1,5 +1,3 @@
-# Systems Core - Engineering Decision Records
-
 ## 2025-12-16 - [High Energy Physics Decomposition] **Violation:** `high_energy.rs` was a "God File" mixing Special Relativity, General Relativity, Radiative Processes, Fluid Dynamics, and Statistics. **Refactor:** Extracted into cohesive submodules (`observer`, `radiation`, `fluid_dynamics`, `general_relativity`, `statistics`) within a directory. **Trade-off:** Increased file count vs significantly improved Separation of Concerns and maintainability.
 
 ## 2025-05-23 - [ODE Solver Extraction] **Violation:** `SIRModel` and `SEIRModel` violated DRY by duplicating RK4 integration logic. **Refactor:** Extracted `RungeKutta4` into `analysis::ode` module using the Strategy Pattern (via `OdeSystem` trait). **Trade-off:** Generic solver adds a trait boundary vs flexibility to swap solvers and models independently.
@@ -8,3 +6,4 @@
 
 ## 2025-06-13 - [Solver Strategy Pattern] **Violation:** `lorenz_lyapunov` and `LorenzSystem` were tightly coupled to `RungeKutta4`, violating OCP and DIP. **Refactor:** Introduced `Solver` trait and implemented `Euler` and `RungeKutta4`. Refactored usage to accept `impl Solver`. **Trade-off:** Generic bounds complexity vs Ability to swap solvers dynamically.
 ## 2025-12-16 - [Battery Degradation Strong Typing] **Violation:** `battery_degradation` suffered from Primitive Obsession (raw `f64` for percentage) and hardcoded magic numbers. **Refactor:** Introduced `DepthOfDischarge`, `Cycles`, `Capacity` newtypes and `PowerLawModel` struct. **Trade-off:** More verbose initialization (`DepthOfDischarge::new(60.0)` vs `60.0`) vs compile-time/runtime validation and ability to support multiple battery chemistries.
+## 2025-06-14 - [MRI Physics Decomposition] **Violation:** `mri.rs` was a "God File" mixing Quantum Physics, Bloch Dynamics, Hardware Encoding, and Image Reconstruction. **Refactor:** Decomposed into cohesive submodules (`proton`, `bloch`, `scanner`, `reconstruction`) within `mri/` directory. **Trade-off:** Increased file count vs strict adherence to SRP and independent evolvability of components.
