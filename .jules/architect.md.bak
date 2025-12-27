@@ -7,11 +7,3 @@
 **Problem:** `math_explorer/src/physics/medical.rs` contained four distinct Treatment Planning domains (Calibration, Dose, Optimization, Evaluation) in a single file, violating the Single Responsibility Principle and limiting scalability.
 **Decision:** Applied "Module Extraction" to split `medical.rs` into a directory-based module `math_explorer/src/physics/medical/` with dedicated submodules.
 **Consequence:** Improved navigability and allows independent evolution of dose algorithms and optimization strategies.
-## 2026-05-24 - [Clinical Randomization Strategy]
-**Problem:** Randomization logic in `clinical_trials/design.rs` was tightly coupled to specific functions (`simple_randomization`, `block_randomization`), making it impossible to inject custom strategies or deterministic RNGs for testing.
-**Decision:** Applied "Strategy Pattern" via `AllocationStrategy` trait.
-**Consequence:**
-- Decouples allocation logic from execution flow (especially in `stratified_randomization`).
-- Enables Dependency Injection of RNGs for reproducible tests.
-- Allows future extension (e.g., Minimization/Urn methods) without breaking API.
-- Small overhead of dynamic dispatch or generic monomorphization (negligible for this domain).
