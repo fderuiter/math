@@ -212,13 +212,27 @@ pub mod reconstruction {
             for k in 0..cols {
                 // Output column index (frequency or space)
                 let mut sum = Complex::new(0.0, 0.0);
+
+                // OPTIMIZATION: Incremental Phase Update (The "Twiddle Factor" approach)
+                // Instead of calling `Complex::from_polar` inside the inner loop ($O(N^3)$ trig calls),
+                // we compute the step phase once per row-element ($O(N^2)$ trig calls) and accumulate
+                // by complex multiplication ($O(N^3)$ scalar mults).
+                //
+                // Mathematical basis:
+                // phase = pi_factor * k * n / N
+                // w_step = exp(i * pi_factor * k / N)
+                // w_curr[n] = (w_step)^n
+                // w_curr[n+1] = w_curr[n] * w_step
+
                 let phase_step = pi_factor * (k as f64) / (cols as f64);
+                let w_step = Complex::from_polar(1.0, phase_step);
+                let mut w = Complex::new(1.0, 0.0);
 
                 for n in 0..cols {
                     // Input column index
                     let val = matrix[(r, n)];
-                    let phase = phase_step * (n as f64);
-                    sum += val * Complex::from_polar(1.0, phase);
+                    sum += val * w;
+                    w *= w_step;
                 }
                 temp[(r, k)] = sum;
             }
@@ -232,13 +246,17 @@ pub mod reconstruction {
             for k in 0..rows {
                 // Output row index
                 let mut sum = Complex::new(0.0, 0.0);
+
+                // Same optimization for columns
                 let phase_step = pi_factor * (k as f64) / (rows as f64);
+                let w_step = Complex::from_polar(1.0, phase_step);
+                let mut w = Complex::new(1.0, 0.0);
 
                 for n in 0..rows {
                     // Input row index
                     let val = temp[(n, c)];
-                    let phase = phase_step * (n as f64);
-                    sum += val * Complex::from_polar(1.0, phase);
+                    sum += val * w;
+                    w *= w_step;
                 }
                 result[(k, c)] = sum;
             }
@@ -251,7 +269,7 @@ pub mod reconstruction {
     ///
     /// Computes $S(k_x, k_y) = \sum_{x,y} \rho(x,y) e^{-i 2\pi (k_x x + k_y y)}$
     ///
-    /// **Optimization:** Uses Row-Column decomposition via shared helper ($O(N^3)$).
+    /// **Optimization:** Uses Row-Column decomposition with incremental phase updates ($O(N^3)$).
     ///
     /// # Arguments
     /// * `density` - 2D matrix representing the spin density $\rho(x,y)$.
@@ -266,7 +284,7 @@ pub mod reconstruction {
     ///
     /// Computes $\rho(x,y) = \sum_{k_x, k_y} S(k_x, k_y) e^{+i 2\pi (k_x x + k_y y)}$
     ///
-    /// **Optimization:** Uses Row-Column decomposition via shared helper ($O(N^3)$).
+    /// **Optimization:** Uses Row-Column decomposition with incremental phase updates ($O(N^3)$).
     ///
     /// # Arguments
     /// * `k_space` - 2D matrix of k-space samples $S(k_x, k_y)$.
