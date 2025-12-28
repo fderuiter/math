@@ -3,6 +3,11 @@
 //! This module provides functionalities related to elliptic curves and modular forms,
 //! with a focus on concepts discussed in Florian Breuer's paper on the divisibility
 //! of coefficients of modular polynomials.
+//!
+//! ## References
+//!
+//! * Breuer, Florian. "On the divisibility of the coefficients of modular polynomials."
+//!   *Journal of Number Theory* 130.6 (2010): 1223-1232.
 
 use std::collections::HashMap;
 
@@ -85,10 +90,10 @@ pub struct Theorem11Bounds {
 /// The theorem provides bounds for primes p=2, 3, and 5.
 /// Let `a_{i,j}` be a coefficient of `Φ_N(X,Y)`.
 ///
-/// - If `2 nmid N`, then `v_2(a_{i,j}) >= 15 * (ψ(N) - i - j)`.
-/// - If `3 nmid N`, then `v_3(a_{i,j}) >= 3 * (ψ(N) - i - j)`.
-///   - If `N ≡ 1 mod 3`, the bound is `ceil(9/2 * (ψ(N) - i - j))`.
-/// - If `5 nmid N`, then `v_5(a_{i,j}) >= 3 * (ψ(N) - i - j)`.
+/// - If `2 ∤ N`, then `v_2(a_{i,j}) ≥ 15 * (ψ(N) - i - j)`.
+/// - If `3 ∤ N`, then `v_3(a_{i,j}) ≥ 3 * (ψ(N) - i - j)`.
+///   - If `N ≡ 1 mod 3`, the bound is `⌈9/2 * (ψ(N) - i - j)⌉`.
+/// - If `5 ∤ N`, then `v_5(a_{i,j}) ≥ 3 * (ψ(N) - i - j)`.
 ///
 /// The function returns `None` for a given prime if the condition on `N` is not met.
 ///
@@ -153,10 +158,10 @@ pub struct Theorem12Bounds {
 ///
 /// Let `a_{i,j}` be a coefficient of `Φ_N(X+1728, Y+1728)`.
 ///
-/// - If `2 nmid N`, then `v_2(a_{i,j}) >= 9 * (ψ(N) - i - j)`.
+/// - If `2 ∤ N`, then `v_2(a_{i,j}) ≥ 9 * (ψ(N) - i - j)`.
 ///   - If `N ≡ 1 mod 4`, the bound is `10 * (ψ(N) - i - j)`.
-/// - If `3 nmid N`, then `v_3(a_{i,j}) >= 6 * (ψ(N) - i - j)`.
-/// - If `7 nmid N`, then `v_7(a_{i,j}) >= 2 * (ψ(N) - i - j)`.
+/// - If `3 ∤ N`, then `v_3(a_{i,j}) ≥ 6 * (ψ(N) - i - j)`.
+/// - If `7 ∤ N`, then `v_7(a_{i,j}) ≥ 2 * (ψ(N) - i - j)`.
 ///
 /// # Panics
 /// Panics if `i + j >= ψ(N)`, as the theorem only applies for `i + j < ψ(N)`.
