@@ -1,4 +1,14 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
+
+/// Heap Sort Strategy
+pub struct HeapSort;
+
+impl<T: Ord + Clone> Sorter<T> for HeapSort {
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        heap_sort_impl(data)
+    }
+}
 
 /// Heap Sort
 ///
@@ -12,7 +22,12 @@ use super::stats::{SortingResult, SortingStats};
 ///
 /// Total Complexity: $O(n) + O(n \log n) = \Theta(n \log n)$.
 /// Space: $O(1)$ (in-place).
+#[deprecated(since = "0.2.0", note = "Use `HeapSort.sort(data)` strategy instead.")]
 pub fn heap_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
+    heap_sort_impl(data)
+}
+
+fn heap_sort_impl<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     let mut sorted_data = data.to_vec();
     let mut stats = SortingStats::default();
     let n = sorted_data.len();

@@ -1,4 +1,23 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
+
+/// Merge Sort Strategy
+pub struct MergeSort;
+
+impl<T: Ord + Clone> Sorter<T> for MergeSort {
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        merge_sort_impl(data)
+    }
+}
+
+/// Quick Sort Strategy
+pub struct QuickSort;
+
+impl<T: Ord + Clone> Sorter<T> for QuickSort {
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        quick_sort_impl(data)
+    }
+}
 
 /// Merge Sort
 ///
@@ -17,7 +36,12 @@ use super::stats::{SortingResult, SortingStats};
 /// * Result: $T(n) = \Theta(n \log n)$.
 ///
 /// **Space Complexity**: $O(n)$ auxiliary space.
+#[deprecated(since = "0.2.0", note = "Use `MergeSort.sort(data)` strategy instead.")]
 pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
+    merge_sort_impl(data)
+}
+
+fn merge_sort_impl<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     let mut stats = SortingStats::default();
     let sorted_data = merge_sort_recursive(data, &mut stats);
     SortingResult { sorted_data, stats }
@@ -78,7 +102,12 @@ fn merge<T: Ord + Clone>(left: &[T], right: &[T], stats: &mut SortingStats) -> V
 /// * **Average Case**: Expected depth is $O(\log n)$.
 ///
 /// **Space Complexity**: $O(\log n)$ stack space (average).
+#[deprecated(since = "0.2.0", note = "Use `QuickSort.sort(data)` strategy instead.")]
 pub fn quick_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
+    quick_sort_impl(data)
+}
+
+fn quick_sort_impl<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     let mut sorted_data = data.to_vec();
     let mut stats = SortingStats::default();
     if !sorted_data.is_empty() {

@@ -1,4 +1,14 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
+
+/// Radix Sort Strategy
+pub struct RadixSort;
+
+impl Sorter<u64> for RadixSort {
+    fn sort(&self, data: &[u64]) -> SortingResult<u64> {
+        radix_sort_impl(data)
+    }
+}
 
 /// Radix Sort (LSD)
 ///
@@ -15,7 +25,12 @@ use super::stats::{SortingResult, SortingStats};
 ///
 /// # constraints
 /// Only works for non-negative integers (`u64`) in this implementation.
+#[deprecated(since = "0.2.0", note = "Use `RadixSort.sort(data)` strategy instead.")]
 pub fn radix_sort(data: &[u64]) -> SortingResult<u64> {
+    radix_sort_impl(data)
+}
+
+fn radix_sort_impl(data: &[u64]) -> SortingResult<u64> {
     let mut sorted_data = data.to_vec();
     let mut stats = SortingStats::default();
 
