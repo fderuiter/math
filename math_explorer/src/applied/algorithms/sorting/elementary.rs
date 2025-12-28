@@ -1,4 +1,36 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
+
+/// Strategy implementation for Bubble Sort.
+pub struct BubbleSort;
+
+impl<T: Ord + Clone> Sorter<T> for BubbleSort {
+    fn sort(&self, data: &mut [T]) -> SortingStats {
+        let mut stats = SortingStats::default();
+        let n = data.len();
+
+        if n < 2 {
+            return stats;
+        }
+
+        for i in 0..n {
+            let mut swapped = false;
+            // Optimization: the last i elements are already in place
+            for j in 0..n - 1 - i {
+                stats.comparisons += 1;
+                if data[j] > data[j + 1] {
+                    data.swap(j, j + 1);
+                    stats.swaps += 1;
+                    swapped = true;
+                }
+            }
+            if !swapped {
+                break;
+            }
+        }
+        stats
+    }
+}
 
 /// Bubble Sort
 ///
@@ -10,32 +42,43 @@ use super::stats::{SortingResult, SortingStats};
 /// * **Swaps (Worst Case)**: Reverse order implies every comparison leads to a swap: $\frac{n(n-1)}{2} = \Theta(n^2)$.
 /// * **Swaps (Best Case)**: Sorted order implies 0 swaps.
 /// * **Stability**: Yes.
+#[deprecated(since = "0.2.0", note = "Use `BubbleSort` struct with `Sorter` trait instead.")]
 pub fn bubble_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     let mut sorted_data = data.to_vec();
-    let mut stats = SortingStats::default();
-    let n = sorted_data.len();
+    let stats = BubbleSort.sort(&mut sorted_data);
+    SortingResult { sorted_data, stats }
+}
 
-    if n < 2 {
-        return SortingResult { sorted_data, stats };
-    }
+/// Strategy implementation for Insertion Sort.
+pub struct InsertionSort;
 
-    for i in 0..n {
-        let mut swapped = false;
-        // Optimization: the last i elements are already in place
-        for j in 0..n - 1 - i {
-            stats.comparisons += 1;
-            if sorted_data[j] > sorted_data[j + 1] {
-                sorted_data.swap(j, j + 1);
-                stats.swaps += 1;
-                swapped = true;
+impl<T: Ord + Clone> Sorter<T> for InsertionSort {
+    fn sort(&self, data: &mut [T]) -> SortingStats {
+        let mut stats = SortingStats::default();
+        let n = data.len();
+
+        for i in 1..n {
+            let mut j = i;
+            let temp = data[i].clone();
+            stats.assignments += 1; // temp = ...
+
+            while j > 0 {
+                stats.comparisons += 1;
+                if data[j - 1] > temp {
+                    data[j] = data[j - 1].clone(); // Shift
+                    stats.assignments += 1;
+                    j -= 1;
+                } else {
+                    break;
+                }
+            }
+            if j != i {
+                data[j] = temp;
+                stats.assignments += 1;
             }
         }
-        if !swapped {
-            break;
-        }
+        stats
     }
-
-    SortingResult { sorted_data, stats }
 }
 
 /// Insertion Sort
@@ -48,44 +91,9 @@ pub fn bubble_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
 ///   Total time: $\sum_{k=2}^{n} (k-1) = \Theta(n^2)$.
 /// * **Best Case**: Sorted order. 1 comparison per element, 0 swaps. $\Theta(n)$.
 /// * **Stability**: Yes.
+#[deprecated(since = "0.2.0", note = "Use `InsertionSort` struct with `Sorter` trait instead.")]
 pub fn insertion_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     let mut sorted_data = data.to_vec();
-    let mut stats = SortingStats::default();
-    let n = sorted_data.len();
-
-    for i in 1..n {
-        let mut j = i;
-        // We count assignments for the temp variable logic if we implemented it that way,
-        // but here we use swaps to 'bubble' the element down, which is a common implementation variant.
-        // A strict insertion sort shifts elements. Let's implement shift for strict adherence to "Insertion".
-
-        // However, in Rust `swap` is idiomatic. If we want to strictly count "shifts" as assignments:
-        // Let's stick to the swap-based implementation often taught, or the shift-based one?
-        // Shift based is standard.
-        // temp = A[i]
-        // while j > 0 and A[j-1] > temp: A[j] = A[j-1]; j--;
-        // A[j] = temp;
-
-        // This requires T to be Copy or we clone. We have Clone.
-
-        let temp = sorted_data[i].clone();
-        stats.assignments += 1; // temp = ...
-
-        while j > 0 {
-            stats.comparisons += 1;
-            if sorted_data[j - 1] > temp {
-                sorted_data[j] = sorted_data[j - 1].clone(); // Shift
-                stats.assignments += 1;
-                j -= 1;
-            } else {
-                break;
-            }
-        }
-        if j != i {
-            sorted_data[j] = temp;
-            stats.assignments += 1;
-        }
-    }
-
+    let stats = InsertionSort.sort(&mut sorted_data);
     SortingResult { sorted_data, stats }
 }

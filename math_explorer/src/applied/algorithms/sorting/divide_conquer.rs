@@ -1,4 +1,19 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
+
+/// Strategy implementation for Merge Sort.
+pub struct MergeSort;
+
+impl<T: Ord + Clone> Sorter<T> for MergeSort {
+    fn sort(&self, data: &mut [T]) -> SortingStats {
+        let mut stats = SortingStats::default();
+        let sorted = merge_sort_recursive(data, &mut stats);
+        // Copy back to data. This is an overhead of the Strategy pattern for out-of-place algos wrapping as in-place.
+        data.clone_from_slice(&sorted);
+        stats.assignments += data.len() as u64;
+        stats
+    }
+}
 
 /// Merge Sort
 ///
@@ -17,6 +32,7 @@ use super::stats::{SortingResult, SortingStats};
 /// * Result: $T(n) = \Theta(n \log n)$.
 ///
 /// **Space Complexity**: $O(n)$ auxiliary space.
+#[deprecated(since = "0.2.0", note = "Use `MergeSort` struct with `Sorter` trait instead.")]
 pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     let mut stats = SortingStats::default();
     let sorted_data = merge_sort_recursive(data, &mut stats);
@@ -67,6 +83,20 @@ fn merge<T: Ord + Clone>(left: &[T], right: &[T], stats: &mut SortingStats) -> V
     result
 }
 
+/// Strategy implementation for Quick Sort.
+pub struct QuickSort;
+
+impl<T: Ord + Clone> Sorter<T> for QuickSort {
+    fn sort(&self, data: &mut [T]) -> SortingStats {
+        let mut stats = SortingStats::default();
+        if !data.is_empty() {
+            let n = data.len();
+            quick_sort_recursive(data, 0, n - 1, &mut stats);
+        }
+        stats
+    }
+}
+
 /// Quick Sort
 ///
 /// Selects a pivot and partitions the array.
@@ -78,6 +108,7 @@ fn merge<T: Ord + Clone>(left: &[T], right: &[T], stats: &mut SortingStats) -> V
 /// * **Average Case**: Expected depth is $O(\log n)$.
 ///
 /// **Space Complexity**: $O(\log n)$ stack space (average).
+#[deprecated(since = "0.2.0", note = "Use `QuickSort` struct with `Sorter` trait instead.")]
 pub fn quick_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     let mut sorted_data = data.to_vec();
     let mut stats = SortingStats::default();
