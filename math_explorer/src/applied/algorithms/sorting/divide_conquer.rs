@@ -1,26 +1,19 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
 
-/// Merge Sort
-///
-/// Divides the array into two halves, recursively sorts them, and merges the sorted halves.
-///
-/// # Mathematical Analysis
-///
-/// **Recurrence Relation**: $T(n) = 2T(n/2) + \Theta(n)$.
-///
-/// Using the **Master Theorem** for $T(n) = aT(n/b) + f(n)$:
-/// * $a = 2$ (subproblems)
-/// * $b = 2$ (factor of reduction)
-/// * $f(n) = n$ (merge cost)
-/// * $\log_b a = \log_2 2 = 1$.
-/// * Since $f(n) = \Theta(n^{\log_b a})$, we are in Case 2.
-/// * Result: $T(n) = \Theta(n \log n)$.
-///
-/// **Space Complexity**: $O(n)$ auxiliary space.
-pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
-    let mut stats = SortingStats::default();
-    let sorted_data = merge_sort_recursive(data, &mut stats);
-    SortingResult { sorted_data, stats }
+/// Merge Sort Strategy.
+pub struct MergeSort;
+
+impl<T: Ord + Clone> Sorter<T> for MergeSort {
+    fn name(&self) -> &'static str {
+        "Merge Sort"
+    }
+
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        let mut stats = SortingStats::default();
+        let sorted_data = merge_sort_recursive(data, &mut stats);
+        SortingResult { sorted_data, stats }
+    }
 }
 
 fn merge_sort_recursive<T: Ord + Clone>(data: &[T], stats: &mut SortingStats) -> Vec<T> {
@@ -67,25 +60,23 @@ fn merge<T: Ord + Clone>(left: &[T], right: &[T], stats: &mut SortingStats) -> V
     result
 }
 
-/// Quick Sort
-///
-/// Selects a pivot and partitions the array.
-///
-/// # Probabilistic Analysis
-///
-/// * **Best Case**: Pivot splits array in half. $O(n \log n)$.
-/// * **Worst Case**: Pivot is min or max (unbalanced). Recurrence $T(n) = T(n-1) + \Theta(n) \implies O(n^2)$.
-/// * **Average Case**: Expected depth is $O(\log n)$.
-///
-/// **Space Complexity**: $O(\log n)$ stack space (average).
-pub fn quick_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
-    let mut sorted_data = data.to_vec();
-    let mut stats = SortingStats::default();
-    if !sorted_data.is_empty() {
-        let n = sorted_data.len();
-        quick_sort_recursive(&mut sorted_data, 0, n - 1, &mut stats);
+/// Quick Sort Strategy.
+pub struct QuickSort;
+
+impl<T: Ord + Clone> Sorter<T> for QuickSort {
+    fn name(&self) -> &'static str {
+        "Quick Sort"
     }
-    SortingResult { sorted_data, stats }
+
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        let mut sorted_data = data.to_vec();
+        let mut stats = SortingStats::default();
+        if !sorted_data.is_empty() {
+            let n = sorted_data.len();
+            quick_sort_recursive(&mut sorted_data, 0, n - 1, &mut stats);
+        }
+        SortingResult { sorted_data, stats }
+    }
 }
 
 fn quick_sort_recursive<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, stats: &mut SortingStats) {
@@ -99,14 +90,7 @@ fn quick_sort_recursive<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, 
 }
 
 fn partition<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, stats: &mut SortingStats) -> usize {
-    // We choose the last element as pivot (Lomuto partition scheme)
-    // To avoid worst-case on sorted arrays, random pivot or median-of-three is better,
-    // but the prompt describes standard partitioning logic.
-    // For "Robustness", let's stick to standard Lomuto but acknowledge pivot choice matters.
-
     let pivot_index = high;
-    // We can't easily move out of slice without unsafe or cloning, so we index.
-
     let mut i = low;
     for j in low..high {
         stats.comparisons += 1;
@@ -121,4 +105,22 @@ fn partition<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, stats: &mut
     arr.swap(i, high);
     stats.swaps += 1;
     i
+}
+
+/// Legacy wrapper for Merge Sort.
+///
+/// # Deprecated
+/// Use `MergeSort.sort(data)` instead.
+#[deprecated(since = "0.2.0", note = "Use the `MergeSort` struct implementing the `Sorter` trait.")]
+pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
+    MergeSort.sort(data)
+}
+
+/// Legacy wrapper for Quick Sort.
+///
+/// # Deprecated
+/// Use `QuickSort.sort(data)` instead.
+#[deprecated(since = "0.2.0", note = "Use the `QuickSort` struct implementing the `Sorter` trait.")]
+pub fn quick_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
+    QuickSort.sort(data)
 }
