@@ -18,3 +18,11 @@
 1. Applied "Hub and Spoke" to `clinical_trials`: Added Mermaid workflow and full example.
 2. Labeled `cannibalism` as "Theoretical" with a warning about placeholder status to manage user expectations.
 **Outcome:** Bridged the gap between code reality and user perception. High-value code is now visible; low-value code is honestly labeled.
+
+## 2025-12-24 - Physics Module Taxonomy
+**Gap:** The `physics` module has 11 submodules but `mod.rs` was just a list. Users had to open each file to understand if "high_energy" meant Particle Physics or Relativity.
+**Strategy:**
+1.  Apply "Hub and Spoke" pattern to `physics/mod.rs`.
+2.  Group submodules into 5 clear domains: Quantum, Astrophysics, Materials, Medical, and Chaos.
+3.  Use the `LorenzSystem` as the canonical example (visually recognizable science).
+**Outcome:** Transformed a flat list into a structured map of physical sciences.
