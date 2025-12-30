@@ -1,10 +1,18 @@
 use super::{calculate_favoritism_score, FavoritismInputs};
+use std::fmt;
 
 /// Represents a child with a name and a set of attributes for favoritism calculation.
 #[derive(Debug, Clone)]
 pub struct Child {
     pub name: String,
     pub inputs: FavoritismInputs,
+}
+
+impl fmt::Display for Child {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "👶 Child Profile: {}", self.name)?;
+        write!(f, "{}", self.inputs)
+    }
 }
 
 /// Determines the favorite child from a list of children based on the favoritism score.

@@ -1,4 +1,5 @@
 use nalgebra::DVector;
+use std::fmt;
 
 /// Time and proximity related parameters.
 ///
@@ -202,4 +203,42 @@ pub struct FavoritismInputs {
     pub compliments: ComplimentParams,
     /// Family context (siblings).
     pub family: FamilyParams,
+}
+
+impl fmt::Display for FavoritismInputs {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "📋 Favoritism Strategy Profile")?;
+        writeln!(f, "--------------------------------")?;
+
+        // Wealth & Success (The "Golden Child" factors)
+        let wealth_icon = if self.personality.wealth > 8.0 { "💰" } else { "💸" };
+        writeln!(f, "{} Wealth Score: {:.1}/10", wealth_icon, self.personality.wealth)?;
+
+        let talent_icon = if self.personality.talent > 8.0 { "🌟" } else { "😐" };
+        writeln!(f, "{} Talent Score: {:.1}/10", talent_icon, self.personality.talent)?;
+
+        // Gifts
+        let gift_type = if self.gifts.g_practical > self.gifts.g_emotional {
+            "Practical (Cash is King)"
+        } else {
+            "Emotional (Sentimental)"
+        };
+        writeln!(f, "🎁 Gift Strategy: {}", gift_type)?;
+
+        // Contact
+        let contact_status = if self.contact.time_since_last_contact < 3.0 {
+            "Excellent (Called recently)"
+        } else if self.contact.time_since_last_contact < 14.0 {
+            "Average (It's been a while)"
+        } else {
+            "Poor (They forgot your voice)"
+        };
+        writeln!(f, "📞 Contact Status: {}", contact_status)?;
+
+        // Social
+        let social_bonus = if self.social.helped_during_crisis { "✅ Hero (Helped in Crisis)" } else { "❌ Bylander" };
+        writeln!(f, "🆘 Crisis Response: {}", social_bonus)?;
+
+        Ok(())
+    }
 }

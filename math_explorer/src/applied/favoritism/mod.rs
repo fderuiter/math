@@ -91,3 +91,4 @@ pub use types::{
     ComplimentParams,
     FamilyParams,
 };
+pub use favorite_child::Child;
