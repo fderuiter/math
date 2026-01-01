@@ -22,7 +22,33 @@ fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Po
     )
 }
 
+/// Calculates gradient using direct indexing without bounds checks.
+/// Assumes that idx +/- 1, idx +/- stride_y, idx +/- stride_z are valid.
+/// Only for use inside the safe interior zone of the grid.
+#[inline(always)]
+fn get_gradient_fast(data: &[f32], idx: usize, stride_y: usize, stride_z: usize) -> Point3D {
+    // Safety: The caller must ensure idx is in the 'safe zone' (interior of the grid).
+    // The safe zone logic in extract_isosurface guarantees:
+    // idx +/- 1, idx +/- stride_y, idx +/- stride_z are all within data bounds.
+    unsafe {
+        let dx = (*data.get_unchecked(idx + 1) - *data.get_unchecked(idx - 1)) * 0.5;
+        let dy = (*data.get_unchecked(idx + stride_y) - *data.get_unchecked(idx - stride_y)) * 0.5;
+        let dz = (*data.get_unchecked(idx + stride_z) - *data.get_unchecked(idx - stride_z)) * 0.5;
+
+        // Use a small epsilon for length squared to avoid sqrt of near-zero.
+        // Original threshold was len > 1e-6, so len_sq > 1e-12.
+        let len_sq = dx * dx + dy * dy + dz * dz;
+        if len_sq > 1e-12 {
+            let len = len_sq.sqrt();
+            Point3D::new(dx / len, dy / len, dz / len)
+        } else {
+            Point3D::new(0.0, 0.0, 0.0)
+        }
+    }
+}
+
 /// Calculates the gradient at a grid point using central differences.
+/// Safe version with full bounds checking.
 #[inline]
 fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
     let dx = if x == 0 {
@@ -48,13 +74,6 @@ fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
     } else {
         (grid.get(x, y, z + 1) - grid.get(x, y, z - 1)) / 2.0
     };
-
-    // The gradient points from low values to high values.
-    // Inside: V < Threshold, Outside: V >= Threshold.
-    // So gradient points OUTWARD.
-    // The surface normal is usually defined as pointing outward.
-    // Thus, Normal = Normalized Gradient.
-    // (Previous implementation inverted this, fixed now).
 
     let len = (dx * dx + dy * dy + dz * dz).sqrt();
     if len > 1e-6 {
@@ -103,73 +122,100 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
         let z_base = z * stride_z;
         let z_pos = grid.origin.z + (z as f32) * grid.voxel_size.z;
 
+        let safe_z = z >= 1 && z <= grid.depth - 3;
+
         for y in 0..grid.height - 1 {
             let zy_base = z_base + y * stride_y;
             let y_pos = grid.origin.y + (y as f32) * grid.voxel_size.y;
+            let safe_y = y >= 1 && y <= grid.height - 3;
+
+            // Profiler Optimization: Sliding Window
+            // Pre-load the 'back face' (x=0) values.
+            // Nodes: 0, 3, 4, 7
+            let mut v0 = grid.data[zy_base];
+            let mut v3 = grid.data[zy_base + stride_y];
+            let mut v4 = grid.data[zy_base + stride_z];
+            let mut v7 = grid.data[zy_base + stride_y + stride_z];
+
+            // Compute initial back mask
+            let mut back_mask = 0;
+            if v0 < threshold { back_mask |= 1; }
+            if v3 < threshold { back_mask |= 8; }
+            if v4 < threshold { back_mask |= 16; }
+            if v7 < threshold { back_mask |= 128; }
 
             for x in 0..grid.width - 1 {
                 let base_idx = zy_base + x;
-                let x_pos = grid.origin.x + (x as f32) * grid.voxel_size.x;
 
-                // 1. Determine the index of the case (0-255)
-                let mut cube_index = 0;
-                let mut corner_values = [0.0; 8];
-                let mut corner_pos = [Point3D::new(0.0,0.0,0.0); 8];
-                // Profiler Note: Initializing normals here is wasteful if edge_flags == 0.
-                // We will compute them lazily later.
-                let mut corner_normals = [Point3D::new(0.0,0.0,0.0); 8];
-
-                // Direct access for corner values to avoid redundant index calculation
-                // Vertices are ordered:
-                // 0: (0,0,0), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)
-                // 4: (0,0,1), 5: (1,0,1), 6: (1,1,1), 7: (0,1,1)
-
-                let v0 = grid.data[base_idx];
+                // Load Front Face (nodes 1, 2, 5, 6)
                 let v1 = grid.data[base_idx + 1];
                 let v2 = grid.data[base_idx + 1 + stride_y];
-                let v3 = grid.data[base_idx + stride_y];
-                let v4 = grid.data[base_idx + stride_z];
                 let v5 = grid.data[base_idx + 1 + stride_z];
                 let v6 = grid.data[base_idx + 1 + stride_y + stride_z];
-                let v7 = grid.data[base_idx + stride_y + stride_z];
 
-                corner_values[0] = v0; if v0 < threshold { cube_index |= 1; }
-                corner_values[1] = v1; if v1 < threshold { cube_index |= 2; }
-                corner_values[2] = v2; if v2 < threshold { cube_index |= 4; }
-                corner_values[3] = v3; if v3 < threshold { cube_index |= 8; }
-                corner_values[4] = v4; if v4 < threshold { cube_index |= 16; }
-                corner_values[5] = v5; if v5 < threshold { cube_index |= 32; }
-                corner_values[6] = v6; if v6 < threshold { cube_index |= 64; }
-                corner_values[7] = v7; if v7 < threshold { cube_index |= 128; }
+                let mut front_mask = 0;
+                if v1 < threshold { front_mask |= 2; }
+                if v2 < threshold { front_mask |= 4; }
+                if v5 < threshold { front_mask |= 32; }
+                if v6 < threshold { front_mask |= 64; }
 
-                // Only compute positions if needed (though it's cheap)
-                // We do it here to keep logic simple for step 3.
-                let next_x_pos = x_pos + grid.voxel_size.x;
-                let next_y_pos = y_pos + grid.voxel_size.y;
-                let next_z_pos = z_pos + grid.voxel_size.z;
-
-                corner_pos[0] = Point3D::new(x_pos, y_pos, z_pos);
-                corner_pos[1] = Point3D::new(next_x_pos, y_pos, z_pos);
-                corner_pos[2] = Point3D::new(next_x_pos, next_y_pos, z_pos);
-                corner_pos[3] = Point3D::new(x_pos, next_y_pos, z_pos);
-                corner_pos[4] = Point3D::new(x_pos, y_pos, next_z_pos);
-                corner_pos[5] = Point3D::new(next_x_pos, y_pos, next_z_pos);
-                corner_pos[6] = Point3D::new(next_x_pos, next_y_pos, next_z_pos);
-                corner_pos[7] = Point3D::new(x_pos, next_y_pos, next_z_pos);
+                let cube_index = back_mask | front_mask;
 
                 // 2. Check if the cube is entirely inside or outside
                 let edge_flags = CUBE_EDGE_FLAGS[cube_index];
                 if edge_flags == 0 {
+                    // Shift window and continue
+                    v0 = v1; v3 = v2; v4 = v5; v7 = v6;
+                    back_mask = ((front_mask & 2) >> 1) |
+                                ((front_mask & 4) << 1) |
+                                ((front_mask & 32) >> 1) |
+                                ((front_mask & 64) << 1);
                     continue;
                 }
 
+                // If active, we need full data
+                let x_pos = grid.origin.x + (x as f32) * grid.voxel_size.x;
+                let safe_x = x >= 1 && x <= grid.width - 3;
+
+                // Construct full corner arrays
+                let corner_values = [v0, v1, v2, v3, v4, v5, v6, v7];
+
+                let next_x_pos = x_pos + grid.voxel_size.x;
+                let next_y_pos = y_pos + grid.voxel_size.y;
+                let next_z_pos = z_pos + grid.voxel_size.z;
+
+                let corner_pos = [
+                    Point3D::new(x_pos, y_pos, z_pos),
+                    Point3D::new(next_x_pos, y_pos, z_pos),
+                    Point3D::new(next_x_pos, next_y_pos, z_pos),
+                    Point3D::new(x_pos, next_y_pos, z_pos),
+                    Point3D::new(x_pos, y_pos, next_z_pos),
+                    Point3D::new(next_x_pos, y_pos, next_z_pos),
+                    Point3D::new(next_x_pos, next_y_pos, next_z_pos),
+                    Point3D::new(x_pos, next_y_pos, next_z_pos),
+                ];
+
+                let mut corner_normals = [Point3D::new(0.0,0.0,0.0); 8];
+
                 // Profiler Optimization: Lazy Gradient Computation
-                // Only compute gradients if the cube contains a surface intersection.
-                for i in 0..8 {
-                    let ox = x + VERTEX_OFFSET[i][0];
-                    let oy = y + VERTEX_OFFSET[i][1];
-                    let oz = z + VERTEX_OFFSET[i][2];
-                    corner_normals[i] = get_gradient(grid, ox, oy, oz);
+                let entirely_safe = safe_x && safe_y && safe_z;
+
+                if entirely_safe {
+                    corner_normals[0] = get_gradient_fast(&grid.data, base_idx, stride_y, stride_z);
+                    corner_normals[1] = get_gradient_fast(&grid.data, base_idx + 1, stride_y, stride_z);
+                    corner_normals[2] = get_gradient_fast(&grid.data, base_idx + 1 + stride_y, stride_y, stride_z);
+                    corner_normals[3] = get_gradient_fast(&grid.data, base_idx + stride_y, stride_y, stride_z);
+                    corner_normals[4] = get_gradient_fast(&grid.data, base_idx + stride_z, stride_y, stride_z);
+                    corner_normals[5] = get_gradient_fast(&grid.data, base_idx + 1 + stride_z, stride_y, stride_z);
+                    corner_normals[6] = get_gradient_fast(&grid.data, base_idx + 1 + stride_y + stride_z, stride_y, stride_z);
+                    corner_normals[7] = get_gradient_fast(&grid.data, base_idx + stride_y + stride_z, stride_y, stride_z);
+                } else {
+                    for i in 0..8 {
+                        let ox = x + VERTEX_OFFSET[i][0];
+                        let oy = y + VERTEX_OFFSET[i][1];
+                        let oz = z + VERTEX_OFFSET[i][2];
+                        corner_normals[i] = get_gradient(grid, ox, oy, oz);
+                    }
                 }
 
                 // 3. Compute intersection points on required edges
@@ -213,6 +259,13 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
 
                     i += 3;
                 }
+
+                // Shift for next iteration (must do this even if active)
+                v0 = v1; v3 = v2; v4 = v5; v7 = v6;
+                back_mask = ((front_mask & 2) >> 1) |
+                            ((front_mask & 4) << 1) |
+                            ((front_mask & 32) >> 1) |
+                            ((front_mask & 64) << 1);
             }
         }
     }

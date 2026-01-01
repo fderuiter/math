@@ -3,3 +3,4 @@
 ## 2025-12-17 - [Optimization] **Bottleneck:** O(N^3) Gradient Calculation in Marching Cubes **Strategy:** Lazy Evaluation (Compute only on surface) **Gain:** 6.2x speedup (213ms -> 34ms)
 ## 2025-05-13 - [Optimization] **Bottleneck:** O(N^2) Partition Function (f_k) Calculation **Strategy:** Euler's Pentagonal Number Theorem (O(sqrt(N))) **Gain:** 41,000x speedup (3.23s -> 78µs) for precision=100000
 ## 2025-05-20 - [Optimization] **Bottleneck:** Isosurface Extraction Memory/CPU Overhead **Strategy:** Linear Indexing + Inlining + Pre-allocation **Gain:** 20% speedup (277ms -> 220ms)
+## 2024-10-24 - [Optimization] **Bottleneck:** [Marching Cubes Memory Access] **Strategy:** [Sliding Window + Unchecked Access] **Gain:** [21.5ms -> 11.0ms (48% reduction)]
