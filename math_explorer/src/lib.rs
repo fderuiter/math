@@ -1,3 +1,26 @@
+//! # Math Explorer
+//!
+//! `math_explorer` is a comprehensive Rust library that bridges the gap between rigorous academic theory and executable code.
+//! It is organized into high-level domains, each solving specific problems:
+//!
+//! - **AI**: Deep learning primitives, Transformers, and Neural Rendering.
+//! - **Applied**: Models for real-world (and satirical) scenarios like Favoritism, Clinical Trials, and Climate Science.
+//! - **Physics**: Implementations of Quantum Mechanics, Fluid Dynamics, Chaos Theory, and more.
+//! - **Pure Math**: Algorithms for Number Theory, Algebra, and Analysis.
+//! - **Biology**: Computational biology models including Neuroscience and Morphogenesis.
+//!
+//! ## Quick Start
+//!
+//! ```rust
+//! use math_explorer::physics::quantum::clebsch_gordan;
+//!
+//! fn main() {
+//!     // Calculate Clebsch-Gordan coefficients
+//!     let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
+//!     println!("Coeff: {}", coeff);
+//! }
+//! ```
+
 pub mod ai;
 pub mod applied;
 pub mod climate;

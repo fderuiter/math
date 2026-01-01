@@ -5,16 +5,22 @@
 //! This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
 //! states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
 //! in general.
+//!
+//! # Example: Logistic Map Lyapunov Exponent
+//!
+//! ```
+//! use math_explorer::physics::chaos::metrics;
+//!
+//! // Calculate the Lyapunov exponent for the Logistic Map with r=3.9 (chaotic regime)
+//! // A positive exponent indicates chaos.
+//! let lambda = metrics::logistic_lyapunov(3.9, 0.1, 1000);
+//! assert!(lambda > 0.0);
+//! ```
 
 pub mod logistic;
 pub mod lorenz;
 pub mod metrics;
 pub mod fractals;
-
-// Re-export specific items to maintain backward compatibility if needed,
-// but the plan says "Extract `logistic` module to `math_explorer/src/physics/chaos/logistic.rs`".
-// The original `chaos.rs` had `pub mod logistic`, `pub mod lorenz`, `pub mod metrics`, `pub mod fractals`.
-// So we just need to declare them as pub mod.
 
 #[cfg(test)]
 mod tests {
