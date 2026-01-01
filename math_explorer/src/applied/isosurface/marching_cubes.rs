@@ -1,5 +1,6 @@
 use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE, VERTEX_OFFSET};
-use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
+use super::types::{Mesh, Point3D, Triangle};
+use super::traits::ScalarField3D;
 
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
 #[inline]
@@ -24,10 +25,10 @@ fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Po
 
 /// Calculates the gradient at a grid point using central differences.
 #[inline]
-fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
+fn get_gradient<S: ScalarField3D + ?Sized>(grid: &S, x: usize, y: usize, z: usize) -> Point3D {
     let dx = if x == 0 {
         grid.get(x + 1, y, z) - grid.get(x, y, z)
-    } else if x == grid.width - 1 {
+    } else if x == grid.width() - 1 {
         grid.get(x, y, z) - grid.get(x - 1, y, z)
     } else {
         (grid.get(x + 1, y, z) - grid.get(x - 1, y, z)) / 2.0
@@ -35,7 +36,7 @@ fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
 
     let dy = if y == 0 {
         grid.get(x, y + 1, z) - grid.get(x, y, z)
-    } else if y == grid.height - 1 {
+    } else if y == grid.height() - 1 {
         grid.get(x, y, z) - grid.get(x, y - 1, z)
     } else {
         (grid.get(x, y + 1, z) - grid.get(x, y - 1, z)) / 2.0
@@ -43,7 +44,7 @@ fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
 
     let dz = if z == 0 {
         grid.get(x, y, z + 1) - grid.get(x, y, z)
-    } else if z == grid.depth - 1 {
+    } else if z == grid.depth() - 1 {
         grid.get(x, y, z) - grid.get(x, y, z - 1)
     } else {
         (grid.get(x, y, z + 1) - grid.get(x, y, z - 1)) / 2.0
@@ -84,32 +85,34 @@ fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32
 }
 
 
-pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, String> {
-    if grid.width < 2 || grid.height < 2 || grid.depth < 2 {
+pub fn extract_isosurface<S: ScalarField3D + ?Sized>(grid: &S, threshold: f32) -> Result<Mesh, String> {
+    if grid.width() < 2 || grid.height() < 2 || grid.depth() < 2 {
         return Err("Grid dimensions must be at least 2x2x2".to_string());
     }
 
     // Estimate capacity to avoid reallocations
     // A heuristic: surface area roughly scales with N^2.
     // Let's reserve enough for a sphere of radius N/3.
-    let estimated_triangles = grid.width * grid.height * 2;
+    let estimated_triangles = grid.width() * grid.height() * 2;
     let mut triangles = Vec::with_capacity(estimated_triangles);
 
-    let stride_y = grid.width;
-    let stride_z = grid.width * grid.height;
+    // stride_y and stride_z were used for direct indexing in Vec,
+    // but now we abstract access via get().
+    // Direct indexing optimization is traded for flexibility here.
+    // The compiler might inline the get() call if the concrete type is known (monomorphization).
+
+    let origin = grid.origin();
+    let voxel_size = grid.voxel_size();
 
     // Iterate over each cube in the grid
-    for z in 0..grid.depth - 1 {
-        let z_base = z * stride_z;
-        let z_pos = grid.origin.z + (z as f32) * grid.voxel_size.z;
+    for z in 0..grid.depth() - 1 {
+        let z_pos = origin.z + (z as f32) * voxel_size.z;
 
-        for y in 0..grid.height - 1 {
-            let zy_base = z_base + y * stride_y;
-            let y_pos = grid.origin.y + (y as f32) * grid.voxel_size.y;
+        for y in 0..grid.height() - 1 {
+            let y_pos = origin.y + (y as f32) * voxel_size.y;
 
-            for x in 0..grid.width - 1 {
-                let base_idx = zy_base + x;
-                let x_pos = grid.origin.x + (x as f32) * grid.voxel_size.x;
+            for x in 0..grid.width() - 1 {
+                let x_pos = origin.x + (x as f32) * voxel_size.x;
 
                 // 1. Determine the index of the case (0-255)
                 let mut cube_index = 0;
@@ -119,19 +122,18 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 // We will compute them lazily later.
                 let mut corner_normals = [Point3D::new(0.0,0.0,0.0); 8];
 
-                // Direct access for corner values to avoid redundant index calculation
                 // Vertices are ordered:
                 // 0: (0,0,0), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)
                 // 4: (0,0,1), 5: (1,0,1), 6: (1,1,1), 7: (0,1,1)
 
-                let v0 = grid.data[base_idx];
-                let v1 = grid.data[base_idx + 1];
-                let v2 = grid.data[base_idx + 1 + stride_y];
-                let v3 = grid.data[base_idx + stride_y];
-                let v4 = grid.data[base_idx + stride_z];
-                let v5 = grid.data[base_idx + 1 + stride_z];
-                let v6 = grid.data[base_idx + 1 + stride_y + stride_z];
-                let v7 = grid.data[base_idx + stride_y + stride_z];
+                let v0 = grid.get(x, y, z);
+                let v1 = grid.get(x + 1, y, z);
+                let v2 = grid.get(x + 1, y + 1, z);
+                let v3 = grid.get(x, y + 1, z);
+                let v4 = grid.get(x, y, z + 1);
+                let v5 = grid.get(x + 1, y, z + 1);
+                let v6 = grid.get(x + 1, y + 1, z + 1);
+                let v7 = grid.get(x, y + 1, z + 1);
 
                 corner_values[0] = v0; if v0 < threshold { cube_index |= 1; }
                 corner_values[1] = v1; if v1 < threshold { cube_index |= 2; }
@@ -144,9 +146,9 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
 
                 // Only compute positions if needed (though it's cheap)
                 // We do it here to keep logic simple for step 3.
-                let next_x_pos = x_pos + grid.voxel_size.x;
-                let next_y_pos = y_pos + grid.voxel_size.y;
-                let next_z_pos = z_pos + grid.voxel_size.z;
+                let next_x_pos = x_pos + voxel_size.x;
+                let next_y_pos = y_pos + voxel_size.y;
+                let next_z_pos = z_pos + voxel_size.z;
 
                 corner_pos[0] = Point3D::new(x_pos, y_pos, z_pos);
                 corner_pos[1] = Point3D::new(next_x_pos, y_pos, z_pos);

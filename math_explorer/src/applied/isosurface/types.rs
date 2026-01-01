@@ -1,3 +1,5 @@
+use super::traits::ScalarField3D;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3D {
     pub x: f32,
@@ -43,5 +45,32 @@ impl VoxelGrid {
             return 0.0; // Boundary condition
         }
         self.data[z * self.width * self.height + y * self.width + x]
+    }
+}
+
+impl ScalarField3D for VoxelGrid {
+    fn width(&self) -> usize {
+        self.width
+    }
+
+    fn height(&self) -> usize {
+        self.height
+    }
+
+    fn depth(&self) -> usize {
+        self.depth
+    }
+
+    #[inline]
+    fn get(&self, x: usize, y: usize, z: usize) -> f32 {
+        self.get(x, y, z)
+    }
+
+    fn voxel_size(&self) -> Point3D {
+        self.voxel_size
+    }
+
+    fn origin(&self) -> Point3D {
+        self.origin
     }
 }
