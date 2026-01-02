@@ -7,3 +7,8 @@
 **Problem:** `math_explorer/src/physics/medical.rs` contained four distinct Treatment Planning domains (Calibration, Dose, Optimization, Evaluation) in a single file, violating the Single Responsibility Principle and limiting scalability.
 **Decision:** Applied "Module Extraction" to split `medical.rs` into a directory-based module `math_explorer/src/physics/medical/` with dedicated submodules.
 **Consequence:** Improved navigability and allows independent evolution of dose algorithms and optimization strategies.
+
+## 2026-05-28 - [Standard Model Physics Decomposition]
+**Problem:** `math_explorer/src/physics/standard_model.rs` was a monolithic file mixing disparate particle physics domains: Gauge Theory, Higgs Mechanism, Flavor Physics (CKM), QCD, and Neutrino Physics. This coupling hindered independent development and navigation.
+**Decision:** Applied "Module Extraction" to decompose `standard_model.rs` into a directory-based module `math_explorer/src/physics/standard_model/` with specialized submodules: `gauge.rs`, `higgs.rs`, `flavor.rs`, `qcd.rs`, and `neutrinos.rs`.
+**Consequence:** Separation of concerns is enforced, allowing distinct physical theories to evolve independently (e.g., adding PMNS matrix to neutrinos without touching quarks). Backward compatibility is maintained via `mod.rs` re-exports.
