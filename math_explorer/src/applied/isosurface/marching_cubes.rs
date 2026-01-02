@@ -49,13 +49,6 @@ fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
         (grid.get(x, y, z + 1) - grid.get(x, y, z - 1)) / 2.0
     };
 
-    // The gradient points from low values to high values.
-    // Inside: V < Threshold, Outside: V >= Threshold.
-    // So gradient points OUTWARD.
-    // The surface normal is usually defined as pointing outward.
-    // Thus, Normal = Normalized Gradient.
-    // (Previous implementation inverted this, fixed now).
-
     let len = (dx * dx + dy * dy + dz * dz).sqrt();
     if len > 1e-6 {
         Point3D::new(dx / len, dy / len, dz / len)
@@ -107,6 +100,10 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
             let zy_base = z_base + y * stride_y;
             let y_pos = grid.origin.y + (y as f32) * grid.voxel_size.y;
 
+            // Cache for the "Right Face" gradients of the previous iteration (x-1).
+            // Corresponds to vertices 1, 2, 5, 6 of (x-1), which become 0, 3, 4, 7 of (x).
+            let mut cached_gradients: Option<[Point3D; 4]> = None;
+
             for x in 0..grid.width - 1 {
                 let base_idx = zy_base + x;
                 let x_pos = grid.origin.x + (x as f32) * grid.voxel_size.x;
@@ -115,8 +112,6 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 let mut cube_index = 0;
                 let mut corner_values = [0.0; 8];
                 let mut corner_pos = [Point3D::new(0.0,0.0,0.0); 8];
-                // Profiler Note: Initializing normals here is wasteful if edge_flags == 0.
-                // We will compute them lazily later.
                 let mut corner_normals = [Point3D::new(0.0,0.0,0.0); 8];
 
                 // Direct access for corner values to avoid redundant index calculation
@@ -142,8 +137,14 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 corner_values[6] = v6; if v6 < threshold { cube_index |= 64; }
                 corner_values[7] = v7; if v7 < threshold { cube_index |= 128; }
 
-                // Only compute positions if needed (though it's cheap)
-                // We do it here to keep logic simple for step 3.
+                // 2. Check if the cube is entirely inside or outside
+                let edge_flags = CUBE_EDGE_FLAGS[cube_index];
+                if edge_flags == 0 {
+                    cached_gradients = None; // Invalidate cache since we aren't computing gradients for this cube
+                    continue;
+                }
+
+                // Only compute positions if needed
                 let next_x_pos = x_pos + grid.voxel_size.x;
                 let next_y_pos = y_pos + grid.voxel_size.y;
                 let next_z_pos = z_pos + grid.voxel_size.z;
@@ -157,20 +158,39 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 corner_pos[6] = Point3D::new(next_x_pos, next_y_pos, next_z_pos);
                 corner_pos[7] = Point3D::new(x_pos, next_y_pos, next_z_pos);
 
-                // 2. Check if the cube is entirely inside or outside
-                let edge_flags = CUBE_EDGE_FLAGS[cube_index];
-                if edge_flags == 0 {
-                    continue;
+                // Profiler Optimization: Lazy Gradient Computation & Sliding Window
+
+                // 1. Fill Left Face (0, 3, 4, 7) from cache or compute
+                if let Some(grads) = cached_gradients {
+                    corner_normals[0] = grads[0];
+                    corner_normals[3] = grads[1];
+                    corner_normals[4] = grads[2];
+                    corner_normals[7] = grads[3];
+                } else {
+                    corner_normals[0] = get_gradient(grid, x, y, z);
+                    corner_normals[3] = get_gradient(grid, x, y + 1, z);
+                    corner_normals[4] = get_gradient(grid, x, y, z + 1);
+                    corner_normals[7] = get_gradient(grid, x, y + 1, z + 1);
                 }
 
-                // Profiler Optimization: Lazy Gradient Computation
-                // Only compute gradients if the cube contains a surface intersection.
-                for i in 0..8 {
-                    let ox = x + VERTEX_OFFSET[i][0];
-                    let oy = y + VERTEX_OFFSET[i][1];
-                    let oz = z + VERTEX_OFFSET[i][2];
-                    corner_normals[i] = get_gradient(grid, ox, oy, oz);
-                }
+                // 2. Compute Right Face (1, 2, 5, 6) - these are always new
+                // Vertices:
+                // 1: (x+1, y, z)
+                // 2: (x+1, y+1, z)
+                // 5: (x+1, y, z+1)
+                // 6: (x+1, y+1, z+1)
+                corner_normals[1] = get_gradient(grid, x + 1, y, z);
+                corner_normals[2] = get_gradient(grid, x + 1, y + 1, z);
+                corner_normals[5] = get_gradient(grid, x + 1, y, z + 1);
+                corner_normals[6] = get_gradient(grid, x + 1, y + 1, z + 1);
+
+                // 3. Update cache for next iteration (which will use these as Left Face)
+                cached_gradients = Some([
+                    corner_normals[1],
+                    corner_normals[2],
+                    corner_normals[5],
+                    corner_normals[6],
+                ]);
 
                 // 3. Compute intersection points on required edges
                 let mut edge_vertex = [Point3D::new(0.0,0.0,0.0); 12];
