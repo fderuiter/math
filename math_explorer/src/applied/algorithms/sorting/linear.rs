@@ -1,4 +1,32 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
+
+/// Strategy implementation for Radix Sort.
+pub struct RadixSorter;
+
+impl Sorter<u64> for RadixSorter {
+    fn sort(&self, data: &[u64]) -> SortingResult<u64> {
+        let mut sorted_data = data.to_vec();
+        let mut stats = SortingStats::default();
+
+        if sorted_data.is_empty() {
+            return SortingResult { sorted_data, stats };
+        }
+
+        let max_val = *sorted_data.iter().max().unwrap();
+        // Comparisons to find max? technically yes, but usually considered O(n) overhead not part of sort loop logic strictly.
+        // We'll count them for rigorousness.
+        stats.comparisons += sorted_data.len() as u64 - 1;
+
+        let mut exp = 1;
+        while max_val / exp > 0 {
+            counting_sort_for_radix(&mut sorted_data, exp, &mut stats);
+            exp *= 10;
+        }
+
+        SortingResult { sorted_data, stats }
+    }
+}
 
 /// Radix Sort (LSD)
 ///
@@ -15,26 +43,9 @@ use super::stats::{SortingResult, SortingStats};
 ///
 /// # constraints
 /// Only works for non-negative integers (`u64`) in this implementation.
+#[deprecated(since = "0.2.0", note = "Use `RadixSorter` struct instead")]
 pub fn radix_sort(data: &[u64]) -> SortingResult<u64> {
-    let mut sorted_data = data.to_vec();
-    let mut stats = SortingStats::default();
-
-    if sorted_data.is_empty() {
-        return SortingResult { sorted_data, stats };
-    }
-
-    let max_val = *sorted_data.iter().max().unwrap();
-    // Comparisons to find max? technically yes, but usually considered O(n) overhead not part of sort loop logic strictly.
-    // We'll count them for rigorousness.
-    stats.comparisons += sorted_data.len() as u64 - 1;
-
-    let mut exp = 1;
-    while max_val / exp > 0 {
-        counting_sort_for_radix(&mut sorted_data, exp, &mut stats);
-        exp *= 10;
-    }
-
-    SortingResult { sorted_data, stats }
+    RadixSorter.sort(data)
 }
 
 fn counting_sort_for_radix(arr: &mut [u64], exp: u64, stats: &mut SortingStats) {

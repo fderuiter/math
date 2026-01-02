@@ -41,6 +41,7 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
     // p(-m) = (-m(-3m-1))/2 = (3m^2 + m)/2
 
     let mut m = 1;
+    #[allow(clippy::collapsible_if)]
     loop {
         let p_pos = (m * (3 * m - 1)) / 2;
         let p_neg = (m * (3 * m + 1)) / 2;
@@ -61,7 +62,7 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
         }
 
         if let Some(idx) = idx_neg {
-            if idx < precision {
+             if idx < precision {
                 coeffs[idx] = sign;
                 added = true;
             }

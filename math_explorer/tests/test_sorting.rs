@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use math_explorer::applied::algorithms::sorting::*;
 
 #[test]

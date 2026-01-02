@@ -1,4 +1,33 @@
 use super::stats::{SortingResult, SortingStats};
+use super::traits::Sorter;
+
+/// Strategy implementation for Heap Sort.
+pub struct HeapSorter;
+
+impl<T: Ord + Clone> Sorter<T> for HeapSorter {
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        let mut sorted_data = data.to_vec();
+        let mut stats = SortingStats::default();
+        let n = sorted_data.len();
+
+        // Build heap (rearrange array)
+        for i in (0..n / 2).rev() {
+            heapify(&mut sorted_data, n, i, &mut stats);
+        }
+
+        // One by one extract an element from heap
+        for i in (1..n).rev() {
+            // Move current root to end
+            sorted_data.swap(0, i);
+            stats.swaps += 1;
+
+            // call max heapify on the reduced heap
+            heapify(&mut sorted_data, i, 0, &mut stats);
+        }
+
+        SortingResult { sorted_data, stats }
+    }
+}
 
 /// Heap Sort
 ///
@@ -12,27 +41,9 @@ use super::stats::{SortingResult, SortingStats};
 ///
 /// Total Complexity: $O(n) + O(n \log n) = \Theta(n \log n)$.
 /// Space: $O(1)$ (in-place).
+#[deprecated(since = "0.2.0", note = "Use `HeapSorter` struct instead")]
 pub fn heap_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
-    let mut sorted_data = data.to_vec();
-    let mut stats = SortingStats::default();
-    let n = sorted_data.len();
-
-    // Build heap (rearrange array)
-    for i in (0..n / 2).rev() {
-        heapify(&mut sorted_data, n, i, &mut stats);
-    }
-
-    // One by one extract an element from heap
-    for i in (1..n).rev() {
-        // Move current root to end
-        sorted_data.swap(0, i);
-        stats.swaps += 1;
-
-        // call max heapify on the reduced heap
-        heapify(&mut sorted_data, i, 0, &mut stats);
-    }
-
-    SortingResult { sorted_data, stats }
+    HeapSorter.sort(data)
 }
 
 fn heapify<T: Ord + Clone>(arr: &mut [T], n: usize, i: usize, stats: &mut SortingStats) {
