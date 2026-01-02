@@ -18,3 +18,11 @@
 1. Applied "Hub and Spoke" to `clinical_trials`: Added Mermaid workflow and full example.
 2. Labeled `cannibalism` as "Theoretical" with a warning about placeholder status to manage user expectations.
 **Outcome:** Bridged the gap between code reality and user perception. High-value code is now visible; low-value code is honestly labeled.
+
+## 2025-12-18 - Biological Scales Visualization
+**Gap:** The `biology` module lacked high-level structure. Users had to open individual files to understand that it covers everything from Enzymes (Molecular) to Evolution (Population).
+**Strategy:**
+1.  **Taxonomy:** Categorized modules into Molecular, Tissue, and Population scales in `mod.rs`.
+2.  **Visuals:** Added a Mermaid diagram to `mod.rs` to show the hierarchy and emergence.
+3.  **Deep Dive:** Enhanced `neuroscience.rs` with a state diagram for ion channels, making the Hodgkin-Huxley model accessible to non-biologists.
+**Outcome:** Users can now navigate the biology module by "scale" rather than just by filename.

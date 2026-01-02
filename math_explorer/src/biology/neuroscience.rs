@@ -5,9 +5,65 @@
 //! It is a set of nonlinear differential equations that approximates the electrical characteristics
 //! of excitable cells such as neurons and cardiac myocytes.
 //!
-//! The current through the membrane is given by:
+//! # 🧠 Model Overview
+//!
+//! The membrane potential $V$ is controlled by the flow of ions across the membrane.
+//! The total current $I$ is given by:
+//!
 //! $$ I = C_m \frac{dV}{dt} + I_{ion} $$
+//!
 //! where $I_{ion}$ includes Sodium ($Na^+$), Potassium ($K^+$), and Leak ($L$) currents.
+//!
+//! # 🔄 Gating Dynamics
+//!
+//! The probability of ion channels being open is controlled by gating variables $n, m, h$.
+//!
+//! ```mermaid
+//! stateDiagram-v2
+//!     [*] --> Resting
+//!
+//!     state "Sodium Activation (m)" as Na_Act {
+//!         Closed_m --> Open_m : Depolarization
+//!         Open_m --> Closed_m : Repolarization
+//!     }
+//!
+//!     state "Sodium Inactivation (h)" as Na_Inact {
+//!         Open_h --> Closed_h : Depolarization
+//!         Closed_h --> Open_h : Repolarization
+//!     }
+//!
+//!     state "Potassium Activation (n)" as K_Act {
+//!         Closed_n --> Open_n : Depolarization
+//!         Open_n --> Closed_n : Repolarization
+//!     }
+//!
+//!     note right of Na_Act
+//!         Fast activation leads to
+//!         rapid rising phase (Spike).
+//!     end note
+//!
+//!     note right of K_Act
+//!         Slower activation leads to
+//!         repolarization (Falling phase).
+//!     end note
+//! ```
+//!
+//! # 🚀 Usage
+//!
+//! ```rust
+//! use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+//!
+//! // Initialize a neuron at resting potential (-65 mV)
+//! let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
+//!
+//! // Simulate for 10ms with an external current injection of 10.0 nA
+//! let dt = 0.01; // 0.01 ms time step
+//! for _ in 0..1000 {
+//!     neuron.update(dt, 10.0);
+//! }
+//!
+//! println!("Final Membrane Potential: {:.2} mV", neuron.v);
+//! ```
 
 /// Represents the state of a Hodgkin-Huxley neuron.
 pub struct HodgkinHuxleyNeuron {
