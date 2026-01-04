@@ -96,7 +96,7 @@ println!("Favoritism Score: {}", score); // Higher is better
 ### 🌌 Physics: Chaos Theory
 Explore the Lorenz System and Lyapunov exponents.
 
-*(See `math_explorer/src/physics/chaos.rs` for implementation details)*
+*(See `math_explorer/src/physics/chaos/mod.rs` for implementation details)*
 
 ---
 
