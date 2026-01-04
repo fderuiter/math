@@ -1,5 +1,5 @@
 use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 
 /// Represents the group assignment for a patient in a clinical trial.
@@ -16,78 +16,165 @@ pub struct Patient {
     pub stratum: String,
 }
 
+/// A strategy for assigning patients to groups.
+///
+/// This trait allows for different randomization algorithms (Simple, Block, Adaptive)
+/// to be used interchangeably.
+pub trait AllocationStrategy {
+    /// Generates the next group assignment.
+    ///
+    /// # Arguments
+    /// * `stratum` - Optional stratum identifier for stratified randomization.
+    fn assign(&mut self, stratum: Option<&str>) -> Result<Group, String>;
+}
+
+/// Simple Randomization Strategy.
+///
+/// Assigns Treatment/Control with equal probability (coin flip).
+/// Stateless and does not guarantee balance.
+pub struct SimpleRandomizer<R> {
+    rng: R,
+}
+
+impl<R: Rng> SimpleRandomizer<R> {
+    pub fn new(rng: R) -> Self {
+        Self { rng }
+    }
+}
+
+impl<R: Rng> AllocationStrategy for SimpleRandomizer<R> {
+    fn assign(&mut self, _stratum: Option<&str>) -> Result<Group, String> {
+        if self.rng.r#gen() {
+            Ok(Group::Treatment)
+        } else {
+            Ok(Group::Control)
+        }
+    }
+}
+
+/// Block Randomization Strategy.
+///
+/// Ensures balance within blocks of a fixed size.
+/// State is maintained in a buffer.
+pub struct BlockRandomizer<R> {
+    block_size: usize,
+    buffer: Vec<Group>,
+    rng: R,
+}
+
+impl<R: Rng> BlockRandomizer<R> {
+    pub fn new(block_size: usize, rng: R) -> Result<Self, String> {
+        if block_size == 0 || block_size % 2 != 0 {
+            return Err("Block size must be a positive even number.".to_string());
+        }
+        Ok(Self {
+            block_size,
+            buffer: Vec::with_capacity(block_size),
+            rng,
+        })
+    }
+
+    fn refill_buffer(&mut self) {
+        self.buffer.clear();
+        for _ in 0..(self.block_size / 2) {
+            self.buffer.push(Group::Treatment);
+            self.buffer.push(Group::Control);
+        }
+        self.buffer.shuffle(&mut self.rng);
+    }
+}
+
+impl<R: Rng> AllocationStrategy for BlockRandomizer<R> {
+    fn assign(&mut self, _stratum: Option<&str>) -> Result<Group, String> {
+        if self.buffer.is_empty() {
+            self.refill_buffer();
+        }
+        // pop() returns None only if empty, but we just refilled.
+        Ok(self.buffer.pop().unwrap())
+    }
+}
+
+/// Stratified Randomization Strategy.
+///
+/// Maintains a separate strategy instance for each stratum.
+/// Uses a factory closure to instantiate new strategies as needed.
+pub struct StratifiedRandomizer<S, F> {
+    factory: F,
+    strata: HashMap<String, S>,
+}
+
+impl<S: AllocationStrategy, F: Fn() -> S> StratifiedRandomizer<S, F> {
+    pub fn new(factory: F) -> Self {
+        Self {
+            factory,
+            strata: HashMap::new(),
+        }
+    }
+}
+
+impl<S: AllocationStrategy, F: Fn() -> S> AllocationStrategy for StratifiedRandomizer<S, F> {
+    fn assign(&mut self, stratum: Option<&str>) -> Result<Group, String> {
+        let key = stratum.ok_or("Stratum is required for StratifiedRandomizer")?;
+        let strategy = self
+            .strata
+            .entry(key.to_string())
+            .or_insert_with(&self.factory);
+        strategy.assign(Some(key))
+    }
+}
+
+// --- Legacy Wrappers (Deprecated) ---
+
 /// Performs Simple Randomization.
-/// Each patient is assigned to Treatment or Control with equal probability (0.5).
-/// Note: This does not guarantee equal group sizes, especially for small sample sizes.
+#[deprecated(since = "0.2.0", note = "Use `SimpleRandomizer` instead.")]
 pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
+    let mut randomizer = SimpleRandomizer::new(thread_rng());
     let mut assignments = Vec::with_capacity(n_patients);
     for _ in 0..n_patients {
-        if rand::random() {
-            assignments.push(Group::Treatment);
-        } else {
-            assignments.push(Group::Control);
-        }
+        assignments.push(randomizer.assign(None).unwrap());
     }
     assignments
 }
 
 /// Performs Block Randomization.
-/// Ensures that the number of patients in each group is balanced within blocks of `block_size`.
-/// `block_size` must be a multiple of 2 (assuming 1:1 allocation).
+#[deprecated(since = "0.2.0", note = "Use `BlockRandomizer` instead.")]
 pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<Group>, String> {
-    if !block_size.is_multiple_of(2) {
-        return Err("Block size must be even for 1:1 allocation.".to_string());
+    let mut randomizer = BlockRandomizer::new(block_size, thread_rng())?;
+    let mut assignments = Vec::with_capacity(n_patients);
+    for _ in 0..n_patients {
+        assignments.push(randomizer.assign(None)?);
     }
-    if !n_patients.is_multiple_of(block_size) {
-        // We can either return an error or handle the remainder.
-        // For strict block randomization, let's assume n must fit blocks or we fill the last partial block?
-        // Usually, trials recruit until a number. Let's just generate enough blocks to cover n_patients.
-    }
-
-    let mut rng = thread_rng();
-    let num_blocks = (n_patients as f64 / block_size as f64).ceil() as usize;
-    let mut assignments = Vec::with_capacity(num_blocks * block_size);
-
-    for _ in 0..num_blocks {
-        let mut block = Vec::with_capacity(block_size);
-        for _ in 0..(block_size / 2) {
-            block.push(Group::Treatment);
-            block.push(Group::Control);
-        }
-        block.shuffle(&mut rng);
-        assignments.extend(block);
-    }
-
-    // Truncate to exact number of patients if n_patients is not a multiple of block_size
-    assignments.truncate(n_patients);
     Ok(assignments)
 }
 
 /// Performs Stratified Randomization.
-/// Separates patients into strata and performs block randomization within each stratum.
-/// Returns a map of Patient ID to Group assignment.
+#[deprecated(since = "0.2.0", note = "Use `StratifiedRandomizer` instead.")]
 pub fn stratified_randomization(
     patients: &[Patient],
     block_size: usize,
 ) -> Result<HashMap<String, Group>, String> {
-    // Group patients by stratum
+    // Note: The legacy implementation grouped by stratum first, then randomized.
+    // This affects the order in which the RNG is consumed.
+    // To preserve "logic" (if we consider RNG stream consumption order part of logic),
+    // we should replicate that grouping.
+
     let mut strata_map: HashMap<String, Vec<&Patient>> = HashMap::new();
     for p in patients {
-        strata_map
-            .entry(p.stratum.clone())
-            .or_default()
-            .push(p);
+        strata_map.entry(p.stratum.clone()).or_default().push(p);
     }
 
     let mut final_assignments = HashMap::new();
 
-    for (_stratum, patients_in_stratum) in strata_map {
-        let n = patients_in_stratum.len();
-        // Generate assignments for this stratum
-        let assignments = block_randomization(n, block_size)?;
+    // We can't use StratifiedRandomizer here easily because we need to
+    // process stratum by stratum to match legacy behavior of consuming RNG blocks.
+    // So we just use BlockRandomizer per stratum.
 
-        for (i, p) in patients_in_stratum.iter().enumerate() {
-            final_assignments.insert(p.id.clone(), assignments[i]);
+    for (_stratum, patients_in_stratum) in strata_map {
+        // Create a new BlockRandomizer for this stratum
+        let mut randomizer = BlockRandomizer::new(block_size, thread_rng())?;
+
+        for p in patients_in_stratum {
+             final_assignments.insert(p.id.clone(), randomizer.assign(None)?);
         }
     }
 

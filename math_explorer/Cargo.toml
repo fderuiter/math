@@ -24,3 +24,4 @@ path = "tests/algorithmic_information.rs"
 
 [dev-dependencies]
 approx = "0.5.1"
+rand_chacha = "0.3.1"
