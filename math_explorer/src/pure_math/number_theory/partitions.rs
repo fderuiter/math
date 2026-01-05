@@ -53,18 +53,14 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
 
         let sign = if m % 2 == 0 { 1 } else { -1 };
 
-        if let Some(idx) = idx_pos {
-            if idx < precision {
-                coeffs[idx] = sign;
-                added = true;
-            }
+        if let Some(idx) = idx_pos.filter(|&i| i < precision) {
+            coeffs[idx] = sign;
+            added = true;
         }
 
-        if let Some(idx) = idx_neg {
-            if idx < precision {
-                coeffs[idx] = sign;
-                added = true;
-            }
+        if let Some(idx) = idx_neg.filter(|&i| i < precision) {
+            coeffs[idx] = sign;
+            added = true;
         }
 
         if !added {
