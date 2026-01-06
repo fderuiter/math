@@ -1,18 +1,28 @@
 use math_explorer::applied::clinical_trials::{design, sample_size, hypothesis_testing, analysis, survival_analysis};
+use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
+use math_explorer::applied::clinical_trials::design::AllocationStrategy;
 
 #[test]
 fn test_simple_randomization() {
     let n = 100;
-    let assignments = design::simple_randomization(n);
+    // Use new API with deterministic RNG
+    let rng = ChaCha8Rng::seed_from_u64(42);
+    let mut strategy = design::SimpleRandomizer::new(rng);
+    let assignments = strategy.assign(n).unwrap();
+
     assert_eq!(assignments.len(), n);
-    // Cannot assert exact split due to randomness, but can check it runs.
 }
 
 #[test]
 fn test_block_randomization() {
     let n = 20;
     let block_size = 4;
-    let assignments = design::block_randomization(n, block_size).unwrap();
+    // Use new API
+    let rng = ChaCha8Rng::seed_from_u64(42);
+    let mut strategy = design::BlockRandomizer::new(block_size, rng);
+    let assignments = strategy.assign(n).unwrap();
+
     assert_eq!(assignments.len(), n);
 
     // Check overall balance
@@ -20,6 +30,45 @@ fn test_block_randomization() {
     let control_count = assignments.iter().filter(|&&g| g == design::Group::Control).count();
     assert_eq!(treatment_count, 10);
     assert_eq!(control_count, 10);
+}
+
+#[test]
+fn test_stratified_randomization() {
+    use design::{StratifiedRandomizer, Patient};
+
+    let patients = vec![
+        Patient { id: "P1".to_string(), stratum: "A".to_string() },
+        Patient { id: "P2".to_string(), stratum: "A".to_string() },
+        Patient { id: "P3".to_string(), stratum: "B".to_string() },
+        Patient { id: "P4".to_string(), stratum: "B".to_string() },
+    ];
+
+    // Inject factory that creates BlockRandomizer with deterministic RNG per stratum
+    // (In real use, you'd likely seed based on stratum or use a master RNG)
+    let factory = || {
+        let rng = ChaCha8Rng::seed_from_u64(123);
+        design::BlockRandomizer::new(2, rng)
+    };
+
+    let randomizer = StratifiedRandomizer::new(factory);
+    let assignments = randomizer.assign_stratified(&patients).unwrap();
+
+    assert_eq!(assignments.len(), 4);
+    assert!(assignments.contains_key("P1"));
+    assert!(assignments.contains_key("P3"));
+}
+
+#[test]
+fn test_legacy_functions() {
+    // Ensure deprecated functions still work
+    #![allow(deprecated)]
+
+    let n = 10;
+    let assignments = design::simple_randomization(n);
+    assert_eq!(assignments.len(), n);
+
+    let block_assignments = design::block_randomization(n, 2).unwrap();
+    assert_eq!(block_assignments.len(), n);
 }
 
 #[test]
