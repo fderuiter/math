@@ -1,5 +1,26 @@
 use math_explorer::applied::algorithms::sorting::*;
 
+// Helper to test strategy composition
+fn run_sort<S: Sorter<i32>>(sorter: S, data: &[i32]) -> SortingResult<i32> {
+    sorter.sort(data)
+}
+
+#[test]
+fn test_strategy_pattern_composability() {
+    let data = vec![5, 1, 4, 2, 8];
+    let expected = vec![1, 2, 4, 5, 8];
+
+    // Test dependency injection
+    let merge_result = run_sort(MergeSorter, &data);
+    assert_eq!(merge_result.sorted_data, expected);
+
+    let quick_result = run_sort(QuickSorter, &data);
+    assert_eq!(quick_result.sorted_data, expected);
+
+    let bubble_result = run_sort(BubbleSorter, &data);
+    assert_eq!(bubble_result.sorted_data, expected);
+}
+
 #[test]
 fn test_information_theoretic_bound() {
     // Test small values
