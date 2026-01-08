@@ -7,6 +7,7 @@
 //! 2.  **Dose Calculation**: Modeling how radiation interacts with matter using convolution/superposition principles.
 //! 3.  **Inverse Planning**: Optimizing beam intensities (IMRT/VMAT) to maximize tumor control while sparing healthy tissue.
 //! 4.  **Evaluation**: Quantifying plan quality using Dose-Volume Histograms (DVH) and biological modeling (TCP).
+//! 5.  **Motion Management**: Radar-based respiratory gating for treating moving targets (e.g. Lung/Liver).
 //!
 //! ## Context
 //!
@@ -25,3 +26,4 @@ pub mod calibration;
 pub mod dose_calculation;
 pub mod optimization;
 pub mod evaluation;
+pub mod radar_gating;
