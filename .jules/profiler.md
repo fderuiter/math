@@ -6,3 +6,4 @@
 ## 2025-05-21 - [Optimization] **Bottleneck:** Redundant Gradient Calculations in Marching Cubes **Strategy:** Sliding Window Reuse (X-axis) **Gain:** TBD
 ## 2025-10-27 - [Optimization] **Bottleneck:** Allocations in ODE `VecState` operations **Strategy:** In-place mutation (reuse `self`) **Gain:** ~2.45x speedup (920ms -> 375ms)
 ## 2025-05-21 - [Optimization] **Bottleneck:** Heap Allocation in Turing System Step Loop **Strategy:** Double Buffering (Zero-Allocation Swap) **Gain:** TBD
+## 2026-01-08 - [Optimization] **Bottleneck:** [Branch Prediction & Index Arithmetic in Isosurface] **Strategy:** [Data-Oriented Design: Split loop into 'fast interior' (unchecked) and 'slow boundary' (safe). Used direct slice indexing.] **Gain:** [18.34ms -> 16.36ms (~11%)]

@@ -1,4 +1,4 @@
-use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE, VERTEX_OFFSET};
+use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE};
 use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
 
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
@@ -22,35 +22,71 @@ fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Po
     )
 }
 
-/// Calculates the gradient at a grid point using central differences.
-#[inline]
-fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
+/// Optimized gradient calculation that avoids redundant index math.
+/// Assumes indices are valid and handles boundaries logic based on x, y, z coords.
+#[inline(always)]
+fn get_gradient_safe(
+    data: &[f32],
+    idx: usize,
+    x: usize,
+    y: usize,
+    z: usize,
+    width: usize,
+    height: usize,
+    depth: usize,
+    stride_y: usize,
+    stride_z: usize,
+) -> Point3D {
     let dx = if x == 0 {
-        grid.get(x + 1, y, z) - grid.get(x, y, z)
-    } else if x == grid.width - 1 {
-        grid.get(x, y, z) - grid.get(x - 1, y, z)
+        data[idx + 1] - data[idx]
+    } else if x == width - 1 {
+        data[idx] - data[idx - 1]
     } else {
-        (grid.get(x + 1, y, z) - grid.get(x - 1, y, z)) / 2.0
+        (data[idx + 1] - data[idx - 1]) * 0.5
     };
 
     let dy = if y == 0 {
-        grid.get(x, y + 1, z) - grid.get(x, y, z)
-    } else if y == grid.height - 1 {
-        grid.get(x, y, z) - grid.get(x, y - 1, z)
+        data[idx + stride_y] - data[idx]
+    } else if y == height - 1 {
+        data[idx] - data[idx - stride_y]
     } else {
-        (grid.get(x, y + 1, z) - grid.get(x, y - 1, z)) / 2.0
+        (data[idx + stride_y] - data[idx - stride_y]) * 0.5
     };
 
     let dz = if z == 0 {
-        grid.get(x, y, z + 1) - grid.get(x, y, z)
-    } else if z == grid.depth - 1 {
-        grid.get(x, y, z) - grid.get(x, y, z - 1)
+        data[idx + stride_z] - data[idx]
+    } else if z == depth - 1 {
+        data[idx] - data[idx - stride_z]
     } else {
-        (grid.get(x, y, z + 1) - grid.get(x, y, z - 1)) / 2.0
+        (data[idx + stride_z] - data[idx - stride_z]) * 0.5
     };
 
-    let len = (dx * dx + dy * dy + dz * dz).sqrt();
-    if len > 1e-6 {
+    let len_sq = dx * dx + dy * dy + dz * dz;
+    if len_sq > 1e-12 {
+        let len = len_sq.sqrt();
+        Point3D::new(dx / len, dy / len, dz / len)
+    } else {
+        Point3D::new(0.0, 0.0, 0.0)
+    }
+}
+
+/// Unchecked gradient calculation for interior voxels.
+/// NO boundary checks. Assumes neighbors exist.
+#[inline(always)]
+fn get_gradient_unchecked(
+    data: &[f32],
+    idx: usize,
+    stride_y: usize,
+    stride_z: usize,
+) -> Point3D {
+    // Safety: Caller guarantees idx is far enough from boundaries.
+    let dx = (data[idx + 1] - data[idx - 1]) * 0.5;
+    let dy = (data[idx + stride_y] - data[idx - stride_y]) * 0.5;
+    let dz = (data[idx + stride_z] - data[idx - stride_z]) * 0.5;
+
+    let len_sq = dx * dx + dy * dy + dz * dz;
+    if len_sq > 1e-12 {
+        let len = len_sq.sqrt();
         Point3D::new(dx / len, dy / len, dz / len)
     } else {
         Point3D::new(0.0, 0.0, 0.0)
@@ -68,8 +104,9 @@ fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32
     let ny = n1.y + t * (n2.y - n1.y);
     let nz = n1.z + t * (n2.z - n1.z);
 
-    let len = (nx*nx + ny*ny + nz*nz).sqrt();
-    if len > 1e-6 {
+    let len_sq = nx*nx + ny*ny + nz*nz;
+    if len_sq > 1e-12 {
+        let len = len_sq.sqrt();
         Point3D::new(nx/len, ny/len, nz/len)
     } else {
         Point3D::new(0.0, 0.0, 0.0)
@@ -90,23 +127,41 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
 
     let stride_y = grid.width;
     let stride_z = grid.width * grid.height;
+    let width = grid.width;
+    let height = grid.height;
+    let depth = grid.depth;
+    let data_slice = &grid.data; // Avoid repeated pointer indirections
 
     // Iterate over each cube in the grid
-    for z in 0..grid.depth - 1 {
+    for z in 0..depth - 1 {
         let z_base = z * stride_z;
         let z_pos = grid.origin.z + (z as f32) * grid.voxel_size.z;
 
-        for y in 0..grid.height - 1 {
+        // Is z strictly interior?
+        // We need gradient at z and z+1.
+        // Unchecked requires z-1 (for gradient at z) and z+1+1 (for gradient at z+1).
+        // So z must be >= 1 and z+1 <= depth-2 => z <= depth-3.
+        let z_interior = z >= 1 && z <= depth - 3;
+
+        for y in 0..height - 1 {
             let zy_base = z_base + y * stride_y;
             let y_pos = grid.origin.y + (y as f32) * grid.voxel_size.y;
+
+            // Is y strictly interior?
+            // Need y-1 valid and y+2 valid.
+            let y_interior = y >= 1 && y <= height - 3;
 
             // Cache for the "Right Face" gradients of the previous iteration (x-1).
             // Corresponds to vertices 1, 2, 5, 6 of (x-1), which become 0, 3, 4, 7 of (x).
             let mut cached_gradients: Option<[Point3D; 4]> = None;
 
-            for x in 0..grid.width - 1 {
+            for x in 0..width - 1 {
                 let base_idx = zy_base + x;
                 let x_pos = grid.origin.x + (x as f32) * grid.voxel_size.x;
+
+                // Is x strictly interior?
+                // Need x-1 valid and x+2 valid.
+                let x_interior = x >= 1 && x <= width - 3;
 
                 // 1. Determine the index of the case (0-255)
                 let mut cube_index = 0;
@@ -114,28 +169,32 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 let mut corner_pos = [Point3D::new(0.0,0.0,0.0); 8];
                 let mut corner_normals = [Point3D::new(0.0,0.0,0.0); 8];
 
-                // Direct access for corner values to avoid redundant index calculation
-                // Vertices are ordered:
-                // 0: (0,0,0), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)
-                // 4: (0,0,1), 5: (1,0,1), 6: (1,1,1), 7: (0,1,1)
+                let v0 = data_slice[base_idx];
+                let v1 = data_slice[base_idx + 1];
+                let v2 = data_slice[base_idx + 1 + stride_y];
+                let v3 = data_slice[base_idx + stride_y];
+                let v4 = data_slice[base_idx + stride_z];
+                let v5 = data_slice[base_idx + 1 + stride_z];
+                let v6 = data_slice[base_idx + 1 + stride_y + stride_z];
+                let v7 = data_slice[base_idx + stride_y + stride_z];
 
-                let v0 = grid.data[base_idx];
-                let v1 = grid.data[base_idx + 1];
-                let v2 = grid.data[base_idx + 1 + stride_y];
-                let v3 = grid.data[base_idx + stride_y];
-                let v4 = grid.data[base_idx + stride_z];
-                let v5 = grid.data[base_idx + 1 + stride_z];
-                let v6 = grid.data[base_idx + 1 + stride_y + stride_z];
-                let v7 = grid.data[base_idx + stride_y + stride_z];
+                if v0 < threshold { cube_index |= 1; }
+                if v1 < threshold { cube_index |= 2; }
+                if v2 < threshold { cube_index |= 4; }
+                if v3 < threshold { cube_index |= 8; }
+                if v4 < threshold { cube_index |= 16; }
+                if v5 < threshold { cube_index |= 32; }
+                if v6 < threshold { cube_index |= 64; }
+                if v7 < threshold { cube_index |= 128; }
 
-                corner_values[0] = v0; if v0 < threshold { cube_index |= 1; }
-                corner_values[1] = v1; if v1 < threshold { cube_index |= 2; }
-                corner_values[2] = v2; if v2 < threshold { cube_index |= 4; }
-                corner_values[3] = v3; if v3 < threshold { cube_index |= 8; }
-                corner_values[4] = v4; if v4 < threshold { cube_index |= 16; }
-                corner_values[5] = v5; if v5 < threshold { cube_index |= 32; }
-                corner_values[6] = v6; if v6 < threshold { cube_index |= 64; }
-                corner_values[7] = v7; if v7 < threshold { cube_index |= 128; }
+                corner_values[0] = v0;
+                corner_values[1] = v1;
+                corner_values[2] = v2;
+                corner_values[3] = v3;
+                corner_values[4] = v4;
+                corner_values[5] = v5;
+                corner_values[6] = v6;
+                corner_values[7] = v7;
 
                 // 2. Check if the cube is entirely inside or outside
                 let edge_flags = CUBE_EDGE_FLAGS[cube_index];
@@ -160,29 +219,50 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
 
                 // Profiler Optimization: Lazy Gradient Computation & Sliding Window
 
-                // 1. Fill Left Face (0, 3, 4, 7) from cache or compute
-                if let Some(grads) = cached_gradients {
-                    corner_normals[0] = grads[0];
-                    corner_normals[3] = grads[1];
-                    corner_normals[4] = grads[2];
-                    corner_normals[7] = grads[3];
-                } else {
-                    corner_normals[0] = get_gradient(grid, x, y, z);
-                    corner_normals[3] = get_gradient(grid, x, y + 1, z);
-                    corner_normals[4] = get_gradient(grid, x, y, z + 1);
-                    corner_normals[7] = get_gradient(grid, x, y + 1, z + 1);
-                }
+                let is_fully_interior = x_interior && y_interior && z_interior;
 
-                // 2. Compute Right Face (1, 2, 5, 6) - these are always new
-                // Vertices:
-                // 1: (x+1, y, z)
-                // 2: (x+1, y+1, z)
-                // 5: (x+1, y, z+1)
-                // 6: (x+1, y+1, z+1)
-                corner_normals[1] = get_gradient(grid, x + 1, y, z);
-                corner_normals[2] = get_gradient(grid, x + 1, y + 1, z);
-                corner_normals[5] = get_gradient(grid, x + 1, y, z + 1);
-                corner_normals[6] = get_gradient(grid, x + 1, y + 1, z + 1);
+                if is_fully_interior {
+                    // FAST PATH: No branches for boundaries
+                    if let Some(grads) = cached_gradients {
+                        corner_normals[0] = grads[0];
+                        corner_normals[3] = grads[1];
+                        corner_normals[4] = grads[2];
+                        corner_normals[7] = grads[3];
+                    } else {
+                        corner_normals[0] = get_gradient_unchecked(data_slice, base_idx, stride_y, stride_z);
+                        corner_normals[3] = get_gradient_unchecked(data_slice, base_idx + stride_y, stride_y, stride_z);
+                        corner_normals[4] = get_gradient_unchecked(data_slice, base_idx + stride_z, stride_y, stride_z);
+                        corner_normals[7] = get_gradient_unchecked(data_slice, base_idx + stride_y + stride_z, stride_y, stride_z);
+                    }
+
+                    // 1: (x+1, y, z)
+                    corner_normals[1] = get_gradient_unchecked(data_slice, base_idx + 1, stride_y, stride_z);
+                    // 2: (x+1, y+1, z)
+                    corner_normals[2] = get_gradient_unchecked(data_slice, base_idx + 1 + stride_y, stride_y, stride_z);
+                    // 5: (x+1, y, z+1)
+                    corner_normals[5] = get_gradient_unchecked(data_slice, base_idx + 1 + stride_z, stride_y, stride_z);
+                    // 6: (x+1, y+1, z+1)
+                    corner_normals[6] = get_gradient_unchecked(data_slice, base_idx + 1 + stride_y + stride_z, stride_y, stride_z);
+
+                } else {
+                    // SLOW SAFE PATH
+                    if let Some(grads) = cached_gradients {
+                        corner_normals[0] = grads[0];
+                        corner_normals[3] = grads[1];
+                        corner_normals[4] = grads[2];
+                        corner_normals[7] = grads[3];
+                    } else {
+                        corner_normals[0] = get_gradient_safe(data_slice, base_idx, x, y, z, width, height, depth, stride_y, stride_z);
+                        corner_normals[3] = get_gradient_safe(data_slice, base_idx + stride_y, x, y+1, z, width, height, depth, stride_y, stride_z);
+                        corner_normals[4] = get_gradient_safe(data_slice, base_idx + stride_z, x, y, z+1, width, height, depth, stride_y, stride_z);
+                        corner_normals[7] = get_gradient_safe(data_slice, base_idx + stride_y + stride_z, x, y+1, z+1, width, height, depth, stride_y, stride_z);
+                    }
+
+                    corner_normals[1] = get_gradient_safe(data_slice, base_idx + 1, x+1, y, z, width, height, depth, stride_y, stride_z);
+                    corner_normals[2] = get_gradient_safe(data_slice, base_idx + 1 + stride_y, x+1, y+1, z, width, height, depth, stride_y, stride_z);
+                    corner_normals[5] = get_gradient_safe(data_slice, base_idx + 1 + stride_z, x+1, y, z+1, width, height, depth, stride_y, stride_z);
+                    corner_normals[6] = get_gradient_safe(data_slice, base_idx + 1 + stride_y + stride_z, x+1, y+1, z+1, width, height, depth, stride_y, stride_z);
+                }
 
                 // 3. Update cache for next iteration (which will use these as Left Face)
                 cached_gradients = Some([
@@ -201,6 +281,7 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                         let v1_idx = EDGE_CONNECTION[i][0];
                         let v2_idx = EDGE_CONNECTION[i][1];
 
+                        // Inline the interpolate calls by usage if needed, but the function is marked inline
                         edge_vertex[i] = interpolate(
                             corner_pos[v1_idx], corner_values[v1_idx],
                             corner_pos[v2_idx], corner_values[v2_idx],
