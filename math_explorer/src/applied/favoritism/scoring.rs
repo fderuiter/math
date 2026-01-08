@@ -5,17 +5,35 @@ use rand::Rng;
 
 /// Calculates the favoritism score based on the provided inputs.
 ///
-/// The formula combines integrals of proximity and emotional support, gift value,
-/// compliments, personality traits, and various other factors, scaled by a
-/// random perturbation `r`.
+/// This function implements the core logic of the Unified Favoritism Theory (UFT).
+/// It aggregates various metrics (financial, social, emotional) into a single scalar value.
+///
+/// **Why this matters:**
+/// It provides an objective metric for what is traditionally a subjective and emotionally charged subject.
+/// By reducing affection to a floating-point number, we can optimize strategies for inheritance maximization.
 ///
 /// # Arguments
 ///
-/// * `inputs` - A reference to a `FavoritismInputs` struct containing all necessary parameters.
+/// * `inputs` - A reference to a `FavoritismInputs` struct containing all necessary parameters,
+///              including time horizons, gift values, and sibling competition metrics.
 ///
 /// # Returns
 ///
-/// A `f64` representing the calculated favoritism score. Higher is better.
+/// A `f64` representing the calculated favoritism score.
+/// * **Higher is better.**
+/// * **Range:** Technically $[0, \infty)$, but usually within $[10^6, 10^9]$.
+///
+/// # Example
+///
+/// ```
+/// use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
+///
+/// let mut inputs = FavoritismInputs::default();
+/// inputs.social.helped_during_crisis = true; // Crucial factor
+///
+/// let score = calculate_favoritism_score(&inputs);
+/// assert!(score > 0.0);
+/// ```
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
     // SECURITY: Input validation to prevent Division by Zero and Infinity propagation.
     const EPSILON: f64 = 1e-9;
