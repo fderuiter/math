@@ -3,9 +3,21 @@ use statrs::statistics::Distribution;
 use rand::distributions::Distribution as RandDistribution;
 
 /// Represents a distribution of bidder valuations.
+///
+/// In Mechanism Design, particularly for auction theory, we often need to analyze properties
+/// of the distribution of valuations $v$ drawn from a cumulative distribution function $F(v)$
+/// with probability density function $f(v)$.
 pub trait ValuationDistribution: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + RandDistribution<f64> {
-    /// Computes the virtual valuation J(v) = v - (1 - F(v)) / f(v).
-    /// This is central to Myerson's optimal auction design.
+    /// Computes the **Virtual Valuation** $J(v)$ according to Myerson's Lemma.
+    ///
+    /// $$ J(v) = v - \frac{1 - F(v)}{f(v)} $$
+    ///
+    /// In the context of optimal auction design (revenue maximization), the auctioneer
+    /// treats the virtual valuation $J(v)$ as the "real" value they extract from the bidder.
+    /// An optimal auction awards the item to the bidder with the highest virtual valuation,
+    /// provided it is non-negative.
+    ///
+    /// The condition $J(v) \geq 0$ defines the optimal reserve price.
     fn virtual_valuation(&self, v: f64) -> f64 {
         let pdf = self.pdf(v);
         let cdf = self.cdf(v);
@@ -25,9 +37,31 @@ impl<D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + Ran
 pub struct MechanismDesign;
 
 impl MechanismDesign {
-    /// Calculates the optimal reserve price for a given distribution.
-    /// The optimal reserve price r* is such that J(r*) = 0.
-    /// Uses bisection method.
+    /// Calculates the **Optimal Reserve Price** for a single-item auction.
+    ///
+    /// According to Myerson (1981), for a "regular" distribution (where $J(v)$ is strictly increasing),
+    /// the revenue-maximizing reserve price $r^*$ is the value such that the virtual valuation is zero:
+    ///
+    /// $$ J(r^*) = r^* - \frac{1 - F(r^*)}{f(r^*)} = 0 $$
+    ///
+    /// This function finds the root of $J(r) = 0$ using the bisection method within the given bounds.
+    ///
+    /// # Parameters
+    /// - `dist`: The probability distribution of bidder valuations.
+    /// - `lower_bound`: The lower bound for the search (e.g., min possible valuation).
+    /// - `upper_bound`: The upper bound for the search (e.g., max possible valuation).
+    ///
+    /// # Example
+    /// ```
+    /// use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
+    /// use statrs::distribution::Uniform;
+    ///
+    /// // For Uniform(0, 100), J(v) = 2v - 100.
+    /// // J(r) = 0 => 2r = 100 => r = 50.
+    /// let dist = Uniform::new(0.0, 100.0).unwrap();
+    /// let r_star = MechanismDesign::optimal_reserve_price(&dist, 0.0, 100.0);
+    /// assert!((r_star - 50.0).abs() < 1e-4);
+    /// ```
     pub fn optimal_reserve_price<D: ValuationDistribution>(
         dist: &D,
         lower_bound: f64,
@@ -46,7 +80,10 @@ impl MechanismDesign {
             // For regular distributions, J is increasing.
             // If J(mid) > 0, then the root is to the left? No.
             // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then r must be smaller than mid.
+            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
+            // wait: J(r*) = 0.
+            // If mid > r*, then J(mid) > J(r*) = 0.
+            // So if J(mid) > 0, mid is too high.
             if j_val > 0.0 {
                 high = mid;
             } else {
@@ -58,7 +95,12 @@ impl MechanismDesign {
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`
     /// via Monte Carlo simulation.
-    /// The revenue of the optimal auction is E[ max(0, J(v_1), ..., J(v_n)) ].
+    ///
+    /// The revenue of the optimal auction is given by:
+    /// $$ \text{Revenue} = \mathbb{E} \left[ \max(0, J(v_1), \dots, J(v_n)) \right] $$
+    ///
+    /// This simulation draws random valuations for $n$ bidders, calculates their virtual valuations,
+    /// and averages the maximum non-negative virtual valuation over `n_simulations`.
     pub fn simulate_optimal_revenue<D: ValuationDistribution>(
         dist: &D,
         n_bidders: usize,

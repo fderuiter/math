@@ -1,4 +1,17 @@
 use super::stats::{SortingResult, SortingStats};
+use super::strategy::Sorter;
+
+/// Strategy implementation for Merge Sort.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct MergeSorter;
+
+impl<T: Ord + Clone> Sorter<T> for MergeSorter {
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        let mut stats = SortingStats::default();
+        let sorted_data = merge_sort_recursive(data, &mut stats);
+        SortingResult { sorted_data, stats }
+    }
+}
 
 /// Merge Sort
 ///
@@ -18,9 +31,7 @@ use super::stats::{SortingResult, SortingStats};
 ///
 /// **Space Complexity**: $O(n)$ auxiliary space.
 pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
-    let mut stats = SortingStats::default();
-    let sorted_data = merge_sort_recursive(data, &mut stats);
-    SortingResult { sorted_data, stats }
+    MergeSorter.sort(data)
 }
 
 fn merge_sort_recursive<T: Ord + Clone>(data: &[T], stats: &mut SortingStats) -> Vec<T> {
@@ -67,6 +78,22 @@ fn merge<T: Ord + Clone>(left: &[T], right: &[T], stats: &mut SortingStats) -> V
     result
 }
 
+/// Strategy implementation for Quick Sort.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct QuickSorter;
+
+impl<T: Ord + Clone> Sorter<T> for QuickSorter {
+    fn sort(&self, data: &[T]) -> SortingResult<T> {
+        let mut sorted_data = data.to_vec();
+        let mut stats = SortingStats::default();
+        if !sorted_data.is_empty() {
+            let n = sorted_data.len();
+            quick_sort_recursive(&mut sorted_data, 0, n - 1, &mut stats);
+        }
+        SortingResult { sorted_data, stats }
+    }
+}
+
 /// Quick Sort
 ///
 /// Selects a pivot and partitions the array.
@@ -79,13 +106,7 @@ fn merge<T: Ord + Clone>(left: &[T], right: &[T], stats: &mut SortingStats) -> V
 ///
 /// **Space Complexity**: $O(\log n)$ stack space (average).
 pub fn quick_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
-    let mut sorted_data = data.to_vec();
-    let mut stats = SortingStats::default();
-    if !sorted_data.is_empty() {
-        let n = sorted_data.len();
-        quick_sort_recursive(&mut sorted_data, 0, n - 1, &mut stats);
-    }
-    SortingResult { sorted_data, stats }
+    QuickSorter.sort(data)
 }
 
 fn quick_sort_recursive<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, stats: &mut SortingStats) {
@@ -100,13 +121,7 @@ fn quick_sort_recursive<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, 
 
 fn partition<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, stats: &mut SortingStats) -> usize {
     // We choose the last element as pivot (Lomuto partition scheme)
-    // To avoid worst-case on sorted arrays, random pivot or median-of-three is better,
-    // but the prompt describes standard partitioning logic.
-    // For "Robustness", let's stick to standard Lomuto but acknowledge pivot choice matters.
-
     let pivot_index = high;
-    // We can't easily move out of slice without unsafe or cloning, so we index.
-
     let mut i = low;
     for j in low..high {
         stats.comparisons += 1;
