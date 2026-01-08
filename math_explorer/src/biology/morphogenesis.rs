@@ -18,6 +18,13 @@ pub struct TuringSystem {
     pub d_v: f64,
     /// Grid spacing
     pub dx: f64,
+
+    // Private buffers for double buffering to avoid allocation in hot loops.
+    // Marked hidden to discourage manual usage if fields were public (which they are).
+    #[doc(hidden)]
+    buffer_u: Vec<f64>,
+    #[doc(hidden)]
+    buffer_v: Vec<f64>,
 }
 
 impl TuringSystem {
@@ -28,6 +35,8 @@ impl TuringSystem {
             d_u,
             d_v,
             dx,
+            buffer_u: vec![0.0; size],
+            buffer_v: vec![0.0; size],
         }
     }
 
@@ -36,41 +45,89 @@ impl TuringSystem {
     /// f(u,v) = a - u + u^2 v
     pub fn step(&mut self, dt: f64) {
         let n = self.u.len();
-        let mut new_u = self.u.clone();
-        let mut new_v = self.v.clone();
+        if n == 0 { return; }
 
-        let a = 0.01; // Feed rate / constant
-        let b = 0.05; // Another constant
-        // Using Schnakenberg-like kinetics for demonstration if not strictly specified beyond "f(u,v) = ..."
-
-        for i in 0..n {
-            // Laplacian with periodic boundary or zero-flux?
-            // Zero flux (Neumann) is safer for 1D patterns usually, or periodic.
-            // Using simple indices with clamping for Neumann-ish or just simple handling.
-            let u_curr = self.u[i];
-            let v_curr = self.v[i];
-
-            let idx_prev = if i == 0 { 0 } else { i - 1 }; // Zero flux approx (u_-1 = u_0) -> deriv is 0
-            let idx_next = if i == n - 1 { n - 1 } else { i + 1 };
-
-            // Laplacian: (u_{i+1} - 2u_i + u_{i-1}) / dx^2
-            // If i=0, u_{i-1} is u_0 -> (u_1 - 2u_0 + u_0) = u_1 - u_0.
-            // This corresponds to forward difference at boundary, effectively zero flux if we consider ghost points.
-            // Standard 3-point stencil.
-            let lap_u = (self.u[idx_next] - 2.0 * u_curr + self.u[idx_prev]) / (self.dx * self.dx);
-            let lap_v = (self.v[idx_next] - 2.0 * v_curr + self.v[idx_prev]) / (self.dx * self.dx);
-
-            // Reaction terms
-            // u_t = ... + a - u + u^2 v
-            // v_t = ... + b - u^2 v (Schnakenberg)
-            let reaction_u = a - u_curr + u_curr.powi(2) * v_curr;
-            let reaction_v = b - u_curr.powi(2) * v_curr;
-
-            new_u[i] = u_curr + dt * (self.d_u * lap_u + reaction_u);
-            new_v[i] = v_curr + dt * (self.d_v * lap_v + reaction_v);
+        // Ensure buffers are the right size
+        if self.buffer_u.len() != n {
+            self.buffer_u = vec![0.0; n];
+        }
+        if self.buffer_v.len() != n {
+            self.buffer_v = vec![0.0; n];
         }
 
-        self.u = new_u;
-        self.v = new_v;
+        let a = 0.01;
+        let b = 0.05;
+        let dx_sq = self.dx * self.dx;
+
+        // Optimization: Lift boundary checks out of the loop
+
+        // Helper closure to calculate update for a single index
+        let calculate_update = |u_curr: f64, v_curr: f64, u_prev: f64, u_next: f64, v_prev: f64, v_next: f64| -> (f64, f64) {
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) / dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) / dx_sq;
+
+            let uv_sq = u_curr.powi(2) * v_curr;
+            let reaction_u = a - u_curr + uv_sq;
+            let reaction_v = b - uv_sq;
+
+            let next_u = u_curr + dt * (self.d_u * lap_u + reaction_u);
+            let next_v = v_curr + dt * (self.d_v * lap_v + reaction_v);
+            (next_u, next_v)
+        };
+
+        // 1. Handle i = 0
+        {
+            let i = 0;
+            let u_curr = self.u[i];
+            let v_curr = self.v[i];
+            // idx_prev = 0, idx_next = 1 (or 0 if n=1)
+            let u_prev = u_curr;
+            let v_prev = v_curr;
+            let (u_next, v_next) = if n > 1 {
+                (self.u[1], self.v[1])
+            } else {
+                (u_curr, v_curr)
+            };
+
+            let (res_u, res_v) = calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
+            self.buffer_u[i] = res_u;
+            self.buffer_v[i] = res_v;
+        }
+
+        // 2. Handle i = 1..n-1 (Hot Path)
+        if n > 2 {
+            for i in 1..n-1 {
+                // Safety: i-1 and i+1 are valid
+                let u_curr = self.u[i];
+                let v_curr = self.v[i];
+                let u_prev = self.u[i-1];
+                let u_next = self.u[i+1];
+                let v_prev = self.v[i-1];
+                let v_next = self.v[i+1];
+
+                let (res_u, res_v) = calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
+                self.buffer_u[i] = res_u;
+                self.buffer_v[i] = res_v;
+            }
+        }
+
+        // 3. Handle i = n-1
+        if n > 1 {
+            let i = n - 1;
+            let u_curr = self.u[i];
+            let v_curr = self.v[i];
+            let u_prev = self.u[i-1];
+            let v_prev = self.v[i-1];
+            let u_next = u_curr; // idx_next = n-1
+            let v_next = v_curr;
+
+            let (res_u, res_v) = calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
+            self.buffer_u[i] = res_u;
+            self.buffer_v[i] = res_v;
+        }
+
+        // Swap buffers
+        std::mem::swap(&mut self.u, &mut self.buffer_u);
+        std::mem::swap(&mut self.v, &mut self.buffer_v);
     }
 }

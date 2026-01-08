@@ -18,6 +18,59 @@ impl LorenzState {
     }
 }
 
+/// A builder for the `LorenzSystem`.
+#[derive(Debug, Clone, Copy)]
+pub struct LorenzBuilder {
+    sigma: f64,
+    rho: f64,
+    beta: f64,
+}
+
+impl Default for LorenzBuilder {
+    fn default() -> Self {
+        Self {
+            sigma: 10.0,
+            rho: 28.0,
+            beta: 8.0 / 3.0,
+        }
+    }
+}
+
+impl LorenzBuilder {
+    /// Creates a new builder with standard chaotic constants.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the Prandtl number $\sigma$.
+    pub fn sigma(mut self, val: f64) -> Self {
+        self.sigma = val;
+        self
+    }
+
+    /// Sets the Rayleigh number $\rho$.
+    pub fn rho(mut self, val: f64) -> Self {
+        self.rho = val;
+        self
+    }
+
+    /// Sets the geometric factor $\beta$.
+    pub fn beta(mut self, val: f64) -> Self {
+        self.beta = val;
+        self
+    }
+
+    /// Builds the `LorenzSystem` with the configured parameters and initial state.
+    pub fn build(self, state: LorenzState) -> LorenzSystem {
+        LorenzSystem {
+            sigma: self.sigma,
+            rho: self.rho,
+            beta: self.beta,
+            state,
+        }
+    }
+}
+
 /// The Lorenz System simulator.
 ///
 /// The Lorenz equations are:
@@ -40,13 +93,11 @@ pub struct LorenzSystem {
 
 impl LorenzSystem {
     /// Creates a new LorenzSystem with standard chaotic constants: $\sigma=10, \rho=28, \beta=8/3$.
+    ///
+    /// # Deprecation Notice
+    /// Prefer using `LorenzBuilder::new().build(initial_state)` for better composability.
     pub fn default_chaotic(initial_state: LorenzState) -> Self {
-        LorenzSystem {
-            sigma: 10.0,
-            rho: 28.0,
-            beta: 8.0 / 3.0,
-            state: initial_state,
-        }
+        LorenzBuilder::new().build(initial_state)
     }
 
     /// Advances the system by time `dt` using the Runge-Kutta 4 (RK4) method.

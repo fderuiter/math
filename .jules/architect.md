@@ -12,3 +12,7 @@
 **Problem:** `math_explorer/src/physics/solid_state.rs` was a "God File" containing mixed concerns: Second Quantization, Screening, Lattice Dynamics, Magnetism, BCS Theory, and Interactions. This violated the Single Responsibility Principle and hindered navigability.
 **Decision:** Applied "Module Extraction" to split `solid_state.rs` into a directory-based module `math_explorer/src/physics/solid_state/` with dedicated submodules for each domain.
 **Consequence:** Improved separation of concerns, easier testing of individual components, and better scalability for future solid state physics additions. Backward compatibility is preserved via re-exports in `mod.rs`.
+## 2026-05-25 - [Solid State Physics Decomposition]
+**Problem:** `math_explorer/src/physics/solid_state.rs` was a large file (~400 lines) mixing six distinct physical domains: Second Quantization, Screening, Lattice Dynamics, Magnetism, BCS Theory, and Electron-Phonon Interactions.
+**Decision:** Applied "Module Extraction" to split `solid_state.rs` into a directory-based module `math_explorer/src/physics/solid_state/` with dedicated files for each domain.
+**Consequence:** Greatly improved cohesion. Each file now represents a single physical domain. The API remains backward compatible via re-exports in `mod.rs`, but the codebase is now much more scalable for adding future solid state models.

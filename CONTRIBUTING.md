@@ -21,6 +21,22 @@ When you submit a PR, you aren't just merging code; you are merging knowledge. E
     git checkout -b feature/amazing-new-math
     ```
 
+## 🔄 Workflow
+
+```mermaid
+graph TD
+    A[Start] --> B[Fork Repository]
+    B --> C[Create Branch]
+    C --> D[Code Changes]
+    D --> E{Tests Pass?}
+    E -->|No| D
+    E -->|Yes| F[Write Docs]
+    F --> G[Submit PR]
+    G --> H{Review}
+    H -->|Changes Requested| D
+    H -->|Approved| I[Merge]
+```
+
 ## 🧪 Testing
 
 We take reliability seriously. Before submitting, ensure all tests pass.

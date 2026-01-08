@@ -1,3 +1,40 @@
+//! # Math Explorer
+//!
+//! **Math Explorer** is a research-grade Rust library designed to bridge the gap between abstract mathematical theory
+//! and executable code. It provides robust implementations for domains ranging from Quantum Mechanics and Chaos Theory
+//! to satirical social modeling.
+//!
+//! ## 🚀 Quick Start
+//!
+//! **Calculate Clebsch-Gordan Coefficients (Quantum Physics):**
+//!
+//! ```rust
+//! use math_explorer::physics::quantum::clebsch_gordan;
+//!
+//! // Coupling j1=1.5, m1=-0.5 with j2=1.0, m2=1.0 to J=2.5, M=0.5
+//! let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
+//! assert!((coeff - 0.5477).abs() < 1e-3);
+//! ```
+//!
+//! ## 📚 Core Domains
+//!
+//! *   **[AI](crate::ai)**: Architectures (Transformers), Neural Rendering (NeRF), and Self-Calibration.
+//! *   **[Applied](crate::applied)**: Real-world (and satirical) applications like [Favoritism](crate::applied::favoritism) and Clinical Trials.
+//! *   **[Physics](crate::physics)**: Simulations for [Chaos](crate::physics::chaos), Quantum Mechanics, and Fluid Dynamics.
+//! *   **[Biology](crate::biology)**: Models for Neuroscience, Morphogenesis, and Evolution.
+//! *   **[Pure Math](crate::pure_math)**: Foundational algorithms in Number Theory, Algebra, and Analysis.
+//!
+//! ## 🔧 Usage
+//!
+//! Add this to your `Cargo.toml`:
+//!
+//! ```toml
+//! [dependencies]
+//! math_explorer = { path = "path/to/math_explorer" }
+//! ```
+//!
+//! *(Note: This crate is typically part of a workspace or cloned locally.)*
+
 pub mod ai;
 pub mod applied;
 pub mod climate;
