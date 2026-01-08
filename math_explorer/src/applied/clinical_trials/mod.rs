@@ -37,6 +37,7 @@
 //! use math_explorer::applied::clinical_trials::design::{simple_randomization, Group};
 //! use math_explorer::applied::clinical_trials::sample_size::calculate_sample_size_means;
 //! use math_explorer::applied::clinical_trials::analysis::calculate_risk_metrics;
+//! use math_explorer::applied::clinical_trials::types::ContingencyTable;
 //!
 //! fn main() {
 //!     // 1. Plan: We want to detect a mean difference of 5.0 with SD=10.0
@@ -53,13 +54,13 @@
 //!
 //!     // 3. Analyze: Calculate Relative Risk (RR)
 //!     // Scenario: Treatment group had fewer adverse events (20 vs 40) out of 100 each.
-//!     let metrics = calculate_risk_metrics(
+//!     let table = ContingencyTable::new(
 //!         20, // Treatment: Event
 //!         80, // Treatment: No Event
 //!         40, // Control: Event
 //!         60, // Control: No Event
-//!         0.05 // Alpha
 //!     ).unwrap();
+//!     let metrics = calculate_risk_metrics(&table, 0.05).unwrap();
 //!
 //!     println!("Relative Risk: {:.2}", metrics.relative_risk); // Should be 0.5
 //!     println!("Odds Ratio: {:.2}", metrics.odds_ratio);
@@ -71,3 +72,4 @@ pub mod sample_size;
 pub mod hypothesis_testing;
 pub mod analysis;
 pub mod survival_analysis;
+pub mod types;

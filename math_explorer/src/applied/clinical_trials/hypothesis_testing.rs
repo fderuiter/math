@@ -1,5 +1,5 @@
 use statrs::distribution::{ContinuousCDF, StudentsT, ChiSquared};
-use std::f64;
+use super::types::{GroupData, ContingencyTable, ClinicalTrialError};
 
 #[derive(Debug, Clone)]
 pub struct TestResult {
@@ -15,19 +15,20 @@ pub struct TestResult {
 /// * `group1` - Data for group 1.
 /// * `group2` - Data for group 2.
 /// * `alpha` - Significance level (e.g., 0.05).
-pub fn t_test_independent(group1: &[f64], group2: &[f64], alpha: f64) -> Result<TestResult, String> {
-    let n1 = group1.len();
-    let n2 = group2.len();
+pub fn t_test_independent(group1: &GroupData, group2: &GroupData, alpha: f64) -> Result<TestResult, ClinicalTrialError> {
+    let n1 = group1.n();
+    let n2 = group2.n();
 
+    // Already checked in GroupData::new, but safe to check again if internals change
     if n1 < 2 || n2 < 2 {
-        return Err("Sample sizes must be at least 2".to_string());
+        return Err(ClinicalTrialError::InsufficientSampleSize { required: 2, actual: n1.min(n2) });
     }
 
-    let mean1 = mean(group1);
-    let mean2 = mean(group2);
+    let mean1 = group1.mean();
+    let mean2 = group2.mean();
 
-    let var1 = variance(group1, mean1);
-    let var2 = variance(group2, mean2);
+    let var1 = group1.variance();
+    let var2 = group2.variance();
 
     // Pooled variance
     let dof = (n1 + n2 - 2) as f64;
@@ -41,7 +42,7 @@ pub fn t_test_independent(group1: &[f64], group2: &[f64], alpha: f64) -> Result<
     let t_stat = (mean1 - mean2) / se_diff;
 
     // P-value (two-tailed)
-    let t_dist = StudentsT::new(0.0, 1.0, dof).map_err(|e| e.to_string())?;
+    let t_dist = StudentsT::new(0.0, 1.0, dof).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
     let p_value = 2.0 * (1.0 - t_dist.cdf(t_stat.abs()));
 
     // Confidence Interval for the difference
@@ -61,25 +62,17 @@ pub fn t_test_independent(group1: &[f64], group2: &[f64], alpha: f64) -> Result<
 
 /// Performs a Chi-Square test for a 2x2 contingency table.
 ///
-/// | | Event | No Event |
-/// |---|---|---|
-/// | Group 1 | a | b |
-/// | Group 2 | c | d |
-///
 /// # Arguments
-/// * `a`, `b` - Group 1 counts (Event, No Event).
-/// * `c`, `d` - Group 2 counts (Event, No Event).
+/// * `table` - The 2x2 contingency table.
 /// * `alpha` - Significance level.
-pub fn chi_square_2x2(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Result<TestResult, String> {
-    let total = (a + b + c + d) as f64;
-    if total == 0.0 {
-        return Err("Total count is zero".to_string());
-    }
+pub fn chi_square_2x2(table: &ContingencyTable, alpha: f64) -> Result<TestResult, ClinicalTrialError> {
+    let total = table.total();
+    // total == 0 check is done in ContingencyTable constructor.
 
-    let a_f = a as f64;
-    let b_f = b as f64;
-    let c_f = c as f64;
-    let d_f = d as f64;
+    let a_f = table.treatment_event as f64;
+    let b_f = table.treatment_no_event as f64;
+    let c_f = table.control_event as f64;
+    let d_f = table.control_no_event as f64;
 
     let row1 = a_f + b_f;
     let row2 = c_f + d_f;
@@ -93,7 +86,7 @@ pub fn chi_square_2x2(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Result<Test
     let e_d = (row2 * col2) / total;
 
     if e_a == 0.0 || e_b == 0.0 || e_c == 0.0 || e_d == 0.0 {
-         return Err("Expected frequencies too low (zero) for Chi-Square".to_string());
+         return Err(ClinicalTrialError::StatisticalError("Expected frequencies too low (zero) for Chi-Square".to_string()));
     }
 
     let term_a = (a_f - e_a).powi(2) / e_a;
@@ -104,7 +97,7 @@ pub fn chi_square_2x2(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Result<Test
     let chi_sq = term_a + term_b + term_c + term_d;
 
     // DoF for 2x2 is 1
-    let dist = ChiSquared::new(1.0).map_err(|e| e.to_string())?;
+    let dist = ChiSquared::new(1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
     let p_value = 1.0 - dist.cdf(chi_sq);
 
     Ok(TestResult {
@@ -113,14 +106,4 @@ pub fn chi_square_2x2(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Result<Test
         is_significant: p_value < alpha,
         confidence_interval: None, // CI for chi-sq statistic is not standard; usually CI for OR/RR is used.
     })
-}
-
-fn mean(data: &[f64]) -> f64 {
-    let sum: f64 = data.iter().sum();
-    sum / data.len() as f64
-}
-
-fn variance(data: &[f64], mean: f64) -> f64 {
-    let sum_sq_diff: f64 = data.iter().map(|x| (x - mean).powi(2)).sum();
-    sum_sq_diff / (data.len() - 1) as f64
 }

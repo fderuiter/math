@@ -1,4 +1,4 @@
-use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE, VERTEX_OFFSET};
+use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE};
 use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
 
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
