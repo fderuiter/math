@@ -1,20 +1,30 @@
 use nalgebra::{DMatrix, DVector};
 
-/// Represents an Evolutionary Game with Replicator Dynamics.
-/// dx_i/dt = x_i * ( fitness_i(x) - average_fitness(x) )
-/// For matrix games: fitness_i(x) = (Ax)_i
-/// average_fitness(x) = x^T A x
+/// Represents an Evolutionary Game solved via **Replicator Dynamics**.
+///
+/// In evolutionary game theory, we study how the composition of a population changes over time
+/// based on the fitness of different strategies. The governing equation is the Replicator Equation:
+///
+/// $$ \dot{x}_i = x_i \left( f_i(x) - \bar{f}(x) \right) $$
+///
+/// Where:
+/// - $x_i$ is the proportion of the population playing strategy $i$.
+/// - $f_i(x) = (Ax)_i$ is the fitness of strategy $i$ against population state $x$.
+/// - $\bar{f}(x) = x^T A x$ is the average fitness of the population.
+///
+/// Strategies with better-than-average fitness grow in prevalence; those with worse-than-average shrink.
 pub struct ReplicatorDynamics {
     pub payoff_matrix: DMatrix<f64>,
 }
 
 impl ReplicatorDynamics {
+    /// Creates a new system with the given payoff matrix $A$.
     pub fn new(payoff_matrix: DMatrix<f64>) -> Self {
         assert_eq!(payoff_matrix.nrows(), payoff_matrix.ncols(), "Payoff matrix must be square");
         Self { payoff_matrix }
     }
 
-    /// Computes the time derivative dx/dt for the population state x.
+    /// Computes the time derivative $\dot{x}$ for the population state $x$.
     pub fn derivative(&self, x: &DVector<f64>) -> DVector<f64> {
         let fitness_vector = &self.payoff_matrix * x;
         let average_fitness = x.dot(&fitness_vector);
@@ -26,7 +36,15 @@ impl ReplicatorDynamics {
         dxdt
     }
 
-    /// Simulates the dynamics over time using Runge-Kutta 4 method.
+    /// Simulates the dynamics over time using the **Runge-Kutta 4** method.
+    ///
+    /// # Parameters
+    /// - `initial_population`: Vector of proportions summing to 1.0.
+    /// - `time_horizon`: Total time to simulate.
+    /// - `dt`: Time step size.
+    ///
+    /// # Returns
+    /// A time-series of population states: `Vec<(Time, State)>`.
     pub fn simulate(
         &self,
         initial_population: DVector<f64>,
@@ -68,13 +86,14 @@ mod tests {
 
     #[test]
     fn test_rock_paper_scissors() {
-        // Rock Paper Scissors matrix
+        // Rock Paper Scissors matrix (Zero-Sum)
         //      R   P   S
         // R    0  -1   1
         // P    1   0  -1
         // S   -1   1   0
-        // (Standard zero-sum version)
-        // If we add a constant to make payoffs positive (standard biology practice), dynamics are same.
+        //
+        // This is a "Cyclic" game. The interior equilibrium is (1/3, 1/3, 1/3).
+        // Trajectories should cycle around it.
 
         let payoff = DMatrix::from_row_slice(3, 3, &[
              0.0, -1.0,  1.0,
