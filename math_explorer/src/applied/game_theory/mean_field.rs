@@ -1,16 +1,25 @@
 use nalgebra::DMatrix;
 
-/// Represents a 1D Mean Field Game configuration.
-/// The system consists of:
-/// 1. Hamilton-Jacobi-Bellman (HJB) equation (Backward):
-///    -du/dt + H(x, grad u) + nu * laplacian(u) = F(x, m)
-///    u(x, T) = G(x, m(T))
+/// Represents a 1D Mean Field Game (MFG) configuration.
 ///
-/// 2. Fokker-Planck (KBE) equation (Forward):
-///    dm/dt + div(m * dH/dp) - nu * laplacian(m) = 0
-///    m(x, 0) = m_0(x)
+/// Mean Field Games model systems with a large number of indistinguishable rational agents.
+/// Instead of tracking $N$ players, we model the limit as $N \to \infty$.
 ///
-/// We assume H(p) = 0.5 * p^2, so dH/dp = p = grad u.
+/// The solution is characterized by a coupled system of Partial Differential Equations (PDEs):
+///
+/// 1. **Hamilton-Jacobi-Bellman (HJB) Equation**: Describes the optimal control problem of a single agent.
+///    It evolves **backward in time** (from terminal cost to present).
+///    $$ -\partial_t u + H(x, \nabla u) - \nu \Delta u = F(x, m) $$
+///
+/// 2. **Fokker-Planck (Kolmogorov Forward) Equation**: Describes the evolution of the population distribution.
+///    It evolves **forward in time** (from initial distribution).
+///    $$ \partial_t m + \nabla \cdot (m v) - \nu \Delta m = 0 $$
+///    where the drift $v = -\nabla H_p = -\nabla u$ (assuming quadratic Hamiltonian).
+///
+/// # Field Descriptions
+/// - `viscosity` ($\nu$): Diffusion parameter representing noise/randomness in agent motion.
+/// - `time_horizon` ($T$): Duration of the game.
+/// - `dt`, `dx`: Discretization steps.
 pub struct MeanFieldGame1D {
     pub viscosity: f64,          // nu
     pub time_horizon: f64,       // T
@@ -45,10 +54,21 @@ impl MeanFieldGame1D {
         }
     }
 
-    /// Solves the coupled system using fixed-point iteration.
-    /// `cost_function` F(x, m): Running cost.
-    /// `terminal_cost` G(x, m): Terminal cost.
-    /// `initial_distribution` m_0(x): Initial population density.
+    /// Solves the coupled system using a **Fixed-Point Iteration** scheme.
+    ///
+    /// The algorithm iterates between:
+    /// 1. Solving HJB **backward** given the current guess for distribution $m$.
+    /// 2. Solving Fokker-Planck **forward** given the optimal control from $u$.
+    ///
+    /// # Parameters
+    /// - `cost_function` $F(x, m)$: The running cost. Often penalizes congestion (large $m$).
+    /// - `terminal_cost` $G(x, m)$: Cost at final time $T$.
+    /// - `initial_distribution` $m_0(x)$: Starting population density.
+    /// - `iterations`: Number of forward-backward sweeps.
+    ///
+    /// # Returns
+    /// Tuple `(u, m)` containing the value function and distribution matrices.
+    /// Rows correspond to space, columns to time.
     pub fn solve(
         &self,
         cost_function: impl Fn(f64, f64) -> f64,
