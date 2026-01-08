@@ -5,6 +5,32 @@
 //! This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
 //! states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
 //! in general.
+//!
+//! ## Modules
+//!
+//! *   **[Logistic Map](logistic)**: A discrete-time demographic model $ x_{n+1} = r x_n (1 - x_n) $ famous for its bifurcation route to chaos.
+//! *   **[Lorenz System](lorenz)**: A system of three ODEs representing atmospheric convection, known for the "butterfly" attractor.
+//! *   **[Metrics](metrics)**: Tools to quantify chaos, such as Lyapunov Exponents.
+//! *   **[Fractals](fractals)**: Analysis of fractal geometry, including Correlation Dimension.
+//!
+//! ## Example: Lorenz System
+//!
+//! ```rust
+//! use math_explorer::physics::chaos::lorenz::{LorenzSystem, LorenzState};
+//!
+//! // 1. Define the initial state (x, y, z)
+//! let initial_state = LorenzState::new(10.0, 10.0, 10.0);
+//!
+//! // 2. Create the system with standard "chaotic" parameters
+//! // (sigma=10.0, rho=28.0, beta=8/3)
+//! let mut system = LorenzSystem::default_chaotic(initial_state);
+//!
+//! // 3. Evolve the system
+//! let dt = 0.01;
+//! system.step(dt);
+//!
+//! println!("New state: {:?}", system.state);
+//! ```
 
 pub mod logistic;
 pub mod lorenz;
