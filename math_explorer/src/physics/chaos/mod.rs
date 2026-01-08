@@ -120,4 +120,26 @@ mod tests {
         let c = fractals::correlation_dimension(&traj, 1.1);
         assert_relative_eq!(c, 0.2);
     }
+
+    #[test]
+    fn test_lorenz_builder_custom_parameters() {
+        let state = lorenz::LorenzState::new(1.0, 1.0, 1.0);
+
+        // Build a system with non-standard parameters
+        // Example: sigma = 11.0, rho = 29.0 (slightly different from standard)
+        let system = lorenz::LorenzBuilder::new()
+            .sigma(11.0)
+            .rho(29.0)
+            .beta(3.0)
+            .build(state);
+
+        assert_eq!(system.sigma, 11.0);
+        assert_eq!(system.rho, 29.0);
+        assert_eq!(system.beta, 3.0);
+
+        // Ensure it runs
+        let mut running_system = system;
+        running_system.step(0.01);
+        assert!(running_system.state.vec.x.is_finite());
+    }
 }
