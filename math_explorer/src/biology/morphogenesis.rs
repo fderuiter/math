@@ -6,8 +6,56 @@
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
 
+/// Defines the reaction kinetics for a 2-component reaction-diffusion system.
+pub trait ReactionKinetics {
+    /// Calculates the reaction rates for activator u and inhibitor v.
+    ///
+    /// # Arguments
+    /// * `u` - Concentration of activator.
+    /// * `v` - Concentration of inhibitor.
+    ///
+    /// # Returns
+    /// A tuple `(du/dt, dv/dt)` representing the reaction terms.
+    fn reaction(&self, u: f64, v: f64) -> (f64, f64);
+}
+
+/// Schnakenberg kinetics (often used for Turing patterns).
+///
+/// Equations:
+/// $$ f(u, v) = a - u + u^2 v $$
+/// $$ g(u, v) = b - u^2 v $$
+#[derive(Debug, Clone, Copy)]
+pub struct SchnakenbergKinetics {
+    /// Production rate of activator.
+    pub a: f64,
+    /// Production rate of inhibitor.
+    pub b: f64,
+}
+
+impl SchnakenbergKinetics {
+    /// Creates a new Schnakenberg kinetics model.
+    pub fn new(a: f64, b: f64) -> Self {
+        Self { a, b }
+    }
+}
+
+impl Default for SchnakenbergKinetics {
+    fn default() -> Self {
+        Self { a: 0.01, b: 0.05 }
+    }
+}
+
+impl ReactionKinetics for SchnakenbergKinetics {
+    fn reaction(&self, u: f64, v: f64) -> (f64, f64) {
+        let uv_sq = u.powi(2) * v;
+        let reaction_u = self.a - u + uv_sq;
+        let reaction_v = self.b - uv_sq;
+        (reaction_u, reaction_v)
+    }
+}
+
 /// Represents a 1D Reaction-Diffusion system.
-pub struct TuringSystem {
+pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
     /// Activator concentrations
     pub u: Vec<f64>,
     /// Inhibitor concentrations
@@ -18,6 +66,8 @@ pub struct TuringSystem {
     pub d_v: f64,
     /// Grid spacing
     pub dx: f64,
+    /// Reaction kinetics strategy
+    pub kinetics: K,
 
     // Private buffers for double buffering to avoid allocation in hot loops.
     // Marked hidden to discourage manual usage if fields were public (which they are).
@@ -27,22 +77,29 @@ pub struct TuringSystem {
     buffer_v: Vec<f64>,
 }
 
-impl TuringSystem {
+impl TuringSystem<SchnakenbergKinetics> {
+    /// Creates a new Turing System with default Schnakenberg kinetics.
     pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
+        Self::new_with_kinetics(size, d_u, d_v, dx, SchnakenbergKinetics::default())
+    }
+}
+
+impl<K: ReactionKinetics> TuringSystem<K> {
+    /// Creates a new Turing System with custom kinetics.
+    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, dx: f64, kinetics: K) -> Self {
         Self {
             u: vec![0.0; size],
             v: vec![0.0; size],
             d_u,
             d_v,
             dx,
+            kinetics,
             buffer_u: vec![0.0; size],
             buffer_v: vec![0.0; size],
         }
     }
 
     /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
-    /// Using Gierer-Meinhardt-like kinetics as suggested:
-    /// f(u,v) = a - u + u^2 v
     pub fn step(&mut self, dt: f64) {
         let n = self.u.len();
         if n == 0 { return; }
@@ -55,8 +112,6 @@ impl TuringSystem {
             self.buffer_v = vec![0.0; n];
         }
 
-        let a = 0.01;
-        let b = 0.05;
         let dx_sq = self.dx * self.dx;
 
         // Optimization: Lift boundary checks out of the loop
@@ -66,9 +121,7 @@ impl TuringSystem {
             let lap_u = (u_next - 2.0 * u_curr + u_prev) / dx_sq;
             let lap_v = (v_next - 2.0 * v_curr + v_prev) / dx_sq;
 
-            let uv_sq = u_curr.powi(2) * v_curr;
-            let reaction_u = a - u_curr + uv_sq;
-            let reaction_v = b - uv_sq;
+            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
             let next_u = u_curr + dt * (self.d_u * lap_u + reaction_u);
             let next_v = v_curr + dt * (self.d_v * lap_v + reaction_v);
