@@ -1,4 +1,4 @@
-use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE, VERTEX_OFFSET};
+use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE};
 use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
 
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
@@ -23,30 +23,42 @@ fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Po
 }
 
 /// Calculates the gradient at a grid point using central differences.
+/// Optimized to use direct indexing `idx` instead of recalculating from (x,y,z).
 #[inline]
-fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
+fn get_gradient(
+    grid: &VoxelGrid,
+    x: usize,
+    y: usize,
+    z: usize,
+    idx: usize,
+    stride_y: usize,
+    stride_z: usize,
+) -> Point3D {
+    // Note: grid.data[idx] access is safe because idx is derived from loop bounds in caller.
+    // Checks for neighbors ensure we don't access out of bounds via offsets.
+
     let dx = if x == 0 {
-        grid.get(x + 1, y, z) - grid.get(x, y, z)
+        grid.data[idx + 1] - grid.data[idx]
     } else if x == grid.width - 1 {
-        grid.get(x, y, z) - grid.get(x - 1, y, z)
+        grid.data[idx] - grid.data[idx - 1]
     } else {
-        (grid.get(x + 1, y, z) - grid.get(x - 1, y, z)) / 2.0
+        (grid.data[idx + 1] - grid.data[idx - 1]) * 0.5
     };
 
     let dy = if y == 0 {
-        grid.get(x, y + 1, z) - grid.get(x, y, z)
+        grid.data[idx + stride_y] - grid.data[idx]
     } else if y == grid.height - 1 {
-        grid.get(x, y, z) - grid.get(x, y - 1, z)
+        grid.data[idx] - grid.data[idx - stride_y]
     } else {
-        (grid.get(x, y + 1, z) - grid.get(x, y - 1, z)) / 2.0
+        (grid.data[idx + stride_y] - grid.data[idx - stride_y]) * 0.5
     };
 
     let dz = if z == 0 {
-        grid.get(x, y, z + 1) - grid.get(x, y, z)
+        grid.data[idx + stride_z] - grid.data[idx]
     } else if z == grid.depth - 1 {
-        grid.get(x, y, z) - grid.get(x, y, z - 1)
+        grid.data[idx] - grid.data[idx - stride_z]
     } else {
-        (grid.get(x, y, z + 1) - grid.get(x, y, z - 1)) / 2.0
+        (grid.data[idx + stride_z] - grid.data[idx - stride_z]) * 0.5
     };
 
     let len = (dx * dx + dy * dy + dz * dz).sqrt();
@@ -167,10 +179,10 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                     corner_normals[4] = grads[2];
                     corner_normals[7] = grads[3];
                 } else {
-                    corner_normals[0] = get_gradient(grid, x, y, z);
-                    corner_normals[3] = get_gradient(grid, x, y + 1, z);
-                    corner_normals[4] = get_gradient(grid, x, y, z + 1);
-                    corner_normals[7] = get_gradient(grid, x, y + 1, z + 1);
+                    corner_normals[0] = get_gradient(grid, x, y, z, base_idx, stride_y, stride_z);
+                    corner_normals[3] = get_gradient(grid, x, y + 1, z, base_idx + stride_y, stride_y, stride_z);
+                    corner_normals[4] = get_gradient(grid, x, y, z + 1, base_idx + stride_z, stride_y, stride_z);
+                    corner_normals[7] = get_gradient(grid, x, y + 1, z + 1, base_idx + stride_y + stride_z, stride_y, stride_z);
                 }
 
                 // 2. Compute Right Face (1, 2, 5, 6) - these are always new
@@ -179,10 +191,10 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 // 2: (x+1, y+1, z)
                 // 5: (x+1, y, z+1)
                 // 6: (x+1, y+1, z+1)
-                corner_normals[1] = get_gradient(grid, x + 1, y, z);
-                corner_normals[2] = get_gradient(grid, x + 1, y + 1, z);
-                corner_normals[5] = get_gradient(grid, x + 1, y, z + 1);
-                corner_normals[6] = get_gradient(grid, x + 1, y + 1, z + 1);
+                corner_normals[1] = get_gradient(grid, x + 1, y, z, base_idx + 1, stride_y, stride_z);
+                corner_normals[2] = get_gradient(grid, x + 1, y + 1, z, base_idx + 1 + stride_y, stride_y, stride_z);
+                corner_normals[5] = get_gradient(grid, x + 1, y, z + 1, base_idx + 1 + stride_z, stride_y, stride_z);
+                corner_normals[6] = get_gradient(grid, x + 1, y + 1, z + 1, base_idx + 1 + stride_y + stride_z, stride_y, stride_z);
 
                 // 3. Update cache for next iteration (which will use these as Left Face)
                 cached_gradients = Some([
