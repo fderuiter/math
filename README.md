@@ -56,6 +56,7 @@ Math Explorer is organized into high-level domains, each solving specific proble
 | **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
 | **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), and **LoraHub**. |
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
+| **🦠 Epidemiology** | `math_explorer::epidemiology` | **SIR/SEIR Models**, Network Dynamics, and Stochastic simulations. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
 | **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, and Differential Geometry. |
 
@@ -91,6 +92,22 @@ inputs.social.helped_during_crisis = true; // High social utility
 
 let score = calculate_favoritism_score(&inputs);
 println!("Favoritism Score: {}", score); // Higher is better
+```
+
+### 🦠 Epidemiology
+Model disease spread using Compartmental Models (SIR, SEIR).
+
+```rust
+use math_explorer::epidemiology::compartmental::SIRModel;
+
+// Population: 1000, Patient Zero: 1, Beta: 0.4, Gamma: 0.1
+let mut model = SIRModel::new(1000.0, 1.0, 0.4, 0.1);
+
+// Simulate 30 days
+for _ in 0..30 {
+    model.step(1.0);
+}
+println!("Infected Count: {:.0}", model.state.i);
 ```
 
 ### 🌌 Physics: Chaos Theory
