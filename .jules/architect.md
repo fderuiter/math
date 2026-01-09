@@ -12,3 +12,14 @@
 **Problem:** `math_explorer/src/physics/solid_state.rs` was a large file (~400 lines) mixing six distinct physical domains: Second Quantization, Screening, Lattice Dynamics, Magnetism, BCS Theory, and Electron-Phonon Interactions.
 **Decision:** Applied "Module Extraction" to split `solid_state.rs` into a directory-based module `math_explorer/src/physics/solid_state/` with dedicated files for each domain.
 **Consequence:** Greatly improved cohesion. Each file now represents a single physical domain. The API remains backward compatible via re-exports in `mod.rs`, but the codebase is now much more scalable for adding future solid state models.
+
+## 2024-05-23 - [Neuroscience: Separation of State and Model]
+**Problem:** The `HodgkinHuxleyNeuron` struct was a "God Object" mixing state (membrane potential, gating variables), constants (conductances), and integration logic (Euler method) in a single struct and file.
+**Decision:** Applied "Module Extraction" and "Traitification".
+- Extracted `HodgkinHuxleyState` and `HodgkinHuxleyParameters` into strong types.
+- Implemented `OdeSystem` for `HodgkinHuxleyModel` to decouple the physics from the solver.
+- Refactored `HodgkinHuxleyNeuron` to act as a Facade that delegates to these internal components.
+**Consequence:**
+- Scalability: The model can now be used with advanced solvers (e.g., RK4) via the `OdeSystem` trait.
+- Complexity: Added more files and type definitions.
+- Constraint: The legacy `update` method manually preserves the staggered Euler integration order to ensure strict backward compatibility, preventing the direct use of the generic `OdeSystem` for the default path.
