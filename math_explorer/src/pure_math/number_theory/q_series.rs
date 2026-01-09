@@ -108,12 +108,17 @@ impl<T: Ring> Mul for &QSeries<T> {
         let precision = std::cmp::max(len1, len2);
         let mut new_coeffs = vec![T::zero(); precision];
 
+        // Optimized for truncated multiplication
+        // The outer loop runs up to min(len1, precision).
+        // Since precision = max(len1, len2), min(len1, precision) == len1.
         for i in 0..len1 {
-            for j in 0..len2 {
-                if i + j < precision {
-                    let product = self.coeffs[i].clone() * other.coeffs[j].clone();
-                    new_coeffs[i + j] += product;
-                }
+            let limit = std::cmp::min(len2, precision - i);
+            let c_i = self.coeffs[i].clone();
+
+            for j in 0..limit {
+                // i + j < precision is guaranteed by loop bounds
+                let product = c_i.clone() * other.coeffs[j].clone();
+                new_coeffs[i + j] += product;
             }
         }
 
