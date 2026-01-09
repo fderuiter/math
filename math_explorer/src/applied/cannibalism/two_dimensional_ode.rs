@@ -5,19 +5,11 @@
 
 /// Placeholder function for the rate of change of normal individuals.
 ///
-/// # Arguments
+/// # Deprecation Notice
 ///
-/// * `n` - number of normal individuals
-/// * `c` - number of cannibalistic individuals
-/// * `beta_n` - birth rate of normal individuals
-/// * `beta_c` - birth rate of cannibalistic individuals
-/// * `k_n` - rate at which normal individuals become cannibals
-/// * `phi_n_c` - loss of normal individuals due to cannibalism
-/// * `mu_n` - death rate of normal individuals
-///
-/// # Returns
-///
-/// The rate of change of the number of normal individuals.
+/// This function is deprecated. Please use `CannibalismModel` struct in `model.rs` instead.
+#[deprecated(since = "0.1.0", note = "Use CannibalismModel struct instead")]
+#[allow(clippy::too_many_arguments)]
 pub fn dndt(n: f64, c: f64, beta_n: f64, beta_c: f64, k_n: f64, phi_n_c: f64, mu_n: f64) -> f64 {
     // This is a placeholder implementation.
     beta_n * n + beta_c * c - k_n * n - phi_n_c - mu_n * n
@@ -25,16 +17,10 @@ pub fn dndt(n: f64, c: f64, beta_n: f64, beta_c: f64, k_n: f64, phi_n_c: f64, mu
 
 /// Placeholder function for the rate of change of cannibalistic individuals.
 ///
-/// # Arguments
+/// # Deprecation Notice
 ///
-/// * `n` - number of normal individuals
-/// * `c` - number of cannibalistic individuals
-/// * `k_n` - rate at which normal individuals become cannibals
-/// * `mu_c` - death rate of cannibalistic individuals
-///
-/// # Returns
-///
-/// The rate of change of the number of cannibalistic individuals.
+/// This function is deprecated. Please use `CannibalismModel` struct in `model.rs` instead.
+#[deprecated(since = "0.1.0", note = "Use CannibalismModel struct instead")]
 pub fn dcdt(n: f64, c: f64, k_n: f64, mu_c: f64) -> f64 {
     // This is a placeholder implementation.
     k_n * n - mu_c * c

@@ -15,7 +15,7 @@ use rand::Rng;
 /// # Arguments
 ///
 /// * `inputs` - A reference to a `FavoritismInputs` struct containing all necessary parameters,
-///              including time horizons, gift values, and sibling competition metrics.
+///   including time horizons, gift values, and sibling competition metrics.
 ///
 /// # Returns
 ///

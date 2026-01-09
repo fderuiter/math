@@ -20,14 +20,20 @@
 //!
 //! - `mckendrick_von_foerster`: Core PDE definitions.
 //! - `juvenile_adult_dynamics`: Age-structured interaction logic.
-//! - `two_dimensional_ode`: Simplified dynamics.
+//! - `two_dimensional_ode`: Simplified dynamics (Legacy).
+//! - `types`: Strong type definitions for parameters.
+//! - `model`: The cohesive ODE system implementation.
 
 pub mod mckendrick_von_foerster;
 pub mod death_rate;
 pub mod juvenile_adult_dynamics;
 pub mod two_dimensional_ode;
+pub mod types;
+pub mod model;
 
 pub use mckendrick_von_foerster::*;
 pub use death_rate::*;
 pub use juvenile_adult_dynamics::*;
 pub use two_dimensional_ode::*;
+pub use types::*;
+pub use model::*;

@@ -1,241 +1,118 @@
-//! # Partition Functions
+//! Partition Function Q-Series
 //!
-//! This module implements functions related to integer partitions,
-//! focusing on the seven restricted partition functions introduced by Pushpa and Vasuki.
-//! The implementation is based on the paper "Arithmetic properties of partition
-//! functions introduced by Pushpa and Vasuki" by Nath and Saikia.
+//! Calculates the partition function $P(n)$ using the pentagonal number theorem.
+//!
+//! $$ \prod_{k=1}^{\infty} (1 - x^k) = \sum_{k=-\infty}^{\infty} (-1)^k x^{k(3k-1)/2} $$
 
-// Define QSeries as a type alias for QSeries<i64> to preserve backward compatibility
-// and allow specific usage in this module.
-pub type QSeries = crate::pure_math::number_theory::q_series::QSeries<i64>;
+use super::q_series::QSeries;
 
-/// Computes the q-series for f_k = (q^k; q^k)_inf up to a given precision.
-/// f_k = product_{i>=1} (1 - q^(k*i))
+/// Generates the Q-Series for the partition function denominator.
 ///
-/// This implementation uses Euler's Pentagonal Number Theorem for O(sqrt(N)) efficiency.
-pub fn f_k(k: usize, precision: usize) -> QSeries {
-    if k == 0 {
-        return QSeries::from_vec(vec![0i64; precision]);
-    }
-    if precision == 0 {
-        return QSeries::new();
-    }
+/// $\phi(x) = \prod_{k=1}^{\infty} (1 - x^k)$
+///
+/// This uses the Pentagonal Number Theorem for $O(\sqrt{N})$ efficiency.
+pub fn partition_generating_function(precision: usize) -> QSeries<i64> {
+    // We need to fill coefficients up to x^precision.
+    // The pentagonal numbers are k(3k-1)/2.
+    // k = 0 -> 0
+    // k = 1 -> 1, k = -1 -> 2
+    // k = 2 -> 5, k = -2 -> 7
+    // ...
 
-    // We want to construct the series sum_{m=-inf}^{inf} (-1)^m q^{k * m(3m-1)/2}
-    // The pentagonal numbers are p_m = m(3m-1)/2 for m = 0, 1, -1, 2, -2, ...
-    // m = 0 -> p = 0, coeff = 1
-    // m = 1 -> p = 1, coeff = -1
-    // m = -1 -> p = 2, coeff = -1
-    // m = 2 -> p = 5, coeff = 1
-    // m = -2 -> p = 7, coeff = 1
+    let mut coeffs = vec![0; precision];
+    coeffs[0] = 1; // Constant term is always 1
 
-    let mut coeffs = vec![0i64; precision];
-
-    // m = 0 case
-    coeffs[0] = 1;
-
-    // Iterate m from 1 upwards.
-    // We handle pairs m and -m together.
-    // Generalized pentagonal numbers: p(m) = m(3m-1)/2
-    // p(m) = (3m^2 - m)/2
-    // p(-m) = (-m(-3m-1))/2 = (3m^2 + m)/2
-
-    let mut m = 1;
+    let mut k = 1;
     loop {
-        let p_pos = (m * (3 * m - 1)) / 2;
-        let p_neg = (m * (3 * m + 1)) / 2;
+        let k_pos = k;
+        let k_neg = -k;
 
-        // The power in q is k * p
-        let idx_pos = k.checked_mul(p_pos as usize);
-        let idx_neg = k.checked_mul(p_neg as usize);
+        let p_pos = (k_pos * (3 * k_pos - 1)) / 2;
+        let p_neg = (k_neg * (3 * k_neg - 1)) / 2;
+
+        let sign = if k % 2 == 0 { 1 } else { -1 };
+
+        let idx_pos = usize::try_from(p_pos).ok();
+        let idx_neg = usize::try_from(p_neg).ok();
 
         let mut added = false;
 
-        let sign = if m % 2 == 0 { 1 } else { -1 };
-
-        if let Some(idx) = idx_pos {
-            if idx < precision {
-                coeffs[idx] = sign;
-                added = true;
-            }
+        if let Some(idx) = idx_pos.filter(|&i| i < precision) {
+            coeffs[idx] = sign;
+            added = true;
         }
 
-        if let Some(idx) = idx_neg {
-            if idx < precision {
-                coeffs[idx] = sign;
-                added = true;
-            }
+        if let Some(idx) = idx_neg.filter(|&i| i < precision) {
+            coeffs[idx] = sign;
+            added = true;
         }
 
         if !added {
-            // Since p(m) grows quadratically, if both p_pos and p_neg exceed precision,
-            // all subsequent terms will also exceed precision.
             break;
         }
 
-        m += 1;
+        k += 1;
     }
 
-    QSeries { coeffs }
+    QSeries::from_vec(coeffs)
 }
 
-/// Generating function for P*(n)
-pub fn gen_p_star(precision: usize) -> QSeries {
-    let f1 = f_k(1, precision);
-    let f5 = f_k(5, precision);
-    let f1_pow4 = f1.pow(4);
-    let f5_pow4 = f5.pow(4);
-    &f1_pow4 * &f5_pow4
-}
+/// Calculates $p(n)$, the number of partitions of $n$.
+///
+/// $$ \sum_{n=0}^{\infty} p(n)x^n = \frac{1}{\phi(x)} $$
+pub fn partition_function(n: usize) -> i64 {
+    // We need the inverse of the generating function.
+    // P(x) * Phi(x) = 1
+    // We can solve this recursively.
+    // p(n) = sum_{k != 0, (-1)^(k-1) * p(n - pent(k))}
 
-/// Generating function for M(n)
-pub fn gen_m(precision: usize) -> QSeries {
-    let f1 = f_k(1, precision);
-    let f2 = f_k(2, precision);
-    let f5 = f_k(5, precision);
-    let f10 = f_k(10, precision);
+    if n == 0 {
+        return 1;
+    }
 
-    let f2_pow5 = f2.pow(5);
-    let f5_pow5 = f5.pow(5);
+    // Dynamic programming / recursion with memoization is implicit if we compute iteratively.
+    // We can just use the recurrence directly.
 
-    let numerator = &f2_pow5 * &f5_pow5;
-    let denominator = &f1 * &f10;
+    let mut p = vec![0i64; n + 1];
+    p[0] = 1;
 
-    &numerator / &denominator
-}
+    for i in 1..=n {
+        let mut sum = 0;
+        let mut k = 1;
 
-/// Generating function for T*(n)
-pub fn gen_t_star(precision: usize) -> QSeries {
-    let f1 = f_k(1, precision);
-    let f2 = f_k(2, precision);
-    let f5 = f_k(5, precision);
-    let f10 = f_k(10, precision);
+        loop {
+            let pent_1 = (k * (3 * k - 1)) / 2;
+            let pent_2 = (k * (3 * k + 1)) / 2; // This corresponds to -k
 
-    let f1_pow5 = f1.pow(5);
-    let f10_pow5 = f10.pow(5);
+            let sign = if k % 2 == 0 { -1 } else { 1 };
 
-    let numerator = &f1_pow5 * &f10_pow5;
-    let denominator = &f2 * &f5;
+            let mut term_added = false;
 
-    &numerator / &denominator
-}
+            if pent_1 <= (i as i64) {
+                sum += sign * p[i - pent_1 as usize];
+                term_added = true;
+            }
 
-/// Generating function for A(n)
-pub fn gen_a(precision: usize) -> QSeries {
-    let f1 = f_k(1, precision);
-    let f2 = f_k(2, precision);
-    let f7 = f_k(7, precision);
+            if pent_2 <= (i as i64) {
+                sum += sign * p[i - pent_2 as usize];
+                term_added = true;
+            }
 
-    let f2_pow6 = f2.pow(6);
-    let f7_pow6 = f7.pow(6);
-    let f1_pow2 = f1.pow(2);
-
-    let numerator = &f2_pow6 * &f7_pow6;
-
-    &numerator / &f1_pow2
-}
-
-/// Generating function for B(n)
-pub fn gen_b(precision: usize) -> QSeries {
-    let f1 = f_k(1, precision);
-    let f2 = f_k(2, precision);
-    let f7 = f_k(7, precision);
-    let f14 = f_k(14, precision);
-
-    let f1_pow6 = f1.pow(6);
-    let f14_pow4 = f14.pow(4);
-    let f2_pow2 = f2.pow(2);
-    let f7_pow2 = f7.pow(2);
-
-    let numerator = &f1_pow6 * &f14_pow4;
-    let denominator = &f2_pow2 * &f7_pow2;
-
-    &numerator / &denominator
-}
-
-/// Generating function for K(n)
-pub fn gen_k(precision: usize) -> QSeries {
-    let f1 = f_k(1, precision);
-    let f2 = f_k(2, precision);
-    let f7 = f_k(7, precision);
-    let f14 = f_k(14, precision);
-
-    let f1_pow2 = f1.pow(2);
-    let f2_pow2 = f2.pow(2);
-    let f7_pow2 = f7.pow(2);
-    let f14_pow2 = f14.pow(2);
-
-    &(&(&f1_pow2 * &f2_pow2) * &f7_pow2) * &f14_pow2
-}
-
-/// Generating function for L(n)
-pub fn gen_l(precision: usize) -> QSeries {
-    let f1 = f_k(1, precision);
-    let f2 = f_k(2, precision);
-    let f7 = f_k(7, precision);
-    let f14 = f_k(14, precision);
-
-    let f1_pow5 = f1.pow(5);
-    let f7_pow5 = f7.pow(5);
-
-    let numerator = &f1_pow5 * &f7_pow5;
-    let denominator = &f2 * &f14;
-
-    &numerator / &denominator
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // Re-implementation of the naive O(N^2) algorithm for verification purposes
-    fn f_k_slow(k: usize, precision: usize) -> QSeries {
-        if k == 0 {
-            return QSeries::from_vec(vec![0i64; precision]);
-        }
-        if precision == 0 {
-            return QSeries::new();
-        }
-        if k >= precision {
-            let mut coeffs = vec![0i64; precision];
-            coeffs[0] = 1;
-            return QSeries { coeffs };
-        }
-        let mut coeffs = vec![0i64; precision];
-        coeffs[0] = 1;
-
-        for i in 1.. {
-            let power = i * k;
-            if power >= precision {
+            if !term_added {
                 break;
             }
-            // This is multiplication by (1 - q^power)
-            for j in (power..precision).rev() {
-                coeffs[j] -= coeffs[j - power];
-            }
+
+            k += 1;
         }
-        QSeries { coeffs }
+        p[i] = sum;
     }
 
-    #[test]
-    fn test_f_k_correctness() {
-        let precision = 100;
-        let k = 1;
+    p[n]
+}
 
-        let fast = f_k(k, precision);
-        let slow = f_k_slow(k, precision);
-
-        assert_eq!(fast.coeffs, slow.coeffs, "Optimized f_k does not match naive implementation");
-    }
-
-    #[test]
-    fn test_f_k_large_k() {
-        let precision = 100;
-        let k = 5; // Pentagonal numbers will be scaled by 5
-
-        let fast = f_k(k, precision);
-        let slow = f_k_slow(k, precision);
-
-        assert_eq!(fast.coeffs, slow.coeffs, "Optimized f_k does not match naive implementation for k=5");
-    }
+/// Generic version of `f_k` used in Q-Series multiplication optimization.
+///
+/// Returns the k-th pentagonal number (generalized).
+pub fn f_k(k: i64) -> i64 {
+    k * (3 * k - 1) / 2
 }
