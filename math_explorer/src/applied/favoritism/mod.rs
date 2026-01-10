@@ -1,93 +1,40 @@
-//! # Favoritism
+//! Unified Favoritism Theory (UFT) Module.
 //!
-//! A **satirical** yet mathematically rigorous framework for quantifying parental affection.
+//! This module implements a rigorous mathematical framework for determining parental affection.
+//! By quantifying subjective metrics such as "gift quality" and "call frequency", we can
+//! derive an objective "Favoritism Score" to predict inheritance distribution.
 //!
-//! This module implements the "Unified Favoritism Theory" (UFT), which postulates that
-//! a child's standing in the family hierarchy is a deterministic function of financial
-//! contribution, proximity, and social signaling, subject to stochastic perturbations
-//! (parental mood swings).
+//! # The Theory
 //!
-//! > **Warning:** This model is for educational and entertainment purposes only.
-//! > Do not use this to confront your parents during Thanksgiving dinner.
+//! The Favoritism Score $S$ is calculated as a product of weighted terms:
 //!
-//! ## The Algorithm
+//! $$ S = \frac{ \prod_{i} T_i }{ 1 + \sum_{j \neq \text{me}} \frac{1}{|\text{dist}_j|} } $$
 //!
-//! The Favoritism Score $F$ is calculated as:
+//! Where $T_i$ are individual terms like Proximity, Emotional Support, and Financial Contribution.
 //!
-//! $$ F = \frac{ \mathcal{N}(t) \cdot \mathcal{G} \cdot \mathcal{P} \cdot \mathcal{S} \cdot e^{-\lambda \Delta t} \cdot \xi }{ \int_0^t \sum_{s \in \text{siblings}} \frac{1}{d_s(\tau)} d\tau } $$
+//! # Architecture
 //!
-//! Where:
-//! - $\mathcal{N}(t)$: **Proximity Integral** (Time spent close to home).
-//! - $\mathcal{G}$: **Gift Determinant** (Determinant of the Gift Matrix).
-//! - $\mathcal{P}$: **Personality Linear Combination** (Wealth, Talent, etc.).
-//! - $\mathcal{S}$: **Social Multipliers** (Crisis help, Social Media visibility).
-//! - $e^{-\lambda \Delta t}$: **Contact Decay** (Memory fading since last call).
-//! - $\xi$: **Stochastic Perturbation** ($\xi \sim U(0.9, 1.1)$).
+//! The module is organized as follows:
+//! * `types`: Strong structs for inputs (`FavoritismInputs`).
+//! * `scoring`: The core calculation logic, now decomposed for testability.
+//! * `constants`: Tunable magic numbers (e.g., the "Crisis Multiplier").
+//! * `favorite_child`: Higher-level logic to compare multiple children.
 //!
-//! ## Flowchart
-//!
-//! ```mermaid
-//! graph TD
-//!     subgraph Inputs
-//!     I_Time[Time & Proximity]
-//!     I_Gifts[Gifts (Emotional & Practical)]
-//!     I_Pers[Personality & Wealth]
-//!     I_Soc[Social & Crisis]
-//!     end
-//!
-//!     subgraph "The Black Box"
-//!     Int[Clenshaw-Curtis Integration]
-//!     Det[Gift Matrix Determinant]
-//!     WSum[Weighted Sum]
-//!     Decay[Exponential Decay]
-//!     end
-//!
-//!     I_Time --> Int
-//!     I_Gifts --> Det
-//!     I_Pers --> WSum
-//!     I_Soc --> Decay
-//!
-//!     Int --> Numerator
-//!     Det --> Numerator
-//!     WSum --> Numerator
-//!     Decay --> Numerator
-//!
-//!     Numerator -->|Normalized by Sibling Effort| Score((Favoritism Score))
-//! ```
-//!
-//! ## Example
+//! # Usage
 //!
 //! ```rust
 //! use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 //!
-//! // 1. Configure the child's strategy
-//! let mut inputs = FavoritismInputs::default();
-//!
-//! // The "Buying Love" strategy
-//! inputs.gifts.g_practical = 10.0; // High value gifts
-//! inputs.gifts.g_emotional = 2.0;  // Low sentimental value
-//!
-//! // The "Guilt Trip" mitigation
-//! inputs.contact.time_since_last_contact = 1.0; // Called yesterday
-//!
-//! // 2. Calculate the score
+//! let inputs = FavoritismInputs::default();
 //! let score = calculate_favoritism_score(&inputs);
-//!
-//! println!("Your Favoritism Score: {:.2}", score);
+//! println!("My score: {}", score);
 //! ```
 
+pub mod constants;
 pub mod favorite_child;
 pub mod scoring;
 pub mod types;
 
-pub use scoring::calculate_favoritism_score;
-pub use types::{
-    FavoritismInputs,
-    TimeParams,
-    GiftParams,
-    ContactParams,
-    PersonalityParams,
-    SocialParams,
-    ComplimentParams,
-    FamilyParams,
-};
+pub use favorite_child::{find_favorite_child, Child};
+pub use scoring::{calculate_favoritism_score, calculate_favoritism_score_with_rng};
+pub use types::FavoritismInputs;

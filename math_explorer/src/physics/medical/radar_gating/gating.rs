@@ -45,7 +45,7 @@ impl GatingLogic {
     /// With hysteresis:
     /// - Turn ON if $A_{pred} < T - H$.
     /// - Turn OFF if $A_{pred} > T + H$.
-    /// This assumes "low amplitude" is the target state (e.g. baseline).
+    ///   This assumes "low amplitude" is the target state (e.g. baseline).
     pub fn evaluate(&mut self, amplitude: f64, velocity: f64) -> bool {
         // Latency Compensation
         // Predict the amplitude at the time the beam actually switches.

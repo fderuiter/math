@@ -56,6 +56,7 @@ impl BlockRandomizer {
     ///
     /// # Arguments
     /// * `block_size` - The size of each block. Must be even.
+    #[allow(clippy::manual_is_multiple_of)]
     pub fn new(block_size: usize) -> Result<Self, String> {
         if block_size % 2 != 0 {
             return Err("Block size must be even for 1:1 allocation.".to_string());
