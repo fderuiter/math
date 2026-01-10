@@ -12,3 +12,7 @@
 **Problem:** `math_explorer/src/physics/solid_state.rs` was a large file (~400 lines) mixing six distinct physical domains: Second Quantization, Screening, Lattice Dynamics, Magnetism, BCS Theory, and Electron-Phonon Interactions.
 **Decision:** Applied "Module Extraction" to split `solid_state.rs` into a directory-based module `math_explorer/src/physics/solid_state/` with dedicated files for each domain.
 **Consequence:** Greatly improved cohesion. Each file now represents a single physical domain. The API remains backward compatible via re-exports in `mod.rs`, but the codebase is now much more scalable for adding future solid state models.
+## 2025-01-10 - Nuclear Physics Decomposition
+**Problem:** The `physics/nuclear/mod.rs` file was a "God File" containing mixed concerns: properties, binding energy models, decay logic, and reaction formulas. This coupling made it hard to add new models (like Shell Model corrections) or swap binding energy parameters.
+**Decision:** Applied **Module Extraction** to split the domains into `properties.rs`, `decay.rs`, `reactions.rs`. Applied **Traitification** and **Structification** to the Liquid Drop Model, creating a `BindingEnergyModel` trait and a configurable `LiquidDropModel` struct.
+**Consequence:** The public API in `mod.rs` is now a set of wrappers maintaining backward compatibility, while the internal architecture is modular and scalable. Users can now instantiate `LiquidDropModel` with custom constants for fitting.
