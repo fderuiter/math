@@ -50,3 +50,41 @@ impl EnzymeReaction {
         Ok(self.v_max * substrate_conc / denominator)
     }
 }
+
+/// Trait defining reaction kinetics for activator-inhibitor systems.
+/// This allows different reaction models (e.g., Gierer-Meinhardt, Schnakenberg) to be plugged into the TuringSystem.
+pub trait ReactionKinetics: Send + Sync {
+    /// Calculates the reaction rates for activator (u) and inhibitor (v).
+    ///
+    /// # Arguments
+    /// * `u` - Current activator concentration.
+    /// * `v` - Current inhibitor concentration.
+    ///
+    /// # Returns
+    /// A tuple `(du, dv)` representing the rate of change due to reaction for u and v respectively.
+    fn reaction(&self, u: f64, v: f64) -> (f64, f64);
+}
+
+/// Default Gierer-Meinhardt-like kinetics used in the original implementation.
+/// $f_u = a - u + u^2 v$
+/// $f_v = b - u^2 v$
+#[derive(Clone, Copy, Debug)]
+pub struct GiererMeinhardtKinetics {
+    pub a: f64,
+    pub b: f64,
+}
+
+impl Default for GiererMeinhardtKinetics {
+    fn default() -> Self {
+        Self { a: 0.01, b: 0.05 }
+    }
+}
+
+impl ReactionKinetics for GiererMeinhardtKinetics {
+    fn reaction(&self, u: f64, v: f64) -> (f64, f64) {
+        let uv_sq = u.powi(2) * v;
+        let reaction_u = self.a - u + uv_sq;
+        let reaction_v = self.b - uv_sq;
+        (reaction_u, reaction_v)
+    }
+}

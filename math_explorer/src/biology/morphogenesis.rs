@@ -6,8 +6,10 @@
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
 
+use super::kinetics::{ReactionKinetics, GiererMeinhardtKinetics};
+
 /// Represents a 1D Reaction-Diffusion system.
-pub struct TuringSystem {
+pub struct TuringSystem<K: ReactionKinetics = GiererMeinhardtKinetics> {
     /// Activator concentrations
     pub u: Vec<f64>,
     /// Inhibitor concentrations
@@ -18,6 +20,8 @@ pub struct TuringSystem {
     pub d_v: f64,
     /// Grid spacing
     pub dx: f64,
+    /// Reaction kinetics strategy
+    pub kinetics: K,
 
     // Private buffers for double buffering to avoid allocation in hot loops.
     // Marked hidden to discourage manual usage if fields were public (which they are).
@@ -27,22 +31,29 @@ pub struct TuringSystem {
     buffer_v: Vec<f64>,
 }
 
-impl TuringSystem {
+impl TuringSystem<GiererMeinhardtKinetics> {
+    /// Creates a new TuringSystem with default Gierer-Meinhardt kinetics.
     pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
+        Self::new_with_kinetics(size, d_u, d_v, dx, GiererMeinhardtKinetics::default())
+    }
+}
+
+impl<K: ReactionKinetics> TuringSystem<K> {
+    /// Creates a new TuringSystem with custom reaction kinetics.
+    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, dx: f64, kinetics: K) -> Self {
         Self {
             u: vec![0.0; size],
             v: vec![0.0; size],
             d_u,
             d_v,
             dx,
+            kinetics,
             buffer_u: vec![0.0; size],
             buffer_v: vec![0.0; size],
         }
     }
 
     /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
-    /// Using Gierer-Meinhardt-like kinetics as suggested:
-    /// f(u,v) = a - u + u^2 v
     pub fn step(&mut self, dt: f64) {
         let n = self.u.len();
         if n == 0 { return; }
@@ -55,8 +66,6 @@ impl TuringSystem {
             self.buffer_v = vec![0.0; n];
         }
 
-        let a = 0.01;
-        let b = 0.05;
         let dx_sq = self.dx * self.dx;
 
         // Optimization: Lift boundary checks out of the loop
@@ -66,9 +75,7 @@ impl TuringSystem {
             let lap_u = (u_next - 2.0 * u_curr + u_prev) / dx_sq;
             let lap_v = (v_next - 2.0 * v_curr + v_prev) / dx_sq;
 
-            let uv_sq = u_curr.powi(2) * v_curr;
-            let reaction_u = a - u_curr + uv_sq;
-            let reaction_v = b - uv_sq;
+            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
             let next_u = u_curr + dt * (self.d_u * lap_u + reaction_u);
             let next_v = v_curr + dt * (self.d_v * lap_v + reaction_v);
