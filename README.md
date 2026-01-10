@@ -27,14 +27,9 @@ cargo build --release
 ### 2. Run "Hello World" (Quantum Physics)
 Calculate Clebsch-Gordan coefficients for angular momentum coupling:
 
-```rust
-use math_explorer::physics::quantum::clebsch_gordan;
-
-fn main() {
-    // Coupling j1=1.5, m1=-0.5 with j2=1.0, m2=1.0 to J=2.5, M=0.5
-    let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
-    println!("Clebsch-Gordan Coefficient: {:.4}", coeff);
-}
+```bash
+cd math_explorer
+cargo run --example hello_world
 ```
 
 ---
@@ -55,7 +50,9 @@ Math Explorer is organized into high-level domains, each solving specific proble
 | :--- | :--- | :--- |
 | **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
 | **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), and **LoraHub**. |
+| **🧬 Biology** | `math_explorer::biology` | **Morphogenesis** (Turing Patterns), **Neuroscience** (Hodgkin-Huxley), and **Kinetics**. |
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
+| **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **R0 Calculation**, and **Network Dynamics**. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
 | **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, and Differential Geometry. |
 
