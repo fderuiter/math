@@ -1,6 +1,7 @@
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 use rand::distributions::Distribution as RandDistribution;
+use rand::Rng;
 
 /// Represents a distribution of bidder valuations.
 ///
@@ -94,6 +95,34 @@ impl MechanismDesign {
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`
+    /// via Monte Carlo simulation using a provided RNG.
+    ///
+    /// This method allows for deterministic simulations by injecting a seeded RNG,
+    /// adhering to the Dependency Inversion Principle.
+    pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Sized>(
+        dist: &D,
+        n_bidders: usize,
+        n_simulations: usize,
+        rng: &mut R,
+    ) -> f64 {
+        let mut total_revenue = 0.0;
+
+        for _ in 0..n_simulations {
+            let mut max_virtual_val = 0.0;
+            for _ in 0..n_bidders {
+                let v = dist.sample(rng);
+                let j = dist.virtual_valuation(v);
+                if j > max_virtual_val {
+                    max_virtual_val = j;
+                }
+            }
+            total_revenue += max_virtual_val;
+        }
+
+        total_revenue / (n_simulations as f64)
+    }
+
+    /// Estimates the expected revenue of an optimal auction with `n_bidders`
     /// via Monte Carlo simulation.
     ///
     /// The revenue of the optimal auction is given by:
@@ -106,22 +135,8 @@ impl MechanismDesign {
         n_bidders: usize,
         n_simulations: usize,
     ) -> f64 {
-        let mut total_revenue = 0.0;
         let mut rng = rand::thread_rng();
-
-        for _ in 0..n_simulations {
-            let mut max_virtual_val = 0.0;
-            for _ in 0..n_bidders {
-                let v = dist.sample(&mut rng);
-                let j = dist.virtual_valuation(v);
-                if j > max_virtual_val {
-                    max_virtual_val = j;
-                }
-            }
-            total_revenue += max_virtual_val;
-        }
-
-        total_revenue / (n_simulations as f64)
+        Self::simulate_optimal_revenue_with_rng(dist, n_bidders, n_simulations, &mut rng)
     }
 }
 
@@ -129,6 +144,8 @@ impl MechanismDesign {
 mod tests {
     use super::*;
     use statrs::distribution::Uniform;
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn test_virtual_valuation_uniform() {
@@ -163,7 +180,15 @@ mod tests {
         // = (1 - 1) - (0.25 - 0.5) = 0 - (-0.25) = 0.25.
 
         let dist = Uniform::new(0.0, 1.0).unwrap();
-        let revenue = MechanismDesign::simulate_optimal_revenue(&dist, 1, 10_000);
+
+        // Use deterministic RNG for reproducible tests
+        let mut rng = StdRng::seed_from_u64(42);
+        let revenue = MechanismDesign::simulate_optimal_revenue_with_rng(&dist, 1, 10_000, &mut rng);
+
         assert!((revenue - 0.25).abs() < 0.02); // MC error margin
+
+        // Verify that the backward-compatible wrapper also runs (smoke test)
+        let revenue_legacy = MechanismDesign::simulate_optimal_revenue(&dist, 1, 100);
+        assert!(revenue_legacy >= 0.0);
     }
 }
