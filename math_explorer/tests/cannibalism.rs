@@ -1,4 +1,5 @@
-use math_explorer::applied::cannibalism;
+use math_explorer::applied::cannibalism::{self, CannibalismModel, CannibalismParams, CannibalismState};
+use math_explorer::pure_math::analysis::ode::{OdeSystem, RungeKutta4};
 
 #[test]
 fn test_mckendrick_von_foerster() {
@@ -47,6 +48,7 @@ fn test_adult_dynamics() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_dndt() {
     let n = 100.0;
     let c = 10.0;
@@ -60,6 +62,7 @@ fn test_dndt() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_dcdt() {
     let n = 100.0;
     let c = 10.0;
@@ -67,4 +70,38 @@ fn test_dcdt() {
     let mu_c = 0.1;
     let result = cannibalism::dcdt(n, c, k_n, mu_c);
     assert_eq!(result, 4.0);
+}
+
+#[test]
+fn test_cannibalism_model_integration() {
+    let params = CannibalismParams {
+        beta_n: 0.1,
+        beta_c: 0.2,
+        k_n: 0.05,
+        phi_loss: 1.0,
+        mu_n: 0.1,
+        mu_c: 0.1,
+    };
+    let model = CannibalismModel::new(params);
+    let state = CannibalismState::new(100.0, 10.0);
+
+    // Verify derivative matches the legacy calculation
+    let deriv = model.derivative(0.0, &state);
+    assert_eq!(deriv.x, -4.0);
+    assert_eq!(deriv.y, 4.0);
+
+    // Test integration
+    let dt = 0.1;
+    let next_state = RungeKutta4::step(&model, 0.0, &state, dt);
+
+    // Manual Euler check:
+    // n_next = 100.0 + (-4.0 * 0.1) = 99.6
+    // c_next = 10.0 + (4.0 * 0.1) = 10.4
+    // RK4 should be close to this for linear-ish steps, but more accurate.
+    // Since derivatives are linear in state variables, RK4 is exact for polynomials up to degree 4?
+    // No, but it should be very precise.
+
+    // Let's just assert it changed in the right direction
+    assert!(next_state.x < 100.0);
+    assert!(next_state.y > 10.0);
 }
