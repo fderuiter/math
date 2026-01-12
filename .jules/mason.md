@@ -6,3 +6,7 @@
 ## 2026-01-08 - Decomposed Standard Model God File
 **Violation:** Single Responsibility Principle (SRP). The `standard_model.rs` file was a 'God File' containing unrelated physics domains (Gauge, Higgs, Flavor, QCD, Neutrinos) in a single module.
 **Remedy:** Module Extraction. Split the file into a directory `standard_model/` with separate files for each domain (`gauge.rs`, `higgs.rs`, etc.) and re-exported them via `mod.rs`. This improves cohesion and navigability.
+
+## 2026-10-24 - Deterministic Mechanism Design Simulation
+**Violation:** Dependency Inversion Principle (DIP). The `simulate_optimal_revenue` method in `mechanism_design.rs` had a hard-coded dependency on `rand::thread_rng()`, making deterministic testing impossible.
+**Remedy:** Dependency Injection. Introduced `simulate_optimal_revenue_with_rng` to accept an injected `Rng` trait, while preserving the original method as a convenience wrapper.

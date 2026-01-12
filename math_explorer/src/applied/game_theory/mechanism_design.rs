@@ -1,6 +1,7 @@
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 use rand::distributions::Distribution as RandDistribution;
+use rand::Rng;
 
 /// Represents a distribution of bidder valuations.
 ///
@@ -106,13 +107,25 @@ impl MechanismDesign {
         n_bidders: usize,
         n_simulations: usize,
     ) -> f64 {
-        let mut total_revenue = 0.0;
         let mut rng = rand::thread_rng();
+        Self::simulate_optimal_revenue_with_rng(dist, n_bidders, n_simulations, &mut rng)
+    }
+
+    /// Estimates expected revenue using a provided random number generator.
+    ///
+    /// This method allows for deterministic simulations by injecting a seeded RNG.
+    pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng>(
+        dist: &D,
+        n_bidders: usize,
+        n_simulations: usize,
+        rng: &mut R,
+    ) -> f64 {
+        let mut total_revenue = 0.0;
 
         for _ in 0..n_simulations {
             let mut max_virtual_val = 0.0;
             for _ in 0..n_bidders {
-                let v = dist.sample(&mut rng);
+                let v = dist.sample(rng);
                 let j = dist.virtual_valuation(v);
                 if j > max_virtual_val {
                     max_virtual_val = j;
@@ -129,6 +142,8 @@ impl MechanismDesign {
 mod tests {
     use super::*;
     use statrs::distribution::Uniform;
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
 
     #[test]
     fn test_virtual_valuation_uniform() {
@@ -163,7 +178,26 @@ mod tests {
         // = (1 - 1) - (0.25 - 0.5) = 0 - (-0.25) = 0.25.
 
         let dist = Uniform::new(0.0, 1.0).unwrap();
+        // This test uses the default (random) implementation
         let revenue = MechanismDesign::simulate_optimal_revenue(&dist, 1, 10_000);
         assert!((revenue - 0.25).abs() < 0.02); // MC error margin
+    }
+
+    #[test]
+    fn test_revenue_simulation_deterministic() {
+        // Validate that we can reproduce results with a seeded RNG
+        let dist = Uniform::new(0.0, 1.0).unwrap();
+
+        let mut rng1 = StdRng::seed_from_u64(42);
+        let revenue1 = MechanismDesign::simulate_optimal_revenue_with_rng(&dist, 1, 1000, &mut rng1);
+
+        let mut rng2 = StdRng::seed_from_u64(42);
+        let revenue2 = MechanismDesign::simulate_optimal_revenue_with_rng(&dist, 1, 1000, &mut rng2);
+
+        // Results should be identical
+        assert_eq!(revenue1, revenue2);
+
+        // Check that it's close to expected 0.25 (1000 samples might have some variance, but 42 is usually good)
+        assert!((revenue1 - 0.25).abs() < 0.05);
     }
 }
