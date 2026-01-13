@@ -1,56 +1,30 @@
-//! # Applied Mathematics
+//! Applied Mathematics and Engineering Domains.
 //!
-//! This module serves as a collection of mathematical models applied to specific,
-//! often niche or complex, domains. It demonstrates how core mathematical concepts
-//! (calculus, statistics, game theory) translate into practical solutions.
+//! This module aggregates applied mathematical models for various technical fields,
+//! bridging the gap between pure theory and practical implementation.
 //!
-//! ## Domains
+//! # Domains
 //!
-//! - **Biology & Medicine**: `clinical_trials`, `pharmacokinetics`, `freesurfer`, `cannibalism`.
-//! - **Physics & Engineering**: `battery_degradation`, `isosurface`.
-//! - **Artificial Intelligence**: `lorahub`, `grpo`.
-//! - **Social Science (Satire)**: `favoritism`.
-//! - **General Algorithms**: `algorithms`, `win_ratio`.
+//! *   **Algorithms**: General purpose algorithms.
+//! *   **Electronics**: Circuit theory, communications, and signal processing.
+//! *   **Game Theory**: Nash equilibria, mean field games, and evolutionary strategies.
+//! *   **Generative Turbulence**: Deep learning models for fluid dynamics.
+//! *   **Clinical Trials**: Statistical methods for medical research.
+//! *   **Pharmacokinetics**: Drug distribution models.
+//! *   **Isosurface**: Mesh generation and geometry processing (Marching Cubes).
+//! *   **Battery Degradation**: Electrochemical models for energy storage.
 
-/// Modeling of battery health and capacity fade over time.
-pub mod battery_degradation;
-
-/// Population dynamics models focusing on intraspecific predation (Cannibalism).
-/// Includes McKendrick-von Foerster equations.
-pub mod cannibalism;
-
-/// A satirical yet rigorously implemented model to calculate a "Favoritism Score"
-/// for children based on wealth, social utility, and proximity.
-pub mod favoritism;
-
-/// Neuroimaging tools compatible with FreeSurfer formats, including cortical thickness
-/// analysis and segmentation logic.
-pub mod freesurfer;
-
-/// Statistical methods for comparing outcomes using the Win Ratio approach, common
-/// in clinical trials with composite endpoints.
-pub mod win_ratio;
-
-/// Modeling of drug absorption, distribution, metabolism, and excretion (ADME)
-/// using Bateman functions and multi-dose superposition.
-pub mod pharmacokinetics;
-
-/// Logic for merging Low-Rank Adaptation (LoRA) weights for Large Language Models
-/// (LLMs), including ensemble composition.
-pub mod lorahub;
-
-/// Applied Game Theory, including Mean Field Games and Evolutionary Dynamics.
-pub mod game_theory;
-
-/// Group Relative Policy Optimization (GRPO) components, often used in Reinforcement Learning.
-pub mod grpo;
-
-/// Algorithms for extracting surfaces from volumetric data, such as Marching Cubes.
-pub mod isosurface;
-
-/// Statistical design and analysis for clinical trials, including sample size
-/// calculation and survival analysis.
-pub mod clinical_trials;
-
-/// General purpose algorithms, including Sorting and other utility structures.
 pub mod algorithms;
+pub mod battery_degradation;
+pub mod cannibalism;
+pub mod clinical_trials;
+pub mod electronics;
+pub mod favoritism;
+pub mod freesurfer;
+pub mod game_theory;
+pub mod generative_turbulence;
+pub mod grpo;
+pub mod isosurface;
+pub mod lorahub;
+pub mod pharmacokinetics;
+pub mod win_ratio;

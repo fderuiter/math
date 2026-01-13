@@ -29,6 +29,12 @@ pub struct AngleFftConfig {
     pub n_fft_azimuth: usize,
     /// Size of the Elevation FFT (e.g., 32).
     pub n_fft_elevation: usize,
+    /// Number of RX antennas.
+    pub n_rx_antennas: usize,
+    /// Distance between antennas in meters (usually lambda/2).
+    pub antenna_spacing: f64,
+    /// Operating wavelength (lambda).
+    pub wavelength: f64,
 }
 
 impl AngleFftConfig {
@@ -42,16 +48,7 @@ impl AngleFftConfig {
     /// $$ z = r \cdot w_z $$
     /// $$ y = \sqrt{r^2 - x^2 - z^2} $$
     ///
-    /// Note: The TI convention defines $y$ as the depth (range direction) for the *derived* Cartesian frame here,
-    /// but the prompt specifies $x, y, z$ as:
-    /// "x = r * wx"
-    /// "z = r * wz"
-    /// "y = sqrt(r^2 - x^2 - z^2)"
-    ///
-    /// Usually in standard TI radar SDK:
-    /// - x is horizontal
-    /// - y is depth (range)
-    /// - z is vertical
+    /// Note: The TI convention defines $y$ as the depth (range direction) for the *derived* Cartesian frame here.
     pub fn spherical_to_cartesian(&self, point: &SphericalPoint) -> Point3<f64> {
         let w_x = (2.0 * point.azimuth_index as f64) / self.n_fft_azimuth as f64;
         let w_z = (2.0 * point.elevation_index as f64) / self.n_fft_elevation as f64;
@@ -64,6 +61,39 @@ impl AngleFftConfig {
         let y = if y_sq > 0.0 { y_sq.sqrt() } else { 0.0 };
 
         Point3::new(x, y, z)
+    }
+
+    /// Estimates the Angle of Arrival (AoA) from phase difference.
+    ///
+    /// $$ \theta = \sin^{-1} \left( \frac{\lambda \Delta \phi}{2 \pi l} \right) $$
+    ///
+    /// # Arguments
+    /// * `phase_diff` - Phase difference between two antennas in radians.
+    pub fn angle_of_arrival(&self, phase_diff: f64) -> f64 {
+        // (lambda * delta_phi) / (2 * pi * l)
+        let val = (self.wavelength * phase_diff) / (2.0 * std::f64::consts::PI * self.antenna_spacing);
+        val.clamp(-1.0, 1.0).asin()
+    }
+
+    /// Calculates the angular resolution.
+    ///
+    /// $$ \theta_{res} = \frac{\lambda}{N_{RX} l \cos(\theta)} $$
+    ///
+    /// # Arguments
+    /// * `theta` - The look angle (0 for boresight).
+    pub fn angle_resolution(&self, theta: f64) -> f64 {
+        self.wavelength / (self.n_rx_antennas as f64 * self.antenna_spacing * theta.cos())
+    }
+
+    /// Calculates the required angular separation to distinguish thoracic vs abdominal motion.
+    ///
+    /// $$ \Delta\theta_{\text{req}} \approx \arctan\left(\frac{d_{\text{TAA}}}{R}\right) $$
+    ///
+    /// # Arguments
+    /// * `vertical_distance` - Distance between thoracic and abdominal regions ($d_{\text{TAA}}$).
+    /// * `range` - Sensor range ($R$).
+    pub fn required_angular_separation(vertical_distance: f64, range: f64) -> f64 {
+        (vertical_distance / range).atan()
     }
 }
 

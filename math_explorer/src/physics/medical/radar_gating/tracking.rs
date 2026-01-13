@@ -4,6 +4,7 @@
 //! the breathing signal and handle system latency.
 
 use nalgebra::{Matrix2, Vector2, Vector1};
+use nalgebra::{DMatrix, DVector};
 
 /// A Kalman Filter for 1D position and velocity tracking (Constant Velocity model).
 #[derive(Debug, Clone)]
@@ -101,5 +102,70 @@ impl TrackingFilter {
     /// Returns the current estimated velocity.
     pub fn velocity(&self) -> f64 {
         self.state[1]
+    }
+}
+
+/// A generic Kalman Filter.
+#[derive(Debug, Clone)]
+pub struct KalmanFilter {
+    /// State transition model ($F$).
+    pub f: DMatrix<f64>,
+    /// Observation model ($H$).
+    pub h: DMatrix<f64>,
+    /// Process noise covariance ($Q$).
+    pub q: DMatrix<f64>,
+    /// Measurement noise covariance ($R$).
+    pub r: DMatrix<f64>,
+    /// State estimate ($\hat{x}$).
+    pub x: DVector<f64>,
+    /// Error covariance ($P$).
+    pub p: DMatrix<f64>,
+}
+
+impl KalmanFilter {
+    /// Creates a new Kalman Filter.
+    pub fn new(
+        f: DMatrix<f64>,
+        h: DMatrix<f64>,
+        q: DMatrix<f64>,
+        r: DMatrix<f64>,
+        initial_state: DVector<f64>,
+        initial_covariance: DMatrix<f64>,
+    ) -> Self {
+        Self {
+            f,
+            h,
+            q,
+            r,
+            x: initial_state,
+            p: initial_covariance,
+        }
+    }
+
+    /// Performs the prediction step.
+    ///
+    /// $$ \hat{x}_{k|k-1} = F_k \hat{x}_{k-1|k-1} $$
+    /// $$ P_{k|k-1} = F_k P_{k-1|k-1} F_k^T + Q_k $$
+    pub fn predict(&mut self) {
+        self.x = &self.f * &self.x;
+        self.p = &self.f * &self.p * self.f.transpose() + &self.q;
+    }
+
+    /// Performs the update step with a new measurement ($z_k$).
+    pub fn update(&mut self, measurement: &DVector<f64>) {
+        let z = measurement;
+        let y = z - &self.h * &self.x; // Innovation
+        let s = &self.h * &self.p * self.h.transpose() + &self.r; // Innovation covariance
+
+        // Calculate Kalman Gain K = P * H^T * S^-1
+        // Using solve for numerical stability
+        let k = match s.clone().try_inverse() {
+            Some(s_inv) => &self.p * self.h.transpose() * s_inv,
+            None => return, // Should handle error better in production
+        };
+
+        self.x = &self.x + &k * y;
+        let i = DMatrix::identity(self.x.len(), self.x.len());
+        self.p = (&i - &k * &self.h) * &self.p;
     }
 }

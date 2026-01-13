@@ -1,4 +1,7 @@
-//! Plan Evaluation: DVH and Radiobiology.
+//! Evaluation Metrics for Medical Physics and Radar.
+//!
+//! Provides statistical tools to validate respiratory monitoring signals and tracking accuracy against clinical standards.
+//! Also includes Plan Evaluation metrics like DVH and TCP.
 
 use std::f64;
 
@@ -82,6 +85,83 @@ pub fn tcp_model(
     let surviving_clonogens = n0 * exponent.exp();
 
     (-surviving_clonogens).exp()
+}
+
+/// Calculates the Pearson Correlation Coefficient ($r$).
+///
+/// $$ r = \frac{n \sum X_i Y_i - \sum X_i \sum Y_i}{\sqrt{n \sum X_i^2 - (\sum X_i)^2}} $$
+///
+/// # Arguments
+/// * `x` - First dataset ($X$).
+/// * `y` - Second dataset ($Y$).
+///
+/// # Returns
+/// * `Some(f64)` if calculation succeeds.
+/// * `None` if datasets are empty or have different lengths.
+pub fn pearson_correlation(x: &[f64], y: &[f64]) -> Option<f64> {
+    if x.len() != y.len() || x.is_empty() {
+        return None;
+    }
+
+    let n = x.len() as f64;
+    let mut sum_x = 0.0;
+    let mut sum_y = 0.0;
+    let mut sum_xy = 0.0;
+    let mut sum_x2 = 0.0;
+    let mut sum_y2 = 0.0;
+
+    for i in 0..x.len() {
+        sum_x += x[i];
+        sum_y += y[i];
+        sum_xy += x[i] * y[i];
+        sum_x2 += x[i].powi(2);
+        sum_y2 += y[i].powi(2);
+    }
+
+    let numerator = n * sum_xy - sum_x * sum_y;
+    let denominator = ((n * sum_x2 - sum_x.powi(2)) * (n * sum_y2 - sum_y.powi(2))).sqrt();
+
+    if denominator == 0.0 {
+        None
+    } else {
+        Some(numerator / denominator)
+    }
+}
+
+/// Calculates the Root-Mean-Square Error (RMSE).
+///
+/// $$ \text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (X_i - Y_i)^2} $$
+///
+/// # Arguments
+/// * `predicted` - Predicted values ($X$).
+/// * `observed` - Ground truth values ($Y$).
+pub fn rmse(predicted: &[f64], observed: &[f64]) -> Option<f64> {
+    if predicted.len() != observed.len() || predicted.is_empty() {
+        return None;
+    }
+
+    let n = predicted.len() as f64;
+    let mut sum_sq_diff = 0.0;
+
+    for i in 0..predicted.len() {
+        let diff = predicted[i] - observed[i];
+        sum_sq_diff += diff.powi(2);
+    }
+
+    Some((sum_sq_diff / n).sqrt())
+}
+
+/// Calculates the Spatial Accuracy Percentage Error.
+///
+/// $$ \text{Percentage error} = \frac{X_{\text{meas}} - X_{\text{ref}}}{X_{\text{meas}}} \times 100 $$
+///
+/// Note: The prompt formula has $X_{meas}$ in the denominator, which is slightly unusual (typically $X_{ref}$ is denominator),
+/// but I will implement it exactly as requested.
+pub fn spatial_accuracy_percentage_error(measured: f64, reference: f64) -> f64 {
+    if measured == 0.0 {
+        return f64::INFINITY; // Avoid division by zero
+    }
+    ((measured - reference) / measured) * 100.0
 }
 
 #[cfg(test)]

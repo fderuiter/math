@@ -33,6 +33,13 @@ impl FmcwConfig {
         }
     }
 
+    /// Calculates the slope of the frequency chirp ($S$).
+    ///
+    /// $$ S = \frac{B}{T_c} $$
+    pub fn slope(&self) -> f64 {
+        self.bandwidth / self.chirp_time
+    }
+
     /// Calculates the fundamental range resolution ($\Delta R$).
     ///
     /// The ability to resolve two distinct points in depth is determined by the sweep bandwidth $B$.
@@ -63,16 +70,37 @@ impl FmcwConfig {
         (phase_shift * lambda) / (4.0 * std::f64::consts::PI * self.chirp_time)
     }
 
-    /// Estimates target range ($R$) from the IF beat frequency ($\hat{f}_{FFT}$).
+    /// Calculates the maximum unambiguous velocity ($v_{max}$).
     ///
-    /// Equation (1) from the Bressler et al. framework:
-    /// $$ \hat{f}_{FFT} = \frac{2 B R}{c T} \implies R = \frac{\hat{f}_{FFT} c T}{2 B} $$
+    /// Limits the detectable velocity before Doppler aliasing occurs.
+    ///
+    /// $$ v_{max} = \frac{\lambda}{4 T_c} $$
+    pub fn max_unambiguous_velocity(&self) -> f64 {
+        self.wavelength() / (4.0 * self.chirp_time)
+    }
+
+    /// Estimates target range ($R$) from the IF beat frequency ($f_b$).
+    ///
+    /// $$ f_b = \frac{S \cdot 2R}{c} \implies R = \frac{f_b c}{2 S} $$
     ///
     /// # Arguments
     ///
     /// * `beat_frequency` - The measured beat frequency in Hz.
     pub fn range_from_beat_frequency(&self, beat_frequency: f64) -> f64 {
-        (beat_frequency * C * self.chirp_time) / (2.0 * self.bandwidth)
+        // existing implementation used (beat_frequency * C * chirp_time) / (2.0 * bandwidth)
+        // which is equivalent since slope = bandwidth / chirp_time
+        (beat_frequency * C) / (2.0 * self.slope())
+    }
+
+    /// Calculates the expected beat frequency ($f_b$) for a target at distance $R$.
+    ///
+    /// $$ f_b = \frac{S \cdot 2R}{c} $$
+    ///
+    /// # Arguments
+    ///
+    /// * `range` - Distance to target in meters.
+    pub fn beat_frequency(&self, range: f64) -> f64 {
+        (self.slope() * 2.0 * range) / C
     }
 
     /// Estimates physical displacement ($d$) from the phase change ($\Delta \phi$).
@@ -89,4 +117,42 @@ impl FmcwConfig {
         let lambda = self.wavelength();
         (phase_shift * lambda) / (4.0 * std::f64::consts::PI)
     }
+
+    /// Calculates the instantaneous frequency of the chirp at time $t$.
+    ///
+    /// $$ f(t) = S t + f_c $$
+    ///
+    /// # Arguments
+    /// * `t` - Time since start of chirp (0 <= t <= chirp_time).
+    pub fn chirp_frequency(&self, t: f64) -> f64 {
+        self.slope() * t + self.center_frequency
+    }
+}
+
+/// Calculates the output of the mixer (heterodyne principle).
+///
+/// $$ x_{out} = \sin((\omega_1 - \omega_2)t + (\phi_1 - \phi_2)) $$
+///
+/// # Arguments
+/// * `w1` - Angular frequency of signal 1 ($\omega_1$).
+/// * `w2` - Angular frequency of signal 2 ($\omega_2$).
+/// * `phi1` - Initial phase of signal 1 ($\phi_1$).
+/// * `phi2` - Initial phase of signal 2 ($\phi_2$).
+/// * `t` - Time.
+pub fn mixer_output(w1: f64, w2: f64, phi1: f64, phi2: f64, t: f64) -> f64 {
+    ((w1 - w2) * t + (phi1 - phi2)).sin()
+}
+
+/// Calculates the dielectric phase delay.
+///
+/// Models the additional phase shift induced by passing through a dielectric material (e.g., immobilization mask).
+///
+/// $$ \Delta \phi = \frac{4\pi d}{\lambda} (\sqrt{\epsilon_r} - 1) $$
+///
+/// # Arguments
+/// * `d` - Material thickness in meters.
+/// * `lambda` - Operating wavelength in meters.
+/// * `epsilon_r` - Relative dielectric constant of the material.
+pub fn dielectric_phase_delay(d: f64, lambda: f64, epsilon_r: f64) -> f64 {
+    (4.0 * std::f64::consts::PI * d / lambda) * (epsilon_r.sqrt() - 1.0)
 }

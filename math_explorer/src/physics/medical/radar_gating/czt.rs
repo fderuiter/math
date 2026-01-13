@@ -12,12 +12,16 @@ use std::f64::consts::PI;
 /// This implementation corresponds to the corrected Equation (2) from the Bressler verification:
 /// $$ X_{k, CZT} = \sum_{n=0}^{N-1} x_n e^{-i 2\pi n \left( \frac{f_0 + B \frac{k}{K}}{f_s} \right)} $$
 ///
+/// Alternate notation (from prompt):
+/// $$ X_{k,CZT} = \sum_{n=0}^{N-1} x_n e^{-i 2\pi n (f_{0,norm} + \frac{Bk}{K f_s})} $$
+/// where $f_{0,norm} = f_0 / f_s$.
+///
 /// # Arguments
 ///
 /// * `signal` - The time-domain input signal ($x_n$).
-/// * `start_freq` - The starting frequency of the zoom window ($f_0$).
-/// * `bandwidth` - The bandwidth of the zoom window ($B$).
-/// * `sample_rate` - The sampling rate of the input signal ($f_s$).
+/// * `start_freq` - The starting frequency of the zoom window ($f_0$) in Hz.
+/// * `bandwidth` - The bandwidth of the zoom window ($B$) in Hz.
+/// * `sample_rate` - The sampling rate of the input signal ($f_s$) in Hz.
 /// * `output_bins` - The number of frequency bins in the output ($K$).
 ///
 /// # Returns

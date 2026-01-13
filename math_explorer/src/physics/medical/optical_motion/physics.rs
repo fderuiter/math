@@ -92,3 +92,83 @@ pub fn calculate_photocurrent(p_r: f64, i_d: f64, r_pd: f64) -> f64 {
 pub fn calculate_tia_output(i_pd: f64, g_pd: f64) -> f64 {
     g_pd * i_pd
 }
+
+/// Calculates the Lambertian Intensity Profile.
+///
+/// $$ I_{tx}(r_i, \phi_i) = \frac{(n + 1) P_{tx}}{2\pi r_i^2} \cos^n(\phi_i) $$
+///
+/// # Arguments
+/// * `p_tx` - Optical power ($P_{tx}$).
+/// * `r` - Distance ($r_i$).
+/// * `phi` - Off-normal angle ($\phi_i$) in radians.
+/// * `n` - Mode number (related to directionality of the source).
+pub fn lambertian_intensity(p_tx: f64, r: f64, phi: f64, n: f64) -> f64 {
+    let numerator = (n + 1.0) * p_tx;
+    let denominator = 2.0 * std::f64::consts::PI * r.powi(2);
+    (numerator / denominator) * phi.cos().powf(n)
+}
+
+/// Calculates the theoretical LWS Range Resolution (ADC-Limited).
+///
+/// $$ \Delta r_{min} = r_0 - [(r_0 - \Delta r_{max})^{-4} 2^{B_{min}} + r_0^{-4}]^{-1/4} $$
+///
+/// # Arguments
+/// * `r0` - Base range ($r_0$).
+/// * `delta_r_max` - Maximum displacement ($\Delta r_{max}$).
+/// * `adc_bits` - ADC resolution in bits ($B_{min}$).
+pub fn lws_range_resolution(r0: f64, delta_r_max: f64, adc_bits: u32) -> f64 {
+    // Term 1 inside bracket: (r0 - delta_r_max)^-4 * 2^B_min
+    let term1 = (r0 - delta_r_max).powi(-4) * 2f64.powi(adc_bits as i32);
+
+    // Term 2 inside bracket: r0^-4
+    let term2 = r0.powi(-4);
+
+    // Bracket term ^ -1/4
+    let bracket = (term1 + term2).powf(-0.25);
+
+    r0 - bracket
+}
+
+/// Calculates the output of a Lock-In Amplifier Phase Sensitive Detector.
+///
+/// $$ V_{m1} = \frac{V_s V_r}{2}\cos{(\Delta\omega)t + (\Delta\phi)} - \cos{(\sum\omega)t + (\sum\phi)} $$
+///
+/// # Arguments
+/// * `v_s` - Amplitude of signal.
+/// * `v_r` - Amplitude of reference.
+/// * `w_s` - Angular frequency of signal.
+/// * `w_r` - Angular frequency of reference.
+/// * `phi_s` - Phase of signal.
+/// * `phi_r` - Phase of reference.
+/// * `t` - Time.
+pub fn lock_in_phase_detection(v_s: f64, v_r: f64, w_s: f64, w_r: f64, phi_s: f64, phi_r: f64, t: f64) -> f64 {
+    let delta_w = w_s - w_r;
+    let delta_phi = phi_s - phi_r;
+    let sum_w = w_s + w_r;
+    let sum_phi = phi_s + phi_r;
+
+    let term1 = (delta_w * t + delta_phi).cos();
+    let term2 = (sum_w * t + sum_phi).cos();
+
+    (v_s * v_r / 2.0) * (term1 - term2)
+}
+
+/// Optical Flow Intensity Conservation.
+///
+/// Calculates velocity ($v$) assuming intensity conservation.
+///
+/// $$ v = -\nabla I \frac{\partial_V I}{|\nabla I|^2} $$
+///
+/// # Arguments
+/// * `grad_i` - Spatial gradient vector ($\nabla I$).
+/// * `partial_v_i` - Temporal gradient/variation ($\partial_V I$).
+pub fn optical_flow_intensity_conservation(grad_i: &[f64], partial_v_i: f64) -> Vec<f64> {
+    let grad_sq_norm: f64 = grad_i.iter().map(|&x| x * x).sum();
+
+    if grad_sq_norm == 0.0 {
+        return vec![0.0; grad_i.len()];
+    }
+
+    let factor = -partial_v_i / grad_sq_norm;
+    grad_i.iter().map(|&g| g * factor).collect()
+}

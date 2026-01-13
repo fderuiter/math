@@ -91,3 +91,20 @@ impl EllipticalFilter {
         self.center
     }
 }
+
+/// CA-CFAR (Cell Averaging Constant False Alarm Rate) Noise Estimation.
+///
+/// Estimates the noise level ($E$) around a cell by averaging the values of reference units.
+///
+/// $$ E = \frac{1}{N} \sum_{i=1}^{N} x_i $$
+///
+/// # Arguments
+/// * `reference_cells` - A slice containing the values of the reference cells ($x_i$).
+pub fn ca_cfar_noise_estimation(reference_cells: &[f64]) -> f64 {
+    let n = reference_cells.len();
+    if n == 0 {
+        return 0.0;
+    }
+    let sum: f64 = reference_cells.iter().sum();
+    sum / n as f64
+}
