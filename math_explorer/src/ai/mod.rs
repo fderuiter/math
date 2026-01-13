@@ -17,6 +17,9 @@ pub mod utils;
 pub mod gaussian_splatting;
 pub mod deep_learning_theory;
 pub mod reinforcement_learning;
+pub mod error;
+
+pub use error::AIError;
 
 // Re-export transformer components for backward compatibility.
 pub use transformer::attention;

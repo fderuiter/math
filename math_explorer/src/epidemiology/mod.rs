@@ -20,3 +20,6 @@ pub mod analytics;
 pub mod matrix_dynamics;
 pub mod networks;
 pub mod stochastic;
+pub mod error;
+
+pub use error::EpidemiologyError;

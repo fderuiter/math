@@ -1,5 +1,6 @@
 use nalgebra::DMatrix;
 use crate::ai::sds::rendering::{NeRFModel, RayBundle};
+use crate::ai::AIError;
 
 /// Module 5.1: Jacobian-Vector Product
 /// Input: SDS Gradient delta_SDS, Rendered Image x_render, NeRF Weights theta.
@@ -53,7 +54,19 @@ impl AdamOptimizer {
         }
     }
 
-    pub fn step(&mut self, params: &DMatrix<f64>, grads: &DMatrix<f64>) -> DMatrix<f64> {
+    /// Performs a single optimization step.
+    ///
+    /// # Returns
+    /// * `Ok(DMatrix<f64>)` - The updated parameters.
+    /// * `Err(AIError)` - If dimensions mismatch.
+    pub fn step(&mut self, params: &DMatrix<f64>, grads: &DMatrix<f64>) -> Result<DMatrix<f64>, AIError> {
+        if params.shape() != grads.shape() {
+             return Err(AIError::DimensionMismatch {
+                 expected: format!("{:?}", params.shape()),
+                 got: format!("{:?}", grads.shape())
+             });
+        }
+
         self.t += 1;
 
         // Initialize state if needed
@@ -62,8 +75,8 @@ impl AdamOptimizer {
             self.v = Some(DMatrix::zeros(params.nrows(), params.ncols()));
         }
 
-        let m = self.m.as_mut().unwrap();
-        let v = self.v.as_mut().unwrap();
+        let m = self.m.as_mut().expect("Optimizer state m should be initialized");
+        let v = self.v.as_mut().expect("Optimizer state v should be initialized");
 
         // Update biased first moment estimate: m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
         *m = &*m * self.beta1 + grads * (1.0 - self.beta1);
@@ -82,7 +95,7 @@ impl AdamOptimizer {
         // Update parameters: theta = theta - lr * m_hat / (sqrt(v_hat) + epsilon)
         let update_term = m_hat.component_div(&v_hat.map(|x| x.sqrt() + self.epsilon));
 
-        params - update_term * self.learning_rate
+        Ok(params - update_term * self.learning_rate)
     }
 }
 
