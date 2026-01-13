@@ -1,0 +1,177 @@
+//! MUSIC (Multiple Signal Classification) Algorithm for FMCW Radar.
+//!
+//! This module implements the "Math" Solution: Super-Resolution processing.
+//! It allows distinguishing between reflection points (e.g., skin vs. clothes) closer than the
+//! physical range resolution limit ($\Delta R = c/2B$) by exploiting the eigen-structure of the
+//! signal covariance matrix.
+
+use num_complex::Complex;
+use nalgebra::{DMatrix, DVector};
+use std::f64::consts::PI;
+
+/// Implements the MUSIC algorithm for high-resolution range estimation.
+pub struct MusicEstimator {
+    /// Number of signal snapshots (chirps) to estimate covariance.
+    snapshot_count: usize,
+    /// Number of samples per chirp ($N$).
+    samples_per_chirp: usize,
+    /// Estimated number of targets/signals ($P$).
+    signal_subspace_dim: usize,
+    /// Signal covariance matrix buffer.
+    snapshots: Vec<DVector<Complex<f64>>>,
+}
+
+impl MusicEstimator {
+    /// Creates a new MUSIC Estimator.
+    ///
+    /// # Arguments
+    ///
+    /// * `samples_per_chirp` - Length of the FMCW chirp ($N$).
+    /// * `smoothing_factor` - Number of snapshots to average for covariance matrix stability (e.g., 10).
+    /// * `num_targets` - Expected number of reflecting surfaces (e.g., 1 for just skin, 2 for skin+clothes).
+    pub fn new(samples_per_chirp: usize, smoothing_factor: usize, num_targets: usize) -> Self {
+        Self {
+            snapshot_count: smoothing_factor,
+            samples_per_chirp,
+            signal_subspace_dim: num_targets,
+            snapshots: Vec::with_capacity(smoothing_factor),
+        }
+    }
+
+    /// Adds a chirp snapshot to the estimator.
+    ///
+    /// Once enough snapshots are collected, the covariance matrix is robust.
+    /// Ideally, call `compute_spectrum` after filling the buffer.
+    pub fn add_snapshot(&mut self, chirp: &[Complex<f64>]) {
+        if chirp.len() != self.samples_per_chirp {
+            return;
+        }
+        let vec = DVector::from_iterator(chirp.len(), chirp.iter().cloned());
+
+        if self.snapshots.len() >= self.snapshot_count {
+            self.snapshots.remove(0);
+        }
+        self.snapshots.push(vec);
+    }
+
+    /// Computes the MUSIC Pseudospectrum over a range of distances.
+    ///
+    /// $$ P(R) = \frac{1}{a(R)^H E_n E_n^H a(R)} $$
+    ///
+    /// # Arguments
+    ///
+    /// * `start_range` - Start distance in meters.
+    /// * `end_range` - End distance in meters.
+    /// * `step_range` - Resolution step in meters (e.g., 0.001 for 1mm).
+    /// * `bandwidth` - Radar bandwidth ($B$) in Hz.
+    /// * `c` - Speed of light (default ~3e8).
+    ///
+    /// # Returns
+    ///
+    /// A vector of `(Range, Power)` tuples.
+    pub fn compute_spectrum(
+        &self,
+        start_range: f64,
+        end_range: f64,
+        step_range: f64,
+        bandwidth: f64,
+        c: f64
+    ) -> Result<Vec<(f64, f64)>, &'static str> {
+        if self.snapshots.len() < self.snapshot_count {
+            return Err("Not enough snapshots to compute stable Covariance Matrix");
+        }
+
+        // 1. Estimate Covariance Matrix Rxx
+        // Rxx = (1/K) * sum(x_k * x_k^H)
+        let n = self.samples_per_chirp;
+        let mut r_xx = DMatrix::<Complex<f64>>::zeros(n, n);
+
+        for snap in &self.snapshots {
+            // snap is column vector (Nx1)
+            // snap * snap^H -> NxN matrix
+            let outer = snap * snap.adjoint();
+            r_xx += outer;
+        }
+        r_xx /= Complex::new(self.snapshots.len() as f64, 0.0); // normalize
+
+        // 2. Eigen Decomposition
+        // We use SVD or Eigendecomposition. Rxx is Hermitian.
+        let eigen = r_xx.symmetric_eigen();
+
+        // Eigenvalues are sorted in ascending order by default in nalgebra::symmetric_eigen?
+        // Actually we need to check documentation or assume.
+        // Usually noise eigenvalues are the smallest ones.
+        // If we have P targets, the P largest eigenvalues correspond to signal.
+        // The remaining N - P are noise.
+        // `eigen.eigenvalues` is a vector.
+        // `eigen.eigenvectors` is a matrix where columns are eigenvectors.
+
+        // Sort eigenvalues and permute eigenvectors
+        let mut pairs: Vec<(f64, usize)> = eigen.eigenvalues.iter()
+            .enumerate()
+            .map(|(i, &v)| (v, i))
+            .collect();
+        // Sort descending (largest first)
+        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+
+        // 3. Extract Noise Subspace En
+        // The last (N - P) eigenvectors correspond to noise.
+        let num_noise_vectors = n - self.signal_subspace_dim;
+        if num_noise_vectors == 0 {
+             return Err("Signal subspace dimension equals or exceeds sample size");
+        }
+
+        // Collect indices of noise eigenvectors (the smallest ones)
+        let noise_indices: Vec<usize> = pairs.iter()
+            .skip(self.signal_subspace_dim) // Skip the P largest (Signal)
+            .map(|(_, i)| *i)
+            .collect();
+
+        // Construct En matrix (N x (N-P))
+        // We can pre-compute En * En^H to speed up the loop: P_noise = En * En^H
+        // Then denominator is a^H * P_noise * a
+        let mut p_noise = DMatrix::<Complex<f64>>::zeros(n, n);
+
+        for idx in noise_indices {
+            let col = eigen.eigenvectors.column(idx);
+            p_noise += col * col.adjoint();
+        }
+
+        // 4. Compute Spectrum P(R)
+        let mut spectrum = Vec::new();
+        let mut r = start_range;
+
+        // Constants for steering vector
+        // a(R)[n] = exp(j * (4pi * B * R / c) * (n / N))
+        // Let alpha = (4pi * B * R) / (c * N)
+        // phase[n] = alpha * n
+        let constant_factor = (4.0 * PI * bandwidth) / (c * n as f64);
+
+        while r <= end_range {
+            let alpha = constant_factor * r;
+
+            // Construct steering vector a(R)
+            let mut a_vec_data = Vec::with_capacity(n);
+            for i in 0..n {
+                let phase = alpha * (i as f64);
+                a_vec_data.push(Complex::new(0.0, phase).exp());
+            }
+            let a_vec = DVector::from_vec(a_vec_data);
+
+            // Denominator D = a^H * P_noise * a
+            // a^H * (P_noise * a)
+            let tmp = &p_noise * &a_vec;
+            let den_complex = a_vec.adjoint() * tmp; // Result is 1x1 matrix
+            let den = den_complex[(0,0)].norm(); // Should be real, take norm to be safe
+
+            // P(R) = 1 / D
+            // Add small epsilon to avoid division by zero
+            let power = 1.0 / (den + 1e-12);
+
+            spectrum.push((r, power));
+            r += step_range;
+        }
+
+        Ok(spectrum)
+    }
+}
