@@ -89,4 +89,66 @@ impl FmcwConfig {
         let lambda = self.wavelength();
         (phase_shift * lambda) / (4.0 * std::f64::consts::PI)
     }
+
+    /// Calculates the instantaneous frequency of the chirp signal.
+    ///
+    /// $$ f(t) = St + f_c $$
+    ///
+    /// # Arguments
+    ///
+    /// * `t` - Time within the chirp duration.
+    pub fn chirp_frequency(&self, t: f64) -> f64 {
+        let slope = self.bandwidth / self.chirp_time;
+        slope * t + self.center_frequency
+    }
+
+    /// Simulates the mixer output for FMCW signal generation.
+    ///
+    /// $$ x_{out} = \sin((\omega_1 - \omega_2)t + (\phi_1 - \phi_2)) $$
+    ///
+    /// # Arguments
+    ///
+    /// * `omega1` - Angular velocity of signal 1.
+    /// * `omega2` - Angular velocity of signal 2.
+    /// * `phi1` - Initial phase of signal 1.
+    /// * `phi2` - Initial phase of signal 2.
+    /// * `t` - Time.
+    pub fn mixer_output(omega1: f64, omega2: f64, phi1: f64, phi2: f64, t: f64) -> f64 {
+        ((omega1 - omega2) * t + (phi1 - phi2)).sin()
+    }
+
+    /// Calculates the Maximum Unambiguous Velocity ($v_{max}$).
+    ///
+    /// Determined by the chirp repetition time ($T_c$).
+    ///
+    /// $$ v_{max} = \frac{\lambda}{4 T_c} $$
+    pub fn max_unambiguous_velocity(&self) -> f64 {
+        let lambda = self.wavelength();
+        lambda / (4.0 * self.chirp_time)
+    }
+
+    /// Calculates the Phase Delay introduced by a dielectric material.
+    ///
+    /// $$ \Delta \phi = \frac{4\pi d}{\lambda} (\sqrt{\epsilon_r} - 1) $$
+    ///
+    /// # Arguments
+    ///
+    /// * `thickness` ($d$) - Material thickness in meters.
+    /// * `dielectric_constant` ($\epsilon_r$) - Relative permittivity.
+    pub fn dielectric_phase_delay(&self, thickness: f64, dielectric_constant: f64) -> f64 {
+        let lambda = self.wavelength();
+        (4.0 * std::f64::consts::PI * thickness / lambda) * (dielectric_constant.sqrt() - 1.0)
+    }
+
+    /// Calculates the FMCW Beat Frequency.
+    ///
+    /// $$ f_b = \frac{S \cdot 2R}{c} $$
+    ///
+    /// # Arguments
+    ///
+    /// * `slope` ($S$) - Frequency slope of the chirp (Hz/s).
+    /// * `range` ($R$) - Distance to target (m).
+    pub fn beat_frequency(slope: f64, range: f64) -> f64 {
+        (slope * 2.0 * range) / C
+    }
 }

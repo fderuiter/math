@@ -71,7 +71,7 @@ fn test_mimo_beamforming() {
 
 #[test]
 fn test_elliptical_filter_clutter_removal() {
-    let mut filter = EllipticalFilter::new(100);
+    let mut filter = EllipticalFilter::new(100.0);
 
     let center = Complex::new(5.0, -3.0); // Static Clutter
     let radius = 1.0;
