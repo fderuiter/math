@@ -1,4 +1,5 @@
 use super::constants::{C, EPSILON};
+use super::error::HighEnergyError;
 
 /// A struct representing a Four-Vector (Time + 3-Space).
 /// The metric signature is -+++.
@@ -25,7 +26,7 @@ impl FourVector {
     /// Calculates the spacetime interval s^2.
     /// Formula: s^2 = -(ct)^2 + x^2 + y^2 + z^2.
     /// This assumes `self.t` is time in seconds.
-    pub fn invariant_interval(&self) -> Result<f64, String> {
+    pub fn invariant_interval(&self) -> Result<f64, HighEnergyError> {
         let ct = C * self.t;
         Ok(-(ct * ct) + self.x * self.x + self.y * self.y + self.z * self.z)
     }
@@ -35,9 +36,12 @@ impl FourVector {
     ///
     /// Assumes the vector represents 4-momentum p^mu = (E/c, px, py, pz).
     /// Note: The input `mass` is the rest mass `m`.
-    pub fn is_valid_momentum(&self, mass: f64) -> Result<bool, String> {
+    ///
+    /// # Errors
+    /// * `HighEnergyError::InvalidMass` if `mass < 0`.
+    pub fn is_valid_momentum(&self, mass: f64) -> Result<bool, HighEnergyError> {
         if mass < 0.0 {
-            return Err("Mass cannot be negative".to_string());
+            return Err(HighEnergyError::InvalidMass { mass });
         }
         // Contraction p^mu p_mu = - (p^0)^2 + (p^1)^2 + ...
         // Here self.t is p^0 (E/c).
@@ -59,10 +63,13 @@ impl FourVector {
 
 /// Calculates the Lorentz Factor gamma.
 /// Formula: gamma = 1 / sqrt(1 - beta^2) where beta = v/c.
-pub fn calculate_lorentz_factor(v: f64) -> Result<f64, String> {
+///
+/// # Errors
+/// * `HighEnergyError::InvalidVelocity` if `|v| >= c`.
+pub fn calculate_lorentz_factor(v: f64) -> Result<f64, HighEnergyError> {
     let beta = v / C;
     if beta.abs() >= 1.0 {
-        return Err("Velocity must be strictly less than c for massive particles".to_string());
+        return Err(HighEnergyError::InvalidVelocity { v });
     }
     let gamma = 1.0 / (1.0 - beta * beta).sqrt();
     Ok(gamma)
@@ -77,13 +84,13 @@ mod tests {
     fn test_special_relativity() {
         // Lorentz Factor: v = 0.6c => gamma = 1.25
         let v = 0.6 * C;
-        let gamma = calculate_lorentz_factor(v).unwrap();
+        let gamma = calculate_lorentz_factor(v).expect("Failed to calc Lorentz factor");
         assert_relative_eq!(gamma, 1.25, epsilon = 1e-6);
 
         // Invariant Interval: ct=3, x=4, y=0, z=0 => s^2 = -9 + 16 = 7
         // t = 3/c.
         let fv = FourVector::new(3.0 / C, 4.0, 0.0, 0.0);
-        let s2 = fv.invariant_interval().unwrap();
+        let s2 = fv.invariant_interval().expect("Failed to calc interval");
         assert_relative_eq!(s2, 7.0, epsilon = 1e-6);
 
         // Momentum Invariance
@@ -100,6 +107,14 @@ mod tests {
         // E/c = 1.25 * C.
         // px = 0.75 * C.
         let p_vec = FourVector::new(1.25 * C, 0.75 * C, 0.0, 0.0);
-        assert!(p_vec.is_valid_momentum(mass).unwrap());
+        assert!(p_vec.is_valid_momentum(mass).expect("Failed to check momentum"));
+    }
+
+    #[test]
+    fn test_errors() {
+        assert!(calculate_lorentz_factor(C).is_err());
+        assert!(calculate_lorentz_factor(1.1 * C).is_err());
+        let fv = FourVector::new(0.0, 0.0, 0.0, 0.0);
+        assert!(fv.is_valid_momentum(-1.0).is_err());
     }
 }
