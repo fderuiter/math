@@ -51,17 +51,59 @@ fn main() {
 
 Math Explorer is organized into high-level domains, each solving specific problems:
 
+```mermaid
+graph TD
+    Root[Math Explorer] --> AI[🤖 AI]
+    Root --> Applied[🛠️ Applied]
+    Root --> Bio[🧬 Biology]
+    Root --> Climate[🌍 Climate]
+    Root --> Epi[🦠 Epidemiology]
+    Root --> Phys[🌌 Physics]
+    Root --> Pure[📐 Pure Math]
+
+    AI --> Trans[Transformers] & NeRF[NeRF-Diffusion]
+    Applied --> Fav[Favoritism] & Clinical[Clinical Trials]
+    Bio --> Neuro[Neuroscience] & Morph[Morphogenesis]
+    Epi --> SIR[SIR/SEIR Models] & Net[Network Spread]
+    Phys --> Quant[Quantum] & Chaos[Chaos Theory]
+    Pure --> Num[Number Theory] & Geo[Diff Geometry]
+
+    style Root fill:#f9f,stroke:#333,stroke-width:2px
+```
+
 | Domain | Module | Description |
 | :--- | :--- | :--- |
 | **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
 | **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), and **LoraHub**. |
+| **🧬 Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Morphogenesis** (Turing Patterns), and **Evolutionary Dynamics**. |
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
+| **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
 | **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, and Differential Geometry. |
 
 ---
 
 ## 🔍 Deep Dive: Modules
+
+### 🧬 Biology & Neuroscience
+Simulate the electrical characteristics of excitable cells using the Hodgkin-Huxley model.
+
+```rust
+use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+
+// Initialize a neuron at resting potential (-65.0 mV)
+let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
+let dt = 0.01; // 0.01 ms time step
+
+// Simulate for 10ms with 10 uA/cm^2 current injection
+for _ in 0..1000 {
+    neuron.update(dt, 10.0);
+    if neuron.v > 0.0 {
+        println!("Action Potential Generated!");
+        break;
+    }
+}
+```
 
 ### 🤖 Artificial Intelligence
 Implement state-of-the-art architectures from scratch.
