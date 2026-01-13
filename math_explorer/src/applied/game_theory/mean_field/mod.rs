@@ -8,9 +8,11 @@
 
 pub mod types;
 pub mod solver;
+pub mod physics;
 
 pub use types::MFGConfig;
 pub use solver::{MFGSolver, FixedPointSolver};
+pub use physics::{Hamiltonian, QuadraticHamiltonian};
 
 // Re-export for backward compatibility, though the API has changed slightly (requires solver struct).
 // We can provide a type alias if MeanFieldGame1D was just a struct.
@@ -66,6 +68,25 @@ mod tests {
         let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
 
         let (u, m) = mfg.solve(cost_fn, term_fn, init_dist, 5);
+
+        assert_eq!(u.nrows(), 50);
+        assert_eq!(u.ncols(), 101);
+    }
+
+    #[test]
+    fn test_mfg_with_custom_hamiltonian() {
+        let config = MFGConfig::new(
+            0.1, 1.0, 50, 100, -2.0, 2.0
+        );
+        // Heavy particles (mass = 2.0)
+        let hamiltonian = QuadraticHamiltonian::new(2.0);
+        let solver = FixedPointSolver::new_with_hamiltonian(5, hamiltonian);
+
+        let cost_fn = |x: f64, m: f64| -> f64 { m + x * x };
+        let term_fn = |x: f64, _m: f64| -> f64 { x * x };
+        let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
+
+        let (u, m) = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
 
         assert_eq!(u.nrows(), 50);
         assert_eq!(u.ncols(), 101);

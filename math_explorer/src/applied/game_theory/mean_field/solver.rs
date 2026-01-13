@@ -1,5 +1,6 @@
 use nalgebra::DMatrix;
 use super::types::MFGConfig;
+use super::physics::{Hamiltonian, QuadraticHamiltonian};
 
 /// Strategy trait for solving Mean Field Games.
 ///
@@ -29,17 +30,32 @@ pub trait MFGSolver {
 ///
 /// Iterates back and forth between the HJB (backward) and Fokker-Planck (forward) equations
 /// until convergence (or for a fixed number of iterations).
-pub struct FixedPointSolver {
+pub struct FixedPointSolver<H: Hamiltonian> {
     pub iterations: usize,
+    pub hamiltonian: H,
 }
 
-impl FixedPointSolver {
+impl FixedPointSolver<QuadraticHamiltonian> {
+    /// Creates a new solver with a default Quadratic Hamiltonian ($H = p^2/2$).
     pub fn new(iterations: usize) -> Self {
-        Self { iterations }
+        Self {
+            iterations,
+            hamiltonian: QuadraticHamiltonian::default(),
+        }
     }
 }
 
-impl MFGSolver for FixedPointSolver {
+impl<H: Hamiltonian> FixedPointSolver<H> {
+    /// Creates a new solver with a custom Hamiltonian strategy.
+    pub fn new_with_hamiltonian(iterations: usize, hamiltonian: H) -> Self {
+        Self {
+            iterations,
+            hamiltonian,
+        }
+    }
+}
+
+impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
     fn solve(
         &self,
         config: &MFGConfig,
@@ -94,7 +110,7 @@ impl MFGSolver for FixedPointSolver {
                     let du_dx = (u[(i + 1, n + 1)] - u[(i - 1, n + 1)]) / (2.0 * config.dx);
                     let d2u_dx2 = (u[(i + 1, n + 1)] - 2.0 * u[(i, n + 1)] + u[(i - 1, n + 1)]) / (config.dx * config.dx);
 
-                    let hamiltonian = 0.5 * du_dx * du_dx; // H(p) = p^2 / 2
+                    let hamiltonian = self.hamiltonian.evaluate(du_dx);
                     let running_cost = cost_function(x, m[(i, n + 1)]);
 
                     u[(i, n)] = u[(i, n + 1)] - config.dt * (hamiltonian - config.viscosity * d2u_dx2 - running_cost);
@@ -109,7 +125,9 @@ impl MFGSolver for FixedPointSolver {
                 for i in 1..nx - 1 {
                     // Calculate v at current step n
                     let du_dx = (u[(i + 1, n)] - u[(i - 1, n)]) / (2.0 * config.dx);
-                    let v = -du_dx;
+
+                    // The drift velocity v = - H_p(p)
+                    let v = -self.hamiltonian.derivative(du_dx);
 
                     let d2m_dx2 = (m[(i + 1, n)] - 2.0 * m[(i, n)] + m[(i - 1, n)]) / (config.dx * config.dx);
 
