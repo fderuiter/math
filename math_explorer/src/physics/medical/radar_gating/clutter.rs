@@ -91,3 +91,19 @@ impl EllipticalFilter {
         self.center
     }
 }
+
+/// CA-CFAR Noise Estimation.
+///
+/// $$ E = \frac{1}{N} \sum_{i=1}^{N} x_i $$
+///
+/// Cell Averaging Constant False Alarm Rate (CA-CFAR) estimates the noise level
+/// around a cell under test (CUT) by averaging the power of neighboring reference cells.
+///
+/// # Arguments
+/// * `reference_cells` - A slice of power values from reference cells (excluding guard cells and CUT).
+pub fn ca_cfar_noise_level(reference_cells: &[f64]) -> f64 {
+    if reference_cells.is_empty() {
+        return 0.0;
+    }
+    reference_cells.iter().sum::<f64>() / reference_cells.len() as f64
+}

@@ -54,3 +54,7 @@ pub mod clinical_trials;
 
 /// General purpose algorithms, including Sorting and other utility structures.
 pub mod algorithms;
+
+/// Computer Vision algorithms, including Optical Flow.
+pub mod computer_vision;
+// pub mod generative_turbulence;

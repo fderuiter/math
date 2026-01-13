@@ -98,3 +98,25 @@ impl BiQuadraticSurface {
         mesh
     }
 }
+
+/// Weighted Average Height (WAH) Signal.
+///
+/// $$ V_{resp}(t) = \frac{1}{\text{Area}} \iint_{ROI} Z_{mesh}(x,y,t) dx dy $$
+///
+/// Discretized as:
+/// $$ V_{resp} \approx \frac{1}{N} \sum_{i=1}^{N} z_i $$
+///
+/// This function calculates the mean height of a mesh within a Region of Interest (ROI).
+/// It assumes the mesh points provided are already within the ROI.
+///
+/// # Arguments
+/// * `mesh_points` - A slice of points $(x, y, z)$ within the ROI.
+///
+/// # Returns
+/// Average height.
+pub fn weighted_average_height(mesh_points: &[Point3<f64>]) -> f64 {
+    if mesh_points.is_empty() {
+        return 0.0;
+    }
+    mesh_points.iter().map(|p| p.z).sum::<f64>() / mesh_points.len() as f64
+}

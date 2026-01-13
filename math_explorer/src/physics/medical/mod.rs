@@ -27,3 +27,6 @@ pub mod dose_calculation;
 pub mod optimization;
 pub mod evaluation;
 pub mod radar_gating;
+pub mod thermodynamics;
+pub mod radiotherapy;
+pub mod biosensing;
