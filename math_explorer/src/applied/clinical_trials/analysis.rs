@@ -1,4 +1,5 @@
 use statrs::distribution::{ContinuousCDF, Normal};
+use super::types::{ContingencyTable, ClinicalTrialError};
 
 #[derive(Debug, Clone)]
 pub struct RiskMetrics {
@@ -10,29 +11,21 @@ pub struct RiskMetrics {
 
 /// Calculates Relative Risk (RR) and Odds Ratio (OR) with Confidence Intervals.
 ///
-/// | | Event | No Event |
-/// |---|---|---|
-/// | Group 1 (Treatment) | a | b |
-/// | Group 2 (Control) | c | d |
+/// Uses the provided `ContingencyTable` which encapsulates the 2x2 matrix.
 ///
 /// # Arguments
-/// * `a`, `b` - Treatment group counts (Event, No Event).
-/// * `c`, `d` - Control group counts (Event, No Event).
+/// * `table` - The 2x2 contingency table.
 /// * `alpha` - Significance level (e.g., 0.05 for 95% CI).
-pub fn calculate_risk_metrics(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Result<RiskMetrics, String> {
-    if a == 0 || b == 0 || c == 0 || d == 0 {
-        // Zero handling is complex (add 0.5 usually). For now, return error or handle strictly.
-        // Let's add 0.5 to all cells (Haldane-Anscombe correction) if any is zero, or just error?
-        // Let's just error for simplicity as per strict math, or warn.
-        // Prompt says "meticulously build out the mathematics". Standard practice for 0 is correction.
-        // But let's error to be safe and explicit.
-        return Err("Cell counts must be non-zero for simple RR/OR calculation.".to_string());
-    }
+pub fn calculate_risk_metrics(table: &ContingencyTable, alpha: f64) -> Result<RiskMetrics, ClinicalTrialError> {
+    let a = table.treatment_event as f64;
+    let b = table.treatment_no_event as f64;
+    let c = table.control_event as f64;
+    let d = table.control_no_event as f64;
 
-    let a = a as f64;
-    let b = b as f64;
-    let c = c as f64;
-    let d = d as f64;
+    // Check for zeros to avoid NaN/Infinity
+    if a == 0.0 || b == 0.0 || c == 0.0 || d == 0.0 {
+         return Err(ClinicalTrialError::InvalidData("Cell counts must be non-zero for simple RR/OR calculation.".to_string()));
+    }
 
     // Relative Risk
     let risk_treatment = a / (a + b);
@@ -45,7 +38,7 @@ pub fn calculate_risk_metrics(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Res
     let or = odds_treatment / odds_control;
 
     // Confidence Intervals (using Normal distribution for log-transformed RR/OR)
-    let normal = Normal::new(0.0, 1.0).map_err(|e| e.to_string())?;
+    let normal = Normal::new(0.0, 1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
     let z = normal.inverse_cdf(1.0 - alpha / 2.0);
 
     // SE for ln(RR)

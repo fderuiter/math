@@ -1,4 +1,5 @@
 use math_explorer::applied::clinical_trials::{design, sample_size, hypothesis_testing, analysis, survival_analysis};
+use math_explorer::applied::clinical_trials::types::{GroupData, ContingencyTable};
 
 #[test]
 fn test_simple_randomization() {
@@ -33,8 +34,11 @@ fn test_sample_size_calculation() {
 
 #[test]
 fn test_t_test_independent() {
-    let group1 = vec![10.0, 12.0, 11.0, 13.0, 10.5]; // Mean 11.3
-    let group2 = vec![15.0, 16.0, 14.0, 15.5, 14.5]; // Mean 15.0
+    let raw_group1 = vec![10.0, 12.0, 11.0, 13.0, 10.5]; // Mean 11.3
+    let raw_group2 = vec![15.0, 16.0, 14.0, 15.5, 14.5]; // Mean 15.0
+
+    let group1 = GroupData::new(raw_group1).unwrap();
+    let group2 = GroupData::new(raw_group2).unwrap();
 
     let result = hypothesis_testing::t_test_independent(&group1, &group2, 0.05).unwrap();
     assert!(result.is_significant);
@@ -45,7 +49,14 @@ fn test_t_test_independent() {
 fn test_chi_square_2x2() {
     // 50 cured, 50 not (Control) vs 70 cured, 30 not (Treatment)
     // Should be significant
-    let result = hypothesis_testing::chi_square_2x2(70, 30, 50, 50, 0.05).unwrap();
+    let table = ContingencyTable::new(
+        70, // Treatment Event
+        30, // Treatment No Event
+        50, // Control Event
+        50, // Control No Event
+    ).unwrap();
+
+    let result = hypothesis_testing::chi_square_2x2(&table, 0.05).unwrap();
     assert!(result.is_significant);
 }
 
@@ -55,7 +66,14 @@ fn test_risk_metrics() {
     // Control: 20 events, 80 no events (Risk = 0.2)
     // RR = 0.5
     // OR = (10/90) / (20/80) = (1/9) / (1/4) = 4/9 = 0.444...
-    let metrics = analysis::calculate_risk_metrics(10, 90, 20, 80, 0.05).unwrap();
+    let table = ContingencyTable::new(
+        10, // Treatment Event
+        90, // Treatment No Event
+        20, // Control Event
+        80, // Control No Event
+    ).unwrap();
+
+    let metrics = analysis::calculate_risk_metrics(&table, 0.05).unwrap();
 
     assert!((metrics.relative_risk - 0.5).abs() < 1e-4);
     assert!((metrics.odds_ratio - 0.4444).abs() < 1e-4);
