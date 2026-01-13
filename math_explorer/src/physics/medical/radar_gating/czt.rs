@@ -60,3 +60,40 @@ pub fn chirp_z_transform(
 
     output
 }
+
+/// Helper struct to configure CZT using Spatial Parameters ("Fonzi" Step 1).
+pub struct SpatialCztConfig {
+    /// Start distance in meters ($A$ parameter equivalent).
+    pub start_distance: f64,
+    /// Resolution step size in meters ($W$ parameter equivalent).
+    pub step_distance: f64,
+    /// Number of output bins ($K$).
+    pub output_bins: usize,
+    /// Radar Bandwidth in Hz ($B$).
+    pub bandwidth: f64,
+    /// Chirp Time in seconds ($T_c$).
+    pub chirp_time: f64,
+    /// Speed of light ($c$).
+    pub c: f64,
+}
+
+impl SpatialCztConfig {
+    /// Converts spatial parameters to frequency parameters and runs the CZT.
+    ///
+    /// # Arguments
+    ///
+    /// * `signal` - The time-domain input signal.
+    /// * `sample_rate` - ADC sample rate ($f_s$).
+    pub fn process(&self, signal: &[Complex<f64>], sample_rate: f64) -> Vec<Complex<f64>> {
+        // Frequency per meter slope: S_f = (2 * B) / (c * T_c)
+        let slope = (2.0 * self.bandwidth) / (self.c * self.chirp_time);
+
+        // f_start = slope * start_distance
+        let start_freq = slope * self.start_distance;
+
+        // Total bandwidth of the window = slope * (step_size * bins)
+        let zoom_bandwidth = slope * (self.step_distance * self.output_bins as f64);
+
+        chirp_z_transform(signal, start_freq, zoom_bandwidth, sample_rate, self.output_bins)
+    }
+}
