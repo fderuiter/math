@@ -80,7 +80,7 @@ pub mod favorite_child;
 pub mod scoring;
 pub mod types;
 
-pub use scoring::calculate_favoritism_score;
+pub use scoring::{calculate_favoritism_score, calculate_favoritism_score_with_rng};
 pub use types::{
     FavoritismInputs,
     TimeParams,
