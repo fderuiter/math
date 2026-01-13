@@ -29,6 +29,28 @@ Add this crate to your dependencies:
 math_explorer = { path = "path/to/math_explorer" }
 ```
 
+### Example: Computational Biology (Neuroscience)
+
+Simulate a neuron's membrane potential using the Hodgkin-Huxley model:
+
+```rust
+use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+
+fn main() {
+    // Initialize a neuron at resting potential (-65.0 mV)
+    let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
+    let dt = 0.01; // 0.01 ms time step
+
+    // Simulate for 10ms with 10 uA/cm^2 current injection
+    for step in 0..1000 {
+        neuron.update(dt, 10.0);
+        if step % 100 == 0 {
+            println!("t={:.2}ms, V={:.2}mV", step as f64 * dt, neuron.v);
+        }
+    }
+}
+```
+
 ### Example: Chaos Theory
 
 Calculate the Lyapunov exponent for a Lorenz System:

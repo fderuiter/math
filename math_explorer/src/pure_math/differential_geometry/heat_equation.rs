@@ -12,6 +12,61 @@ pub struct HeatEquationSolver<'a, S: ParametricSurface> {
 }
 
 impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
+    /// Creates a new Heat Equation solver for a given parametric surface.
+    ///
+    /// Initializes the temperature grid $u(u, v)$ based on the provided `initial_condition`.
+    /// The solver uses a uniform grid in the parameter space $(u, v)$.
+    ///
+    /// # Arguments
+    ///
+    /// * `surface` - The parametric surface geometry (e.g., Sphere, Torus).
+    /// * `alpha` - Thermal diffusivity coefficient $\alpha$. Higher values mean heat spreads faster.
+    /// * `range_u` - The domain range for the $u$ parameter $(u_{min}, u_{max})$.
+    /// * `range_v` - The domain range for the $v$ parameter $(v_{min}, v_{max})$.
+    /// * `grid_res` - The resolution of the simulation grid $(n_u, n_v)$. Must be at least $(2, 2)$ to avoid division by zero or infinity.
+    /// * `initial_condition` - A closure `Fn(u, v) -> temp` defining the initial temperature at $t=0$.
+    ///
+    /// # Examples
+    ///
+    /// Simulating heat diffusion on a unit Sphere:
+    ///
+    /// ```rust
+    /// use math_explorer::pure_math::differential_geometry::surface::Sphere;
+    /// use math_explorer::pure_math::differential_geometry::heat_equation::HeatEquationSolver;
+    /// use std::f64::consts::PI;
+    ///
+    /// // 1. Define the surface
+    /// let sphere = Sphere { radius: 1.0 };
+    ///
+    /// // 2. Define initial temperature: A hot spot at the north pole (v close to 0)
+    /// let initial_hot_spot = |_u: f64, v: f64| -> f64 {
+    ///     if v < 0.5 { 100.0 } else { 0.0 }
+    /// };
+    ///
+    /// // 3. Initialize the solver
+    /// let mut solver = HeatEquationSolver::new(
+    ///     &sphere,
+    ///     0.01,             // Alpha (diffusivity)
+    ///     (0.0, 2.0 * PI), // u range (0 to 2pi)
+    ///     (0.01, PI - 0.01), // v range (avoid poles due to singularity)
+    ///     (20, 20),        // Grid resolution
+    ///     initial_hot_spot
+    /// );
+    ///
+    /// // 4. Run the simulation
+    /// let initial_max = solver.u_grid.iter().flatten().fold(0.0/0.0, |a: f64, b| a.max(*b));
+    /// assert!(initial_max > 99.0);
+    ///
+    /// // Run with small time step to ensure stability (CFL condition)
+    /// for _ in 0..10 {
+    ///     solver.step(0.001);
+    /// }
+    ///
+    /// let final_max = solver.u_grid.iter().flatten().fold(0.0/0.0, |a: f64, b| a.max(*b));
+    ///
+    /// // Heat should have diffused, lowering the peak temperature
+    /// assert!(final_max < initial_max);
+    /// ```
     pub fn new(
         surface: &'a S,
         alpha: f64,

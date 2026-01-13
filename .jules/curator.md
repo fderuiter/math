@@ -1,14 +1,11 @@
 # Curator's Log - Documentation Decision Records (DDR)
 
-## 2024-10-24 - Initial Documentation Audit
-**Gap:** The repository has "Knowledge Rot" (broken links in README) and potential mismatches between memory/plans and actual code (Favoritism module).
-**Strategy:**
-1. Fix broken links in README (specifically `chaos.rs` -> `chaos/mod.rs`).
-2. Verify `CONTRIBUTING.md` content against the "Golden Rule" and Mermaid diagram requirements.
-3. Enhance docstrings in `lib.rs` and key modules to explain "WHY" rather than just "HOW".
-**Outcome:** Reduced confusion for new users and contributors.
+## 2025-05-15 - Visualizing the Domain Ecosystem
+**Gap:** The root README lists domains but lacks a visual map of how they relate or what they contain, making the project feel like a disconnected list of files.
+**Strategy:** Introduce a Mermaid.js diagram in the "Features" section to visualize the project hierarchy.
+**Outcome:** Users can instantly grasp the scope of the library without reading the table of contents.
 
-## 2024-10-24 - Diagramming Standard
-**Gap:** Visualizing complex flows is inconsistent.
-**Strategy:** All structural and flow diagrams will use Mermaid.js.
-**Outcome:** Standardized visual language that renders natively in GitHub.
+## 2025-05-15 - Elevating Biology
+**Gap:** The "Biology" module is a core feature but is completely absent from the "Deep Dive" sections in the READMEs, violating the "Show, Don't Tell" principle.
+**Strategy:** Add a Hodgkin-Huxley neuron simulation example to both the root and crate READMEs.
+**Outcome:** Demonstrates the library's capability in complex biological systems modeling.

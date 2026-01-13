@@ -4,7 +4,8 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         types::{FluidProperties, FlowState},
         conservation::{material_derivative_scalar, navier_stokes_time_derivative, continuity_divergence},
-        analysis::{reynolds_number, flow_regime, bernoulli_constant, FlowRegime},
+        analysis::{reynolds_number, bernoulli_constant, shear_stress},
+        regimes::{FlowRegime, FlowClassifier, PipeFlowClassifier, FlatPlateClassifier},
     };
 
     #[test]
@@ -29,24 +30,36 @@ mod tests {
     }
 
     #[test]
-    fn test_reynolds_number() {
+    fn test_reynolds_number_and_strategies() {
         let props = FluidProperties::new(1000.0, 0.001); // Water-like
         let u = 2.0;
         let l = 0.5;
 
-        // Re = 1000 * 2 * 0.5 / 0.001 = 1000 / 0.001 = 1,000,000
+        // Re = 1000 * 2 * 0.5 / 0.001 = 1_000_000
         let re = reynolds_number(&props, u, l);
         assert!((re - 1_000_000.0).abs() < 1e-9);
-        assert_eq!(flow_regime(re), FlowRegime::Turbulent);
 
-        let re_laminar = reynolds_number(&props, 0.001, 0.1);
-        // Re = 1000 * 0.001 * 0.1 / 0.001 = 100.0
-        assert_eq!(flow_regime(re_laminar), FlowRegime::Laminar);
+        // Pipe Flow (default)
+        let pipe_classifier = PipeFlowClassifier;
+        assert_eq!(pipe_classifier.classify(re), FlowRegime::Turbulent);
+
+        let re_laminar = reynolds_number(&props, 0.001, 0.1); // Re = 100
+        assert_eq!(pipe_classifier.classify(re_laminar), FlowRegime::Laminar);
+
+        // Flat Plate
+        let plate_classifier = FlatPlateClassifier;
+        // Re = 1,000,000 > 500,000 -> Turbulent
+        assert_eq!(plate_classifier.classify(re), FlowRegime::Turbulent);
+
+        // Re = 400,000 -> Laminar for Plate, but Turbulent for Pipe
+        let re_intermediate = 400_000.0;
+        assert_eq!(plate_classifier.classify(re_intermediate), FlowRegime::Laminar);
+        assert_eq!(pipe_classifier.classify(re_intermediate), FlowRegime::Turbulent);
     }
 
     #[test]
     fn test_bernoulli() {
-        let rho = 1000.0;
+        let props = FluidProperties::new(1000.0, 1.0); // rho=1000
         let g = 9.81;
         let state = FlowState::new(Vector3::new(10.0, 0.0, 0.0), 101325.0);
         let h = 5.0;
@@ -54,25 +67,25 @@ mod tests {
         // P + 0.5 rho v^2 + rho g h
         // 101325 + 500 * 100 + 1000 * 9.81 * 5
         // 101325 + 50000 + 49050 = 200375
-        let constant = bernoulli_constant(&state, rho, h, g);
+        let constant = bernoulli_constant(&state, &props, h, g);
         assert!((constant - 200375.0).abs() < 1e-6);
     }
 
     #[test]
-    fn test_navier_stokes_simple_couette() {
-        // Simulating a point in Couette flow (steady, parallel plates).
-        // u = (u(y), 0, 0)
-        // No pressure gradient.
-        // No body force.
-        // Expect du/dt = 0 if steady state solution is plugged in?
-        // Actually this function calculates acceleration.
-        // For steady fully developed flow, acceleration should be zero.
+    fn test_shear_stress() {
+        let props = FluidProperties::new(1000.0, 0.001); // mu = 0.001
+        let grad_u = 500.0; // 1/s
 
-        // Let's test term calculation correctness.
+        // tau = mu * du/dy = 0.001 * 500 = 0.5 Pa
+        let tau = shear_stress(&props, grad_u);
+        assert!((tau - 0.5).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_navier_stokes_simple_couette() {
         let props = FluidProperties::new(1.0, 1.0); // rho=1, mu=1 -> nu=1
         let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
 
-        // Uniform velocity field -> gradient is zero
         let vel_grad = Matrix3::zeros();
         let p_grad = Vector3::zeros();
         let lap_vel = Vector3::zeros();
@@ -81,11 +94,8 @@ mod tests {
         let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
         assert_eq!(accel, Vector3::zeros());
 
-        // Add pressure gradient in X
-        // -1/rho * grad_p
         let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
         let accel_p = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
-        // -2.0 / 1.0 = -2.0
         assert!((accel_p.x - (-2.0)).abs() < 1e-9);
     }
 
