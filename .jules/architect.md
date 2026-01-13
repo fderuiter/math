@@ -21,3 +21,8 @@
 **Problem:** `math_explorer/src/biology/neuroscience.rs` coupled the mathematical model (differential equations), the state representation (struct), and the numerical solver (explicit Euler) into a single struct `HodgkinHuxleyNeuron`. This prevented the use of higher-order solvers (like Runge-Kutta 4) and made the system hard to test or extend.
 **Decision:** Applied "Model-State Separation" and "Strategy Pattern". Split `neuroscience.rs` into `types.rs` (State), `model.rs` (OdeSystem logic), and `neuron.rs` (Facade). Adopted the existing `OdeSystem` trait architecture.
 **Consequence:** The `HodgkinHuxleyNeuron` is now a thin facade. Users can still use the simple API, but the underlying system now supports dependency injection of solvers and is strictly typed via `VectorOperations`.
+
+## 2024-10-24 - [Integration Strategy Extraction]
+**Problem:** The `applied` domain depends directly on external `quadrature` libraries, bypassing the `pure_math` domain. This couples the application logic to specific numerical implementations and prevents swapping integration strategies (e.g., for performance or precision).
+**Decision:** Extract a generic `Integrator` trait into `pure_math::analysis::integration`. Implement `ClenshawCurtis` (wrapping the dependency) and `Trapezoidal` (native) as strategies.
+**Consequence:** `favoritism` module will depend on `pure_math` abstractions. Future modules can choose their integration strategy. Adds a layer of indirection but improves testability and modularity.

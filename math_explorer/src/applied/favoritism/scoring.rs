@@ -1,6 +1,6 @@
 use super::types::FavoritismInputs;
 use nalgebra::{DMatrix, DVector};
-use quadrature::clenshaw_curtis;
+use crate::pure_math::analysis::integration::{ClenshawCurtis, Integrator};
 use rand::Rng;
 
 /// Calculates the favoritism score based on the provided inputs.
@@ -55,17 +55,18 @@ pub fn calculate_favoritism_score_with_rng<R: Rng + ?Sized>(inputs: &FavoritismI
     // Adds a ±10% random variation to the final score to simulate human unpredictability.
     let r = rng.gen_range(0.9..1.1);
 
-    let proximity_integral = clenshaw_curtis::integrate(|_t| 1.0 / safe_x0, 0.0, safe_t, EPSILON).integral;
+    let integrator = ClenshawCurtis;
+    let proximity_integral = integrator.integrate(|_t| 1.0 / safe_x0, 0.0, safe_t, EPSILON).value;
 
-    let emotional_support_integral = clenshaw_curtis::integrate(
+    let emotional_support_integral = integrator.integrate(
         |_t| {
-            clenshaw_curtis::integrate(|_x| 8.0, 0.0, 1.0, EPSILON).integral
+            integrator.integrate(|_x| 8.0, 0.0, 1.0, EPSILON).value
         },
         0.0,
         safe_t,
         EPSILON,
     )
-    .integral;
+    .value;
 
     let gift_matrix = DMatrix::from_diagonal(&DVector::from_vec(vec![inputs.gifts.g_emotional, inputs.gifts.g_practical]));
     let gift_matrix_determinant = gift_matrix.determinant();
@@ -92,7 +93,7 @@ pub fn calculate_favoritism_score_with_rng<R: Rng + ?Sized>(inputs: &FavoritismI
     // The memory of good deeds decays exponentially over time without contact.
     let d = (-inputs.contact.decay_constant * inputs.contact.time_since_last_contact).exp();
 
-    let sibling_proximity_integral = clenshaw_curtis::integrate(
+    let sibling_proximity_integral = integrator.integrate(
         |_t| {
             inputs
                 .family
@@ -109,7 +110,7 @@ pub fn calculate_favoritism_score_with_rng<R: Rng + ?Sized>(inputs: &FavoritismI
         safe_t,
         EPSILON,
     )
-    .integral;
+    .value;
 
     let numerator = proximity_integral
         * emotional_support_integral
