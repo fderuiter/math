@@ -1,6 +1,6 @@
+use super::types::{Action, State};
 use std::collections::HashMap;
 use std::hash::Hash;
-use super::types::{Action, State};
 
 /// Q-Learning Update Rule.
 /// $Q(s, a) \leftarrow Q(s, a) + \alpha [R + \gamma \max_{a'} Q(s', a') - Q(s, a)]$
@@ -45,13 +45,21 @@ where
         *self.q_table.get(&(*state, *action)).unwrap_or(&0.0)
     }
 
-    pub fn update(&mut self, state: &S, action: &A, reward: f64, next_state: &S, possible_next_actions: &[A]) {
+    pub fn update(
+        &mut self,
+        state: &S,
+        action: &A,
+        reward: f64,
+        next_state: &S,
+        possible_next_actions: &[A],
+    ) {
         let current_q = self.get_q_value(state, action);
 
         let max_next_q = if possible_next_actions.is_empty() {
             0.0
         } else {
-            possible_next_actions.iter()
+            possible_next_actions
+                .iter()
                 .map(|a| self.get_q_value(next_state, a))
                 .fold(f64::NEG_INFINITY, f64::max)
         };
@@ -62,7 +70,11 @@ where
         let new_q = q_learning_update(
             current_q,
             reward,
-            if max_next_q == f64::NEG_INFINITY { 0.0 } else { max_next_q },
+            if max_next_q == f64::NEG_INFINITY {
+                0.0
+            } else {
+                max_next_q
+            },
             self.learning_rate,
             self.discount_factor,
         );
@@ -87,7 +99,8 @@ where
             // Exploit: Best action
             // Shuffle to break ties randomly? Or just take first best.
             // For simplicity, take first best.
-            available_actions.iter()
+            available_actions
+                .iter()
                 .max_by(|a, b| {
                     let qa = self.get_q_value(state, a);
                     let qb = self.get_q_value(state, b);
@@ -104,10 +117,9 @@ where
 /// This function calculates the gradient component for a single step.
 /// * `return_gt`: The cumulative return $G_t$.
 /// * `grad_log_pi`: The gradient of the log probability of the action taken.
-pub fn policy_gradient_step(
-    return_gt: f64,
-    grad_log_pi: &[f64],
-    learning_rate: f64,
-) -> Vec<f64> {
-    grad_log_pi.iter().map(|g| learning_rate * return_gt * g).collect()
+pub fn policy_gradient_step(return_gt: f64, grad_log_pi: &[f64], learning_rate: f64) -> Vec<f64> {
+    grad_log_pi
+        .iter()
+        .map(|g| learning_rate * return_gt * g)
+        .collect()
 }

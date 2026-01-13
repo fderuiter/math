@@ -42,7 +42,7 @@ pub mod properties {
         let radius = calculate_radius(mass_number);
         let volume = (4.0 / 3.0) * PI * radius.powi(3);
         if volume == 0.0 {
-             return Err(NuclearError::VolumeZero);
+            return Err(NuclearError::VolumeZero);
         }
         Ok(mass_number.as_f64() / volume)
     }
@@ -62,12 +62,17 @@ pub mod liquid_drop {
     ///
     /// # Returns
     /// * `Result<f64, NuclearError>` - The binding energy in MeV.
-    pub fn binding_energy(atomic_number: AtomicNumber, mass_number: MassNumber) -> Result<f64, NuclearError> {
+    pub fn binding_energy(
+        atomic_number: AtomicNumber,
+        mass_number: MassNumber,
+    ) -> Result<f64, NuclearError> {
         let z = atomic_number.as_f64();
         let a = mass_number.as_f64();
 
         if atomic_number.value() > mass_number.value() {
-            return Err(NuclearError::InvalidAtomicNumber("Z cannot be greater than A".to_string()));
+            return Err(NuclearError::InvalidAtomicNumber(
+                "Z cannot be greater than A".to_string(),
+            ));
         }
 
         let vol_term = constants::liquid_drop_constants::A_V * a;
@@ -95,7 +100,10 @@ pub mod liquid_drop {
     }
 
     /// Calculates the Binding Energy per nucleon.
-    pub fn binding_energy_per_nucleon(atomic_number: AtomicNumber, mass_number: MassNumber) -> Result<f64, NuclearError> {
+    pub fn binding_energy_per_nucleon(
+        atomic_number: AtomicNumber,
+        mass_number: MassNumber,
+    ) -> Result<f64, NuclearError> {
         let be = binding_energy(atomic_number, mass_number)?;
         Ok(be / mass_number.as_f64())
     }
@@ -135,7 +143,11 @@ pub mod decay {
     /// * `initial_quantity` - Initial quantity (N0).
     /// * `half_life` - Half-life in seconds.
     /// * `time` - Time elapsed in seconds.
-    pub fn calculate_remaining(initial_quantity: f64, half_life: f64, time: f64) -> Result<f64, NuclearError> {
+    pub fn calculate_remaining(
+        initial_quantity: f64,
+        half_life: f64,
+        time: f64,
+    ) -> Result<f64, NuclearError> {
         if half_life <= 0.0 {
             return Err(NuclearError::InvalidHalfLife);
         }
@@ -149,7 +161,11 @@ pub mod decay {
     /// * `z_daughter` - Atomic number of the daughter nucleus.
     /// * `z_alpha` - Atomic number of the alpha particle (usually 2).
     /// * `velocity` - Velocity of the alpha particle in fm/s.
-    pub fn gamow_factor(z_daughter: AtomicNumber, z_alpha: AtomicNumber, velocity: f64) -> Result<f64, NuclearError> {
+    pub fn gamow_factor(
+        z_daughter: AtomicNumber,
+        z_alpha: AtomicNumber,
+        velocity: f64,
+    ) -> Result<f64, NuclearError> {
         if velocity <= 0.0 {
             return Err(NuclearError::InvalidVelocity);
         }
@@ -185,7 +201,11 @@ pub mod reactions {
     /// * `energy` - Energy E in MeV.
     /// * `resonance_energy` - Resonance energy E_res in MeV.
     /// * `gamma_width` - Decay width Gamma in MeV.
-    pub fn breit_wigner(energy: f64, resonance_energy: f64, gamma_width: f64) -> Result<f64, NuclearError> {
+    pub fn breit_wigner(
+        energy: f64,
+        resonance_energy: f64,
+        gamma_width: f64,
+    ) -> Result<f64, NuclearError> {
         if gamma_width <= 0.0 {
             return Err(NuclearError::InvalidGammaWidth);
         }
@@ -202,13 +222,25 @@ mod tests {
     #[test]
     fn test_iron_peak() {
         // Fe-56: Z=26.
-        let be_fe = liquid_drop::binding_energy_per_nucleon(AtomicNumber::new(26), MassNumber::new(56).unwrap()).unwrap();
+        let be_fe = liquid_drop::binding_energy_per_nucleon(
+            AtomicNumber::new(26),
+            MassNumber::new(56).unwrap(),
+        )
+        .unwrap();
 
         // C-12: Z=6
-        let be_c = liquid_drop::binding_energy_per_nucleon(AtomicNumber::new(6), MassNumber::new(12).unwrap()).unwrap();
+        let be_c = liquid_drop::binding_energy_per_nucleon(
+            AtomicNumber::new(6),
+            MassNumber::new(12).unwrap(),
+        )
+        .unwrap();
 
         // U-238: Z=92
-        let be_u = liquid_drop::binding_energy_per_nucleon(AtomicNumber::new(92), MassNumber::new(238).unwrap()).unwrap();
+        let be_u = liquid_drop::binding_energy_per_nucleon(
+            AtomicNumber::new(92),
+            MassNumber::new(238).unwrap(),
+        )
+        .unwrap();
 
         assert!(be_fe > be_c, "Iron should have higher BE/A than Carbon");
         assert!(be_fe > be_u, "Iron should have higher BE/A than Uranium");
@@ -219,7 +251,10 @@ mod tests {
         let val_j3_2 = shell_model::spin_orbit_coupling(1.0, 0.5, 1.5);
         let val_j1_2 = shell_model::spin_orbit_coupling(1.0, 0.5, 0.5);
 
-        assert!(val_j3_2 > val_j1_2, "j=3/2 should have higher coupling value than j=1/2");
+        assert!(
+            val_j3_2 > val_j1_2,
+            "j=3/2 should have higher coupling value than j=1/2"
+        );
     }
 
     #[test]

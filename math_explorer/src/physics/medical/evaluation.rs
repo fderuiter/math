@@ -69,13 +69,7 @@ pub fn calculate_dvh(doses: &[f64]) -> Vec<(f64, f64)> {
 /// # Formula
 ///
 /// $TCP = \exp(-N_0 \exp(-\alpha n d - \beta n d^2))$
-pub fn tcp_model(
-    n0: f64,
-    alpha: f64,
-    beta: f64,
-    dose_per_fraction: f64,
-    fractions: f64,
-) -> f64 {
+pub fn tcp_model(n0: f64, alpha: f64, beta: f64, dose_per_fraction: f64, fractions: f64) -> f64 {
     // The exponent inside is: - alpha * n * d - beta * n * d^2
     let exponent =
         -alpha * fractions * dose_per_fraction - beta * fractions * dose_per_fraction.powi(2);

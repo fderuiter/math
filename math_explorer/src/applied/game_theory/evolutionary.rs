@@ -20,7 +20,11 @@ pub struct ReplicatorDynamics {
 impl ReplicatorDynamics {
     /// Creates a new system with the given payoff matrix $A$.
     pub fn new(payoff_matrix: DMatrix<f64>) -> Self {
-        assert_eq!(payoff_matrix.nrows(), payoff_matrix.ncols(), "Payoff matrix must be square");
+        assert_eq!(
+            payoff_matrix.nrows(),
+            payoff_matrix.ncols(),
+            "Payoff matrix must be square"
+        );
         Self { payoff_matrix }
     }
 
@@ -95,17 +99,14 @@ mod tests {
         // This is a "Cyclic" game. The interior equilibrium is (1/3, 1/3, 1/3).
         // Trajectories should cycle around it.
 
-        let payoff = DMatrix::from_row_slice(3, 3, &[
-             0.0, -1.0,  1.0,
-             1.0,  0.0, -1.0,
-            -1.0,  1.0,  0.0
-        ]);
+        let payoff =
+            DMatrix::from_row_slice(3, 3, &[0.0, -1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, 0.0]);
 
         let system = ReplicatorDynamics::new(payoff);
 
         // Start near equilibrium (1/3, 1/3, 1/3)
         // If exact equilibrium, derivative should be 0.
-        let equilibrium = DVector::from_vec(vec![1.0/3.0, 1.0/3.0, 1.0/3.0]);
+        let equilibrium = DVector::from_vec(vec![1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]);
         let deriv = system.derivative(&equilibrium);
         assert!(deriv.norm() < 1e-9);
 

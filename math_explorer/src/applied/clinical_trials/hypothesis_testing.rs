@@ -1,11 +1,11 @@
-use statrs::distribution::{ContinuousCDF, StudentsT, ChiSquared};
+use statrs::distribution::{ChiSquared, ContinuousCDF, StudentsT};
 use std::f64;
 
 #[derive(Debug, Clone)]
 pub struct TestResult {
     pub statistic: f64,
     pub p_value: f64,
-    pub is_significant: bool, // Based on provided alpha
+    pub is_significant: bool,                    // Based on provided alpha
     pub confidence_interval: Option<(f64, f64)>, // For the difference
 }
 
@@ -15,7 +15,11 @@ pub struct TestResult {
 /// * `group1` - Data for group 1.
 /// * `group2` - Data for group 2.
 /// * `alpha` - Significance level (e.g., 0.05).
-pub fn t_test_independent(group1: &[f64], group2: &[f64], alpha: f64) -> Result<TestResult, String> {
+pub fn t_test_independent(
+    group1: &[f64],
+    group2: &[f64],
+    alpha: f64,
+) -> Result<TestResult, String> {
     let n1 = group1.len();
     let n2 = group2.len();
 
@@ -93,7 +97,7 @@ pub fn chi_square_2x2(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Result<Test
     let e_d = (row2 * col2) / total;
 
     if e_a == 0.0 || e_b == 0.0 || e_c == 0.0 || e_d == 0.0 {
-         return Err("Expected frequencies too low (zero) for Chi-Square".to_string());
+        return Err("Expected frequencies too low (zero) for Chi-Square".to_string());
     }
 
     let term_a = (a_f - e_a).powi(2) / e_a;

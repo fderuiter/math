@@ -1,17 +1,22 @@
+use super::error::EpidemiologyError;
 use nalgebra::DMatrix;
 
 /// Calculates the Spectral Radius (R0) from Transmission (F) and Transition (V) matrices.
 ///
 /// $K = F \cdot V^{-1}$
-pub fn calculate_r0_matrix(f_mat: &DMatrix<f64>, v_mat: &DMatrix<f64>) -> Result<f64, String> {
-    let v_inv = v_mat.clone().try_inverse().ok_or("Matrix V is singular")?;
+pub fn calculate_r0_matrix(
+    f_mat: &DMatrix<f64>,
+    v_mat: &DMatrix<f64>,
+) -> Result<f64, EpidemiologyError> {
+    let v_inv = v_mat
+        .clone()
+        .try_inverse()
+        .ok_or(EpidemiologyError::SingularMatrixV)?;
     let k = f_mat * v_inv;
 
     let eigenvalues = k.complex_eigenvalues();
 
-    let spectral_radius = eigenvalues.iter()
-        .map(|c| c.norm())
-        .fold(0.0, f64::max);
+    let spectral_radius = eigenvalues.iter().map(|c| c.norm()).fold(0.0, f64::max);
 
     Ok(spectral_radius)
 }

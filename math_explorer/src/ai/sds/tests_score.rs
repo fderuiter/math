@@ -1,6 +1,6 @@
-use nalgebra::DMatrix;
-use approx::assert_relative_eq;
 use crate::ai::sds::score::classifier_free_guidance;
+use approx::assert_relative_eq;
+use nalgebra::DMatrix;
 
 #[test]
 fn test_cfg() {

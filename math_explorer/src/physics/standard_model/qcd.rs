@@ -13,15 +13,22 @@
 /// # Formula
 /// $\alpha_s(Q^2) = \frac{\alpha_s(\mu^2)}{1 + \frac{\alpha_s(\mu^2)}{12\pi} (33 - 2N_f) \ln(Q^2/\mu^2)}$
 ///
+use super::error::StandardModelError;
+
 /// # Returns
 /// * `Ok(f64)`: The value of $\alpha_s(Q^2)$.
-/// * `Err(String)`: If an invalid parameter (e.g., negative energy) is provided.
-pub fn running_coupling(mu: f64, alpha_mu: f64, q: f64, nf: f64) -> Result<f64, String> {
+/// * `Err(StandardModelError)`: If an invalid parameter (e.g., negative energy) is provided.
+pub fn running_coupling(
+    mu: f64,
+    alpha_mu: f64,
+    q: f64,
+    nf: f64,
+) -> Result<f64, StandardModelError> {
     if mu <= 0.0 || q <= 0.0 {
-        return Err("Energy scales must be positive.".to_string());
+        return Err(StandardModelError::InvalidEnergyScale(mu, q));
     }
     if alpha_mu <= 0.0 {
-        return Err("Coupling constant must be positive.".to_string());
+        return Err(StandardModelError::InvalidCoupling(alpha_mu));
     }
 
     let beta0 = 33.0 - 2.0 * nf;
@@ -29,7 +36,7 @@ pub fn running_coupling(mu: f64, alpha_mu: f64, q: f64, nf: f64) -> Result<f64, 
     let denominator = 1.0 + (alpha_mu / (12.0 * std::f64::consts::PI)) * beta0 * log_term;
 
     if denominator <= 0.0 {
-         return Err("Landau pole encountered: coupling diverges at this scale.".to_string());
+        return Err(StandardModelError::LandauPole);
     }
 
     Ok(alpha_mu / denominator)

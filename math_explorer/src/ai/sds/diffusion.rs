@@ -1,6 +1,6 @@
+use nalgebra::DMatrix;
 use rand::Rng;
 use rand_distr::{Distribution, Normal};
-use nalgebra::DMatrix;
 
 const DEFAULT_BETA_START: f64 = 0.0001;
 const DEFAULT_BETA_END: f64 = 0.02;

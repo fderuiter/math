@@ -1,12 +1,14 @@
 #[cfg(test)]
 mod tests {
-    use nalgebra::{Vector3, Matrix3};
     use crate::physics::fluid_dynamics::{
-        types::{FluidProperties, FlowState},
-        conservation::{material_derivative_scalar, navier_stokes_time_derivative, continuity_divergence},
-        analysis::{reynolds_number, bernoulli_constant, shear_stress},
-        regimes::{FlowRegime, FlowClassifier, PipeFlowClassifier, FlatPlateClassifier},
+        analysis::{bernoulli_constant, reynolds_number, shear_stress},
+        conservation::{
+            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+        },
+        regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
+        types::{FlowState, FluidProperties},
     };
+    use nalgebra::{Matrix3, Vector3};
 
     #[test]
     fn test_fluid_properties() {
@@ -53,8 +55,14 @@ mod tests {
 
         // Re = 400,000 -> Laminar for Plate, but Turbulent for Pipe
         let re_intermediate = 400_000.0;
-        assert_eq!(plate_classifier.classify(re_intermediate), FlowRegime::Laminar);
-        assert_eq!(pipe_classifier.classify(re_intermediate), FlowRegime::Turbulent);
+        assert_eq!(
+            plate_classifier.classify(re_intermediate),
+            FlowRegime::Laminar
+        );
+        assert_eq!(
+            pipe_classifier.classify(re_intermediate),
+            FlowRegime::Turbulent
+        );
     }
 
     #[test]
@@ -95,7 +103,8 @@ mod tests {
         assert_eq!(accel, Vector3::zeros());
 
         let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
-        let accel_p = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
+        let accel_p =
+            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
         assert!((accel_p.x - (-2.0)).abs() < 1e-9);
     }
 

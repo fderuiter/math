@@ -78,7 +78,6 @@ impl HodgkinHuxleyNeuron {
             m: 0.05,
             h: 0.6,
             v_rest,
-
         }
     }
 
@@ -162,8 +161,20 @@ impl HodgkinHuxleyNeuron {
             x + dx_dt * dt
         };
 
-        self.n = update_gate(self.n, Self::alpha_n(self.v, self.v_rest), Self::beta_n(self.v, self.v_rest));
-        self.m = update_gate(self.m, Self::alpha_m(self.v, self.v_rest), Self::beta_m(self.v, self.v_rest));
-        self.h = update_gate(self.h, Self::alpha_h(self.v, self.v_rest), Self::beta_h(self.v, self.v_rest));
+        self.n = update_gate(
+            self.n,
+            Self::alpha_n(self.v, self.v_rest),
+            Self::beta_n(self.v, self.v_rest),
+        );
+        self.m = update_gate(
+            self.m,
+            Self::alpha_m(self.v, self.v_rest),
+            Self::beta_m(self.v, self.v_rest),
+        );
+        self.h = update_gate(
+            self.h,
+            Self::alpha_h(self.v, self.v_rest),
+            Self::beta_h(self.v, self.v_rest),
+        );
     }
 }

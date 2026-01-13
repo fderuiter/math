@@ -1,8 +1,8 @@
 // Implementation of the Position-wise Feed-Forward Network.
 
-use nalgebra::{DMatrix, RowDVector};
 use crate::ai::activations::relu;
 use crate::ai::utils::AddRowVector;
+use nalgebra::{DMatrix, RowDVector};
 
 /// A Position-wise Feed-Forward Network (FFN) as described in "Attention Is All You Need".
 ///

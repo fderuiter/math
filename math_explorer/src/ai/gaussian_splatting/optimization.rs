@@ -1,4 +1,3 @@
-
 #[derive(Debug, PartialEq)]
 pub enum DensityAction {
     Clone,
@@ -23,7 +22,7 @@ pub fn determine_density_action(
     opacity: f64,
     grad_threshold: f64,
     scale_threshold: f64,
-    opacity_threshold: f64
+    opacity_threshold: f64,
 ) -> DensityAction {
     // Prune if opacity is too low
     if opacity < opacity_threshold {
@@ -49,15 +48,27 @@ mod tests {
     #[test]
     fn test_density_actions() {
         // Prune
-        assert_eq!(determine_density_action(0.0, 1.0, 0.001, 0.1, 1.0, 0.01), DensityAction::Prune);
+        assert_eq!(
+            determine_density_action(0.0, 1.0, 0.001, 0.1, 1.0, 0.01),
+            DensityAction::Prune
+        );
 
         // Clone (High grad, small scale)
-        assert_eq!(determine_density_action(0.2, 0.5, 0.5, 0.1, 1.0, 0.01), DensityAction::Clone);
+        assert_eq!(
+            determine_density_action(0.2, 0.5, 0.5, 0.1, 1.0, 0.01),
+            DensityAction::Clone
+        );
 
         // Split (High grad, large scale)
-        assert_eq!(determine_density_action(0.2, 1.5, 0.5, 0.1, 1.0, 0.01), DensityAction::Split);
+        assert_eq!(
+            determine_density_action(0.2, 1.5, 0.5, 0.1, 1.0, 0.01),
+            DensityAction::Split
+        );
 
         // Keep
-        assert_eq!(determine_density_action(0.05, 0.5, 0.5, 0.1, 1.0, 0.01), DensityAction::Keep);
+        assert_eq!(
+            determine_density_action(0.05, 0.5, 0.5, 0.1, 1.0, 0.01),
+            DensityAction::Keep
+        );
     }
 }

@@ -1,6 +1,6 @@
 use super::structs::Gaussian2D;
-use nalgebra::Vector3;
 use nalgebra::Matrix2;
+use nalgebra::Vector3;
 
 /// Computes the accumulated color for a pixel using alpha blending.
 ///
@@ -8,7 +8,7 @@ use nalgebra::Matrix2;
 /// where T_i = prod(1 - alpha_j) for j < i
 pub fn blend_gaussians(
     sorted_gaussians: &[Gaussian2D],
-    pixel_coord: &nalgebra::Point2<f64>
+    pixel_coord: &nalgebra::Point2<f64>,
 ) -> Vector3<f64> {
     let mut c = Vector3::zeros();
     let mut transmittance = 1.0;
@@ -36,10 +36,7 @@ pub fn blend_gaussians(
 /// Evaluates the opacity of a 2D Gaussian at a specific point.
 ///
 /// alpha = alpha_raw * exp(-0.5 * (x - mu)^T * Sigma^-1 * (x - mu))
-pub fn evaluate_gaussian_opacity(
-    gaussian: &Gaussian2D,
-    point: &nalgebra::Point2<f64>
-) -> f64 {
+pub fn evaluate_gaussian_opacity(gaussian: &Gaussian2D, point: &nalgebra::Point2<f64>) -> f64 {
     let diff = point - gaussian.mean;
 
     // Inverse covariance
@@ -47,7 +44,10 @@ pub fn evaluate_gaussian_opacity(
     if det.abs() < 1e-6 {
         return 0.0;
     }
-    let inv_cov = gaussian.covariance.try_inverse().unwrap_or_else(Matrix2::identity);
+    let inv_cov = gaussian
+        .covariance
+        .try_inverse()
+        .unwrap_or_else(Matrix2::identity);
 
     // Power = -0.5 * d^T * Sigma^-1 * d
     let power = -0.5 * (diff.transpose() * inv_cov * diff)[(0, 0)];

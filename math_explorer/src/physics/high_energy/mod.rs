@@ -8,14 +8,16 @@
 //! - Statistics (Li & Ma significance)
 
 pub mod constants;
-pub mod observer;
-pub mod radiation;
+pub mod error;
 pub mod fluid_dynamics;
 pub mod general_relativity;
+pub mod observer;
+pub mod radiation;
 pub mod statistics;
 
 // Re-export constants to match original API
-pub use constants::{C, G, SOLAR_MASS, SIGMA_T};
+pub use constants::{C, G, SIGMA_T, SOLAR_MASS};
 
 // Re-export SchwarzschildBlackHole to match original API
+pub use error::HighEnergyError;
 pub use general_relativity::SchwarzschildBlackHole;

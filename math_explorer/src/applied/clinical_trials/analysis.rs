@@ -19,7 +19,13 @@ pub struct RiskMetrics {
 /// * `a`, `b` - Treatment group counts (Event, No Event).
 /// * `c`, `d` - Control group counts (Event, No Event).
 /// * `alpha` - Significance level (e.g., 0.05 for 95% CI).
-pub fn calculate_risk_metrics(a: u32, b: u32, c: u32, d: u32, alpha: f64) -> Result<RiskMetrics, String> {
+pub fn calculate_risk_metrics(
+    a: u32,
+    b: u32,
+    c: u32,
+    d: u32,
+    alpha: f64,
+) -> Result<RiskMetrics, String> {
     if a == 0 || b == 0 || c == 0 || d == 0 {
         // Zero handling is complex (add 0.5 usually). For now, return error or handle strictly.
         // Let's add 0.5 to all cells (Haldane-Anscombe correction) if any is zero, or just error?

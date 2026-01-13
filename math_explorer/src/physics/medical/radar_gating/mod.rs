@@ -12,16 +12,16 @@
 //! 5.  **Tracking**: Kalman Filter for temporal smoothing and velocity estimation.
 //! 6.  **Gating**: Schmidt Trigger logic with latency compensation for beam control.
 
-pub mod physics;
 pub mod czt;
+pub mod gating;
 pub mod geometry;
+pub mod physics;
 pub mod surface;
 pub mod tracking;
-pub mod gating;
 
-pub use physics::{FmcwConfig, C};
 pub use czt::chirp_z_transform;
-pub use geometry::{SphericalPoint, AngleFftConfig, SensorToPatientTransform};
+pub use gating::GatingLogic;
+pub use geometry::{AngleFftConfig, SensorToPatientTransform, SphericalPoint};
+pub use physics::{C, FmcwConfig};
 pub use surface::BiQuadraticSurface;
 pub use tracking::TrackingFilter;
-pub use gating::GatingLogic;

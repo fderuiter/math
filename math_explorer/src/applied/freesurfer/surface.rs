@@ -25,7 +25,7 @@ pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
     let mut energy = 0.0;
     for i in 0..surface.vertices.len() - 1 {
         let p1 = DVector::from_vec(surface.vertices[i].to_vec());
-        let p2 = DVector::from_vec(surface.vertices[i+1].to_vec());
+        let p2 = DVector::from_vec(surface.vertices[i + 1].to_vec());
         let diff = p2 - p1;
         energy += diff.norm_squared();
     }
@@ -46,7 +46,7 @@ pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
 pub fn external_energy(surface: &Surface, image_gradient_strength: f64) -> f64 {
     // Placeholder: assumes a constant gradient strength for simplicity.
     // The energy is lower if the gradient is stronger.
-    - (surface.vertices.len() as f64) * image_gradient_strength.powi(2)
+    -(surface.vertices.len() as f64) * image_gradient_strength.powi(2)
 }
 
 /// Evolves the surface one step using gradient descent.

@@ -1,4 +1,4 @@
-use math_explorer::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
+use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 use std::time::Instant;
 
 #[test]
@@ -16,7 +16,7 @@ fn bench_isosurface_performance() {
                 let dx = x as f32 - center;
                 let dy = y as f32 - center;
                 let dz = z as f32 - center;
-                let val = (dx*dx + dy*dy + dz*dz).sqrt();
+                let val = (dx * dx + dy * dy + dz * dz).sqrt();
                 data.push(val);
             }
         }
@@ -39,5 +39,8 @@ fn bench_isosurface_performance() {
     let duration = start.elapsed();
 
     println!("Total time for {} iterations: {:?}", iterations, duration);
-    println!("Average time per iteration: {:?}", duration / iterations as u32);
+    println!(
+        "Average time per iteration: {:?}",
+        duration / iterations as u32
+    );
 }

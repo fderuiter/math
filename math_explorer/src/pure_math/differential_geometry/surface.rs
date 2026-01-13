@@ -1,4 +1,4 @@
-use nalgebra::{Point3, Vector3, Matrix2};
+use nalgebra::{Matrix2, Point3, Vector3};
 
 /// Represents a parametric surface $r(u, v)$ in $\mathbb{R}^3$.
 pub trait ParametricSurface {

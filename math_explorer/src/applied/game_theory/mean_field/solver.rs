@@ -1,5 +1,5 @@
-use nalgebra::DMatrix;
 use super::types::MFGConfig;
+use nalgebra::DMatrix;
 
 /// Strategy trait for solving Mean Field Games.
 ///
@@ -92,12 +92,14 @@ impl MFGSolver for FixedPointSolver {
                     // u(i, n) = u(i, n+1) + dt * ( H + nu * lapl + F )
 
                     let du_dx = (u[(i + 1, n + 1)] - u[(i - 1, n + 1)]) / (2.0 * config.dx);
-                    let d2u_dx2 = (u[(i + 1, n + 1)] - 2.0 * u[(i, n + 1)] + u[(i - 1, n + 1)]) / (config.dx * config.dx);
+                    let d2u_dx2 = (u[(i + 1, n + 1)] - 2.0 * u[(i, n + 1)] + u[(i - 1, n + 1)])
+                        / (config.dx * config.dx);
 
                     let hamiltonian = 0.5 * du_dx * du_dx; // H(p) = p^2 / 2
                     let running_cost = cost_function(x, m[(i, n + 1)]);
 
-                    u[(i, n)] = u[(i, n + 1)] - config.dt * (hamiltonian - config.viscosity * d2u_dx2 - running_cost);
+                    u[(i, n)] = u[(i, n + 1)]
+                        - config.dt * (hamiltonian - config.viscosity * d2u_dx2 - running_cost);
                 }
                 // Boundary conditions (Neumann 0)
                 u[(0, n)] = u[(1, n)];
@@ -111,13 +113,14 @@ impl MFGSolver for FixedPointSolver {
                     let du_dx = (u[(i + 1, n)] - u[(i - 1, n)]) / (2.0 * config.dx);
                     let v = -du_dx;
 
-                    let d2m_dx2 = (m[(i + 1, n)] - 2.0 * m[(i, n)] + m[(i - 1, n)]) / (config.dx * config.dx);
+                    let d2m_dx2 =
+                        (m[(i + 1, n)] - 2.0 * m[(i, n)] + m[(i - 1, n)]) / (config.dx * config.dx);
 
                     // Upwind for drift term
                     let drift_flux = if v > 0.0 {
-                         (m[(i, n)] * v - m[(i - 1, n)] * v) / config.dx
+                        (m[(i, n)] * v - m[(i - 1, n)] * v) / config.dx
                     } else {
-                         (m[(i + 1, n)] * v - m[(i, n)] * v) / config.dx
+                        (m[(i + 1, n)] * v - m[(i, n)] * v) / config.dx
                     };
 
                     let rhs = -drift_flux + config.viscosity * d2m_dx2;

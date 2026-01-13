@@ -1,7 +1,7 @@
-use nalgebra::DMatrix;
 use super::attention::MultiHeadAttention;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use nalgebra::DMatrix;
 
 /// A single Encoder layer, containing self-attention and a feed-forward network,
 /// with residual connections and layer normalization.

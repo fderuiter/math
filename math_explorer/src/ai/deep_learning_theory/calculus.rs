@@ -36,11 +36,7 @@ pub fn sigmoid_prime(z: &Vector) -> Vector {
 /// \frac{\partial L}{\partial x} = W^T \cdot \frac{\partial L}{\partial z}
 /// \frac{\partial L}{\partial W} = \frac{\partial L}{\partial z} \cdot x^T
 /// \frac{\partial L}{\partial b} = \frac{\partial L}{\partial z}
-pub fn linear_backward(
-    grad_z: &Vector,
-    x: &Vector,
-    w: &Matrix,
-) -> (Vector, Matrix, Vector) {
+pub fn linear_backward(grad_z: &Vector, x: &Vector, w: &Matrix) -> (Vector, Matrix, Vector) {
     // grad_z is (output_dim)
     // x is (input_dim)
     // W is (output_dim, input_dim)
@@ -66,11 +62,7 @@ pub fn linear_backward(
 /// and the pre-activation input z, computes \frac{\partial L}{\partial z}.
 ///
 /// \frac{\partial L}{\partial z} = \frac{\partial L}{\partial a} \odot f'(z)
-pub fn activation_backward<F>(
-    grad_a: &Vector,
-    z: &Vector,
-    prime_fn: F,
-) -> Vector
+pub fn activation_backward<F>(grad_a: &Vector, z: &Vector, prime_fn: F) -> Vector
 where
     F: Fn(&Vector) -> Vector,
 {

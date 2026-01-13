@@ -1,9 +1,7 @@
 use math_explorer::physics::astrophysics::galaxies::{
-    calculate_log_mass_from_distance,
-    calculate_apparent_magnitude_from_distance,
-    calculate_log_mass_from_absolute_magnitude,
+    GalaxyType, calculate_apparent_magnitude_from_distance,
+    calculate_log_mass_from_absolute_magnitude, calculate_log_mass_from_distance,
     calculate_redshift_from_log_mass,
-    GalaxyType,
 };
 
 const F64_TOLERANCE: f64 = 1e-9;
@@ -42,7 +40,8 @@ fn test_calculate_apparent_magnitude_from_distance() {
     assert!((result.unwrap() - expected.unwrap()).abs() < F64_TOLERANCE);
 
     // Test case for GalaxyType::TypeCode9_5To9_9 (should be None)
-    let result = calculate_apparent_magnitude_from_distance(distance, &GalaxyType::TypeCode9_5To9_9);
+    let result =
+        calculate_apparent_magnitude_from_distance(distance, &GalaxyType::TypeCode9_5To9_9);
     assert!(result.is_none());
 }
 
@@ -56,12 +55,16 @@ fn test_calculate_log_mass_from_absolute_magnitude() {
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for GalaxyType::TypeCode10
-    let result = calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &GalaxyType::TypeCode10);
+    let result =
+        calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &GalaxyType::TypeCode10);
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for GalaxyType::TypeCode9_5To9_9
     let expected = -0.3837 * absolute_magnitude_v - 2.2864;
-    let result = calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &GalaxyType::TypeCode9_5To9_9);
+    let result = calculate_log_mass_from_absolute_magnitude(
+        absolute_magnitude_v,
+        &GalaxyType::TypeCode9_5To9_9,
+    );
     assert!((result - expected).abs() < F64_TOLERANCE);
 }
 

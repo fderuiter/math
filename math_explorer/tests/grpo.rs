@@ -27,8 +27,14 @@ fn test_clipped_surrogate_objective() {
     // sum = 2.2 + 2.4 = 4.6
     // G = 2
     // L_GRPO = -(1/2) * 4.6 + 0.1 * 0.5 = -2.3 + 0.05 = -2.25
-    let objective =
-        clipped_surrogate_objective(&pi_thetas, &pi_theta_olds, &advantages, epsilon, beta, kl_divergence);
+    let objective = clipped_surrogate_objective(
+        &pi_thetas,
+        &pi_theta_olds,
+        &advantages,
+        epsilon,
+        beta,
+        kl_divergence,
+    );
     assert!((objective - (-2.25)).abs() < 1e-9);
 }
 

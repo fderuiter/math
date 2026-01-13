@@ -14,7 +14,7 @@ pub fn calculate_sample_size_means(
     alpha: f64,
     power: f64,
     delta: f64,
-    sigma: f64
+    sigma: f64,
 ) -> Result<usize, String> {
     if alpha <= 0.0 || alpha >= 1.0 {
         return Err("Alpha must be between 0 and 1".to_string());
@@ -54,10 +54,14 @@ pub fn calculate_sample_size_proportions(
     alpha: f64,
     power: f64,
     p1: f64,
-    p2: f64
+    p2: f64,
 ) -> Result<usize, String> {
-    if alpha <= 0.0 || alpha >= 1.0 { return Err("Alpha must be between 0 and 1".to_string()); }
-    if power <= 0.0 || power >= 1.0 { return Err("Power must be between 0 and 1".to_string()); }
+    if alpha <= 0.0 || alpha >= 1.0 {
+        return Err("Alpha must be between 0 and 1".to_string());
+    }
+    if power <= 0.0 || power >= 1.0 {
+        return Err("Power must be between 0 and 1".to_string());
+    }
     if !(0.0..=1.0).contains(&p1) || !(0.0..=1.0).contains(&p2) {
         return Err("Proportions must be between 0 and 1".to_string());
     }

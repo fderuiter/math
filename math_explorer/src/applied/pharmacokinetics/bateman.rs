@@ -84,7 +84,9 @@ pub fn solve_ka(
     }
 
     for _ in 0..max_iter {
-        if ka <= 0.0 { return None; }
+        if ka <= 0.0 {
+            return None;
+        }
 
         if (ka - ke).abs() < 1e-9 {
             let t_max_at_ke = 1.0 / ke;

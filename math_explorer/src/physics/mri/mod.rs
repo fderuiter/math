@@ -11,10 +11,10 @@
 //! 3. **Spatial Encoding**: Gradient fields and k-space trajectory calculations.
 //! 4. **Image Reconstruction**: Signal generation and Inverse Fourier Transform.
 
-pub mod proton;
 pub mod bloch;
-pub mod scanner;
+pub mod proton;
 pub mod reconstruction;
+pub mod scanner;
 
 // Re-export BlochSimulator to maintain API compatibility
 pub use bloch::BlochSimulator;

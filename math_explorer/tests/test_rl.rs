@@ -1,8 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use math_explorer::ai::reinforcement_learning::types::{Action, State, MarkovDecisionProcess, Policy};
-    use math_explorer::ai::reinforcement_learning::bellman::state_value_bellman_equation;
     use math_explorer::ai::reinforcement_learning::algorithms::TabularQAgent;
+    use math_explorer::ai::reinforcement_learning::bellman::state_value_bellman_equation;
+    use math_explorer::ai::reinforcement_learning::types::{
+        Action, MarkovDecisionProcess, Policy, State,
+    };
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     enum GridState {
@@ -30,7 +32,12 @@ mod tests {
         type S = GridState;
         type A = Move;
 
-        fn transition_probability(&self, next_state: &Self::S, current_state: &Self::S, action: &Self::A) -> f64 {
+        fn transition_probability(
+            &self,
+            next_state: &Self::S,
+            current_state: &Self::S,
+            action: &Self::A,
+        ) -> f64 {
             match (current_state, action, next_state) {
                 (GridState::Start, Move::Forward, GridState::Path) => 1.0,
                 (GridState::Start, Move::Stay, GridState::Start) => 1.0,
@@ -88,7 +95,7 @@ mod tests {
         let v_func = |s: &GridState| match s {
             GridState::Goal => 0.0, // Terminal
             GridState::Trap => 0.0, // Terminal
-            _ => 1.0, // Arbitrary guess
+            _ => 1.0,               // Arbitrary guess
         };
 
         // Test V(s) calculation for Start
@@ -100,11 +107,20 @@ mod tests {
             &env,
             &policy,
             &GridState::Start,
-            &[GridState::Start, GridState::Path, GridState::Goal, GridState::Trap],
-            v_func
+            &[
+                GridState::Start,
+                GridState::Path,
+                GridState::Goal,
+                GridState::Trap,
+            ],
+            v_func,
         );
 
-        assert!((v_start - 0.9).abs() < 1e-6, "V(Start) should be 0.9, got {}", v_start);
+        assert!(
+            (v_start - 0.9).abs() < 1e-6,
+            "V(Start) should be 0.9, got {}",
+            v_start
+        );
     }
 
     #[test]
@@ -120,18 +136,36 @@ mod tests {
         // Next state actions: Forward, Stay. Q values are 0.0. Max is 0.0.
         // Q += 0.1 * (0.0 + 0.9 * 0.0 - 0.0) = 0.0
 
-        agent.update(&state, &action, reward, &next_state, &[Move::Forward, Move::Stay]);
+        agent.update(
+            &state,
+            &action,
+            reward,
+            &next_state,
+            &[Move::Forward, Move::Stay],
+        );
         assert_eq!(agent.get_q_value(&state, &action), 0.0);
 
         // Now assume we found gold at the next step
-        agent.update(&GridState::Path, &Move::Forward, 10.0, &GridState::Goal, &[]);
+        agent.update(
+            &GridState::Path,
+            &Move::Forward,
+            10.0,
+            &GridState::Goal,
+            &[],
+        );
         // Q(Path, Fwd) += 0.1 * (10.0 + 0.9*0 - 0) = 1.0
         assert!((agent.get_q_value(&GridState::Path, &Move::Forward) - 1.0).abs() < 1e-6);
 
         // Now update Start again
         // Max Q(Path) is now 1.0 (from Forward action)
         // Q(Start, Fwd) += 0.1 * (0.0 + 0.9 * 1.0 - 0.0) = 0.09
-        agent.update(&state, &action, reward, &next_state, &[Move::Forward, Move::Stay]);
+        agent.update(
+            &state,
+            &action,
+            reward,
+            &next_state,
+            &[Move::Forward, Move::Stay],
+        );
         assert!((agent.get_q_value(&state, &action) - 0.09).abs() < 1e-6);
     }
 }

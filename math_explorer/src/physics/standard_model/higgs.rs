@@ -52,8 +52,8 @@ pub fn boson_masses(vev: f64, couplings: &GaugeCouplings) -> (f64, f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
     use crate::physics::standard_model::gauge;
+    use approx::assert_relative_eq;
 
     #[test]
     fn test_higgs_boson_masses() {
@@ -77,6 +77,10 @@ mod tests {
         assert_relative_eq!(m_z, expected_mz, epsilon = 1e-4);
 
         // Check against rough physical value
-        assert!(m_z > 90.0 && m_z < 92.0, "Z mass should be around 91.18 GeV, got {}", m_z);
+        assert!(
+            m_z > 90.0 && m_z < 92.0,
+            "Z mass should be around 91.18 GeV, got {}",
+            m_z
+        );
     }
 }

@@ -1,7 +1,7 @@
 //! Analytical tools and derived quantities for Fluid Dynamics.
 
-use super::types::{FluidProperties, FlowState};
-use super::regimes::{FlowRegime, FlowClassifier, PipeFlowClassifier};
+use super::regimes::{FlowClassifier, FlowRegime, PipeFlowClassifier};
+use super::types::{FlowState, FluidProperties};
 
 /// Calculates the Reynolds Number ($Re$).
 ///
@@ -13,7 +13,7 @@ use super::regimes::{FlowRegime, FlowClassifier, PipeFlowClassifier};
 pub fn reynolds_number(
     properties: &FluidProperties,
     velocity_magnitude: f64,
-    characteristic_length: f64
+    characteristic_length: f64,
 ) -> f64 {
     (properties.density * velocity_magnitude * characteristic_length) / properties.dynamic_viscosity
 }
@@ -25,7 +25,10 @@ pub fn reynolds_number(
 /// * $Re < 2000$: Laminar
 /// * $2000 \le Re \le 4000$: Transitional
 /// * $Re > 4000$: Turbulent
-#[deprecated(since = "0.2.0", note = "Use `regimes::PipeFlowClassifier` for explicit strategy")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `regimes::PipeFlowClassifier` for explicit strategy"
+)]
 pub fn flow_regime(re: f64) -> FlowRegime {
     PipeFlowClassifier.classify(re)
 }
@@ -38,7 +41,12 @@ pub fn flow_regime(re: f64) -> FlowRegime {
 /// * `properties`: Fluid properties (specifically density $\rho$).
 /// * `height`: Elevation $h$ relative to a datum.
 /// * `gravity`: Gravitational acceleration $g$ (magnitude, usually 9.81).
-pub fn bernoulli_constant(state: &FlowState, properties: &FluidProperties, height: f64, gravity: f64) -> f64 {
+pub fn bernoulli_constant(
+    state: &FlowState,
+    properties: &FluidProperties,
+    height: f64,
+    gravity: f64,
+) -> f64 {
     let v_sq = state.velocity.norm_squared();
     state.pressure + 0.5 * properties.density * v_sq + properties.density * gravity * height
 }

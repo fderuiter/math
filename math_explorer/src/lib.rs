@@ -37,19 +37,19 @@
 
 pub mod ai;
 pub mod applied;
-pub mod climate;
 pub mod biology;
+pub mod climate;
+pub mod epidemiology;
 pub mod physics;
 pub mod pure_math;
-pub mod epidemiology;
 
 #[cfg(test)]
 mod tests {
-    use super::pure_math::algebra;
     use super::applied::favoritism::{self, FavoritismInputs};
-    use super::pure_math::number_theory;
-    use super::physics::quantum;
     use super::applied::lorahub;
+    use super::physics::quantum;
+    use super::pure_math::algebra;
+    use super::pure_math::number_theory;
     use nalgebra::DMatrix;
 
     #[test]
@@ -90,7 +90,12 @@ mod tests {
         let coeff = quantum::clebsch_gordan(j1, m1, j2, m2, j, m);
         let _textbook_expected = (3.0f64 / 5.0f64).sqrt();
         let library_expected = (3.0f64 / 10.0f64).sqrt(); // The value the library actually returns
-        assert!((coeff - library_expected).abs() < 1e-9, "Expected {}, got {}", library_expected, coeff);
+        assert!(
+            (coeff - library_expected).abs() < 1e-9,
+            "Expected {}, got {}",
+            library_expected,
+            coeff
+        );
     }
 
     #[test]
@@ -104,19 +109,36 @@ mod tests {
         let m = 1.0;
         let coeff = quantum::clebsch_gordan(j1, m1, j2, m2, j, m);
         let expected = 1.0;
-        assert!((coeff - expected).abs() < 1e-9, "Expected {}, got {}", expected, coeff);
+        assert!(
+            (coeff - expected).abs() < 1e-9,
+            "Expected {}, got {}",
+            expected,
+            coeff
+        );
     }
 
     #[test]
     fn test_lorahub_functions() {
         // Create two dummy LoRA state dicts
         let mut lora1 = lorahub::LoraStateDict::new();
-        lora1.insert("tensor_a".to_string(), DMatrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]));
-        lora1.insert("tensor_b".to_string(), DMatrix::from_vec(2, 2, vec![0.1, 0.2, 0.3, 0.4]));
+        lora1.insert(
+            "tensor_a".to_string(),
+            DMatrix::from_vec(2, 2, vec![1.0, 2.0, 3.0, 4.0]),
+        );
+        lora1.insert(
+            "tensor_b".to_string(),
+            DMatrix::from_vec(2, 2, vec![0.1, 0.2, 0.3, 0.4]),
+        );
 
         let mut lora2 = lorahub::LoraStateDict::new();
-        lora2.insert("tensor_a".to_string(), DMatrix::from_vec(2, 2, vec![5.0, 6.0, 7.0, 8.0]));
-        lora2.insert("tensor_b".to_string(), DMatrix::from_vec(2, 2, vec![0.5, 0.6, 0.7, 0.8]));
+        lora2.insert(
+            "tensor_a".to_string(),
+            DMatrix::from_vec(2, 2, vec![5.0, 6.0, 7.0, 8.0]),
+        );
+        lora2.insert(
+            "tensor_b".to_string(),
+            DMatrix::from_vec(2, 2, vec![0.5, 0.6, 0.7, 0.8]),
+        );
 
         let loras = vec![lora1, lora2];
         let weights = vec![0.5, 0.5];
@@ -132,7 +154,10 @@ mod tests {
         // Compare tensor_b with a tolerance for floating point precision
         let combined_b = combined.get("tensor_b").unwrap();
         let tolerance = 1e-9;
-        assert!((combined_b - &expected_b).abs().max() < tolerance, "Tensor B is not within tolerance");
+        assert!(
+            (combined_b - &expected_b).abs().max() < tolerance,
+            "Tensor B is not within tolerance"
+        );
 
         // Test objective score
         let weights_for_reg = vec![-1.0, 2.0, -3.0];
@@ -145,7 +170,8 @@ mod tests {
 
         // Note: L1 regularization was an implementation detail helper, now we test the full objective.
         let mock_loss = 1.5;
-        let objective_score = ensemble_for_reg.evaluate_objective(&weights_for_reg, mock_loss, alpha);
+        let objective_score =
+            ensemble_for_reg.evaluate_objective(&weights_for_reg, mock_loss, alpha);
 
         // Expected Reg: 0.1 * (| -1| + |2| + |-3|) / 3 = 0.1 * 6 / 3 = 0.2
         // Expected Score: 1.5 + 0.2 = 1.7
@@ -154,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_find_favorite_child() {
-        use super::applied::favoritism::favorite_child::{find_favorite_child, Child};
+        use super::applied::favoritism::favorite_child::{Child, find_favorite_child};
         use nalgebra::DVector;
 
         // Child A: The baseline child
