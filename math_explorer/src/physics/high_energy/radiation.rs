@@ -1,4 +1,5 @@
 use super::constants::{C, SIGMA_T};
+use super::error::HighEnergyError;
 
 /// Calculates the total synchrotron power radiated by a single electron.
 /// Formula: P = (4/3) * sigma_T * c * beta^2 * gamma^2 * U_B
@@ -7,12 +8,16 @@ use super::constants::{C, SIGMA_T};
 /// * `u_b` - Magnetic energy density.
 /// * `beta` - Electron velocity / c.
 /// * `gamma` - Lorentz factor.
-pub fn synchrotron_power(u_b: f64, beta: f64, gamma: f64) -> Result<f64, String> {
+///
+/// # Errors
+/// * `HighEnergyError::InvalidEnergyDensity` if `u_b < 0`.
+/// * `HighEnergyError::InvalidLorentzFactor` if `gamma < 1`.
+pub fn synchrotron_power(u_b: f64, beta: f64, gamma: f64) -> Result<f64, HighEnergyError> {
     if u_b < 0.0 {
-        return Err("Energy density cannot be negative".to_string());
+        return Err(HighEnergyError::InvalidEnergyDensity { u_b });
     }
     if gamma < 1.0 {
-        return Err("Lorentz factor must be >= 1".to_string());
+        return Err(HighEnergyError::InvalidLorentzFactor { gamma });
     }
 
     // P = 4/3 sigma_T c beta^2 gamma^2 U_B
@@ -22,9 +27,12 @@ pub fn synchrotron_power(u_b: f64, beta: f64, gamma: f64) -> Result<f64, String>
 
 /// Calculates the observed spectral index alpha from an electron power-law distribution p.
 /// Formula: alpha = (p - 1) / 2
-pub fn inverse_compton_spectral_index(p: f64) -> Result<f64, String> {
+///
+/// # Errors
+/// * `HighEnergyError::InvalidPowerLawIndex` if `p <= 1`.
+pub fn inverse_compton_spectral_index(p: f64) -> Result<f64, HighEnergyError> {
     if p <= 1.0 {
-        return Err("Power law index p must be > 1 for convergence".to_string());
+        return Err(HighEnergyError::InvalidPowerLawIndex { p });
     }
     Ok((p - 1.0) / 2.0)
 }
@@ -42,13 +50,20 @@ mod tests {
         let u_b = 1.0;
         let gamma = 2.0;
         let beta = (1.0 - 1.0/4.0f64).sqrt(); // consistent beta
-        let p = synchrotron_power(u_b, beta, gamma).unwrap();
+        let p = synchrotron_power(u_b, beta, gamma).expect("Failed to calc synchrotron power");
         let expected = (4.0/3.0) * SIGMA_T * C * beta * beta * 4.0;
         assert_relative_eq!(p, expected, epsilon = 1e-6);
 
         // Inverse Compton
         // p = 3 => alpha = (3-1)/2 = 1.
-        let alpha = inverse_compton_spectral_index(3.0).unwrap();
+        let alpha = inverse_compton_spectral_index(3.0).expect("Failed to calc alpha");
         assert_relative_eq!(alpha, 1.0);
+    }
+
+    #[test]
+    fn test_errors() {
+        assert!(synchrotron_power(-1.0, 0.9, 10.0).is_err());
+        assert!(synchrotron_power(1.0, 0.9, 0.5).is_err());
+        assert!(inverse_compton_spectral_index(0.5).is_err());
     }
 }
