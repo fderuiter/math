@@ -6,3 +6,7 @@
 ## 2026-01-08 - Decomposed Standard Model God File
 **Violation:** Single Responsibility Principle (SRP). The `standard_model.rs` file was a 'God File' containing unrelated physics domains (Gauge, Higgs, Flavor, QCD, Neutrinos) in a single module.
 **Remedy:** Module Extraction. Split the file into a directory `standard_model/` with separate files for each domain (`gauge.rs`, `higgs.rs`, etc.) and re-exported them via `mod.rs`. This improves cohesion and navigability.
+
+## 2026-01-20 - Deterministic Simulation via RNG Injection
+**Violation:** Dependency Inversion Principle (DIP). The `simulate_optimal_revenue` (Mechanism Design) and `calculate_favoritism_score` (Favoritism) functions hardcoded `rand::thread_rng()`, making them non-deterministic and untestable without mocking.
+**Remedy:** Method Injection. Extracted core logic into `*_with_rng` methods accepting `&mut R: Rng`. The original functions now serve as convenience wrappers. This enables deterministic testing with seeded RNGs.

@@ -62,4 +62,31 @@ impl FmcwConfig {
         let lambda = self.wavelength();
         (phase_shift * lambda) / (4.0 * std::f64::consts::PI * self.chirp_time)
     }
+
+    /// Estimates target range ($R$) from the IF beat frequency ($\hat{f}_{FFT}$).
+    ///
+    /// Equation (1) from the Bressler et al. framework:
+    /// $$ \hat{f}_{FFT} = \frac{2 B R}{c T} \implies R = \frac{\hat{f}_{FFT} c T}{2 B} $$
+    ///
+    /// # Arguments
+    ///
+    /// * `beat_frequency` - The measured beat frequency in Hz.
+    pub fn range_from_beat_frequency(&self, beat_frequency: f64) -> f64 {
+        (beat_frequency * C * self.chirp_time) / (2.0 * self.bandwidth)
+    }
+
+    /// Estimates physical displacement ($d$) from the phase change ($\Delta \phi$).
+    ///
+    /// Equation (5) from the Bressler et al. framework:
+    /// $$ d = \frac{\lambda \Delta \phi}{4\pi} $$
+    ///
+    /// Note: This is equivalent to velocity * chirp_time, but expressed directly as displacement.
+    ///
+    /// # Arguments
+    ///
+    /// * `phase_shift` - The phase shift in radians.
+    pub fn displacement_from_phase(&self, phase_shift: f64) -> f64 {
+        let lambda = self.wavelength();
+        (phase_shift * lambda) / (4.0 * std::f64::consts::PI)
+    }
 }

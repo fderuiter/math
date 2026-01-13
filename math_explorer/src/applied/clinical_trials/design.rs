@@ -57,7 +57,7 @@ impl BlockRandomizer {
     /// # Arguments
     /// * `block_size` - The size of each block. Must be even.
     pub fn new(block_size: usize) -> Result<Self, String> {
-        if block_size % 2 != 0 {
+        if !block_size.is_multiple_of(2) {
             return Err("Block size must be even for 1:1 allocation.".to_string());
         }
         Ok(Self { block_size })
