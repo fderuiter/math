@@ -18,3 +18,4 @@ pub mod mri;
 pub mod stat_mech;
 pub mod medical;
 pub mod chaos;
+pub mod optics;

@@ -185,3 +185,67 @@ pub fn calculate_time_delay(signal_1: &[f64], signal_2: &[f64], sample_rate: f64
 
     lag_samples / sample_rate
 }
+
+/// Calculates velocity using Optical Flow Intensity Conservation.
+///
+/// $$ v = -\nabla I \frac{\partial_V I}{\| \nabla I \|^2} $$
+///
+/// Note: This is a simplified scalar projection of velocity along the gradient direction.
+/// The prompt formula is: $v = -\nabla I \frac{\partial_V I}{\| \nabla I \|^2}$.
+/// $\partial_V I$ is likely $\frac{\partial I}{\partial t}$ (temporal gradient).
+///
+/// # Arguments
+///
+/// * `spatial_gradient` ($\nabla I$) - Gradient vector (dx, dy).
+/// * `temporal_gradient` ($\partial_V I$) - Change in intensity over time.
+///
+/// # Returns
+///
+/// * `(f64, f64)` - Velocity vector components ($v_x, v_y$).
+pub fn optical_flow_velocity(
+    spatial_gradient: (f64, f64),
+    temporal_gradient: f64,
+) -> (f64, f64) {
+    let (gx, gy) = spatial_gradient;
+    let norm_sq = gx.powi(2) + gy.powi(2);
+
+    if norm_sq < 1e-9 {
+        return (0.0, 0.0);
+    }
+
+    let factor = -temporal_gradient / norm_sq;
+    (gx * factor, gy * factor)
+}
+
+/// Calculates the Lock-In Phase Sensitive Detection signal.
+///
+/// $$ V_{m1} = \frac{V_s V_r}{2}\cos{(\Delta\omega)t + (\Delta\phi)} - \cos{(\sum\omega)t + (\sum\phi)} $$
+///
+/// Note: This returns the full mixed signal before low-pass filtering.
+///
+/// # Arguments
+///
+/// * `v_s` ($V_s$) - Signal amplitude.
+/// * `v_r` ($V_r$) - Reference amplitude.
+/// * `delta_omega` ($\Delta\omega$) - Difference in angular frequency.
+/// * `delta_phi` ($\Delta\phi$) - Difference in phase.
+/// * `sum_omega` ($\sum\omega$) - Sum of angular frequencies.
+/// * `sum_phi` ($\sum\phi$) - Sum of phases.
+/// * `t` - Time.
+///
+/// # Returns
+///
+/// * `f64` - The mixed signal value $V_{m1}$.
+pub fn lock_in_phase_sensitive_detection(
+    v_s: f64,
+    v_r: f64,
+    delta_omega: f64,
+    delta_phi: f64,
+    sum_omega: f64,
+    sum_phi: f64,
+    t: f64,
+) -> f64 {
+    let term1 = (delta_omega * t + delta_phi).cos();
+    let term2 = (sum_omega * t + sum_phi).cos();
+    (v_s * v_r / 2.0) * (term1 - term2)
+}

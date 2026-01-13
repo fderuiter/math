@@ -87,3 +87,74 @@ mod tests {
         assert!((k - (-1.0_f64).exp()).abs() < 1e-5);
     }
 }
+
+/// Calculates the average energy for the Beam Loading Line.
+///
+/// $$ E = 5.925 - I_b \times 0.00808 $$
+///
+/// # Arguments
+///
+/// * `beam_current` ($I_b$) - Beam current in mA.
+///
+/// # Returns
+///
+/// * `f64` - Average energy in MeV.
+pub fn beam_loading_energy(beam_current: f64) -> f64 {
+    5.925 - beam_current * 0.00808
+}
+
+/// Calculates Tracking Error for cine EPID.
+///
+/// $$ E_{EPID} = C_{target} - C_{field} $$
+///
+/// # Arguments
+///
+/// * `target_center` ($C_{target}$) - Position of the target center.
+/// * `field_centroid` ($C_{field}$) - Position of the field centroid.
+///
+/// # Returns
+///
+/// * `f64` - The tracking error.
+pub fn tracking_error(target_center: f64, field_centroid: f64) -> f64 {
+    target_center - field_centroid
+}
+
+/// Models a Dirac Delta Composite Function for beam pulses.
+///
+/// $$ g(x) = \sum_{n=0}^{(t_{off} - t_{on})/\Delta t} \delta(x - x_n) $$
+///
+/// In practice, discrete modeling represents this as a sequence of pulses.
+/// This function returns the number of pulses in the window.
+///
+/// # Arguments
+///
+/// * `t_on` ($t_{on}$) - Start time.
+/// * `t_off` ($t_{off}$) - End time.
+/// * `delta_t` ($\Delta t$) - Pulse interval.
+///
+/// # Returns
+///
+/// * `usize` - Number of pulses.
+pub fn dirac_pulse_count(t_on: f64, t_off: f64, delta_t: f64) -> usize {
+    if delta_t <= 0.0 || t_off < t_on {
+        return 0;
+    }
+    ((t_off - t_on) / delta_t).floor() as usize + 1
+}
+
+/// Calculates the Signal-Front Delay.
+///
+/// $$ t_{\text{delay}} = \lim_{\omega \to \infty} (\frac{\phi(\omega)}{\omega}) $$
+///
+/// Represents the delay of the wavefront (signal front) in a dispersive medium.
+///
+/// # Arguments
+///
+/// * `phase_slope_high_freq` - The limit of $\phi(\omega) / \omega$ as $\omega \to \infty$.
+///
+/// # Returns
+///
+/// * `f64` - The delay time.
+pub fn signal_front_delay(phase_slope_high_freq: f64) -> f64 {
+    phase_slope_high_freq
+}

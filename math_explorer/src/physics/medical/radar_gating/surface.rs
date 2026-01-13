@@ -98,3 +98,24 @@ impl BiQuadraticSurface {
         mesh
     }
 }
+
+/// Calculates the Weighted Average Height (WAH) for a radar mesh.
+///
+/// $$ V_{resp}(t) = \frac{1}{\text{Area}} \iint_{ROI} Z_{mesh}(x,y,t) dx dy $$
+///
+/// Discretized as the mean of Z-coordinates for vertices within the ROI.
+///
+/// # Arguments
+///
+/// * `vertices` - List of vertices in the ROI.
+///
+/// # Returns
+///
+/// * `f64` - The WAH value.
+pub fn weighted_average_height(vertices: &[Point3<f64>]) -> f64 {
+    if vertices.is_empty() {
+        return 0.0;
+    }
+    let sum_z: f64 = vertices.iter().map(|p| p.z).sum();
+    sum_z / vertices.len() as f64
+}

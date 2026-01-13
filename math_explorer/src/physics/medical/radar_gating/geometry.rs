@@ -92,3 +92,69 @@ impl SensorToPatientTransform {
         self.translation * (self.rotation * point_sensor)
     }
 }
+
+/// Calculates the Angle of Arrival (AoA) estimation.
+///
+/// $$ \theta = \sin^{-1} \left( \frac{\lambda \Delta \phi}{2 \pi l} \right) $$
+///
+/// # Arguments
+///
+/// * `wavelength` ($\lambda$) - The signal wavelength.
+/// * `phase_difference` ($\Delta \phi$) - The phase difference between two antennas.
+/// * `antenna_distance` ($l$) - The distance between the two antennas.
+///
+/// # Returns
+///
+/// * `f64` - The angle in radians.
+pub fn angle_of_arrival(
+    wavelength: f64,
+    phase_difference: f64,
+    antenna_distance: f64,
+) -> Option<f64> {
+    let arg = (wavelength * phase_difference) / (2.0 * std::f64::consts::PI * antenna_distance);
+    if arg.abs() > 1.0 {
+        None // Invalid argument for arcsin (phase ambiguity or noise)
+    } else {
+        Some(arg.asin())
+    }
+}
+
+/// Calculates the Angle Resolution ($\theta_{res}$).
+///
+/// The minimum angular separation resolvable by the radar.
+///
+/// $$ \theta_{res} = \frac{\lambda}{N_{RX} l \cos(\theta)} $$
+///
+/// # Arguments
+///
+/// * `wavelength` ($\lambda$) - Signal wavelength.
+/// * `num_rx_antennas` ($N_{RX}$) - Number of receive antennas (or virtual array size).
+/// * `antenna_distance` ($l$) - Spacing between array elements.
+/// * `angle` ($\theta$) - The look angle (off-boresight). Resolution degrades as $\theta$ increases.
+pub fn angle_resolution(
+    wavelength: f64,
+    num_rx_antennas: usize,
+    antenna_distance: f64,
+    angle: f64,
+) -> f64 {
+    let denominator = num_rx_antennas as f64 * antenna_distance * angle.cos();
+    if denominator.abs() < 1e-9 {
+        f64::INFINITY // Singularity at grazing angles
+    } else {
+        wavelength / denominator
+    }
+}
+
+/// Calculates the Required Angular Separation ($\Delta\theta_{\text{req}}$).
+///
+/// For distinguishing thoracic vs. abdominal respiratory motion.
+///
+/// $$ \Delta\theta_{\text{req}} \approx \arctan\left(\frac{d_{\text{TAA}}}{R}\right) $$
+///
+/// # Arguments
+///
+/// * `vertical_distance` ($d_{\text{TAA}}$) - Distance between thoracic and abdominal regions (e.g., 20 cm).
+/// * `range` ($R$) - Distance from the sensor to the patient.
+pub fn required_angular_separation(vertical_distance: f64, range: f64) -> f64 {
+    (vertical_distance / range).atan()
+}
