@@ -1,59 +1,83 @@
 # Agent Instructions for Mathematical Implementation and Academic Composition
 
-This document outlines the procedure for developing a Rust implementation and an accompanying academic paper based on a given mathematical framework. Adherence to these steps is mandatory to ensure a high-quality, robust, and academically sound submission.
+This document outlines the mandatory procedure for developing a Rust implementation and an accompanying academic paper within the `math_explorer` ecosystem. 
 
-### **1. Mathematical Analysis & Implementation Scoping**
+**Core Philosophy:** This project prioritizes **Separation of Concerns (SoC)**, **Type Safety**, **Determinism**, and **Academic Rigor**. We actively avoid "God Files" and "Primitive Obsession."
 
-Your first responsibility is to deeply understand the provided material and plan the project scope.
+---
 
-*   **Analyze the Source Material**: Systematically analyze the provided mathematical paper or specification. Your goal is to identify the core concepts, algorithms, and data models that form the foundation of the work.
-*   **Scope the Implementation**: Based on your analysis, scope out the primary components required for a robust Rust implementation. All development for this part of the project will take place in the `math_explorer/` directory.
-*   **Scope the Academic Paper**: Identify the key sections needed for a thorough academic paper that accurately represents the work. The paper will be developed in the `papers/` directory.
-*   **Compile a Bibliography**: Compile all external sources, prior art, and foundational work that will require citation in the paper. This is a critical step for maintaining academic integrity.
+### **1. Contextual Analysis & Architectural Alignment**
 
-***
+Before generating code or text, you must ground your work in the project's existing engineering standards.
 
-### **2. Detailed Implementation & Paper Outline**
+* **Consult the Engineering Journals (`.jules/`)**: 
+    * Review `systems_core.md` for established design patterns (e.g., Strategy Pattern for solvers, Builder Pattern for complex structs).
+    * Review `architect.md` to understand domain decomposition and module extraction standards.
+    * Review `mason.md` for architectural constraints (e.g., Dependency Injection for RNG).
+* **Analyze the Source Material**: Deconstruct the provided mathematical framework into core components (State, Dynamics, Solvers, Statistics).
+* **Identify Reusable Abstractions**: Determine if existing traits (e.g., `OdeSystem`, `Solver`, `VectorOperations`, `ReactionKinetics`) can be leveraged or extended.
 
-Before writing any implementation code or prose, you must produce a detailed outline. This outline serves as the blueprint for the project.
+---
 
-*   **Rust Project Structure**:
-    *   Propose a clear **file and module structure** for the Rust project within `math_explorer/`. The design should prioritize clarity, maintainability, and scalability.
-    *   Provide a clear description of the **key data structures and function signatures**. These must follow idiomatic Rust conventions (e.g., using `Result` for error handling, appropriate use of traits, etc.).
+### **2. Comprehensive Design & Scoping**
 
-*   **LaTeX Paper Structure**:
-    *   Propose a **section-by-section structure** for the LaTeX paper.
-    *   This must include a plan for a "References" or "Bibliography" section to manage citations.
+Produce a detailed blueprint. We do not write code without a plan.
 
-***
+* **Rust Architecture Strategy (`math_explorer/`)**:
+    * **Module Structure**: Propose a directory-based hierarchy. **Explicitly forbid "God Files"** (monolithic files mixing unrelated domains).
+    * **Data Modeling**: 
+        * Plan for **Strong Typing** (Newtypes) to avoid Primitive Obsession (e.g., `struct Kelvin(f64)` instead of raw `f64`).
+        * Define `struct`s for state management and `trait`s for interchangeable logic.
+    * **Interface Design**:
+        * Use the **Strategy Pattern** for algorithms that might change (e.g., numerical integrators, sorting, selection).
+        * Use the **Builder Pattern** for complex model initialization to ensure validation.
+        * Plan for **Dependency Injection**, specifically for Random Number Generators (RNG) to ensure test determinism.
 
-### **3. Targeted Implementation & Composition**
+* **Academic Paper Outline (`papers/`)**:
+    * Define a section-by-section LaTeX structure.
+    * Identify necessary citations and plan the `.bib` file entries to support the mathematical claims.
 
-With an approved outline, proceed to the implementation and composition phase.
+---
 
-*   **Rust Implementation (`math_explorer/`)**:
-    *   Implement the most direct and clean version of the solution as defined in your outline.
-    *   Write clean, well-documented, and efficient code.
-    *   Adhere strictly to modern Rust idioms and **coding best practices**, including:
-        *   Robust error handling (e.g., `Result<T, E>`).
-        *   Clear and descriptive variable and function names.
-        *   A modular design that reflects the structure of the problem domain.
+### **3. Targeted Implementation**
 
-*   **Paper Composition (`papers/`)**:
-    *   Compose the academic paper, upholding the highest standards of **academic integrity**.
-    *   All concepts, data, and text drawn from other works **must be appropriately cited** within the text and fully detailed in the bibliography. Plagiarism is strictly forbidden.
+Execute the design using modern Rust idioms and the project's specific coding standards.
 
-***
+* **Rust Implementation Standards**:
+    * **Type Safety**: Enforce validity at the type level. Use `Result` for fallible operations.
+    * **Generic Solvers**: Decouple models from solvers. Models should implement traits (like `OdeSystem`) rather than containing hardcoded integration loops.
+    * **Determinism**: Functions involving randomness must accept an injected RNG (`&mut R: Rng`) rather than using `thread_rng()` internally.
+    * **Error Handling**: Create domain-specific error types (e.g., `thiserror` or custom enums) rather than stringly-typed errors.
 
-### **4. Verification Through Testing & Review**
+* **Paper Composition**:
+    * Write with high academic rigor in `papers/`.
+    * Ensure every mathematical claim is backed by the implementation or a citation.
+    * Manage references via BibTeX, ensuring all prior art is credited.
 
-Validation is a critical final step. Your work is not complete until it has been thoroughly verified.
+---
 
-*   **Unit and Integration Testing**:
-    *   **Write new, targeted tests** for the Rust implementation. These tests must verify the correctness of the core algorithms and handle critical edge cases.
-    *   **Run the entire test suite** for the `math_explorer` project. All tests must pass before the project is considered complete. You must ensure your changes have not introduced any regressions.
+### **4. Verification & Validation**
 
-*   **Final Submission Review**:
-    *   **Meticulously review the final submission** before completion.
-    *   **Code Quality**: Check the Rust code for quality, adherence to best practices, and clarity.
-    *   **Academic Rigor**: Proofread the paper for academic rigor, citation accuracy, and to ensure all content is original and properly attributed. **Verify every citation.**
+Your work is not complete until it is proven correct and robust.
+
+* **Testing Strategy**:
+    * **Unit Tests**: Test core logic in isolation.
+    * **Deterministic Integration Tests**: Write tests that inject a seeded RNG to verify reproducible behavior.
+    * **Regression Check**: Run the full `math_explorer` test suite to ensure no breaking changes to existing modules.
+
+* **Quality Review**:
+    * Verify that no "God Files" were created.
+    * Verify that `mod.rs` files properly re-export public interfaces to maintain backward compatibility where appropriate.
+    * Check for "Primitive Obsession" (e.g., passing raw `Vec<f64>` where a `ContingencyTable` struct would be safer).
+
+---
+
+### **5. Journaling & Documentation**
+
+You must document your engineering decisions to maintain the project's historical continuity.
+
+* **Update Engineering Records**:
+    * **`systems_core.md`**: Log any major refactors, pattern adoptions (e.g., "Extracted X Strategy"), or trade-offs made during implementation.
+    * **`architect.md`**: Log any new domain modules or structural decompositions.
+    * **`mason.md`**: Record any architectural violations found and fixed (e.g., "Decoupled Physics from Solver").
+* **Documentation**: Ensure all public Rust items have docstrings (`///`).
