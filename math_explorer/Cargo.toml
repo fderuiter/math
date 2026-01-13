@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+rustfft = "6.2.0"
 nalgebra = "0.34.0"
 quadrature = "0.1.2"
 rand = "0.8.5"
