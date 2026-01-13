@@ -41,12 +41,19 @@ impl HodgkinHuxleyNeuron {
 
     /// Updates the neuron state by a time step `dt` with external current `i_ext`.
     ///
-    /// Uses the Euler method to integrate the differential equations.
+    /// Uses the Euler method by default to maintain backward compatibility.
     ///
     /// # Arguments
     /// * `dt` - Time step in milliseconds (e.g., 0.01).
     /// * `i_ext` - External injected current ($\mu A/cm^2$).
     pub fn update(&mut self, dt: f64, i_ext: f64) {
+        self.update_with(dt, i_ext, &Euler);
+    }
+
+    /// Updates the neuron state using a provided solver strategy.
+    ///
+    /// Allows switching between Euler, Runge-Kutta, etc.
+    pub fn update_with<S: Solver<HodgkinHuxleyState>>(&mut self, dt: f64, i_ext: f64, solver: &S) {
         // Convert to strongly typed state
         let state = HodgkinHuxleyState {
             v: self.v,
@@ -58,8 +65,7 @@ impl HodgkinHuxleyNeuron {
         // Create the model with current parameters
         let model = HodgkinHuxleyModel::new(self.v_rest, i_ext);
 
-        // Solve using Euler (to match legacy behavior)
-        let solver = Euler;
+        // Solve using the provided solver
         let new_state = solver.solve(&model, 0.0, &state, dt);
 
         // Update fields
