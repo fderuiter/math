@@ -9,7 +9,7 @@
 //!
 //! Note: This differs from standard mathematical spherical conventions.
 
-use nalgebra::{Point3, Rotation3, Translation3, Vector3};
+use nalgebra::{Point3, Rotation3, Translation3};
 
 /// A raw detection point in spherical/sensor space.
 #[derive(Debug, Clone, Copy)]
