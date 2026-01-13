@@ -82,7 +82,7 @@ pub fn inject_noise(
 /// Helper to generate Gaussian noise matching image dimensions
 pub fn generate_noise(rows: usize, cols: usize) -> DMatrix<f64> {
     let mut rng = rand::thread_rng();
-    let normal = Normal::new(0.0, 1.0).unwrap();
+    let normal = Normal::new(0.0, 1.0).expect("Standard Normal Distribution (mean=0, std=1) should always be valid");
     DMatrix::from_fn(rows, cols, |_, _| normal.sample(&mut rng))
 }
 

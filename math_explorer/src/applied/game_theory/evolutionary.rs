@@ -1,4 +1,5 @@
 use nalgebra::{DMatrix, DVector};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
 
 /// Represents an Evolutionary Game solved via **Replicator Dynamics**.
 ///
@@ -25,15 +26,10 @@ impl ReplicatorDynamics {
     }
 
     /// Computes the time derivative $\dot{x}$ for the population state $x$.
+    ///
+    /// This is a helper method that delegates to the `OdeSystem` implementation.
     pub fn derivative(&self, x: &DVector<f64>) -> DVector<f64> {
-        let fitness_vector = &self.payoff_matrix * x;
-        let average_fitness = x.dot(&fitness_vector);
-
-        let mut dxdt = DVector::zeros(x.len());
-        for i in 0..x.len() {
-            dxdt[i] = x[i] * (fitness_vector[i] - average_fitness);
-        }
-        dxdt
+        <Self as OdeSystem<DVector<f64>>>::derivative(self, 0.0, x)
     }
 
     /// Simulates the dynamics over time using the **Runge-Kutta 4** method.
@@ -58,13 +54,11 @@ impl ReplicatorDynamics {
 
         trajectory.push((current_t, current_x.clone()));
 
-        for _ in 0..steps {
-            let k1 = self.derivative(&current_x);
-            let k2 = self.derivative(&(&current_x + 0.5 * dt * &k1));
-            let k3 = self.derivative(&(&current_x + 0.5 * dt * &k2));
-            let k4 = self.derivative(&(&current_x + dt * &k3));
+        let solver = RungeKutta4;
 
-            current_x += (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+        for _ in 0..steps {
+            // Use the shared solver instead of manual RK4 implementation
+            current_x = solver.solve(self, current_t, &current_x, dt);
             current_t += dt;
 
             // Normalize to prevent numerical drift from simplex
@@ -77,6 +71,19 @@ impl ReplicatorDynamics {
         }
 
         trajectory
+    }
+}
+
+impl OdeSystem<DVector<f64>> for ReplicatorDynamics {
+    fn derivative(&self, _t: f64, x: &DVector<f64>) -> DVector<f64> {
+        let fitness_vector = &self.payoff_matrix * x;
+        let average_fitness = x.dot(&fitness_vector);
+
+        let mut dxdt = DVector::zeros(x.len());
+        for i in 0..x.len() {
+            dxdt[i] = x[i] * (fitness_vector[i] - average_fitness);
+        }
+        dxdt
     }
 }
 
