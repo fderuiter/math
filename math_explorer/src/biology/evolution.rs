@@ -1,11 +1,5 @@
-//! Evolutionary Dynamics
-//!
-//! This module implements Evolutionary Game Theory models, specifically the Hawk-Dove game.
-//! It uses the Replicator Equation to model the evolution of strategy frequencies in a population.
-//!
-//! The change in frequency of a strategy $i$ is given by:
-//! $$ \frac{dp_i}{dt} = p_i (f_i(\mathbf{p}) - \phi(\mathbf{p})) $$
-//! where $f_i$ is the fitness of strategy $i$ and $\phi$ is the average population fitness.
+use nalgebra::{DMatrix, DVector};
+use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
 
 /// Represents a population playing the Hawk-Dove game.
 pub struct HawkDovePopulation {
@@ -18,6 +12,33 @@ pub struct HawkDovePopulation {
 impl HawkDovePopulation {
     pub fn new(v: f64, c: f64) -> Self {
         Self { v, c }
+    }
+
+    /// Constructs the Replicator Dynamics system for this game.
+    ///
+    /// The payoff matrix is:
+    ///
+    /// $$
+    /// \begin{pmatrix}
+    /// (V-C)/2 & V \\
+    /// 0 & V/2
+    /// \end{pmatrix}
+    /// $$
+    ///
+    /// Row 0 / Col 0: Hawk
+    /// Row 1 / Col 1: Dove
+    pub fn to_replicator_dynamics(&self) -> ReplicatorDynamics {
+        let e_hh = (self.v - self.c) / 2.0;
+        let e_hd = self.v;
+        let e_dh = 0.0;
+        let e_dd = self.v / 2.0;
+
+        let payoff = DMatrix::from_row_slice(2, 2, &[
+            e_hh, e_hd,
+            e_dh, e_dd
+        ]);
+
+        ReplicatorDynamics::new(payoff)
     }
 
     /// Updates the frequency of the Hawk strategy using the Replicator Equation.
@@ -36,27 +57,15 @@ impl HawkDovePopulation {
         let p_h = hawk_freq;
         let p_d = 1.0 - p_h;
 
-        // Payoffs
-        // E(H, H) = (V-C)/2
-        // E(H, D) = V
-        // E(D, H) = 0
-        // E(D, D) = V/2
-        let e_hh = (self.v - self.c) / 2.0;
-        let e_hd = self.v;
-        let e_dh = 0.0;
-        let e_dd = self.v / 2.0;
+        let current_state = DVector::from_vec(vec![p_h, p_d]);
+        let solver = self.to_replicator_dynamics();
+        let derivative = solver.derivative(&current_state);
 
-        // Fitness
-        let fit_h = p_h * e_hh + p_d * e_hd;
-        let fit_d = p_h * e_dh + p_d * e_dd;
+        // Manual Euler step to preserve legacy behavior (solver.simulate uses RK4)
+        // dp/dt = derivative
+        // new_p = p + dp/dt * dt
+        let dp_h = derivative[0];
 
-        // Average Fitness
-        let phi = p_h * fit_h + p_d * fit_d;
-
-        // Differential: dp_H/dt = p_H (Fitness_H - phi)
-        let dp_h = p_h * (fit_h - phi);
-
-        // Update
         let mut new_p_h = p_h + dp_h * dt;
 
         // Clamp to [0, 1] to handle numerical drift

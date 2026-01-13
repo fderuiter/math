@@ -1,6 +1,7 @@
 //! Analytical tools and derived quantities for Fluid Dynamics.
 
 use super::types::{FluidProperties, FlowState};
+use super::regimes::{FlowRegime, FlowClassifier, PipeFlowClassifier};
 
 /// Calculates the Reynolds Number ($Re$).
 ///
@@ -17,28 +18,16 @@ pub fn reynolds_number(
     (properties.density * velocity_magnitude * characteristic_length) / properties.dynamic_viscosity
 }
 
-/// Classification of flow regimes based on Reynolds number.
-#[derive(Debug, PartialEq, Eq)]
-pub enum FlowRegime {
-    Laminar,
-    Transitional,
-    Turbulent,
-}
-
-/// Determines the flow regime from the Reynolds number.
+/// Determines the flow regime from the Reynolds number using the standard Pipe Flow strategy.
 ///
-/// Note: Thresholds are approximate and geometry-dependent (e.g., pipe flow).
+/// **Deprecated:** Use `PipeFlowClassifier` or another implementation of `FlowClassifier` directly.
+///
 /// * $Re < 2000$: Laminar
 /// * $2000 \le Re \le 4000$: Transitional
 /// * $Re > 4000$: Turbulent
+#[deprecated(since = "0.2.0", note = "Use `regimes::PipeFlowClassifier` for explicit strategy")]
 pub fn flow_regime(re: f64) -> FlowRegime {
-    if re < 2000.0 {
-        FlowRegime::Laminar
-    } else if re <= 4000.0 {
-        FlowRegime::Transitional
-    } else {
-        FlowRegime::Turbulent
-    }
+    PipeFlowClassifier.classify(re)
 }
 
 /// Calculates the Bernoulli constant along a streamline for steady, incompressible, inviscid flow.
@@ -46,20 +35,20 @@ pub fn flow_regime(re: f64) -> FlowRegime {
 /// $$C = p + \frac{1}{2}\rho v^2 + \rho g h$$
 ///
 /// * `state`: Fluid state ($p, \mathbf{u}$).
-/// * `rho`: Fluid density.
+/// * `properties`: Fluid properties (specifically density $\rho$).
 /// * `height`: Elevation $h$ relative to a datum.
 /// * `gravity`: Gravitational acceleration $g$ (magnitude, usually 9.81).
-pub fn bernoulli_constant(state: &FlowState, rho: f64, height: f64, gravity: f64) -> f64 {
+pub fn bernoulli_constant(state: &FlowState, properties: &FluidProperties, height: f64, gravity: f64) -> f64 {
     let v_sq = state.velocity.norm_squared();
-    state.pressure + 0.5 * rho * v_sq + rho * gravity * height
+    state.pressure + 0.5 * properties.density * v_sq + properties.density * gravity * height
 }
 
 /// Calculates Shear Stress ($\tau$) in a Boundary Layer (Newtonian Fluid).
 ///
 /// $$\tau = \mu \frac{\partial u}{\partial y}$$
 ///
-/// * `mu`: Dynamic viscosity.
+/// * `properties`: Fluid properties (specifically dynamic viscosity $\mu$).
 /// * `velocity_gradient_normal`: Gradient of velocity perpendicular to the wall ($\frac{\partial u}{\partial y}$).
-pub fn shear_stress(mu: f64, velocity_gradient_normal: f64) -> f64 {
-    mu * velocity_gradient_normal
+pub fn shear_stress(properties: &FluidProperties, velocity_gradient_normal: f64) -> f64 {
+    properties.dynamic_viscosity * velocity_gradient_normal
 }

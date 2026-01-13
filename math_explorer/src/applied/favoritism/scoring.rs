@@ -35,6 +35,14 @@ use rand::Rng;
 /// assert!(score > 0.0);
 /// ```
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
+    let mut rng = rand::thread_rng();
+    calculate_favoritism_score_with_rng(inputs, &mut rng)
+}
+
+/// Calculates the favoritism score using an injected RNG.
+///
+/// See `calculate_favoritism_score` for details.
+pub fn calculate_favoritism_score_with_rng<R: Rng + ?Sized>(inputs: &FavoritismInputs, rng: &mut R) -> f64 {
     // SECURITY: Input validation to prevent Division by Zero and Infinity propagation.
     const EPSILON: f64 = 1e-9;
 
@@ -43,7 +51,6 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
     // Ensure t is non-negative.
     let safe_t = inputs.time.t.max(0.0);
 
-    let mut rng = rand::thread_rng();
     // r: Stochastic Perturbation (Parental Mood)
     // Adds a ±10% random variation to the final score to simulate human unpredictability.
     let r = rng.gen_range(0.9..1.1);

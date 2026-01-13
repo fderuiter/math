@@ -1,6 +1,7 @@
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 use rand::distributions::Distribution as RandDistribution;
+use rand::Rng;
 
 /// Represents a distribution of bidder valuations.
 ///
@@ -106,13 +107,24 @@ impl MechanismDesign {
         n_bidders: usize,
         n_simulations: usize,
     ) -> f64 {
-        let mut total_revenue = 0.0;
         let mut rng = rand::thread_rng();
+        Self::simulate_optimal_revenue_with_rng(dist, n_bidders, n_simulations, &mut rng)
+    }
+
+    /// Same as `simulate_optimal_revenue` but allows injecting a custom RNG
+    /// for deterministic testing.
+    pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Sized>(
+        dist: &D,
+        n_bidders: usize,
+        n_simulations: usize,
+        rng: &mut R,
+    ) -> f64 {
+        let mut total_revenue = 0.0;
 
         for _ in 0..n_simulations {
             let mut max_virtual_val = 0.0;
             for _ in 0..n_bidders {
-                let v = dist.sample(&mut rng);
+                let v = dist.sample(rng);
                 let j = dist.virtual_valuation(v);
                 if j > max_virtual_val {
                     max_virtual_val = j;

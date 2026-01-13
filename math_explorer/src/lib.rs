@@ -4,6 +4,11 @@
 //! and executable code. It provides robust implementations for domains ranging from Quantum Mechanics and Chaos Theory
 //! to satirical social modeling.
 //!
+//! > **"Code explains HOW; Docs explain WHY."**
+//!
+//! This library serves as a verifiable playground for complex algorithms, ensuring that "Knowledge Rot" is fought
+//! with runnable examples and rigorous testing.
+//!
 //! ## 🚀 Quick Start
 //!
 //! **Calculate Clebsch-Gordan Coefficients (Quantum Physics):**
@@ -18,10 +23,10 @@
 //!
 //! ## 📚 Core Domains
 //!
-//! *   **[AI](crate::ai)**: Architectures (Transformers), Neural Rendering (NeRF), and Self-Calibration.
-//! *   **[Applied](crate::applied)**: Real-world (and satirical) applications like [Favoritism](crate::applied::favoritism) and Clinical Trials.
+//! *   **[AI](crate::ai)**: Implementations of Transformers, Neural Rendering (NeRF), and Self-Calibration loops.
+//! *   **[Applied](crate::applied)**: Real-world modeling including Clinical Trials and the satirical [Favoritism](crate::applied::favoritism) theory.
 //! *   **[Physics](crate::physics)**: Simulations for [Chaos](crate::physics::chaos), Quantum Mechanics, and Fluid Dynamics.
-//! *   **[Biology](crate::biology)**: Models for Neuroscience, Morphogenesis, and Evolution.
+//! *   **[Biology](crate::biology)**: Computational biology models from Molecular to Population scales.
 //! *   **[Pure Math](crate::pure_math)**: Foundational algorithms in Number Theory, Algebra, and Analysis.
 //!
 //! ## 🔧 Usage
