@@ -1,11 +1,11 @@
 use math_explorer::physics::medical::radar_gating::{
     physics::{FmcwConfig, C},
-    geometry::{SphericalPoint, AngleFftConfig, SensorToPatientTransform},
+    geometry::{SphericalPoint, AngleFftConfig},
     surface::BiQuadraticSurface,
     tracking::TrackingFilter,
     gating::GatingLogic,
 };
-use nalgebra::{Point3, Rotation3, Translation3, Vector3};
+use nalgebra::Point3;
 use approx::assert_relative_eq;
 
 #[test]
