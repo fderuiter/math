@@ -1,5 +1,7 @@
 //! Quantum Chromodynamics (QCD) focuses on the strong interaction and asymptotic freedom.
 
+use crate::physics::standard_model::StandardModelError;
+
 /// Calculates the 1-loop running of the strong coupling constant $\alpha_s(Q^2)$.
 ///
 /// QCD exhibits asymptotic freedom, meaning the coupling decreases at higher energy scales.
@@ -15,13 +17,19 @@
 ///
 /// # Returns
 /// * `Ok(f64)`: The value of $\alpha_s(Q^2)$.
-/// * `Err(String)`: If an invalid parameter (e.g., negative energy) is provided.
-pub fn running_coupling(mu: f64, alpha_mu: f64, q: f64, nf: f64) -> Result<f64, String> {
-    if mu <= 0.0 || q <= 0.0 {
-        return Err("Energy scales must be positive.".to_string());
+/// * `Err(StandardModelError)`: If an invalid parameter (e.g., negative energy) is provided.
+pub fn running_coupling(mu: f64, alpha_mu: f64, q: f64, nf: f64) -> Result<f64, StandardModelError> {
+    if mu <= 0.0 {
+        return Err(StandardModelError::InvalidEnergyScale { scale: mu, context: "initial scale mu".to_string() });
+    }
+    if q <= 0.0 {
+        return Err(StandardModelError::InvalidEnergyScale { scale: q, context: "target scale q".to_string() });
     }
     if alpha_mu <= 0.0 {
-        return Err("Coupling constant must be positive.".to_string());
+        return Err(StandardModelError::InvalidCouplingConstant { alpha: alpha_mu });
+    }
+    if nf < 0.0 {
+        return Err(StandardModelError::InvalidFlavors { nf });
     }
 
     let beta0 = 33.0 - 2.0 * nf;
@@ -29,7 +37,7 @@ pub fn running_coupling(mu: f64, alpha_mu: f64, q: f64, nf: f64) -> Result<f64, 
     let denominator = 1.0 + (alpha_mu / (12.0 * std::f64::consts::PI)) * beta0 * log_term;
 
     if denominator <= 0.0 {
-         return Err("Landau pole encountered: coupling diverges at this scale.".to_string());
+         return Err(StandardModelError::LandauPole { scale: q });
     }
 
     Ok(alpha_mu / denominator)
@@ -57,5 +65,12 @@ mod tests {
 
         // At higher energy (q_high > mu), coupling should be lower (asymptotic freedom)
         assert!(alpha_high < alpha_mu);
+    }
+
+    #[test]
+    fn test_errors() {
+        assert!(running_coupling(-1.0, 0.1, 10.0, 5.0).is_err());
+        assert!(running_coupling(10.0, 0.1, -10.0, 5.0).is_err());
+        assert!(running_coupling(10.0, -0.1, 100.0, 5.0).is_err());
     }
 }

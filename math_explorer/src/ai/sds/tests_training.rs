@@ -19,7 +19,9 @@ fn test_adam_step() {
     // update = 0.1 * 0.1 / (sqrt(0.01) + eps) = 0.01 / 0.1 = 0.1
     // new_params = 0.5 - 0.1 = 0.4
 
-    let new_params = optimizer.step(&params, &grads);
+    let new_params_result = optimizer.step(&params, &grads);
+    assert!(new_params_result.is_ok());
+    let new_params = new_params_result.unwrap();
 
     // Exact values might differ slightly due to float precision and epsilon
     assert!(new_params[(0, 0)] < 0.5);

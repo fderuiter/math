@@ -13,3 +13,6 @@ pub mod higgs;
 pub mod flavor;
 pub mod qcd;
 pub mod neutrinos;
+pub mod error;
+
+pub use error::StandardModelError;
