@@ -217,18 +217,16 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                     corner_normals[3] = grads[1];
                     corner_normals[4] = grads[2];
                     corner_normals[7] = grads[3];
+                } else if can_use_fast_path {
+                    corner_normals[0] = get_gradient_interior(data, base_idx, stride_y, stride_z);
+                    corner_normals[3] = get_gradient_interior(data, base_idx + stride_y, stride_y, stride_z);
+                    corner_normals[4] = get_gradient_interior(data, base_idx + stride_z, stride_y, stride_z);
+                    corner_normals[7] = get_gradient_interior(data, base_idx + stride_y + stride_z, stride_y, stride_z);
                 } else {
-                    if can_use_fast_path {
-                         corner_normals[0] = get_gradient_interior(data, base_idx, stride_y, stride_z);
-                         corner_normals[3] = get_gradient_interior(data, base_idx + stride_y, stride_y, stride_z);
-                         corner_normals[4] = get_gradient_interior(data, base_idx + stride_z, stride_y, stride_z);
-                         corner_normals[7] = get_gradient_interior(data, base_idx + stride_y + stride_z, stride_y, stride_z);
-                    } else {
-                         corner_normals[0] = get_gradient(grid, x, y, z);
-                         corner_normals[3] = get_gradient(grid, x, y + 1, z);
-                         corner_normals[4] = get_gradient(grid, x, y, z + 1);
-                         corner_normals[7] = get_gradient(grid, x, y + 1, z + 1);
-                    }
+                    corner_normals[0] = get_gradient(grid, x, y, z);
+                    corner_normals[3] = get_gradient(grid, x, y + 1, z);
+                    corner_normals[4] = get_gradient(grid, x, y, z + 1);
+                    corner_normals[7] = get_gradient(grid, x, y + 1, z + 1);
                 }
 
                 // 2. Compute Right Face (1, 2, 5, 6) - these are always new

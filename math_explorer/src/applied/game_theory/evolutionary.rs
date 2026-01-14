@@ -32,7 +32,7 @@ impl ReplicatorDynamics {
         <Self as OdeSystem<DVector<f64>>>::derivative(self, 0.0, x)
     }
 
-    /// Simulates the dynamics over time using the **Runge-Kutta 4** method.
+    /// Simulates the dynamics over time using the **Runge-Kutta 4** method by default.
     ///
     /// # Parameters
     /// - `initial_population`: Vector of proportions summing to 1.0.
@@ -47,6 +47,29 @@ impl ReplicatorDynamics {
         time_horizon: f64,
         dt: f64,
     ) -> Vec<(f64, DVector<f64>)> {
+        self.simulate_with_strategy(initial_population, time_horizon, dt, &RungeKutta4)
+    }
+
+    /// Simulates the dynamics over time using a provided **Solver** strategy.
+    ///
+    /// This allows for different integration schemes (e.g., Euler vs Runge-Kutta)
+    /// to be used based on accuracy or performance requirements.
+    ///
+    /// # Parameters
+    /// - `initial_population`: Vector of proportions summing to 1.0.
+    /// - `time_horizon`: Total time to simulate.
+    /// - `dt`: Time step size.
+    /// - `solver`: The numerical integrator to use.
+    pub fn simulate_with_strategy<S>(
+        &self,
+        initial_population: DVector<f64>,
+        time_horizon: f64,
+        dt: f64,
+        solver: &S,
+    ) -> Vec<(f64, DVector<f64>)>
+    where
+        S: Solver<DVector<f64>>,
+    {
         let steps = (time_horizon / dt).ceil() as usize;
         let mut trajectory = Vec::with_capacity(steps + 1);
         let mut current_x = initial_population;
@@ -54,10 +77,7 @@ impl ReplicatorDynamics {
 
         trajectory.push((current_t, current_x.clone()));
 
-        let solver = RungeKutta4;
-
         for _ in 0..steps {
-            // Use the shared solver instead of manual RK4 implementation
             current_x = solver.solve(self, current_t, &current_x, dt);
             current_t += dt;
 
@@ -90,6 +110,7 @@ impl OdeSystem<DVector<f64>> for ReplicatorDynamics {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pure_math::analysis::ode::Euler;
 
     #[test]
     fn test_rock_paper_scissors() {
@@ -124,5 +145,33 @@ mod tests {
         let last_state = &trajectory.last().unwrap().1;
         assert!((last_state.sum() - 1.0).abs() < 1e-6);
         assert!(last_state.min() >= -1e-9);
+    }
+
+    #[test]
+    fn test_replicator_dynamics_with_euler() {
+        // Use Euler method to verify Strategy Pattern.
+        // Euler is less accurate, so we use a smaller step size for similar results
+        // or just verify it runs and stays in the simplex.
+
+        let payoff = DMatrix::from_row_slice(3, 3, &[
+             0.0, -1.0,  1.0,
+             1.0,  0.0, -1.0,
+            -1.0,  1.0,  0.0
+        ]);
+
+        let system = ReplicatorDynamics::new(payoff);
+        let init = DVector::from_vec(vec![0.4, 0.3, 0.3]);
+
+        // Inject Euler solver
+        let trajectory = system.simulate_with_strategy(init, 5.0, 0.001, &Euler);
+
+        let last_state = &trajectory.last().unwrap().1;
+        assert!((last_state.sum() - 1.0).abs() < 1e-6);
+        assert!(last_state.min() >= -1e-9);
+
+        // Check reasonable behavior (not static)
+        let init_state = &trajectory.first().unwrap().1;
+        let diff = (last_state - init_state).norm();
+        assert!(diff > 0.01, "Dynamics should evolve over time");
     }
 }
