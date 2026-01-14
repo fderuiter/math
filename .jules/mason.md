@@ -10,3 +10,7 @@
 ## 2026-01-20 - Deterministic Simulation via RNG Injection
 **Violation:** Dependency Inversion Principle (DIP). The `simulate_optimal_revenue` (Mechanism Design) and `calculate_favoritism_score` (Favoritism) functions hardcoded `rand::thread_rng()`, making them non-deterministic and untestable without mocking.
 **Remedy:** Method Injection. Extracted core logic into `*_with_rng` methods accepting `&mut R: Rng`. The original functions now serve as convenience wrappers. This enables deterministic testing with seeded RNGs.
+
+## 2026-01-14 - Decoupling Numerical Integration
+**Violation:** Dependency Inversion Principle (DIP). The `calculate_favoritism_score` (Favoritism) and `calculate_win_probability` (Win Ratio) functions hardcoded `quadrature::clenshaw_curtis`, creating a tight coupling to a specific integration implementation and preventing strategy substitution.
+**Remedy:** Strategy Pattern. Created `Integrator` trait in `pure_math/analysis/integration.rs` and implemented `ClenshawCurtis` and `Trapezoidal` strategies. Refactored high-level modules to accept `&impl Integrator` via dependency injection.
