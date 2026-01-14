@@ -105,6 +105,20 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
         return Err("Grid dimensions must be at least 2x2x2".to_string());
     }
 
+    // Safety Check: Ensure data buffer is sufficient to prevent OOB access in unsafe blocks
+    let expected_len = grid.width
+        .checked_mul(grid.height)
+        .and_then(|wh| wh.checked_mul(grid.depth))
+        .ok_or_else(|| "Grid dimensions cause integer overflow".to_string())?;
+
+    if grid.data.len() < expected_len {
+        return Err(format!(
+            "Data buffer size mismatch. Expected at least {}, got {}",
+            expected_len,
+            grid.data.len()
+        ));
+    }
+
     // Estimate capacity to avoid reallocations
     // A heuristic: surface area roughly scales with N^2.
     // Let's reserve enough for a sphere of radius N/3.

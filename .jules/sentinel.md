@@ -4,3 +4,8 @@
 **Vulnerability:** Unbounded inputs in `calculate_favoritism_score` caused Division by Zero and Infinite propagation (DoS risk).
 **Learning:** Mathematical implementations often assume ideal inputs (e.g., $x_0 \neq 0$) and neglect software-level safety checks. In a Rust library, propagating `Inf` or `NaN` can crash downstream systems or cause undefined behavior in logic.
 **Prevention:** Always sanitize inputs for mathematical functions (clamp denominators away from zero, clamp log inputs to positive domain) before computation, especially in public APIs.
+
+## 2024-05-24 - Buffer Overflow in Isosurface Extraction
+**Vulnerability:** `extract_isosurface` used `unsafe { get_unchecked }` for performance optimization ("fast path") but failed to validate that the input `VoxelGrid`'s data buffer actually matched the specified dimensions.
+**Learning:** Performance optimizations using `unsafe` in scientific computing must be paired with rigorous input validation at the public API boundary. A `Vec<f32>` does not guarantee it has enough elements for the dimensions claimed by the struct.
+**Prevention:** Always validate `data.len() >= width * height * depth` at the entry point of functions that use unsafe indexing based on those dimensions.
