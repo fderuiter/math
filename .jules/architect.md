@@ -21,3 +21,8 @@
 **Problem:** `math_explorer/src/biology/neuroscience.rs` coupled the mathematical model (differential equations), the state representation (struct), and the numerical solver (explicit Euler) into a single struct `HodgkinHuxleyNeuron`. This prevented the use of higher-order solvers (like Runge-Kutta 4) and made the system hard to test or extend.
 **Decision:** Applied "Model-State Separation" and "Strategy Pattern". Split `neuroscience.rs` into `types.rs` (State), `model.rs` (OdeSystem logic), and `neuron.rs` (Facade). Adopted the existing `OdeSystem` trait architecture.
 **Consequence:** The `HodgkinHuxleyNeuron` is now a thin facade. Users can still use the simple API, but the underlying system now supports dependency injection of solvers and is strictly typed via `VectorOperations`.
+
+## 2026-06-15 - [Isosurface Abstraction]
+**Problem:** `math_explorer/src/applied/isosurface` was tightly coupled to `VoxelGrid`, forcing users to allocate dense arrays for isosurface extraction. This precluded the use of implicit surfaces (CSG, noise) or sparse data structures without inefficient memory copies.
+**Decision:** Applied "Traitification" by introducing the `Volume` trait to abstract over any 3D scalar field. Refactored `marching_cubes` to operate on `&impl Volume`.
+**Consequence:** `extract_isosurface` is now generic. Implicit surfaces can be meshed directly (verified via procedural sphere test). We traded some raw pointer optimization in the dense grid case for architectural universality and safety.

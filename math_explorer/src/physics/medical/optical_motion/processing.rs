@@ -155,7 +155,7 @@ pub fn calculate_time_delay(signal_1: &[f64], signal_2: &[f64], sample_rate: f64
     // Xcorr(f) = X(f) * Y*(f). Peak at lag implies shift.
     for i in 0..n {
         s2_c[i] = s2_c[i].conj(); // Conjugate of signal 2
-        s1_c[i] = s1_c[i] * s2_c[i]; // Multiply
+        s1_c[i] *= s2_c[i]; // Multiply
     }
 
     // IFFT

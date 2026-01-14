@@ -1,3 +1,5 @@
+use super::volume::Volume;
+
 /// A 3D point or vector with single-precision floating point coordinates.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3D {
@@ -70,5 +72,24 @@ impl VoxelGrid {
             return 0.0; // Boundary condition
         }
         self.data[z * self.width * self.height + y * self.width + x]
+    }
+}
+
+impl Volume for VoxelGrid {
+    fn dimensions(&self) -> (usize, usize, usize) {
+        (self.width, self.height, self.depth)
+    }
+
+    #[inline]
+    fn get(&self, x: usize, y: usize, z: usize) -> f32 {
+        self.get(x, y, z)
+    }
+
+    fn voxel_size(&self) -> Point3D {
+        self.voxel_size
+    }
+
+    fn origin(&self) -> Point3D {
+        self.origin
     }
 }
