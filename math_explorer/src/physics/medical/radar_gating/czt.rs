@@ -47,12 +47,15 @@ pub fn chirp_z_transform(
         let normalized_freq = target_freq / sample_rate;
 
         // Summation over time samples 'n'
-        for (n, &x_n) in signal.iter().enumerate() {
-            // exponent = -i * 2 * pi * n * normalized_freq
-            let theta = -2.0 * PI * (n as f64) * normalized_freq;
-            let basis = Complex::new(0.0, theta).exp();
+        // Optimization: Use recurrence relation e^{j(n+1)a} = e^{jna} * e^{ja}
+        // This avoids calculating sin/cos in the inner loop.
+        let alpha = -2.0 * PI * normalized_freq;
+        let rotation = Complex::new(0.0, alpha).exp();
+        let mut current_basis = Complex::new(1.0, 0.0);
 
-            sum += x_n * basis;
+        for &x_n in signal {
+            sum += x_n * current_basis;
+            current_basis *= rotation;
         }
 
         output.push(sum);
