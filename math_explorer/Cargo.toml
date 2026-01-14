@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 rustfft = "6.2.0"
-nalgebra = "0.34.0"
+nalgebra = "0.32.6"
 quadrature = "0.1.2"
 rand = "0.8.5"
 wigner-symbols = "0.5.0"

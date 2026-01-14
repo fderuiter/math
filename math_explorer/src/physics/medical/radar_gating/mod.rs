@@ -35,7 +35,7 @@ pub use czt::chirp_z_transform;
 pub use czt::SpatialCztConfig;
 pub use geometry::{SphericalPoint, AngleFftConfig, SensorToPatientTransform};
 pub use surface::BiQuadraticSurface;
-pub use tracking::TrackingFilter;
+pub use tracking::{TrackingFilter, KalmanFilter, KalmanModel, ConstantVelocityModel};
 pub use gating::GatingLogic;
 pub use phase::PhaseUnwrapper;
 pub use mimo::Beamformer;
