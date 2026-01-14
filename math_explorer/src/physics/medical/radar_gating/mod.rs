@@ -1,23 +1,44 @@
-//! Radar-based Respiratory Gating.
+//! # Radar-based Respiratory Gating
 //!
-//! This module implements a pipeline for using mmWave radar (e.g., TI IWR6843) to monitor
-//! patient breathing for respiratory gating in Radiation Therapy (LINAC).
+//! A high-precision pipeline for non-contact patient monitoring using mmWave radar (e.g., TI IWR6843).
+//! This system bridges the gap between raw RF signals and clinical beam control.
 //!
-//! # Pipeline
+//! ## The Pipeline
 //!
-//! 1.  **Physics**: Signal processing for FMCW radar (Range/Doppler).
-//! 2.  **CZT**: Chirp Z-Transform for high-resolution range/doppler zooming.
-//! 3.  **Geometry**: Coordinate transformation from Sensor Frame to Patient Frame.
-//! 4.  **Surface**: Bi-Quadratic polynomial fitting to smooth point cloud noise.
-//! 5.  **Tracking**: Kalman Filter for temporal smoothing and velocity estimation.
-//! 6.  **Gating**: Schmidt Trigger logic with latency compensation for beam control.
+//! The system processes data in stages, transforming raw ADC samples into a "Gate/No-Gate" decision.
 //!
-//! # Advanced Processing (Fonzi Stack)
+//! ```mermaid
+//! graph TD
+//!     subgraph "Signal Processing"
+//!     Raw[Raw ADC Data] --> Physics[Physics (FMCW)]
+//!     Physics --> CZT[CZT (Chirp Z-Transform)]
+//!     end
 //!
-//! *   **MIMO**: Beamforming ("Digital Lens") for spatial filtering.
-//! *   **Super-Resolution**: MUSIC algorithm for sub-resolution targets.
-//! *   **Clutter Removal**: Elliptical filtering for static clutter rejection.
-//! *   **Phase**: Differential phase unwrapping for sub-mm displacement.
+//!     subgraph "Spatial Analysis"
+//!     CZT --> Geometry[Geometry (Sensor -> Patient)]
+//!     Geometry --> Surface[Surface Fitting (Bi-Quadratic)]
+//!     end
+//!
+//!     subgraph "Decision Engine"
+//!     Surface --> Tracking[Tracking (Kalman Filter)]
+//!     Tracking --> Gating[Gating Logic (Schmidt Trigger)]
+//!     Gating --> LINAC((LINAC Beam Control))
+//!     end
+//!
+//!     style LINAC fill:#f96,stroke:#333,stroke-width:4px
+//! ```
+//!
+//! ## Advanced Processing ("Fonzi Stack")
+//!
+//! For challenging clinical scenarios (e.g., shallow breathing, heavy clutter), the **Fonzi Stack**
+//! activates additional algorithms to enhance signal fidelity.
+//!
+//! *   **[MIMO Beamforming](mimo)**: "The Digital Lens" - Spatially filters signals to focus on specific organs.
+//! *   **[MUSIC Estimator](super_resolution)**: Sub-resolution target identification using eigen-decomposition.
+//! *   **[Elliptical Filter](clutter)**: Removes static clutter (treatment couch, immobilization devices).
+//! *   **[Phase Unwrapping](phase)**: Detects sub-millimeter chest wall displacements.
+//!
+//! # Core Modules
 
 pub mod physics;
 pub mod czt;

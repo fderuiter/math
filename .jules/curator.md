@@ -9,3 +9,8 @@
 **Gap:** The "Biology" module is a core feature but is completely absent from the "Deep Dive" sections in the READMEs, violating the "Show, Don't Tell" principle.
 **Strategy:** Add a Hodgkin-Huxley neuron simulation example to both the root and crate READMEs.
 **Outcome:** Demonstrates the library's capability in complex biological systems modeling.
+
+## 2025-05-16 - Closing the "What is this?" Gap
+**Gap:** `pure_math` lacked a top-level description, and `radar_gating` was a wall of text describing a pipeline.
+**Strategy:** Added a summary module doc to `pure_math` and a Mermaid pipeline diagram to `radar_gating`.
+**Outcome:** Users can now visualize the data flow in radar processing and understand the scope of the pure math module at a glance.
