@@ -1,4 +1,5 @@
-use math_explorer::applied::favoritism::{calculate_favoritism_score_with_rng, FavoritismInputs};
+use math_explorer::applied::favoritism::{calculate_favoritism_score_with_rng, calculate_favoritism_score_full, FavoritismInputs};
+use math_explorer::pure_math::analysis::integration::{Trapezoidal, ClenshawCurtis, Integrator, IntegrationResult};
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 
@@ -23,4 +24,50 @@ fn test_favoritism_deterministic() {
 
     // Check variation (extremely unlikely to be identical with different seeds due to r factor)
     assert_ne!(score1, score3, "Scores with different seeds should vary");
+}
+
+struct MockIntegrator;
+
+impl Integrator for MockIntegrator {
+    fn integrate<F>(&self, f: F, min: f64, max: f64, _eps: f64) -> IntegrationResult
+    where
+        F: Fn(f64) -> f64,
+    {
+        // Return a bogus value to prove it's being used.
+        // For example, return 0.0 regardless of function.
+        // But if we return 0.0, we might get division by zero in the score calculation.
+        // The score calculation has `denominator = if integral < EPSILON { 1.0 } else { integral }`.
+
+        // Let's return a value that is clearly different from the correct integral (which is usually > 0).
+        // The real integral is approx Time * Value.
+        // Let's return Time * Value * 2.0.
+
+        let val = f((min + max) / 2.0) * (max - min);
+        IntegrationResult {
+            value: val * 2.0, // Double the result
+            error: 0.0,
+        }
+    }
+}
+
+#[test]
+fn test_favoritism_integrator_swap() {
+    let inputs = FavoritismInputs::default();
+    let mut rng = StdRng::seed_from_u64(42);
+
+    // Use default Clenshaw-Curtis
+    let score_cc = calculate_favoritism_score_full(&inputs, &mut rng.clone(), &ClenshawCurtis);
+
+    // Use Mock Integrator
+    let score_mock = calculate_favoritism_score_full(&inputs, &mut rng.clone(), &MockIntegrator);
+
+    println!("CC Score: {}, Mock Score: {}", score_cc, score_mock);
+
+    // Since Mock doubles the integrals (numerator and denominator), the ratio might stay similar?
+    // Numerator has proximity_integral * emotional_integral (doubled * doubled = 4x).
+    // Denominator has sibling_integral (doubled = 2x).
+    // Result should be approx 2x.
+
+    // So they should be different.
+    assert!((score_cc - score_mock).abs() > 1.0, "Mock integrator should yield significantly different result");
 }

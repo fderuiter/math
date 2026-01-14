@@ -4,7 +4,7 @@
 //! of the sample win ratio. This module uses numerical integration to calculate the
 //! win and loss probabilities over a specified time interval.
 
-use quadrature::clenshaw_curtis::integrate;
+use crate::pure_math::analysis::integration::{ClenshawCurtis, Integrator};
 
 /// Context for calculating probability win ratios.
 ///
@@ -35,23 +35,7 @@ impl ProbabilityWinRatioContext {
 
     /// Calculates the win probability, W(c).
     ///
-    /// ## Formula
-    ///
-    /// W(c) = integral from 0 to c of S1(t)*f0(t)dt - S1(c)*S0(c) * integral from 0 to c of G1(x|c)*f0(x|c)dx
-    ///
-    /// where:
-    /// - S1(t): Marginal survival function for the treatment group.
-    /// - f0(t): Probability density function for the fatal event in the control group.
-    /// - G1(x|c): Conditional survival function for the non-fatal event in the treatment group.
-    /// - f0(x|c): Conditional probability density function for the non-fatal event in the control group.
-    /// - S0(c), S1(c): Survival probabilities at time c (from context).
-    ///
-    /// ## Parameters
-    ///
-    /// * `s1`: Closure for the marginal survival function of the treatment group, S1(t).
-    /// * `pdf_t0`: Closure for the PDF of the fatal event in the control group, f0(t).
-    /// * `g1_given_c`: Closure for the conditional survival function of the non-fatal event in the treatment group, G1(x|c).
-    /// * `pdf_x0_given_c`: Closure for the conditional PDF of the non-fatal event in the control group, f0(x|c).
+    /// Delegates to `calculate_win_probability_with_integrator` using `ClenshawCurtis` as default.
     pub fn calculate_win_probability<FS1, FPDFT0, FG1, FPDFX0>(
         &self,
         s1: FS1,
@@ -65,23 +49,47 @@ impl ProbabilityWinRatioContext {
         FG1: Fn(f64) -> f64,
         FPDFX0: Fn(f64) -> f64,
     {
+        self.calculate_win_probability_with_integrator(
+            s1,
+            pdf_t0,
+            g1_given_c,
+            pdf_x0_given_c,
+            &ClenshawCurtis,
+        )
+    }
+
+    /// Calculates the win probability using a specific integrator.
+    pub fn calculate_win_probability_with_integrator<FS1, FPDFT0, FG1, FPDFX0, I>(
+        &self,
+        s1: FS1,
+        pdf_t0: FPDFT0,
+        g1_given_c: FG1,
+        pdf_x0_given_c: FPDFX0,
+        integrator: &I,
+    ) -> f64
+    where
+        FS1: Fn(f64) -> f64,
+        FPDFT0: Fn(f64) -> f64,
+        FG1: Fn(f64) -> f64,
+        FPDFX0: Fn(f64) -> f64,
+        I: Integrator + ?Sized,
+    {
         let integrand1 = |t: f64| s1(t) * pdf_t0(t);
-        let integral1 = integrate(integrand1, 0.0, self.c, self.error_tolerance).integral;
+        let integral1 = integrator
+            .integrate(integrand1, 0.0, self.c, self.error_tolerance)
+            .value;
 
         let integrand2 = |x: f64| g1_given_c(x) * pdf_x0_given_c(x);
-        let integral2 = integrate(integrand2, 0.0, self.c, self.error_tolerance).integral;
+        let integral2 = integrator
+            .integrate(integrand2, 0.0, self.c, self.error_tolerance)
+            .value;
 
         integral1 - self.s0_at_c * self.s1_at_c * integral2
     }
 
     /// Calculates the loss probability, L(c).
     ///
-    /// ## Formula
-    ///
-    /// L(c) = integral from 0 to c of S0(t)*f1(t)dt - S1(c)*S0(c) * integral from 0 to c of G0(x|c)*f1(x|c)dx
-    ///
-    /// ## Parameters
-    /// (See `calculate_win_probability` for details, with roles of group 0 and 1 swapped)
+    /// Delegates to `calculate_loss_probability_with_integrator` using `ClenshawCurtis` as default.
     pub fn calculate_loss_probability<FS0, FPDFT1, FG0, FPDFX1>(
         &self,
         s0: FS0,
@@ -95,11 +103,40 @@ impl ProbabilityWinRatioContext {
         FG0: Fn(f64) -> f64,
         FPDFX1: Fn(f64) -> f64,
     {
+        self.calculate_loss_probability_with_integrator(
+            s0,
+            pdf_t1,
+            g0_given_c,
+            pdf_x1_given_c,
+            &ClenshawCurtis,
+        )
+    }
+
+    /// Calculates the loss probability using a specific integrator.
+    pub fn calculate_loss_probability_with_integrator<FS0, FPDFT1, FG0, FPDFX1, I>(
+        &self,
+        s0: FS0,
+        pdf_t1: FPDFT1,
+        g0_given_c: FG0,
+        pdf_x1_given_c: FPDFX1,
+        integrator: &I,
+    ) -> f64
+    where
+        FS0: Fn(f64) -> f64,
+        FPDFT1: Fn(f64) -> f64,
+        FG0: Fn(f64) -> f64,
+        FPDFX1: Fn(f64) -> f64,
+        I: Integrator + ?Sized,
+    {
         let integrand1 = |t: f64| s0(t) * pdf_t1(t);
-        let integral1 = integrate(integrand1, 0.0, self.c, self.error_tolerance).integral;
+        let integral1 = integrator
+            .integrate(integrand1, 0.0, self.c, self.error_tolerance)
+            .value;
 
         let integrand2 = |x: f64| g0_given_c(x) * pdf_x1_given_c(x);
-        let integral2 = integrate(integrand2, 0.0, self.c, self.error_tolerance).integral;
+        let integral2 = integrator
+            .integrate(integrand2, 0.0, self.c, self.error_tolerance)
+            .value;
 
         integral1 - self.s0_at_c * self.s1_at_c * integral2
     }
