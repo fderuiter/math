@@ -6,7 +6,7 @@
 //! - Temperature scaling based on answer entropy.
 //! - Training via KL divergence loss.
 
-pub mod types;
 pub mod scoring;
 pub mod temperature;
 pub mod training;
+pub mod types;

@@ -4,11 +4,11 @@
 //! It transforms the original functional implementation into a modular,
 //! object-oriented design using the `LoraEnsemble` struct.
 
-pub mod types;
 pub mod ensemble;
+pub mod types;
 
-pub use types::LoraStateDict;
 pub use ensemble::LoraEnsemble;
+pub use types::LoraStateDict;
 
 // Backward compatibility or legacy exports?
 // To clean up "God File" tendencies, we prefer users to use `LoraEnsemble`.

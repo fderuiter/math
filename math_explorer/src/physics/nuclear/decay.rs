@@ -1,5 +1,5 @@
-use super::types::*;
 use super::constants;
+use super::types::*;
 use std::f64::consts::PI;
 
 /// Calculates the remaining amount of a substance.
@@ -10,7 +10,11 @@ use std::f64::consts::PI;
 /// * `initial_quantity` - Initial quantity (N0).
 /// * `half_life` - Half-life in seconds.
 /// * `time` - Time elapsed in seconds.
-pub fn calculate_remaining(initial_quantity: f64, half_life: f64, time: f64) -> Result<f64, NuclearError> {
+pub fn calculate_remaining(
+    initial_quantity: f64,
+    half_life: f64,
+    time: f64,
+) -> Result<f64, NuclearError> {
     if half_life <= 0.0 {
         return Err(NuclearError::InvalidHalfLife);
     }
@@ -24,7 +28,11 @@ pub fn calculate_remaining(initial_quantity: f64, half_life: f64, time: f64) -> 
 /// * `z_daughter` - Atomic number of the daughter nucleus.
 /// * `z_alpha` - Atomic number of the alpha particle (usually 2).
 /// * `velocity` - Velocity of the alpha particle in fm/s.
-pub fn gamow_factor(z_daughter: AtomicNumber, z_alpha: AtomicNumber, velocity: f64) -> Result<f64, NuclearError> {
+pub fn gamow_factor(
+    z_daughter: AtomicNumber,
+    z_alpha: AtomicNumber,
+    velocity: f64,
+) -> Result<f64, NuclearError> {
     if velocity <= 0.0 {
         return Err(NuclearError::InvalidVelocity);
     }

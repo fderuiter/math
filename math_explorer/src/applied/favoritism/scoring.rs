@@ -79,11 +79,7 @@ pub fn calculate_favoritism_score_full<R: Rng + ?Sized, I: Integrator + ?Sized>(
 
     let emotional_support_integral = integrator
         .integrate(
-            |_t| {
-                integrator
-                    .integrate(|_x| 8.0, 0.0, 1.0, EPSILON)
-                    .value
-            },
+            |_t| integrator.integrate(|_x| 8.0, 0.0, 1.0, EPSILON).value,
             0.0,
             safe_t,
             EPSILON,

@@ -1,8 +1,8 @@
 //! Spatial Encoding and k-Space Trajectories.
 
+use super::proton;
 use nalgebra::Vector3;
 use std::f64::consts::PI;
-use super::proton;
 
 /// Calculates the accumulated phase $\phi(\vec{r}, t)$ given a spatial position and accumulated gradient.
 ///

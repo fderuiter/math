@@ -12,7 +12,10 @@ pub struct SuperpositionModel<M> {
 impl<M> SuperpositionModel<M> {
     /// Creates a new `SuperpositionModel`.
     pub fn new(base_model: M, dose_times: Vec<f64>) -> Self {
-        Self { base_model, dose_times }
+        Self {
+            base_model,
+            dose_times,
+        }
     }
 }
 

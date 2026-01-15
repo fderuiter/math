@@ -6,10 +6,10 @@
 //! states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
 //! in general.
 
+pub mod fractals;
 pub mod logistic;
 pub mod lorenz;
 pub mod metrics;
-pub mod fractals;
 
 // Re-export specific items to maintain backward compatibility if needed,
 // but the plan says "Extract `logistic` module to `math_explorer/src/physics/chaos/logistic.rs`".
@@ -19,8 +19,8 @@ pub mod fractals;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nalgebra as na;
     use approx::assert_relative_eq;
+    use nalgebra as na;
 
     #[test]
     fn test_logistic_chaos_lyapunov() {
@@ -28,7 +28,11 @@ mod tests {
         // Theoretical value is approx 0.496.
         // We use x0=0.1 to avoid starting at the critical point x=0.5.
         let lambda = metrics::logistic_lyapunov(3.9, 0.1, 1000);
-        assert!(lambda > 0.0, "Lyapunov exponent for r=3.9 should be positive, got {}", lambda);
+        assert!(
+            lambda > 0.0,
+            "Lyapunov exponent for r=3.9 should be positive, got {}",
+            lambda
+        );
     }
 
     #[test]
@@ -37,9 +41,17 @@ mod tests {
         // f'(x*) = 2.5(1 - 1.2) = 2.5(-0.2) = -0.5. ln(0.5) approx -0.693.
         // We use x0=0.1.
         let lambda = metrics::logistic_lyapunov(2.5, 0.1, 1000);
-        assert!(lambda < 0.0, "Lyapunov exponent for r=2.5 should be negative, got {}", lambda);
+        assert!(
+            lambda < 0.0,
+            "Lyapunov exponent for r=2.5 should be negative, got {}",
+            lambda
+        );
         // We can be more precise
-        assert!((lambda - -std::f64::consts::LN_2).abs() < 0.1, "Expected approx -0.693, got {}", lambda);
+        assert!(
+            (lambda - -std::f64::consts::LN_2).abs() < 0.1,
+            "Expected approx -0.693, got {}",
+            lambda
+        );
     }
 
     #[test]
@@ -73,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_lorenz_lyapunov_strategy() {
-        use crate::pure_math::analysis::ode::{RungeKutta4, Euler};
+        use crate::pure_math::analysis::ode::{Euler, RungeKutta4};
         let state = lorenz::LorenzState::new(1.0, 1.0, 1.0);
         let system = lorenz::LorenzSystem::default_chaotic(state);
 
@@ -84,10 +96,15 @@ mod tests {
             na::Vector3::new(10.0, 10.0, 10.0),
             0.01,
             100,
-            1.0
-        ).unwrap();
+            1.0,
+        )
+        .unwrap();
 
-        assert!(lambda_rk4 > 0.0, "Lorenz with RK4 should be chaotic, got {}", lambda_rk4);
+        assert!(
+            lambda_rk4 > 0.0,
+            "Lorenz with RK4 should be chaotic, got {}",
+            lambda_rk4
+        );
 
         // Test with Euler (less accurate, but should run)
         let lambda_euler = metrics::lorenz_lyapunov(
@@ -96,10 +113,15 @@ mod tests {
             na::Vector3::new(10.0, 10.0, 10.0),
             0.0001, // Euler needs smaller step for stability
             100,
-            1.0
-        ).unwrap();
+            1.0,
+        )
+        .unwrap();
 
-        assert!(lambda_euler > 0.0, "Lorenz with Euler should be chaotic, got {}", lambda_euler);
+        assert!(
+            lambda_euler > 0.0,
+            "Lorenz with Euler should be chaotic, got {}",
+            lambda_euler
+        );
     }
 
     #[test]

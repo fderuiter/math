@@ -11,7 +11,9 @@ use super::error::HighEnergyError;
 /// * `HighEnergyError::InvalidAdiabaticIndex` if `adiabatic_index <= 1`.
 pub fn shock_compression_ratio(adiabatic_index: f64) -> Result<f64, HighEnergyError> {
     if adiabatic_index <= 1.0 {
-        return Err(HighEnergyError::InvalidAdiabaticIndex { gamma: adiabatic_index });
+        return Err(HighEnergyError::InvalidAdiabaticIndex {
+            gamma: adiabatic_index,
+        });
     }
     let r = (adiabatic_index + 1.0) / (adiabatic_index - 1.0);
     Ok(r)
@@ -24,9 +26,15 @@ pub fn shock_compression_ratio(adiabatic_index: f64) -> Result<f64, HighEnergyEr
 /// * `HighEnergyError::InvalidAdiabaticIndex` if `adiabatic_index <= 1`.
 /// * `HighEnergyError::InvalidDensity` if `density <= 0`.
 /// * `HighEnergyError::InvalidPressure` if `pressure < 0`.
-pub fn specific_enthalpy(adiabatic_index: f64, pressure: f64, density: f64) -> Result<f64, HighEnergyError> {
+pub fn specific_enthalpy(
+    adiabatic_index: f64,
+    pressure: f64,
+    density: f64,
+) -> Result<f64, HighEnergyError> {
     if adiabatic_index <= 1.0 {
-        return Err(HighEnergyError::InvalidAdiabaticIndex { gamma: adiabatic_index });
+        return Err(HighEnergyError::InvalidAdiabaticIndex {
+            gamma: adiabatic_index,
+        });
     }
     if density <= 0.0 {
         return Err(HighEnergyError::InvalidDensity { rho: density });
@@ -48,7 +56,7 @@ mod tests {
     fn test_fluid_dynamics() {
         // Compression ratio, gamma_hat = 4/3.
         // r = (4/3 + 1) / (4/3 - 1) = (7/3) / (1/3) = 7.
-        let r = shock_compression_ratio(4.0/3.0).expect("Failed to calc compression ratio");
+        let r = shock_compression_ratio(4.0 / 3.0).expect("Failed to calc compression ratio");
         assert_relative_eq!(r, 7.0);
     }
 

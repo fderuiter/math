@@ -95,7 +95,13 @@ impl Adam {
     }
 
     /// Updates parameters (weights and bias) using Adam logic.
-    pub fn step(&mut self, weights: &mut Matrix, bias: &mut Vector, grad_w: &Matrix, grad_b: &Vector) {
+    pub fn step(
+        &mut self,
+        weights: &mut Matrix,
+        bias: &mut Vector,
+        grad_w: &Matrix,
+        grad_b: &Vector,
+    ) {
         self.t += 1;
         let t = self.t as f64;
 

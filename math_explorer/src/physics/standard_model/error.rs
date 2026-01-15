@@ -16,10 +16,22 @@ pub enum StandardModelError {
 impl fmt::Display for StandardModelError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidEnergyScale { scale, context } => write!(f, "Invalid energy scale in {}: got {}, expected > 0", context, scale),
-            Self::InvalidCouplingConstant { alpha } => write!(f, "Coupling constant must be positive, got {}", alpha),
-            Self::LandauPole { scale } => write!(f, "Landau pole encountered: coupling diverges at scale {}", scale),
-            Self::InvalidFlavors { nf } => write!(f, "Number of flavors must be non-negative, got {}", nf),
+            Self::InvalidEnergyScale { scale, context } => write!(
+                f,
+                "Invalid energy scale in {}: got {}, expected > 0",
+                context, scale
+            ),
+            Self::InvalidCouplingConstant { alpha } => {
+                write!(f, "Coupling constant must be positive, got {}", alpha)
+            }
+            Self::LandauPole { scale } => write!(
+                f,
+                "Landau pole encountered: coupling diverges at scale {}",
+                scale
+            ),
+            Self::InvalidFlavors { nf } => {
+                write!(f, "Number of flavors must be non-negative, got {}", nf)
+            }
         }
     }
 }

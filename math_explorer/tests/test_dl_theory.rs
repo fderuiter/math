@@ -27,7 +27,10 @@ fn test_deep_learning_cycle() {
 
     let final_pred = network.predict(&x);
     // Probability of class 0 should be high
-    assert!(final_pred[0] > final_pred[1], "Did not learn to predict class 0");
+    assert!(
+        final_pred[0] > final_pred[1],
+        "Did not learn to predict class 0"
+    );
     assert!(final_pred[0] > 0.8, "Prediction confidence too low");
 }
 

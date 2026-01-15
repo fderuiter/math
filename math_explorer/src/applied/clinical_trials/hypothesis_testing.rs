@@ -1,11 +1,11 @@
-use statrs::distribution::{ContinuousCDF, StudentsT, ChiSquared};
-use super::types::{GroupData, ContingencyTable, ClinicalTrialError};
+use super::types::{ClinicalTrialError, ContingencyTable, GroupData};
+use statrs::distribution::{ChiSquared, ContinuousCDF, StudentsT};
 
 #[derive(Debug, Clone)]
 pub struct TestResult {
     pub statistic: f64,
     pub p_value: f64,
-    pub is_significant: bool, // Based on provided alpha
+    pub is_significant: bool,                    // Based on provided alpha
     pub confidence_interval: Option<(f64, f64)>, // For the difference
 }
 
@@ -15,13 +15,20 @@ pub struct TestResult {
 /// * `group1` - Data for group 1.
 /// * `group2` - Data for group 2.
 /// * `alpha` - Significance level (e.g., 0.05).
-pub fn t_test_independent(group1: &GroupData, group2: &GroupData, alpha: f64) -> Result<TestResult, ClinicalTrialError> {
+pub fn t_test_independent(
+    group1: &GroupData,
+    group2: &GroupData,
+    alpha: f64,
+) -> Result<TestResult, ClinicalTrialError> {
     let n1 = group1.n();
     let n2 = group2.n();
 
     // Already checked in GroupData::new, but safe to check again if internals change
     if n1 < 2 || n2 < 2 {
-        return Err(ClinicalTrialError::InsufficientSampleSize { required: 2, actual: n1.min(n2) });
+        return Err(ClinicalTrialError::InsufficientSampleSize {
+            required: 2,
+            actual: n1.min(n2),
+        });
     }
 
     let mean1 = group1.mean();
@@ -42,7 +49,8 @@ pub fn t_test_independent(group1: &GroupData, group2: &GroupData, alpha: f64) ->
     let t_stat = (mean1 - mean2) / se_diff;
 
     // P-value (two-tailed)
-    let t_dist = StudentsT::new(0.0, 1.0, dof).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
+    let t_dist = StudentsT::new(0.0, 1.0, dof)
+        .map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
     let p_value = 2.0 * (1.0 - t_dist.cdf(t_stat.abs()));
 
     // Confidence Interval for the difference
@@ -65,7 +73,10 @@ pub fn t_test_independent(group1: &GroupData, group2: &GroupData, alpha: f64) ->
 /// # Arguments
 /// * `table` - The 2x2 contingency table.
 /// * `alpha` - Significance level.
-pub fn chi_square_2x2(table: &ContingencyTable, alpha: f64) -> Result<TestResult, ClinicalTrialError> {
+pub fn chi_square_2x2(
+    table: &ContingencyTable,
+    alpha: f64,
+) -> Result<TestResult, ClinicalTrialError> {
     let total = table.total();
     // total == 0 check is done in ContingencyTable constructor.
 
@@ -86,7 +97,9 @@ pub fn chi_square_2x2(table: &ContingencyTable, alpha: f64) -> Result<TestResult
     let e_d = (row2 * col2) / total;
 
     if e_a == 0.0 || e_b == 0.0 || e_c == 0.0 || e_d == 0.0 {
-         return Err(ClinicalTrialError::StatisticalError("Expected frequencies too low (zero) for Chi-Square".to_string()));
+        return Err(ClinicalTrialError::StatisticalError(
+            "Expected frequencies too low (zero) for Chi-Square".to_string(),
+        ));
     }
 
     let term_a = (a_f - e_a).powi(2) / e_a;
@@ -97,7 +110,8 @@ pub fn chi_square_2x2(table: &ContingencyTable, alpha: f64) -> Result<TestResult
     let chi_sq = term_a + term_b + term_c + term_d;
 
     // DoF for 2x2 is 1
-    let dist = ChiSquared::new(1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
+    let dist =
+        ChiSquared::new(1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
     let p_value = 1.0 - dist.cdf(chi_sq);
 
     Ok(TestResult {

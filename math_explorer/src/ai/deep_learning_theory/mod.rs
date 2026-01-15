@@ -1,5 +1,5 @@
-pub mod linear_algebra;
 pub mod calculus;
-pub mod probability;
-pub mod optimization;
 pub mod cycle;
+pub mod linear_algebra;
+pub mod optimization;
+pub mod probability;

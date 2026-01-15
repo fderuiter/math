@@ -34,7 +34,12 @@ impl LinearCalibrator {
         let nf = n as f64;
         let sum_x: f64 = voltages.iter().take(n).sum();
         let sum_y: f64 = distances.iter().take(n).sum();
-        let sum_xy: f64 = voltages.iter().zip(distances.iter()).take(n).map(|(x, y)| x * y).sum();
+        let sum_xy: f64 = voltages
+            .iter()
+            .zip(distances.iter())
+            .take(n)
+            .map(|(x, y)| x * y)
+            .sum();
         let sum_x2: f64 = voltages.iter().take(n).map(|x| x.powi(2)).sum();
 
         let denominator = nf * sum_x2 - sum_x.powi(2);

@@ -1,13 +1,21 @@
-use super::types::*;
 use super::constants::liquid_drop_constants;
+use super::types::*;
 
 /// Trait defining the behavior of a nuclear binding energy model.
 pub trait BindingEnergyModel {
     /// Calculates the Binding Energy B(Z, A).
-    fn binding_energy(&self, atomic_number: AtomicNumber, mass_number: MassNumber) -> Result<f64, NuclearError>;
+    fn binding_energy(
+        &self,
+        atomic_number: AtomicNumber,
+        mass_number: MassNumber,
+    ) -> Result<f64, NuclearError>;
 
     /// Calculates the Binding Energy per nucleon.
-    fn binding_energy_per_nucleon(&self, atomic_number: AtomicNumber, mass_number: MassNumber) -> Result<f64, NuclearError> {
+    fn binding_energy_per_nucleon(
+        &self,
+        atomic_number: AtomicNumber,
+        mass_number: MassNumber,
+    ) -> Result<f64, NuclearError> {
         let be = self.binding_energy(atomic_number, mass_number)?;
         Ok(be / mass_number.as_f64())
     }
@@ -43,17 +51,29 @@ impl LiquidDropModel {
 
     /// Creates a new LiquidDropModel with custom constants.
     pub fn with_constants(a_v: f64, a_s: f64, a_c: f64, a_sym: f64, delta_coeff: f64) -> Self {
-        Self { a_v, a_s, a_c, a_sym, delta_coeff }
+        Self {
+            a_v,
+            a_s,
+            a_c,
+            a_sym,
+            delta_coeff,
+        }
     }
 }
 
 impl BindingEnergyModel for LiquidDropModel {
-    fn binding_energy(&self, atomic_number: AtomicNumber, mass_number: MassNumber) -> Result<f64, NuclearError> {
+    fn binding_energy(
+        &self,
+        atomic_number: AtomicNumber,
+        mass_number: MassNumber,
+    ) -> Result<f64, NuclearError> {
         let z = atomic_number.as_f64();
         let a = mass_number.as_f64();
 
         if atomic_number.value() > mass_number.value() {
-            return Err(NuclearError::InvalidAtomicNumber("Z cannot be greater than A".to_string()));
+            return Err(NuclearError::InvalidAtomicNumber(
+                "Z cannot be greater than A".to_string(),
+            ));
         }
 
         let vol_term = self.a_v * a;

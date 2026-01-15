@@ -21,7 +21,11 @@ pub struct BivariateWeibullModel {
 impl BivariateWeibullModel {
     /// Creates a new `BivariateWeibullModel`.
     pub fn new(lambda1: f64, lambda2: f64, alpha: f64) -> Self {
-        Self { lambda1, lambda2, alpha }
+        Self {
+            lambda1,
+            lambda2,
+            alpha,
+        }
     }
 
     /// Joint survival function S(t, x).
@@ -36,7 +40,9 @@ impl BivariateWeibullModel {
 
     /// PDF for T, f(t).
     pub fn pdf_t(&self, t: f64) -> f64 {
-        if t <= 0.0 { return 0.0; }
+        if t <= 0.0 {
+            return 0.0;
+        }
         let l1_alpha = self.lambda1.powf(self.alpha);
         // f(t) = - dS(t)/dt = alpha * lambda1 * (lambda1 * t)^(alpha-1) * S(t)
         //      = alpha * lambda1^alpha * t^(alpha-1) * S(t)
@@ -52,9 +58,13 @@ impl BivariateWeibullModel {
 
     /// Conditional PDF for X given T > c, f(x|c).
     pub fn pdf_x_given_t(&self, x: f64, c: f64) -> f64 {
-        if x < 0.0 { return 0.0; }
+        if x < 0.0 {
+            return 0.0;
+        }
         let term = self.lambda1 * c + self.lambda2 * x;
-        if term < 0.0 { return 0.0; }
+        if term < 0.0 {
+            return 0.0;
+        }
         let g = self.conditional_survival_x_given_t(x, c);
         // f(x|c) = - dG(x|c)/dx
         // G(x|c) = exp( - (lambda1*c + lambda2*x)^alpha ) / S(c,0)
@@ -80,7 +90,12 @@ pub struct SimulationParams {
 impl SimulationParams {
     /// Creates a new `SimulationParams`.
     pub fn new(lambda1: f64, lambda2: f64, alpha: f64, theta: f64) -> Self {
-        Self { lambda1, lambda2, alpha, theta }
+        Self {
+            lambda1,
+            lambda2,
+            alpha,
+            theta,
+        }
     }
 
     /// Returns the model for the control group.
@@ -140,7 +155,6 @@ pub fn pdf_t_treatment(t: f64, params: &SimulationParams) -> f64 {
     params.treatment_model().pdf_t(t)
 }
 
-
 // --- Derived Functions for X (Non-Fatal Event) given T > c ---
 
 /// Conditional survival function for X in the control group, G0(x|c).
@@ -150,7 +164,9 @@ pub fn conditional_survival_x_given_t_control(x: f64, c: f64, params: &Simulatio
 
 /// Conditional survival function for X in the treatment group, G1(x|c).
 pub fn conditional_survival_x_given_t_treatment(x: f64, c: f64, params: &SimulationParams) -> f64 {
-    params.treatment_model().conditional_survival_x_given_t(x, c)
+    params
+        .treatment_model()
+        .conditional_survival_x_given_t(x, c)
 }
 
 /// Conditional PDF for X in the control group, f0(x|c).

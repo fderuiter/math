@@ -17,7 +17,12 @@ pub fn calculate_soft_self_consistency_scores(responses: &[Response]) -> Vec<f64
     }
     responses
         .iter()
-        .map(|response| answer_probabilities.get(&response.answer).cloned().unwrap_or(0.0))
+        .map(|response| {
+            answer_probabilities
+                .get(&response.answer)
+                .cloned()
+                .unwrap_or(0.0)
+        })
         .collect()
 }
 
@@ -28,10 +33,26 @@ mod tests {
     #[test]
     fn test_calculate_soft_self_consistency_scores() {
         let responses = vec![
-            Response { text: "A".to_string(), probability: 0.8, answer: "A".to_string() },
-            Response { text: "B".to_string(), probability: 0.1, answer: "B".to_string() },
-            Response { text: "A".to_string(), probability: 0.05, answer: "A".to_string() },
-            Response { text: "B".to_string(), probability: 0.05, answer: "B".to_string() },
+            Response {
+                text: "A".to_string(),
+                probability: 0.8,
+                answer: "A".to_string(),
+            },
+            Response {
+                text: "B".to_string(),
+                probability: 0.1,
+                answer: "B".to_string(),
+            },
+            Response {
+                text: "A".to_string(),
+                probability: 0.05,
+                answer: "A".to_string(),
+            },
+            Response {
+                text: "B".to_string(),
+                probability: 0.05,
+                answer: "B".to_string(),
+            },
         ];
         let scores = calculate_soft_self_consistency_scores(&responses);
         let expected_scores = vec![0.85, 0.15, 0.85, 0.15];

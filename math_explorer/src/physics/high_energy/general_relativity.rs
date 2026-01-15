@@ -36,7 +36,10 @@ impl SchwarzschildBlackHole {
     pub fn gravitational_time_dilation(&self, r: f64) -> Result<f64, HighEnergyError> {
         let rs = self.schwarzschild_radius()?;
         if r <= rs {
-            return Err(HighEnergyError::InvalidRadius { radius: r, limit: rs });
+            return Err(HighEnergyError::InvalidRadius {
+                radius: r,
+                limit: rs,
+            });
         }
         Ok((1.0 - rs / r).sqrt())
     }
@@ -50,8 +53,8 @@ impl SchwarzschildBlackHole {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::constants::SOLAR_MASS;
+    use super::*;
     use approx::assert_relative_eq;
 
     #[test]
@@ -68,7 +71,9 @@ mod tests {
 
         // Time dilation at r = 2 Rs.
         // factor = sqrt(1 - 1/2) = sqrt(0.5) approx 0.707
-        let factor = bh.gravitational_time_dilation(2.0 * rs).expect("Failed to calc time dilation");
+        let factor = bh
+            .gravitational_time_dilation(2.0 * rs)
+            .expect("Failed to calc time dilation");
         assert_relative_eq!(factor, 0.5f64.sqrt());
     }
 

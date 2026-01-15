@@ -2,8 +2,8 @@
 //!
 //! Implements the core Partial Differential Equations (PDEs) of Fluid Dynamics.
 
+use super::types::{FlowState, FluidProperties};
 use nalgebra::Vector3;
-use super::types::{FluidProperties, FlowState};
 
 /// Calculates the Material Derivative ($D/Dt$) of a scalar property.
 ///
@@ -12,7 +12,11 @@ use super::types::{FluidProperties, FlowState};
 /// * `local_change`: Partial time derivative $\frac{\partial \phi}{\partial t}$.
 /// * `velocity`: Flow velocity $\mathbf{u}$.
 /// * `gradient`: Spatial gradient $\nabla \phi$.
-pub fn material_derivative_scalar(local_change: f64, velocity: Vector3<f64>, gradient: Vector3<f64>) -> f64 {
+pub fn material_derivative_scalar(
+    local_change: f64,
+    velocity: Vector3<f64>,
+    gradient: Vector3<f64>,
+) -> f64 {
     local_change + velocity.dot(&gradient)
 }
 
@@ -26,7 +30,7 @@ pub fn material_derivative_scalar(local_change: f64, velocity: Vector3<f64>, gra
 pub fn material_derivative_vector(
     local_change: Vector3<f64>,
     velocity: Vector3<f64>,
-    gradient_tensor: &nalgebra::Matrix3<f64>
+    gradient_tensor: &nalgebra::Matrix3<f64>,
 ) -> Vector3<f64> {
     // (\mathbf{u} \cdot \nabla) \mathbf{A} corresponds to Jacobian * velocity vector
     // J = [ dA_x/dx  dA_x/dy  dA_x/dz ]

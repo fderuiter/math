@@ -16,7 +16,12 @@ use num_complex::Complex;
 ///
 /// # Returns
 /// A 3x3 Complex Matrix representing $V_{CKM}$.
-pub fn construct_ckm(theta12: f64, theta23: f64, theta13: f64, delta: f64) -> Matrix3<Complex<f64>> {
+pub fn construct_ckm(
+    theta12: f64,
+    theta23: f64,
+    theta13: f64,
+    delta: f64,
+) -> Matrix3<Complex<f64>> {
     let c12 = theta12.cos();
     let s12 = theta12.sin();
     let c23 = theta23.cos();
@@ -46,11 +51,7 @@ pub fn construct_ckm(theta12: f64, theta23: f64, theta13: f64, delta: f64) -> Ma
     let v_ts = Complex::new(-c12 * s23, 0.0) - Complex::new(s12 * c23 * s13, 0.0) * phase_pos;
     let v_tb = Complex::new(c23 * c13, 0.0);
 
-    Matrix3::new(
-        v_ud, v_us, v_ub,
-        v_cd, v_cs, v_cb,
-        v_td, v_ts, v_tb
-    )
+    Matrix3::new(v_ud, v_us, v_ub, v_cd, v_cs, v_cb, v_td, v_ts, v_tb)
 }
 
 #[cfg(test)]
@@ -73,11 +74,11 @@ mod tests {
             for j in 0..3 {
                 let val = identity[(i, j)];
                 if i == j {
-                     assert_relative_eq!(val.re, 1.0, epsilon = 1e-10);
-                     assert_relative_eq!(val.im, 0.0, epsilon = 1e-10);
+                    assert_relative_eq!(val.re, 1.0, epsilon = 1e-10);
+                    assert_relative_eq!(val.im, 0.0, epsilon = 1e-10);
                 } else {
-                     assert_relative_eq!(val.re, 0.0, epsilon = 1e-10);
-                     assert_relative_eq!(val.im, 0.0, epsilon = 1e-10);
+                    assert_relative_eq!(val.re, 0.0, epsilon = 1e-10);
+                    assert_relative_eq!(val.im, 0.0, epsilon = 1e-10);
                 }
             }
         }

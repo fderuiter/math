@@ -1,5 +1,5 @@
-use super::encoder::Encoder;
 use super::decoder::Decoder;
+use super::encoder::Encoder;
 
 /// The full Transformer model container.
 ///

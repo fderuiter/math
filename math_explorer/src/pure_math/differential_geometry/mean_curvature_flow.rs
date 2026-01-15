@@ -11,15 +11,27 @@ pub struct DiscreteSurface {
 
 impl DiscreteSurface {
     pub fn new(points: Vec<Vec<Point3<f64>>>, closed_u: bool, closed_v: bool) -> Self {
-        Self { points, closed_u, closed_v }
+        Self {
+            points,
+            closed_u,
+            closed_v,
+        }
     }
 
     fn get(&self, i: i32, j: i32) -> Point3<f64> {
         let nu = self.points.len() as i32;
         let nv = self.points[0].len() as i32;
 
-        let i_idx = if self.closed_u { i.rem_euclid(nu) } else { i.clamp(0, nu - 1) } as usize;
-        let j_idx = if self.closed_v { j.rem_euclid(nv) } else { j.clamp(0, nv - 1) } as usize;
+        let i_idx = if self.closed_u {
+            i.rem_euclid(nu)
+        } else {
+            i.clamp(0, nu - 1)
+        } as usize;
+        let j_idx = if self.closed_v {
+            j.rem_euclid(nv)
+        } else {
+            j.clamp(0, nv - 1)
+        } as usize;
 
         self.points[i_idx][j_idx]
     }

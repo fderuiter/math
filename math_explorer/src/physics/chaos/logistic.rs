@@ -29,7 +29,10 @@ pub struct LogisticMap {
 impl LogisticMap {
     /// Creates a new LogisticMap instance.
     pub fn new(r: f64, initial_state: f64) -> Self {
-        LogisticMap { r, state: initial_state }
+        LogisticMap {
+            r,
+            state: initial_state,
+        }
     }
 }
 

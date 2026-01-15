@@ -14,8 +14,12 @@ pub enum AIError {
 impl fmt::Display for AIError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::DimensionMismatch { expected, got } => write!(f, "Dimension mismatch: expected {}, got {}", expected, got),
-            Self::InvalidParameter { name, value } => write!(f, "Invalid parameter {}: {}", name, value),
+            Self::DimensionMismatch { expected, got } => {
+                write!(f, "Dimension mismatch: expected {}, got {}", expected, got)
+            }
+            Self::InvalidParameter { name, value } => {
+                write!(f, "Invalid parameter {}: {}", name, value)
+            }
             Self::OptimizationDivergence => write!(f, "Optimization diverged"),
         }
     }

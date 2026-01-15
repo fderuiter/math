@@ -5,8 +5,8 @@
 //! physical range resolution limit ($\Delta R = c/2B$) by exploiting the eigen-structure of the
 //! signal covariance matrix.
 
-use num_complex::Complex;
 use nalgebra::{DMatrix, DVector};
+use num_complex::Complex;
 use std::f64::consts::PI;
 
 /// Implements the MUSIC algorithm for high-resolution range estimation.
@@ -75,7 +75,7 @@ impl MusicEstimator {
         end_range: f64,
         step_range: f64,
         bandwidth: f64,
-        c: f64
+        c: f64,
     ) -> Result<Vec<(f64, f64)>, &'static str> {
         if self.snapshots.len() < self.snapshot_count {
             return Err("Not enough snapshots to compute stable Covariance Matrix");
@@ -107,7 +107,9 @@ impl MusicEstimator {
         // `eigen.eigenvectors` is a matrix where columns are eigenvectors.
 
         // Sort eigenvalues and permute eigenvectors
-        let mut pairs: Vec<(f64, usize)> = eigen.eigenvalues.iter()
+        let mut pairs: Vec<(f64, usize)> = eigen
+            .eigenvalues
+            .iter()
             .enumerate()
             .map(|(i, &v)| (v, i))
             .collect();
@@ -118,11 +120,12 @@ impl MusicEstimator {
         // The last (N - P) eigenvectors correspond to noise.
         let num_noise_vectors = n - self.signal_subspace_dim;
         if num_noise_vectors == 0 {
-             return Err("Signal subspace dimension equals or exceeds sample size");
+            return Err("Signal subspace dimension equals or exceeds sample size");
         }
 
         // Collect indices of noise eigenvectors (the smallest ones)
-        let noise_indices: Vec<usize> = pairs.iter()
+        let noise_indices: Vec<usize> = pairs
+            .iter()
             .skip(self.signal_subspace_dim) // Skip the P largest (Signal)
             .map(|(_, i)| *i)
             .collect();
@@ -162,7 +165,7 @@ impl MusicEstimator {
             // a^H * (P_noise * a)
             let tmp = &p_noise * &a_vec;
             let den_complex = a_vec.adjoint() * tmp; // Result is 1x1 matrix
-            let den = den_complex[(0,0)].norm(); // Should be real, take norm to be safe
+            let den = den_complex[(0, 0)].norm(); // Should be real, take norm to be safe
 
             // P(R) = 1 / D
             // Add small epsilon to avoid division by zero

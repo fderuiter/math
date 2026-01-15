@@ -1,6 +1,6 @@
-use super::linear_algebra::{DenseLayer, Vector};
 use super::calculus::{linear_backward, relu, relu_prime};
-use super::optimization::{cross_entropy_softmax_prime, SGD};
+use super::linear_algebra::{DenseLayer, Vector};
+use super::optimization::{SGD, cross_entropy_softmax_prime};
 use super::probability::softmax;
 
 /// The Deep Learning Cycle: Forward -> Loss -> Backward -> Update
@@ -65,10 +65,12 @@ impl TrainingLoop {
         let (_, d_w1, d_b1) = linear_backward(&d_z1, x, &self.layer1.weights);
 
         // --- 4. Update (Optimization) ---
-        self.optimizer.update_matrix(&mut self.layer2.weights, &d_w2);
+        self.optimizer
+            .update_matrix(&mut self.layer2.weights, &d_w2);
         self.optimizer.update_vector(&mut self.layer2.bias, &d_b2);
 
-        self.optimizer.update_matrix(&mut self.layer1.weights, &d_w1);
+        self.optimizer
+            .update_matrix(&mut self.layer1.weights, &d_w1);
         self.optimizer.update_vector(&mut self.layer1.bias, &d_b1);
 
         loss

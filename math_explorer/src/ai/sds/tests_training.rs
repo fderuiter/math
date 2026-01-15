@@ -1,6 +1,6 @@
-use nalgebra::DMatrix;
-use approx::assert_relative_eq;
 use crate::ai::sds::training::AdamOptimizer;
+use approx::assert_relative_eq;
+use nalgebra::DMatrix;
 
 #[test]
 fn test_adam_step() {

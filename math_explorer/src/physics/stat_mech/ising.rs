@@ -144,6 +144,10 @@ mod tests {
         // In disordered phase, magnetization should be small (random fluctuations).
         // It won't be exactly 0, but should be close to 0 compared to 1.
         // <M> ~ 0.
-        assert!(avg_m_per_spin.abs() < 0.3, "High T Ising should be disordered (M ~ 0). Got {}", avg_m_per_spin);
+        assert!(
+            avg_m_per_spin.abs() < 0.3,
+            "High T Ising should be disordered (M ~ 0). Got {}",
+            avg_m_per_spin
+        );
     }
 }

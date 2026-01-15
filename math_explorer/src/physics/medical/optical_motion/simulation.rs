@@ -42,7 +42,12 @@ pub fn cosine_respiratory_curve(t: f64, amplitude: f64, period: f64) -> f64 {
 /// # Returns
 ///
 /// * `f64` - Position $y_1$.
-pub fn translation_stage_motion(t: f64, half_period: f64, coefficient_a: f64, coefficient_b: f64) -> f64 {
+pub fn translation_stage_motion(
+    t: f64,
+    half_period: f64,
+    coefficient_a: f64,
+    coefficient_b: f64,
+) -> f64 {
     coefficient_a * (t - half_period).powi(2) + coefficient_b
 }
 

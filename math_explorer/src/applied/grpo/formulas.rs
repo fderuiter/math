@@ -3,8 +3,8 @@ use statrs::statistics::{Data, Distribution};
 const EPSILON_NORM: f64 = 1e-8;
 
 // Re-export moved functions to maintain backward compatibility
-pub use super::metrics::{pairwise_distance_bleu};
-pub use super::rewards::{uncertainty_reward, repetition_penalty, composite_reward, binary_reward};
+pub use super::metrics::pairwise_distance_bleu;
+pub use super::rewards::{binary_reward, composite_reward, repetition_penalty, uncertainty_reward};
 
 /// Calculates the response-level advantage using z-score normalization.
 ///
