@@ -22,7 +22,8 @@ pub struct Patient {
 /// algorithms to be swapped interchangeably.
 pub trait AllocationStrategy {
     /// Assigns `n_subjects` to groups using the provided RNG.
-    fn assign<R: Rng + ?Sized>(&self, rng: &mut R, n_subjects: usize) -> Result<Vec<Group>, String>;
+    fn assign<R: Rng + ?Sized>(&self, rng: &mut R, n_subjects: usize)
+    -> Result<Vec<Group>, String>;
 }
 
 /// Simple Randomization Strategy.
@@ -31,7 +32,11 @@ pub trait AllocationStrategy {
 pub struct SimpleRandomizer;
 
 impl AllocationStrategy for SimpleRandomizer {
-    fn assign<R: Rng + ?Sized>(&self, rng: &mut R, n_subjects: usize) -> Result<Vec<Group>, String> {
+    fn assign<R: Rng + ?Sized>(
+        &self,
+        rng: &mut R,
+        n_subjects: usize,
+    ) -> Result<Vec<Group>, String> {
         let mut assignments = Vec::with_capacity(n_subjects);
         for _ in 0..n_subjects {
             if rng.r#gen::<bool>() {
@@ -65,7 +70,11 @@ impl BlockRandomizer {
 }
 
 impl AllocationStrategy for BlockRandomizer {
-    fn assign<R: Rng + ?Sized>(&self, rng: &mut R, n_subjects: usize) -> Result<Vec<Group>, String> {
+    fn assign<R: Rng + ?Sized>(
+        &self,
+        rng: &mut R,
+        n_subjects: usize,
+    ) -> Result<Vec<Group>, String> {
         // Note: The original implementation didn't strictly check n_subjects % block_size,
         // it just filled enough blocks and truncated. We preserve that behavior.
 
@@ -107,10 +116,7 @@ impl<S: AllocationStrategy> StratifiedRandomizer<S> {
     ) -> Result<HashMap<String, Group>, String> {
         let mut strata_map: HashMap<String, Vec<&Patient>> = HashMap::new();
         for p in patients {
-            strata_map
-                .entry(p.stratum.clone())
-                .or_default()
-                .push(p);
+            strata_map.entry(p.stratum.clone()).or_default().push(p);
         }
 
         let mut final_assignments = HashMap::new();

@@ -1,5 +1,7 @@
-use math_explorer::applied::clinical_trials::{design, sample_size, hypothesis_testing, analysis, survival_analysis};
-use math_explorer::applied::clinical_trials::types::{GroupData, ContingencyTable};
+use math_explorer::applied::clinical_trials::types::{ContingencyTable, GroupData};
+use math_explorer::applied::clinical_trials::{
+    analysis, design, hypothesis_testing, sample_size, survival_analysis,
+};
 
 #[test]
 fn test_simple_randomization() {
@@ -17,8 +19,14 @@ fn test_block_randomization() {
     assert_eq!(assignments.len(), n);
 
     // Check overall balance
-    let treatment_count = assignments.iter().filter(|&&g| g == design::Group::Treatment).count();
-    let control_count = assignments.iter().filter(|&&g| g == design::Group::Control).count();
+    let treatment_count = assignments
+        .iter()
+        .filter(|&&g| g == design::Group::Treatment)
+        .count();
+    let control_count = assignments
+        .iter()
+        .filter(|&&g| g == design::Group::Control)
+        .count();
     assert_eq!(treatment_count, 10);
     assert_eq!(control_count, 10);
 }
@@ -54,7 +62,8 @@ fn test_chi_square_2x2() {
         30, // Treatment No Event
         50, // Control Event
         50, // Control No Event
-    ).unwrap();
+    )
+    .unwrap();
 
     let result = hypothesis_testing::chi_square_2x2(&table, 0.05).unwrap();
     assert!(result.is_significant);
@@ -71,7 +80,8 @@ fn test_risk_metrics() {
         90, // Treatment No Event
         20, // Control Event
         80, // Control No Event
-    ).unwrap();
+    )
+    .unwrap();
 
     let metrics = analysis::calculate_risk_metrics(&table, 0.05).unwrap();
 
@@ -83,10 +93,22 @@ fn test_risk_metrics() {
 fn test_kaplan_meier() {
     use survival_analysis::Observation;
     let obs = vec![
-        Observation { time: 1.0, event_occurred: true },
-        Observation { time: 2.0, event_occurred: true },
-        Observation { time: 3.0, event_occurred: false }, // censored
-        Observation { time: 4.0, event_occurred: true },
+        Observation {
+            time: 1.0,
+            event_occurred: true,
+        },
+        Observation {
+            time: 2.0,
+            event_occurred: true,
+        },
+        Observation {
+            time: 3.0,
+            event_occurred: false,
+        }, // censored
+        Observation {
+            time: 4.0,
+            event_occurred: true,
+        },
     ];
 
     let curve = survival_analysis::kaplan_meier(&obs);

@@ -1,8 +1,8 @@
 //! Classical Dynamics Simulator using Bloch Equations.
 
-use nalgebra::Vector3;
-use crate::pure_math::analysis::ode::{OdeSystem, Solver, Euler};
 use super::proton;
+use crate::pure_math::analysis::ode::{Euler, OdeSystem, Solver};
+use nalgebra::Vector3;
 
 /// Internal helper struct to define the Bloch equations as an OdeSystem.
 struct BlochSystem {
@@ -21,18 +21,10 @@ impl OdeSystem<Vector3<f64>> for BlochSystem {
 
         // Relaxation terms
         // Transverse relaxation (x and y components decay with T2)
-        let transverse_decay = Vector3::new(
-            state.x / self.t2,
-            state.y / self.t2,
-            0.0
-        );
+        let transverse_decay = Vector3::new(state.x / self.t2, state.y / self.t2, 0.0);
 
         // Longitudinal relaxation (z component recovers to M0 with T1)
-        let longitudinal_recovery = Vector3::new(
-            0.0,
-            0.0,
-            (state.z - self.m0) / self.t1
-        );
+        let longitudinal_recovery = Vector3::new(0.0, 0.0, (state.z - self.m0) / self.t1);
 
         // Total derivative dM/dt
         precession - transverse_decay - longitudinal_recovery

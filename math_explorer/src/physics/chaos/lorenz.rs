@@ -1,7 +1,7 @@
 //! Continuous Chaos (The Lorenz System)
 
-use nalgebra::Vector3;
 use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
+use nalgebra::Vector3;
 
 /// Represents the state of the Lorenz system $(x, y, z)$.
 #[derive(Debug, Clone, Copy)]
@@ -104,7 +104,7 @@ impl LorenzSystem {
     ///
     /// This now delegates to the generic `RungeKutta4` solver, ensuring DRY and type safety.
     pub fn step(&mut self, dt: f64) {
-            self.state.vec = RungeKutta4::step(self, 0.0, &self.state.vec, dt);
+        self.state.vec = RungeKutta4::step(self, 0.0, &self.state.vec, dt);
     }
 
     /// Advances the system by time `dt` using a provided solver strategy.

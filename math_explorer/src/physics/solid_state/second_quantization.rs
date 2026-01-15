@@ -55,12 +55,19 @@ impl FockState {
     }
 
     /// Sets the occupation number of a specific state directly.
-    pub fn set_occupation(&mut self, index: usize, count: u8, p_type: ParticleType) -> Result<(), String> {
+    pub fn set_occupation(
+        &mut self,
+        index: usize,
+        count: u8,
+        p_type: ParticleType,
+    ) -> Result<(), String> {
         if index >= self.occupations.len() {
             return Err(format!("Index {} out of bounds", index));
         }
         if p_type == ParticleType::Fermion && count > 1 {
-            return Err("Pauli Exclusion Principle: Fermions cannot occupy same state > 1".to_string());
+            return Err(
+                "Pauli Exclusion Principle: Fermions cannot occupy same state > 1".to_string(),
+            );
         }
         self.occupations[index] = count;
         Ok(())
@@ -78,7 +85,7 @@ impl FockState {
                     return Err("Pauli Exclusion: State already occupied".to_string());
                 }
                 self.occupations[index] = 1;
-            },
+            }
             ParticleType::Boson => {
                 if current == u8::MAX {
                     return Err("Boson saturation (u8 max)".to_string());
@@ -101,8 +108,8 @@ pub fn check_commutation(op1: &Operator, op2: &Operator, p_type: ParticleType) -
             // Fermions: Anti-commutator {A, B} = AB + BA
             // {c_i, c_j^\dagger} = delta_{ij}
             match (op1.op_type, op2.op_type) {
-                (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation) |
-                (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
+                (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation)
+                | (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
                     if op1.index == op2.index { 1.0 } else { 0.0 }
                 }
                 _ => 0.0, // {c, c} = 0, {c^\dagger, c^\dagger} = 0
@@ -114,11 +121,11 @@ pub fn check_commutation(op1: &Operator, op2: &Operator, p_type: ParticleType) -
             // [a_i^\dagger, a_j] = -delta_{ij}
             match (op1.op_type, op2.op_type) {
                 (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation) => {
-                        if op1.index == op2.index { 1.0 } else { 0.0 }
-                },
+                    if op1.index == op2.index { 1.0 } else { 0.0 }
+                }
                 (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
-                        if op1.index == op2.index { -1.0 } else { 0.0 }
-                },
+                    if op1.index == op2.index { -1.0 } else { 0.0 }
+                }
                 _ => 0.0, // [a, a] = 0, [a^\dagger, a^\dagger] = 0
             }
         }

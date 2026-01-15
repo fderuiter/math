@@ -109,7 +109,12 @@ pub fn quick_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     QuickSorter.sort(data)
 }
 
-fn quick_sort_recursive<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, stats: &mut SortingStats) {
+fn quick_sort_recursive<T: Ord + Clone>(
+    arr: &mut [T],
+    low: usize,
+    high: usize,
+    stats: &mut SortingStats,
+) {
     if low < high {
         let p = partition(arr, low, high, stats);
         if p > 0 {
@@ -119,7 +124,12 @@ fn quick_sort_recursive<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, 
     }
 }
 
-fn partition<T: Ord + Clone>(arr: &mut [T], low: usize, high: usize, stats: &mut SortingStats) -> usize {
+fn partition<T: Ord + Clone>(
+    arr: &mut [T],
+    low: usize,
+    high: usize,
+    stats: &mut SortingStats,
+) -> usize {
     // We choose the last element as pivot (Lomuto partition scheme)
     let pivot_index = high;
     let mut i = low;

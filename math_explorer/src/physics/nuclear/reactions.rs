@@ -21,7 +21,11 @@ pub fn q_value(input_masses: &[f64], output_masses: &[f64]) -> f64 {
 /// * `energy` - Energy E in MeV.
 /// * `resonance_energy` - Resonance energy E_res in MeV.
 /// * `gamma_width` - Decay width Gamma in MeV.
-pub fn breit_wigner(energy: f64, resonance_energy: f64, gamma_width: f64) -> Result<f64, NuclearError> {
+pub fn breit_wigner(
+    energy: f64,
+    resonance_energy: f64,
+    gamma_width: f64,
+) -> Result<f64, NuclearError> {
     if gamma_width <= 0.0 {
         return Err(NuclearError::InvalidGammaWidth);
     }

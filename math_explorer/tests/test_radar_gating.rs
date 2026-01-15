@@ -1,12 +1,12 @@
+use approx::assert_relative_eq;
 use math_explorer::physics::medical::radar_gating::{
-    physics::{FmcwConfig, C},
-    geometry::{SphericalPoint, AngleFftConfig},
+    gating::GatingLogic,
+    geometry::{AngleFftConfig, SphericalPoint},
+    physics::{C, FmcwConfig},
     surface::BiQuadraticSurface,
     tracking::TrackingFilter,
-    gating::GatingLogic,
 };
 use nalgebra::Point3;
-use approx::assert_relative_eq;
 
 #[test]
 fn test_radar_physics() {

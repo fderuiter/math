@@ -1,18 +1,12 @@
-use math_explorer::applied::win_ratio::{bmi, sample_win_ratio, probability_win_ratio, simulation, pair_comparison};
+use math_explorer::applied::win_ratio::{
+    bmi, pair_comparison, probability_win_ratio, sample_win_ratio, simulation,
+};
 
 const FLOAT_TOLERANCE: f64 = 1e-3;
 
 fn get_test_data() -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
-    let group1 = vec![
-        vec![1, 0, 1],
-        vec![0, 1, 1],
-        vec![1, 1, 0],
-    ];
-    let group2 = vec![
-        vec![0, 1, 0],
-        vec![1, 0, 0],
-        vec![0, 0, 1],
-    ];
+    let group1 = vec![vec![1, 0, 1], vec![0, 1, 1], vec![1, 1, 0]];
+    let group2 = vec![vec![0, 1, 0], vec![1, 0, 0], vec![0, 0, 1]];
     (group1, group2)
 }
 
@@ -141,18 +135,20 @@ fn test_probability_win_ratio_with_simulation() {
     let s1_at_c = s1(c);
 
     // Create context
-    let ctx = probability_win_ratio::ProbabilityWinRatioContext::new(s0_at_c, s1_at_c, c, error_tolerance);
+    let ctx = probability_win_ratio::ProbabilityWinRatioContext::new(
+        s0_at_c,
+        s1_at_c,
+        c,
+        error_tolerance,
+    );
 
     // Calculate win and loss probabilities using numerical integration
-    let win_prob = ctx.calculate_win_probability(
-        s1, pdf_t0, g1_given_c, pdf_x0_given_c
-    );
-    let loss_prob = ctx.calculate_loss_probability(
-        s0, pdf_t1, g0_given_c, pdf_x1_given_c
-    );
+    let win_prob = ctx.calculate_win_probability(s1, pdf_t0, g1_given_c, pdf_x0_given_c);
+    let loss_prob = ctx.calculate_loss_probability(s0, pdf_t1, g0_given_c, pdf_x1_given_c);
 
     // Calculate probability win ratio
-    let calculated_pr_c = probability_win_ratio::calculate_probability_win_ratio(win_prob, loss_prob);
+    let calculated_pr_c =
+        probability_win_ratio::calculate_probability_win_ratio(win_prob, loss_prob);
 
     // The probability win ratio PR(c) should be close to the theoretical parameter PR_W
     // when c is large enough for the integrals to stabilize.
@@ -160,6 +156,10 @@ fn test_probability_win_ratio_with_simulation() {
     // Let's assert they are reasonably close.
     // A tolerance of 0.1 might be needed depending on the choice of c and parameters.
     let comparison_tolerance = 0.1;
-    assert!((calculated_pr_c - expected_pr_w).abs() < comparison_tolerance,
-            "Calculated PR(c) = {}, Expected PR_W = {}", calculated_pr_c, expected_pr_w);
+    assert!(
+        (calculated_pr_c - expected_pr_w).abs() < comparison_tolerance,
+        "Calculated PR(c) = {}, Expected PR_W = {}",
+        calculated_pr_c,
+        expected_pr_w
+    );
 }

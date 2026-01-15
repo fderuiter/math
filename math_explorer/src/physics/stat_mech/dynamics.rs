@@ -51,6 +51,10 @@ mod tests {
     fn test_diffusion() {
         // For Random Walk D ~ 0.5 (since dx=1, dt=1).
         let d = estimate_diffusion_coefficient(1000, 100);
-        assert!((d - 0.5).abs() < 0.1, "Diffusion coefficient should be approx 0.5. Got {}", d);
+        assert!(
+            (d - 0.5).abs() < 0.1,
+            "Diffusion coefficient should be approx 0.5. Got {}",
+            d
+        );
     }
 }

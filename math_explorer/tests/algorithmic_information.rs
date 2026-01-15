@@ -1,4 +1,6 @@
-use math_explorer::pure_math::algorithmic_information::{combinatorics::*, geometry::*, kolmogorov::*};
+use math_explorer::pure_math::algorithmic_information::{
+    combinatorics::*, geometry::*, kolmogorov::*,
+};
 use rug::{Integer, Rational};
 use std::collections::{HashMap, HashSet};
 
@@ -11,7 +13,12 @@ fn test_distance() {
 
 #[test]
 fn test_kolmogorov_approx() {
-    assert!((prefix_kolmogorov_approx(&Integer::from(10)) - (10.0f64.log2() + 2.0 * 10.0f64.log2().log2() + 1.0)).abs() < 1e-9);
+    assert!(
+        (prefix_kolmogorov_approx(&Integer::from(10))
+            - (10.0f64.log2() + 2.0 * 10.0f64.log2().log2() + 1.0))
+            .abs()
+            < 1e-9
+    );
 }
 
 #[test]
@@ -36,8 +43,14 @@ fn test_combinatorial_lemma() {
     n_v.insert("v", n_v_set);
 
     let mut sim = HashMap::new();
-    sim.insert(1, Box::new(|_u: &&str, _v: &&str| true) as Box<dyn Fn(&&str, &&str) -> bool>);
-    sim.insert(2, Box::new(|_u: &&str, _v: &&str| false) as Box<dyn Fn(&&str, &&str) -> bool>);
+    sim.insert(
+        1,
+        Box::new(|_u: &&str, _v: &&str| true) as Box<dyn Fn(&&str, &&str) -> bool>,
+    );
+    sim.insert(
+        2,
+        Box::new(|_u: &&str, _v: &&str| false) as Box<dyn Fn(&&str, &&str) -> bool>,
+    );
 
     let alpha = 0.9;
     let result = combinatorial_lemma(&x_set, &v_set, &n_v, &sim, alpha);

@@ -8,14 +8,14 @@
 //! - Nuclear Reactions (Q-Value, Breit-Wigner Resonance).
 
 pub mod constants;
-pub mod types;
-pub mod properties;
 pub mod decay;
-pub mod reactions;
 pub mod models;
+pub mod properties;
+pub mod reactions;
+pub mod types;
 
-pub use types::*;
 pub use models::{BindingEnergyModel, LiquidDropModel};
+pub use types::*;
 
 // Explicitly not glob-importing constants to avoid polluting namespace and potential collisions.
 // Users can access them via `nuclear::constants::...`.
@@ -37,12 +37,18 @@ pub mod liquid_drop {
     ///
     /// # Returns
     /// * `Result<f64, NuclearError>` - The binding energy in MeV.
-    pub fn binding_energy(atomic_number: AtomicNumber, mass_number: MassNumber) -> Result<f64, NuclearError> {
+    pub fn binding_energy(
+        atomic_number: AtomicNumber,
+        mass_number: MassNumber,
+    ) -> Result<f64, NuclearError> {
         models::LiquidDropModel::new().binding_energy(atomic_number, mass_number)
     }
 
     /// Calculates the Binding Energy per nucleon.
-    pub fn binding_energy_per_nucleon(atomic_number: AtomicNumber, mass_number: MassNumber) -> Result<f64, NuclearError> {
+    pub fn binding_energy_per_nucleon(
+        atomic_number: AtomicNumber,
+        mass_number: MassNumber,
+    ) -> Result<f64, NuclearError> {
         models::LiquidDropModel::new().binding_energy_per_nucleon(atomic_number, mass_number)
     }
 }
@@ -76,13 +82,25 @@ mod tests {
     #[test]
     fn test_iron_peak() {
         // Fe-56: Z=26.
-        let be_fe = liquid_drop::binding_energy_per_nucleon(AtomicNumber::new(26), MassNumber::new(56).unwrap()).unwrap();
+        let be_fe = liquid_drop::binding_energy_per_nucleon(
+            AtomicNumber::new(26),
+            MassNumber::new(56).unwrap(),
+        )
+        .unwrap();
 
         // C-12: Z=6
-        let be_c = liquid_drop::binding_energy_per_nucleon(AtomicNumber::new(6), MassNumber::new(12).unwrap()).unwrap();
+        let be_c = liquid_drop::binding_energy_per_nucleon(
+            AtomicNumber::new(6),
+            MassNumber::new(12).unwrap(),
+        )
+        .unwrap();
 
         // U-238: Z=92
-        let be_u = liquid_drop::binding_energy_per_nucleon(AtomicNumber::new(92), MassNumber::new(238).unwrap()).unwrap();
+        let be_u = liquid_drop::binding_energy_per_nucleon(
+            AtomicNumber::new(92),
+            MassNumber::new(238).unwrap(),
+        )
+        .unwrap();
 
         assert!(be_fe > be_c, "Iron should have higher BE/A than Carbon");
         assert!(be_fe > be_u, "Iron should have higher BE/A than Uranium");
@@ -93,7 +111,10 @@ mod tests {
         let val_j3_2 = shell_model::spin_orbit_coupling(1.0, 0.5, 1.5);
         let val_j1_2 = shell_model::spin_orbit_coupling(1.0, 0.5, 0.5);
 
-        assert!(val_j3_2 > val_j1_2, "j=3/2 should have higher coupling value than j=1/2");
+        assert!(
+            val_j3_2 > val_j1_2,
+            "j=3/2 should have higher coupling value than j=1/2"
+        );
     }
 
     #[test]
@@ -126,7 +147,9 @@ mod tests {
     fn test_liquid_drop_struct_usage() {
         // Test the new Architect-approved way of using the struct
         let model = LiquidDropModel::new();
-        let be = model.binding_energy(AtomicNumber::new(26), MassNumber::new(56).unwrap()).unwrap();
+        let be = model
+            .binding_energy(AtomicNumber::new(26), MassNumber::new(56).unwrap())
+            .unwrap();
         assert!(be > 0.0);
     }
 }

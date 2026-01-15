@@ -1,14 +1,16 @@
+use rand::Rng;
+use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
-use rand::distributions::Distribution as RandDistribution;
-use rand::Rng;
 
 /// Represents a distribution of bidder valuations.
 ///
 /// In Mechanism Design, particularly for auction theory, we often need to analyze properties
 /// of the distribution of valuations $v$ drawn from a cumulative distribution function $F(v)$
 /// with probability density function $f(v)$.
-pub trait ValuationDistribution: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + RandDistribution<f64> {
+pub trait ValuationDistribution:
+    Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + RandDistribution<f64>
+{
     /// Computes the **Virtual Valuation** $J(v)$ according to Myerson's Lemma.
     ///
     /// $$ J(v) = v - \frac{1 - F(v)}{f(v)} $$
@@ -32,7 +34,10 @@ pub trait ValuationDistribution: Continuous<f64, f64> + ContinuousCDF<f64, f64> 
 }
 
 // Blanket implementation for any continuous distribution from statrs
-impl<D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + RandDistribution<f64>> ValuationDistribution for D {}
+impl<D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + RandDistribution<f64>>
+    ValuationDistribution for D
+{
+}
 
 /// Mechanism Design utilities.
 pub struct MechanismDesign;

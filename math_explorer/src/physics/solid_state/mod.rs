@@ -11,9 +11,9 @@
 //! 5. Superconductivity (BCS)
 //! 6. Interactions (Electron-Phonon)
 
-pub mod second_quantization;
-pub mod screening;
-pub mod phonons;
-pub mod magnetism;
 pub mod bcs;
 pub mod interactions;
+pub mod magnetism;
+pub mod phonons;
+pub mod screening;
+pub mod second_quantization;

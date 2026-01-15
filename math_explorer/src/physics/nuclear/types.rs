@@ -58,7 +58,9 @@ pub struct MassNumber(u32);
 impl MassNumber {
     pub fn new(value: u32) -> Result<Self, NuclearError> {
         if value == 0 {
-            return Err(NuclearError::InvalidMassNumber("Must be positive".to_string()));
+            return Err(NuclearError::InvalidMassNumber(
+                "Must be positive".to_string(),
+            ));
         }
         Ok(Self(value))
     }

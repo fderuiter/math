@@ -1,10 +1,10 @@
-pub mod surface;
-pub mod segmentation;
-pub mod thickness;
 pub mod glm;
+pub mod segmentation;
+pub mod surface;
+pub mod thickness;
 
 // Re-export specific items to maintain public API compatibility
-pub use surface::{Surface, internal_energy, external_energy, evolve_surface};
-pub use segmentation::bayesian_classification;
-pub use thickness::cortical_thickness;
 pub use glm::{estimate_beta, t_statistic};
+pub use segmentation::bayesian_classification;
+pub use surface::{Surface, evolve_surface, external_energy, internal_energy};
+pub use thickness::cortical_thickness;

@@ -15,10 +15,7 @@ pub fn compute_residual(
 /// Input: Raw error grad_2D, Timestep t.
 /// Operation: Apply weighting w(t) to normalize gradient magnitude across different noise levels.
 /// Output: The weighted gradient vector.
-pub fn apply_weighting(
-    residual: &DMatrix<f64>,
-    weight: f64,
-) -> DMatrix<f64> {
+pub fn apply_weighting(residual: &DMatrix<f64>, weight: f64) -> DMatrix<f64> {
     residual * weight
 }
 

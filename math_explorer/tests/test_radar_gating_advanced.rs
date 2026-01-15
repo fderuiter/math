@@ -1,8 +1,5 @@
 use math_explorer::physics::medical::radar_gating::{
-    phase::PhaseUnwrapper,
-    mimo::Beamformer,
-    clutter::EllipticalFilter,
-    czt::SpatialCztConfig,
+    clutter::EllipticalFilter, czt::SpatialCztConfig, mimo::Beamformer, phase::PhaseUnwrapper,
     super_resolution::MusicEstimator,
 };
 use num_complex::Complex;
@@ -34,7 +31,12 @@ fn test_phase_unwrapping_with_wraps() {
     }
 
     // Tolerance
-    assert!((final_disp - max_displacement).abs() < 1e-4, "Displacement {} != {}", final_disp, max_displacement);
+    assert!(
+        (final_disp - max_displacement).abs() < 1e-4,
+        "Displacement {} != {}",
+        final_disp,
+        max_displacement
+    );
 }
 
 #[test]

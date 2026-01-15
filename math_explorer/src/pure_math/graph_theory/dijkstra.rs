@@ -1,9 +1,9 @@
+use petgraph::graph::NodeIndex;
+use petgraph::visit::{Data, EdgeRef, IntoEdges, Visitable};
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
 use std::hash::Hash;
 use std::ops::Add;
-use petgraph::visit::{Data, EdgeRef, IntoEdges, Visitable};
-use petgraph::graph::NodeIndex;
 
 /// Result of Dijkstra's algorithm.
 /// Contains the shortest distance to each reachable node and the predecessor map.
@@ -40,7 +40,9 @@ impl<W: PartialOrd> Ord for State<W> {
     fn cmp(&self, other: &Self) -> Ordering {
         // We want the smallest cost to be the "greatest" in the heap so it's popped first.
         // If costs are equal, we compare nodes to ensure consistent ordering.
-        other.cost.partial_cmp(&self.cost)
+        other
+            .cost
+            .partial_cmp(&self.cost)
             .unwrap_or(Ordering::Equal)
             .then_with(|| self.node.index().cmp(&other.node.index()))
     }
@@ -123,9 +125,10 @@ where
 
         // Check if we found a shorter path to u already (lazy deletion from PQ)
         if let Some(&current_d) = distances.get(&u)
-            && d_u > current_d {
-                continue;
-            }
+            && d_u > current_d
+        {
+            continue;
+        }
 
         // u is now effectively in S (Settled Vertices) because d[u] is minimal.
 

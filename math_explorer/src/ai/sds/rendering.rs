@@ -1,6 +1,6 @@
 use nalgebra::{DMatrix, Matrix4, Vector3};
-use std::f64::consts::PI;
 use rand::Rng;
+use std::f64::consts::PI;
 
 /// Represents a single ray: r(t) = o + t * d
 #[derive(Debug, Clone, Copy)]
@@ -20,7 +20,12 @@ pub struct RayBundle {
 /// Input: Camera Pose matrix P (4x4), Image resolution (H, W).
 /// Operation: For every pixel (u, v), compute the ray origin o and direction d.
 /// Output: Ray Bundle R (origins and directions).
-pub fn generate_ray_bundle(pose: &Matrix4<f64>, width: usize, height: usize, fov_y: f64) -> RayBundle {
+pub fn generate_ray_bundle(
+    pose: &Matrix4<f64>,
+    width: usize,
+    height: usize,
+    fov_y: f64,
+) -> RayBundle {
     let mut rays = Vec::with_capacity(width * height);
     let aspect_ratio = width as f64 / height as f64;
 
@@ -66,18 +71,18 @@ pub fn generate_ray_bundle(pose: &Matrix4<f64>, width: usize, height: usize, fov
         }
     }
 
-    RayBundle { rays, width, height }
+    RayBundle {
+        rays,
+        width,
+        height,
+    }
 }
 
 /// Module 1.2: Stratified Sampling
 /// Input: Ray Bundle R, Near plane t_n, Far plane t_f, Number of samples N.
 /// Operation: Divide the ray into N bins and sample a distance t_i uniformly within each bin.
 /// Output: Sample points along rays r(t_i) = o + t_i * d.
-pub fn stratified_sampling(
-    t_near: f64,
-    t_far: f64,
-    n_samples: usize,
-) -> Vec<f64> {
+pub fn stratified_sampling(t_near: f64, t_far: f64, n_samples: usize) -> Vec<f64> {
     let mut rng = rand::thread_rng();
     let bin_size = (t_far - t_near) / n_samples as f64;
     let mut samples = Vec::with_capacity(n_samples);
@@ -178,9 +183,9 @@ pub fn render_image<M: NeRFModel + ?Sized>(
             // Calculate delta (distance to next sample)
             // For the last sample, we can assume a default large distance or same as previous
             let next_t = if i < n_samples - 1 {
-                ts[i+1]
+                ts[i + 1]
             } else if i > 0 {
-                t + (t - ts[i-1])
+                t + (t - ts[i - 1])
             } else {
                 t + 1.0 // Default delta for single sample case
             };

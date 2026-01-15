@@ -70,7 +70,10 @@ impl Integrator for Trapezoidal {
         F: Fn(f64) -> f64,
     {
         if self.steps == 0 {
-             return IntegrationResult { value: 0.0, error: 0.0 };
+            return IntegrationResult {
+                value: 0.0,
+                error: 0.0,
+            };
         }
 
         let h = (max - min) / self.steps as f64;

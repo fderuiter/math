@@ -50,7 +50,10 @@ pub use types::{Capacity, Cycles, DepthOfDischarge};
 /// # Returns
 ///
 /// The estimated number of cycles to reach 70% capacity.
-#[deprecated(since = "0.2.0", note = "Use `PowerLawModel::standard().n70(DepthOfDischarge::new(d))` instead")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `PowerLawModel::standard().n70(DepthOfDischarge::new(d))` instead"
+)]
 pub fn n70(d: f64) -> f64 {
     // Avoid panics for legacy users who might be passing bad values (though unlikely to work well)
     // We clamp to 0-100 to be safe
@@ -70,7 +73,10 @@ pub fn n70(d: f64) -> f64 {
 /// # Returns
 ///
 /// The battery capacity as a fraction of its initial capacity (e.g., 0.9 for 90%).
-#[deprecated(since = "0.2.0", note = "Use `PowerLawModel::standard().capacity(...)` instead")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `PowerLawModel::standard().capacity(...)` instead"
+)]
 pub fn capacity(n: f64, d: f64) -> f64 {
     let d_clamped = d.clamp(0.0, 100.0);
     let n_clamped = n.max(0.0);
@@ -89,11 +95,17 @@ pub fn capacity(n: f64, d: f64) -> f64 {
 /// # Returns
 ///
 /// The estimated number of cycles to reach the target capacity.
-#[deprecated(since = "0.2.0", note = "Use `PowerLawModel::standard().cycles_to_capacity(...)` instead")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `PowerLawModel::standard().cycles_to_capacity(...)` instead"
+)]
 pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
     let d_clamped = d.clamp(0.0, 100.0);
     let target_clamped = target_capacity.clamp(0.0, 1.0);
     PowerLawModel::standard()
-        .cycles_to_capacity(Capacity::new(target_clamped), DepthOfDischarge::new(d_clamped))
+        .cycles_to_capacity(
+            Capacity::new(target_clamped),
+            DepthOfDischarge::new(d_clamped),
+        )
         .as_f64()
 }

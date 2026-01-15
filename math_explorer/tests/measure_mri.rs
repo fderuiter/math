@@ -1,4 +1,4 @@
-use math_explorer::physics::mri::reconstruction::{simulate_signal_2d, inverse_dft_2d};
+use math_explorer::physics::mri::reconstruction::{inverse_dft_2d, simulate_signal_2d};
 use nalgebra::DMatrix;
 use num_complex::Complex;
 use std::time::Instant;
@@ -40,7 +40,15 @@ fn measure_mri_dft_performance() {
     let orig_val = density[center].re;
     let recon_val = reconstructed[center].re / scale;
 
-    println!("Center pixel original: {}, reconstructed (scaled): {}", orig_val, recon_val);
+    println!(
+        "Center pixel original: {}, reconstructed (scaled): {}",
+        orig_val, recon_val
+    );
 
-    assert!((orig_val - recon_val).abs() < 1e-5, "Reconstruction failed correctness check. Expected {}, got {}", orig_val, recon_val);
+    assert!(
+        (orig_val - recon_val).abs() < 1e-5,
+        "Reconstruction failed correctness check. Expected {}, got {}",
+        orig_val,
+        recon_val
+    );
 }

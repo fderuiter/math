@@ -1,4 +1,3 @@
-
 use math_explorer::biology::neuroscience::neuron::HodgkinHuxleyNeuron;
 use math_explorer::pure_math::analysis::ode::RungeKutta4;
 

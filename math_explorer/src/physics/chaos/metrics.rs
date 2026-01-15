@@ -1,8 +1,8 @@
 //! Quantifying Chaos (Lyapunov Exponents)
 
 use super::logistic::LogisticMap;
-use nalgebra::Vector3;
 use crate::pure_math::analysis::ode::{OdeSystem, Solver};
+use nalgebra::Vector3;
 
 /// Calculates the Lyapunov Exponent for the Logistic Map.
 ///
@@ -82,7 +82,9 @@ where
         let d_t = dist_vec.norm();
 
         if d_t == 0.0 {
-            return Err("Trajectories converged completely (distance 0), cannot compute log.".to_string());
+            return Err(
+                "Trajectories converged completely (distance 0), cannot compute log.".to_string(),
+            );
         }
 
         sum_log_divergence += (d_t / d0).ln();

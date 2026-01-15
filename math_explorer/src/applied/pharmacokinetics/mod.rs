@@ -12,7 +12,7 @@ pub mod superposition;
 pub mod traits;
 pub mod two_pulse;
 
-pub use bateman::{half_life, solve_ka, t_max, BatemanModel, PKParameters};
+pub use bateman::{BatemanModel, PKParameters, half_life, solve_ka, t_max};
 pub use enantiomer::EnantiomerModel;
 pub use superposition::SuperpositionModel;
 pub use traits::PharmacokineticModel;

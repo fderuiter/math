@@ -109,8 +109,16 @@ pub fn calculate_confidence_interval(n_w: u32, n_l: u32) -> (f64, f64) {
     let p_l = p_w - margin_of_error;
     let p_u = p_w + margin_of_error;
 
-    let lower_bound = if 1.0 - p_l == 0.0 { f64::INFINITY } else { p_l / (1.0 - p_l) };
-    let upper_bound = if 1.0 - p_u == 0.0 { f64::INFINITY } else { p_u / (1.0 - p_u) };
+    let lower_bound = if 1.0 - p_l == 0.0 {
+        f64::INFINITY
+    } else {
+        p_l / (1.0 - p_l)
+    };
+    let upper_bound = if 1.0 - p_u == 0.0 {
+        f64::INFINITY
+    } else {
+        p_u / (1.0 - p_u)
+    };
 
     (lower_bound.max(0.0), upper_bound.max(0.0))
 }

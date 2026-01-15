@@ -1,10 +1,6 @@
 use math_explorer::pure_math::graph_theory::{
     graph::Graph,
-    parameters::{
-        degree::degeneracy,
-        modulator::vertex_cover,
-        treewidth::treewidth,
-    },
+    parameters::{degree::degeneracy, modulator::vertex_cover, treewidth::treewidth},
 };
 use petgraph::graph::NodeIndex;
 use petgraph::visit::EdgeRef;

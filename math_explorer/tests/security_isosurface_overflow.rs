@@ -1,4 +1,4 @@
-use math_explorer::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
+use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 
 #[test]
 fn test_security_buffer_overflow_prevention() {
@@ -20,7 +20,14 @@ fn test_security_buffer_overflow_prevention() {
     let result = extract_isosurface(&grid, 0.5);
 
     // Assert that we get an error, not a crash
-    assert!(result.is_err(), "Should return error for insufficient buffer size");
+    assert!(
+        result.is_err(),
+        "Should return error for insufficient buffer size"
+    );
     let err_msg = result.err().unwrap();
-    assert!(err_msg.contains("Data buffer size mismatch"), "Error message should mention buffer mismatch. Got: {}", err_msg);
+    assert!(
+        err_msg.contains("Data buffer size mismatch"),
+        "Error message should mention buffer mismatch. Got: {}",
+        err_msg
+    );
 }

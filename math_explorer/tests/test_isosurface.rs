@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use math_explorer::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
+    use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 
     #[test]
     fn test_sphere_extraction() {
@@ -17,7 +17,7 @@ mod tests {
                     let dx = x as f32 - center;
                     let dy = y as f32 - center;
                     let dz = z as f32 - center;
-                    let dist = (dx*dx + dy*dy + dz*dz).sqrt();
+                    let dist = (dx * dx + dy * dy + dz * dz).sqrt();
                     data[z * size * size + y * size + x] = dist;
                 }
             }
@@ -44,17 +44,22 @@ mod tests {
                 let dx = v.x - center;
                 let dy = v.y - center;
                 let dz = v.z - center;
-                let d = (dx*dx + dy*dy + dz*dz).sqrt();
+                let d = (dx * dx + dy * dy + dz * dz).sqrt();
                 // We used linear interpolation, so it should be close to exact radius
                 // Increase tolerance slightly due to discretization
-                assert!((d - radius).abs() < 1.0, "Vertex distance {} not close to radius {}", d, radius);
+                assert!(
+                    (d - radius).abs() < 1.0,
+                    "Vertex distance {} not close to radius {}",
+                    d,
+                    radius
+                );
             }
         }
     }
 
     #[test]
     fn test_small_grid() {
-         let grid = VoxelGrid {
+        let grid = VoxelGrid {
             width: 2,
             height: 2,
             depth: 2,

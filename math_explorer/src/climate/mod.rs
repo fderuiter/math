@@ -100,9 +100,9 @@
 //! ```
 
 pub mod autoencoder;
-pub mod config;
 pub mod cera;
+pub mod config;
 pub mod loss;
 pub mod predictor;
-pub mod training;
 pub mod tensor_ops;
+pub mod training;

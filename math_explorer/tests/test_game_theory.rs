@@ -1,8 +1,10 @@
-use math_explorer::applied::game_theory::equilibrium::{BoxSet, ConvexSet, FixedPointVerifier, BestResponseCorrespondence};
-use math_explorer::applied::game_theory::mean_field::MeanFieldGame1D;
+use math_explorer::applied::game_theory::equilibrium::{
+    BestResponseCorrespondence, BoxSet, ConvexSet, FixedPointVerifier,
+};
 use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
+use math_explorer::applied::game_theory::mean_field::MeanFieldGame1D;
 use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
-use nalgebra::{DVector, DMatrix};
+use nalgebra::{DMatrix, DVector};
 use statrs::distribution::Uniform;
 
 #[test]
@@ -15,19 +17,17 @@ fn test_equilibrium_integration() {
         mapping: Box::new(|x| x.clone()),
         tolerance: 1e-6,
     };
-    assert!(FixedPointVerifier::is_fixed_point(&correspondence, &DVector::from_vec(vec![0.5])));
+    assert!(FixedPointVerifier::is_fixed_point(
+        &correspondence,
+        &DVector::from_vec(vec![0.5])
+    ));
 }
 
 #[test]
 fn test_mean_field_integration() {
     let mfg = MeanFieldGame1D::new(0.1, 1.0, 10, 10, -1.0, 1.0);
     // Just ensure it runs without panic
-    let _res = mfg.solve(
-        |_x, m| m * m,
-        |_x, _m| 0.0,
-        |_x| 1.0,
-        2
-    );
+    let _res = mfg.solve(|_x, m| m * m, |_x, _m| 0.0, |_x| 1.0, 2);
 }
 
 #[test]

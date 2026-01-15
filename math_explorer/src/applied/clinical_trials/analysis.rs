@@ -1,5 +1,5 @@
+use super::types::{ClinicalTrialError, ContingencyTable};
 use statrs::distribution::{ContinuousCDF, Normal};
-use super::types::{ContingencyTable, ClinicalTrialError};
 
 #[derive(Debug, Clone)]
 pub struct RiskMetrics {
@@ -16,7 +16,10 @@ pub struct RiskMetrics {
 /// # Arguments
 /// * `table` - The 2x2 contingency table.
 /// * `alpha` - Significance level (e.g., 0.05 for 95% CI).
-pub fn calculate_risk_metrics(table: &ContingencyTable, alpha: f64) -> Result<RiskMetrics, ClinicalTrialError> {
+pub fn calculate_risk_metrics(
+    table: &ContingencyTable,
+    alpha: f64,
+) -> Result<RiskMetrics, ClinicalTrialError> {
     let a = table.treatment_event as f64;
     let b = table.treatment_no_event as f64;
     let c = table.control_event as f64;
@@ -24,7 +27,9 @@ pub fn calculate_risk_metrics(table: &ContingencyTable, alpha: f64) -> Result<Ri
 
     // Check for zeros to avoid NaN/Infinity
     if a == 0.0 || b == 0.0 || c == 0.0 || d == 0.0 {
-         return Err(ClinicalTrialError::InvalidData("Cell counts must be non-zero for simple RR/OR calculation.".to_string()));
+        return Err(ClinicalTrialError::InvalidData(
+            "Cell counts must be non-zero for simple RR/OR calculation.".to_string(),
+        ));
     }
 
     // Relative Risk
@@ -38,7 +43,8 @@ pub fn calculate_risk_metrics(table: &ContingencyTable, alpha: f64) -> Result<Ri
     let or = odds_treatment / odds_control;
 
     // Confidence Intervals (using Normal distribution for log-transformed RR/OR)
-    let normal = Normal::new(0.0, 1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
+    let normal =
+        Normal::new(0.0, 1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
     let z = normal.inverse_cdf(1.0 - alpha / 2.0);
 
     // SE for ln(RR)
