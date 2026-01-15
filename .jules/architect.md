@@ -21,3 +21,8 @@
 **Problem:** `math_explorer/src/biology/neuroscience.rs` coupled the mathematical model (differential equations), the state representation (struct), and the numerical solver (explicit Euler) into a single struct `HodgkinHuxleyNeuron`. This prevented the use of higher-order solvers (like Runge-Kutta 4) and made the system hard to test or extend.
 **Decision:** Applied "Model-State Separation" and "Strategy Pattern". Split `neuroscience.rs` into `types.rs` (State), `model.rs` (OdeSystem logic), and `neuron.rs` (Facade). Adopted the existing `OdeSystem` trait architecture.
 **Consequence:** The `HodgkinHuxleyNeuron` is now a thin facade. Users can still use the simple API, but the underlying system now supports dependency injection of solvers and is strictly typed via `VectorOperations`.
+
+## 2026-10-27 - [Kalman Filter Generic Promotion]
+**Problem:** A "God File" candidate (`applied/tracking.rs`) contained a duplicate, incomplete Kalman Filter, while a robust implementation was hidden inside the specific `physics/medical/radar_gating` domain.
+**Decision:** Applied "Module Extraction" and "Generic Promotion". Extracted a robust, generic `KalmanFilter` to `applied/algorithms/kalman.rs`, using `DMatrix` for flexibility. Refactored `radar_gating` to use this generic core via the Strategy Pattern.
+**Consequence:** Centralized estimation logic. The Radar Gating module is now simpler (focused on physics), and other domains can reuse the Kalman Filter. Accepted a minor heap allocation cost (switching from Stack `Matrix2` to Dynamic `DMatrix` in Radar Gating) in favor of significant architectural reuse and maintainability.
