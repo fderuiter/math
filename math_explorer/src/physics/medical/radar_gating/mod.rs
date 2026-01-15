@@ -61,4 +61,4 @@ pub use phase::PhaseUnwrapper;
 pub use physics::{C, FmcwConfig};
 pub use super_resolution::MusicEstimator;
 pub use surface::BiQuadraticSurface;
-pub use tracking::TrackingFilter;
+pub use tracking::{ConstantVelocityModel, KalmanModel, TrackingFilter};
