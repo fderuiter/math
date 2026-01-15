@@ -50,6 +50,7 @@ pub mod physics;
 pub mod super_resolution;
 pub mod surface;
 pub mod tracking;
+pub mod error;
 
 pub use clutter::EllipticalFilter;
 pub use czt::SpatialCztConfig;

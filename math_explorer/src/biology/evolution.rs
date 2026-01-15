@@ -1,3 +1,4 @@
+use crate::applied::game_theory::error::GameTheoryError;
 use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
 use nalgebra::{DMatrix, DVector};
 
@@ -27,7 +28,7 @@ impl HawkDovePopulation {
     ///
     /// Row 0 / Col 0: Hawk
     /// Row 1 / Col 1: Dove
-    pub fn to_replicator_dynamics(&self) -> ReplicatorDynamics {
+    pub fn to_replicator_dynamics(&self) -> Result<ReplicatorDynamics, GameTheoryError> {
         let e_hh = (self.v - self.c) / 2.0;
         let e_hd = self.v;
         let e_dh = 0.0;
@@ -46,16 +47,19 @@ impl HawkDovePopulation {
     ///
     /// # Returns
     /// The new frequency of Hawks.
-    pub fn update_frequencies(&self, hawk_freq: f64, dt: f64) -> Result<f64, String> {
+    pub fn update_frequencies(&self, hawk_freq: f64, dt: f64) -> Result<f64, GameTheoryError> {
         if !(0.0..=1.0).contains(&hawk_freq) {
-            return Err("Frequency must be between 0.0 and 1.0".to_string());
+            return Err(GameTheoryError::InvalidParameter {
+                name: "hawk_freq".to_string(),
+                value: hawk_freq,
+            });
         }
 
         let p_h = hawk_freq;
         let p_d = 1.0 - p_h;
 
         let current_state = DVector::from_vec(vec![p_h, p_d]);
-        let solver = self.to_replicator_dynamics();
+        let solver = self.to_replicator_dynamics()?;
         let derivative = solver.derivative(&current_state);
 
         // Manual Euler step to preserve legacy behavior (solver.simulate uses RK4)
