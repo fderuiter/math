@@ -1,0 +1,83 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'math_explorer/**'
+      - '.github/workflows/rust-ci.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'math_explorer/**'
+      - '.github/workflows/rust-ci.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+  WORKING_DIR: ./math_explorer
+
+jobs:
+  # Job 1: Quick Static Analysis (Runs fast, saves compute if code is messy)
+  quality-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Check Formatting
+        run: cargo fmt --all -- --check
+
+      # We need system deps even for clippy because rug uses C bindings
+      - name: Install System Dependencies (for rug)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgmp-dev libmpfr-dev libmpc-dev
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: math_explorer -> target
+
+      - name: Run Clippy (Linting)
+        run: cargo clippy -- -D warnings
+
+  # Job 2: Build and Test (Runs only if quality checks pass)
+  test:
+    needs: quality-check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install System Dependencies (for rug)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgmp-dev libmpfr-dev libmpc-dev
+
+      - name: Rust Cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: math_explorer -> target
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run Tests
+        # Runs unit tests, integration tests, and doc tests
+        run: cargo test --verbose
+
+      - name: Build Documentation
+        # Ensures your heavy documentation comments actually compile
+        run: cargo doc --no-deps --document-private-items
