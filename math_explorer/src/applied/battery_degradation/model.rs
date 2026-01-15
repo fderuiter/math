@@ -102,11 +102,19 @@ mod tests {
         // Check anchor points from documentation approximately
         // DoD=100%, N70=300
         let n70_100 = model.n70(DepthOfDischarge::new(100.0)).as_f64();
-        assert!((n70_100 - 300.0).abs() < 50.0, "Expected ~300, got {}", n70_100);
+        assert!(
+            (n70_100 - 300.0).abs() < 50.0,
+            "Expected ~300, got {}",
+            n70_100
+        );
 
         // DoD=10%, N70=6000
         let n70_10 = model.n70(DepthOfDischarge::new(10.0)).as_f64();
-        assert!((n70_10 - 6000.0).abs() < 500.0, "Expected ~6000, got {}", n70_10);
+        assert!(
+            (n70_10 - 6000.0).abs() < 500.0,
+            "Expected ~6000, got {}",
+            n70_10
+        );
     }
 
     #[test]
