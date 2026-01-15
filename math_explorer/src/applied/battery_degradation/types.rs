@@ -16,7 +16,10 @@ impl DepthOfDischarge {
     /// Panics if `value` is not between 0.0 and 100.0 inclusive.
     pub fn new(value: f64) -> Self {
         if !(0.0..=100.0).contains(&value) {
-            panic!("DepthOfDischarge must be between 0.0 and 100.0, got {}", value);
+            panic!(
+                "DepthOfDischarge must be between 0.0 and 100.0, got {}",
+                value
+            );
         }
         Self(value)
     }

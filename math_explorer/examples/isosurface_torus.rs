@@ -1,4 +1,4 @@
-use math_explorer::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
+use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 use std::fs::File;
 use std::io::Write;
 
@@ -33,7 +33,8 @@ fn main() -> std::io::Result<()> {
 
                 // Torus SDF: f(x,y,z) = sqrt((sqrt(x^2 + y^2) - R)^2 + z^2) - r
                 let len_xy = (x_coord * x_coord + y_coord * y_coord).sqrt();
-                let dist = ((len_xy - major_radius).powi(2) + z_coord * z_coord).sqrt() - minor_radius;
+                let dist =
+                    ((len_xy - major_radius).powi(2) + z_coord * z_coord).sqrt() - minor_radius;
 
                 // Marching Cubes expects values where < threshold is "inside".
                 // SDF is typically negative inside, positive outside.
@@ -83,10 +84,15 @@ fn main() -> std::io::Result<()> {
     let mut offset = 1;
     for _ in 0..mesh.triangles.len() {
         // format: f v1//vn1 v2//vn2 v3//vn3
-        writeln!(file, "f {}//{} {}//{} {}//{}",
-            offset, offset,
-            offset+1, offset+1,
-            offset+2, offset+2
+        writeln!(
+            file,
+            "f {}//{} {}//{} {}//{}",
+            offset,
+            offset,
+            offset + 1,
+            offset + 1,
+            offset + 2,
+            offset + 2
         )?;
         offset += 3;
     }

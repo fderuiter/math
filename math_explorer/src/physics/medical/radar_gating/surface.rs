@@ -71,18 +71,18 @@ impl BiQuadraticSurface {
     /// Evaluates the surface height $z$ at a given $(x, y)$.
     pub fn evaluate(&self, x: f64, y: f64) -> f64 {
         let c = &self.coefficients;
-        c[0]
-            + c[1] * x
-            + c[2] * y
-            + c[3] * x * y
-            + c[4] * x.powi(2)
-            + c[5] * y.powi(2)
+        c[0] + c[1] * x + c[2] * y + c[3] * x * y + c[4] * x.powi(2) + c[5] * y.powi(2)
     }
 
     /// Generates a dense grid of points from the fitted surface.
     ///
     /// Useful for visualization.
-    pub fn generate_mesh(&self, x_range: (f64, f64), y_range: (f64, f64), resolution: usize) -> Vec<Point3<f64>> {
+    pub fn generate_mesh(
+        &self,
+        x_range: (f64, f64),
+        y_range: (f64, f64),
+        resolution: usize,
+    ) -> Vec<Point3<f64>> {
         let mut mesh = Vec::with_capacity(resolution * resolution);
         let dx = (x_range.1 - x_range.0) / (resolution as f64 - 1.0);
         let dy = (y_range.1 - y_range.0) / (resolution as f64 - 1.0);

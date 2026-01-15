@@ -92,20 +92,14 @@ mod tests {
         let tumor_idx = vec![0, 1];
         let organ_idx = vec![2, 3];
 
-        let cost = calculate_cost(
-            &doses, &tumor_idx, &organ_idx,
-            50.0, 20.0, 1.0, 1.0
-        );
+        let cost = calculate_cost(&doses, &tumor_idx, &organ_idx, 50.0, 20.0, 1.0, 1.0);
 
         assert!((cost - 200.0).abs() < 1e-6);
 
         // Verify organ below limit contributes 0
         // Change organ doses to [10, 15] (both < 20)
         let doses_safe = DVector::from_vec(vec![50.0, 50.0, 10.0, 15.0]);
-        let cost_safe = calculate_cost(
-            &doses_safe, &tumor_idx, &organ_idx,
-            50.0, 20.0, 1.0, 1.0
-        );
+        let cost_safe = calculate_cost(&doses_safe, &tumor_idx, &organ_idx, 50.0, 20.0, 1.0, 1.0);
         assert_eq!(cost_safe, 0.0);
     }
 

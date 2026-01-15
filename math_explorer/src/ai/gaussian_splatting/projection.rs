@@ -1,4 +1,4 @@
-use nalgebra::{Matrix2, Matrix3, Matrix4, Vector3, SMatrix};
+use nalgebra::{Matrix2, Matrix3, Matrix4, SMatrix, Vector3};
 
 /// Computes the Jacobian of the affine approximation of the projective transformation.
 ///
@@ -40,7 +40,7 @@ pub fn compute_jacobian(t: &Vector3<f64>, focal_x: f64, focal_y: f64) -> SMatrix
 pub fn project_covariance(
     cov3d: &Matrix3<f64>,
     view_matrix: &Matrix4<f64>,
-    jacobian: &SMatrix<f64, 2, 3>
+    jacobian: &SMatrix<f64, 2, 3>,
 ) -> Matrix2<f64> {
     // Extract the 3x3 rotation part of the view matrix (W)
     let w = view_matrix.fixed_view::<3, 3>(0, 0);

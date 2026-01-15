@@ -12,7 +12,7 @@ pub fn solve_gap_equation(
     energies_xi: &[f64],
     potential_v_magnitude: f64,
     debye_energy: f64,
-    iterations: usize
+    iterations: usize,
 ) -> Result<f64, String> {
     // Initial guess for the gap parameter Delta
     let mut delta = 0.01 * debye_energy;
@@ -65,7 +65,7 @@ mod tests {
         let xi = 1.5;
         let delta = 0.2;
         let (u, v) = coherence_factors(xi, delta);
-        let prob = u*u + v*v;
+        let prob = u * u + v * v;
         assert!((prob - 1.0).abs() < 1e-9);
     }
 }

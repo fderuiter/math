@@ -1,5 +1,5 @@
-use nalgebra::{DMatrix, DVector};
 use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
+use nalgebra::{DMatrix, DVector};
 
 /// Represents a population playing the Hawk-Dove game.
 pub struct HawkDovePopulation {
@@ -33,10 +33,7 @@ impl HawkDovePopulation {
         let e_dh = 0.0;
         let e_dd = self.v / 2.0;
 
-        let payoff = DMatrix::from_row_slice(2, 2, &[
-            e_hh, e_hd,
-            e_dh, e_dd
-        ]);
+        let payoff = DMatrix::from_row_slice(2, 2, &[e_hh, e_hd, e_dh, e_dd]);
 
         ReplicatorDynamics::new(payoff)
     }

@@ -1,4 +1,4 @@
-use math_explorer::applied::favoritism::{calculate_favoritism_score, FavoritismInputs};
+use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 #[test]
 fn test_security_division_by_zero_prevention() {
@@ -9,7 +9,10 @@ fn test_security_division_by_zero_prevention() {
     let score = calculate_favoritism_score(&inputs);
 
     // Should return a finite value (clamped), not Infinity or NaN
-    assert!(score.is_finite(), "Score should be finite even when x_0 is 0.0");
+    assert!(
+        score.is_finite(),
+        "Score should be finite even when x_0 is 0.0"
+    );
     // Since x_0 is small (high proximity), score should be high/positive
     assert!(score > 0.0);
 }
@@ -24,7 +27,10 @@ fn test_security_empty_siblings_prevention() {
 
     // Should handle empty siblings gracefully (e.g. treat as no competition)
     // and not return Infinity
-    assert!(score.is_finite(), "Score should be finite even with no siblings");
+    assert!(
+        score.is_finite(),
+        "Score should be finite even with no siblings"
+    );
     assert!(score > 0.0);
 }
 
@@ -36,5 +42,8 @@ fn test_security_log_domain_prevention() {
 
     let score = calculate_favoritism_score(&inputs);
 
-    assert!(score.is_finite(), "Score should be finite even with invalid contact frequency");
+    assert!(
+        score.is_finite(),
+        "Score should be finite even with invalid contact frequency"
+    );
 }

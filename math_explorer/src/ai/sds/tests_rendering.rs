@@ -1,7 +1,9 @@
-use nalgebra::{Matrix4, Vector3};
+use crate::ai::sds::rendering::{
+    NeRFModel, generate_ray_bundle, render_image, stratified_sampling, volume_integration,
+};
 use approx::assert_relative_eq;
+use nalgebra::{Matrix4, Vector3};
 use std::f64::consts::PI;
-use crate::ai::sds::rendering::{generate_ray_bundle, stratified_sampling, volume_integration, render_image, NeRFModel};
 
 #[test]
 fn test_generate_ray_bundle() {

@@ -3,7 +3,7 @@
 //! Implements a **Discrete Kalman Filter** with a **Constant Velocity (CV)** model to smooth
 //! the breathing signal and handle system latency.
 
-use nalgebra::{Matrix2, Vector2, Vector1};
+use nalgebra::{Matrix2, Vector1, Vector2};
 
 /// A Kalman Filter for 1D position and velocity tracking (Constant Velocity model).
 #[derive(Debug, Clone)]
@@ -28,10 +28,15 @@ impl TrackingFilter {
     /// * `dt` - Time step in seconds (e.g., 0.05).
     /// * `process_noise_var` - Variance for process noise (trust in model).
     /// * `measurement_noise_var` - Variance for measurement noise (sensor uncertainty).
-    pub fn new(initial_amplitude: f64, dt: f64, process_noise_var: f64, measurement_noise_var: f64) -> Self {
+    pub fn new(
+        initial_amplitude: f64,
+        dt: f64,
+        process_noise_var: f64,
+        measurement_noise_var: f64,
+    ) -> Self {
         Self {
             state: Vector2::new(initial_amplitude, 0.0), // Assume 0 velocity initially
-            covariance: Matrix2::identity(), // High initial uncertainty
+            covariance: Matrix2::identity(),             // High initial uncertainty
             process_noise: Matrix2::identity() * process_noise_var, // Simplified Q
             measurement_noise: measurement_noise_var,
             dt,

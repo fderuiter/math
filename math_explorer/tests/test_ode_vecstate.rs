@@ -1,5 +1,6 @@
-use math_explorer::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, VecState, VectorOperations};
-use std::ops::{Add, Mul};
+use math_explorer::pure_math::analysis::ode::{
+    OdeSystem, RungeKutta4, Solver, VecState,
+};
 
 /// A simple decay model: dy/dt = -y
 struct DecayModel;
@@ -40,6 +41,16 @@ fn test_vec_state_ode() {
     let expected_y2 = 5.0 * expected_factor;
 
     // Check with tolerance
-    assert!((y1 - expected_y1).abs() < 1e-4, "y1: expected {}, got {}", expected_y1, y1);
-    assert!((y2 - expected_y2).abs() < 1e-4, "y2: expected {}, got {}", expected_y2, y2);
+    assert!(
+        (y1 - expected_y1).abs() < 1e-4,
+        "y1: expected {}, got {}",
+        expected_y1,
+        y1
+    );
+    assert!(
+        (y2 - expected_y2).abs() < 1e-4,
+        "y2: expected {}, got {}",
+        expected_y2,
+        y2
+    );
 }

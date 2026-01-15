@@ -53,14 +53,14 @@ impl LoraEnsemble {
             // Check keys against the first one
             // Note: This assumes all dicts share keys. strict validation.
             for (key, final_tensor) in &mut final_state_dict {
-                 if let Some(tensor) = lora_state_dict.get(key) {
+                if let Some(tensor) = lora_state_dict.get(key) {
                     if final_tensor.shape() != tensor.shape() {
                         return Err("Mismatched tensor shapes for the same key.");
                     }
                     *final_tensor += tensor * weights[i];
-                 } else {
-                     return Err("Mismatched keys between LoRA modules.");
-                 }
+                } else {
+                    return Err("Mismatched keys between LoRA modules.");
+                }
             }
             // Double check we aren't missing keys in the new lora that were in the old one
             // The iteration above only iterates keys present in `final_state_dict` (from 0th).

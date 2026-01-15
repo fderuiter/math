@@ -6,13 +6,13 @@
 //!
 //! This module provides the configuration types and solver strategies for 1D MFGs.
 
-pub mod types;
-pub mod solver;
 pub mod physics;
+pub mod solver;
+pub mod types;
 
-pub use types::MFGConfig;
-pub use solver::{MFGSolver, FixedPointSolver};
 pub use physics::{Hamiltonian, QuadraticHamiltonian};
+pub use solver::{FixedPointSolver, MFGSolver};
+pub use types::MFGConfig;
 
 // Re-export for backward compatibility, though the API has changed slightly (requires solver struct).
 // We can provide a type alias if MeanFieldGame1D was just a struct.
@@ -36,7 +36,12 @@ impl MeanFieldGame1D {
     ) -> Self {
         Self {
             config: MFGConfig::new(
-                viscosity, time_horizon, grid_points, time_steps, space_min, space_max
+                viscosity,
+                time_horizon,
+                grid_points,
+                time_steps,
+                space_min,
+                space_max,
             ),
         }
     }
@@ -49,7 +54,12 @@ impl MeanFieldGame1D {
         iterations: usize,
     ) -> (nalgebra::DMatrix<f64>, nalgebra::DMatrix<f64>) {
         let solver = FixedPointSolver::new(iterations);
-        solver.solve(&self.config, &cost_function, &terminal_cost, &initial_distribution)
+        solver.solve(
+            &self.config,
+            &cost_function,
+            &terminal_cost,
+            &initial_distribution,
+        )
     }
 }
 
@@ -59,9 +69,7 @@ mod tests {
 
     #[test]
     fn test_mfg_run_legacy() {
-        let mfg = MeanFieldGame1D::new(
-            0.1, 1.0, 50, 100, -2.0, 2.0
-        );
+        let mfg = MeanFieldGame1D::new(0.1, 1.0, 50, 100, -2.0, 2.0);
 
         let cost_fn = |x: f64, m: f64| -> f64 { m + x * x };
         let term_fn = |x: f64, _m: f64| -> f64 { x * x };
@@ -75,9 +83,7 @@ mod tests {
 
     #[test]
     fn test_mfg_with_custom_hamiltonian() {
-        let config = MFGConfig::new(
-            0.1, 1.0, 50, 100, -2.0, 2.0
-        );
+        let config = MFGConfig::new(0.1, 1.0, 50, 100, -2.0, 2.0);
         // Heavy particles (mass = 2.0)
         let hamiltonian = QuadraticHamiltonian::new(2.0);
         let solver = FixedPointSolver::new_with_hamiltonian(5, hamiltonian);

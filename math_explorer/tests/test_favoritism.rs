@@ -1,4 +1,4 @@
-use math_explorer::applied::favoritism::{calculate_favoritism_score, FavoritismInputs};
+use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 #[test]
 fn test_favoritism_defaults() {

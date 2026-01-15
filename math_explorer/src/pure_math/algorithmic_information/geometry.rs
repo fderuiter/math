@@ -63,7 +63,6 @@ pub fn sqrt(r: &Rational) -> Rational {
     }
 }
 
-
 /// Represents a dyadic rational number m/2^r.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DyadicRational {

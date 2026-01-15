@@ -10,14 +10,14 @@
 /// - Foundational Mathematics of Deep Learning (Linear Algebra, Calculus, Probability, Optimization).
 /// - Reinforcement Learning (MDPs, Bellman Equations, Q-Learning).
 pub mod activations;
-pub mod transformer;
+pub mod deep_learning_theory;
+pub mod error;
+pub mod gaussian_splatting;
+pub mod reinforcement_learning;
 pub mod sds;
 pub mod self_calibration;
+pub mod transformer;
 pub mod utils;
-pub mod gaussian_splatting;
-pub mod deep_learning_theory;
-pub mod reinforcement_learning;
-pub mod error;
 
 pub use error::AIError;
 

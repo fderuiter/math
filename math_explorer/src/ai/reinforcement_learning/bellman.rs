@@ -23,7 +23,8 @@ where
             let transition_prob = mdp.transition_probability(next_state, state, &action);
             if transition_prob > 0.0 {
                 let reward = mdp.reward(state, &action, next_state);
-                expected_return_for_action += transition_prob * (reward + gamma * v_function(next_state));
+                expected_return_for_action +=
+                    transition_prob * (reward + gamma * v_function(next_state));
             }
         }
 
@@ -96,5 +97,9 @@ where
 
     // If all paths lead to probability 0 or negative infinity remains, handle gracefully?
     // Usually for valid MDPs max_value will be updated.
-    if max_value == f64::NEG_INFINITY { 0.0 } else { max_value }
+    if max_value == f64::NEG_INFINITY {
+        0.0
+    } else {
+        max_value
+    }
 }

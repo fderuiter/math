@@ -9,7 +9,10 @@ use nalgebra::{DMatrix, DVector, RealField};
 ///
 /// # Returns
 /// The estimated beta parameters, or an error if the matrix is not invertible.
-pub fn estimate_beta<T: RealField>(x: &DMatrix<T>, y: &DVector<T>) -> Result<DVector<T>, &'static str> {
+pub fn estimate_beta<T: RealField>(
+    x: &DMatrix<T>,
+    y: &DVector<T>,
+) -> Result<DVector<T>, &'static str> {
     let xt = x.transpose();
     let xtx = &xt * x;
     let xtx_inv = xtx.try_inverse().ok_or("X^T * X is not invertible")?;
@@ -32,7 +35,7 @@ pub fn t_statistic<T: RealField + Copy>(
     c: &DVector<T>,
     beta: &DVector<T>,
     x: &DMatrix<T>,
-    residual_variance: T
+    residual_variance: T,
 ) -> Result<T, &'static str> {
     let xtx = x.transpose() * x;
     let xtx_inv = xtx.try_inverse().ok_or("X^T * X is not invertible")?;
@@ -40,7 +43,7 @@ pub fn t_statistic<T: RealField + Copy>(
     let numerator = c.dot(beta);
 
     let variance_term = c.transpose() * xtx_inv * c;
-    let denominator = (residual_variance * variance_term[(0,0)]).sqrt();
+    let denominator = (residual_variance * variance_term[(0, 0)]).sqrt();
 
     if denominator == T::zero() {
         return Err("Denominator is zero, t-statistic is undefined.");

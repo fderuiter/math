@@ -81,15 +81,10 @@ pub mod scoring;
 pub mod types;
 
 pub use scoring::{
-    calculate_favoritism_score, calculate_favoritism_score_full, calculate_favoritism_score_with_rng,
+    calculate_favoritism_score, calculate_favoritism_score_full,
+    calculate_favoritism_score_with_rng,
 };
 pub use types::{
-    FavoritismInputs,
-    TimeParams,
-    GiftParams,
-    ContactParams,
-    PersonalityParams,
-    SocialParams,
-    ComplimentParams,
-    FamilyParams,
+    ComplimentParams, ContactParams, FamilyParams, FavoritismInputs, GiftParams, PersonalityParams,
+    SocialParams, TimeParams,
 };

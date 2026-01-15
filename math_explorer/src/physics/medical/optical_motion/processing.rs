@@ -140,8 +140,16 @@ pub fn calculate_time_delay(signal_1: &[f64], signal_2: &[f64], sample_rate: f64
     let ifft = planner.plan_fft_inverse(n);
 
     // Convert to Complex
-    let mut s1_c: Vec<Complex<f64>> = signal_1.iter().take(n).map(|&v| Complex::new(v, 0.0)).collect();
-    let mut s2_c: Vec<Complex<f64>> = signal_2.iter().take(n).map(|&v| Complex::new(v, 0.0)).collect();
+    let mut s1_c: Vec<Complex<f64>> = signal_1
+        .iter()
+        .take(n)
+        .map(|&v| Complex::new(v, 0.0))
+        .collect();
+    let mut s2_c: Vec<Complex<f64>> = signal_2
+        .iter()
+        .take(n)
+        .map(|&v| Complex::new(v, 0.0))
+        .collect();
 
     // FFT
     fft.process(&mut s1_c);
@@ -202,10 +210,7 @@ pub fn calculate_time_delay(signal_1: &[f64], signal_2: &[f64], sample_rate: f64
 /// # Returns
 ///
 /// * `(f64, f64)` - Velocity vector components ($v_x, v_y$).
-pub fn optical_flow_velocity(
-    spatial_gradient: (f64, f64),
-    temporal_gradient: f64,
-) -> (f64, f64) {
+pub fn optical_flow_velocity(spatial_gradient: (f64, f64), temporal_gradient: f64) -> (f64, f64) {
     let (gx, gy) = spatial_gradient;
     let norm_sq = gx.powi(2) + gy.powi(2);
 

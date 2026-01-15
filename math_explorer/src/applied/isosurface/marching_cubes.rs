@@ -68,8 +68,12 @@ fn get_gradient_interior(data: &[f32], idx: usize, stride_y: usize, stride_z: us
     // Profiler Note: Using unsafe get_unchecked significantly reduces overhead by skipping bounds checks.
     // We trust the caller (extract_isosurface) to only call this for strictly interior voxels.
     let dx = unsafe { (*data.get_unchecked(idx + 1) - *data.get_unchecked(idx - 1)) * 0.5 };
-    let dy = unsafe { (*data.get_unchecked(idx + stride_y) - *data.get_unchecked(idx - stride_y)) * 0.5 };
-    let dz = unsafe { (*data.get_unchecked(idx + stride_z) - *data.get_unchecked(idx - stride_z)) * 0.5 };
+    let dy = unsafe {
+        (*data.get_unchecked(idx + stride_y) - *data.get_unchecked(idx - stride_y)) * 0.5
+    };
+    let dz = unsafe {
+        (*data.get_unchecked(idx + stride_z) - *data.get_unchecked(idx - stride_z)) * 0.5
+    };
 
     let len_sq = dx * dx + dy * dy + dz * dz;
     if len_sq > 1e-12 {
@@ -83,7 +87,7 @@ fn get_gradient_interior(data: &[f32], idx: usize, stride_y: usize, stride_z: us
 /// Linear interpolation of normals.
 #[inline]
 fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32) -> Point3D {
-     if (v1 - v2).abs() < 1e-5 {
+    if (v1 - v2).abs() < 1e-5 {
         return n1;
     }
     let t = (threshold - v1) / (v2 - v1);
@@ -91,14 +95,13 @@ fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32
     let ny = n1.y + t * (n2.y - n1.y);
     let nz = n1.z + t * (n2.z - n1.z);
 
-    let len = (nx*nx + ny*ny + nz*nz).sqrt();
+    let len = (nx * nx + ny * ny + nz * nz).sqrt();
     if len > 1e-6 {
-        Point3D::new(nx/len, ny/len, nz/len)
+        Point3D::new(nx / len, ny / len, nz / len)
     } else {
         Point3D::new(0.0, 0.0, 0.0)
     }
 }
-
 
 pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, String> {
     if grid.width < 2 || grid.height < 2 || grid.depth < 2 {
@@ -106,7 +109,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
     }
 
     // Safety Check: Ensure data buffer is sufficient to prevent OOB access in unsafe blocks
-    let expected_len = grid.width
+    let expected_len = grid
+        .width
         .checked_mul(grid.height)
         .and_then(|wh| wh.checked_mul(grid.depth))
         .ok_or_else(|| "Grid dimensions cause integer overflow".to_string())?;
@@ -163,8 +167,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 // 1. Determine the index of the case (0-255)
                 let mut cube_index = 0;
                 let mut corner_values = [0.0; 8];
-                let mut corner_pos = [Point3D::new(0.0,0.0,0.0); 8];
-                let mut corner_normals = [Point3D::new(0.0,0.0,0.0); 8];
+                let mut corner_pos = [Point3D::new(0.0, 0.0, 0.0); 8];
+                let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
 
                 // Direct access for corner values to avoid redundant index calculation
                 // Vertices are ordered:
@@ -186,14 +190,38 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 let v6 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y + stride_z) };
                 let v7 = unsafe { *data.get_unchecked(base_idx + stride_y + stride_z) };
 
-                corner_values[0] = v0; if v0 < threshold { cube_index |= 1; }
-                corner_values[1] = v1; if v1 < threshold { cube_index |= 2; }
-                corner_values[2] = v2; if v2 < threshold { cube_index |= 4; }
-                corner_values[3] = v3; if v3 < threshold { cube_index |= 8; }
-                corner_values[4] = v4; if v4 < threshold { cube_index |= 16; }
-                corner_values[5] = v5; if v5 < threshold { cube_index |= 32; }
-                corner_values[6] = v6; if v6 < threshold { cube_index |= 64; }
-                corner_values[7] = v7; if v7 < threshold { cube_index |= 128; }
+                corner_values[0] = v0;
+                if v0 < threshold {
+                    cube_index |= 1;
+                }
+                corner_values[1] = v1;
+                if v1 < threshold {
+                    cube_index |= 2;
+                }
+                corner_values[2] = v2;
+                if v2 < threshold {
+                    cube_index |= 4;
+                }
+                corner_values[3] = v3;
+                if v3 < threshold {
+                    cube_index |= 8;
+                }
+                corner_values[4] = v4;
+                if v4 < threshold {
+                    cube_index |= 16;
+                }
+                corner_values[5] = v5;
+                if v5 < threshold {
+                    cube_index |= 32;
+                }
+                corner_values[6] = v6;
+                if v6 < threshold {
+                    cube_index |= 64;
+                }
+                corner_values[7] = v7;
+                if v7 < threshold {
+                    cube_index |= 128;
+                }
 
                 // 2. Check if the cube is entirely inside or outside
                 let edge_flags = CUBE_EDGE_FLAGS[cube_index];
@@ -233,9 +261,16 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                     corner_normals[7] = grads[3];
                 } else if can_use_fast_path {
                     corner_normals[0] = get_gradient_interior(data, base_idx, stride_y, stride_z);
-                    corner_normals[3] = get_gradient_interior(data, base_idx + stride_y, stride_y, stride_z);
-                    corner_normals[4] = get_gradient_interior(data, base_idx + stride_z, stride_y, stride_z);
-                    corner_normals[7] = get_gradient_interior(data, base_idx + stride_y + stride_z, stride_y, stride_z);
+                    corner_normals[3] =
+                        get_gradient_interior(data, base_idx + stride_y, stride_y, stride_z);
+                    corner_normals[4] =
+                        get_gradient_interior(data, base_idx + stride_z, stride_y, stride_z);
+                    corner_normals[7] = get_gradient_interior(
+                        data,
+                        base_idx + stride_y + stride_z,
+                        stride_y,
+                        stride_z,
+                    );
                 } else {
                     corner_normals[0] = get_gradient(grid, x, y, z);
                     corner_normals[3] = get_gradient(grid, x, y + 1, z);
@@ -253,9 +288,16 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 if can_use_fast_path {
                     let next_x_idx = base_idx + 1;
                     corner_normals[1] = get_gradient_interior(data, next_x_idx, stride_y, stride_z);
-                    corner_normals[2] = get_gradient_interior(data, next_x_idx + stride_y, stride_y, stride_z);
-                    corner_normals[5] = get_gradient_interior(data, next_x_idx + stride_z, stride_y, stride_z);
-                    corner_normals[6] = get_gradient_interior(data, next_x_idx + stride_y + stride_z, stride_y, stride_z);
+                    corner_normals[2] =
+                        get_gradient_interior(data, next_x_idx + stride_y, stride_y, stride_z);
+                    corner_normals[5] =
+                        get_gradient_interior(data, next_x_idx + stride_z, stride_y, stride_z);
+                    corner_normals[6] = get_gradient_interior(
+                        data,
+                        next_x_idx + stride_y + stride_z,
+                        stride_y,
+                        stride_z,
+                    );
                 } else {
                     corner_normals[1] = get_gradient(grid, x + 1, y, z);
                     corner_normals[2] = get_gradient(grid, x + 1, y + 1, z);
@@ -272,8 +314,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 ]);
 
                 // 3. Compute intersection points on required edges
-                let mut edge_vertex = [Point3D::new(0.0,0.0,0.0); 12];
-                let mut edge_norm = [Point3D::new(0.0,0.0,0.0); 12];
+                let mut edge_vertex = [Point3D::new(0.0, 0.0, 0.0); 12];
+                let mut edge_norm = [Point3D::new(0.0, 0.0, 0.0); 12];
 
                 for i in 0..12 {
                     if (edge_flags & (1 << i)) != 0 {
@@ -281,15 +323,19 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                         let v2_idx = EDGE_CONNECTION[i][1];
 
                         edge_vertex[i] = interpolate(
-                            corner_pos[v1_idx], corner_values[v1_idx],
-                            corner_pos[v2_idx], corner_values[v2_idx],
-                            threshold
+                            corner_pos[v1_idx],
+                            corner_values[v1_idx],
+                            corner_pos[v2_idx],
+                            corner_values[v2_idx],
+                            threshold,
                         );
 
-                         edge_norm[i] = interpolate_normal(
-                            corner_normals[v1_idx], corner_values[v1_idx],
-                            corner_normals[v2_idx], corner_values[v2_idx],
-                            threshold
+                        edge_norm[i] = interpolate_normal(
+                            corner_normals[v1_idx],
+                            corner_values[v1_idx],
+                            corner_normals[v2_idx],
+                            corner_values[v2_idx],
+                            threshold,
                         );
                     }
                 }

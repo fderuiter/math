@@ -79,7 +79,11 @@ impl OdeSystem<SIRState> for SIRModel {
         let di = self.beta * s * i / self.n - self.gamma * i;
         let dr = self.gamma * i;
 
-        SIRState { s: ds, i: di, r: dr }
+        SIRState {
+            s: ds,
+            i: di,
+            r: dr,
+        }
     }
 }
 
@@ -168,7 +172,12 @@ impl OdeSystem<SEIRState> for SEIRModel {
         let di = self.sigma * e - self.gamma * i;
         let dr = self.gamma * i;
 
-        SEIRState { s: ds, e: de, i: di, r: dr }
+        SEIRState {
+            s: ds,
+            e: de,
+            i: di,
+            r: dr,
+        }
     }
 }
 
@@ -195,7 +204,10 @@ mod tests {
         let initial_i = model.state.i;
         model.step(0.1);
 
-        assert!(model.state.i < initial_i, "Infected should decrease when R0 < 1");
+        assert!(
+            model.state.i < initial_i,
+            "Infected should decrease when R0 < 1"
+        );
     }
 
     #[test]
@@ -209,7 +221,10 @@ mod tests {
         model_std.step(dt);
         model_with.step_with(&RungeKutta4, dt);
 
-        assert_eq!(model_std.state, model_with.state, "step and step_with(RK4) should yield identical results");
+        assert_eq!(
+            model_std.state, model_with.state,
+            "step and step_with(RK4) should yield identical results"
+        );
     }
 
     #[test]
@@ -223,7 +238,10 @@ mod tests {
         model_std.step(dt);
         model_with.step_with(&RungeKutta4, dt);
 
-        assert_eq!(model_std.state, model_with.state, "step and step_with(RK4) should yield identical results");
+        assert_eq!(
+            model_std.state, model_with.state,
+            "step and step_with(RK4) should yield identical results"
+        );
     }
 
     #[test]
