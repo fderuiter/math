@@ -7,18 +7,21 @@
 //! with any vector-like type (e.g., `Vec<f64>`, `nalgebra::Vector3<f64>`, etc.),
 //! avoiding heap allocations when fixed-size arrays are sufficient.
 
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// A trait defining the vector operations required by numerical integrators.
 ///
 /// This trait allows the solver to be agnostic of the underlying storage (Heap vs Stack).
 /// It requires the type to support addition and scalar multiplication.
-pub trait VectorOperations: Sized + Clone + Add<Output = Self> + Mul<f64, Output = Self> {
-    // No extra methods needed, just the supertraits.
-}
+pub trait VectorOperations: Sized + Clone + Add<Output = Self> + Mul<f64, Output = Self> + AddAssign + MulAssign<f64> {
+    /// Adds `other` scaled by `scale` to `self`.
+    /// `self += other * scale`
+    fn scale_add(&mut self, other: &Self, scale: f64);
 
-// Blanket implementation for any type that satisfies the bounds.
-impl<T> VectorOperations for T where T: Sized + Clone + Add<Output = Self> + Mul<f64, Output = Self> {}
+    /// Copies the content of `other` into `self`.
+    /// This allows reusing allocated buffers.
+    fn copy_from(&mut self, other: &Self);
+}
 
 /// A wrapper around `Vec<f64>` that implements `VectorOperations`.
 /// Use this when you need a heap-allocated state vector.
@@ -29,12 +32,8 @@ impl Add for VecState {
     type Output = Self;
 
     fn add(mut self, rhs: Self) -> Self {
-        // In a production system, we might want to check for length mismatch.
-        // For now, zip will truncate to the shorter length, but states should be consistent.
-        // We reuse the buffer from `self` to avoid allocation.
         let len = std::cmp::min(self.0.len(), rhs.0.len());
         self.0.truncate(len);
-
         for (a, b) in self.0.iter_mut().zip(rhs.0.iter()) {
             *a += b;
         }
@@ -42,15 +41,86 @@ impl Add for VecState {
     }
 }
 
+impl AddAssign for VecState {
+    fn add_assign(&mut self, rhs: Self) {
+        let len = std::cmp::min(self.0.len(), rhs.0.len());
+        // Use zip to avoid bounds checks and handle length mismatch gracefully
+        for (a, b) in self.0.iter_mut().zip(rhs.0.iter()).take(len) {
+            *a += b;
+        }
+    }
+}
+
 impl Mul<f64> for VecState {
     type Output = Self;
 
     fn mul(mut self, scalar: f64) -> Self {
-        // Reuse the buffer from `self`.
         for val in self.0.iter_mut() {
             *val *= scalar;
         }
         self
+    }
+}
+
+impl MulAssign<f64> for VecState {
+    fn mul_assign(&mut self, scalar: f64) {
+        for val in self.0.iter_mut() {
+            *val *= scalar;
+        }
+    }
+}
+
+impl VectorOperations for VecState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        let len = std::cmp::min(self.0.len(), other.0.len());
+        for (a, b) in self.0.iter_mut().zip(other.0.iter()).take(len) {
+            *a += b * scale;
+        }
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        // Reuse buffer if possible
+        if self.0.len() != other.0.len() {
+            self.0.resize(other.0.len(), 0.0);
+        }
+        self.0.copy_from_slice(&other.0);
+    }
+}
+
+// Implementations for nalgebra types
+use nalgebra::{Vector2, Vector3, DVector};
+
+impl VectorOperations for Vector2<f64> {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        *self += other * scale;
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        *self = *other;
+    }
+}
+
+impl VectorOperations for Vector3<f64> {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        *self += other * scale;
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        *self = *other;
+    }
+}
+
+impl VectorOperations for DVector<f64> {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        // Use slice iteration to avoid temporary allocations from 'other * scale'
+        // This assumes DVector storage is contiguous which it is for standard DVector.
+        for (a, b) in self.as_mut_slice().iter_mut().zip(other.as_slice().iter()) {
+            *a += b * scale;
+        }
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        self.copy_from(other);
     }
 }
 
@@ -68,30 +138,36 @@ pub trait OdeSystem<State: VectorOperations> {
     ///
     /// # Returns
     /// The derivative vector $\frac{d\vec{y}}{dt}$.
+    ///
+    /// # Performance
+    /// Default implementation allocates a new State. Implement `derivative_in_place` for better performance.
     fn derivative(&self, t: f64, state: &State) -> State;
+
+    /// Computes the time derivative of the system state in-place.
+    ///
+    /// # Arguments
+    /// * `t` - The current time.
+    /// * `state` - The current state vector $\vec{y}$.
+    /// * `out` - The output vector to store $\frac{d\vec{y}}{dt}$.
+    fn derivative_in_place(&self, t: f64, state: &State, out: &mut State) {
+        *out = self.derivative(t, state);
+    }
 }
 
 /// A trait defining a numerical ODE solver strategy.
-///
-/// This allows different integration schemes (e.g., Euler, Runge-Kutta) to be swapped
-/// interchangeably, adhering to the Strategy Pattern.
 pub trait Solver<State: VectorOperations> {
     /// Advances the system state by one time step `dt`.
-    ///
-    /// # Arguments
-    /// * `system` - The ODE system defining the derivatives.
-    /// * `t` - The current time.
-    /// * `state` - The current state vector.
-    /// * `dt` - The time step size.
     fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized;
+
+    /// Advances the system state by one time step `dt` in-place.
+    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized;
 }
 
 /// Euler's Method Solver.
-///
-/// A simple first-order integrator: $y_{n+1} = y_n + f(t_n, y_n) \cdot \Delta t$.
-/// Fast but less accurate; useful for stiff systems or performance-critical approximations.
 pub struct Euler;
 
 impl<State: VectorOperations> Solver<State> for Euler {
@@ -101,6 +177,16 @@ impl<State: VectorOperations> Solver<State> for Euler {
     {
         let derivative = system.derivative(t, state);
         state.clone() + derivative * dt
+    }
+
+    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
+    where
+        S: OdeSystem<State> + ?Sized,
+    {
+         // Simple Euler step: y += f(t, y) * dt
+         let mut derivative = state.clone(); // Template allocation
+         system.derivative_in_place(t, state, &mut derivative);
+         state.scale_add(&derivative, dt);
     }
 }
 
@@ -115,34 +201,54 @@ impl<State: VectorOperations> Solver<State> for RungeKutta4 {
     where
         S: OdeSystem<State> + ?Sized,
     {
-        // Re-use the static logic (duplicated here to avoid self-borrowing quirks, though straightforward).
-        // delta = (k1 + 2k2 + 2k3 + k4) * dt / 6
+        // Fallback to in-place implementation
+        let mut new_state = state.clone();
+        self.step(system, t, &mut new_state, dt);
+        new_state
+    }
 
-        let k1 = system.derivative(t, state);
-        let k2 = system.derivative(t + dt / 2.0, &(state.clone() + k1.clone() * (dt / 2.0)));
-        let k3 = system.derivative(t + dt / 2.0, &(state.clone() + k2.clone() * (dt / 2.0)));
-        let k4 = system.derivative(t + dt, &(state.clone() + k3.clone() * dt));
+    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
+    where
+        S: OdeSystem<State> + ?Sized,
+    {
+        // Allocation: 3 vectors (k, tmp, initial_state).
+        let initial_state = state.clone();
+        let mut k = initial_state.clone();
+        let mut tmp = initial_state.clone();
 
-        let k2_2 = k2 * 2.0;
-        let k3_2 = k3 * 2.0;
-        let sum_k = k1 + k2_2 + k3_2 + k4;
-        let delta = sum_k * (dt / 6.0);
+        // k1 = f(t, y)
+        system.derivative_in_place(t, &initial_state, &mut k);
+        // y += k1 * dt/6
+        state.scale_add(&k, dt / 6.0);
 
-        state.clone() + delta
+        // k2 = f(t + dt/2, y + k1 * dt/2)
+        // tmp = y + k1 * dt/2
+        tmp.copy_from(&initial_state);
+        tmp.scale_add(&k, dt / 2.0);
+        system.derivative_in_place(t + dt / 2.0, &tmp, &mut k);
+        // y += k2 * dt/3
+        state.scale_add(&k, dt / 3.0);
+
+        // k3 = f(t + dt/2, y + k2 * dt/2)
+        // tmp = y + k2 * dt/2
+        tmp.copy_from(&initial_state);
+        tmp.scale_add(&k, dt / 2.0);
+        system.derivative_in_place(t + dt / 2.0, &tmp, &mut k);
+        // y += k3 * dt/3
+        state.scale_add(&k, dt / 3.0);
+
+        // k4 = f(t + dt, y + k3 * dt)
+        // tmp = y + k3 * dt
+        tmp.copy_from(&initial_state);
+        tmp.scale_add(&k, dt);
+        system.derivative_in_place(t + dt, &tmp, &mut k);
+        // y += k4 * dt/6
+        state.scale_add(&k, dt / 6.0);
     }
 }
 
 impl RungeKutta4 {
     /// Performs a single integration step.
-    ///
-    /// # Arguments
-    /// * `system` - The ODE system to solve.
-    /// * `t` - The current time.
-    /// * `state` - The current state vector.
-    /// * `dt` - The time step size.
-    ///
-    /// # Returns
-    /// The new state vector after time `dt`.
     pub fn step<State, S>(system: &S, t: f64, state: &State, dt: f64) -> State
     where
         State: VectorOperations,

@@ -1,6 +1,7 @@
 //! Type definitions for the Hodgkin-Huxley model.
 
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
+use crate::pure_math::analysis::ode::VectorOperations;
 
 /// Represents the state vector of a Hodgkin-Huxley neuron.
 ///
@@ -30,6 +31,15 @@ impl Add for HodgkinHuxleyState {
     }
 }
 
+impl AddAssign for HodgkinHuxleyState {
+    fn add_assign(&mut self, rhs: Self) {
+        self.v += rhs.v;
+        self.n += rhs.n;
+        self.m += rhs.m;
+        self.h += rhs.h;
+    }
+}
+
 impl Mul<f64> for HodgkinHuxleyState {
     type Output = Self;
 
@@ -43,5 +53,24 @@ impl Mul<f64> for HodgkinHuxleyState {
     }
 }
 
-// The blanket implementation in `ode.rs` covers this type since it implements Add and Mul.
-// impl VectorOperations for HodgkinHuxleyState {}
+impl MulAssign<f64> for HodgkinHuxleyState {
+    fn mul_assign(&mut self, scalar: f64) {
+        self.v *= scalar;
+        self.n *= scalar;
+        self.m *= scalar;
+        self.h *= scalar;
+    }
+}
+
+impl VectorOperations for HodgkinHuxleyState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        self.v += other.v * scale;
+        self.n += other.n * scale;
+        self.m += other.m * scale;
+        self.h += other.h * scale;
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        *self = *other;
+    }
+}
