@@ -9,3 +9,8 @@
 **Violation:** The `ReplicatorDynamics` struct hardcoded the `RungeKutta4` solver in its `simulate` method, violating the Dependency Inversion Principle and making it impossible to use alternative solvers (e.g., Euler for performance or experimental solvers).
 **Refactor:** Applied **Dependency Inversion**. Introduced `simulate_with_strategy` accepting a generic `S: Solver`. Retained `simulate` as a convenience wrapper.
 **Trade-off:** User must specify solver strategy for advanced usage, but default API remains unchanged.
+
+## 2026-01-15 - Strategy Pattern for Kalman Filter Physics
+**Violation:** `TrackingFilter` was coupled to the Constant Velocity (CV) physics model (hardcoded transition and measurement matrices), violating OCP and hindering the addition of higher-order models like Constant Acceleration.
+**Refactor:** Applied the **Strategy Pattern**. Extracted `KalmanModel` trait (defining $F, H, Q, R$). Implemented `ConstantVelocityModel`. Refactored `TrackingFilter` to be generic over `M: KalmanModel`.
+**Trade-off:** Constructor API changed (requires injecting model instance), but separated Physics from Estimation logic, enabling zero-cost abstraction for different motion models.

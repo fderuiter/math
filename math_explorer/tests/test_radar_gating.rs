@@ -4,7 +4,7 @@ use math_explorer::physics::medical::radar_gating::{
     geometry::{AngleFftConfig, SphericalPoint},
     physics::{C, FmcwConfig},
     surface::BiQuadraticSurface,
-    tracking::TrackingFilter,
+    tracking::{ConstantVelocityModel, TrackingFilter},
 };
 use nalgebra::Point3;
 
@@ -94,7 +94,8 @@ fn test_surface_fitting() {
 
 #[test]
 fn test_kalman_tracking() {
-    let mut filter = TrackingFilter::new(0.0, 0.1, 1e-4, 1e-2);
+    let model = ConstantVelocityModel::new(1e-4, 1e-2);
+    let mut filter = TrackingFilter::new(0.0, 0.1, model);
 
     // Simulate motion: A(t) = 1.0 * t (velocity = 1.0)
     for i in 0..100 {
