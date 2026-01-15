@@ -1,7 +1,7 @@
 //! Type definitions for the Hodgkin-Huxley model.
 
-use std::ops::{Add, AddAssign, Mul, MulAssign};
 use crate::pure_math::analysis::ode::VectorOperations;
+use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state vector of a Hodgkin-Huxley neuron.
 ///
