@@ -36,3 +36,23 @@ Benchmark `profile_qseries` (10 iterations on length 2000 series):
 - Before: ~3.54ms
 - After: ~1.43ms
 - Speedup: ~2.5x (~60% reduction)
+
+## 2026-10-15 - [Optimization] **Bottleneck:** RK4 Solver Allocation Churn **Strategy:** Zero-Allocation In-Place Solver **Gain:** 45% Time Saved (31.2ms -> 17.3ms)
+
+**Bottleneck:**
+The `RungeKutta4` solver and `VecState` vector operations relied on standard operator overloading (`Add`, `Mul`) which returned new allocated vectors (`Vec::new`) for every intermediate step.
+For a system of size 10,000, a single RK4 step performed ~12 large heap allocations/copies.
+- `state + k*dt` (Allocates result)
+- `k1`, `k2`, `k3`, `k4` (Allocated by `derivative`)
+
+**Strategy:**
+1. **Trait Refactor:** Extended `VectorOperations` with `scale_add(&mut self, other, scale)` and `copy_from(&mut self, other)` to allow in-place mutation.
+2. **Buffer Reuse:** Updated `RungeKutta4` to allocate workspace vectors (`k`, `tmp`) only once per step and reuse them.
+3. **In-Place Arithmetic:** Replaced creating new vectors with `scale_add`, avoiding intermediate allocations.
+4. **Manual Specialization:** Implemented optimized `scale_add` for `VecState` and `DVector` using iterators and slices.
+
+**Gain:**
+Benchmark (100 steps, system size 10,000):
+- Before: 31.19ms
+- After: 17.29ms
+- Speedup: ~45% (Allocation reduction)

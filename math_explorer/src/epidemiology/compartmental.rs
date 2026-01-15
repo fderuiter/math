@@ -1,5 +1,5 @@
-use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
-use std::ops::{Add, Mul};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, VectorOperations};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -20,6 +20,14 @@ impl Add for SIRState {
     }
 }
 
+impl AddAssign for SIRState {
+    fn add_assign(&mut self, rhs: Self) {
+        self.s += rhs.s;
+        self.i += rhs.i;
+        self.r += rhs.r;
+    }
+}
+
 impl Mul<f64> for SIRState {
     type Output = Self;
     fn mul(self, scalar: f64) -> Self {
@@ -28,6 +36,26 @@ impl Mul<f64> for SIRState {
             i: self.i * scalar,
             r: self.r * scalar,
         }
+    }
+}
+
+impl MulAssign<f64> for SIRState {
+    fn mul_assign(&mut self, scalar: f64) {
+        self.s *= scalar;
+        self.i *= scalar;
+        self.r *= scalar;
+    }
+}
+
+impl VectorOperations for SIRState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        self.s += other.s * scale;
+        self.i += other.i * scale;
+        self.r += other.r * scale;
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        *self = *other;
     }
 }
 
@@ -108,6 +136,15 @@ impl Add for SEIRState {
     }
 }
 
+impl AddAssign for SEIRState {
+    fn add_assign(&mut self, rhs: Self) {
+        self.s += rhs.s;
+        self.e += rhs.e;
+        self.i += rhs.i;
+        self.r += rhs.r;
+    }
+}
+
 impl Mul<f64> for SEIRState {
     type Output = Self;
     fn mul(self, scalar: f64) -> Self {
@@ -117,6 +154,28 @@ impl Mul<f64> for SEIRState {
             i: self.i * scalar,
             r: self.r * scalar,
         }
+    }
+}
+
+impl MulAssign<f64> for SEIRState {
+    fn mul_assign(&mut self, scalar: f64) {
+        self.s *= scalar;
+        self.e *= scalar;
+        self.i *= scalar;
+        self.r *= scalar;
+    }
+}
+
+impl VectorOperations for SEIRState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        self.s += other.s * scale;
+        self.e += other.e * scale;
+        self.i += other.i * scale;
+        self.r += other.r * scale;
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        *self = *other;
     }
 }
 
