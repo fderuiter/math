@@ -13,7 +13,9 @@ use std::ops::{Add, AddAssign, Mul, MulAssign};
 ///
 /// This trait allows the solver to be agnostic of the underlying storage (Heap vs Stack).
 /// It requires the type to support addition and scalar multiplication.
-pub trait VectorOperations: Sized + Clone + Add<Output = Self> + Mul<f64, Output = Self> + AddAssign + MulAssign<f64> {
+pub trait VectorOperations:
+    Sized + Clone + Add<Output = Self> + Mul<f64, Output = Self> + AddAssign + MulAssign<f64>
+{
     /// Adds `other` scaled by `scale` to `self`.
     /// `self += other * scale`
     fn scale_add(&mut self, other: &Self, scale: f64);
@@ -88,7 +90,7 @@ impl VectorOperations for VecState {
 }
 
 // Implementations for nalgebra types
-use nalgebra::{Vector2, Vector3, DVector};
+use nalgebra::{DVector, Vector2, Vector3};
 
 impl VectorOperations for Vector2<f64> {
     fn scale_add(&mut self, other: &Self, scale: f64) {
@@ -183,10 +185,10 @@ impl<State: VectorOperations> Solver<State> for Euler {
     where
         S: OdeSystem<State> + ?Sized,
     {
-         // Simple Euler step: y += f(t, y) * dt
-         let mut derivative = state.clone(); // Template allocation
-         system.derivative_in_place(t, state, &mut derivative);
-         state.scale_add(&derivative, dt);
+        // Simple Euler step: y += f(t, y) * dt
+        let mut derivative = state.clone(); // Template allocation
+        system.derivative_in_place(t, state, &mut derivative);
+        state.scale_add(&derivative, dt);
     }
 }
 
