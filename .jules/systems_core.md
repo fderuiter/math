@@ -14,3 +14,8 @@
 **Violation:** `TrackingFilter` was coupled to the Constant Velocity (CV) physics model (hardcoded transition and measurement matrices), violating OCP and hindering the addition of higher-order models like Constant Acceleration.
 **Refactor:** Applied the **Strategy Pattern**. Extracted `KalmanModel` trait (defining $F, H, Q, R$). Implemented `ConstantVelocityModel`. Refactored `TrackingFilter` to be generic over `M: KalmanModel`.
 **Trade-off:** Constructor API changed (requires injecting model instance), but separated Physics from Estimation logic, enabling zero-cost abstraction for different motion models.
+
+## 2026-02-20 - Dependency Inversion for Battery Degradation
+**Violation:** The `battery_degradation` module was tightly coupled to the concrete `PowerLawModel` struct, violating the Open/Closed Principle and preventing the addition of alternative degradation models (e.g., electrochemical or semi-empirical) without modifying existing code.
+**Refactor:** Applied **Dependency Inversion**. Extracted a `DegradationModel` trait defining the contract for cycle life and capacity fade. Implemented this trait for `PowerLawModel`.
+**Trade-off:** Added a layer of abstraction (the trait), but enabled full extensibility for future battery chemistries while preserving backward compatibility via inherent methods.
