@@ -1,6 +1,6 @@
-use nalgebra::DMatrix;
-use approx::assert_relative_eq;
 use crate::ai::sds::diffusion::{NoiseSchedule, inject_noise};
+use approx::assert_relative_eq;
+use nalgebra::DMatrix;
 
 #[test]
 fn test_noise_schedule() {

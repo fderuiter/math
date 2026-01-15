@@ -34,14 +34,14 @@
 //! - **Decoder**: Stack of `DecoderLayer`s.
 
 pub mod attention;
-pub mod feed_forward;
-pub mod positional_encoding;
-pub mod layer_norm;
-pub mod encoder;
 pub mod decoder;
+pub mod encoder;
+pub mod feed_forward;
+pub mod layer_norm;
 pub mod model;
+pub mod positional_encoding;
 
-pub use layer_norm::LayerNorm;
-pub use encoder::{Encoder, EncoderLayer};
 pub use decoder::{Decoder, DecoderLayer};
+pub use encoder::{Encoder, EncoderLayer};
+pub use layer_norm::LayerNorm;
 pub use model::Transformer;

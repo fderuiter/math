@@ -1,8 +1,16 @@
 use math_explorer::physics::medical::optical_motion::{
-    physics::{calculate_lambertian_order, calculate_received_power, calculate_photocurrent, calculate_tia_output},
-    processing::{weighted_average_height, snr_improvement_factor, LockInAmplifier, calculate_time_delay},
-    validation::{percentage_error, root_mean_square_error, pearson_correlation, dice_similarity_coefficient, time_shift_error},
     calibration::LinearCalibrator,
+    physics::{
+        calculate_lambertian_order, calculate_photocurrent, calculate_received_power,
+        calculate_tia_output,
+    },
+    processing::{
+        LockInAmplifier, calculate_time_delay, snr_improvement_factor, weighted_average_height,
+    },
+    validation::{
+        dice_similarity_coefficient, pearson_correlation, percentage_error, root_mean_square_error,
+        time_shift_error,
+    },
 };
 use nalgebra::Point3;
 use std::f64::consts::PI;

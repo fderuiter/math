@@ -1,7 +1,7 @@
 //! This module defines the autoencoder architecture for the CERA framework.
 
+use crate::climate::tensor_ops::conv1d;
 use nalgebra::{DMatrix, DVector};
-use crate::climate::tensor_ops::{conv1d};
 
 /// A simple leaky ReLU activation function.
 ///
@@ -43,12 +43,18 @@ impl ConvLayer {
     /// A new `ConvLayer`.
     pub fn new(in_channels: usize, out_channels: usize) -> Self {
         // Simple random initialization using from_fn
-        let kernel = DMatrix::from_fn(out_channels, in_channels, |_, _| rand::random::<f32>() * 2.0 - 1.0);
+        let kernel = DMatrix::from_fn(out_channels, in_channels, |_, _| {
+            rand::random::<f32>() * 2.0 - 1.0
+        });
         let bias = DVector::from_fn(out_channels, |_, _| rand::random::<f32>() * 2.0 - 1.0);
-        Self { kernel, bias, in_channels, out_channels }
+        Self {
+            kernel,
+            bias,
+            in_channels,
+            out_channels,
+        }
     }
 }
-
 
 /// The encoder component of the autoencoder.
 pub struct Encoder {

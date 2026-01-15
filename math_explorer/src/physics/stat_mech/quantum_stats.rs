@@ -38,7 +38,7 @@ pub fn occupancy_probability(
         // If T is exactly 0, we can't divide by 0 in beta.
         // We'll treat 0 as "very small positive" or handle explicitly.
         // Let's handle explicitly.
-         match particle_type {
+        match particle_type {
             ParticleType::Fermion => {
                 if energy < chemical_potential {
                     return Ok(1.0);
@@ -47,19 +47,21 @@ pub fn occupancy_probability(
                 }
             }
             ParticleType::Boson => {
-                 if chemical_potential > energy {
-                     return Err("Chemical potential cannot exceed energy for Bosons at T=0".to_string());
-                 }
-                 // If mu == E, divergence (condensate).
-                 return Ok(0.0); // Assume ground state condensation handled elsewhere? Or infinity.
+                if chemical_potential > energy {
+                    return Err(
+                        "Chemical potential cannot exceed energy for Bosons at T=0".to_string()
+                    );
+                }
+                // If mu == E, divergence (condensate).
+                return Ok(0.0); // Assume ground state condensation handled elsewhere? Or infinity.
             }
             ParticleType::Classical => {
-                 // e^-inf or e^inf
-                 if energy < chemical_potential {
-                     return Ok(f64::INFINITY);
-                 } else {
-                     return Ok(0.0);
-                 }
+                // e^-inf or e^inf
+                if energy < chemical_potential {
+                    return Ok(f64::INFINITY);
+                } else {
+                    return Ok(0.0);
+                }
             }
         }
     }
@@ -83,7 +85,9 @@ pub fn occupancy_probability(
         ParticleType::Boson => {
             // Bose-Einstein
             if chemical_potential > energy {
-                 return Err("Chemical potential cannot be greater than energy for Bosons".to_string());
+                return Err(
+                    "Chemical potential cannot be greater than energy for Bosons".to_string(),
+                );
             }
             // Check for singularity if exponent is 0 (E=mu)
             if exponent.abs() < 1e-9 {
@@ -113,21 +117,17 @@ mod tests {
         let e_below = 0.5e-20;
         let e_above = 1.5e-20;
 
-        let prob_below = occupancy_probability(
-            ParticleType::Fermion,
-            e_below,
-            mu_j,
-            t
-        ).unwrap();
+        let prob_below = occupancy_probability(ParticleType::Fermion, e_below, mu_j, t).unwrap();
 
-        let prob_above = occupancy_probability(
-            ParticleType::Fermion,
-            e_above,
-            mu_j,
-            t
-        ).unwrap();
+        let prob_above = occupancy_probability(ParticleType::Fermion, e_above, mu_j, t).unwrap();
 
-        assert!((prob_below - 1.0).abs() < 1e-6, "Fermion below mu should be occupied at T~0");
-        assert!(prob_above.abs() < 1e-6, "Fermion above mu should be empty at T~0");
+        assert!(
+            (prob_below - 1.0).abs() < 1e-6,
+            "Fermion below mu should be occupied at T~0"
+        );
+        assert!(
+            prob_above.abs() < 1e-6,
+            "Fermion above mu should be empty at T~0"
+        );
     }
 }

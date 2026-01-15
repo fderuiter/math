@@ -29,11 +29,21 @@ impl fmt::Display for HighEnergyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidMass { mass } => write!(f, "Mass must be positive, got {}", mass),
-            Self::InvalidRadius { radius, limit } => write!(f, "Radius {} must be greater than Schwarzschild radius {}", radius, limit),
-            Self::InvalidEnergyDensity { u_b } => write!(f, "Energy density must be non-negative, got {}", u_b),
-            Self::InvalidLorentzFactor { gamma } => write!(f, "Lorentz factor must be >= 1, got {}", gamma),
+            Self::InvalidRadius { radius, limit } => write!(
+                f,
+                "Radius {} must be greater than Schwarzschild radius {}",
+                radius, limit
+            ),
+            Self::InvalidEnergyDensity { u_b } => {
+                write!(f, "Energy density must be non-negative, got {}", u_b)
+            }
+            Self::InvalidLorentzFactor { gamma } => {
+                write!(f, "Lorentz factor must be >= 1, got {}", gamma)
+            }
             Self::InvalidPowerLawIndex { p } => write!(f, "Power law index must be > 1, got {}", p),
-            Self::InvalidAdiabaticIndex { gamma } => write!(f, "Adiabatic index must be > 1, got {}", gamma),
+            Self::InvalidAdiabaticIndex { gamma } => {
+                write!(f, "Adiabatic index must be > 1, got {}", gamma)
+            }
             Self::InvalidDensity { rho } => write!(f, "Density must be positive, got {}", rho),
             Self::InvalidPressure { p } => write!(f, "Pressure must be non-negative, got {}", p),
             Self::InvalidVelocity { v } => write!(f, "Velocity {} is invalid (must be < c)", v),

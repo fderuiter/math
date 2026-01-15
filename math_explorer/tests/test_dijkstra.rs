@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use math_explorer::pure_math::graph_theory::dijkstra::dijkstra;

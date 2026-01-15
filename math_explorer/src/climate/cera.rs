@@ -1,8 +1,8 @@
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
-use nalgebra::DMatrix;
 use crate::climate::autoencoder::Autoencoder;
 use crate::climate::predictor::Predictor;
+use nalgebra::DMatrix;
 // Re-export CeraConfig for backward compatibility (or convenience)
 pub use crate::climate::config::CeraConfig;
 
@@ -34,16 +34,20 @@ impl Cera {
             ));
         }
         if config.aligned_channels == 0 {
-             return Err("aligned_channels must be greater than 0".to_string());
+            return Err("aligned_channels must be greater than 0".to_string());
         }
         if config.num_levels == 0 {
-             return Err("num_levels must be greater than 0".to_string());
+            return Err("num_levels must be greater than 0".to_string());
         }
 
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         let predictor_input_size = config.num_levels * config.aligned_channels;
         let predictor = Predictor::new(predictor_input_size, config.output_size);
-        Ok(Self { autoencoder, predictor, config })
+        Ok(Self {
+            autoencoder,
+            predictor,
+            config,
+        })
     }
 
     /// Reshapes a batch of latent vectors for the predictor.
@@ -57,7 +61,11 @@ impl Cera {
     /// # Returns
     ///
     /// The reshaped matrix ready for the predictor.
-    fn reshape_for_predictor(&self, latent_matrix: &DMatrix<f32>, batch_size: usize) -> DMatrix<f32> {
+    fn reshape_for_predictor(
+        &self,
+        latent_matrix: &DMatrix<f32>,
+        batch_size: usize,
+    ) -> DMatrix<f32> {
         let num_levels = self.config.num_levels;
         let aligned_channels = self.config.aligned_channels;
         let mut reshaped_data = Vec::with_capacity(batch_size * num_levels * aligned_channels);
@@ -97,8 +105,8 @@ impl Cera {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nalgebra::DMatrix;
-    use crate::climate::training::CeraTrainer; // Import Trainer
+    use crate::climate::training::CeraTrainer;
+    use nalgebra::DMatrix; // Import Trainer
 
     // Helper constant for tests
     const TEST_NUM_LEVELS: usize = 30;
@@ -106,7 +114,9 @@ mod tests {
     const TEST_OUTPUT_SIZE: usize = 148;
 
     fn generate_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMatrix<f32>) {
-        let inputs = DMatrix::from_fn(n_samples * TEST_NUM_LEVELS, TEST_IN_CHANNELS, |_, _| rand::random::<f32>() + offset);
+        let inputs = DMatrix::from_fn(n_samples * TEST_NUM_LEVELS, TEST_IN_CHANNELS, |_, _| {
+            rand::random::<f32>() + offset
+        });
         let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| rand::random());
         (inputs, targets)
     }

@@ -74,10 +74,7 @@ impl FixedPointVerifier {
     /// Checks if $x^* \in \phi(x^*)$.
     ///
     /// If this returns true, `point` represents a Nash Equilibrium (or a fixed point of the dynamical system).
-    pub fn is_fixed_point<C: Correspondence>(
-        correspondence: &C,
-        point: &DVector<f64>
-    ) -> bool {
+    pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64>) -> bool {
         correspondence.is_in_image(point, point)
     }
 }
@@ -124,9 +121,15 @@ mod tests {
         let point_one = DVector::from_vec(vec![1.0]);
 
         // x=0 => f(0)=0. 0 is in {y | |y-0| < eps}. True.
-        assert!(FixedPointVerifier::is_fixed_point(&correspondence, &point_zero));
+        assert!(FixedPointVerifier::is_fixed_point(
+            &correspondence,
+            &point_zero
+        ));
 
         // x=1 => f(1)=0.5. 1 is NOT in {y | |y-0.5| < eps}. False.
-        assert!(!FixedPointVerifier::is_fixed_point(&correspondence, &point_one));
+        assert!(!FixedPointVerifier::is_fixed_point(
+            &correspondence,
+            &point_one
+        ));
     }
 }

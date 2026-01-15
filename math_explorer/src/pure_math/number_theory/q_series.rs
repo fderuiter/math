@@ -5,7 +5,7 @@
 //! other areas of number theory.
 
 use crate::pure_math::algebra::Ring;
-use std::ops::{Add, Mul, Div};
+use std::ops::{Add, Div, Mul};
 
 /// Represents a q-series, a power series in q.
 /// The vector `coeffs` stores the coefficients, where the index represents the power of q.
@@ -151,7 +151,7 @@ impl<T: Ring> Div for &QSeries<T> {
             let mut sum_val = T::zero();
             // Use iterator to avoid indexing check
             for (i, coeff) in new_coeffs.iter().enumerate().take(n) {
-                 sum_val += coeff.clone() * other.get_coeff(n - i);
+                sum_val += coeff.clone() * other.get_coeff(n - i);
             }
 
             let numerator = self.get_coeff(n) - sum_val;
@@ -194,9 +194,9 @@ mod tests {
     #[test]
     fn test_qseries_div() {
         // 1 / (1-q) = 1+q+q^2+...
-        let one = QSeries::from_vec(vec![1i64,0,0,0,0]);
-        let one_minus_q = QSeries::from_vec(vec![1i64,-1]);
+        let one = QSeries::from_vec(vec![1i64, 0, 0, 0, 0]);
+        let one_minus_q = QSeries::from_vec(vec![1i64, -1]);
         let geom_series = &one / &one_minus_q;
-        assert_eq!(geom_series.coeffs, vec![1,1,1,1,1]);
+        assert_eq!(geom_series.coeffs, vec![1, 1, 1, 1, 1]);
     }
 }

@@ -1,7 +1,7 @@
-use nalgebra::DMatrix;
 use super::attention::MultiHeadAttention;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use nalgebra::DMatrix;
 
 /// A single Decoder layer.
 pub struct DecoderLayer {
@@ -67,9 +67,9 @@ impl DecoderLayer {
         let normed_self_attn = self.norm1.forward(&x_plus_self_attn);
 
         // 2. Cross-attention (Encoder-Decoder attention)
-        let cross_attn_output = self
-            .cross_attn
-            .forward(&normed_self_attn, enc_output, enc_output, cross_attn_mask);
+        let cross_attn_output =
+            self.cross_attn
+                .forward(&normed_self_attn, enc_output, enc_output, cross_attn_mask);
         let normed_self_attn_plus_cross = &normed_self_attn + cross_attn_output;
         let normed_cross_attn = self.norm2.forward(&normed_self_attn_plus_cross);
 

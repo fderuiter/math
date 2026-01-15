@@ -13,7 +13,11 @@ use nalgebra::DMatrix;
 ///
 /// The mean squared error.
 pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> f32 {
-    assert_eq!(y_true.shape(), y_pred.shape(), "Matrices must have the same shape for MSE.");
+    assert_eq!(
+        y_true.shape(),
+        y_pred.shape(),
+        "Matrices must have the same shape for MSE."
+    );
     let diff = y_true - y_pred;
     diff.norm_squared() / (diff.nrows() * diff.ncols()) as f32
 }
@@ -32,7 +36,11 @@ pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> f32 {
 ///
 /// The average Earth Mover's Distance.
 pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
-    assert_eq!(z1.shape(), z2.shape(), "Matrices must have the same shape for EMD.");
+    assert_eq!(
+        z1.shape(),
+        z2.shape(),
+        "Matrices must have the same shape for EMD."
+    );
     if z1.ncols() == 0 {
         return 0.0;
     }
@@ -48,7 +56,11 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
         col1.sort_by(|a, b| a.partial_cmp(b).unwrap());
         col2.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-        let emd_i: f32 = col1.iter().zip(col2.iter()).map(|(a, b)| (a - b).abs()).sum();
+        let emd_i: f32 = col1
+            .iter()
+            .zip(col2.iter())
+            .map(|(a, b)| (a - b).abs())
+            .sum();
         total_emd += emd_i / col1.len() as f32;
     }
 
@@ -101,18 +113,8 @@ mod tests {
     #[test]
     fn test_earth_movers_distance() {
         // Two distributions for the first channel, two for the second
-        let z1 = DMatrix::from_row_slice(4, 2, &[
-            1.0, 8.0,
-            2.0, 7.0,
-            3.0, 6.0,
-            4.0, 5.0,
-        ]);
-        let z2 = DMatrix::from_row_slice(4, 2, &[
-            5.0, 4.0,
-            6.0, 3.0,
-            7.0, 2.0,
-            8.0, 1.0,
-        ]);
+        let z1 = DMatrix::from_row_slice(4, 2, &[1.0, 8.0, 2.0, 7.0, 3.0, 6.0, 4.0, 5.0]);
+        let z2 = DMatrix::from_row_slice(4, 2, &[5.0, 4.0, 6.0, 3.0, 7.0, 2.0, 8.0, 1.0]);
 
         // Channel 1: z1_sorted = [1,2,3,4], z2_sorted = [5,6,7,8]
         // Diff = [4,4,4,4]. Sum of abs diff = 16. EMD_1 = 16 / 4 = 4.

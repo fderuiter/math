@@ -1,6 +1,6 @@
+use nalgebra::DMatrix;
 use rand::Rng;
 use rand_distr::{Distribution, Normal};
-use nalgebra::DMatrix;
 
 const DEFAULT_BETA_START: f64 = 0.0001;
 const DEFAULT_BETA_END: f64 = 0.02;
@@ -82,7 +82,8 @@ pub fn inject_noise(
 /// Helper to generate Gaussian noise matching image dimensions
 pub fn generate_noise(rows: usize, cols: usize) -> DMatrix<f64> {
     let mut rng = rand::thread_rng();
-    let normal = Normal::new(0.0, 1.0).expect("Standard Normal Distribution (mean=0, std=1) should always be valid");
+    let normal = Normal::new(0.0, 1.0)
+        .expect("Standard Normal Distribution (mean=0, std=1) should always be valid");
     DMatrix::from_fn(rows, cols, |_, _| normal.sample(&mut rng))
 }
 

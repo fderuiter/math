@@ -19,7 +19,11 @@ impl fmt::Display for ClinicalTrialError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::InsufficientSampleSize { required, actual } => {
-                write!(f, "Insufficient sample size: required {}, got {}", required, actual)
+                write!(
+                    f,
+                    "Insufficient sample size: required {}, got {}",
+                    required, actual
+                )
             }
             Self::InvalidData(msg) => write!(f, "Invalid data: {}", msg),
             Self::StatisticalError(msg) => write!(f, "Statistical error: {}", msg),

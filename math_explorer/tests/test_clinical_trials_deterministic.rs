@@ -1,4 +1,6 @@
-use math_explorer::applied::clinical_trials::design::{AllocationStrategy, BlockRandomizer, SimpleRandomizer, Group};
+use math_explorer::applied::clinical_trials::design::{
+    AllocationStrategy, BlockRandomizer, Group, SimpleRandomizer,
+};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
@@ -26,8 +28,14 @@ fn test_deterministic_block_randomization() {
     assert_eq!(assignments1, assignments2);
 
     // Check balance
-    let treatment_count = assignments1.iter().filter(|&&g| g == Group::Treatment).count();
-    let control_count = assignments1.iter().filter(|&&g| g == Group::Control).count();
+    let treatment_count = assignments1
+        .iter()
+        .filter(|&&g| g == Group::Treatment)
+        .count();
+    let control_count = assignments1
+        .iter()
+        .filter(|&&g| g == Group::Control)
+        .count();
     assert_eq!(treatment_count, 10);
     assert_eq!(control_count, 10);
 }

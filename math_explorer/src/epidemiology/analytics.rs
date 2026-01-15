@@ -13,15 +13,15 @@ pub fn calculate_final_size(r0: f64, s0: f64, n: f64) -> Result<f64, String> {
     // Initial guess strategy:
     // If R0 > 1, the final size S_inf is approximately S0 * exp(-R0).
     // If R0 <= 1, the epidemic doesn't take off, S_inf ~ S0.
-    let mut x = if r0 > 1.0 {
-        s0 * (-r0).exp()
-    } else {
-        s0
-    };
+    let mut x = if r0 > 1.0 { s0 * (-r0).exp() } else { s0 };
 
     // Ensure x is within reasonable bounds
-    if x < 1e-5 { x = 1e-5; }
-    if x > n { x = n - 1e-5; }
+    if x < 1e-5 {
+        x = 1e-5;
+    }
+    if x > n {
+        x = n - 1e-5;
+    }
 
     let tolerance = 1e-7;
     let max_iter = 100;
@@ -42,9 +42,9 @@ pub fn calculate_final_size(r0: f64, s0: f64, n: f64) -> Result<f64, String> {
 
         // Safety check to keep x within bounds
         if next_x <= 0.0 {
-             x /= 2.0; // Backtrack towards 0
+            x /= 2.0; // Backtrack towards 0
         } else if next_x > n {
-             x = (x + n) / 2.0; // Backtrack towards N
+            x = (x + n) / 2.0; // Backtrack towards N
         } else {
             x = next_x;
         }

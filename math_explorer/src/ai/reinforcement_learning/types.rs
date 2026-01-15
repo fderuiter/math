@@ -15,7 +15,12 @@ pub trait MarkovDecisionProcess {
 
     /// The Transition Probability $P(s' | s, a)$.
     /// Defines the probability of moving to `next_state` given `current_state` and `action`.
-    fn transition_probability(&self, next_state: &Self::S, current_state: &Self::S, action: &Self::A) -> f64;
+    fn transition_probability(
+        &self,
+        next_state: &Self::S,
+        current_state: &Self::S,
+        action: &Self::A,
+    ) -> f64;
 
     /// The Reward Function $R(s, a, s')$.
     /// The immediate reward received for a transition.

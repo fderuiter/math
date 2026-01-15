@@ -1,0 +1,54 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  WORKING_DIRECTORY: math_explorer
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ${{ env.WORKING_DIRECTORY }}/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check Formatting
+        run: cargo fmt -- --check
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Build
+        run: cargo build --verbose
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Run Tests
+        run: cargo test --verbose
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Run Clippy
+        run: cargo clippy -- -D warnings
+        working-directory: ${{ env.WORKING_DIRECTORY }}

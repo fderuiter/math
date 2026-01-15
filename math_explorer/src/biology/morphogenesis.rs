@@ -102,7 +102,9 @@ impl<K: ReactionKinetics> TuringSystem<K> {
     /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
     pub fn step(&mut self, dt: f64) {
         let n = self.u.len();
-        if n == 0 { return; }
+        if n == 0 {
+            return;
+        }
 
         // Ensure buffers are the right size
         if self.buffer_u.len() != n {
@@ -117,7 +119,13 @@ impl<K: ReactionKinetics> TuringSystem<K> {
         // Optimization: Lift boundary checks out of the loop
 
         // Helper closure to calculate update for a single index
-        let calculate_update = |u_curr: f64, v_curr: f64, u_prev: f64, u_next: f64, v_prev: f64, v_next: f64| -> (f64, f64) {
+        let calculate_update = |u_curr: f64,
+                                v_curr: f64,
+                                u_prev: f64,
+                                u_next: f64,
+                                v_prev: f64,
+                                v_next: f64|
+         -> (f64, f64) {
             let lap_u = (u_next - 2.0 * u_curr + u_prev) / dx_sq;
             let lap_v = (v_next - 2.0 * v_curr + v_prev) / dx_sq;
 
@@ -149,16 +157,17 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
         // 2. Handle i = 1..n-1 (Hot Path)
         if n > 2 {
-            for i in 1..n-1 {
+            for i in 1..n - 1 {
                 // Safety: i-1 and i+1 are valid
                 let u_curr = self.u[i];
                 let v_curr = self.v[i];
-                let u_prev = self.u[i-1];
-                let u_next = self.u[i+1];
-                let v_prev = self.v[i-1];
-                let v_next = self.v[i+1];
+                let u_prev = self.u[i - 1];
+                let u_next = self.u[i + 1];
+                let v_prev = self.v[i - 1];
+                let v_next = self.v[i + 1];
 
-                let (res_u, res_v) = calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
+                let (res_u, res_v) =
+                    calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
                 self.buffer_u[i] = res_u;
                 self.buffer_v[i] = res_v;
             }
@@ -169,8 +178,8 @@ impl<K: ReactionKinetics> TuringSystem<K> {
             let i = n - 1;
             let u_curr = self.u[i];
             let v_curr = self.v[i];
-            let u_prev = self.u[i-1];
-            let v_prev = self.v[i-1];
+            let u_prev = self.u[i - 1];
+            let v_prev = self.v[i - 1];
             let u_next = u_curr; // idx_next = n-1
             let v_next = v_curr;
 

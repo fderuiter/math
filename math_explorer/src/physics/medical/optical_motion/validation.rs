@@ -46,7 +46,9 @@ pub fn root_mean_square_error(measured: &[f64], reference: &[f64]) -> f64 {
         return 0.0;
     }
 
-    let sum_sq_diff: f64 = measured.iter().zip(reference.iter())
+    let sum_sq_diff: f64 = measured
+        .iter()
+        .zip(reference.iter())
         .take(n)
         .map(|(x, y)| (x - y).powi(2))
         .sum();
@@ -82,7 +84,9 @@ pub fn pearson_correlation(x: &[f64], y: &[f64]) -> f64 {
     let mean_x = sum_x / nf;
     let mean_y = sum_y / nf;
 
-    let numerator: f64 = x.iter().zip(y.iter())
+    let numerator: f64 = x
+        .iter()
+        .zip(y.iter())
         .take(n)
         .map(|(a, b)| (a - mean_x) * (b - mean_y))
         .sum();
@@ -118,9 +122,15 @@ pub fn dice_similarity_coefficient(set_a: &[bool], set_b: &[bool]) -> f64 {
     let mut size_b = 0;
 
     for i in 0..n {
-        if set_a[i] { size_a += 1; }
-        if set_b[i] { size_b += 1; }
-        if set_a[i] && set_b[i] { intersection += 1; }
+        if set_a[i] {
+            size_a += 1;
+        }
+        if set_b[i] {
+            size_b += 1;
+        }
+        if set_a[i] && set_b[i] {
+            intersection += 1;
+        }
     }
 
     if size_a + size_b == 0 {
@@ -146,7 +156,9 @@ pub fn dice_similarity_coefficient(set_a: &[bool], set_b: &[bool]) -> f64 {
 /// $Error = \sum (Y_{measured}[i] - Y_{reference}[i])^2$
 pub fn time_shift_error(measured: &[f64], reference: &[f64]) -> f64 {
     let n = measured.len().min(reference.len());
-    measured.iter().zip(reference.iter())
+    measured
+        .iter()
+        .zip(reference.iter())
         .take(n)
         .map(|(m, r)| (m - r).powi(2))
         .sum()

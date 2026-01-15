@@ -4,8 +4,8 @@ use super::surface::ParametricSurface;
 /// Uses explicit Euler time-stepping with a discrete 5-point stencil for the Laplace-Beltrami operator.
 pub struct HeatEquationSolver<'a, S: ParametricSurface> {
     pub surface: &'a S,
-    pub alpha: f64, // Thermal diffusivity
-    pub u_grid: Vec<Vec<f64>>, // Current temperature state
+    pub alpha: f64,               // Thermal diffusivity
+    pub u_grid: Vec<Vec<f64>>,    // Current temperature state
     pub grid_res: (usize, usize), // (n_u, n_v)
     pub range_u: (f64, f64),
     pub range_v: (f64, f64),
@@ -144,12 +144,18 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
                     let sqrt_g = (e * g_metric - f * f).sqrt();
 
                     // f_u at i+0.5 is (f_{i+1} - f_i) / du
-                    let f_u = (get(&self.u_grid, i_base + 1, j_base) - get(&self.u_grid, i_base, j_base)) / du;
+                    let f_u = (get(&self.u_grid, i_base + 1, j_base)
+                        - get(&self.u_grid, i_base, j_base))
+                        / du;
 
                     // f_v at i+0.5 is average of f_v at i and i+1?
                     // f_v at i = (f_{i, j+1} - f_{i, j-1}) / 2dv
-                    let f_v_i = (get(&self.u_grid, i_base, j_base + 1) - get(&self.u_grid, i_base, j_base - 1)) / (2.0 * dv);
-                    let f_v_ip1 = (get(&self.u_grid, i_base + 1, j_base + 1) - get(&self.u_grid, i_base + 1, j_base - 1)) / (2.0 * dv);
+                    let f_v_i = (get(&self.u_grid, i_base, j_base + 1)
+                        - get(&self.u_grid, i_base, j_base - 1))
+                        / (2.0 * dv);
+                    let f_v_ip1 = (get(&self.u_grid, i_base + 1, j_base + 1)
+                        - get(&self.u_grid, i_base + 1, j_base - 1))
+                        / (2.0 * dv);
                     let f_v = 0.5 * (f_v_i + f_v_ip1);
 
                     (g_metric * f_u - f * f_v) / sqrt_g
@@ -168,11 +174,17 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
                     let sqrt_g = (e * g_metric - f * f).sqrt();
 
                     // f_v at j+0.5 is (f_{j+1} - f_j) / dv
-                    let f_v = (get(&self.u_grid, i_base, j_base + 1) - get(&self.u_grid, i_base, j_base)) / dv;
+                    let f_v = (get(&self.u_grid, i_base, j_base + 1)
+                        - get(&self.u_grid, i_base, j_base))
+                        / dv;
 
                     // f_u at j+0.5 is average
-                    let f_u_j = (get(&self.u_grid, i_base + 1, j_base) - get(&self.u_grid, i_base - 1, j_base)) / (2.0 * du);
-                    let f_u_jp1 = (get(&self.u_grid, i_base + 1, j_base + 1) - get(&self.u_grid, i_base - 1, j_base + 1)) / (2.0 * du);
+                    let f_u_j = (get(&self.u_grid, i_base + 1, j_base)
+                        - get(&self.u_grid, i_base - 1, j_base))
+                        / (2.0 * du);
+                    let f_u_jp1 = (get(&self.u_grid, i_base + 1, j_base + 1)
+                        - get(&self.u_grid, i_base - 1, j_base + 1))
+                        / (2.0 * du);
                     let f_u = 0.5 * (f_u_j + f_u_jp1);
 
                     (e * f_v - f * f_u) / sqrt_g

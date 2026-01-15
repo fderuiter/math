@@ -10,7 +10,11 @@ use nalgebra::Vector3;
 ///
 /// * J > 0: Ferromagnetic
 /// * J < 0: Antiferromagnetic
-pub fn calculate_heisenberg_energy(j: f64, spins: &[Vector3<f64>], neighbors: &[(usize, usize)]) -> f64 {
+pub fn calculate_heisenberg_energy(
+    j: f64,
+    spins: &[Vector3<f64>],
+    neighbors: &[(usize, usize)],
+) -> f64 {
     let mut sum_dot_products = 0.0;
     for &(idx1, idx2) in neighbors {
         if idx1 < spins.len() && idx2 < spins.len() {

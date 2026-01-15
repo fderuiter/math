@@ -3,7 +3,7 @@
 //! This example simulates a radar signal reflected from a target and runs the verified
 //! processing pipeline: Coarse FFT -> Fine CZT -> Phase Extraction -> Displacement.
 
-use math_explorer::physics::medical::radar_gating::{FmcwConfig, chirp_z_transform, C};
+use math_explorer::physics::medical::radar_gating::{C, FmcwConfig, chirp_z_transform};
 use num_complex::Complex;
 use std::f64::consts::PI;
 
@@ -81,7 +81,6 @@ fn main() {
     println!("Coarse Range: {:.4} m", coarse_range);
     println!("Error: {:.4} m", (coarse_range - true_range).abs());
 
-
     // 4. Step 2: Fine Search (Zoom CZT)
     println!("\n--- Step 2: Fine Search (CZT Zoom) ---");
     // Zoom in around the coarse frequency.
@@ -126,8 +125,14 @@ fn main() {
     // Eq (5): d = lambda * phi / (4 * pi)
     let calculated_displacement = config.displacement_from_phase(extracted_phase);
 
-    println!("Calculated Displacement: {:.6} mm", calculated_displacement * 1000.0);
-    println!("Displacement Error: {:.6} mm", (calculated_displacement * 1000.0 - displacement_mm).abs());
+    println!(
+        "Calculated Displacement: {:.6} mm",
+        calculated_displacement * 1000.0
+    );
+    println!(
+        "Displacement Error: {:.6} mm",
+        (calculated_displacement * 1000.0 - displacement_mm).abs()
+    );
 
     println!("\n=== Verification Complete ===");
 }

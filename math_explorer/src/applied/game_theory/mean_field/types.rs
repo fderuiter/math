@@ -6,10 +6,10 @@
 /// - `dt`, `dx`: Discretization steps.
 #[derive(Clone, Debug)]
 pub struct MFGConfig {
-    pub viscosity: f64,          // nu
-    pub time_horizon: f64,       // T
-    pub time_steps: usize,       // Nt
-    pub grid_points: usize,      // Nx
+    pub viscosity: f64,     // nu
+    pub time_horizon: f64,  // T
+    pub time_steps: usize,  // Nt
+    pub grid_points: usize, // Nx
     pub dt: f64,
     pub dx: f64,
     pub space_min: f64,

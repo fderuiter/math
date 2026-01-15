@@ -1,4 +1,4 @@
-use math_explorer::biology::morphogenesis::{TuringSystem, ReactionKinetics};
+use math_explorer::biology::morphogenesis::{ReactionKinetics, TuringSystem};
 
 struct GrayScottKinetics {
     f: f64,

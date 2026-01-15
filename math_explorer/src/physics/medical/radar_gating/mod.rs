@@ -40,25 +40,25 @@
 //!
 //! # Core Modules
 
-pub mod physics;
+pub mod clutter;
 pub mod czt;
+pub mod gating;
 pub mod geometry;
+pub mod mimo;
+pub mod phase;
+pub mod physics;
+pub mod super_resolution;
 pub mod surface;
 pub mod tracking;
-pub mod gating;
-pub mod phase;
-pub mod mimo;
-pub mod super_resolution;
-pub mod clutter;
 
-pub use physics::{FmcwConfig, C};
-pub use czt::chirp_z_transform;
+pub use clutter::EllipticalFilter;
 pub use czt::SpatialCztConfig;
-pub use geometry::{SphericalPoint, AngleFftConfig, SensorToPatientTransform};
+pub use czt::chirp_z_transform;
+pub use gating::GatingLogic;
+pub use geometry::{AngleFftConfig, SensorToPatientTransform, SphericalPoint};
+pub use mimo::Beamformer;
+pub use phase::PhaseUnwrapper;
+pub use physics::{C, FmcwConfig};
+pub use super_resolution::MusicEstimator;
 pub use surface::BiQuadraticSurface;
 pub use tracking::TrackingFilter;
-pub use gating::GatingLogic;
-pub use phase::PhaseUnwrapper;
-pub use mimo::Beamformer;
-pub use super_resolution::MusicEstimator;
-pub use clutter::EllipticalFilter;

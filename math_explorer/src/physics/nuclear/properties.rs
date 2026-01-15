@@ -1,5 +1,5 @@
-use super::types::*;
 use super::constants::property_constants;
+use super::types::*;
 use std::f64::consts::PI;
 
 /// Calculates the nuclear radius using the formula R = R0 * A^(1/3).
@@ -24,7 +24,7 @@ pub fn calculate_nucleon_density(mass_number: MassNumber) -> Result<f64, Nuclear
     let radius = calculate_radius(mass_number);
     let volume = (4.0 / 3.0) * PI * radius.powi(3);
     if volume == 0.0 {
-            return Err(NuclearError::VolumeZero);
+        return Err(NuclearError::VolumeZero);
     }
     Ok(mass_number.as_f64() / volume)
 }

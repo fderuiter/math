@@ -44,12 +44,7 @@ fn test_cortical_thickness() {
 
 #[test]
 fn test_glm_beta_estimation() {
-    let x: DMatrix<f64> = DMatrix::from_row_slice(4, 2, &[
-        1.0, 1.0,
-        1.0, 2.0,
-        1.0, 3.0,
-        1.0, 4.0,
-    ]);
+    let x: DMatrix<f64> = DMatrix::from_row_slice(4, 2, &[1.0, 1.0, 1.0, 2.0, 1.0, 3.0, 1.0, 4.0]);
     let y: DVector<f64> = DVector::from_vec(vec![6.0, 5.0, 7.0, 10.0]);
 
     let beta = estimate_beta(&x, &y).unwrap();
@@ -59,12 +54,7 @@ fn test_glm_beta_estimation() {
 
 #[test]
 fn test_glm_t_statistic() {
-    let x: DMatrix<f64> = DMatrix::from_row_slice(4, 2, &[
-        1.0, 1.0,
-        1.0, 2.0,
-        1.0, 3.0,
-        1.0, 4.0,
-    ]);
+    let x: DMatrix<f64> = DMatrix::from_row_slice(4, 2, &[1.0, 1.0, 1.0, 2.0, 1.0, 3.0, 1.0, 4.0]);
     let y: DVector<f64> = DVector::from_vec(vec![6.0, 5.0, 7.0, 10.0]);
     let beta = estimate_beta(&x, &y).unwrap();
 

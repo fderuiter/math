@@ -1,8 +1,8 @@
 //! This module handles the training process for the CERA model.
 
-use nalgebra::{DMatrix, DVector};
 use crate::climate::cera::Cera;
-use crate::climate::loss::{cera_loss, mse_loss, earth_movers_distance};
+use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
+use nalgebra::{DMatrix, DVector};
 
 /// A trainer for the CERA model.
 pub struct CeraTrainer<'a> {
@@ -26,20 +26,26 @@ impl<'a> CeraTrainer<'a> {
     fn optimizer_step(&mut self) {
         let lr = self.model.config.learning_rate;
         for layer in self.model.autoencoder.encoder.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
+            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
+                rand::random::<f32>() - 0.5
+            });
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
             layer.kernel -= grad_k * lr;
             layer.bias -= grad_b * lr;
         }
         for layer in self.model.autoencoder.decoder.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
+            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
+                rand::random::<f32>() - 0.5
+            });
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
             layer.kernel -= grad_k * lr;
             layer.bias -= grad_b * lr;
         }
         for layer in self.model.predictor.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_,_| rand::random::<f32>() - 0.5);
-            let grad_b = DVector::from_fn(layer.bias.len(), |_,_| rand::random::<f32>() - 0.5);
+            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
+                rand::random::<f32>() - 0.5
+            });
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
             layer.kernel -= grad_k * lr;
             layer.bias -= grad_b * lr;
         }
@@ -47,7 +53,11 @@ impl<'a> CeraTrainer<'a> {
 
     /// Reshapes a batch of latent vectors for the predictor.
     /// From (batch_size * num_levels, channels) to (batch_size, num_levels * channels).
-    fn reshape_for_predictor(&self, latent_matrix: &DMatrix<f32>, batch_size: usize) -> DMatrix<f32> {
+    fn reshape_for_predictor(
+        &self,
+        latent_matrix: &DMatrix<f32>,
+        batch_size: usize,
+    ) -> DMatrix<f32> {
         let num_levels = self.model.config.num_levels;
         let aligned_channels = self.model.config.aligned_channels;
         let mut reshaped_data = Vec::with_capacity(batch_size * num_levels * aligned_channels);
@@ -94,19 +104,24 @@ impl<'a> CeraTrainer<'a> {
                 // --- Create batches ---
                 let input_start = i * batch_size * num_levels;
                 let input_rows = batch_size * num_levels;
-                let control_input_batch = control_inputs.rows(input_start, input_rows).clone_owned();
+                let control_input_batch =
+                    control_inputs.rows(input_start, input_rows).clone_owned();
                 let warm_input_batch = warm_inputs.rows(input_start, input_rows).clone_owned();
 
                 let target_start = i * batch_size;
-                let control_target_batch = control_targets.rows(target_start, batch_size).clone_owned();
+                let control_target_batch =
+                    control_targets.rows(target_start, batch_size).clone_owned();
 
                 // --- Forward pass ---
-                let (control_latent, control_recon) = self.model.autoencoder.forward(&control_input_batch);
+                let (control_latent, control_recon) =
+                    self.model.autoencoder.forward(&control_input_batch);
                 let (warm_latent, warm_recon) = self.model.autoencoder.forward(&warm_input_batch);
 
                 // --- Reshape and predict ---
-                let control_aligned_latent = control_latent.columns(0, aligned_channels).clone_owned();
-                let predictor_input = self.reshape_for_predictor(&control_aligned_latent, batch_size);
+                let control_aligned_latent =
+                    control_latent.columns(0, aligned_channels).clone_owned();
+                let predictor_input =
+                    self.reshape_for_predictor(&control_aligned_latent, batch_size);
                 let prediction = self.model.predictor.forward(&predictor_input);
 
                 // --- Calculate losses ---
@@ -132,7 +147,11 @@ impl<'a> CeraTrainer<'a> {
                 total_loss += loss;
             }
             if n_batches > 0 {
-                println!("Epoch {}, Average Loss: {}", epoch, total_loss / n_batches as f32);
+                println!(
+                    "Epoch {}, Average Loss: {}",
+                    epoch,
+                    total_loss / n_batches as f32
+                );
             }
         }
     }

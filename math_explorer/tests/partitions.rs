@@ -30,10 +30,10 @@ fn test_qseries_div() {
     assert_eq!(s3.coeffs, s2.coeffs);
 
     // 1 / (1-q) = 1+q+q^2+...
-    let one = QSeries::from_vec(vec![1,0,0,0,0]);
-    let one_minus_q = QSeries::from_vec(vec![1,-1]);
+    let one = QSeries::from_vec(vec![1, 0, 0, 0, 0]);
+    let one_minus_q = QSeries::from_vec(vec![1, -1]);
     let geom_series = &one / &one_minus_q;
-    assert_eq!(geom_series.coeffs, vec![1,1,1,1,1]);
+    assert_eq!(geom_series.coeffs, vec![1, 1, 1, 1, 1]);
 }
 
 #[test]
@@ -104,12 +104,18 @@ fn test_theorem_2() {
     let precision = 40;
     let p_star = gen_p_star(precision);
 
-    for n in 0..2 { // Check for n=0 and n=1
+    for n in 0..2 {
+        // Check for n=0 and n=1
         let index1 = 16 * n + 15;
         if index1 >= precision {
             break;
         }
-        assert_eq!(p_star.get_coeff(index1), -64 * p_star.get_coeff(n), "P*(16*{}+15) failed", n);
+        assert_eq!(
+            p_star.get_coeff(index1),
+            -64 * p_star.get_coeff(n),
+            "P*(16*{}+15) failed",
+            n
+        );
     }
 }
 

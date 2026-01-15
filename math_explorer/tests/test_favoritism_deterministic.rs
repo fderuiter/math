@@ -1,7 +1,11 @@
-use math_explorer::applied::favoritism::{calculate_favoritism_score_with_rng, calculate_favoritism_score_full, FavoritismInputs};
-use math_explorer::pure_math::analysis::integration::{Trapezoidal, ClenshawCurtis, Integrator, IntegrationResult};
-use rand::rngs::StdRng;
+use math_explorer::applied::favoritism::{
+    FavoritismInputs, calculate_favoritism_score_full, calculate_favoritism_score_with_rng,
+};
+use math_explorer::pure_math::analysis::integration::{
+    ClenshawCurtis, IntegrationResult, Integrator,
+};
 use rand::SeedableRng;
+use rand::rngs::StdRng;
 
 #[test]
 fn test_favoritism_deterministic() {
@@ -53,7 +57,7 @@ impl Integrator for MockIntegrator {
 #[test]
 fn test_favoritism_integrator_swap() {
     let inputs = FavoritismInputs::default();
-    let mut rng = StdRng::seed_from_u64(42);
+    let rng = StdRng::seed_from_u64(42);
 
     // Use default Clenshaw-Curtis
     let score_cc = calculate_favoritism_score_full(&inputs, &mut rng.clone(), &ClenshawCurtis);
@@ -69,5 +73,8 @@ fn test_favoritism_integrator_swap() {
     // Result should be approx 2x.
 
     // So they should be different.
-    assert!((score_cc - score_mock).abs() > 1.0, "Mock integrator should yield significantly different result");
+    assert!(
+        (score_cc - score_mock).abs() > 1.0,
+        "Mock integrator should yield significantly different result"
+    );
 }

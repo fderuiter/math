@@ -27,14 +27,7 @@ pub struct CannibalismModel {
 
 impl CannibalismModel {
     /// Creates a new `CannibalismModel` with the specified parameters.
-    pub fn new(
-        beta_n: f64,
-        beta_c: f64,
-        k_n: f64,
-        phi_n_c: f64,
-        mu_n: f64,
-        mu_c: f64,
-    ) -> Self {
+    pub fn new(beta_n: f64, beta_c: f64, k_n: f64, phi_n_c: f64, mu_n: f64, mu_c: f64) -> Self {
         Self {
             beta_n,
             beta_c,
@@ -78,7 +71,10 @@ impl OdeSystem<Vector2<f64>> for CannibalismModel {
 /// # Returns
 ///
 /// The rate of change of the number of normal individuals.
-#[deprecated(since = "0.2.0", note = "Use `CannibalismModel` and `OdeSystem` instead.")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `CannibalismModel` and `OdeSystem` instead."
+)]
 pub fn dndt(n: f64, c: f64, beta_n: f64, beta_c: f64, k_n: f64, phi_n_c: f64, mu_n: f64) -> f64 {
     // This is a placeholder implementation.
     beta_n * n + beta_c * c - k_n * n - phi_n_c - mu_n * n
@@ -96,7 +92,10 @@ pub fn dndt(n: f64, c: f64, beta_n: f64, beta_c: f64, k_n: f64, phi_n_c: f64, mu
 /// # Returns
 ///
 /// The rate of change of the number of cannibalistic individuals.
-#[deprecated(since = "0.2.0", note = "Use `CannibalismModel` and `OdeSystem` instead.")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `CannibalismModel` and `OdeSystem` instead."
+)]
 pub fn dcdt(n: f64, c: f64, k_n: f64, mu_c: f64) -> f64 {
     // This is a placeholder implementation.
     k_n * n - mu_c * c

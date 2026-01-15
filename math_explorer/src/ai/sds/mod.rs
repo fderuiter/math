@@ -1,5 +1,5 @@
-pub mod rendering;
 pub mod diffusion;
-pub mod score;
 pub mod gradient;
+pub mod rendering;
+pub mod score;
 pub mod training;

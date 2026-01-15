@@ -19,7 +19,9 @@ pub fn boltzmann_factor(energy: f64, temperature: f64) -> f64 {
         // exp(-E/0) -> if E>0 exp(-inf)=0, if E<0 exp(inf)=inf.
         // We'll proceed with standard formula, let caller handle T<=0 or math errors.
         // But to be safe against division by zero:
-         if temperature == 0.0 { return 0.0; } // Fallback
+        if temperature == 0.0 {
+            return 0.0;
+        } // Fallback
     }
     let beta = 1.0 / (KB * temperature);
     (-beta * energy).exp()
@@ -36,7 +38,10 @@ pub fn boltzmann_factor(energy: f64, temperature: f64) -> f64 {
 /// # Returns
 /// * `f64` - The partition function Z.
 pub fn calculate_partition_function(energies: &[f64], temperature: f64) -> f64 {
-    energies.iter().map(|&e| boltzmann_factor(e, temperature)).sum()
+    energies
+        .iter()
+        .map(|&e| boltzmann_factor(e, temperature))
+        .sum()
 }
 
 /// Calculates the Helmholtz Free Energy (F).

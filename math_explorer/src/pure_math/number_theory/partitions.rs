@@ -54,16 +54,18 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
         let sign = if m % 2 == 0 { 1 } else { -1 };
 
         if let Some(idx) = idx_pos
-            && idx < precision {
-                coeffs[idx] = sign;
-                added = true;
-            }
+            && idx < precision
+        {
+            coeffs[idx] = sign;
+            added = true;
+        }
 
         if let Some(idx) = idx_neg
-            && idx < precision {
-                coeffs[idx] = sign;
-                added = true;
-            }
+            && idx < precision
+        {
+            coeffs[idx] = sign;
+            added = true;
+        }
 
         if !added {
             // Since p(m) grows quadratically, if both p_pos and p_neg exceed precision,
@@ -223,7 +225,10 @@ mod tests {
         let fast = f_k(k, precision);
         let slow = f_k_slow(k, precision);
 
-        assert_eq!(fast.coeffs, slow.coeffs, "Optimized f_k does not match naive implementation");
+        assert_eq!(
+            fast.coeffs, slow.coeffs,
+            "Optimized f_k does not match naive implementation"
+        );
     }
 
     #[test]
@@ -234,6 +239,9 @@ mod tests {
         let fast = f_k(k, precision);
         let slow = f_k_slow(k, precision);
 
-        assert_eq!(fast.coeffs, slow.coeffs, "Optimized f_k does not match naive implementation for k=5");
+        assert_eq!(
+            fast.coeffs, slow.coeffs,
+            "Optimized f_k does not match naive implementation for k=5"
+        );
     }
 }

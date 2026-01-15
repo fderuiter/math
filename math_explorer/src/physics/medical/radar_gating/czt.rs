@@ -97,6 +97,12 @@ impl SpatialCztConfig {
         // Total bandwidth of the window = slope * (step_size * bins)
         let zoom_bandwidth = slope * (self.step_distance * self.output_bins as f64);
 
-        chirp_z_transform(signal, start_freq, zoom_bandwidth, sample_rate, self.output_bins)
+        chirp_z_transform(
+            signal,
+            start_freq,
+            zoom_bandwidth,
+            sample_rate,
+            self.output_bins,
+        )
     }
 }

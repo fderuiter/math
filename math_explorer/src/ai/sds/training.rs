@@ -1,6 +1,6 @@
-use nalgebra::DMatrix;
-use crate::ai::sds::rendering::{NeRFModel, RayBundle};
 use crate::ai::AIError;
+use crate::ai::sds::rendering::{NeRFModel, RayBundle};
+use nalgebra::DMatrix;
 
 /// Module 5.1: Jacobian-Vector Product
 /// Input: SDS Gradient delta_SDS, Rendered Image x_render, NeRF Weights theta.
@@ -18,11 +18,7 @@ pub trait DifferentiableNeRF: NeRFModel {
     ///
     /// # Returns
     /// * `DMatrix<f64>` - The gradient vector for the model parameters (theta).
-    fn backward(
-        &self,
-        bundle: &RayBundle,
-        image_grad: &DMatrix<f64>,
-    ) -> DMatrix<f64>;
+    fn backward(&self, bundle: &RayBundle, image_grad: &DMatrix<f64>) -> DMatrix<f64>;
 }
 
 /// Module 5.2: Optimizer Step
@@ -59,12 +55,16 @@ impl AdamOptimizer {
     /// # Returns
     /// * `Ok(DMatrix<f64>)` - The updated parameters.
     /// * `Err(AIError)` - If dimensions mismatch.
-    pub fn step(&mut self, params: &DMatrix<f64>, grads: &DMatrix<f64>) -> Result<DMatrix<f64>, AIError> {
+    pub fn step(
+        &mut self,
+        params: &DMatrix<f64>,
+        grads: &DMatrix<f64>,
+    ) -> Result<DMatrix<f64>, AIError> {
         if params.shape() != grads.shape() {
-             return Err(AIError::DimensionMismatch {
-                 expected: format!("{:?}", params.shape()),
-                 got: format!("{:?}", grads.shape())
-             });
+            return Err(AIError::DimensionMismatch {
+                expected: format!("{:?}", params.shape()),
+                got: format!("{:?}", grads.shape()),
+            });
         }
 
         self.t += 1;
@@ -75,8 +75,14 @@ impl AdamOptimizer {
             self.v = Some(DMatrix::zeros(params.nrows(), params.ncols()));
         }
 
-        let m = self.m.as_mut().expect("Optimizer state m should be initialized");
-        let v = self.v.as_mut().expect("Optimizer state v should be initialized");
+        let m = self
+            .m
+            .as_mut()
+            .expect("Optimizer state m should be initialized");
+        let v = self
+            .v
+            .as_mut()
+            .expect("Optimizer state v should be initialized");
 
         // Update biased first moment estimate: m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
         *m = &*m * self.beta1 + grads * (1.0 - self.beta1);
