@@ -116,7 +116,7 @@ fn test_music_smoke() {
     // Add 10 dummy snapshots
     for _ in 0..10 {
         let chirp = vec![Complex::new(0.0, 0.0); 64];
-        estimator.add_snapshot(&chirp);
+        estimator.add_snapshot(&chirp).unwrap();
     }
 
     // Compute spectrum (should not panic)

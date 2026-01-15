@@ -63,3 +63,6 @@ pub mod mean_field;
 
 /// Design of rules/mechanisms to achieve specific outcomes, such as revenue-maximizing auctions (Myerson).
 pub mod mechanism_design;
+
+/// Errors for Game Theory calculations.
+pub mod error;

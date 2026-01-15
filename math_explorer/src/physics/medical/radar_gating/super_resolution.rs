@@ -5,6 +5,7 @@
 //! physical range resolution limit ($\Delta R = c/2B$) by exploiting the eigen-structure of the
 //! signal covariance matrix.
 
+use super::error::RadarError;
 use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;
 use std::f64::consts::PI;
@@ -42,9 +43,12 @@ impl MusicEstimator {
     ///
     /// Once enough snapshots are collected, the covariance matrix is robust.
     /// Ideally, call `compute_spectrum` after filling the buffer.
-    pub fn add_snapshot(&mut self, chirp: &[Complex<f64>]) {
+    pub fn add_snapshot(&mut self, chirp: &[Complex<f64>]) -> Result<(), RadarError> {
         if chirp.len() != self.samples_per_chirp {
-            return;
+            return Err(RadarError::ChirpLengthMismatch {
+                expected: self.samples_per_chirp,
+                actual: chirp.len(),
+            });
         }
         let vec = DVector::from_iterator(chirp.len(), chirp.iter().cloned());
 
@@ -52,6 +56,7 @@ impl MusicEstimator {
             self.snapshots.remove(0);
         }
         self.snapshots.push(vec);
+        Ok(())
     }
 
     /// Computes the MUSIC Pseudospectrum over a range of distances.
@@ -76,9 +81,12 @@ impl MusicEstimator {
         step_range: f64,
         bandwidth: f64,
         c: f64,
-    ) -> Result<Vec<(f64, f64)>, &'static str> {
+    ) -> Result<Vec<(f64, f64)>, RadarError> {
         if self.snapshots.len() < self.snapshot_count {
-            return Err("Not enough snapshots to compute stable Covariance Matrix");
+            return Err(RadarError::InsufficientSnapshots {
+                required: self.snapshot_count,
+                actual: self.snapshots.len(),
+            });
         }
 
         // 1. Estimate Covariance Matrix Rxx
@@ -114,13 +122,16 @@ impl MusicEstimator {
             .map(|(i, &v)| (v, i))
             .collect();
         // Sort descending (largest first)
-        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
         // 3. Extract Noise Subspace En
         // The last (N - P) eigenvectors correspond to noise.
         let num_noise_vectors = n - self.signal_subspace_dim;
         if num_noise_vectors == 0 {
-            return Err("Signal subspace dimension equals or exceeds sample size");
+            return Err(RadarError::InvalidSignalSubspace {
+                samples: n,
+                subspace: self.signal_subspace_dim,
+            });
         }
 
         // Collect indices of noise eigenvectors (the smallest ones)

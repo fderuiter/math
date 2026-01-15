@@ -1,3 +1,4 @@
+use super::error::GameTheoryError;
 use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
 use nalgebra::{DMatrix, DVector};
 
@@ -20,13 +21,14 @@ pub struct ReplicatorDynamics {
 
 impl ReplicatorDynamics {
     /// Creates a new system with the given payoff matrix $A$.
-    pub fn new(payoff_matrix: DMatrix<f64>) -> Self {
-        assert_eq!(
-            payoff_matrix.nrows(),
-            payoff_matrix.ncols(),
-            "Payoff matrix must be square"
-        );
-        Self { payoff_matrix }
+    pub fn new(payoff_matrix: DMatrix<f64>) -> Result<Self, GameTheoryError> {
+        if payoff_matrix.nrows() != payoff_matrix.ncols() {
+            return Err(GameTheoryError::NonSquarePayoffMatrix {
+                rows: payoff_matrix.nrows(),
+                cols: payoff_matrix.ncols(),
+            });
+        }
+        Ok(Self { payoff_matrix })
     }
 
     /// Computes the time derivative $\dot{x}$ for the population state $x$.
@@ -130,7 +132,7 @@ mod tests {
         let payoff =
             DMatrix::from_row_slice(3, 3, &[0.0, -1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, 0.0]);
 
-        let system = ReplicatorDynamics::new(payoff);
+        let system = ReplicatorDynamics::new(payoff).unwrap();
 
         // Start near equilibrium (1/3, 1/3, 1/3)
         // If exact equilibrium, derivative should be 0.
@@ -157,7 +159,7 @@ mod tests {
         let payoff =
             DMatrix::from_row_slice(3, 3, &[0.0, -1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, 0.0]);
 
-        let system = ReplicatorDynamics::new(payoff);
+        let system = ReplicatorDynamics::new(payoff).unwrap();
         let init = DVector::from_vec(vec![0.4, 0.3, 0.3]);
 
         // Inject Euler solver
