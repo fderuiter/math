@@ -14,3 +14,8 @@
 **Gap:** `pure_math` lacked a top-level description, and `radar_gating` was a wall of text describing a pipeline.
 **Strategy:** Added a summary module doc to `pure_math` and a Mermaid pipeline diagram to `radar_gating`.
 **Outcome:** Users can now visualize the data flow in radar processing and understand the scope of the pure math module at a glance.
+
+## 2025-05-17 - Demystifying the AI Black Box
+**Gap:** The `ai` module documentation was a dry list of files, failing to convey the "From Scratch" educational philosophy or the relationships between submodules (e.g., how SDS relates to NeRF).
+**Strategy:** Overhauled `ai/mod.rs` with a "Deep Learning & AI" header, a Mermaid ecosystem diagram, and a runnable Transformer example. Also added a process diagram to `sds/mod.rs`.
+**Outcome:** Users can now visualize the AI learning path and run a Transformer model in seconds.
