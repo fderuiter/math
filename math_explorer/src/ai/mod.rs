@@ -52,26 +52,24 @@
 //! use math_explorer::ai::transformer::Encoder;
 //! use nalgebra::DMatrix;
 //!
-//! fn main() {
-//!     // 1. Configure the Architecture
-//!     let num_layers = 2;
-//!     let d_model = 512;      // Embedding dimension
-//!     let num_heads = 8;      // Attention heads
-//!     let d_ff = 2048;        // Feed-forward hidden dimension
+//! // 1. Configure the Architecture
+//! let num_layers = 2;
+//! let d_model = 512;      // Embedding dimension
+//! let num_heads = 8;      // Attention heads
+//! let d_ff = 2048;        // Feed-forward hidden dimension
 //!
-//!     let encoder = Encoder::new(num_layers, d_model, num_heads, d_ff);
+//! let encoder = Encoder::new(num_layers, d_model, num_heads, d_ff);
 //!
-//!     // 2. Prepare Input (Batch Size x Sequence Length x Embedding Dim)
-//!     // Note: This implementation currently handles 2D matrices (SeqLen x Dim)
-//!     let seq_len = 10;
-//!     // Create dummy data using a deterministic function
-//!     let input_data = DMatrix::<f64>::from_fn(seq_len, d_model, |r, c| (r + c) as f64 * 0.01);
+//! // 2. Prepare Input (Batch Size x Sequence Length x Embedding Dim)
+//! // Note: This implementation currently handles 2D matrices (SeqLen x Dim)
+//! let seq_len = 10;
+//! // Create dummy data using a deterministic function
+//! let input_data = DMatrix::<f64>::from_fn(seq_len, d_model, |r, c| (r + c) as f64 * 0.01);
 //!
-//!     // 3. Forward Pass
-//!     let output = encoder.forward(input_data, None);
+//! // 3. Forward Pass
+//! let output = encoder.forward(input_data, None);
 //!
-//!     println!("Output shape: ({}, {})", output.nrows(), output.ncols());
-//! }
+//! println!("Output shape: ({}, {})", output.nrows(), output.ncols());
 //! ```
 //!
 //! ## 🔍 Deep Dive
