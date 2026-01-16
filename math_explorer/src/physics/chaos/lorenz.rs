@@ -110,7 +110,7 @@ impl LorenzSystem {
     /// Advances the system by time `dt` using a provided solver strategy.
     ///
     /// This allows the user to switch integrators (e.g., Euler, RK4) dynamically.
-    pub fn step_with<S: Solver<Vector3<f64>>>(&mut self, solver: &S, dt: f64) {
+    pub fn step_with<S: Solver<Vector3<f64>>>(&mut self, solver: &mut S, dt: f64) {
         self.state.vec = solver.solve(self, 0.0, &self.state.vec, dt);
     }
 }
@@ -127,5 +127,10 @@ impl OdeSystem<Vector3<f64>> for LorenzSystem {
         let dz = x * y - self.beta * z;
 
         Vector3::new(dx, dy, dz)
+    }
+
+    /// Calculates the derivative in-place to avoid allocation.
+    fn derivative_in_place(&self, t: f64, state: &Vector3<f64>, out: &mut Vector3<f64>) {
+        *out = self.derivative(t, state);
     }
 }

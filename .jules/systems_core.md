@@ -24,3 +24,8 @@
 **Violation:** The `occupancy_probability` function in `quantum_stats.rs` contained hardcoded formulas for Fermi-Dirac, Bose-Einstein, and Maxwell-Boltzmann distributions within a `match` statement, violating OCP.
 **Refactor:** Applied the **Strategy Pattern**. Extracted a `StatisticalDistribution` trait with an `occupancy` method. Implemented strategies for each distribution type.
 **Trade-off:** Minimal boilerplate increase for trait/struct definitions. Enables adding new distributions (e.g., Anyons) without modifying the core logic. Backward compatibility maintained via wrapper.
+
+## 2026-10-12 - Stateful Solver Strategy & Zero-Allocation Buffer
+**Violation:** The `Solver` trait forced `&self` immutability, preventing implementations like `RungeKutta4` from maintaining internal buffers. This caused `O(N)` allocations (one per step) inside the simulation loop, violating the "Zero Allocation" core directive.
+**Refactor:** Refactored `Solver` trait to take `&mut self`. Implemented `BufferedRungeKutta4` to reuse pre-allocated state buffers. Updated all consumers to pass mutable solver references.
+**Trade-off:** Solvers are now stateful/mutable, requiring `&mut` access, which prevents sharing a solver instance across threads (though typically solvers are thread-local).

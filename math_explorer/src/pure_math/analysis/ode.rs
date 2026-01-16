@@ -159,12 +159,12 @@ pub trait OdeSystem<State: VectorOperations> {
 /// A trait defining a numerical ODE solver strategy.
 pub trait Solver<State: VectorOperations> {
     /// Advances the system state by one time step `dt`.
-    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
     where
         S: OdeSystem<State> + ?Sized;
 
     /// Advances the system state by one time step `dt` in-place.
-    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
+    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized;
 }
@@ -173,7 +173,7 @@ pub trait Solver<State: VectorOperations> {
 pub struct Euler;
 
 impl<State: VectorOperations> Solver<State> for Euler {
-    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
     where
         S: OdeSystem<State> + ?Sized,
     {
@@ -181,7 +181,7 @@ impl<State: VectorOperations> Solver<State> for Euler {
         state.clone() + derivative * dt
     }
 
-    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
+    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized,
     {
@@ -199,7 +199,7 @@ impl<State: VectorOperations> Solver<State> for Euler {
 pub struct RungeKutta4;
 
 impl<State: VectorOperations> Solver<State> for RungeKutta4 {
-    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
     where
         S: OdeSystem<State> + ?Sized,
     {
@@ -209,7 +209,7 @@ impl<State: VectorOperations> Solver<State> for RungeKutta4 {
         new_state
     }
 
-    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
+    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized,
     {
@@ -257,7 +257,78 @@ impl RungeKutta4 {
         S: OdeSystem<State> + ?Sized,
     {
         // Delegate to the trait implementation via a temporary instance
-        let solver = RungeKutta4;
+        let mut solver = RungeKutta4;
         solver.solve(system, t, state, dt)
+    }
+}
+
+/// A zero-allocation implementation of the Runge-Kutta 4th Order Solver.
+///
+/// This struct holds reusable buffers to avoid heap allocations during integration steps.
+/// It is suitable for high-performance simulations.
+pub struct BufferedRungeKutta4<State: VectorOperations> {
+    k: State,
+    tmp: State,
+    initial_state: State,
+}
+
+impl<State: VectorOperations> BufferedRungeKutta4<State> {
+    /// Creates a new `BufferedRungeKutta4` solver.
+    ///
+    /// The `prototype` is used to allocate the internal buffers once.
+    pub fn new(prototype: &State) -> Self {
+        Self {
+            k: prototype.clone(),
+            tmp: prototype.clone(),
+            initial_state: prototype.clone(),
+        }
+    }
+}
+
+impl<State: VectorOperations> Solver<State> for BufferedRungeKutta4<State> {
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized,
+    {
+        let mut new_state = state.clone();
+        self.step(system, t, &mut new_state, dt);
+        new_state
+    }
+
+    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
+    where
+        S: OdeSystem<State> + ?Sized,
+    {
+        // Reuse pre-allocated buffers
+        self.initial_state.copy_from(state);
+
+        // k1 = f(t, y)
+        system.derivative_in_place(t, &self.initial_state, &mut self.k);
+        // y += k1 * dt/6
+        state.scale_add(&self.k, dt / 6.0);
+
+        // k2 = f(t + dt/2, y + k1 * dt/2)
+        // tmp = y + k1 * dt/2
+        self.tmp.copy_from(&self.initial_state);
+        self.tmp.scale_add(&self.k, dt / 2.0);
+        system.derivative_in_place(t + dt / 2.0, &self.tmp, &mut self.k);
+        // y += k2 * dt/3
+        state.scale_add(&self.k, dt / 3.0);
+
+        // k3 = f(t + dt/2, y + k2 * dt/2)
+        // tmp = y + k2 * dt/2
+        self.tmp.copy_from(&self.initial_state);
+        self.tmp.scale_add(&self.k, dt / 2.0);
+        system.derivative_in_place(t + dt / 2.0, &self.tmp, &mut self.k);
+        // y += k3 * dt/3
+        state.scale_add(&self.k, dt / 3.0);
+
+        // k4 = f(t + dt, y + k3 * dt)
+        // tmp = y + k3 * dt
+        self.tmp.copy_from(&self.initial_state);
+        self.tmp.scale_add(&self.k, dt);
+        system.derivative_in_place(t + dt, &self.tmp, &mut self.k);
+        // y += k4 * dt/6
+        state.scale_add(&self.k, dt / 6.0);
     }
 }

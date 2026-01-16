@@ -93,7 +93,7 @@ impl SIRModel {
     }
 
     /// Advances the state by dt using a provided solver strategy.
-    pub fn step_with<S: Solver<SIRState>>(&mut self, solver: &S, dt: f64) {
+    pub fn step_with<S: Solver<SIRState>>(&mut self, solver: &mut S, dt: f64) {
         self.state = solver.solve(self, 0.0, &self.state, dt);
     }
 }
@@ -214,7 +214,7 @@ impl SEIRModel {
     }
 
     /// Advances the state by dt using a provided solver strategy.
-    pub fn step_with<S: Solver<SEIRState>>(&mut self, solver: &S, dt: f64) {
+    pub fn step_with<S: Solver<SEIRState>>(&mut self, solver: &mut S, dt: f64) {
         self.state = solver.solve(self, 0.0, &self.state, dt);
     }
 }
@@ -278,7 +278,7 @@ mod tests {
 
         let dt = 0.1;
         model_std.step(dt);
-        model_with.step_with(&RungeKutta4, dt);
+        model_with.step_with(&mut RungeKutta4, dt);
 
         assert_eq!(
             model_std.state, model_with.state,
@@ -295,7 +295,7 @@ mod tests {
 
         let dt = 0.1;
         model_std.step(dt);
-        model_with.step_with(&RungeKutta4, dt);
+        model_with.step_with(&mut RungeKutta4, dt);
 
         assert_eq!(
             model_std.state, model_with.state,
@@ -310,7 +310,7 @@ mod tests {
         let mut model = SIRModel::new(n, i0, 0.5, 0.1);
 
         // Euler is less accurate but should still run without panic
-        model.step_with(&Euler, 0.1);
+        model.step_with(&mut Euler, 0.1);
 
         assert!(model.state.s <= n);
         assert!(model.state.i >= 0.0);
