@@ -17,7 +17,10 @@ fn main() {
     }
     let duration = start.elapsed();
 
-    println!("Time for {} iterations with size {}: {:?}", iterations, size, duration);
+    println!(
+        "Time for {} iterations with size {}: {:?}",
+        iterations, size, duration
+    );
     let avg_ns = duration.as_nanos() as f64 / iterations as f64;
     println!("Average per step: {:.2} ns", avg_ns);
 }
