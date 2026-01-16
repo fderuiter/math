@@ -112,7 +112,9 @@ impl<M: KalmanModel> KalmanFilter<M> {
         // Invert S.
         // For 1D measurements, this is trivial. For nD, we need matrix inversion.
         // Kalman Filter requires S to be invertible (positive definite).
-        let s_inv = s.try_inverse().ok_or("Failed to invert innovation covariance matrix (singular)")?;
+        let s_inv = s
+            .try_inverse()
+            .ok_or("Failed to invert innovation covariance matrix (singular)")?;
 
         // Kalman Gain K = P H^T S^-1
         let k = &self.covariance * h.transpose() * s_inv;
