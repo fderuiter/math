@@ -62,4 +62,7 @@ pub use phase::PhaseUnwrapper;
 pub use physics::{C, FmcwConfig};
 pub use super_resolution::MusicEstimator;
 pub use surface::BiQuadraticSurface;
-pub use tracking::{ConstantVelocityModel, KalmanModel, TrackingFilter};
+pub use tracking::{ConstantVelocityModel, TrackingFilter};
+
+// Re-export the core KalmanModel so users can implement their own models if needed
+pub use crate::applied::algorithms::kalman::KalmanModel;
