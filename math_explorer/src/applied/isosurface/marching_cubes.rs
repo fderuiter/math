@@ -15,11 +15,8 @@ fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Po
     }
 
     let t = (threshold - v1) / (v2 - v1);
-    Point3D::new(
-        p1.x + t * (p2.x - p1.x),
-        p1.y + t * (p2.y - p1.y),
-        p1.z + t * (p2.z - p1.z),
-    )
+    // Linear interpolation: p1 + t * (p2 - p1)
+    p1 + (p2 - p1) * t
 }
 
 /// Calculates the gradient at a grid point using central differences.
@@ -82,16 +79,10 @@ fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32
         return n1;
     }
     let t = (threshold - v1) / (v2 - v1);
-    let nx = n1.x + t * (n2.x - n1.x);
-    let ny = n1.y + t * (n2.y - n1.y);
-    let nz = n1.z + t * (n2.z - n1.z);
 
-    let len = (nx * nx + ny * ny + nz * nz).sqrt();
-    if len > 1e-6 {
-        Point3D::new(nx / len, ny / len, nz / len)
-    } else {
-        Point3D::new(0.0, 0.0, 0.0)
-    }
+    // Linear interpolation of the normal vector
+    let n = n1 + (n2 - n1) * t;
+    n.normalize()
 }
 
 pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, String> {
@@ -158,8 +149,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 // 1. Determine the index of the case (0-255)
                 let mut cube_index = 0;
                 let mut corner_values = [0.0; 8];
-                let mut corner_pos = [Point3D::new(0.0, 0.0, 0.0); 8];
-                let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
+                let mut corner_pos = [Point3D::zero(); 8];
+                let mut corner_normals = [Point3D::zero(); 8];
 
                 // Direct access for corner values to avoid redundant index calculation
                 // Vertices are ordered:
@@ -305,8 +296,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 ]);
 
                 // 3. Compute intersection points on required edges
-                let mut edge_vertex = [Point3D::new(0.0, 0.0, 0.0); 12];
-                let mut edge_norm = [Point3D::new(0.0, 0.0, 0.0); 12];
+                let mut edge_vertex = [Point3D::zero(); 12];
+                let mut edge_norm = [Point3D::zero(); 12];
 
                 for i in 0..12 {
                     if (edge_flags & (1 << i)) != 0 {

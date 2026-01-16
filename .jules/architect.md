@@ -21,3 +21,8 @@
 **Problem:** `math_explorer/src/biology/neuroscience.rs` coupled the mathematical model (differential equations), the state representation (struct), and the numerical solver (explicit Euler) into a single struct `HodgkinHuxleyNeuron`. This prevented the use of higher-order solvers (like Runge-Kutta 4) and made the system hard to test or extend.
 **Decision:** Applied "Model-State Separation" and "Strategy Pattern". Split `neuroscience.rs` into `types.rs` (State), `model.rs` (OdeSystem logic), and `neuron.rs` (Facade). Adopted the existing `OdeSystem` trait architecture.
 **Consequence:** The `HodgkinHuxleyNeuron` is now a thin facade. Users can still use the simple API, but the underlying system now supports dependency injection of solvers and is strictly typed via `VectorOperations`.
+
+## 2026-01-16 - [Isosurface Point3D Traitification]
+**Problem:** `math_explorer/src/applied/isosurface/marching_cubes.rs` relied on verbose manual component-wise arithmetic for vector operations, leading to noisy code and potential copy-paste errors in geometric calculations. `Point3D` was a dumb data container.
+**Decision:** Applied "Traitification" to `Point3D` by implementing standard arithmetic traits (`Add`, `Sub`, `Mul`, `Div`, `Neg`) and adding geometric helper methods (`dot`, `cross`, `normalize`). Refactored `marching_cubes.rs` to use these high-level abstractions.
+**Consequence:** Improved readability and maintainability of the Marching Cubes algorithm. Geometric intent is now explicit (e.g., `p1 + (p2 - p1) * t` vs manual component interpolation).
