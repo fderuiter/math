@@ -56,3 +56,24 @@ Benchmark (100 steps, system size 10,000):
 - Before: 31.19ms
 - After: 17.29ms
 - Speedup: ~45% (Allocation reduction)
+
+## 2026-10-27 - [Optimization] **Bottleneck:** Turing System Grid Iteration **Strategy:** Unsafe Indexing & Strength Reduction **Gain:** 44% Time Saved (482ms -> 270ms)
+
+**Bottleneck:**
+The `TuringSystem::step` function was performing a 1D Laplacian convolution with:
+1. Checked indexing (`self.u[i]`) inside the hot loop.
+2. Repeated floating-point division (`/ dx_sq`).
+3. Closure invocation overhead.
+4. `u.powi(2)` inside the reaction kinetics.
+
+**Strategy:**
+1. **Unsafe Indexing:** Refactored the loop to use `get_unchecked` within the safe bounds `1..n-1`.
+2. **Strength Reduction:** Pre-calculated `inv_dx_sq` to replace division with multiplication.
+3. **Inlining:** Manually inlined the update logic into the loop to ensure optimal register usage.
+4. **Simplification:** Replaced `powi(2)` with `u * u` in `SchnakenbergKinetics`.
+
+**Gain:**
+Benchmark `bench_morphogenesis` (1000 iterations, size 100,000):
+- Before: 482.02ms
+- After: 270.08ms
+- Speedup: ~1.78x (44% reduction)
