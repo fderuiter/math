@@ -14,3 +14,7 @@
 ## 2026-01-14 - Decoupling Numerical Integration
 **Violation:** Dependency Inversion Principle (DIP). The `calculate_favoritism_score` (Favoritism) and `calculate_win_probability` (Win Ratio) functions hardcoded `quadrature::clenshaw_curtis`, creating a tight coupling to a specific integration implementation and preventing strategy substitution.
 **Remedy:** Strategy Pattern. Created `Integrator` trait in `pure_math/analysis/integration.rs` and implemented `ClenshawCurtis` and `Trapezoidal` strategies. Refactored high-level modules to accept `&impl Integrator` via dependency injection.
+
+## 2026-05-22 - Decoupling Statistical Distributions
+**Violation:** Open/Closed Principle (OCP). The `occupancy_probability` function switched on a `ParticleType` enum, requiring modification to the function to support new statistical distributions.
+**Remedy:** Strategy Pattern. Extracted `StatisticalDistribution` trait and implemented `FermiDirac`, `BoseEinstein`, and `MaxwellBoltzmann` strategies. Refactored `occupancy_probability` to delegate to these strategies.
