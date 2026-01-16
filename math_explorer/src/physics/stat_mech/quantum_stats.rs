@@ -1,3 +1,4 @@
+use super::error::StatMechError;
 use super::KB;
 
 /// Type of particle for statistical distribution.
@@ -18,7 +19,7 @@ pub trait StatisticalDistribution {
         energy: f64,
         chemical_potential: f64,
         temperature: f64,
-    ) -> Result<f64, String>;
+    ) -> Result<f64, StatMechError>;
 }
 
 /// Fermi-Dirac Statistics (Fermions).
@@ -31,8 +32,12 @@ impl StatisticalDistribution for FermiDirac {
         energy: f64,
         chemical_potential: f64,
         temperature: f64,
-    ) -> Result<f64, String> {
-        if temperature <= 0.0 {
+    ) -> Result<f64, StatMechError> {
+        if temperature < 0.0 {
+            return Err(StatMechError::InvalidTemperature(temperature));
+        }
+        if temperature <= 1e-12 {
+            // T -> 0 limit
             if energy < chemical_potential {
                 return Ok(1.0);
             } else {
@@ -41,6 +46,14 @@ impl StatisticalDistribution for FermiDirac {
         }
         let beta = 1.0 / (KB * temperature);
         let exponent = beta * (energy - chemical_potential);
+        // Avoid overflow for large positive exponent
+        if exponent > 700.0 {
+            return Ok(0.0);
+        }
+        // Avoid overflow for large negative exponent
+        if exponent < -700.0 {
+            return Ok(1.0);
+        }
         let denom = exponent.exp() + 1.0;
         Ok(1.0 / denom)
     }
@@ -56,22 +69,37 @@ impl StatisticalDistribution for BoseEinstein {
         energy: f64,
         chemical_potential: f64,
         temperature: f64,
-    ) -> Result<f64, String> {
-        if temperature <= 0.0 {
+    ) -> Result<f64, StatMechError> {
+        if temperature < 0.0 {
+            return Err(StatMechError::InvalidTemperature(temperature));
+        }
+        if temperature <= 1e-12 {
             if chemical_potential > energy {
-                return Err("Chemical potential cannot exceed energy for Bosons at T=0".to_string());
+                return Err(StatMechError::InvalidChemicalPotential {
+                    chemical_potential,
+                    energy,
+                    reason: "Mu > E for Bosons at T=0".to_string(),
+                });
             }
             // If mu == E, divergence (condensate).
             return Ok(0.0); // Assume ground state condensation handled elsewhere? Or infinity.
         }
         if chemical_potential > energy {
-            return Err("Chemical potential cannot be greater than energy for Bosons".to_string());
+            return Err(StatMechError::InvalidChemicalPotential {
+                chemical_potential,
+                energy,
+                reason: "Mu > E for Bosons".to_string(),
+            });
         }
         let beta = 1.0 / (KB * temperature);
         let exponent = beta * (energy - chemical_potential);
         // Check for singularity if exponent is 0 (E=mu)
         if exponent.abs() < 1e-9 {
             return Ok(f64::INFINITY);
+        }
+        // Avoid overflow
+        if exponent > 700.0 {
+            return Ok(0.0);
         }
         let denom = exponent.exp() - 1.0;
         Ok(1.0 / denom)
@@ -88,8 +116,11 @@ impl StatisticalDistribution for MaxwellBoltzmann {
         energy: f64,
         chemical_potential: f64,
         temperature: f64,
-    ) -> Result<f64, String> {
-        if temperature <= 0.0 {
+    ) -> Result<f64, StatMechError> {
+        if temperature < 0.0 {
+            return Err(StatMechError::InvalidTemperature(temperature));
+        }
+        if temperature <= 1e-12 {
             // e^-inf or e^inf
             if energy < chemical_potential {
                 return Ok(f64::INFINITY);
@@ -99,6 +130,11 @@ impl StatisticalDistribution for MaxwellBoltzmann {
         }
         let beta = 1.0 / (KB * temperature);
         let exponent = beta * (energy - chemical_potential);
+        // Avoid overflow
+        if exponent > 700.0 {
+            // exp(-large) -> 0
+            return Ok(0.0);
+        }
         Ok((-exponent).exp())
     }
 }
@@ -109,7 +145,7 @@ pub fn calculate_occupancy<D: StatisticalDistribution>(
     energy: f64,
     chemical_potential: f64,
     temperature: f64,
-) -> Result<f64, String> {
+) -> Result<f64, StatMechError> {
     distribution.occupancy(energy, chemical_potential, temperature)
 }
 
@@ -129,13 +165,13 @@ pub fn calculate_occupancy<D: StatisticalDistribution>(
 /// * `temperature` - Temperature T in Kelvin.
 ///
 /// # Returns
-/// * `Result<f64, String>` - The average occupancy, or error if invalid (e.g. Bosons with mu > epsilon).
+/// * `Result<f64, StatMechError>` - The average occupancy, or error if invalid (e.g. Bosons with mu > epsilon).
 pub fn occupancy_probability(
     particle_type: ParticleType,
     energy: f64,
     chemical_potential: f64,
     temperature: f64,
-) -> Result<f64, String> {
+) -> Result<f64, StatMechError> {
     match particle_type {
         ParticleType::Fermion => {
             calculate_occupancy(FermiDirac, energy, chemical_potential, temperature)
