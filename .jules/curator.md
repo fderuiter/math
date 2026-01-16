@@ -19,3 +19,8 @@
 **Gap:** The `ai` module documentation was a dry list of files, failing to convey the "From Scratch" educational philosophy or the relationships between submodules (e.g., how SDS relates to NeRF).
 **Strategy:** Overhauled `ai/mod.rs` with a "Deep Learning & AI" header, a Mermaid ecosystem diagram, and a runnable Transformer example. Also added a process diagram to `sds/mod.rs`.
 **Outcome:** Users can now visualize the AI learning path and run a Transformer model in seconds.
+
+## 2025-05-20 - Visualizing the Invisible (Bio & Epi)
+**Gap:** `morphogenesis` and `epidemiology` contain rigorous math but lack "Quick Start" examples, making them inaccessible to non-experts. `epidemiology` also lacks visual flow documentation.
+**Strategy:** Inject runnable examples into `biology/morphogenesis.rs` and `epidemiology/mod.rs`. Add a Mermaid diagram to `epidemiology` to visualize the SIR compartment flow.
+**Outcome:** Reduced time-to-first-run for biological simulations and made the SIR model flow immediately intuitive.

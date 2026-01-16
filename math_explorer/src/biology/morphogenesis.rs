@@ -1,10 +1,60 @@
 //! Morphogenesis (Turing Patterns)
 //!
-//! This module implements a Reaction-Diffusion system capable of generating Turing patterns.
-//! It uses a 1D grid to simulate the interaction between an activator ($u$) and an inhibitor ($v$).
+//! This module implements a **Reaction-Diffusion system** capable of generating Turing patterns.
+//! It simulates the interaction between two chemical substances: an **Activator** ($u$) and an **Inhibitor** ($v$)
+//! on a 1D grid.
 //!
-//! The general equation is:
-//! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
+//! > **"How does the leopard get its spots?"** — Alan Turing
+//!
+//! ## The Math
+//!
+//! The system evolves according to:
+//! $$ \frac{\partial \mathbf{u}}{\partial t} = D_u \nabla^2 \mathbf{u} + f(u, v) $$
+//! $$ \frac{\partial \mathbf{v}}{\partial t} = D_v \nabla^2 \mathbf{v} + g(u, v) $$
+//!
+//! Where diffusion drives spreading ($D \nabla^2$) and reaction kinetics ($f, g$) drive local interaction.
+//! We use **Schnakenberg Kinetics** by default:
+//!
+//! *   Activator production: $f(u, v) = a - u + u^2 v$
+//! *   Inhibitor production: $g(u, v) = b - u^2 v$
+//!
+//! ## 🚀 Quick Start
+//!
+//! ```rust
+//! use math_explorer::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
+//!
+//! fn main() {
+//!     // 1. Initialize System
+//!     // Grid size=100, Du=1.0, Dv=20.0 (Inhibitor diffuses faster), dx=1.0
+//!     let mut system = TuringSystem::new(100, 1.0, 20.0, 1.0);
+//!
+//!     // 2. Perturb Initial State
+//!     // Turing instabilities require small random noise to break symmetry.
+//!     for i in 0..100 {
+//!         // Small random perturbation around the steady state
+//!         // (In a real app, use `rand::Rng`)
+//!         let noise = (i as f64).sin() * 0.1;
+//!         system.u[i] = 1.0 + noise;
+//!         system.v[i] = 0.9 + noise;
+//!     }
+//!
+//!     // 3. Evolve System
+//!     // Simulate for 1000 time steps
+//!     let dt = 0.01;
+//!     for _ in 0..1000 {
+//!         system.step(dt);
+//!     }
+//!
+//!     // 4. Observe Pattern
+//!     // In a Turing pattern, concentration levels should vary across the grid.
+//!     let u_variance: f64 = system.u.iter()
+//!         .map(|val| (val - 1.0).powi(2))
+//!         .sum();
+//!
+//!     println!("Pattern Variance: {:.4}", u_variance);
+//!     assert!(u_variance > 0.1, "Pattern should have formed!");
+//! }
+//! ```
 
 /// Defines the reaction kinetics for a 2-component reaction-diffusion system.
 pub trait ReactionKinetics {
