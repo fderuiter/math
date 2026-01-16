@@ -47,7 +47,7 @@ impl Default for SchnakenbergKinetics {
 
 impl ReactionKinetics for SchnakenbergKinetics {
     fn reaction(&self, u: f64, v: f64) -> (f64, f64) {
-        let uv_sq = u.powi(2) * v;
+        let uv_sq = u * u * v;
         let reaction_u = self.a - u + uv_sq;
         let reaction_v = self.b - uv_sq;
         (reaction_u, reaction_v)
@@ -115,77 +115,82 @@ impl<K: ReactionKinetics> TuringSystem<K> {
         }
 
         let dx_sq = self.dx * self.dx;
+        let inv_dx_sq = 1.0 / dx_sq;
 
-        // Optimization: Lift boundary checks out of the loop
-
-        // Helper closure to calculate update for a single index
-        let calculate_update = |u_curr: f64,
-                                v_curr: f64,
-                                u_prev: f64,
-                                u_next: f64,
-                                v_prev: f64,
-                                v_next: f64|
-         -> (f64, f64) {
-            let lap_u = (u_next - 2.0 * u_curr + u_prev) / dx_sq;
-            let lap_v = (v_next - 2.0 * v_curr + v_prev) / dx_sq;
-
-            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
-
-            let next_u = u_curr + dt * (self.d_u * lap_u + reaction_u);
-            let next_v = v_curr + dt * (self.d_v * lap_v + reaction_v);
-            (next_u, next_v)
-        };
+        // Optimization: Lift boundary checks out of the loop and use slices
+        let u = &self.u;
+        let v = &self.v;
+        let buffer_u = &mut self.buffer_u;
+        let buffer_v = &mut self.buffer_v;
 
         // 1. Handle i = 0
         {
             let i = 0;
-            let u_curr = self.u[i];
-            let v_curr = self.v[i];
-            // idx_prev = 0, idx_next = 1 (or 0 if n=1)
+            // Safety: n > 0 checked above
+            let u_curr = unsafe { *u.get_unchecked(i) };
+            let v_curr = unsafe { *v.get_unchecked(i) };
+
             let u_prev = u_curr;
             let v_prev = v_curr;
             let (u_next, v_next) = if n > 1 {
-                (self.u[1], self.v[1])
+                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
             } else {
                 (u_curr, v_curr)
             };
 
-            let (res_u, res_v) = calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
-            self.buffer_u[i] = res_u;
-            self.buffer_v[i] = res_v;
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+
+            unsafe {
+                *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
+                *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+            }
         }
 
         // 2. Handle i = 1..n-1 (Hot Path)
         if n > 2 {
             for i in 1..n - 1 {
-                // Safety: i-1 and i+1 are valid
-                let u_curr = self.u[i];
-                let v_curr = self.v[i];
-                let u_prev = self.u[i - 1];
-                let u_next = self.u[i + 1];
-                let v_prev = self.v[i - 1];
-                let v_next = self.v[i + 1];
+                // Safety: loop bounds ensure i, i-1, i+1 are valid
+                unsafe {
+                    let u_curr = *u.get_unchecked(i);
+                    let v_curr = *v.get_unchecked(i);
+                    let u_prev = *u.get_unchecked(i - 1);
+                    let u_next = *u.get_unchecked(i + 1);
+                    let v_prev = *v.get_unchecked(i - 1);
+                    let v_next = *v.get_unchecked(i + 1);
 
-                let (res_u, res_v) =
-                    calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
-                self.buffer_u[i] = res_u;
-                self.buffer_v[i] = res_v;
+                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+                    let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                    *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
+                    *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+                }
             }
         }
 
         // 3. Handle i = n-1
         if n > 1 {
             let i = n - 1;
-            let u_curr = self.u[i];
-            let v_curr = self.v[i];
-            let u_prev = self.u[i - 1];
-            let v_prev = self.v[i - 1];
-            let u_next = u_curr; // idx_next = n-1
-            let v_next = v_curr;
+            unsafe {
+                let u_curr = *u.get_unchecked(i);
+                let v_curr = *v.get_unchecked(i);
+                let u_prev = *u.get_unchecked(i - 1);
+                let v_prev = *v.get_unchecked(i - 1);
+                let u_next = u_curr;
+                let v_next = v_curr;
 
-            let (res_u, res_v) = calculate_update(u_curr, v_curr, u_prev, u_next, v_prev, v_next);
-            self.buffer_u[i] = res_u;
-            self.buffer_v[i] = res_v;
+                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+                let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
+                *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+            }
         }
 
         // Swap buffers
