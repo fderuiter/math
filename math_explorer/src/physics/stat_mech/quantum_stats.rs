@@ -8,6 +8,113 @@ pub enum ParticleType {
     Classical,
 }
 
+// --- Strategy Pattern Implementation ---
+
+/// Strategy for calculating particle occupancy probability.
+pub trait StatisticalDistribution {
+    /// Calculates the occupancy probability / average occupation number.
+    fn occupancy(
+        &self,
+        energy: f64,
+        chemical_potential: f64,
+        temperature: f64,
+    ) -> Result<f64, String>;
+}
+
+/// Fermi-Dirac Statistics (Fermions).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct FermiDirac;
+
+impl StatisticalDistribution for FermiDirac {
+    fn occupancy(
+        &self,
+        energy: f64,
+        chemical_potential: f64,
+        temperature: f64,
+    ) -> Result<f64, String> {
+        if temperature <= 0.0 {
+            if energy < chemical_potential {
+                return Ok(1.0);
+            } else {
+                return Ok(0.0);
+            }
+        }
+        let beta = 1.0 / (KB * temperature);
+        let exponent = beta * (energy - chemical_potential);
+        let denom = exponent.exp() + 1.0;
+        Ok(1.0 / denom)
+    }
+}
+
+/// Bose-Einstein Statistics (Bosons).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct BoseEinstein;
+
+impl StatisticalDistribution for BoseEinstein {
+    fn occupancy(
+        &self,
+        energy: f64,
+        chemical_potential: f64,
+        temperature: f64,
+    ) -> Result<f64, String> {
+        if temperature <= 0.0 {
+            if chemical_potential > energy {
+                return Err("Chemical potential cannot exceed energy for Bosons at T=0".to_string());
+            }
+            // If mu == E, divergence (condensate).
+            return Ok(0.0); // Assume ground state condensation handled elsewhere? Or infinity.
+        }
+        if chemical_potential > energy {
+            return Err("Chemical potential cannot be greater than energy for Bosons".to_string());
+        }
+        let beta = 1.0 / (KB * temperature);
+        let exponent = beta * (energy - chemical_potential);
+        // Check for singularity if exponent is 0 (E=mu)
+        if exponent.abs() < 1e-9 {
+            return Ok(f64::INFINITY);
+        }
+        let denom = exponent.exp() - 1.0;
+        Ok(1.0 / denom)
+    }
+}
+
+/// Maxwell-Boltzmann Statistics (Classical).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct MaxwellBoltzmann;
+
+impl StatisticalDistribution for MaxwellBoltzmann {
+    fn occupancy(
+        &self,
+        energy: f64,
+        chemical_potential: f64,
+        temperature: f64,
+    ) -> Result<f64, String> {
+        if temperature <= 0.0 {
+            // e^-inf or e^inf
+            if energy < chemical_potential {
+                return Ok(f64::INFINITY);
+            } else {
+                return Ok(0.0);
+            }
+        }
+        let beta = 1.0 / (KB * temperature);
+        let exponent = beta * (energy - chemical_potential);
+        Ok((-exponent).exp())
+    }
+}
+
+/// Generic function to calculate occupancy using a specific strategy.
+pub fn calculate_occupancy<D: StatisticalDistribution>(
+    distribution: D,
+    energy: f64,
+    chemical_potential: f64,
+    temperature: f64,
+) -> Result<f64, String> {
+    distribution.occupancy(energy, chemical_potential, temperature)
+}
+
+// --- Legacy Wrapper ---
+
 /// Calculates the occupancy probability / average occupation number.
 ///
 /// Formulas:
@@ -29,74 +136,15 @@ pub fn occupancy_probability(
     chemical_potential: f64,
     temperature: f64,
 ) -> Result<f64, String> {
-    if temperature <= 0.0 {
-        // T -> 0 limits.
-        // For Fermions: if E < mu, 1.0, else 0.0.
-        // For Bosons: if E < mu, undefined/negative? E > mu required.
-        // Let's approximate small T by using a very small epsilon or handling directly?
-        // The prompt asks for verification of Fermion limit T->0.
-        // If T is exactly 0, we can't divide by 0 in beta.
-        // We'll treat 0 as "very small positive" or handle explicitly.
-        // Let's handle explicitly.
-        match particle_type {
-            ParticleType::Fermion => {
-                if energy < chemical_potential {
-                    return Ok(1.0);
-                } else {
-                    return Ok(0.0);
-                }
-            }
-            ParticleType::Boson => {
-                if chemical_potential > energy {
-                    return Err(
-                        "Chemical potential cannot exceed energy for Bosons at T=0".to_string()
-                    );
-                }
-                // If mu == E, divergence (condensate).
-                return Ok(0.0); // Assume ground state condensation handled elsewhere? Or infinity.
-            }
-            ParticleType::Classical => {
-                // e^-inf or e^inf
-                if energy < chemical_potential {
-                    return Ok(f64::INFINITY);
-                } else {
-                    return Ok(0.0);
-                }
-            }
-        }
-    }
-
-    let beta = 1.0 / (KB * temperature);
-    let exponent = beta * (energy - chemical_potential);
-
     match particle_type {
-        ParticleType::Classical => {
-            // Maxwell-Boltzmann
-            // Note: The formula provided in prompt is e^(-beta(epsilon - mu)).
-            // Usually MB is e^(-beta(E - mu)) or just A * e^(-beta E).
-            // We use the prompt's formula.
-            Ok((-exponent).exp())
-        }
         ParticleType::Fermion => {
-            // Fermi-Dirac
-            let denom = exponent.exp() + 1.0;
-            Ok(1.0 / denom)
+            calculate_occupancy(FermiDirac, energy, chemical_potential, temperature)
         }
         ParticleType::Boson => {
-            // Bose-Einstein
-            if chemical_potential > energy {
-                return Err(
-                    "Chemical potential cannot be greater than energy for Bosons".to_string(),
-                );
-            }
-            // Check for singularity if exponent is 0 (E=mu)
-            if exponent.abs() < 1e-9 {
-                return Ok(f64::INFINITY);
-            }
-            let denom = exponent.exp() - 1.0;
-            // Since E >= mu, exponent >= 0. exponent.exp() >= 1.
-            // denom >= 0.
-            Ok(1.0 / denom)
+            calculate_occupancy(BoseEinstein, energy, chemical_potential, temperature)
+        }
+        ParticleType::Classical => {
+            calculate_occupancy(MaxwellBoltzmann, energy, chemical_potential, temperature)
         }
     }
 }
@@ -129,5 +177,25 @@ mod tests {
             prob_above.abs() < 1e-6,
             "Fermion above mu should be empty at T~0"
         );
+    }
+
+    #[test]
+    fn test_strategy_usage() {
+        // Test using the Strategy API directly
+        let t = 300.0;
+        let e = 1.0 * KB * t; // Energy = kT
+        let mu = 0.0;
+
+        // Fermi-Dirac: 1 / (e^1 + 1)
+        let fd = FermiDirac;
+        let prob_fd = calculate_occupancy(fd, e, mu, t).unwrap();
+        let expected_fd = 1.0 / (std::f64::consts::E + 1.0);
+        assert!((prob_fd - expected_fd).abs() < 1e-9);
+
+        // Maxwell-Boltzmann: e^-1
+        let mb = MaxwellBoltzmann;
+        let prob_mb = calculate_occupancy(mb, e, mu, t).unwrap();
+        let expected_mb = (-1.0_f64).exp();
+        assert!((prob_mb - expected_mb).abs() < 1e-9);
     }
 }
