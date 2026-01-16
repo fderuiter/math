@@ -49,12 +49,8 @@ fn get_gradient(grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
         (grid.get(x, y, z + 1) - grid.get(x, y, z - 1)) / 2.0
     };
 
-    let len = (dx * dx + dy * dy + dz * dz).sqrt();
-    if len > 1e-6 {
-        Point3D::new(dx / len, dy / len, dz / len)
-    } else {
-        Point3D::new(0.0, 0.0, 0.0)
-    }
+    // Optimization: Return un-normalized gradient. Normalization happens after interpolation.
+    Point3D::new(dx, dy, dz)
 }
 
 /// Optimized gradient calculation for interior points.
@@ -75,13 +71,8 @@ fn get_gradient_interior(data: &[f32], idx: usize, stride_y: usize, stride_z: us
         (*data.get_unchecked(idx + stride_z) - *data.get_unchecked(idx - stride_z)) * 0.5
     };
 
-    let len_sq = dx * dx + dy * dy + dz * dz;
-    if len_sq > 1e-12 {
-        let len = len_sq.sqrt();
-        Point3D::new(dx / len, dy / len, dz / len)
-    } else {
-        Point3D::new(0.0, 0.0, 0.0)
-    }
+    // Optimization: Return un-normalized gradient to save sqrt ops.
+    Point3D::new(dx, dy, dz)
 }
 
 /// Linear interpolation of normals.
