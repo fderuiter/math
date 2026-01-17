@@ -24,3 +24,8 @@
 **Violation:** The `occupancy_probability` function in `quantum_stats.rs` contained hardcoded formulas for Fermi-Dirac, Bose-Einstein, and Maxwell-Boltzmann distributions within a `match` statement, violating OCP.
 **Refactor:** Applied the **Strategy Pattern**. Extracted a `StatisticalDistribution` trait with an `occupancy` method. Implemented strategies for each distribution type.
 **Trade-off:** Minimal boilerplate increase for trait/struct definitions. Enables adding new distributions (e.g., Anyons) without modifying the core logic. Backward compatibility maintained via wrapper.
+
+## 2026-06-15 - Composition for Favoritism Model
+**Violation:** The `calculate_favoritism_score` function was a monolithic procedural block, mixing integration logic, linear algebra, and business rules, violating SRP and OCP.
+**Refactor:** Applied **Composition** and **Strategy Pattern**. Decomposed the scoring equation into granular `ScoringStrategy` components (`GiftStrategy`, `ProximityStrategy`, etc.) and orchestrated them via a `UnifiedFavoritismModel` struct.
+**Trade-off:** Increased file count and struct definitions, but achieved full separation of concerns and extensibility for individual scoring factors.

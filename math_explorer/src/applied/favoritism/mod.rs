@@ -78,6 +78,7 @@
 
 pub mod favorite_child;
 pub mod scoring;
+pub mod strategies;
 pub mod types;
 
 pub use scoring::{
