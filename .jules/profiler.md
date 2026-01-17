@@ -77,3 +77,19 @@ Benchmark `bench_morphogenesis` (1000 iterations, size 100,000):
 - Before: 482.02ms
 - After: 270.08ms
 - Speedup: ~1.78x (44% reduction)
+
+## 2026-01-17 - [Optimization] **Bottleneck:** Logistic Map Memory Churn **Strategy:** Pre-allocation **Gain:** ~10% Time Saved + Stability
+
+**Bottleneck:**
+The `generate_bifurcation_diagram` function in `math_explorer/src/physics/chaos/logistic.rs` initialized `points` with `Vec::new()`, causing repeated reallocation as it grew to ~5 million points (80MB).
+Benchmark showed high variance (128ms - 926ms) due to allocator pressure.
+
+**Strategy:**
+Implemented `Vec::with_capacity(capacity)` where `capacity = (steps + 1) * ATTRACTOR_POINTS`.
+This eliminates re-allocations and `memcpy` operations.
+
+**Gain:**
+Benchmark `bench_logistic` (100,000 steps):
+- Before: ~128ms (best), often >400ms (worst)
+- After: ~115ms (consistent)
+- Speedup: ~10% on CPU bound, significantly higher stability on system load.

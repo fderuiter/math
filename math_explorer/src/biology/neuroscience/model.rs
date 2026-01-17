@@ -20,6 +20,7 @@ impl HodgkinHuxleyModel {
     }
 
     /// Rate constant $\alpha_n$ for Potassium activation.
+    #[inline]
     fn alpha_n(v: f64, v_rest: f64) -> f64 {
         let x = 10.0 - (v - v_rest);
         if x.abs() < 1e-9 {
@@ -30,12 +31,14 @@ impl HodgkinHuxleyModel {
     }
 
     /// Rate constant $\beta_n$ for Potassium activation.
+    #[inline]
     fn beta_n(v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         0.125 * (-dv / 80.0).exp()
     }
 
     /// Rate constant $\alpha_m$ for Sodium activation.
+    #[inline]
     fn alpha_m(v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         let x = 25.0 - dv;
@@ -47,18 +50,21 @@ impl HodgkinHuxleyModel {
     }
 
     /// Rate constant $\beta_m$ for Sodium activation.
+    #[inline]
     fn beta_m(v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         4.0 * (-dv / 18.0).exp()
     }
 
     /// Rate constant $\alpha_h$ for Sodium inactivation.
+    #[inline]
     fn alpha_h(v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         0.07 * (-dv / 20.0).exp()
     }
 
     /// Rate constant $\beta_h$ for Sodium inactivation.
+    #[inline]
     fn beta_h(v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         1.0 / ((3.0 - 0.1 * dv).exp() + 1.0)
