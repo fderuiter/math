@@ -23,6 +23,10 @@ pub enum HighEnergyError {
     InvalidVelocity { v: f64 },
     /// Momentum is invalid (e.g. m^2 + p^2 < 0 somehow? or just checking validity).
     InvalidMomentum,
+    /// Invalid statistics parameters (e.g. negative counts).
+    InvalidStatisticsParams { reason: String },
+    /// Error during calculation (e.g. negative sqrt).
+    CalculationError { reason: String },
 }
 
 impl fmt::Display for HighEnergyError {
@@ -48,6 +52,10 @@ impl fmt::Display for HighEnergyError {
             Self::InvalidPressure { p } => write!(f, "Pressure must be non-negative, got {}", p),
             Self::InvalidVelocity { v } => write!(f, "Velocity {} is invalid (must be < c)", v),
             Self::InvalidMomentum => write!(f, "Momentum vector is invalid"),
+            Self::InvalidStatisticsParams { reason } => {
+                write!(f, "Invalid statistics parameters: {}", reason)
+            }
+            Self::CalculationError { reason } => write!(f, "Calculation error: {}", reason),
         }
     }
 }
