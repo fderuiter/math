@@ -15,11 +15,7 @@ fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Po
     }
 
     let t = (threshold - v1) / (v2 - v1);
-    Point3D::new(
-        p1.x + t * (p2.x - p1.x),
-        p1.y + t * (p2.y - p1.y),
-        p1.z + t * (p2.z - p1.z),
-    )
+    p1 + (p2 - p1) * t
 }
 
 /// Calculates the gradient at a grid point using central differences.
@@ -82,16 +78,7 @@ fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32
         return n1;
     }
     let t = (threshold - v1) / (v2 - v1);
-    let nx = n1.x + t * (n2.x - n1.x);
-    let ny = n1.y + t * (n2.y - n1.y);
-    let nz = n1.z + t * (n2.z - n1.z);
-
-    let len = (nx * nx + ny * ny + nz * nz).sqrt();
-    if len > 1e-6 {
-        Point3D::new(nx / len, ny / len, nz / len)
-    } else {
-        Point3D::new(0.0, 0.0, 0.0)
-    }
+    (n1 + (n2 - n1) * t).normalize()
 }
 
 pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, String> {
@@ -158,8 +145,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 // 1. Determine the index of the case (0-255)
                 let mut cube_index = 0;
                 let mut corner_values = [0.0; 8];
-                let mut corner_pos = [Point3D::new(0.0, 0.0, 0.0); 8];
-                let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
+                let mut corner_pos = [Point3D::zero(); 8];
+                let mut corner_normals = [Point3D::zero(); 8];
 
                 // Direct access for corner values to avoid redundant index calculation
                 // Vertices are ordered:
@@ -222,18 +209,19 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 }
 
                 // Only compute positions if needed
-                let next_x_pos = x_pos + grid.voxel_size.x;
-                let next_y_pos = y_pos + grid.voxel_size.y;
-                let next_z_pos = z_pos + grid.voxel_size.z;
+                let current_pos = Point3D::new(x_pos, y_pos, z_pos);
+                let dx = Point3D::new(grid.voxel_size.x, 0.0, 0.0);
+                let dy = Point3D::new(0.0, grid.voxel_size.y, 0.0);
+                let dz = Point3D::new(0.0, 0.0, grid.voxel_size.z);
 
-                corner_pos[0] = Point3D::new(x_pos, y_pos, z_pos);
-                corner_pos[1] = Point3D::new(next_x_pos, y_pos, z_pos);
-                corner_pos[2] = Point3D::new(next_x_pos, next_y_pos, z_pos);
-                corner_pos[3] = Point3D::new(x_pos, next_y_pos, z_pos);
-                corner_pos[4] = Point3D::new(x_pos, y_pos, next_z_pos);
-                corner_pos[5] = Point3D::new(next_x_pos, y_pos, next_z_pos);
-                corner_pos[6] = Point3D::new(next_x_pos, next_y_pos, next_z_pos);
-                corner_pos[7] = Point3D::new(x_pos, next_y_pos, next_z_pos);
+                corner_pos[0] = current_pos;
+                corner_pos[1] = current_pos + dx;
+                corner_pos[2] = current_pos + dx + dy;
+                corner_pos[3] = current_pos + dy;
+                corner_pos[4] = current_pos + dz;
+                corner_pos[5] = current_pos + dx + dz;
+                corner_pos[6] = current_pos + dx + dy + dz;
+                corner_pos[7] = current_pos + dy + dz;
 
                 // Profiler Optimization: Lazy Gradient Computation & Sliding Window
 
@@ -305,8 +293,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 ]);
 
                 // 3. Compute intersection points on required edges
-                let mut edge_vertex = [Point3D::new(0.0, 0.0, 0.0); 12];
-                let mut edge_norm = [Point3D::new(0.0, 0.0, 0.0); 12];
+                let mut edge_vertex = [Point3D::zero(); 12];
+                let mut edge_norm = [Point3D::zero(); 12];
 
                 for i in 0..12 {
                     if (edge_flags & (1 << i)) != 0 {

@@ -21,3 +21,8 @@
 **Problem:** `math_explorer/src/biology/neuroscience.rs` coupled the mathematical model (differential equations), the state representation (struct), and the numerical solver (explicit Euler) into a single struct `HodgkinHuxleyNeuron`. This prevented the use of higher-order solvers (like Runge-Kutta 4) and made the system hard to test or extend.
 **Decision:** Applied "Model-State Separation" and "Strategy Pattern". Split `neuroscience.rs` into `types.rs` (State), `model.rs` (OdeSystem logic), and `neuron.rs` (Facade). Adopted the existing `OdeSystem` trait architecture.
 **Consequence:** The `HodgkinHuxleyNeuron` is now a thin facade. Users can still use the simple API, but the underlying system now supports dependency injection of solvers and is strictly typed via `VectorOperations`.
+
+## 2026-06-03 - [Vector Abstraction for Isosurface Extraction]
+**Problem:** The `marching_cubes` module suffered from "Primitive Obsession," performing manual component-wise arithmetic on `Point3D` structs, leading to verbose and error-prone code.
+**Decision:** Implemented standard arithmetic traits (`Add`, `Sub`, `Mul`, `Div`) and vector operations (`dot`, `cross`, `normalize`) on `Point3D`. Refactored `marching_cubes.rs` to use these high-level abstractions.
+**Consequence:** Code is significantly more readable and idiomatic. Logic for interpolation and gradient calculation is now expressed in vector notation.

@@ -1,3 +1,5 @@
+use std::ops::{Add, Div, Mul, Neg, Sub};
+
 /// A 3D point or vector with single-precision floating point coordinates.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3D {
@@ -13,6 +15,90 @@ impl Point3D {
     /// Creates a new `Point3D` with the given coordinates.
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
+    }
+
+    /// Returns a zero vector (0, 0, 0).
+    pub fn zero() -> Self {
+        Self::new(0.0, 0.0, 0.0)
+    }
+
+    /// Calculates the dot product with another vector.
+    pub fn dot(self, other: Self) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    /// Calculates the cross product with another vector.
+    pub fn cross(self, other: Self) -> Self {
+        Self::new(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        )
+    }
+
+    /// Calculates the magnitude (length) of the vector.
+    pub fn magnitude(self) -> f32 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
+
+    /// Returns the squared magnitude of the vector (faster than magnitude).
+    pub fn magnitude_squared(self) -> f32 {
+        self.x * self.x + self.y * self.y + self.z * self.z
+    }
+
+    /// Returns a normalized unit vector. Returns zero vector if magnitude is close to zero.
+    pub fn normalize(self) -> Self {
+        let mag = self.magnitude();
+        if mag > 1e-6 {
+            self / mag
+        } else {
+            Self::zero()
+        }
+    }
+}
+
+impl Add for Point3D {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self {
+        Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+    }
+}
+
+impl Sub for Point3D {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self {
+        Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
+    }
+}
+
+impl Mul<f32> for Point3D {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self {
+        Self::new(self.x * rhs, self.y * rhs, self.z * rhs)
+    }
+}
+
+// Allow commutative multiplication (f32 * Point3D) - sadly Rust doesn't allow implementing foreign traits on foreign types easily without macros or newtypes in the crate defining the trait, but we can't do `impl Mul<Point3D> for f32` here.
+// So we just stick to Point3D * f32.
+
+impl Div<f32> for Point3D {
+    type Output = Self;
+
+    fn div(self, rhs: f32) -> Self {
+        // Multiplication by reciprocal is faster but less precise.
+        // Keeping it safe with division as per memory "Point3D::div uses direct division"
+        Self::new(self.x / rhs, self.y / rhs, self.z / rhs)
+    }
+}
+
+impl Neg for Point3D {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Self::new(-self.x, -self.y, -self.z)
     }
 }
 
