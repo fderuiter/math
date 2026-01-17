@@ -77,13 +77,17 @@
 //! ```
 
 pub mod favorite_child;
+pub mod model;
 pub mod scoring;
+pub mod strategies;
 pub mod types;
 
+pub use model::UnifiedFavoritismModel;
 pub use scoring::{
     calculate_favoritism_score, calculate_favoritism_score_full,
     calculate_favoritism_score_with_rng,
 };
+pub use strategies::ScoringFactor;
 pub use types::{
     ComplimentParams, ContactParams, FamilyParams, FavoritismInputs, GiftParams, PersonalityParams,
     SocialParams, TimeParams,
