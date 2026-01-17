@@ -1,20 +1,77 @@
-//! The `chaos` module explores Deterministic Chaos, covering continuous flows, discrete maps,
-//! and methods to quantify chaos (Lyapunov exponents and Fractal Dimensions).
+//! # Deterministic Chaos
 //!
 //! Chaos theory studies the behavior of dynamical systems that are highly sensitive to initial conditions.
-//! This sensitivity, often referred to as the butterfly effect, implies that small differences in initial
-//! states yield widely diverging outcomes for such dynamical systems, rendering long-term prediction impossible
-//! in general.
+//! This sensitivity, often referred to as the **Butterfly Effect**, implies that small differences in initial
+//! states yield widely diverging outcomes, rendering long-term prediction impossible.
+//!
+//! ## The Concept: Sensitivity to Initial Conditions
+//!
+//! Even in a deterministic system (no randomness), two trajectories starting arbitrarily close together
+//! can diverge exponentially over time.
+//!
+//! ```mermaid
+//! graph LR
+//!     Start((Start)) -->|t=0| S1[State A]
+//!     Start -->|t=0 + ε| S2[State A + ε]
+//!
+//!     subgraph "Time Evolution"
+//!     S1 -->|t=10| M1[State B]
+//!     S2 -->|t=10| M2[State B']
+//!
+//!     M1 -->|t=100| E1[State C]
+//!     M2 -->|t=100| E2[State Z]
+//!     end
+//!
+//!     style E1 fill:#aaf,stroke:#333
+//!     style E2 fill:#faa,stroke:#333
+//! ```
+//!
+//! ## Modules
+//!
+//! *   **[Fractals](fractals)**: Geometric structures with fractional dimension (e.g., Cantor Set).
+//! *   **[Logistic Map](logistic)**: Discrete-time demographic model $x_{n+1} = r x_n (1 - x_n)$.
+//! *   **[Lorenz System](lorenz)**: Continuous-time atmospheric convection model (The "Butterfly" attractor).
+//! *   **[Metrics](metrics)**: Tools to quantify chaos (Lyapunov Exponents, Correlation Dimension).
+//!
+//! ## 🚀 Deep Dive: The Lorenz Attractor
+//!
+//! The Lorenz system is defined by three coupled differential equations:
+//!
+//! $$ \frac{dx}{dt} = \sigma(y - x), \quad \frac{dy}{dt} = x(\rho - z) - y, \quad \frac{dz}{dt} = xy - \beta z $$
+//!
+//! ### Example Implementation
+//!
+//! ```rust
+//! use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
+//!
+//! // 1. Initialize the system with the "Butterfly" parameters
+//! // sigma=10, rho=28, beta=8/3
+//! let initial_state = LorenzState::new(1.0, 1.0, 1.0);
+//! let mut system = LorenzBuilder::new()
+//!     .sigma(10.0)
+//!     .rho(28.0)
+//!     .beta(8.0 / 3.0)
+//!     .build(initial_state);
+//!
+//! // 2. Simulate forward in time
+//! let dt = 0.01;
+//! for _ in 0..1000 {
+//!     system.step(dt);
+//! }
+//!
+//! // 3. Observe the result (The state stays bounded within the attractor)
+//! println!("Final State: {:.4}, {:.4}, {:.4}",
+//!     system.state.vec.x,
+//!     system.state.vec.y,
+//!     system.state.vec.z
+//! );
+//! assert!(system.state.vec.norm() < 100.0); // Simple boundedness check
+//! ```
 
 pub mod fractals;
 pub mod logistic;
 pub mod lorenz;
 pub mod metrics;
-
-// Re-export specific items to maintain backward compatibility if needed,
-// but the plan says "Extract `logistic` module to `math_explorer/src/physics/chaos/logistic.rs`".
-// The original `chaos.rs` had `pub mod logistic`, `pub mod lorenz`, `pub mod metrics`, `pub mod fractals`.
-// So we just need to declare them as pub mod.
 
 #[cfg(test)]
 mod tests {

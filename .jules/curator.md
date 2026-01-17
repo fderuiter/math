@@ -19,3 +19,10 @@
 **Gap:** The `ai` module documentation was a dry list of files, failing to convey the "From Scratch" educational philosophy or the relationships between submodules (e.g., how SDS relates to NeRF).
 **Strategy:** Overhauled `ai/mod.rs` with a "Deep Learning & AI" header, a Mermaid ecosystem diagram, and a runnable Transformer example. Also added a process diagram to `sds/mod.rs`.
 **Outcome:** Users can now visualize the AI learning path and run a Transformer model in seconds.
+
+## 2026-01-17 - Illuminating the Physics Modules
+**Gap:** The `physics::chaos` module was messy with implementation plans and lacked a clear visual explanation. The `physics::quantum` module was a complete "blank page" despite being used in the README's "Hello World".
+**Strategy:**
+- Overhauled `physics/chaos/mod.rs` with a "Deterministic Chaos" primer, a Mermaid diagram of the Butterfly Effect, and a runnable Lorenz System example.
+- Overhauled `physics/quantum/mod.rs` with a "Time Evolution" workflow diagram and examples for Clebsch-Gordan coupling and Qubit evolution.
+**Outcome:** Users can now immediately grasp the core concepts of Chaos and Quantum mechanics without reading source code, and have copy-pasteable examples for both.
