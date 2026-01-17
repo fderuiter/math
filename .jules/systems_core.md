@@ -24,3 +24,8 @@
 **Violation:** The `occupancy_probability` function in `quantum_stats.rs` contained hardcoded formulas for Fermi-Dirac, Bose-Einstein, and Maxwell-Boltzmann distributions within a `match` statement, violating OCP.
 **Refactor:** Applied the **Strategy Pattern**. Extracted a `StatisticalDistribution` trait with an `occupancy` method. Implemented strategies for each distribution type.
 **Trade-off:** Minimal boilerplate increase for trait/struct definitions. Enables adding new distributions (e.g., Anyons) without modifying the core logic. Backward compatibility maintained via wrapper.
+
+## 2026-05-24 - Encapsulation of Vector Operations in Isosurface Extraction
+**Violation:** The `marching_cubes` module exhibited **Primitive Obsession** and repeated logic by manually performing component-wise vector arithmetic on `Point3D` structs, leading to verbose and brittle code in `interpolate` and `interpolate_normal`.
+**Refactor:** Implemented standard `std::ops` traits (`Add`, `Sub`, `Mul`, `Div`) and geometric methods (`dot`, `cross`, `normalize`) for `Point3D`. Refactored `marching_cubes` to use these vector abstractions.
+**Trade-off:** Minimal overhead for method calls (likely optimized away), significantly improved readability and maintainability by treating `Point3D` as a mathematical vector entity.
