@@ -4,22 +4,18 @@ use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
 #[inline]
 fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Point3D {
-    if (threshold - v1).abs() < 1e-5 {
+    if (threshold - v1).abs() < Point3D::EPSILON {
         return p1;
     }
-    if (threshold - v2).abs() < 1e-5 {
+    if (threshold - v2).abs() < Point3D::EPSILON {
         return p2;
     }
-    if (v1 - v2).abs() < 1e-5 {
+    if (v1 - v2).abs() < Point3D::EPSILON {
         return p1;
     }
 
     let t = (threshold - v1) / (v2 - v1);
-    Point3D::new(
-        p1.x + t * (p2.x - p1.x),
-        p1.y + t * (p2.y - p1.y),
-        p1.z + t * (p2.z - p1.z),
-    )
+    p1 + (p2 - p1) * t
 }
 
 /// Calculates the gradient at a grid point using central differences.
@@ -78,20 +74,12 @@ fn get_gradient_interior(data: &[f32], idx: usize, stride_y: usize, stride_z: us
 /// Linear interpolation of normals.
 #[inline]
 fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32) -> Point3D {
-    if (v1 - v2).abs() < 1e-5 {
+    if (v1 - v2).abs() < Point3D::EPSILON {
         return n1;
     }
     let t = (threshold - v1) / (v2 - v1);
-    let nx = n1.x + t * (n2.x - n1.x);
-    let ny = n1.y + t * (n2.y - n1.y);
-    let nz = n1.z + t * (n2.z - n1.z);
-
-    let len = (nx * nx + ny * ny + nz * nz).sqrt();
-    if len > 1e-6 {
-        Point3D::new(nx / len, ny / len, nz / len)
-    } else {
-        Point3D::new(0.0, 0.0, 0.0)
-    }
+    let n = n1 + (n2 - n1) * t;
+    n.normalize()
 }
 
 pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, String> {
