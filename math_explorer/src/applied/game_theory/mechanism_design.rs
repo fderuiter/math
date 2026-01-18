@@ -1,5 +1,6 @@
-use rand::Rng;
+use crate::pure_math::analysis::roots::{Bisection, RootFinder};
 use rand::distributions::Distribution as RandDistribution;
+use rand::Rng;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 
@@ -50,7 +51,7 @@ impl MechanismDesign {
     ///
     /// $$ J(r^*) = r^* - \frac{1 - F(r^*)}{f(r^*)} = 0 $$
     ///
-    /// This function finds the root of $J(r) = 0$ using the bisection method within the given bounds.
+    /// This function finds the root of $J(r) = 0$ using the default bisection strategy.
     ///
     /// # Parameters
     /// - `dist`: The probability distribution of bidder valuations.
@@ -73,30 +74,55 @@ impl MechanismDesign {
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        Self::optimal_reserve_price_with_strategy(
+            dist,
+            lower_bound,
+            upper_bound,
+            &Bisection::new(50, 1e-9),
+        )
+    }
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
+    /// Calculates the **Optimal Reserve Price** using a specific root-finding strategy.
+    ///
+    /// This allows for different numerical methods or iteration counts.
+    pub fn optimal_reserve_price_with_strategy<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> f64 {
+        let f = |r| dist.virtual_valuation(r);
 
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
-            }
+        // Attempt to find the root.
+        if let Some(root) = solver.find_root(f, lower_bound, upper_bound) {
+            return root;
         }
-        mid
+
+        // Fallback logic to match original behavior or handle non-bracketing:
+        // Original logic: "If J(mid) > 0, high = mid; else low = mid".
+        // This implies J is increasing.
+        // If J(lower_bound) > 0, then J(v) > 0 for all v in range (assuming regularity).
+        // This means we should set reserve price as low as possible (lower_bound)?
+        // Or if J(upper_bound) < 0, then J(v) < 0 for all v. Reserve price -> upper_bound?
+
+        let j_low = f(lower_bound);
+        if j_low > 0.0 {
+            // Virtual valuation is always positive in range -> optimal reserve is lower bound
+            // (technically 0 or whatever the support min is).
+            return lower_bound;
+        }
+
+        let j_high = f(upper_bound);
+        if j_high < 0.0 {
+            // Virtual valuation is always negative in range -> optimal reserve is upper bound
+            return upper_bound;
+        }
+
+        // If we have bracketing (j_low < 0 && j_high > 0) but solver returned None,
+        // it means solver failed to converge (e.g. max iterations reached).
+        // We could log a warning or return best guess.
+        // For now, we return midpoint as a safe fallback or one of the bounds.
+        (lower_bound + upper_bound) / 2.0
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`

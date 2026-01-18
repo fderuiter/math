@@ -24,3 +24,7 @@
 **Violation:** The `occupancy_probability` function in `quantum_stats.rs` contained hardcoded formulas for Fermi-Dirac, Bose-Einstein, and Maxwell-Boltzmann distributions within a `match` statement, violating OCP.
 **Refactor:** Applied the **Strategy Pattern**. Extracted a `StatisticalDistribution` trait with an `occupancy` method. Implemented strategies for each distribution type.
 **Trade-off:** Minimal boilerplate increase for trait/struct definitions. Enables adding new distributions (e.g., Anyons) without modifying the core logic. Backward compatibility maintained via wrapper.
+## 2026-01-18 - Strategy Pattern for Root Finding
+**Violation:** `MechanismDesign::optimal_reserve_price` mixed auction logic with a hardcoded bisection method, violating SRP and OCP.
+**Refactor:** Extracted `RootFinder` trait and `Bisection` strategy to `pure_math/analysis/roots.rs`. Updated `MechanismDesign` to use `RootFinder`.
+**Trade-off:** Minimal complexity increase (new trait) for significant flexibility (swapable solvers).
