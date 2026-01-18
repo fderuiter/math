@@ -2,7 +2,8 @@
 //!
 //! Implements the core Partial Differential Equations (PDEs) of Fluid Dynamics.
 
-use super::types::{FlowState, FluidProperties};
+use super::traits::FluidMaterial;
+use super::types::FlowState;
 use nalgebra::Vector3;
 
 /// Calculates the Material Derivative ($D/Dt$) of a scalar property.
@@ -53,26 +54,35 @@ pub fn continuity_divergence(velocity_divergence: f64) -> f64 {
 ///
 /// $$\frac{\partial \mathbf{u}}{\partial t} = -(\mathbf{u} \cdot \nabla)\mathbf{u} - \frac{1}{\rho}\nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{g}$$
 ///
+/// Note: For Non-Newtonian fluids, this assumes the Generalized Newtonian Fluid model where
+/// the viscous term uses an effective kinematic viscosity calculated from the local shear rate magnitude.
+/// The shear rate is approximated here from the Frobenius norm of the velocity gradient tensor.
+///
 /// Returns the local acceleration $\frac{\partial \mathbf{u}}{\partial t}$.
 ///
-/// * `properties`: Fluid properties ($\rho, \mu$).
+/// * `fluid`: Fluid material (Newtonian or Non-Newtonian).
 /// * `state`: Current flow state ($\mathbf{u}, p$).
 /// * `velocity_gradient`: Jacobian of velocity ($\nabla \mathbf{u}$).
 /// * `pressure_gradient`: Gradient of pressure ($\nabla p$).
 /// * `laplacian_velocity`: Laplacian of velocity ($\nabla^2 \mathbf{u}$).
-/// * `body_force`: External forces (e.g., gravity $\mathbf{g}$). Note: Input is acceleration vector (force per unit mass), or force vector if divided by rho manually.
-///   Standard form usually takes body force density $\mathbf{f}$. If $\mathbf{f} = \rho \mathbf{g}$, then term is $\mathbf{g}$.
-///   Here we assume `body_force` is $\mathbf{g}$ (acceleration).
-pub fn navier_stokes_time_derivative(
-    properties: &FluidProperties,
+/// * `body_force`: External forces (e.g., gravity $\mathbf{g}$).
+pub fn navier_stokes_time_derivative<F: FluidMaterial + ?Sized>(
+    fluid: &F,
     state: &FlowState,
     velocity_gradient: &nalgebra::Matrix3<f64>,
     pressure_gradient: Vector3<f64>,
     laplacian_velocity: Vector3<f64>,
     body_force_accel: Vector3<f64>,
 ) -> Vector3<f64> {
-    let nu = properties.kinematic_viscosity();
-    let rho = properties.density;
+    // Estimate shear rate magnitude from velocity gradient tensor (Frobenius norm)
+    // This is a simplification; full stress tensor would require Rate of Strain tensor.
+    // D = 0.5 * (grad_u + grad_u^T)
+    // gamma_dot = sqrt(2 * D:D)
+    // For now, we use the Frobenius norm of the gradient as a proxy for the characteristic rate scale.
+    let shear_rate = velocity_gradient.norm();
+
+    let nu = fluid.kinematic_viscosity(shear_rate);
+    let rho = fluid.density();
 
     // Convective term: -(u . del) u
     let convection = -(velocity_gradient * state.velocity);
@@ -81,6 +91,8 @@ pub fn navier_stokes_time_derivative(
     let pressure_term = -pressure_gradient / rho;
 
     // Viscous term: nu * del^2 u
+    // strictly speaking, for variable viscosity, the term is div(nu * grad u) + ...
+    // but this function assumes standard form with effective viscosity
     let viscous_term = laplacian_velocity * nu;
 
     // Sum

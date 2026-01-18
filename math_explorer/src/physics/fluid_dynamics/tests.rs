@@ -5,7 +5,9 @@ mod tests {
         conservation::{
             continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
         },
+        models::PowerLawFluid,
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
+        traits::FluidMaterial,
         types::{FlowState, FluidProperties},
     };
     use nalgebra::{Matrix3, Vector3};
@@ -112,5 +114,30 @@ mod tests {
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+
+    #[test]
+    fn test_power_law_fluid() {
+        // Shear thinning (n=0.5, K=1)
+        let fluid = PowerLawFluid::new(1000.0, 1.0, 0.5, 1e-9);
+
+        // Case 1: Shear rate = 1.0
+        // eta = K * 1^(n-1) = 1.0
+        assert!((fluid.dynamic_viscosity(1.0) - 1.0).abs() < 1e-6);
+
+        // Case 2: Shear rate = 4.0
+        // eta = 1 * 4^(0.5 - 1) = 4^(-0.5) = 1/2 = 0.5
+        assert!((fluid.dynamic_viscosity(4.0) - 0.5).abs() < 1e-6);
+
+        // Case 3: Shear Stress at rate 4.0
+        // tau = eta * rate = 0.5 * 4.0 = 2.0
+        assert!((fluid.shear_stress(4.0) - 2.0).abs() < 1e-6);
+
+        // Check Reynolds for Non-Newtonian
+        // u=4, L=1 -> shear_rate=4
+        // eta = 0.5
+        // Re = 1000 * 4 * 1 / 0.5 = 8000
+        let re = reynolds_number(&fluid, 4.0, 1.0);
+        assert!((re - 8000.0).abs() < 1e-6);
     }
 }

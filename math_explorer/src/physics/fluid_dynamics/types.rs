@@ -1,8 +1,11 @@
 //! Types for Fluid Dynamics.
 
 use nalgebra::Vector3;
+use super::traits::FluidMaterial;
 
 /// Physical properties of the fluid.
+///
+/// This struct represents a standard Newtonian fluid with constant viscosity.
 #[derive(Debug, Clone, Copy)]
 pub struct FluidProperties {
     /// Density ($\rho$) in kg/m^3.
@@ -39,6 +42,16 @@ impl FluidProperties {
             density: 1.225,
             dynamic_viscosity: 1.81e-5,
         }
+    }
+}
+
+impl FluidMaterial for FluidProperties {
+    fn density(&self) -> f64 {
+        self.density
+    }
+
+    fn dynamic_viscosity(&self, _shear_rate: f64) -> f64 {
+        self.dynamic_viscosity
     }
 }
 
