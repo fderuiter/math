@@ -19,3 +19,13 @@
 **Gap:** The `ai` module documentation was a dry list of files, failing to convey the "From Scratch" educational philosophy or the relationships between submodules (e.g., how SDS relates to NeRF).
 **Strategy:** Overhauled `ai/mod.rs` with a "Deep Learning & AI" header, a Mermaid ecosystem diagram, and a runnable Transformer example. Also added a process diagram to `sds/mod.rs`.
 **Outcome:** Users can now visualize the AI learning path and run a Transformer model in seconds.
+
+## 2025-05-18 - Visualizing High Energy Physics
+**Gap:** The `physics/high_energy` module was a collection of disconnected tools (relativity, radiation, fluids) without a unifying narrative or example.
+**Strategy:** Added a "Black Hole Observer" Quick Start example that combines General Relativity (gravity) and Special Relativity (motion). Also added a Mermaid diagram showing the interaction of these forces.
+**Outcome:** Users can now model a complex physical scenario (orbiting a black hole) immediately.
+
+## 2025-05-18 - Documenting Ghost Modules
+**Gap:** The `generative_turbulence` module existed on disk but was excluded from the build ("Ghost Module") with no explanation for the user.
+**Strategy:** Added a `README.md` inside the module explaining the `tch` dependency constraint and instructions on how to enable it.
+**Outcome:** Converts a confusing "missing" feature into an opt-in power user feature.
