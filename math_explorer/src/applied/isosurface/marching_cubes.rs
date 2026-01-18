@@ -147,77 +147,65 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
             // Combined interior check for Z and Y
             let row_is_interior = z_interior && y_interior;
 
-            // Cache for the "Right Face" gradients of the previous iteration (x-1).
+            // Cache for the "Right Face" values/positions/gradients of the previous iteration (x-1).
             // Corresponds to vertices 1, 2, 5, 6 of (x-1), which become 0, 3, 4, 7 of (x).
             let mut cached_gradients: Option<[Point3D; 4]> = None;
+            let mut cached_right_face_values: Option<[f32; 4]> = None;
+            let mut cached_right_face_pos: Option<[Point3D; 4]> = None;
 
             for x in 0..grid.width - 1 {
                 let base_idx = zy_base + x;
                 let x_pos = grid.origin.x + (x as f32) * grid.voxel_size.x;
 
                 // 1. Determine the index of the case (0-255)
-                let mut cube_index = 0;
                 let mut corner_values = [0.0; 8];
-                let mut corner_pos = [Point3D::new(0.0, 0.0, 0.0); 8];
-                let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
 
-                // Direct access for corner values to avoid redundant index calculation
-                // Vertices are ordered:
-                // 0: (0,0,0), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)
-                // 4: (0,0,1), 5: (1,0,1), 6: (1,1,1), 7: (0,1,1)
+                // Optim: Reuse "Right Face" values from previous iteration as "Left Face"
+                // 0, 3, 4, 7 are the Left Face vertices.
+                if let Some(vals) = cached_right_face_values {
+                    corner_values[0] = vals[0];
+                    corner_values[3] = vals[1];
+                    corner_values[4] = vals[2];
+                    corner_values[7] = vals[3];
+                } else {
+                    // Safety: Checked in loop bounds (width-1 etc.) and initial size check
+                    corner_values[0] = unsafe { *data.get_unchecked(base_idx) };
+                    corner_values[3] = unsafe { *data.get_unchecked(base_idx + stride_y) };
+                    corner_values[4] = unsafe { *data.get_unchecked(base_idx + stride_z) };
+                    corner_values[7] = unsafe { *data.get_unchecked(base_idx + stride_y + stride_z) };
+                }
 
-                // Safety: We are iterating up to width-1, height-1, depth-1.
-                // Max index accesses base_idx + 1 + stride_y + stride_z.
-                // base_idx = z*Sz + y*Sy + x.
-                // Max = (D-2)*Sz + (H-2)*Sy + (W-2) + 1 + Sy + Sz
-                //     = (D-1)*Sz + (H-1)*Sy + W-1
-                // Which is exactly the last element. So indices are valid.
-                let v0 = unsafe { *data.get_unchecked(base_idx) };
-                let v1 = unsafe { *data.get_unchecked(base_idx + 1) };
-                let v2 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y) };
-                let v3 = unsafe { *data.get_unchecked(base_idx + stride_y) };
-                let v4 = unsafe { *data.get_unchecked(base_idx + stride_z) };
-                let v5 = unsafe { *data.get_unchecked(base_idx + 1 + stride_z) };
-                let v6 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y + stride_z) };
-                let v7 = unsafe { *data.get_unchecked(base_idx + stride_y + stride_z) };
+                // Load Right Face (1, 2, 5, 6) - these are always new
+                // 1: (x+1, y, z), 2: (x+1, y+1, z), 5: (x+1, y, z+1), 6: (x+1, y+1, z+1)
+                corner_values[1] = unsafe { *data.get_unchecked(base_idx + 1) };
+                corner_values[2] = unsafe { *data.get_unchecked(base_idx + 1 + stride_y) };
+                corner_values[5] = unsafe { *data.get_unchecked(base_idx + 1 + stride_z) };
+                corner_values[6] = unsafe { *data.get_unchecked(base_idx + 1 + stride_y + stride_z) };
 
-                corner_values[0] = v0;
-                if v0 < threshold {
-                    cube_index |= 1;
-                }
-                corner_values[1] = v1;
-                if v1 < threshold {
-                    cube_index |= 2;
-                }
-                corner_values[2] = v2;
-                if v2 < threshold {
-                    cube_index |= 4;
-                }
-                corner_values[3] = v3;
-                if v3 < threshold {
-                    cube_index |= 8;
-                }
-                corner_values[4] = v4;
-                if v4 < threshold {
-                    cube_index |= 16;
-                }
-                corner_values[5] = v5;
-                if v5 < threshold {
-                    cube_index |= 32;
-                }
-                corner_values[6] = v6;
-                if v6 < threshold {
-                    cube_index |= 64;
-                }
-                corner_values[7] = v7;
-                if v7 < threshold {
-                    cube_index |= 128;
-                }
+                // Update Values Cache for next iteration
+                cached_right_face_values = Some([
+                    corner_values[1],
+                    corner_values[2],
+                    corner_values[5],
+                    corner_values[6],
+                ]);
+
+                // Calculate cube index
+                let mut cube_index = 0;
+                if corner_values[0] < threshold { cube_index |= 1; }
+                if corner_values[1] < threshold { cube_index |= 2; }
+                if corner_values[2] < threshold { cube_index |= 4; }
+                if corner_values[3] < threshold { cube_index |= 8; }
+                if corner_values[4] < threshold { cube_index |= 16; }
+                if corner_values[5] < threshold { cube_index |= 32; }
+                if corner_values[6] < threshold { cube_index |= 64; }
+                if corner_values[7] < threshold { cube_index |= 128; }
 
                 // 2. Check if the cube is entirely inside or outside
                 let edge_flags = CUBE_EDGE_FLAGS[cube_index];
                 if edge_flags == 0 {
-                    cached_gradients = None; // Invalidate cache since we aren't computing gradients for this cube
+                    cached_gradients = None; // Invalidate gradients
+                    cached_right_face_pos = None; // Invalidate positions since we skip computing them
                     continue;
                 }
 
@@ -226,16 +214,37 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 let next_y_pos = y_pos + grid.voxel_size.y;
                 let next_z_pos = z_pos + grid.voxel_size.z;
 
-                corner_pos[0] = Point3D::new(x_pos, y_pos, z_pos);
+                let mut corner_pos = [Point3D::new(0.0, 0.0, 0.0); 8];
+
+                // Optim: Reuse "Right Face" positions from previous iteration
+                if let Some(pos) = cached_right_face_pos {
+                    corner_pos[0] = pos[0];
+                    corner_pos[3] = pos[1];
+                    corner_pos[4] = pos[2];
+                    corner_pos[7] = pos[3];
+                } else {
+                    corner_pos[0] = Point3D::new(x_pos, y_pos, z_pos);
+                    corner_pos[3] = Point3D::new(x_pos, next_y_pos, z_pos);
+                    corner_pos[4] = Point3D::new(x_pos, y_pos, next_z_pos);
+                    corner_pos[7] = Point3D::new(x_pos, next_y_pos, next_z_pos);
+                }
+
+                // Compute Right Face (1, 2, 5, 6)
                 corner_pos[1] = Point3D::new(next_x_pos, y_pos, z_pos);
                 corner_pos[2] = Point3D::new(next_x_pos, next_y_pos, z_pos);
-                corner_pos[3] = Point3D::new(x_pos, next_y_pos, z_pos);
-                corner_pos[4] = Point3D::new(x_pos, y_pos, next_z_pos);
                 corner_pos[5] = Point3D::new(next_x_pos, y_pos, next_z_pos);
                 corner_pos[6] = Point3D::new(next_x_pos, next_y_pos, next_z_pos);
-                corner_pos[7] = Point3D::new(x_pos, next_y_pos, next_z_pos);
+
+                // Update Pos Cache
+                cached_right_face_pos = Some([
+                    corner_pos[1],
+                    corner_pos[2],
+                    corner_pos[5],
+                    corner_pos[6],
+                ]);
 
                 // Profiler Optimization: Lazy Gradient Computation & Sliding Window
+                let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
 
                 // Check if X is interior.
                 // We need gradients at x and x+1.
@@ -270,12 +279,6 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
                 }
 
                 // 2. Compute Right Face (1, 2, 5, 6) - these are always new
-                // Vertices:
-                // 1: (x+1, y, z)
-                // 2: (x+1, y+1, z)
-                // 5: (x+1, y, z+1)
-                // 6: (x+1, y+1, z+1)
-
                 if can_use_fast_path {
                     let next_x_idx = base_idx + 1;
                     corner_normals[1] = get_gradient_interior(data, next_x_idx, stride_y, stride_z);
