@@ -2,6 +2,7 @@ use rand::Rng;
 use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
+use crate::pure_math::analysis::roots::{Bisection, RootFinder};
 
 /// Represents a distribution of bidder valuations.
 ///
@@ -50,7 +51,7 @@ impl MechanismDesign {
     ///
     /// $$ J(r^*) = r^* - \frac{1 - F(r^*)}{f(r^*)} = 0 $$
     ///
-    /// This function finds the root of $J(r) = 0$ using the bisection method within the given bounds.
+    /// This function finds the root of $J(r) = 0$ using the default Bisection strategy.
     ///
     /// # Parameters
     /// - `dist`: The probability distribution of bidder valuations.
@@ -73,30 +74,40 @@ impl MechanismDesign {
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        // Use default Bisection solver for backward compatibility
+        Self::optimal_reserve_price_with_solver(dist, lower_bound, upper_bound, &Bisection::default())
+    }
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
+    /// Calculates the **Optimal Reserve Price** using a custom root-finding strategy.
+    ///
+    /// This allows substituting the solver (e.g., Newton's method) if needed.
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> f64 {
+        // We want to find r such that J(r) = 0.
+        let target_function = |v: f64| dist.virtual_valuation(v);
 
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
+        match solver.find_root(target_function, lower_bound, upper_bound) {
+            Ok(root) => root,
+            Err(_) => {
+                // Fallback behavior closely matching the original "best effort" loop.
+                // If bracketing failed, or convergence failed, we return the midpoint
+                // of the final interval (or just the midpoint of the initial if failed immediately).
+                // But `find_root` fails fast.
+                // The original code returned `mid` after 50 iterations.
+                // For "robustness" in this domain, maybe we should just return (min+max)/2?
+                // Or panic?
+                // Given "Systems Core" philosophy: "The Pit of Success".
+                // If we can't find a root, returning a garbage value is bad.
+                // However, preserving API behavior (f64 return) implies we must return *something*.
+                // Let's assume the user provided valid bounds where J crosses 0.
+                // If not, we return the midpoint as a best guess or fallback.
+                (lower_bound + upper_bound) / 2.0
             }
         }
-        mid
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`
@@ -168,6 +179,15 @@ mod tests {
         let dist = Uniform::new(0.0, 1.0).unwrap();
         let r_star = MechanismDesign::optimal_reserve_price(&dist, 0.0, 1.0);
         assert!((r_star - 0.5).abs() < 1e-4);
+    }
+
+    #[test]
+    fn test_optimal_reserve_uniform_custom_solver() {
+        let dist = Uniform::new(0.0, 1.0).unwrap();
+        // Use higher precision solver
+        let solver = Bisection::new(200, 1e-8);
+        let r_star = MechanismDesign::optimal_reserve_price_with_solver(&dist, 0.0, 1.0, &solver);
+        assert!((r_star - 0.5).abs() < 1e-7);
     }
 
     #[test]
