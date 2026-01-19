@@ -1,5 +1,6 @@
-use rand::Rng;
+use crate::pure_math::analysis::roots::{AnalysisError, Bisection, RootFinder};
 use rand::distributions::Distribution as RandDistribution;
+use rand::Rng;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 
@@ -73,30 +74,51 @@ impl MechanismDesign {
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        Self::optimal_reserve_price_with_solver(
+            dist,
+            lower_bound,
+            upper_bound,
+            &Bisection::new(50, 1e-6),
+        )
+    }
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
+    /// Calculates the **Optimal Reserve Price** using a custom RootFinder.
+    ///
+    /// This allows injecting different root-finding strategies (e.g., Newton-Raphson, different Bisection parameters).
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> f64 {
+        let result = solver.find_root(|v| dist.virtual_valuation(v), lower_bound, upper_bound);
 
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
+        match result {
+            Ok(root) => root,
+            Err(AnalysisError::RootBracketingError(_)) => {
+                // If not bracketed, check endpoints.
+                // Assuming regularity (J is increasing):
+                // If J(low) > 0, then J(r) > 0 for all r in [low, high].
+                // The optimal reserve is effectively bounded at `low`.
+                if dist.virtual_valuation(lower_bound) > 0.0 {
+                    return lower_bound;
+                }
+                // If J(high) < 0, then J(r) < 0 for all r in [low, high].
+                // The optimal reserve is effectively bounded at `high`.
+                if dist.virtual_valuation(upper_bound) < 0.0 {
+                    return upper_bound;
+                }
+                // Should not happen for increasing function if bracketing failed (same sign)
+                (lower_bound + upper_bound) / 2.0
+            }
+            Err(AnalysisError::ConvergenceError(msg)) => {
+                eprintln!(
+                    "Warning: MechanismDesign optimization failed to converge: {}",
+                    msg
+                );
+                (lower_bound + upper_bound) / 2.0
             }
         }
-        mid
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`

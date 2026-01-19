@@ -21,3 +21,8 @@
 **Problem:** `math_explorer/src/biology/neuroscience.rs` coupled the mathematical model (differential equations), the state representation (struct), and the numerical solver (explicit Euler) into a single struct `HodgkinHuxleyNeuron`. This prevented the use of higher-order solvers (like Runge-Kutta 4) and made the system hard to test or extend.
 **Decision:** Applied "Model-State Separation" and "Strategy Pattern". Split `neuroscience.rs` into `types.rs` (State), `model.rs` (OdeSystem logic), and `neuron.rs` (Facade). Adopted the existing `OdeSystem` trait architecture.
 **Consequence:** The `HodgkinHuxleyNeuron` is now a thin facade. Users can still use the simple API, but the underlying system now supports dependency injection of solvers and is strictly typed via `VectorOperations`.
+
+## 2026-06-05 - [Root Finding Extraction]
+**Problem:** `math_explorer/src/applied/game_theory/mechanism_design.rs` coupled Game Theory logic with a hardcoded Bisection root-finding algorithm. This violated Separation of Concerns and prevented reuse of the numerical solver.
+**Decision:** Applied "Module Extraction" and "Strategy Pattern". Created `math_explorer/src/pure_math/analysis/roots.rs` defining a generic `RootFinder` trait and `Bisection` implementation. Refactored `MechanismDesign` to use dependency injection for the solver.
+**Consequence:** Decoupled Mechanism Design from Numerical Analysis. The `RootFinder` is now reusable across the library, and `MechanismDesign` can support alternative solvers (e.g., Newton's Method) without code changes.
