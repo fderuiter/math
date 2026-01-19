@@ -6,34 +6,23 @@
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
 
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, VectorOperations};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
+
 /// Defines the reaction kinetics for a 2-component reaction-diffusion system.
 pub trait ReactionKinetics {
     /// Calculates the reaction rates for activator u and inhibitor v.
-    ///
-    /// # Arguments
-    /// * `u` - Concentration of activator.
-    /// * `v` - Concentration of inhibitor.
-    ///
-    /// # Returns
-    /// A tuple `(du/dt, dv/dt)` representing the reaction terms.
     fn reaction(&self, u: f64, v: f64) -> (f64, f64);
 }
 
 /// Schnakenberg kinetics (often used for Turing patterns).
-///
-/// Equations:
-/// $$ f(u, v) = a - u + u^2 v $$
-/// $$ g(u, v) = b - u^2 v $$
 #[derive(Debug, Clone, Copy)]
 pub struct SchnakenbergKinetics {
-    /// Production rate of activator.
     pub a: f64,
-    /// Production rate of inhibitor.
     pub b: f64,
 }
 
 impl SchnakenbergKinetics {
-    /// Creates a new Schnakenberg kinetics model.
     pub fn new(a: f64, b: f64) -> Self {
         Self { a, b }
     }
@@ -54,12 +43,94 @@ impl ReactionKinetics for SchnakenbergKinetics {
     }
 }
 
+/// The state of the Turing System (u and v concentrations).
+#[derive(Debug, Clone, PartialEq)]
+pub struct TuringState {
+    pub u: Vec<f64>,
+    pub v: Vec<f64>,
+}
+
+impl TuringState {
+    pub fn new(size: usize) -> Self {
+        Self {
+            u: vec![0.0; size],
+            v: vec![0.0; size],
+        }
+    }
+}
+
+impl Add for TuringState {
+    type Output = Self;
+    fn add(mut self, rhs: Self) -> Self {
+        for (a, b) in self.u.iter_mut().zip(rhs.u.iter()) {
+            *a += b;
+        }
+        for (a, b) in self.v.iter_mut().zip(rhs.v.iter()) {
+            *a += b;
+        }
+        self
+    }
+}
+
+impl AddAssign for TuringState {
+    fn add_assign(&mut self, rhs: Self) {
+        for (a, b) in self.u.iter_mut().zip(rhs.u.iter()) {
+            *a += b;
+        }
+        for (a, b) in self.v.iter_mut().zip(rhs.v.iter()) {
+            *a += b;
+        }
+    }
+}
+
+impl Mul<f64> for TuringState {
+    type Output = Self;
+    fn mul(mut self, scalar: f64) -> Self {
+        for a in self.u.iter_mut() {
+            *a *= scalar;
+        }
+        for a in self.v.iter_mut() {
+            *a *= scalar;
+        }
+        self
+    }
+}
+
+impl MulAssign<f64> for TuringState {
+    fn mul_assign(&mut self, scalar: f64) {
+        for a in self.u.iter_mut() {
+            *a *= scalar;
+        }
+        for a in self.v.iter_mut() {
+            *a *= scalar;
+        }
+    }
+}
+
+impl VectorOperations for TuringState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        for (a, b) in self.u.iter_mut().zip(other.u.iter()) {
+            *a += b * scale;
+        }
+        for (a, b) in self.v.iter_mut().zip(other.v.iter()) {
+            *a += b * scale;
+        }
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        if self.u.len() != other.u.len() {
+            self.u.resize(other.u.len(), 0.0);
+            self.v.resize(other.v.len(), 0.0);
+        }
+        self.u.copy_from_slice(&other.u);
+        self.v.copy_from_slice(&other.v);
+    }
+}
+
 /// Represents a 1D Reaction-Diffusion system.
 pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
-    /// Activator concentrations
-    pub u: Vec<f64>,
-    /// Inhibitor concentrations
-    pub v: Vec<f64>,
+    /// The current state (u and v).
+    pub state: TuringState,
     /// Diffusion coefficient for u
     pub d_u: f64,
     /// Diffusion coefficient for v
@@ -68,13 +139,6 @@ pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
     pub dx: f64,
     /// Reaction kinetics strategy
     pub kinetics: K,
-
-    // Private buffers for double buffering to avoid allocation in hot loops.
-    // Marked hidden to discourage manual usage if fields were public (which they are).
-    #[doc(hidden)]
-    buffer_u: Vec<f64>,
-    #[doc(hidden)]
-    buffer_v: Vec<f64>,
 }
 
 impl TuringSystem<SchnakenbergKinetics> {
@@ -88,113 +152,103 @@ impl<K: ReactionKinetics> TuringSystem<K> {
     /// Creates a new Turing System with custom kinetics.
     pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, dx: f64, kinetics: K) -> Self {
         Self {
-            u: vec![0.0; size],
-            v: vec![0.0; size],
+            state: TuringState::new(size),
             d_u,
             d_v,
             dx,
             kinetics,
-            buffer_u: vec![0.0; size],
-            buffer_v: vec![0.0; size],
         }
     }
 
-    /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
+    /// Updates the grid using the default RK4 solver.
     pub fn step(&mut self, dt: f64) {
-        let n = self.u.len();
+        self.state = RungeKutta4::step(self, 0.0, &self.state, dt);
+    }
+
+    /// Updates the grid using a provided solver.
+    pub fn step_with<S: Solver<TuringState>>(&mut self, solver: &S, dt: f64) {
+        self.state = solver.solve(self, 0.0, &self.state, dt);
+    }
+}
+
+impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
+    fn derivative(&self, _t: f64, state: &TuringState) -> TuringState {
+        let n = state.u.len();
+        let mut deriv = TuringState::new(n);
+        self.derivative_in_place(_t, state, &mut deriv);
+        deriv
+    }
+
+    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
+        let n = state.u.len();
         if n == 0 {
             return;
         }
 
-        // Ensure buffers are the right size
-        if self.buffer_u.len() != n {
-            self.buffer_u = vec![0.0; n];
-        }
-        if self.buffer_v.len() != n {
-            self.buffer_v = vec![0.0; n];
-        }
-
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
+        let u = &state.u;
+        let v = &state.v;
+        let du_dt = &mut out.u;
+        let dv_dt = &mut out.v;
 
-        // Optimization: Lift boundary checks out of the loop and use slices
-        let u = &self.u;
-        let v = &self.v;
-        let buffer_u = &mut self.buffer_u;
-        let buffer_v = &mut self.buffer_v;
+        // Ensure output is sized correctly
+        if du_dt.len() != n {
+            du_dt.resize(n, 0.0);
+            dv_dt.resize(n, 0.0);
+        }
 
-        // 1. Handle i = 0
+        // Safe implementation using get (or get_unchecked if strict optimization needed, keeping safe for now)
+        // Boundary i=0
         {
             let i = 0;
-            // Safety: n > 0 checked above
-            let u_curr = unsafe { *u.get_unchecked(i) };
-            let v_curr = unsafe { *v.get_unchecked(i) };
-
-            let u_prev = u_curr;
+            let u_curr = u[i];
+            let v_curr = v[i];
+            let u_prev = u_curr; // Dirichlet or Neumann? Code implies simple neighbor check, let's stick to existing logic: index -1 -> index 0
             let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 {
-                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
-            } else {
-                (u_curr, v_curr)
-            };
+            let (u_next, v_next) = if n > 1 { (u[i+1], v[i+1]) } else { (u_curr, v_curr) };
 
             let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
             let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
-            unsafe {
-                *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
-            }
+            du_dt[i] = self.d_u * lap_u + reaction_u;
+            dv_dt[i] = self.d_v * lap_v + reaction_v;
         }
 
-        // 2. Handle i = 1..n-1 (Hot Path)
-        if n > 2 {
-            for i in 1..n - 1 {
-                // Safety: loop bounds ensure i, i-1, i+1 are valid
-                unsafe {
-                    let u_curr = *u.get_unchecked(i);
-                    let v_curr = *v.get_unchecked(i);
-                    let u_prev = *u.get_unchecked(i - 1);
-                    let u_next = *u.get_unchecked(i + 1);
-                    let v_prev = *v.get_unchecked(i - 1);
-                    let v_next = *v.get_unchecked(i + 1);
+        // Interior
+        for i in 1..n-1 {
+            let u_curr = u[i];
+            let v_curr = v[i];
+            let u_prev = u[i-1];
+            let v_prev = v[i-1];
+            let u_next = u[i+1];
+            let v_next = v[i+1];
 
-                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
-                    let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                    *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                    *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
-                }
-            }
+            du_dt[i] = self.d_u * lap_u + reaction_u;
+            dv_dt[i] = self.d_v * lap_v + reaction_v;
         }
 
-        // 3. Handle i = n-1
+        // Boundary i=n-1
         if n > 1 {
             let i = n - 1;
-            unsafe {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-                let u_prev = *u.get_unchecked(i - 1);
-                let v_prev = *v.get_unchecked(i - 1);
-                let u_next = u_curr;
-                let v_next = v_curr;
+            let u_curr = u[i];
+            let v_curr = v[i];
+            let u_prev = u[i-1];
+            let v_prev = v[i-1];
+            let u_next = u_curr;
+            let v_next = v_curr;
 
-                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
-                let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
-            }
+            du_dt[i] = self.d_u * lap_u + reaction_u;
+            dv_dt[i] = self.d_v * lap_v + reaction_v;
         }
-
-        // Swap buffers
-        std::mem::swap(&mut self.u, &mut self.buffer_u);
-        std::mem::swap(&mut self.v, &mut self.buffer_v);
     }
 }
