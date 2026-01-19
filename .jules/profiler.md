@@ -77,3 +77,23 @@ Benchmark `bench_morphogenesis` (1000 iterations, size 100,000):
 - Before: 482.02ms
 - After: 270.08ms
 - Speedup: ~1.78x (44% reduction)
+
+## 2026-10-28 - [Optimization] **Bottleneck:** Redundant Memory Loads in Turing System **Strategy:** Sliding Window / Register Rotation **Gain:** ~6% Time Saved (265ms -> 250ms)
+
+**Bottleneck:**
+The `TuringSystem::step` function's hot loop was performing a 3-point stencil convolution by loading 3 values (`i-1`, `i`, `i+1`) from memory for both `u` and `v` arrays in every iteration.
+Total loads per iteration: 6 floats.
+Most of these loads were redundant (e.g., `u[i+1]` in iteration `i` becomes `u[i]` in iteration `i+1`).
+
+**Strategy:**
+Implemented a "Sliding Window" (Scalar Replacement) optimization.
+1. Maintained `prev` and `curr` values in local variables (registers).
+2. In each iteration, only loaded `next` (`i+1`) from memory.
+3. Updated `prev = curr` and `curr = next` at the end of the loop.
+4. Reduced memory loads from 6 to 2 per iteration.
+
+**Gain:**
+Benchmark `bench_morphogenesis` (1000 iterations, size 100,000):
+- Before: ~265.58ms
+- After: ~250.46ms
+- Speedup: ~6%

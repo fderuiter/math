@@ -151,14 +151,19 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
         // 2. Handle i = 1..n-1 (Hot Path)
         if n > 2 {
-            for i in 1..n - 1 {
-                // Safety: loop bounds ensure i, i-1, i+1 are valid
-                unsafe {
-                    let u_curr = *u.get_unchecked(i);
-                    let v_curr = *v.get_unchecked(i);
-                    let u_prev = *u.get_unchecked(i - 1);
+            // Optimization: Sliding Window / Register Rotation
+            // Instead of loading 6 values per iteration from memory (u[i-1], u[i], u[i+1], ...),
+            // we maintain prev/curr in registers and only load the 'next' value.
+            // This reduces memory loads from 6 to 2 per iteration.
+            unsafe {
+                let mut u_prev = *u.get_unchecked(0);
+                let mut u_curr = *u.get_unchecked(1);
+                let mut v_prev = *v.get_unchecked(0);
+                let mut v_curr = *v.get_unchecked(1);
+
+                for i in 1..n - 1 {
+                    // Safety: loop bounds ensure i+1 is valid (max i = n-2, so i+1 = n-1)
                     let u_next = *u.get_unchecked(i + 1);
-                    let v_prev = *v.get_unchecked(i - 1);
                     let v_next = *v.get_unchecked(i + 1);
 
                     let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
@@ -168,6 +173,12 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
                     *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
                     *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+
+                    // Shift window
+                    u_prev = u_curr;
+                    u_curr = u_next;
+                    v_prev = v_curr;
+                    v_curr = v_next;
                 }
             }
         }
