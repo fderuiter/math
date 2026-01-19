@@ -1,5 +1,6 @@
-use rand::Rng;
+use crate::pure_math::analysis::roots::{Bisection, RootFinder};
 use rand::distributions::Distribution as RandDistribution;
+use rand::Rng;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 
@@ -50,7 +51,7 @@ impl MechanismDesign {
     ///
     /// $$ J(r^*) = r^* - \frac{1 - F(r^*)}{f(r^*)} = 0 $$
     ///
-    /// This function finds the root of $J(r) = 0$ using the bisection method within the given bounds.
+    /// This function finds the root of $J(r) = 0$ using the default `Bisection` method.
     ///
     /// # Parameters
     /// - `dist`: The probability distribution of bidder valuations.
@@ -73,30 +74,46 @@ impl MechanismDesign {
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        // Use default Bisection solver
+        Self::optimal_reserve_price_with_solver(
+            dist,
+            lower_bound,
+            upper_bound,
+            &Bisection::default(),
+        )
+    }
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
+    /// Calculates the **Optimal Reserve Price** using a custom root-finding strategy.
+    ///
+    /// This allows for dependency inversion: users can supply faster or more robust
+    /// root-finding algorithms (e.g., Newton's method) if needed.
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> f64 {
+        // We want to find r such that J(r) = 0.
+        let j = |r| dist.virtual_valuation(r);
 
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
+        // Attempt to find root. If it fails (e.g., no root in interval),
+        // we fallback to a safe default or panic depending on design.
+        // For mechanism design, if J(v) never crosses 0, the reserve price might be
+        // the lower bound (all bidders profitable) or upper bound (none).
+        // Here we unwrap for simplicity as per original implementation, but a Result would be better.
+        match solver.find_root(j, lower_bound, upper_bound) {
+            Ok(root) => root,
+            Err(_) => {
+                // Fallback behavior mimicking original "best effort" or bounds.
+                // If J(lower) > 0, then all valuations are profitable -> reserve = lower_bound
+                if dist.virtual_valuation(lower_bound) > 0.0 {
+                    lower_bound
+                } else {
+                    // If J(upper) < 0, then no valuations are profitable -> reserve = upper_bound
+                    upper_bound
+                }
             }
         }
-        mid
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`
