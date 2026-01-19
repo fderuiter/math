@@ -77,7 +77,9 @@
 //! ```
 
 pub mod favorite_child;
+pub mod model;
 pub mod scoring;
+pub mod strategies;
 pub mod types;
 
 pub use scoring::{
@@ -88,3 +90,7 @@ pub use types::{
     ComplimentParams, ContactParams, FamilyParams, FavoritismInputs, GiftParams, PersonalityParams,
     SocialParams, TimeParams,
 };
+
+// Export Strategy Pattern components
+pub use model::UnifiedFavoritismModel;
+pub use strategies::ScoringFactor;

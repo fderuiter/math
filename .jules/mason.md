@@ -18,3 +18,7 @@
 ## 2026-05-22 - Decoupling Statistical Distributions
 **Violation:** Open/Closed Principle (OCP). The `occupancy_probability` function switched on a `ParticleType` enum, requiring modification to the function to support new statistical distributions.
 **Remedy:** Strategy Pattern. Extracted `StatisticalDistribution` trait and implemented `FermiDirac`, `BoseEinstein`, and `MaxwellBoltzmann` strategies. Refactored `occupancy_probability` to delegate to these strategies.
+
+## 2026-10-15 - Decoupled Favoritism Scoring Logic
+**Violation:** Open/Closed Principle (OCP) and Single Responsibility Principle (SRP). The `calculate_favoritism_score_full` function contained hardcoded logic for 10+ different scoring factors (Proximity, Gifts, Social Media, etc.), creating a "God Method" that was closed to extension and hard to test in isolation.
+**Remedy:** Strategy Pattern. Extracted `ScoringFactor` trait and decomposed logic into individual factor implementations (e.g., `ProximityFactor`, `GiftFactor`). Created `UnifiedFavoritismModel` to compose these factors dynamically.
