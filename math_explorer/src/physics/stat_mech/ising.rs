@@ -1,7 +1,57 @@
+//! Ising Model Simulation.
+//!
+//! This module provides the [`SpinLattice`] struct to simulate a 2D Ising Model
+//! using the Metropolis-Hastings algorithm. The Ising model is a mathematical model
+//! of ferromagnetism in statistical mechanics. It consists of discrete variables (spins)
+//! that can be in one of two states (+1 or -1), arranged in a graph lattice.
+//!
+//! # Phase Transitions
+//!
+//! The model exhibits a phase transition at the critical temperature $T_c$.
+//! - **$T < T_c$**: Ferromagnetic phase (Spontaneous Magnetization).
+//! - **$T > T_c$**: Paramagnetic phase (Disordered spins).
+
 use super::KB;
 use rand::Rng;
 
 /// A 2D Spin Lattice for the Ising Model.
+///
+/// # Examples
+///
+/// Simulating a ferromagnetic phase transition (Low Temperature):
+///
+/// ```
+/// use math_explorer::physics::stat_mech::ising::SpinLattice;
+/// use math_explorer::physics::stat_mech::KB;
+///
+/// // 1. Setup system parameters
+/// let width = 20;
+/// let height = 20;
+/// let j_coupling = 1.0; // Interaction energy (J > 0 for Ferromagnetism)
+/// let h_field = 0.0;    // No external magnetic field
+///
+/// // 2. Set Temperature below Critical Point (Tc ~ 2.269 * J / KB)
+/// // We choose T such that kB * T = 1.5 * J (Well within ordered phase)
+/// let temp = 1.5 * j_coupling / KB;
+///
+/// // 3. Initialize Lattice
+/// let mut lattice = SpinLattice::new(width, height);
+///
+/// // 4. Run Metropolis Simulation to reach equilibrium
+/// // Note: This is a probabilistic process.
+/// for _ in 0..100_000 {
+///     lattice.metropolis_step(temp, j_coupling, h_field);
+/// }
+///
+/// // 5. Check Magnetization
+/// let m = lattice.magnetization();
+/// let max_m = (width * height) as i64;
+///
+/// // At low temp, spins align. M should be close to max_m or -max_m.
+/// // We check that the absolute magnetization is significant (> 50% order).
+/// let magnetization_ratio = (m as f64).abs() / (max_m as f64);
+/// assert!(magnetization_ratio > 0.5, "System did not magnetize! Ratio: {}", magnetization_ratio);
+/// ```
 pub struct SpinLattice {
     pub width: usize,
     pub height: usize,
