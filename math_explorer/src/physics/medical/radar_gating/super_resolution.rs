@@ -152,7 +152,9 @@ impl MusicEstimator {
         }
 
         // 4. Compute Spectrum P(R)
-        let mut spectrum = Vec::new();
+        // Optimization: Pre-allocate spectrum vector
+        let estimated_steps = ((end_range - start_range) / step_range) as usize + 2;
+        let mut spectrum = Vec::with_capacity(estimated_steps);
         let mut r = start_range;
 
         // Constants for steering vector
@@ -161,22 +163,29 @@ impl MusicEstimator {
         // phase[n] = alpha * n
         let constant_factor = (4.0 * PI * bandwidth) / (c * n as f64);
 
+        // Profiler Optimization: Reuse buffers to avoid allocation in the hot loop
+        let mut a_vec = DVector::from_element(n, Complex::new(0.0, 0.0));
+        let mut tmp = DVector::from_element(n, Complex::new(0.0, 0.0));
+
         while r <= end_range {
             let alpha = constant_factor * r;
 
-            // Construct steering vector a(R)
-            let mut a_vec_data = Vec::with_capacity(n);
+            // Construct steering vector a(R) in-place
             for i in 0..n {
                 let phase = alpha * (i as f64);
-                a_vec_data.push(Complex::new(0.0, phase).exp());
+                a_vec[i] = Complex::new(0.0, phase).exp();
             }
-            let a_vec = DVector::from_vec(a_vec_data);
 
             // Denominator D = a^H * P_noise * a
-            // a^H * (P_noise * a)
-            let tmp = &p_noise * &a_vec;
-            let den_complex = a_vec.adjoint() * tmp; // Result is 1x1 matrix
-            let den = den_complex[(0, 0)].norm(); // Should be real, take norm to be safe
+
+            // Optimization: Use `mul_to` to avoid allocating `tmp` every iteration
+            p_noise.mul_to(&a_vec, &mut tmp);
+
+            // Optimization: Use `dotc` (conjugate dot product) to compute a^H * tmp directly as a scalar
+            // This avoids allocating a 1x1 DMatrix.
+            let den_complex = a_vec.dotc(&tmp);
+
+            let den = den_complex.norm(); // Should be real, take norm to be safe
 
             // P(R) = 1 / D
             // Add small epsilon to avoid division by zero
