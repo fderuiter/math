@@ -152,7 +152,7 @@ impl MusicEstimator {
         }
 
         // 4. Compute Spectrum P(R)
-        // Optimization: Pre-allocate spectrum vector using reliable integer steps
+        // Optimization: Pre-allocate spectrum vector using robust integer steps
         // Round to nearest integer to handle floating point imprecision
         let steps = ((end_range - start_range) / step_range).round() as usize;
         let mut spectrum = Vec::with_capacity(steps + 1);
@@ -169,7 +169,7 @@ impl MusicEstimator {
         let mut r = start_range;
 
         // Optimization: Use a fixed loop count to guarantee vector length consistency,
-        // but use incremental addition for 'r' to avoid int-to-float conversion overhead.
+        // but use incremental addition for 'r' to avoid int-to-float conversion overhead in loop body.
         for _ in 0..=steps {
             let alpha = constant_factor * r;
 

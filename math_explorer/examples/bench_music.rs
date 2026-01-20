@@ -9,12 +9,10 @@ fn main() {
     let mut estimator = MusicEstimator::new(samples, snapshots, targets);
 
     // Feed dummy data
-    // Signal: Target at index 10 and 20 (frequencies)
     for _ in 0..snapshots {
         let mut data = Vec::with_capacity(samples);
         for i in 0..samples {
             let t = i as f64;
-            // Generate some signal
             let val = Complex::new(0.0, 0.1 * t).exp() + Complex::new(0.0, 0.3 * t).exp();
             data.push(val);
         }
@@ -30,13 +28,13 @@ fn main() {
 
     let start = Instant::now();
     let iterations = 100;
-    // Range 0 to 10m, step 0.001m -> 10,001 points per call.
-    // 100 iterations -> 1,000,100 points.
     for _ in 0..iterations {
+        // This specific call was causing the off-by-one panic
         let spectrum = estimator.compute_spectrum(0.0, 10.0, 0.001, 4.0e9, 3.0e8).unwrap();
-        // Just use the result to make sure it's not optimized away
+
+        // Strictly verify the length
         if spectrum.len() != 10001 {
-             panic!("Unexpected spectrum length");
+             panic!("Unexpected spectrum length: expected 10001, got {}", spectrum.len());
         }
     }
     let duration = start.elapsed();
