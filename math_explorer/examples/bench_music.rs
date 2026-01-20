@@ -32,9 +32,10 @@ fn main() {
         // This specific call was causing the off-by-one panic
         let spectrum = estimator.compute_spectrum(0.0, 10.0, 0.001, 4.0e9, 3.0e8).unwrap();
 
-        // Strictly verify the length
-        if spectrum.len() != 10001 {
-             panic!("Unexpected spectrum length: expected 10001, got {}", spectrum.len());
+        // Strictly verify the length dynamically
+        let expected_len = ((10.0_f64 - 0.0_f64) / 0.001_f64).round() as usize + 1;
+        if spectrum.len() != expected_len {
+             panic!("Unexpected spectrum length: expected {}, got {}", expected_len, spectrum.len());
         }
     }
     let duration = start.elapsed();
