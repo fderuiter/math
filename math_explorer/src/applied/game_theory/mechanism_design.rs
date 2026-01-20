@@ -2,6 +2,7 @@ use rand::Rng;
 use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
+use crate::pure_math::analysis::roots::{Bisection, RootFinder};
 
 /// Represents a distribution of bidder valuations.
 ///
@@ -50,53 +51,52 @@ impl MechanismDesign {
     ///
     /// $$ J(r^*) = r^* - \frac{1 - F(r^*)}{f(r^*)} = 0 $$
     ///
-    /// This function finds the root of $J(r) = 0$ using the bisection method within the given bounds.
+    /// This function finds the root of $J(r) = 0$ using the default Bisection solver.
     ///
     /// # Parameters
     /// - `dist`: The probability distribution of bidder valuations.
     /// - `lower_bound`: The lower bound for the search (e.g., min possible valuation).
     /// - `upper_bound`: The upper bound for the search (e.g., max possible valuation).
-    ///
-    /// # Example
-    /// ```
-    /// use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
-    /// use statrs::distribution::Uniform;
-    ///
-    /// // For Uniform(0, 100), J(v) = 2v - 100.
-    /// // J(r) = 0 => 2r = 100 => r = 50.
-    /// let dist = Uniform::new(0.0, 100.0).unwrap();
-    /// let r_star = MechanismDesign::optimal_reserve_price(&dist, 0.0, 100.0);
-    /// assert!((r_star - 50.0).abs() < 1e-4);
-    /// ```
     pub fn optimal_reserve_price<D: ValuationDistribution>(
         dist: &D,
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        Self::optimal_reserve_price_with_solver(dist, lower_bound, upper_bound, &Bisection::default())
+    }
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
+    /// Calculates the **Optimal Reserve Price** using a custom root-finding strategy.
+    ///
+    /// This allows injecting advanced solvers (e.g., Newton-Raphson if derivatives were available, or faster bracketing methods)
+    /// without modifying the core mechanism design logic.
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S
+    ) -> f64 {
+        // We want to find r such that J(r) = 0.
+        // We handle the result gracefully by falling back to bounds if it fails (though Bisection shouldn't fail if bracketed).
+        // However, J(v) is usually monotonic.
 
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
+        let root_result = solver.find_root(|r| dist.virtual_valuation(r), lower_bound, upper_bound);
+
+        match root_result {
+            Ok(root) => root,
+            Err(_) => {
+                // Fallback: Check boundaries.
+                // If J(lower) > 0, then reserve should be lower (but constrained by lower_bound).
+                // If J(upper) < 0, then reserve should be higher (but constrained by upper_bound).
+                // For a regular distribution, J increases.
+                // If J(lower) > 0, optimal is lower_bound.
+                // If J(upper) < 0, optimal is upper_bound.
+                let j_low = dist.virtual_valuation(lower_bound);
+                if j_low > 0.0 {
+                    return lower_bound;
+                }
+                upper_bound
             }
         }
-        mid
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`
@@ -168,6 +168,16 @@ mod tests {
         let dist = Uniform::new(0.0, 1.0).unwrap();
         let r_star = MechanismDesign::optimal_reserve_price(&dist, 0.0, 1.0);
         assert!((r_star - 0.5).abs() < 1e-4);
+    }
+
+    #[test]
+    fn test_optimal_reserve_with_custom_solver_config() {
+        let dist = Uniform::new(0.0, 1.0).unwrap();
+        // Use a coarser tolerance
+        let solver = Bisection::new(100, 1e-2);
+        let r_star = MechanismDesign::optimal_reserve_price_with_solver(&dist, 0.0, 1.0, &solver);
+        // Result should be within 1e-2 of 0.5
+        assert!((r_star - 0.5).abs() < 1e-2);
     }
 
     #[test]

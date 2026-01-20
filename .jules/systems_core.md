@@ -15,6 +15,11 @@
 **Refactor:** Applied the **Strategy Pattern**. Extracted `KalmanModel` trait (defining $F, H, Q, R$). Implemented `ConstantVelocityModel`. Refactored `TrackingFilter` to be generic over `M: KalmanModel`.
 **Trade-off:** Constructor API changed (requires injecting model instance), but separated Physics from Estimation logic, enabling zero-cost abstraction for different motion models.
 
+## 2026-01-20 - Strategy Pattern for Mechanism Design Root Finding
+**Violation:** The `optimal_reserve_price` function in `mechanism_design.rs` hardcoded the Bisection Method, violating SRP and DIP. This prevented the use of more efficient root-finding algorithms or different configurations (e.g., higher precision).
+**Refactor:** Applied the **Strategy Pattern**. Extracted a `RootFinder` trait in `pure_math/analysis/roots.rs` and implemented `Bisection` as the default strategy. Updated `MechanismDesign` to allow injecting a solver via `optimal_reserve_price_with_solver`.
+**Trade-off:** Minimal complexity increase. The `RootFinder` trait is generic and reusable across the codebase. Backward compatibility maintained.
+
 ## 2026-02-20 - Dependency Inversion for Battery Degradation
 **Violation:** The `battery_degradation` module was tightly coupled to the concrete `PowerLawModel` struct, violating the Open/Closed Principle and preventing the addition of alternative degradation models (e.g., electrochemical or semi-empirical) without modifying existing code.
 **Refactor:** Applied **Dependency Inversion**. Extracted a `DegradationModel` trait defining the contract for cycle life and capacity fade. Implemented this trait for `PowerLawModel`.
