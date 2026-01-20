@@ -24,10 +24,12 @@ fn test_security_buffer_overflow_prevention() {
         result.is_err(),
         "Should return error for insufficient buffer size"
     );
-    let err_msg = result.err().unwrap();
-    assert!(
-        err_msg.contains("Data buffer size mismatch"),
-        "Error message should mention buffer mismatch. Got: {}",
-        err_msg
-    );
+    let err = result.err().unwrap();
+    match err {
+        math_explorer::applied::isosurface::IsosurfaceError::DataMismatch { expected, actual } => {
+            assert_eq!(expected, 1000);
+            assert_eq!(actual, 10);
+        }
+        _ => panic!("Expected DataMismatch error, got {:?}", err),
+    }
 }

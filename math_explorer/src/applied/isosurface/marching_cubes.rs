@@ -1,3 +1,4 @@
+use super::error::IsosurfaceError;
 use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE};
 use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
 
@@ -82,9 +83,11 @@ fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32
     n.normalize()
 }
 
-pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, String> {
+pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, IsosurfaceError> {
     if grid.width < 2 || grid.height < 2 || grid.depth < 2 {
-        return Err("Grid dimensions must be at least 2x2x2".to_string());
+        return Err(IsosurfaceError::InvalidGrid(
+            "Grid dimensions must be at least 2x2x2".to_string(),
+        ));
     }
 
     // Safety Check: Ensure data buffer is sufficient to prevent OOB access in unsafe blocks
@@ -92,14 +95,15 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Stri
         .width
         .checked_mul(grid.height)
         .and_then(|wh| wh.checked_mul(grid.depth))
-        .ok_or_else(|| "Grid dimensions cause integer overflow".to_string())?;
+        .ok_or_else(|| {
+            IsosurfaceError::InvalidGrid("Grid dimensions cause integer overflow".to_string())
+        })?;
 
     if grid.data.len() < expected_len {
-        return Err(format!(
-            "Data buffer size mismatch. Expected at least {}, got {}",
-            expected_len,
-            grid.data.len()
-        ));
+        return Err(IsosurfaceError::DataMismatch {
+            expected: expected_len,
+            actual: grid.data.len(),
+        });
     }
 
     // Estimate capacity to avoid reallocations

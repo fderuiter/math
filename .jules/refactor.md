@@ -11,3 +11,5 @@ Found inconsistent error handling in physics modules (String errors) and `Option
 Refactored `HighEnergyError` and `LinearAlgebraError` to unify and improve error reporting.
 Updated `li_ma_significance` to return `Result`.
 Updated `solve_linear_system` and `solve_normal_equation` to return `Result`.
+## 2026-01-20 - [Physics/Chaos, Applied/Isosurface] **Debt:** Stringly Typed Errors **Risk:** Panic/Unpredictable Behavior
+Replaced `Result<T, String>` with typed error enums `ChaosError` and `IsosurfaceError`. This improves error handling safety and allows consumers to match on specific error cases instead of parsing strings.
