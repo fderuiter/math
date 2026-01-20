@@ -16,11 +16,9 @@ impl fmt::Display for IsosurfaceError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             IsosurfaceError::InvalidGrid(msg) => write!(f, "Invalid grid dimensions: {}", msg),
-            IsosurfaceError::DataMismatch { expected, actual } => write!(
-                f,
-                "Data buffer size mismatch. Expected at least {}, got {}",
-                expected, actual
-            ),
+            IsosurfaceError::DataMismatch { expected, actual } => {
+                write!(f, "Data mismatch: expected {}, got {}", expected, actual)
+            }
         }
     }
 }
