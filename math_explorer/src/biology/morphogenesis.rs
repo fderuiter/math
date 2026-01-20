@@ -54,12 +54,64 @@ impl ReactionKinetics for SchnakenbergKinetics {
     }
 }
 
+/// Represents the state of a Turing system at a point in time.
+///
+/// This struct encapsulates the concentration vectors for the activator and inhibitor,
+/// protecting them from invalid resizing while providing safe access.
+#[derive(Debug, Clone)]
+pub struct TuringState {
+    u: Vec<f64>,
+    v: Vec<f64>,
+}
+
+impl TuringState {
+    /// Creates a new zero-initialized state of a given size.
+    pub fn new(size: usize) -> Self {
+        Self {
+            u: vec![0.0; size],
+            v: vec![0.0; size],
+        }
+    }
+
+    /// Returns a slice of the activator concentrations.
+    pub fn u(&self) -> &[f64] {
+        &self.u
+    }
+
+    /// Returns a slice of the inhibitor concentrations.
+    pub fn v(&self) -> &[f64] {
+        &self.v
+    }
+
+    /// Returns a mutable slice of the activator concentrations.
+    pub fn u_mut(&mut self) -> &mut [f64] {
+        &mut self.u
+    }
+
+    /// Returns a mutable slice of the inhibitor concentrations.
+    pub fn v_mut(&mut self) -> &mut [f64] {
+        &mut self.v
+    }
+
+    /// Returns the length of the grid.
+    pub fn len(&self) -> usize {
+        self.u.len()
+    }
+
+    /// Returns true if the grid is empty.
+    pub fn is_empty(&self) -> bool {
+        self.u.is_empty()
+    }
+}
+
 /// Represents a 1D Reaction-Diffusion system.
 pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
-    /// Activator concentrations
-    pub u: Vec<f64>,
-    /// Inhibitor concentrations
-    pub v: Vec<f64>,
+    /// The current state of the system.
+    pub state: TuringState,
+
+    // Double buffer for the next state.
+    next_state: TuringState,
+
     /// Diffusion coefficient for u
     pub d_u: f64,
     /// Diffusion coefficient for v
@@ -68,13 +120,6 @@ pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
     pub dx: f64,
     /// Reaction kinetics strategy
     pub kinetics: K,
-
-    // Private buffers for double buffering to avoid allocation in hot loops.
-    // Marked hidden to discourage manual usage if fields were public (which they are).
-    #[doc(hidden)]
-    buffer_u: Vec<f64>,
-    #[doc(hidden)]
-    buffer_v: Vec<f64>,
 }
 
 impl TuringSystem<SchnakenbergKinetics> {
@@ -88,40 +133,56 @@ impl<K: ReactionKinetics> TuringSystem<K> {
     /// Creates a new Turing System with custom kinetics.
     pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, dx: f64, kinetics: K) -> Self {
         Self {
-            u: vec![0.0; size],
-            v: vec![0.0; size],
+            state: TuringState::new(size),
+            next_state: TuringState::new(size),
             d_u,
             d_v,
             dx,
             kinetics,
-            buffer_u: vec![0.0; size],
-            buffer_v: vec![0.0; size],
         }
+    }
+
+    /// Accessor for the activator concentrations (backward compatibility/convenience).
+    pub fn u(&self) -> &[f64] {
+        self.state.u()
+    }
+
+    /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
+    pub fn v(&self) -> &[f64] {
+        self.state.v()
+    }
+
+    /// Mutable accessor for the activator concentrations.
+    pub fn u_mut(&mut self) -> &mut [f64] {
+        self.state.u_mut()
+    }
+
+    /// Mutable accessor for the inhibitor concentrations.
+    pub fn v_mut(&mut self) -> &mut [f64] {
+        self.state.v_mut()
     }
 
     /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
     pub fn step(&mut self, dt: f64) {
-        let n = self.u.len();
+        let n = self.state.len();
         if n == 0 {
             return;
         }
 
-        // Ensure buffers are the right size
-        if self.buffer_u.len() != n {
-            self.buffer_u = vec![0.0; n];
-        }
-        if self.buffer_v.len() != n {
-            self.buffer_v = vec![0.0; n];
+        // Ensure buffers are the right size (in case state was modified externally via some future API,
+        // though strictly TuringState prevents resizing).
+        if self.next_state.len() != n {
+            self.next_state = TuringState::new(n);
         }
 
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
         // Optimization: Lift boundary checks out of the loop and use slices
-        let u = &self.u;
-        let v = &self.v;
-        let buffer_u = &mut self.buffer_u;
-        let buffer_v = &mut self.buffer_v;
+        let u = &self.state.u;
+        let v = &self.state.v;
+        let next_u = &mut self.next_state.u;
+        let next_v = &mut self.next_state.v;
 
         // 1. Handle i = 0
         {
@@ -144,17 +205,14 @@ impl<K: ReactionKinetics> TuringSystem<K> {
             let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
             unsafe {
-                *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+                *next_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
+                *next_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
             }
         }
 
         // 2. Handle i = 1..n-1 (Hot Path)
         if n > 2 {
             // Optimization: Sliding Window / Register Rotation
-            // Instead of loading 6 values per iteration from memory (u[i-1], u[i], u[i+1], ...),
-            // we maintain prev/curr in registers and only load the 'next' value.
-            // This reduces memory loads from 6 to 2 per iteration.
             unsafe {
                 let mut u_prev = *u.get_unchecked(0);
                 let mut u_curr = *u.get_unchecked(1);
@@ -162,7 +220,6 @@ impl<K: ReactionKinetics> TuringSystem<K> {
                 let mut v_curr = *v.get_unchecked(1);
 
                 for i in 1..n - 1 {
-                    // Safety: loop bounds ensure i+1 is valid (max i = n-2, so i+1 = n-1)
                     let u_next = *u.get_unchecked(i + 1);
                     let v_next = *v.get_unchecked(i + 1);
 
@@ -171,8 +228,8 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
                     let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
-                    *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                    *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+                    *next_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
+                    *next_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
 
                     // Shift window
                     u_prev = u_curr;
@@ -199,13 +256,12 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
                 let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
 
-                *buffer_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                *buffer_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+                *next_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
+                *next_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
             }
         }
 
-        // Swap buffers
-        std::mem::swap(&mut self.u, &mut self.buffer_u);
-        std::mem::swap(&mut self.v, &mut self.buffer_v);
+        // Swap buffers (states)
+        std::mem::swap(&mut self.state, &mut self.next_state);
     }
 }
