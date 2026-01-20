@@ -53,11 +53,11 @@ impl KalmanModel for ConstantVelocityModel {
 ///
 /// This maintains the original API of the radar gating module while using the unified core algorithm.
 #[derive(Debug, Clone)]
-pub struct TrackingFilter {
-    inner: KalmanFilter<ConstantVelocityModel>,
+pub struct TrackingFilter<M: KalmanModel = ConstantVelocityModel> {
+    inner: KalmanFilter<M>,
 }
 
-impl TrackingFilter {
+impl TrackingFilter<ConstantVelocityModel> {
     /// Creates a new Kalman Filter with a specific physics model.
     ///
     /// # Arguments
@@ -71,6 +71,14 @@ impl TrackingFilter {
         Self {
             inner: KalmanFilter::new(initial_state, initial_covariance, model, dt),
         }
+    }
+}
+
+impl<M: KalmanModel> TrackingFilter<M> {
+    /// Creates a new TrackingFilter from an existing generic KalmanFilter.
+    /// This allows injecting any physics model (Dependency Injection).
+    pub fn new_from_filter(filter: KalmanFilter<M>) -> Self {
+        Self { inner: filter }
     }
 
     /// Predicts the next state.
@@ -89,13 +97,17 @@ impl TrackingFilter {
     }
 
     /// Returns the current estimated amplitude (position).
+    /// Assumes state index 0 is position.
     pub fn amplitude(&self) -> f64 {
-        self.inner.state[0]
+        // Safety: We assume the model has at least 1 state variable.
+        self.inner.state.get(0).copied().unwrap_or(0.0)
     }
 
     /// Returns the current estimated velocity.
+    /// Assumes state index 1 is velocity.
     pub fn velocity(&self) -> f64 {
-        self.inner.state[1]
+        // Safety: We assume the model has at least 2 state variables.
+        self.inner.state.get(1).copied().unwrap_or(0.0)
     }
 
     /// Returns the current state covariance matrix.

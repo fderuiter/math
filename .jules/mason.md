@@ -18,3 +18,7 @@
 ## 2026-05-22 - Decoupling Statistical Distributions
 **Violation:** Open/Closed Principle (OCP). The `occupancy_probability` function switched on a `ParticleType` enum, requiring modification to the function to support new statistical distributions.
 **Remedy:** Strategy Pattern. Extracted `StatisticalDistribution` trait and implemented `FermiDirac`, `BoseEinstein`, and `MaxwellBoltzmann` strategies. Refactored `occupancy_probability` to delegate to these strategies.
+
+## 2026-06-01 - Decoupling Radar Tracking from Physics Model
+**Violation:** Dependency Inversion Principle (DIP). `TrackingFilter` was tightly coupled to `ConstantVelocityModel` via struct fields and constructors, preventing use with other kinematic models.
+**Remedy:** Generics and Dependency Injection. Refactored `TrackingFilter` to be generic over `M: KalmanModel`. Added `new_from_filter` to inject any configured Kalman Filter, enabling support for Constant Acceleration or other models without modifying the tracker.
