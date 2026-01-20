@@ -1,5 +1,6 @@
 //! Quantifying Chaos (Lyapunov Exponents)
 
+use super::error::ChaosError;
 use super::logistic::LogisticMap;
 use crate::pure_math::analysis::ode::{OdeSystem, Solver};
 use nalgebra::Vector3;
@@ -48,7 +49,7 @@ pub fn lorenz_lyapunov<S, Sol>(
     time_step: f64,
     iterations: usize,
     evolution_time: f64,
-) -> Result<f64, String>
+) -> Result<f64, ChaosError>
 where
     S: OdeSystem<Vector3<f64>> + ?Sized,
     Sol: Solver<Vector3<f64>>,
@@ -57,7 +58,9 @@ where
     let steps_per_iter = (evolution_time / time_step).round() as usize;
 
     if steps_per_iter == 0 {
-        return Err("evolution_time must be greater than time_step".to_string());
+        return Err(ChaosError::InvalidParameter(
+            "evolution_time must be greater than time_step".to_string(),
+        ));
     }
 
     let mut current_state = initial_state;
@@ -82,9 +85,9 @@ where
         let d_t = dist_vec.norm();
 
         if d_t == 0.0 {
-            return Err(
+            return Err(ChaosError::CalculationError(
                 "Trajectories converged completely (distance 0), cannot compute log.".to_string(),
-            );
+            ));
         }
 
         sum_log_divergence += (d_t / d0).ln();
