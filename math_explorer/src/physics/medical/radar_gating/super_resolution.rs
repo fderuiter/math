@@ -152,8 +152,10 @@ impl MusicEstimator {
         }
 
         // 4. Compute Spectrum P(R)
-        let mut spectrum = Vec::new();
-        let mut r = start_range;
+        // Optimization: Pre-allocate spectrum vector using robust integer steps
+        // Round to nearest integer to handle floating point imprecision
+        let steps = ((end_range - start_range) / step_range).round() as usize;
+        let mut spectrum = Vec::with_capacity(steps + 1);
 
         // Constants for steering vector
         // a(R)[n] = exp(j * (4pi * B * R / c) * (n / N))
@@ -161,22 +163,32 @@ impl MusicEstimator {
         // phase[n] = alpha * n
         let constant_factor = (4.0 * PI * bandwidth) / (c * n as f64);
 
-        while r <= end_range {
+        // Profiler Optimization: Reuse buffers to avoid allocation in the hot loop
+        let mut a_vec = DVector::from_element(n, Complex::new(0.0, 0.0));
+        let mut tmp = DVector::from_element(n, Complex::new(0.0, 0.0));
+        let mut r = start_range;
+
+        // Optimization: Use a fixed loop count to guarantee vector length consistency,
+        // but use incremental addition for 'r' to avoid int-to-float conversion overhead in loop body.
+        for _ in 0..=steps {
             let alpha = constant_factor * r;
 
-            // Construct steering vector a(R)
-            let mut a_vec_data = Vec::with_capacity(n);
-            for i in 0..n {
-                let phase = alpha * (i as f64);
-                a_vec_data.push(Complex::new(0.0, phase).exp());
+            // Construct steering vector a(R) in-place
+            for k in 0..n {
+                let phase = alpha * (k as f64);
+                a_vec[k] = Complex::new(0.0, phase).exp();
             }
-            let a_vec = DVector::from_vec(a_vec_data);
 
             // Denominator D = a^H * P_noise * a
-            // a^H * (P_noise * a)
-            let tmp = &p_noise * &a_vec;
-            let den_complex = a_vec.adjoint() * tmp; // Result is 1x1 matrix
-            let den = den_complex[(0, 0)].norm(); // Should be real, take norm to be safe
+
+            // Optimization: Use `mul_to` to avoid allocating `tmp` every iteration
+            p_noise.mul_to(&a_vec, &mut tmp);
+
+            // Optimization: Use `dotc` (conjugate dot product) to compute a^H * tmp directly as a scalar
+            // This avoids allocating a 1x1 DMatrix.
+            let den_complex = a_vec.dotc(&tmp);
+
+            let den = den_complex.norm(); // Should be real, take norm to be safe
 
             // P(R) = 1 / D
             // Add small epsilon to avoid division by zero
