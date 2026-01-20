@@ -4,6 +4,30 @@
 //! commonly used in engineering and physics problems.
 
 use nalgebra::{DMatrix, DVector};
+use std::fmt;
+
+/// Errors related to Linear Algebra operations.
+#[derive(Debug, Clone, PartialEq)]
+pub enum LinearAlgebraError {
+    /// The matrix is singular and cannot be inverted or decomposed.
+    SingularMatrix,
+    /// Dimensions of operands are incompatible.
+    DimensionMismatch,
+    /// Solution could not be found.
+    SolutionNotFound,
+}
+
+impl fmt::Display for LinearAlgebraError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::SingularMatrix => write!(f, "Matrix is singular"),
+            Self::DimensionMismatch => write!(f, "Matrix/Vector dimensions are incompatible"),
+            Self::SolutionNotFound => write!(f, "Solution could not be found"),
+        }
+    }
+}
+
+impl std::error::Error for LinearAlgebraError {}
 
 /// Solves a linear system $Ax = b$ using LU decomposition (or best available method).
 ///
@@ -14,9 +38,15 @@ use nalgebra::{DMatrix, DVector};
 ///
 /// # Returns
 ///
-/// * `Option<DVector<f64>>` - The solution vector $x$, if one exists.
-pub fn solve_linear_system(a: &DMatrix<f64>, b: &DVector<f64>) -> Option<DVector<f64>> {
-    a.clone().lu().solve(b)
+/// * `Result<DVector<f64>, LinearAlgebraError>` - The solution vector $x$.
+pub fn solve_linear_system(
+    a: &DMatrix<f64>,
+    b: &DVector<f64>,
+) -> Result<DVector<f64>, LinearAlgebraError> {
+    a.clone()
+        .lu()
+        .solve(b)
+        .ok_or(LinearAlgebraError::SolutionNotFound)
 }
 
 /// Solves the Normal Equation for Least Squares.
@@ -32,8 +62,11 @@ pub fn solve_linear_system(a: &DMatrix<f64>, b: &DVector<f64>) -> Option<DVector
 ///
 /// # Returns
 ///
-/// * `Option<DVector<f64>>` - The coefficient vector $\mathbf{c}$.
-pub fn solve_normal_equation(a: &DMatrix<f64>, b: &DVector<f64>) -> Option<DVector<f64>> {
+/// * `Result<DVector<f64>, LinearAlgebraError>` - The coefficient vector $\mathbf{c}$.
+pub fn solve_normal_equation(
+    a: &DMatrix<f64>,
+    b: &DVector<f64>,
+) -> Result<DVector<f64>, LinearAlgebraError> {
     let a_t = a.transpose();
     let ata = &a_t * a;
     let atb = &a_t * b;
@@ -41,8 +74,11 @@ pub fn solve_normal_equation(a: &DMatrix<f64>, b: &DVector<f64>) -> Option<DVect
     // Invert (A^T A)
     // Note: Cholesky decomposition is more efficient for symmetric positive definite matrices (like A^T A)
     match ata.clone().cholesky() {
-        Some(cholesky) => Some(cholesky.solve(&atb)),
-        None => ata.try_inverse().map(|inv| &inv * &atb), // Fallback
+        Some(cholesky) => Ok(cholesky.solve(&atb)),
+        None => ata
+            .try_inverse()
+            .map(|inv| &inv * &atb)
+            .ok_or(LinearAlgebraError::SingularMatrix),
     }
 }
 

@@ -1,12 +1,16 @@
+use super::error::HighEnergyError;
+
 /// Calculates the Li & Ma Significance (sigma).
 ///
 /// # Arguments
 /// * `n_on` - Counts on source.
 /// * `n_off` - Background counts.
 /// * `alpha` - Ratio of exposure times (t_on / t_off).
-pub fn li_ma_significance(n_on: f64, n_off: f64, alpha: f64) -> Result<f64, String> {
+pub fn li_ma_significance(n_on: f64, n_off: f64, alpha: f64) -> Result<f64, HighEnergyError> {
     if n_on < 0.0 || n_off < 0.0 || alpha <= 0.0 {
-        return Err("Counts must be non-negative and alpha positive".to_string());
+        return Err(HighEnergyError::InvalidStatisticsParams {
+            reason: "Counts must be non-negative and alpha positive".to_string(),
+        });
     }
 
     let term1 = if n_on > 0.0 {
@@ -28,7 +32,9 @@ pub fn li_ma_significance(n_on: f64, n_off: f64, alpha: f64) -> Result<f64, Stri
         // Should not happen for valid inputs where n_on/n_off reflect an excess,
         // but numerically possible or if deficit.
         // Formula has sqrt.
-        return Err("Negative argument for sqrt in Li & Ma".to_string());
+        return Err(HighEnergyError::CalculationError {
+            reason: "Negative argument for sqrt in Li & Ma".to_string(),
+        });
     }
 
     Ok(2.0f64.sqrt() * sum.sqrt())
