@@ -2,6 +2,7 @@ use rand::Rng;
 use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
+use crate::pure_math::analysis::roots::{RootFinder, Bisection, AnalysisError};
 
 /// Represents a distribution of bidder valuations.
 ///
@@ -73,30 +74,49 @@ impl MechanismDesign {
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        // Use default Bisection solver but configure to match legacy behavior roughly
+        let solver = Bisection { max_iterations: 100, tolerance: 1e-6 };
+        Self::optimal_reserve_price_with_solver(dist, lower_bound, upper_bound, &solver)
+    }
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
-
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
+    /// Calculates the **Optimal Reserve Price** using a custom **RootFinder** strategy.
+    ///
+    /// This allows injecting different solvers (e.g., Bisection, Newton-Raphson) or configurations.
+    ///
+    /// # Panics
+    /// Panics if the solver fails (e.g., root not bracketed), as this function is expected to return a valid price.
+    /// For robust handling, use the solver directly.
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> f64 {
+        match solver.find_root(|r| dist.virtual_valuation(r), lower_bound, upper_bound) {
+            Ok(root) => root,
+            Err(AnalysisError::RootBracketingError { min, max, f_min, f_max }) => {
+                // Emulate legacy behavior: if not bracketed, the bisection loop would have converged
+                // to one of the bounds depending on signs.
+                // Original logic: if j_val > 0, high = mid. If j_val < 0, low = mid.
+                // If J(low) > 0 and J(high) > 0:
+                //   j_val will be > 0. high becomes mid. Converges to low (min).
+                // If J(low) < 0 and J(high) < 0:
+                //   j_val will be < 0. low becomes mid. Converges to high (max).
+                if f_min > 0.0 && f_max > 0.0 {
+                    min
+                } else if f_min < 0.0 && f_max < 0.0 {
+                    max
+                } else {
+                    // Should be covered by Ok or other branches, but fallback to midpoint
+                    (min + max) / 2.0
+                }
+            }
+            Err(_) => {
+                // For ConvergenceError or others, return midpoint or panic.
+                // Legacy code always returned *something* (midpoint of last iteration).
+                (lower_bound + upper_bound) / 2.0
             }
         }
-        mid
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`

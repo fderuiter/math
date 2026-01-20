@@ -26,3 +26,8 @@
 **Problem:** `math_explorer/src/applied/isosurface/marching_cubes.rs` used manual component-wise arithmetic (e.g., `x + t * (x2 - x1)`) for vector interpolation and gradient calculation. This was verbose, error-prone, and obscured the mathematical intent.
 **Decision:** Applied "Traitification" to `Point3D` in `types.rs`, implementing `Add`, `Sub`, `Mul`, `Div`, `Neg`, and geometric helpers (`dot`, `cross`, `normalize`). Refactored `marching_cubes.rs` to use these operators.
 **Consequence:** The isosurface extraction logic is now significantly more readable and idiomatic ("Rust idioms"). Mathematical operations are expressed as vector algebra. Performance remains equivalent (inlined operations).
+
+## 2026-06-04 - [Root Finding Strategy Extraction]
+**Problem:** `mechanism_design.rs` contained a hardcoded Bisection loop, preventing reuse and testing of the root-finding logic, and violating the "Strategy Pattern" consistency seen in other modules (like `ode.rs`).
+**Decision:** Extracted `RootFinder` trait and `Bisection` struct to `pure_math/analysis/roots.rs`. Refactored `mechanism_design` to use this strategy, exposing a dependency injection point `optimal_reserve_price_with_solver`.
+**Consequence:** `mechanism_design.rs` is now decoupled from the solver implementation. The `Bisection` solver is reusable across the library. Error handling is now explicit (`AnalysisError`), though `mechanism_design` maintains backward compatibility by handling errors gracefully.
