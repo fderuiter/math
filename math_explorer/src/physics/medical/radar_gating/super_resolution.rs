@@ -152,10 +152,10 @@ impl MusicEstimator {
         }
 
         // 4. Compute Spectrum P(R)
-        // Optimization: Pre-allocate spectrum vector
-        let estimated_steps = ((end_range - start_range) / step_range) as usize + 2;
-        let mut spectrum = Vec::with_capacity(estimated_steps);
-        let mut r = start_range;
+        // Optimization: Pre-allocate spectrum vector using reliable integer steps
+        // Round to nearest integer to handle floating point imprecision
+        let steps = ((end_range - start_range) / step_range).round() as usize;
+        let mut spectrum = Vec::with_capacity(steps + 1);
 
         // Constants for steering vector
         // a(R)[n] = exp(j * (4pi * B * R / c) * (n / N))
@@ -166,14 +166,17 @@ impl MusicEstimator {
         // Profiler Optimization: Reuse buffers to avoid allocation in the hot loop
         let mut a_vec = DVector::from_element(n, Complex::new(0.0, 0.0));
         let mut tmp = DVector::from_element(n, Complex::new(0.0, 0.0));
+        let mut r = start_range;
 
-        while r <= end_range {
+        // Optimization: Use a fixed loop count to guarantee vector length consistency,
+        // but use incremental addition for 'r' to avoid int-to-float conversion overhead.
+        for _ in 0..=steps {
             let alpha = constant_factor * r;
 
             // Construct steering vector a(R) in-place
-            for i in 0..n {
-                let phase = alpha * (i as f64);
-                a_vec[i] = Complex::new(0.0, phase).exp();
+            for k in 0..n {
+                let phase = alpha * (k as f64);
+                a_vec[k] = Complex::new(0.0, phase).exp();
             }
 
             // Denominator D = a^H * P_noise * a
