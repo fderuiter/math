@@ -6,10 +6,7 @@ pub enum IsosurfaceError {
     /// The grid dimensions are too small (must be at least 2x2x2).
     InvalidGrid(String),
     /// The data buffer size matches the grid dimensions.
-    DataMismatch {
-        expected: usize,
-        actual: usize,
-    },
+    DataMismatch { expected: usize, actual: usize },
 }
 
 impl fmt::Display for IsosurfaceError {
