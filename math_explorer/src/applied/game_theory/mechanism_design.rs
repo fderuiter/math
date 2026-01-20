@@ -73,7 +73,7 @@ impl MechanismDesign {
         dist: &D,
         lower_bound: f64,
         upper_bound: f64,
-        solver: &S
+        solver: &S,
     ) -> f64 {
         // We want to find r such that J(r) = 0.
         // We handle the result gracefully by falling back to bounds if it fails (though Bisection shouldn't fail if bracketed).
