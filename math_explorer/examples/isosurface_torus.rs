@@ -1,11 +1,46 @@
 use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
+use std::fmt;
 use std::fs::File;
 use std::io::Write;
+
+// Simple ANSI color wrapper for better UX
+enum Color {
+    Cyan,
+    Green,
+    Yellow,
+    Magenta,
+    Bold,
+    Reset,
+}
+
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let code = match self {
+            Color::Cyan => "\x1b[36m",
+            Color::Green => "\x1b[32m",
+            Color::Yellow => "\x1b[33m",
+            Color::Magenta => "\x1b[35m",
+            Color::Bold => "\x1b[1m",
+            Color::Reset => "\x1b[0m",
+        };
+        write!(f, "{}", code)
+    }
+}
 
 /// This example generates a mesh for a Torus using the Marching Cubes algorithm
 /// and exports it to a Wavefront OBJ file.
 fn main() -> std::io::Result<()> {
-    println!("Generating Torus SDF...");
+    // Header
+    println!();
+    println!("{}🍩 Torus Generator 3000{}", Color::Magenta, Color::Reset);
+    println!("{}======================={}", Color::Magenta, Color::Reset);
+    println!();
+
+    println!(
+        "{}⚙️  Generating Torus Signed Distance Field (SDF)...{}",
+        Color::Yellow,
+        Color::Reset
+    );
 
     let width = 64;
     let height = 64;
@@ -15,6 +50,25 @@ fn main() -> std::io::Result<()> {
     // Torus parameters
     let major_radius = 2.0;
     let minor_radius = 0.8;
+
+    println!(
+        "   Dimensions: {}{}x{}x{}{}",
+        Color::Bold,
+        width,
+        height,
+        depth,
+        Color::Reset
+    );
+    println!(
+        "   Radii:      Major={}{:.1}{}, Minor={}{:.1}{}",
+        Color::Cyan,
+        major_radius,
+        Color::Reset,
+        Color::Cyan,
+        minor_radius,
+        Color::Reset
+    );
+    println!();
 
     // Grid Setup (Spatial extent from -4 to 4)
     let min_bound = -4.0;
@@ -53,9 +107,19 @@ fn main() -> std::io::Result<()> {
         origin: Point3D::new(min_bound, min_bound, min_bound),
     };
 
-    println!("Extracting Isosurface...");
+    println!(
+        "{}⛏️  Extracting Isosurface using Marching Cubes...{}",
+        Color::Yellow,
+        Color::Reset
+    );
     let mesh = extract_isosurface(&grid, 0.0).expect("Failed to extract isosurface");
-    println!("Generated {} triangles.", mesh.triangles.len());
+    println!(
+        "   Generated {}{}{} triangles.",
+        Color::Bold,
+        mesh.triangles.len(),
+        Color::Reset
+    );
+    println!();
 
     // Export to OBJ
     let filename = "torus.obj";
@@ -97,8 +161,15 @@ fn main() -> std::io::Result<()> {
         offset += 3;
     }
 
-    println!("Mesh saved to {}", filename);
-    println!("You can view this file in Blender, MeshLab, or any 3D viewer.");
+    println!("{}✅ Success!{}", Color::Green, Color::Reset);
+    println!(
+        "   Mesh saved to: {}{}{}",
+        Color::Cyan,
+        filename,
+        Color::Reset
+    );
+    println!("   You can view this file in Blender, MeshLab, or any 3D viewer.");
+    println!();
 
     Ok(())
 }
