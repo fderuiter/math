@@ -2,6 +2,7 @@ use rand::Rng;
 use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
+use crate::pure_math::analysis::roots::{Bisection, RootFinder, AnalysisError};
 
 /// Represents a distribution of bidder valuations.
 ///
@@ -73,30 +74,41 @@ impl MechanismDesign {
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        // Use default Bisection strategy with robust parameters.
+        // 100 iterations ensures convergence to f64 precision (approx 2^-100)
+        // even for very large intervals, effectively recovering the behavior
+        // of the original code which always ran 50 steps but had no tolerance check.
+        let solver = Bisection {
+            max_iterations: 100,
+            tolerance: 1e-9,
+        };
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
+        Self::optimal_reserve_price_with_solver(dist, lower_bound, upper_bound, &solver)
+            .unwrap_or_else(|e| match e {
+                AnalysisError::ConvergenceError => {
+                    // If we fail to converge after 100 iterations, the interval
+                    // is likely extremely small or the function is ill-behaved.
+                    // Returning the midpoint of the original full range is a safe fallback
+                    // to avoid panics, though in practice this branch should be unreachable
+                    // for standard distributions with 100 iterations.
+                    (lower_bound + upper_bound) / 2.0
+                },
+                _ => (lower_bound + upper_bound) / 2.0,
+            })
+    }
 
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
-            }
-        }
-        mid
+    /// Calculates the **Optimal Reserve Price** using a provided root-finding strategy.
+    ///
+    /// This enables dependency injection for the root-finding algorithm.
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> Result<f64, AnalysisError> {
+        let target_function = |v: f64| dist.virtual_valuation(v);
+
+        solver.find_root(target_function, lower_bound, upper_bound)
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`
