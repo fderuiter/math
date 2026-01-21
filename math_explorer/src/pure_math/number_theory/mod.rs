@@ -1,31 +1,35 @@
 //! # Number Theory
 //!
-//! This module focuses on concepts from number theory, the study of integers.
-//! It will include algorithms for primality testing, factorization, modular arithmetic,
-//! and other number-theoretic functions.
-
-pub mod partitions;
-pub mod q_series;
-
-/// A placeholder function to check for primality.
-///
-/// This function is a stand-in for a more robust primality test.
-/// It currently only returns `true` for the number 2.
-///
-/// # Examples
-///
-/// ```
-/// use math_explorer::pure_math::number_theory::is_prime_placeholder;
-/// assert!(is_prime_placeholder(2));
-/// assert!(!is_prime_placeholder(4));
-/// ```
-pub fn is_prime_placeholder(n: u64) -> bool {
-    n == 2
-}
+//! This module provides algorithms for investigating the properties of integers.
+//! It covers foundational areas such as Primality Testing, Partition Theory, and Q-Series.
+//!
+//! ## Structure
+//!
+//! ```mermaid
+//! graph TD
+//!     NT[Number Theory] --> Primes[Primes]
+//!     NT --> Part[Partitions]
+//!     NT --> Q[Q-Series]
+//!     NT --> Class[Class Number]
+//!
+//!     Part -->|Uses| Q
+//!
+//!     style NT fill:#f9f,stroke:#333,stroke-width:2px
+//! ```
+//!
+//! ## Submodules
+//!
+//! *   **[Primes](primes)**: Algorithms for generating prime numbers and primality testing.
+//! *   **[Partitions](partitions)**: Restricted partition functions and their generating functions (q-series).
+//! *   **[Q-Series](q_series)**: Algebraic manipulation of power series in $q$.
+//! *   **[Class Number](class_number)**: Investigations into binary quadratic forms.
+//! *   **[Hurwitz-Kronecker](hurwitz_kronecker)**: Class number relations.
 
 pub mod class_number;
 pub mod hurwitz_kronecker;
+pub mod partitions;
 pub mod primes;
+pub mod q_series;
 
-pub use primes::is_prime;
-pub use primes::primes_up_to;
+// Re-exports for convenience
+pub use primes::{is_prime, primes_up_to};
