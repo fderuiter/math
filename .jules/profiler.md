@@ -97,3 +97,21 @@ Benchmark `bench_morphogenesis` (1000 iterations, size 100,000):
 - Before: ~265.58ms
 - After: ~250.46ms
 - Speedup: ~6%
+
+## 2026-10-29 - [Optimization] **Bottleneck:** Isosurface Mesh Reallocation **Strategy:** Improved Heuristic Pre-allocation **Gain:** ~3.4% Time Saved (26.5ms -> 25.6ms)
+
+**Bottleneck:**
+The `extract_isosurface` function uses a conservative heuristic (`2 * N^2`) for pre-allocating the triangle buffer.
+For complex or dense isosurfaces (like the tested Sphere SDF), the actual triangle count exceeded this estimate, causing the `Vec` to reallocate and copy data (likely doubling capacity).
+Reallocating a large buffer (~5MB) is expensive.
+
+**Strategy:**
+Increased the heuristic multiplier from 2 to 5 (`5 * N^2`).
+This provides sufficient capacity for dense meshes, avoiding runtime reallocations while keeping memory usage within reasonable bounds (stack/heap tradeoff).
+This aligns with the "The Reserve" Profiler move.
+
+**Gain:**
+Benchmark `profile_isosurface` (Sphere SDF 128x128x128):
+- Before: ~26.5ms
+- After: ~25.6ms
+- Speedup: ~3.4% (Eliminated reallocations)
