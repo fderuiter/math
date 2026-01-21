@@ -1,5 +1,5 @@
-use math_explorer::applied::isosurface::{extract_isosurface, Point3D, VoxelGrid};
-use std::time::{Duration, Instant};
+use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
+use std::time::Instant;
 
 fn main() {
     println!("⏱️  Profiler Benchmark Starting...");
@@ -29,7 +29,10 @@ fn main() {
     }
     let duration_micro = start_micro.elapsed();
     println!("Processed {} vectors in {:?}", count, duration_micro);
-    println!("Average time per vector: {:.4} ns", (duration_micro.as_nanos() as f64) / (count as f64));
+    println!(
+        "Average time per vector: {:.4} ns",
+        (duration_micro.as_nanos() as f64) / (count as f64)
+    );
     println!("Checksum: {}", checksum); // Ensure result is used
 
     // 2. Macro-benchmark: extract_isosurface
@@ -50,7 +53,7 @@ fn main() {
                 let dx = x as f32 - center;
                 let dy = y as f32 - center;
                 let dz = z as f32 - center;
-                let dist_sq = dx*dx + dy*dy + dz*dz;
+                let dist_sq = dx * dx + dy * dy + dz * dz;
                 // Value is negative inside, positive outside (or vice versa, just needs to cross 0)
                 data.push(dist_sq - radius_sq);
             }
@@ -73,5 +76,9 @@ fn main() {
     let mesh = extract_isosurface(&grid, 0.0).expect("Failed to extract surface");
     let duration_macro = start_macro.elapsed();
 
-    println!("Extracted {} triangles in {:?}", mesh.triangles.len(), duration_macro);
+    println!(
+        "Extracted {} triangles in {:?}",
+        mesh.triangles.len(),
+        duration_macro
+    );
 }
