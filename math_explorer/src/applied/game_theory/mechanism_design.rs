@@ -1,5 +1,6 @@
-use rand::Rng;
+use crate::pure_math::analysis::roots::{AnalysisError, Bisection, RootFinder};
 use rand::distributions::Distribution as RandDistribution;
+use rand::Rng;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 
@@ -73,30 +74,34 @@ impl MechanismDesign {
         lower_bound: f64,
         upper_bound: f64,
     ) -> f64 {
-        let mut low = lower_bound;
-        let mut high = upper_bound;
-        let mut mid = low;
+        let solver = Bisection::default();
+        match Self::optimal_reserve_price_with_solver(dist, lower_bound, upper_bound, &solver) {
+            Ok(root) => root,
+            Err(AnalysisError::ConvergenceError(best_guess)) => best_guess,
+            Err(AnalysisError::InvalidParameters(_)) => {
+                // Fallback for unbracketed roots to match legacy behavior
+                let j_low = dist.virtual_valuation(lower_bound);
+                if j_low > 0.0 {
+                    return lower_bound;
+                }
+                let j_high = dist.virtual_valuation(upper_bound);
+                if j_high < 0.0 {
+                    return upper_bound;
+                }
 
-        for _ in 0..50 {
-            mid = (low + high) / 2.0;
-            let j_val = dist.virtual_valuation(mid);
-
-            // Assuming regularity (J is increasing), if J(mid) > 0, we need smaller v (wait, J is increasing in v usually).
-            // J(v) = v - (1-F)/f. As v increases, 1-F decreases, f varies.
-            // For regular distributions, J is increasing.
-            // If J(mid) > 0, then the root is to the left? No.
-            // If J is increasing, and we want J(r) = 0.
-            // If J(mid) > 0, then we are to the RIGHT of the root. So we need to lower the search range.
-            // wait: J(r*) = 0.
-            // If mid > r*, then J(mid) > J(r*) = 0.
-            // So if J(mid) > 0, mid is too high.
-            if j_val > 0.0 {
-                high = mid;
-            } else {
-                low = mid;
+                (lower_bound + upper_bound) / 2.0
             }
         }
-        mid
+    }
+
+    /// Calculates the **Optimal Reserve Price** for a single-item auction using a custom solver.
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> Result<f64, AnalysisError> {
+        solver.find_root(|v| dist.virtual_valuation(v), lower_bound, upper_bound)
     }
 
     /// Estimates the expected revenue of an optimal auction with `n_bidders`
@@ -182,5 +187,21 @@ mod tests {
         let dist = Uniform::new(0.0, 1.0).unwrap();
         let revenue = MechanismDesign::simulate_optimal_revenue(&dist, 1, 10_000);
         assert!((revenue - 0.25).abs() < 0.02); // MC error margin
+    }
+
+    #[test]
+    fn test_optimal_reserve_unbracketed_fallback() {
+        // Uniform(0, 100). J(v) = 2v - 100. Root at 50.
+        let dist = Uniform::new(0.0, 100.0).unwrap();
+
+        // Search range [60, 100]. J(60)=20, J(100)=100. Both > 0.
+        // Should return lower bound (60) as J is increasing and positive.
+        let r = MechanismDesign::optimal_reserve_price(&dist, 60.0, 100.0);
+        assert!((r - 60.0).abs() < 1e-4);
+
+        // Search range [0, 40]. J(0)=-100, J(40)=-20. Both < 0.
+        // Should return upper bound (40) as J is increasing and negative.
+        let r = MechanismDesign::optimal_reserve_price(&dist, 0.0, 40.0);
+        assert!((r - 40.0).abs() < 1e-4);
     }
 }
