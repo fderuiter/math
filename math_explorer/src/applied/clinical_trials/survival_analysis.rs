@@ -84,19 +84,51 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
 /// Calculates a simple Hazard Ratio estimate based on incidence density.
 /// HR = (Events1 / TotalTime1) / (Events2 / TotalTime2)
 /// Note: This assumes constant hazard (exponential distribution), which is a simplification.
-pub fn estimate_hazard_ratio_simple(group1: &[Observation], group2: &[Observation]) -> f64 {
-    let events1 = group1.iter().filter(|o| o.event_occurred).count() as f64;
-    let time1: f64 = group1.iter().map(|o| o.time).sum();
+///
+/// # Returns
+/// * `Ok(f64)` - The hazard ratio.
+/// * `Err(&'static str)` - If calculation is impossible (e.g. zero total time).
+pub fn try_estimate_hazard_ratio(
+    group1: &[Observation],
+    group2: &[Observation],
+) -> Result<f64, &'static str> {
+    let process_group = |group: &[Observation]| -> Result<(f64, f64), &'static str> {
+        let mut events = 0.0;
+        let mut time = 0.0;
+        for obs in group {
+            if obs.time < 0.0 {
+                return Err("Negative time values encountered");
+            }
+            if obs.event_occurred {
+                events += 1.0;
+            }
+            time += obs.time;
+        }
+        Ok((events, time))
+    };
 
-    let events2 = group2.iter().filter(|o| o.event_occurred).count() as f64;
-    let time2: f64 = group2.iter().map(|o| o.time).sum();
+    let (events1, time1) = process_group(group1)?;
+    let (events2, time2) = process_group(group2)?;
 
-    if time1 == 0.0 || time2 == 0.0 || events2 == 0.0 {
-        return f64::NAN; // Should return Result, but keeping signature simple for now
+    if time1 <= 0.0 {
+        return Err("Group 1 total time is zero or negative");
+    }
+    if time2 <= 0.0 {
+        return Err("Group 2 total time is zero or negative");
+    }
+    if events2 == 0.0 {
+        return Err("No events in Group 2 (infinite Hazard Ratio)");
     }
 
     let rate1 = events1 / time1;
     let rate2 = events2 / time2;
 
-    rate1 / rate2
+    Ok(rate1 / rate2)
+}
+
+/// Legacy wrapper for `try_estimate_hazard_ratio`.
+/// Returns `f64::NAN` on error.
+#[deprecated(since = "0.2.0", note = "Use try_estimate_hazard_ratio instead")]
+pub fn estimate_hazard_ratio_simple(group1: &[Observation], group2: &[Observation]) -> f64 {
+    try_estimate_hazard_ratio(group1, group2).unwrap_or(f64::NAN)
 }
