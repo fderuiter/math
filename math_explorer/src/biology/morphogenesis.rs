@@ -290,10 +290,29 @@ impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
             // i=0: prev=curr, next=1 (if exists)
             // i=n-1: prev=n-2, next=curr
 
-            let (u_prev, v_prev) = if i > 0 { (u[i-1], v[i-1]) } else { (u_curr, v_curr) };
-            let (u_next, v_next) = if i < n - 1 { (u[i+1], v[i+1]) } else { (u_curr, v_curr) };
+            let (u_prev, v_prev) = if i > 0 {
+                (u[i - 1], v[i - 1])
+            } else {
+                (u_curr, v_curr)
+            };
+            let (u_next, v_next) = if i < n - 1 {
+                (u[i + 1], v[i + 1])
+            } else {
+                (u_curr, v_curr)
+            };
 
-            let (du, dv) = Self::calc_rates(self.d_u, self.d_v, &self.kinetics, u_prev, u_curr, u_next, v_prev, v_curr, v_next, inv_dx_sq);
+            let (du, dv) = Self::calc_rates(
+                self.d_u,
+                self.d_v,
+                &self.kinetics,
+                u_prev,
+                u_curr,
+                u_next,
+                v_prev,
+                v_curr,
+                v_next,
+                inv_dx_sq,
+            );
 
             d_state.u[i] = du;
             d_state.v[i] = dv;
@@ -354,7 +373,9 @@ impl<K: ReactionKinetics> EvolvingSystem<TuringState> for TuringSystem<K> {
                 (u_curr, v_curr)
             };
 
-            let (du, dv) = Self::calc_rates(d_u, d_v, kinetics, u_prev, u_curr, u_next, v_prev, v_curr, v_next, inv_dx_sq);
+            let (du, dv) = Self::calc_rates(
+                d_u, d_v, kinetics, u_prev, u_curr, u_next, v_prev, v_curr, v_next, inv_dx_sq,
+            );
 
             unsafe {
                 *next_u.get_unchecked_mut(i) = u_curr + dt * du;
@@ -375,7 +396,10 @@ impl<K: ReactionKinetics> EvolvingSystem<TuringState> for TuringSystem<K> {
                     let u_next = *u.get_unchecked(i + 1);
                     let v_next = *v.get_unchecked(i + 1);
 
-                    let (du, dv) = Self::calc_rates(d_u, d_v, kinetics, u_prev, u_curr, u_next, v_prev, v_curr, v_next, inv_dx_sq);
+                    let (du, dv) = Self::calc_rates(
+                        d_u, d_v, kinetics, u_prev, u_curr, u_next, v_prev, v_curr, v_next,
+                        inv_dx_sq,
+                    );
 
                     *next_u.get_unchecked_mut(i) = u_curr + dt * du;
                     *next_v.get_unchecked_mut(i) = v_curr + dt * dv;
@@ -400,7 +424,9 @@ impl<K: ReactionKinetics> EvolvingSystem<TuringState> for TuringSystem<K> {
                 let u_next = u_curr;
                 let v_next = v_curr;
 
-                let (du, dv) = Self::calc_rates(d_u, d_v, kinetics, u_prev, u_curr, u_next, v_prev, v_curr, v_next, inv_dx_sq);
+                let (du, dv) = Self::calc_rates(
+                    d_u, d_v, kinetics, u_prev, u_curr, u_next, v_prev, v_curr, v_next, inv_dx_sq,
+                );
 
                 *next_u.get_unchecked_mut(i) = u_curr + dt * du;
                 *next_v.get_unchecked_mut(i) = v_curr + dt * dv;
