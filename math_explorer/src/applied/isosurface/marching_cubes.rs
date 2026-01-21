@@ -109,7 +109,8 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Isos
     // Estimate capacity to avoid reallocations
     // A heuristic: surface area roughly scales with N^2.
     // Let's reserve enough for a sphere of radius N/3.
-    let estimated_triangles = grid.width * grid.height * 2;
+    // Profiler Note: Increased multiplier from 2 to 5 to avoid reallocations for typical dense meshes.
+    let estimated_triangles = grid.width * grid.height * 5;
     let mut triangles = Vec::with_capacity(estimated_triangles);
 
     let stride_y = grid.width;
