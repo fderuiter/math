@@ -1,18 +1,52 @@
 //! # Partition Functions
 //!
-//! This module implements functions related to integer partitions,
-//! focusing on the seven restricted partition functions introduced by Pushpa and Vasuki.
-//! The implementation is based on the paper "Arithmetic properties of partition
-//! functions introduced by Pushpa and Vasuki" by Nath and Saikia.
+//! This module implements restricted partition functions based on the work of Pushpa and Vasuki.
+//! It focuses on generating functions expressed as products of the function $f_k$.
+//!
+//! ## Mathematical Background
+//!
+//! The fundamental building block is the q-product:
+//! $$f_k = (q^k; q^k)_\infty = \prod_{n=1}^{\infty} (1 - q^{kn})$$
+//!
+//! The module implements several partition functions defined in terms of $f_k$, such as $P^*(n)$, $M(n)$, and $T^*(n)$.
+//! For example, the generating function for $P^*(n)$ is given by:
+//! $$\sum_{n=0}^{\infty} P^*(n)q^n = f_1^4 f_5^4$$
+//!
+//! These identities relate to Ramanujan's theta functions and have properties modulo primes (e.g., congruences).
+//!
+//! ## 🚀 Quick Start
+//!
+//! Compute the first few coefficients of the partition function $P^*(n)$.
+//!
+//! ```rust
+//! use math_explorer::pure_math::number_theory::partitions::{gen_p_star, QSeries};
+//!
+//! // Calculate coefficients up to q^10
+//! let precision = 11;
+//! let p_star = gen_p_star(precision);
+//!
+//! // The coefficient at index n is P*(n)
+//! println!("P*(0) = {}", p_star.get_coeff(0));
+//! println!("P*(1) = {}", p_star.get_coeff(1));
+//!
+//! assert_eq!(p_star.get_coeff(0), 1);
+//! ```
 
 // Define QSeries as a type alias for QSeries<i64> to preserve backward compatibility
 // and allow specific usage in this module.
 pub type QSeries = crate::pure_math::number_theory::q_series::QSeries<i64>;
 
-/// Computes the q-series for f_k = (q^k; q^k)_inf up to a given precision.
-/// f_k = product_{i>=1} (1 - q^(k*i))
+/// Computes the q-series for $f_k = (q^k; q^k)_\infty$ up to a given precision.
 ///
-/// This implementation uses Euler's Pentagonal Number Theorem for O(sqrt(N)) efficiency.
+/// $$f_k = \prod_{i=1}^{\infty} (1 - q^{ki})$$
+///
+/// This implementation uses **Euler's Pentagonal Number Theorem** to compute the series
+/// in $O(\sqrt{N})$ time, which is significantly faster than expanding the product term-by-term.
+///
+/// # Arguments
+///
+/// * `k` - The scaling factor for the power of q.
+/// * `precision` - The number of terms to compute (i.e., maximum power of q + 1).
 pub fn f_k(k: usize, precision: usize) -> QSeries {
     if k == 0 {
         return QSeries::from_vec(vec![0i64; precision]);
@@ -79,7 +113,9 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
     QSeries { coeffs }
 }
 
-/// Generating function for P*(n)
+/// Generating function for $P^*(n)$.
+///
+/// $$\sum P^*(n)q^n = f_1^4 f_5^4$$
 pub fn gen_p_star(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f5 = f_k(5, precision);
@@ -88,7 +124,9 @@ pub fn gen_p_star(precision: usize) -> QSeries {
     &f1_pow4 * &f5_pow4
 }
 
-/// Generating function for M(n)
+/// Generating function for $M(n)$.
+///
+/// $$\sum M(n)q^n = \frac{f_2^5 f_5^5}{f_1 f_{10}}$$
 pub fn gen_m(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -104,7 +142,9 @@ pub fn gen_m(precision: usize) -> QSeries {
     &numerator / &denominator
 }
 
-/// Generating function for T*(n)
+/// Generating function for $T^*(n)$.
+///
+/// $$\sum T^*(n)q^n = \frac{f_1^5 f_{10}^5}{f_2 f_5}$$
 pub fn gen_t_star(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -120,7 +160,9 @@ pub fn gen_t_star(precision: usize) -> QSeries {
     &numerator / &denominator
 }
 
-/// Generating function for A(n)
+/// Generating function for $A(n)$.
+///
+/// $$\sum A(n)q^n = \frac{f_2^6 f_7^6}{f_1^2}$$
 pub fn gen_a(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -135,7 +177,9 @@ pub fn gen_a(precision: usize) -> QSeries {
     &numerator / &f1_pow2
 }
 
-/// Generating function for B(n)
+/// Generating function for $B(n)$.
+///
+/// $$\sum B(n)q^n = \frac{f_1^6 f_{14}^4}{f_2^2 f_7^2}$$
 pub fn gen_b(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -153,7 +197,9 @@ pub fn gen_b(precision: usize) -> QSeries {
     &numerator / &denominator
 }
 
-/// Generating function for K(n)
+/// Generating function for $K(n)$.
+///
+/// $$\sum K(n)q^n = f_1^2 f_2^2 f_7^2 f_{14}^2$$
 pub fn gen_k(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -168,7 +214,9 @@ pub fn gen_k(precision: usize) -> QSeries {
     &(&(&f1_pow2 * &f2_pow2) * &f7_pow2) * &f14_pow2
 }
 
-/// Generating function for L(n)
+/// Generating function for $L(n)$.
+///
+/// $$\sum L(n)q^n = \frac{f_1^5 f_7^5}{f_2 f_{14}}$$
 pub fn gen_l(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);

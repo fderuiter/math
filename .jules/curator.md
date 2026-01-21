@@ -21,11 +21,12 @@
 **Outcome:** Users can now visualize the AI learning path and run a Transformer model in seconds.
 
 ## 2026-01-17 - Illuminating the Physics Modules
-**Gap:** The `physics::chaos` module was messy with implementation plans and lacked a clear visual explanation. The `physics::quantum` module was a complete "blank page" despite being used in the README's "Hello World".
+**Gap:** The `physics::chaos` module was messy with implementation plans and lacked a clear visual explanation. The `physics::quantum` module was a complete "blank page" despite being used in the READMEs "Hello World".
 **Strategy:**
 - Overhauled `physics/chaos/mod.rs` with a "Deterministic Chaos" primer, a Mermaid diagram of the Butterfly Effect, and a runnable Lorenz System example.
 - Overhauled `physics/quantum/mod.rs` with a "Time Evolution" workflow diagram and examples for Clebsch-Gordan coupling and Qubit evolution.
 **Outcome:** Users can now immediately grasp the core concepts of Chaos and Quantum mechanics without reading source code, and have copy-pasteable examples for both.
+
 ## 2025-05-18 - Visualizing High Energy Physics
 **Gap:** The `physics/high_energy` module was a collection of disconnected tools (relativity, radiation, fluids) without a unifying narrative or example.
 **Strategy:** Added a "Black Hole Observer" Quick Start example that combines General Relativity (gravity) and Special Relativity (motion). Also added a Mermaid diagram showing the interaction of these forces.
@@ -35,3 +36,11 @@
 **Gap:** The `generative_turbulence` module existed on disk but was excluded from the build ("Ghost Module") with no explanation for the user.
 **Strategy:** Added a `README.md` inside the module explaining the `tch` dependency constraint and instructions on how to enable it.
 **Outcome:** Converts a confusing "missing" feature into an opt-in power user feature.
+
+## 2025-05-19 - Visualizing Number Theory
+**Gap:** The `pure_math/number_theory` module was a "Visual Void" with a generic description and the `partitions` submodule was a "Black Box" of undocumented math.
+**Strategy:**
+- Overhauled `number_theory/mod.rs` with a Mermaid diagram and clear module breakdown.
+- Removed deprecated `is_prime_placeholder` ("Rot Check").
+- Added comprehensive docstrings and a "Quick Start" example to `partitions.rs`, explaining the Pushpa and Vasuki functions.
+**Outcome:** Users can now navigate the number theory tools and understand how to generate restricted partition coefficients.
