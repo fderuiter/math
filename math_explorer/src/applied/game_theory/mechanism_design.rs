@@ -1,6 +1,6 @@
 use crate::pure_math::analysis::roots::{AnalysisError, Bisection, RootFinder};
-use rand::distributions::Distribution as RandDistribution;
 use rand::Rng;
+use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 

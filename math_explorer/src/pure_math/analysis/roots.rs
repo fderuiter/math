@@ -18,7 +18,9 @@ pub enum AnalysisError {
 impl fmt::Display for AnalysisError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::ConvergenceError(guess) => write!(f, "Algorithm failed to converge. Best guess: {}", guess),
+            Self::ConvergenceError(guess) => {
+                write!(f, "Algorithm failed to converge. Best guess: {}", guess)
+            }
             Self::InvalidParameters(msg) => write!(f, "Invalid parameters: {}", msg),
         }
     }
@@ -94,9 +96,10 @@ impl RootFinder for Bisection {
 
         // Check if root is bracketed
         if f_low.signum() == f_high.signum() {
-             return Err(AnalysisError::InvalidParameters(
-                format!("Root not bracketed: f({})={}, f({})={}. Signs must differ.", low, f_low, high, f_high)
-            ));
+            return Err(AnalysisError::InvalidParameters(format!(
+                "Root not bracketed: f({})={}, f({})={}. Signs must differ.",
+                low, f_low, high, f_high
+            )));
         }
 
         let mut mid = low;
