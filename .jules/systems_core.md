@@ -29,3 +29,8 @@
 **Violation:** The `calculate_favoritism_score` function was a monolithic procedural block, mixing integration logic, linear algebra, and business rules, violating SRP and OCP.
 **Refactor:** Applied **Composition** and **Strategy Pattern**. Decomposed the scoring equation into granular `ScoringStrategy` components (`GiftStrategy`, `ProximityStrategy`, etc.) and orchestrated them via a `UnifiedFavoritismModel` struct.
 **Trade-off:** Increased file count and struct definitions, but achieved full separation of concerns and extensibility for individual scoring factors.
+
+## 2026-07-20 - Strategy Pattern for Root Finding
+**Violation:** The `optimal_reserve_price` function in `mechanism_design.rs` contained a hardcoded bisection loop with magic numbers (50 iterations), violating OCP and SRP by mixing auction logic with numerical analysis.
+**Refactor:** Applied the **Strategy Pattern**. Extracted a `RootFinder` trait and implemented `Bisection` in `pure_math::analysis::roots`. Refactored `mechanism_design.rs` to use Dependency Injection via `optimal_reserve_price_with_solver`.
+**Trade-off:** Extracted logic requires managing `AnalysisError`, but enables reusable solvers and strictly bracketed root finding. Legacy fallback behavior was explicitly preserved.
