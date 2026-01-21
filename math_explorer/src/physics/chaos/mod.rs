@@ -43,6 +43,7 @@
 //!
 //! ```rust
 //! use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
+//! use math_explorer::pure_math::analysis::ode::EvolvingSystem;
 //!
 //! // 1. Initialize the system with the "Butterfly" parameters
 //! // sigma=10, rho=28, beta=8/3
@@ -81,6 +82,8 @@ mod tests {
     use super::*;
     use approx::assert_relative_eq;
     use nalgebra as na;
+    // Import the trait so methods like `step` are available in tests
+    use crate::pure_math::analysis::ode::EvolvingSystem;
 
     #[test]
     fn test_logistic_chaos_lyapunov() {

@@ -10,6 +10,7 @@
 //!
 //! ```rust
 //! use math_explorer::epidemiology::{SIRModel, SIRState};
+//! use math_explorer::pure_math::analysis::ode::EvolvingSystem;
 //!
 //! // 1. Initialize the model
 //! // Population: 1000, Initial Infected: 10

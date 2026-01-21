@@ -156,6 +156,30 @@ pub trait OdeSystem<State: VectorOperations> {
     }
 }
 
+/// A trait for systems that evolve over time and manage their own state.
+///
+/// This trait extends `OdeSystem` by adding state management capabilities,
+/// allowing for uniform `step` and `step_with` implementations.
+pub trait EvolvingSystem<State: VectorOperations>: OdeSystem<State> {
+    /// Returns a reference to the current state.
+    fn state(&self) -> &State;
+
+    /// Returns a mutable reference to the current state.
+    fn state_mut(&mut self) -> &mut State;
+
+    /// Advances the system state by one time step `dt` using the default `RungeKutta4` solver.
+    fn step(&mut self, dt: f64) {
+        let next_state = RungeKutta4::step(self, 0.0, self.state(), dt);
+        self.state_mut().copy_from(&next_state);
+    }
+
+    /// Advances the system state by one time step `dt` using a provided solver strategy.
+    fn step_with<S: Solver<State>>(&mut self, solver: &S, dt: f64) {
+        let next_state = solver.solve(self, 0.0, self.state(), dt);
+        self.state_mut().copy_from(&next_state);
+    }
+}
+
 /// A trait defining a numerical ODE solver strategy.
 pub trait Solver<State: VectorOperations> {
     /// Advances the system state by one time step `dt`.

@@ -1,4 +1,5 @@
 use math_explorer::biology::morphogenesis::TuringSystem;
+use math_explorer::pure_math::analysis::ode::EvolvingSystem;
 use std::time::Instant;
 
 fn main() {
