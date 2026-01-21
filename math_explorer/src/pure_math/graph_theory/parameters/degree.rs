@@ -16,10 +16,14 @@ where
     let mut degeneracy = 0;
 
     while temp_graph.node_count() > 0 {
-        let min_degree_node = temp_graph
+        let min_degree_node_opt = temp_graph
             .node_indices()
-            .min_by_key(|&n| temp_graph.neighbors(n).count())
-            .unwrap();
+            .min_by_key(|&n| temp_graph.neighbors(n).count());
+
+        let min_degree_node = match min_degree_node_opt {
+            Some(n) => n,
+            None => break, // Should be unreachable given loop condition
+        };
 
         let degree = temp_graph.neighbors(min_degree_node).count();
         if degree > degeneracy {

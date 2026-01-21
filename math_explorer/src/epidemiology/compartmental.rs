@@ -1,4 +1,4 @@
-use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, VectorOperations};
+use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// State for the SIR Model.
@@ -73,6 +73,16 @@ pub struct SIRModel {
     pub gamma: f64,
 }
 
+impl TimeStepper<SIRState> for SIRModel {
+    fn get_state(&self) -> &SIRState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut SIRState {
+        &mut self.state
+    }
+}
+
 impl SIRModel {
     pub fn new(n: f64, i0: f64, beta: f64, gamma: f64) -> Self {
         Self {
@@ -89,12 +99,12 @@ impl SIRModel {
 
     /// Advances the state by dt using Runge-Kutta 4.
     pub fn step(&mut self, dt: f64) {
-        self.state = RungeKutta4::step(self, 0.0, &self.state, dt);
+        <Self as TimeStepper<SIRState>>::step(self, dt);
     }
 
     /// Advances the state by dt using a provided solver strategy.
     pub fn step_with<S: Solver<SIRState>>(&mut self, solver: &S, dt: f64) {
-        self.state = solver.solve(self, 0.0, &self.state, dt);
+        <Self as TimeStepper<SIRState>>::step_with(self, solver, dt);
     }
 }
 
@@ -193,6 +203,16 @@ pub struct SEIRModel {
     pub gamma: f64,
 }
 
+impl TimeStepper<SEIRState> for SEIRModel {
+    fn get_state(&self) -> &SEIRState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut SEIRState {
+        &mut self.state
+    }
+}
+
 impl SEIRModel {
     pub fn new(n: f64, i0: f64, beta: f64, sigma: f64, gamma: f64) -> Self {
         Self {
@@ -210,12 +230,12 @@ impl SEIRModel {
     }
 
     pub fn step(&mut self, dt: f64) {
-        self.state = RungeKutta4::step(self, 0.0, &self.state, dt);
+        <Self as TimeStepper<SEIRState>>::step(self, dt);
     }
 
     /// Advances the state by dt using a provided solver strategy.
     pub fn step_with<S: Solver<SEIRState>>(&mut self, solver: &S, dt: f64) {
-        self.state = solver.solve(self, 0.0, &self.state, dt);
+        <Self as TimeStepper<SEIRState>>::step_with(self, solver, dt);
     }
 }
 

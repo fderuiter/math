@@ -261,3 +261,33 @@ impl RungeKutta4 {
         solver.solve(system, t, state, dt)
     }
 }
+
+/// A trait for systems that can advance in time.
+///
+/// This trait abstracts over the `step` and `step_with` methods,
+/// reducing boilerplate in model implementations.
+pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
+    /// Returns a reference to the current state.
+    fn get_state(&self) -> &State;
+
+    /// Returns a mutable reference to the current state.
+    fn get_state_mut(&mut self) -> &mut State;
+
+    /// Advances the system by `dt` using the default Runge-Kutta 4 solver.
+    fn step(&mut self, dt: f64) {
+        // We assume the system is autonomous (time-invariant derivative) or
+        // tracks time internally if needed, hence passing 0.0 as time.
+        // For strictly time-dependent systems, `step` might need to track `t`.
+        // However, existing models pass 0.0, so we preserve that behavior.
+        let current_state = self.get_state().clone();
+        let new_state = RungeKutta4::step(self, 0.0, &current_state, dt);
+        *self.get_state_mut() = new_state;
+    }
+
+    /// Advances the system by `dt` using a provided solver.
+    fn step_with<S: Solver<State>>(&mut self, solver: &S, dt: f64) {
+        let current_state = self.get_state().clone();
+        let new_state = solver.solve(self, 0.0, &current_state, dt);
+        *self.get_state_mut() = new_state;
+    }
+}
