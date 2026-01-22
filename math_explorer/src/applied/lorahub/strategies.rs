@@ -2,7 +2,11 @@ use super::types::LoraStateDict;
 
 /// Strategy for combining multiple LoRA state dictionaries.
 pub trait CombinationStrategy {
-    fn combine(&self, modules: &[LoraStateDict], weights: &[f64]) -> Result<LoraStateDict, &'static str>;
+    fn combine(
+        &self,
+        modules: &[LoraStateDict],
+        weights: &[f64],
+    ) -> Result<LoraStateDict, &'static str>;
 }
 
 /// Strategy for calculating the objective score.
@@ -14,7 +18,11 @@ pub trait ObjectiveStrategy {
 pub struct LinearCombinationStrategy;
 
 impl CombinationStrategy for LinearCombinationStrategy {
-    fn combine(&self, modules: &[LoraStateDict], weights: &[f64]) -> Result<LoraStateDict, &'static str> {
+    fn combine(
+        &self,
+        modules: &[LoraStateDict],
+        weights: &[f64],
+    ) -> Result<LoraStateDict, &'static str> {
         if modules.is_empty() {
             return Err("Ensemble is empty; cannot combine.");
         }
