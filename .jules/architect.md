@@ -26,3 +26,8 @@
 **Problem:** `math_explorer/src/applied/isosurface/marching_cubes.rs` used manual component-wise arithmetic (e.g., `x + t * (x2 - x1)`) for vector interpolation and gradient calculation. This was verbose, error-prone, and obscured the mathematical intent.
 **Decision:** Applied "Traitification" to `Point3D` in `types.rs`, implementing `Add`, `Sub`, `Mul`, `Div`, `Neg`, and geometric helpers (`dot`, `cross`, `normalize`). Refactored `marching_cubes.rs` to use these operators.
 **Consequence:** The isosurface extraction logic is now significantly more readable and idiomatic ("Rust idioms"). Mathematical operations are expressed as vector algebra. Performance remains equivalent (inlined operations).
+
+## 2026-06-04 - [Turing System ODE Integration]
+**Problem:** `TuringSystem` in `morphogenesis.rs` tightly coupled the Reaction-Diffusion PDE model with a manual Euler integration loop. This prevented the use of advanced solvers (like RK4) defined in the core library and duplicated time-stepping logic.
+**Decision:** Applied "Traitification" by implementing the `OdeSystem` trait for `TuringSystem` and `VectorOperations` for `TuringState`. The `derivative` method was implemented to calculate the Laplacian and reaction rates, exposing the system dynamics to generic solvers.
+**Consequence:** `TuringSystem` can now be integrated using any solver implementing the `Solver` trait (e.g., `RungeKutta4`), allowing for better stability analysis and flexibility. The optimized manual `step` method is retained for performance in legacy use cases.
