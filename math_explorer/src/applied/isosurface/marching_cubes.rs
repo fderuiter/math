@@ -173,7 +173,7 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Isos
                 let corner_values = [v0, v1, v2, v3, v4, v5, v6, v7];
 
                 let mut cube_index = 0;
-                cube_index |= ((v0 < threshold) as usize) * 1;
+                cube_index |= (v0 < threshold) as usize;
                 cube_index |= ((v1 < threshold) as usize) * 2;
                 cube_index |= ((v2 < threshold) as usize) * 4;
                 cube_index |= ((v3 < threshold) as usize) * 8;
