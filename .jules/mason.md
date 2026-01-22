@@ -22,3 +22,7 @@
 ## 2026-06-15 - Decoupling Favoritism Scoring Factors
 **Violation:** Single Responsibility Principle (SRP) and Open/Closed Principle (OCP). The `calculate_favoritism_score_full` function was a monolithic block handling Proximity, Gifts, Personality, and Social factors, making it impossible to extend without modification.
 **Remedy:** Composition and Strategy Pattern. Created `UnifiedFavoritismModel` which composes individual `ScoringStrategy` components (`ProximityStrategy`, `GiftStrategy`, etc.). This allows extending the model with new factors while maintaining the core equation structure.
+
+## 2026-06-25 - Decoupling LoraHub Algorithms
+**Violation:** Open/Closed Principle (OCP). The `LoraEnsemble` hardcoded `combine` (weighted sum) and `evaluate_objective` (L1 Regularization), preventing extension for advanced merging techniques like SLERP or TIES.
+**Remedy:** Strategy Pattern. Extracted `CombinationStrategy` and `ObjectiveStrategy` traits. Implemented `LinearCombinationStrategy` and `L1RegularizationStrategy`. Refactored `LoraEnsemble` to use these strategies via dependency injection.
