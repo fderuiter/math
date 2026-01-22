@@ -34,3 +34,8 @@
 **Violation:** The `optimal_reserve_price` function in `mechanism_design.rs` contained a hardcoded bisection loop with magic numbers (50 iterations), violating OCP and SRP by mixing auction logic with numerical analysis.
 **Refactor:** Applied the **Strategy Pattern**. Extracted a `RootFinder` trait and implemented `Bisection` in `pure_math::analysis::roots`. Refactored `mechanism_design.rs` to use Dependency Injection via `optimal_reserve_price_with_solver`.
 **Trade-off:** Extracted logic requires managing `AnalysisError`, but enables reusable solvers and strictly bracketed root finding. Legacy fallback behavior was explicitly preserved.
+
+## 2026-10-27 - Extract Parameter Object for Hodgkin-Huxley
+**Violation:** The `HodgkinHuxleyModel` contained hardcoded constants (magic numbers) for conductances and potentials in its `derivative` method, violating the "Hard-coding Constraints" rule and preventing configuration for different neuron types.
+**Refactor:** Applied **Extract Parameter Object**. Created `HodgkinHuxleyParameters` struct to hold model coefficients. Updated `HodgkinHuxleyModel` and `HodgkinHuxleyNeuron` to use this configuration object.
+**Trade-off:** Added a new struct to the public API, but enabled full configurability of the neuron model (Composability) while maintaining default behavior for the Squid Giant Axon.

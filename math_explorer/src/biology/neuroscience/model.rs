@@ -1,6 +1,6 @@
 //! Mathematical model of the Hodgkin-Huxley equations.
 
-use super::types::HodgkinHuxleyState;
+use super::types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
 use crate::pure_math::analysis::ode::OdeSystem;
 
 /// The Hodgkin-Huxley system of differential equations.
@@ -8,15 +8,15 @@ use crate::pure_math::analysis::ode::OdeSystem;
 /// Defines the derivatives for the state variables $V, n, m, h$.
 #[derive(Debug, Clone, Copy)]
 pub struct HodgkinHuxleyModel {
-    /// Resting potential offset (mV).
-    pub v_rest: f64,
+    /// Parameters of the model (conductances, potentials).
+    pub params: HodgkinHuxleyParameters,
     /// External current injection ($\mu A/cm^2$).
     pub i_ext: f64,
 }
 
 impl HodgkinHuxleyModel {
-    pub fn new(v_rest: f64, i_ext: f64) -> Self {
-        Self { v_rest, i_ext }
+    pub fn new(params: HodgkinHuxleyParameters, i_ext: f64) -> Self {
+        Self { params, i_ext }
     }
 
     /// Rate constant $\alpha_n$ for Potassium activation.
@@ -67,13 +67,8 @@ impl HodgkinHuxleyModel {
 
 impl OdeSystem<HodgkinHuxleyState> for HodgkinHuxleyModel {
     fn derivative(&self, _t: f64, state: &HodgkinHuxleyState) -> HodgkinHuxleyState {
-        // Constants
-        let g_na = 120.0;
-        let e_na = self.v_rest + 115.0; // Standard offset from rest
-        let g_k = 36.0;
-        let e_k = self.v_rest - 12.0;
-        let g_l = 0.3;
-        let e_l = self.v_rest + 10.6;
+        // Unpack parameters
+        let p = &self.params;
 
         let v = state.v;
         let n = state.n;
@@ -81,17 +76,17 @@ impl OdeSystem<HodgkinHuxleyState> for HodgkinHuxleyModel {
         let h = state.h;
 
         // I_tot equation: I_ext - g_Na m^3 h (V - E_Na) - g_K n^4 (V - E_K) - g_L (V - E_L)
-        let i_na = g_na * m.powi(3) * h * (v - e_na);
-        let i_k = g_k * n.powi(4) * (v - e_k);
-        let i_l = g_l * (v - e_l);
+        let i_na = p.g_na * m.powi(3) * h * (v - p.e_na);
+        let i_k = p.g_k * n.powi(4) * (v - p.e_k);
+        let i_l = p.g_l * (v - p.e_l);
 
         let dv_dt = self.i_ext - i_na - i_k - i_l; // Assuming C_m = 1.0
 
         // Gating variable derivatives
         // dx/dt = alpha_x * (1 - x) - beta_x * x
-        let dn_dt = Self::alpha_n(v, self.v_rest) * (1.0 - n) - Self::beta_n(v, self.v_rest) * n;
-        let dm_dt = Self::alpha_m(v, self.v_rest) * (1.0 - m) - Self::beta_m(v, self.v_rest) * m;
-        let dh_dt = Self::alpha_h(v, self.v_rest) * (1.0 - h) - Self::beta_h(v, self.v_rest) * h;
+        let dn_dt = Self::alpha_n(v, p.v_rest) * (1.0 - n) - Self::beta_n(v, p.v_rest) * n;
+        let dm_dt = Self::alpha_m(v, p.v_rest) * (1.0 - m) - Self::beta_m(v, p.v_rest) * m;
+        let dh_dt = Self::alpha_h(v, p.v_rest) * (1.0 - h) - Self::beta_h(v, p.v_rest) * h;
 
         HodgkinHuxleyState {
             v: dv_dt,

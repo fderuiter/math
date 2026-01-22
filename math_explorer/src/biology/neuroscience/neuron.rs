@@ -1,7 +1,7 @@
 //! Public facade for the Hodgkin-Huxley neuron.
 
 use super::model::HodgkinHuxleyModel;
-use super::types::HodgkinHuxleyState;
+use super::types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
 use crate::pure_math::analysis::ode::{Euler, Solver};
 
 /// Represents the state of a Hodgkin-Huxley neuron.
@@ -17,25 +17,37 @@ pub struct HodgkinHuxleyNeuron {
     /// Gating variable for Sodium channel inactivation ($0 \le h \le 1$).
     pub h: f64,
 
-    /// Resting potential used for relative calculations (mV).
-    pub v_rest: f64,
+    /// Parameters for the neuron model.
+    pub params: HodgkinHuxleyParameters,
 }
 
 impl HodgkinHuxleyNeuron {
     /// Creates a new neuron state with the given initial membrane potential.
     /// Gating variables are initialized to their steady-state values at rest.
+    /// Uses default Hodgkin-Huxley parameters.
     ///
     /// # Arguments
     /// * `v_initial` - Initial membrane potential (typically -65.0 mV).
     pub fn new(v_initial: f64) -> Self {
         // Initialize gating variables to standard resting values approx.
-        let v_rest = -65.0;
+        let params = HodgkinHuxleyParameters::default();
         Self {
             v: v_initial,
             n: 0.32,
             m: 0.05,
             h: 0.6,
-            v_rest,
+            params,
+        }
+    }
+
+    /// Creates a new neuron with custom parameters.
+    pub fn new_with_params(v_initial: f64, params: HodgkinHuxleyParameters) -> Self {
+        Self {
+            v: v_initial,
+            n: 0.32,
+            m: 0.05,
+            h: 0.6,
+            params,
         }
     }
 
@@ -63,7 +75,7 @@ impl HodgkinHuxleyNeuron {
         };
 
         // Create the model with current parameters
-        let model = HodgkinHuxleyModel::new(self.v_rest, i_ext);
+        let model = HodgkinHuxleyModel::new(self.params, i_ext);
 
         // Solve using the provided solver
         let new_state = solver.solve(&model, 0.0, &state, dt);
