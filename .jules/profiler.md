@@ -115,3 +115,21 @@ Benchmark `profile_isosurface` (Sphere SDF 128x128x128):
 - Before: ~26.5ms
 - After: ~25.6ms
 - Speedup: ~3.4% (Eliminated reallocations)
+
+## 2026-10-30 - [Optimization] **Bottleneck:** Redundant Initialization & Branches in Marching Cubes **Strategy:** Deferred Init & Branchless Logic **Gain:** ~7.2% Time Saved (27.6ms -> 25.6ms)
+
+**Bottleneck:**
+The `extract_isosurface` inner loop runs 2 million times (for 128^3).
+1. `corner_pos` and `corner_normals` (48 floats) were zero-initialized for *every* voxel, even though ~80% are empty and skipped immediately.
+2. `cube_index` calculation involved 8 conditional branches (`if v < threshold`) per voxel, causing potential pipeline stalls.
+
+**Strategy:**
+1. **Deferred Initialization:** Moved the declaration and initialization of `corner_pos` and `corner_normals` *after* the `edge_flags == 0` check. This eliminates initialization overhead for empty voxels.
+2. **Branchless Logic:** Replaced `if` checks with bitwise arithmetic (`((v < threshold) as usize) * bit`) to compute `cube_index` without branching.
+3. **Direct Array Init:** Initialized `corner_values` directly from loaded data instead of zero-filling then assigning.
+
+**Gain:**
+Benchmark `profile_isosurface` (Sphere SDF 128x128x128):
+- Before: ~27.6ms
+- After: ~25.6ms
+- Speedup: ~7.2%
