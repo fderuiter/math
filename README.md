@@ -135,6 +135,11 @@ let score = calculate_favoritism_score(&inputs);
 println!("Favoritism Score: {}", score); // Higher is better
 ```
 
+### 🛠️ Applied Mathematics: LoraHub
+Automated merging of Low-Rank Adaptation (LoRA) modules using the Strategy Pattern.
+
+*(See `math_explorer/src/applied/lorahub/mod.rs` for a runnable example of model ensemble composition)*
+
 ### 🌌 Physics: Chaos Theory
 Explore the Lorenz System and Lyapunov exponents.
 

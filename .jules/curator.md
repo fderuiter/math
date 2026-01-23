@@ -44,3 +44,8 @@
 - Removed deprecated `is_prime_placeholder` ("Rot Check").
 - Added comprehensive docstrings and a "Quick Start" example to `partitions.rs`, explaining the Pushpa and Vasuki functions.
 **Outcome:** Users can now navigate the number theory tools and understand how to generate restricted partition coefficients.
+
+## 2025-05-20 - Documenting LoraHub
+**Gap:** `lorahub` was a "Black Box" module with sparse documentation, despite being a key AI feature. The Strategy Pattern implementation was hidden.
+**Strategy:** Overhauled `lorahub/mod.rs` with a "Model Merging" primer, a Mermaid Class Diagram of the Strategy Pattern, and a runnable Quick Start example for combining LoRA weights. Added a Deep Dive section to `README.md`.
+**Outcome:** Users can now understand how to programmatically merge model adapters without reading the source code.
