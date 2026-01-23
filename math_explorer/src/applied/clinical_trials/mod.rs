@@ -69,7 +69,10 @@
 
 pub mod analysis;
 pub mod design;
+pub mod error;
 pub mod hypothesis_testing;
 pub mod sample_size;
 pub mod survival_analysis;
 pub mod types;
+
+pub use error::SurvivalError;

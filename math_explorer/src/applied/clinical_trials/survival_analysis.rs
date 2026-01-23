@@ -85,19 +85,21 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
 /// HR = (Events1 / TotalTime1) / (Events2 / TotalTime2)
 /// Note: This assumes constant hazard (exponential distribution), which is a simplification.
 ///
+use super::error::SurvivalError;
+
 /// # Returns
 /// * `Ok(f64)` - The hazard ratio.
-/// * `Err(&'static str)` - If calculation is impossible (e.g. zero total time).
+/// * `Err(SurvivalError)` - If calculation is impossible (e.g. zero total time).
 pub fn try_estimate_hazard_ratio(
     group1: &[Observation],
     group2: &[Observation],
-) -> Result<f64, &'static str> {
-    let process_group = |group: &[Observation]| -> Result<(f64, f64), &'static str> {
+) -> Result<f64, SurvivalError> {
+    let process_group = |group: &[Observation]| -> Result<(f64, f64), SurvivalError> {
         let mut events = 0.0;
         let mut time = 0.0;
         for obs in group {
             if obs.time < 0.0 {
-                return Err("Negative time values encountered");
+                return Err(SurvivalError::NegativeTime);
             }
             if obs.event_occurred {
                 events += 1.0;
@@ -111,13 +113,19 @@ pub fn try_estimate_hazard_ratio(
     let (events2, time2) = process_group(group2)?;
 
     if time1 <= 0.0 {
-        return Err("Group 1 total time is zero or negative");
+        return Err(SurvivalError::ZeroTotalTime(
+            "Group 1 total time is zero or negative".to_string(),
+        ));
     }
     if time2 <= 0.0 {
-        return Err("Group 2 total time is zero or negative");
+        return Err(SurvivalError::ZeroTotalTime(
+            "Group 2 total time is zero or negative".to_string(),
+        ));
     }
     if events2 == 0.0 {
-        return Err("No events in Group 2 (infinite Hazard Ratio)");
+        return Err(SurvivalError::NoEvents(
+            "No events in Group 2 (infinite Hazard Ratio)".to_string(),
+        ));
     }
 
     let rate1 = events1 / time1;
