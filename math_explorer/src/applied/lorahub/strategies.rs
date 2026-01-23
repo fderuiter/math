@@ -47,7 +47,13 @@ impl CombinationStrategy for LinearCombinationStrategy {
                     if final_tensor.shape() != tensor.shape() {
                         return Err("Mismatched tensor shapes for the same key.");
                     }
-                    *final_tensor += tensor * weights[i];
+                    // Optimized in-place addition to avoid allocating intermediate matrix
+                    let weight = weights[i];
+                    let final_slice = final_tensor.as_mut_slice();
+                    let other_slice = tensor.as_slice();
+                    for (f, t) in final_slice.iter_mut().zip(other_slice.iter()) {
+                        *f += *t * weight;
+                    }
                 } else {
                     return Err("Mismatched keys between LoRA modules.");
                 }
