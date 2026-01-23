@@ -26,3 +26,8 @@
 **Problem:** `math_explorer/src/applied/isosurface/marching_cubes.rs` used manual component-wise arithmetic (e.g., `x + t * (x2 - x1)`) for vector interpolation and gradient calculation. This was verbose, error-prone, and obscured the mathematical intent.
 **Decision:** Applied "Traitification" to `Point3D` in `types.rs`, implementing `Add`, `Sub`, `Mul`, `Div`, `Neg`, and geometric helpers (`dot`, `cross`, `normalize`). Refactored `marching_cubes.rs` to use these operators.
 **Consequence:** The isosurface extraction logic is now significantly more readable and idiomatic ("Rust idioms"). Mathematical operations are expressed as vector algebra. Performance remains equivalent (inlined operations).
+
+## 2026-06-04 - [Turing System Standardization]
+**Problem:** `TuringSystem` in `morphogenesis.rs` used a bespoke, manual Euler integration step, preventing the use of higher-order solvers (RK4) and decoupling from the analysis framework.
+**Decision:** Implemented `VectorOperations` for `TuringState` and `OdeSystem` for `TuringSystem`. Maintained the legacy `step` for backward compatibility/performance but enabled generic solver usage.
+**Consequence:** `TuringSystem` can now be driven by any solver in `pure_math::analysis::ode`. Logic for `derivative` had to be duplicated/adapted from `step` to fit the `OdeSystem` interface.
