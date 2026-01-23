@@ -1,5 +1,6 @@
 //! Type definitions for clinical trials.
 
+use std::cmp::Ordering;
 use std::fmt;
 
 /// Errors that can occur during clinical trial analysis.
@@ -127,5 +128,64 @@ impl GroupData {
         let m = self.mean();
         let sum_sq_diff: f64 = self.data.iter().map(|x| (x - m).powi(2)).sum();
         sum_sq_diff / (self.n() - 1) as f64
+    }
+}
+
+/// A value object representing a non-negative time duration for survival analysis.
+///
+/// Ensures that time is always >= 0.0 and not NaN, allowing for safe sorting and
+/// comparison without runtime validity checks elsewhere.
+#[derive(Debug, Clone, Copy)]
+pub struct SurvivalTime(f64);
+
+impl SurvivalTime {
+    /// Creates a new `SurvivalTime`.
+    ///
+    /// # Errors
+    /// Returns `ClinicalTrialError::InvalidData` if `t` is negative or NaN.
+    pub fn new(t: f64) -> Result<Self, ClinicalTrialError> {
+        if t.is_nan() {
+            return Err(ClinicalTrialError::InvalidData(
+                "Time cannot be NaN".to_string(),
+            ));
+        }
+        if t < 0.0 {
+            return Err(ClinicalTrialError::InvalidData(
+                "Time cannot be negative".to_string(),
+            ));
+        }
+        Ok(Self(t))
+    }
+
+    /// Returns the underlying f64 value.
+    pub fn as_f64(&self) -> f64 {
+        self.0
+    }
+}
+
+impl PartialEq for SurvivalTime {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Eq for SurvivalTime {}
+
+impl PartialOrd for SurvivalTime {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for SurvivalTime {
+    fn cmp(&self, other: &Self) -> Ordering {
+        // Safe unwrap because we rejected NaN in new()
+        self.0.partial_cmp(&other.0).unwrap()
+    }
+}
+
+impl fmt::Display for SurvivalTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }

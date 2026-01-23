@@ -1,26 +1,27 @@
 use math_explorer::applied::clinical_trials::survival_analysis::{
     Observation, try_estimate_hazard_ratio,
 };
+use math_explorer::applied::clinical_trials::types::SurvivalTime;
 
 #[test]
 fn test_hazard_ratio_valid() {
     let group1 = vec![
         Observation {
-            time: 10.0,
+            time: SurvivalTime::new(10.0).unwrap(),
             event_occurred: true,
         },
         Observation {
-            time: 20.0,
+            time: SurvivalTime::new(20.0).unwrap(),
             event_occurred: false,
         },
     ];
     let group2 = vec![
         Observation {
-            time: 5.0,
+            time: SurvivalTime::new(5.0).unwrap(),
             event_occurred: true,
         },
         Observation {
-            time: 5.0,
+            time: SurvivalTime::new(5.0).unwrap(),
             event_occurred: true,
         },
     ];
@@ -33,7 +34,7 @@ fn test_hazard_ratio_valid() {
 #[test]
 fn test_hazard_ratio_error() {
     let group1 = vec![Observation {
-        time: 10.0,
+        time: SurvivalTime::new(10.0).unwrap(),
         event_occurred: true,
     }];
     let group_empty = vec![];
@@ -44,17 +45,11 @@ fn test_hazard_ratio_error() {
 }
 
 #[test]
-fn test_hazard_ratio_negative_time() {
-    let group1 = vec![Observation {
-        time: -10.0,
-        event_occurred: true,
-    }];
-    let group2 = vec![Observation {
-        time: 10.0,
-        event_occurred: true,
-    }];
-
-    let res = try_estimate_hazard_ratio(&group1, &group2);
-    assert!(res.is_err());
-    assert_eq!(res.unwrap_err(), "Negative time values encountered");
+fn test_survival_time_invariants() {
+    // We cannot construct an Observation with negative time anymore.
+    // So we test the type constructor directly.
+    assert!(SurvivalTime::new(-10.0).is_err());
+    assert!(SurvivalTime::new(f64::NAN).is_err());
+    assert!(SurvivalTime::new(0.0).is_ok());
+    assert!(SurvivalTime::new(10.0).is_ok());
 }

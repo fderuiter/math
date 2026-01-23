@@ -1,8 +1,8 @@
-use std::cmp::Ordering;
+use super::types::SurvivalTime;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Observation {
-    pub time: f64,
+    pub time: SurvivalTime,
     pub event_occurred: bool, // true if event (e.g., death), false if censored
 }
 
@@ -21,21 +21,11 @@ pub struct TimePoint {
 /// * `observations` - A list of observations (time, event status).
 pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     let mut obs = observations.to_vec();
-    // Sort by time. If times are equal, put events before censored (conservative).
-    obs.sort_by(|a, b| {
-        if (a.time - b.time).abs() < 1e-9 {
-            // Equal time: events come first?
-            // Standard KM handles ties. Usually event is counted against risk set.
-            // If censored at T, they are in risk set at T? Yes.
-            // If event at T, they are in risk set at T.
-            // Order doesn't matter for risk set calculation if we group by time.
-            Ordering::Equal
-        } else if a.time < b.time {
-            Ordering::Less
-        } else {
-            Ordering::Greater
-        }
-    });
+    // Sort by time using SurvivalTime's Ord implementation.
+    // For ties, `event_occurred` (bool) breaks the tie (false < true).
+    // This puts censored events before actual events if they happen at the exact same float time,
+    // but the grouping logic below handles all events at "time t" together regardless of order.
+    obs.sort();
 
     let mut curve = Vec::new();
     let mut current_survival = 1.0;
@@ -51,7 +41,9 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
         let mut n_censored = 0;
 
         // Process all events at this time t
-        while i < obs.len() && (obs[i].time - t).abs() < 1e-9 {
+        // We use tolerance check for time grouping to handle float precision issues,
+        // even though we sorted nicely.
+        while i < obs.len() && (obs[i].time.as_f64() - t.as_f64()).abs() < 1e-9 {
             if obs[i].event_occurred {
                 n_events += 1;
             } else {
@@ -67,7 +59,7 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
         }
 
         curve.push(TimePoint {
-            time: t,
+            time: t.as_f64(),
             survival_probability: current_survival,
             n_at_risk,
             n_events,
@@ -96,13 +88,11 @@ pub fn try_estimate_hazard_ratio(
         let mut events = 0.0;
         let mut time = 0.0;
         for obs in group {
-            if obs.time < 0.0 {
-                return Err("Negative time values encountered");
-            }
+            // SurvivalTime guarantees non-negativity.
             if obs.event_occurred {
                 events += 1.0;
             }
-            time += obs.time;
+            time += obs.time.as_f64();
         }
         Ok((events, time))
     };

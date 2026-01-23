@@ -39,3 +39,8 @@
 **Violation:** The `HodgkinHuxleyModel` contained hardcoded constants (magic numbers) for conductances and potentials in its `derivative` method, violating the "Hard-coding Constraints" rule and preventing configuration for different neuron types.
 **Refactor:** Applied **Extract Parameter Object**. Created `HodgkinHuxleyParameters` struct to hold model coefficients. Updated `HodgkinHuxleyModel` and `HodgkinHuxleyNeuron` to use this configuration object.
 **Trade-off:** Added a new struct to the public API, but enabled full configurability of the neuron model (Composability) while maintaining default behavior for the Squid Giant Axon.
+
+## 2026-11-15 - Value Object for Survival Analysis
+**Violation:** The `Observation` struct in `survival_analysis.rs` used raw `f64` for `time`, allowing invalid (negative) values and necessitating repeated runtime validation logic in estimators, violating DRY and "Parse, don't validate".
+**Refactor:** Applied **Value Object** pattern (Newtype). Introduced `SurvivalTime` struct that enforces non-negativity and NaN rejection on construction. Updated `Observation` to use this strong type.
+**Trade-off:** Minimal boilerplate for the new type, but achieved compile-time enforcement of domain invariants and simplified downstream algorithms (removed validation checks).
