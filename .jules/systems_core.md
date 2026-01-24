@@ -39,3 +39,8 @@
 **Violation:** The `HodgkinHuxleyModel` contained hardcoded constants (magic numbers) for conductances and potentials in its `derivative` method, violating the "Hard-coding Constraints" rule and preventing configuration for different neuron types.
 **Refactor:** Applied **Extract Parameter Object**. Created `HodgkinHuxleyParameters` struct to hold model coefficients. Updated `HodgkinHuxleyModel` and `HodgkinHuxleyNeuron` to use this configuration object.
 **Trade-off:** Added a new struct to the public API, but enabled full configurability of the neuron model (Composability) while maintaining default behavior for the Squid Giant Axon.
+
+## 2026-10-28 - Dependency Inversion for Turing Morphogenesis
+**Violation:** `TuringSystem` was a closed box with a hardcoded, fused Euler/Finite-Difference solver in its `step` method, violating OCP and DIP, preventing the use of higher-order solvers like RK4.
+**Refactor:** Applied **Dependency Inversion**. Implemented `OdeSystem` and `TimeStepper` for `TuringSystem`. Extracted the derivative logic (Laplacian + Reaction) into `derivative_in_place`.
+**Trade-off:** Duplicated the derivative logic (once in the optimized legacy `step`, once in the safe `OdeSystem` impl) to preserve the original highly-optimized performance path while opening the system to generic solvers.

@@ -6,6 +6,9 @@
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
 
+use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
+
 /// Defines the reaction kinetics for a 2-component reaction-diffusion system.
 pub trait ReactionKinetics {
     /// Calculates the reaction rates for activator u and inhibitor v.
@@ -58,10 +61,82 @@ impl ReactionKinetics for SchnakenbergKinetics {
 ///
 /// This struct encapsulates the concentration vectors for the activator and inhibitor,
 /// protecting them from invalid resizing while providing safe access.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TuringState {
     u: Vec<f64>,
     v: Vec<f64>,
+}
+
+impl Add for TuringState {
+    type Output = Self;
+
+    fn add(mut self, rhs: Self) -> Self {
+        for (a, b) in self.u.iter_mut().zip(rhs.u.iter()) {
+            *a += b;
+        }
+        for (a, b) in self.v.iter_mut().zip(rhs.v.iter()) {
+            *a += b;
+        }
+        self
+    }
+}
+
+impl AddAssign for TuringState {
+    fn add_assign(&mut self, rhs: Self) {
+        for (a, b) in self.u.iter_mut().zip(rhs.u.iter()) {
+            *a += b;
+        }
+        for (a, b) in self.v.iter_mut().zip(rhs.v.iter()) {
+            *a += b;
+        }
+    }
+}
+
+impl Mul<f64> for TuringState {
+    type Output = Self;
+
+    fn mul(mut self, scalar: f64) -> Self {
+        for a in self.u.iter_mut() {
+            *a *= scalar;
+        }
+        for a in self.v.iter_mut() {
+            *a *= scalar;
+        }
+        self
+    }
+}
+
+impl MulAssign<f64> for TuringState {
+    fn mul_assign(&mut self, scalar: f64) {
+        for a in self.u.iter_mut() {
+            *a *= scalar;
+        }
+        for a in self.v.iter_mut() {
+            *a *= scalar;
+        }
+    }
+}
+
+impl VectorOperations for TuringState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        for (a, b) in self.u.iter_mut().zip(other.u.iter()) {
+            *a += b * scale;
+        }
+        for (a, b) in self.v.iter_mut().zip(other.v.iter()) {
+            *a += b * scale;
+        }
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        if self.u.len() != other.u.len() {
+            self.u.resize(other.u.len(), 0.0);
+        }
+        if self.v.len() != other.v.len() {
+            self.v.resize(other.v.len(), 0.0);
+        }
+        self.u.copy_from_slice(&other.u);
+        self.v.copy_from_slice(&other.v);
+    }
 }
 
 impl TuringState {
@@ -263,5 +338,68 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
+    }
+}
+
+impl<K: ReactionKinetics> TimeStepper<TuringState> for TuringSystem<K> {
+    fn get_state(&self) -> &TuringState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut TuringState {
+        &mut self.state
+    }
+}
+
+impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
+    fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
+        let mut out = TuringState::new(state.len());
+        self.derivative_in_place(t, state, &mut out);
+        out
+    }
+
+    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
+        let n = state.len();
+        if n == 0 {
+            return;
+        }
+
+        // Resize output if necessary
+        if out.len() != n {
+            out.u.resize(n, 0.0);
+            out.v.resize(n, 0.0);
+        }
+
+        let dx_sq = self.dx * self.dx;
+        let inv_dx_sq = 1.0 / dx_sq;
+
+        let u = &state.u;
+        let v = &state.v;
+        let out_u = &mut out.u;
+        let out_v = &mut out.v;
+
+        for i in 0..n {
+            // Safe boundary handling with periodic or Neumann conditions?
+            // The legacy implementation uses:
+            // i=0: prev=curr (Neumann/No Flux condition u_{-1} = u_0)
+            // i=n-1: next=curr (Neumann/No Flux condition u_n = u_{n-1})
+
+            let u_curr = u[i];
+            let v_curr = v[i];
+
+            let u_prev = if i == 0 { u_curr } else { u[i - 1] };
+            let v_prev = if i == 0 { v_curr } else { v[i - 1] };
+
+            let u_next = if i == n - 1 { u_curr } else { u[i + 1] };
+            let v_next = if i == n - 1 { v_curr } else { v[i + 1] };
+
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+
+            out_u[i] = self.d_u * lap_u + reaction_u;
+            out_v[i] = self.d_v * lap_v + reaction_v;
+        }
     }
 }
