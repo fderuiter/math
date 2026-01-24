@@ -25,6 +25,21 @@ pub trait DifferentiableNeRF: NeRFModel {
 /// Input: Weights theta, Gradients nabla_theta, Learning Rate eta.
 /// Operation: Update weights (e.g., using Adam optimizer).
 /// Output: Updated NeRF Model.
+
+/// Defines a strategy for updating model parameters based on gradients.
+pub trait Optimizer {
+    /// Performs a single optimization step.
+    ///
+    /// # Arguments
+    /// * `params` - Current model parameters.
+    /// * `grads` - Gradients w.r.t the parameters.
+    ///
+    /// # Returns
+    /// * `Ok(DMatrix<f64>)` - The updated parameters.
+    /// * `Err(AIError)` - If dimensions mismatch.
+    fn step(&mut self, params: &DMatrix<f64>, grads: &DMatrix<f64>) -> Result<DMatrix<f64>, AIError>;
+}
+
 /// Simplified Adam implementation for a single parameter tensor (e.g., NeRF weights).
 /// theta_{t+1} = theta_t - eta * m_t / (sqrt(v_t) + epsilon)
 pub struct AdamOptimizer {
@@ -50,12 +65,22 @@ impl AdamOptimizer {
         }
     }
 
-    /// Performs a single optimization step.
+    /// Performs a single optimization step (Delegate to Trait Impl).
     ///
     /// # Returns
     /// * `Ok(DMatrix<f64>)` - The updated parameters.
     /// * `Err(AIError)` - If dimensions mismatch.
     pub fn step(
+        &mut self,
+        params: &DMatrix<f64>,
+        grads: &DMatrix<f64>,
+    ) -> Result<DMatrix<f64>, AIError> {
+        <Self as Optimizer>::step(self, params, grads)
+    }
+}
+
+impl Optimizer for AdamOptimizer {
+    fn step(
         &mut self,
         params: &DMatrix<f64>,
         grads: &DMatrix<f64>,
@@ -102,6 +127,56 @@ impl AdamOptimizer {
         let update_term = m_hat.component_div(&v_hat.map(|x| x.sqrt() + self.epsilon));
 
         Ok(params - update_term * self.learning_rate)
+    }
+}
+
+/// Stochastic Gradient Descent (SGD) with Momentum.
+///
+/// v_{t+1} = momentum * v_t + grads
+/// theta_{t+1} = theta_t - lr * v_{t+1}
+pub struct SgdOptimizer {
+    pub learning_rate: f64,
+    pub momentum: f64,
+    pub velocity: Option<DMatrix<f64>>,
+}
+
+impl SgdOptimizer {
+    pub fn new(learning_rate: f64, momentum: f64) -> Self {
+        Self {
+            learning_rate,
+            momentum,
+            velocity: None,
+        }
+    }
+}
+
+impl Optimizer for SgdOptimizer {
+    fn step(
+        &mut self,
+        params: &DMatrix<f64>,
+        grads: &DMatrix<f64>,
+    ) -> Result<DMatrix<f64>, AIError> {
+        if params.shape() != grads.shape() {
+            return Err(AIError::DimensionMismatch {
+                expected: format!("{:?}", params.shape()),
+                got: format!("{:?}", grads.shape()),
+            });
+        }
+
+        if self.velocity.is_none() {
+            self.velocity = Some(DMatrix::zeros(params.nrows(), params.ncols()));
+        }
+
+        let v = self
+            .velocity
+            .as_mut()
+            .expect("Velocity should be initialized");
+
+        // v = momentum * v + g
+        *v = &*v * self.momentum + grads;
+
+        // theta = theta - lr * v
+        Ok(params - &*v * self.learning_rate)
     }
 }
 

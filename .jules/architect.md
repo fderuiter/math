@@ -26,3 +26,8 @@
 **Problem:** `math_explorer/src/applied/isosurface/marching_cubes.rs` used manual component-wise arithmetic (e.g., `x + t * (x2 - x1)`) for vector interpolation and gradient calculation. This was verbose, error-prone, and obscured the mathematical intent.
 **Decision:** Applied "Traitification" to `Point3D` in `types.rs`, implementing `Add`, `Sub`, `Mul`, `Div`, `Neg`, and geometric helpers (`dot`, `cross`, `normalize`). Refactored `marching_cubes.rs` to use these operators.
 **Consequence:** The isosurface extraction logic is now significantly more readable and idiomatic ("Rust idioms"). Mathematical operations are expressed as vector algebra. Performance remains equivalent (inlined operations).
+
+## 2026-10-24 - [Refactor AI Optimizer with Strategy Pattern]
+**Problem:** `math_explorer/src/ai/sds/training.rs` contained a concrete `AdamOptimizer` struct with hardcoded update logic. This prevented the easy addition of other optimization algorithms (like SGD or RMSProp) and violated the Open/Closed Principle.
+**Decision:** Applied the **Strategy Pattern**. Defined an `Optimizer` trait with a `step` method. Refactored `AdamOptimizer` to implement this trait and added a new `SgdOptimizer` implementation.
+**Consequence:** The optimization logic is now decoupled from the specific algorithm. New optimizers can be added by simply implementing the trait. Existing code remains compatible as `AdamOptimizer` retains a delegation method.

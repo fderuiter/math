@@ -1,4 +1,4 @@
-use crate::ai::sds::training::AdamOptimizer;
+use crate::ai::sds::training::{AdamOptimizer, Optimizer, SgdOptimizer};
 use approx::assert_relative_eq;
 use nalgebra::DMatrix;
 
@@ -26,4 +26,26 @@ fn test_adam_step() {
     // Exact values might differ slightly due to float precision and epsilon
     assert!(new_params[(0, 0)] < 0.5);
     assert_relative_eq!(new_params[(0, 0)], 0.4, epsilon = 1e-4);
+}
+
+#[test]
+fn test_sgd_step() {
+    let rows = 2;
+    let cols = 2;
+    let mut optimizer = SgdOptimizer::new(0.1, 0.9);
+
+    let params = DMatrix::from_element(rows, cols, 0.5);
+    let grads = DMatrix::from_element(rows, cols, 0.1);
+
+    // First step
+    // v = 0.9 * 0 + 0.1 = 0.1
+    // theta = 0.5 - 0.1 * 0.1 = 0.49
+    let new_params_1 = optimizer.step(&params, &grads).unwrap();
+    assert_relative_eq!(new_params_1[(0, 0)], 0.49, epsilon = 1e-6);
+
+    // Second step
+    // v = 0.9 * 0.1 + 0.1 = 0.09 + 0.1 = 0.19
+    // theta = 0.49 - 0.1 * 0.19 = 0.49 - 0.019 = 0.471
+    let new_params_2 = optimizer.step(&new_params_1, &grads).unwrap();
+    assert_relative_eq!(new_params_2[(0, 0)], 0.471, epsilon = 1e-6);
 }
