@@ -115,3 +115,22 @@ Benchmark `profile_isosurface` (Sphere SDF 128x128x128):
 - Before: ~26.5ms
 - After: ~25.6ms
 - Speedup: ~3.4% (Eliminated reallocations)
+
+## 2026-10-30 - [Optimization] **Bottleneck:** Ising Model Metropolis Loop Overhead **Strategy:** Modulo Removal & Inlining **Gain:** 27% Time Saved (0.73s -> 0.53s)
+
+**Bottleneck:**
+The `metropolis_step` function in `physics::stat_mech::ising` had significant overhead per spin flip:
+1.  **Modulo Arithmetic:** Used `%` operator 4 times per step for periodic boundary conditions. Modulo is computationally expensive (equivalent to division).
+2.  **Function Call Overhead:** `get`, `set`, and `metropolis_step` were not inlined, preventing the compiler from optimizing the hot loop.
+3.  **RNG Initialization:** `rand::thread_rng()` was called inside the spin loop (via `metropolis_step`), adding initialization checks per step.
+
+**Strategy:**
+1.  **Modulo Removal:** Replaced `%` with conditional branches (`if x == 0 { width-1 } else { x-1 }`) to handle boundaries. Branch prediction handles the common case (interior) efficiently.
+2.  **Inlining:** Added `#[inline]` to `get`, `set`, and `metropolis_step` to flatten the call stack.
+3.  **RNG Hoisting:** Introduced `evolve` method (and internal `step_with_rng`) to initialize the RNG once per batch of steps instead of once per spin flip.
+
+**Gain:**
+Benchmark `bench_ising` (10,000,000 iterations on 100x100 grid):
+- Before: ~0.73s
+- After: ~0.53s (metropolis_step loop)
+- Speedup: ~27%

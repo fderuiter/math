@@ -74,11 +74,13 @@ impl SpinLattice {
     }
 
     /// Gets the spin at (x, y).
+    #[inline]
     pub fn get(&self, x: usize, y: usize) -> i8 {
         self.spins[y * self.width + x]
     }
 
     /// Sets the spin at (x, y).
+    #[inline]
     pub fn set(&mut self, x: usize, y: usize, val: i8) {
         self.spins[y * self.width + x] = val;
     }
@@ -123,34 +125,48 @@ impl SpinLattice {
     /// 1. Select a random site.
     /// 2. Calculate energy cost to flip Delta E.
     /// 3. Accept flip if Delta E < 0 OR with probability e^(-beta * Delta E).
+    #[inline]
     pub fn metropolis_step(&mut self, temperature: f64, j_coupling: f64, h_field: f64) {
         let mut rng = rand::thread_rng();
+        let beta = 1.0 / (KB * temperature);
+        self.step_with_rng(&mut rng, beta, j_coupling, h_field);
+    }
+
+    /// Evolves the lattice for a given number of steps using the Metropolis algorithm.
+    /// This is more efficient than calling `metropolis_step` repeatedly as it reuses the RNG
+    /// and pre-calculates beta.
+    pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
+        let mut rng = rand::thread_rng();
+        let beta = 1.0 / (KB * temperature);
+        for _ in 0..steps {
+            self.step_with_rng(&mut rng, beta, j_coupling, h_field);
+        }
+    }
+
+    #[inline]
+    fn step_with_rng<R: Rng>(&mut self, rng: &mut R, beta: f64, j_coupling: f64, h_field: f64) {
         let x = rng.gen_range(0..self.width);
         let y = rng.gen_range(0..self.height);
 
         let s = self.get(x, y);
 
-        // Neighbors for energy difference (all 4 neighbors needed for Delta E)
-        let left_x = (x + self.width - 1) % self.width;
-        let right_x = (x + 1) % self.width;
-        let up_y = (y + self.height - 1) % self.height;
-        let down_y = (y + 1) % self.height;
+        // Neighbors with branch optimization instead of modulo
+        let left_x = if x == 0 { self.width - 1 } else { x - 1 };
+        let right_x = if x == self.width - 1 { 0 } else { x + 1 };
+        let up_y = if y == 0 { self.height - 1 } else { y - 1 };
+        let down_y = if y == self.height - 1 { 0 } else { y + 1 };
 
         let sum_neighbors = self.get(left_x, y) as f64
             + self.get(right_x, y) as f64
             + self.get(x, up_y) as f64
             + self.get(x, down_y) as f64;
 
-        // Delta E = E_new - E_old
-        // E_old_local = -J * s * sum_neighbors - h * s
-        // E_new_local = -J * (-s) * sum_neighbors - h * (-s)
-        // Delta E = 2 * J * s * sum_neighbors + 2 * h * s
+        // Delta E calculation
         let delta_e = 2.0 * s as f64 * (j_coupling * sum_neighbors + h_field);
 
         let should_flip = if delta_e < 0.0 {
             true
         } else {
-            let beta = 1.0 / (KB * temperature);
             let prob = (-beta * delta_e).exp();
             rng.r#gen::<f64>() < prob
         };
