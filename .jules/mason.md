@@ -26,3 +26,7 @@
 ## 2026-06-25 - Decoupling LoraHub Algorithms
 **Violation:** Open/Closed Principle (OCP). The `LoraEnsemble` hardcoded `combine` (weighted sum) and `evaluate_objective` (L1 Regularization), preventing extension for advanced merging techniques like SLERP or TIES.
 **Remedy:** Strategy Pattern. Extracted `CombinationStrategy` and `ObjectiveStrategy` traits. Implemented `LinearCombinationStrategy` and `L1RegularizationStrategy`. Refactored `LoraEnsemble` to use these strategies via dependency injection.
+
+## 2026-06-26 - Decoupling Optimization Algorithms
+**Violation:** Dependency Inversion Principle (DIP) and Open/Closed Principle (OCP). The `AdamOptimizer` in `ai/sds` was a concrete struct used directly, preventing the use of other optimizers (e.g., SGD) without modifying client code.
+**Remedy:** Strategy Pattern. Extracted `Optimizer` trait. Implemented `Optimizer` for `AdamOptimizer` and added `SgdOptimizer`. This allows swapping optimization strategies dynamically.
