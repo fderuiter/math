@@ -78,7 +78,7 @@ graph TD
 | **🧬 Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Morphogenesis** (Turing Patterns), and **Evolutionary Dynamics**. |
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
 | **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
-| **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
+| **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics, Astrophysics, **MRI** (Bloch Eqs), **Solid State** (BCS), and Chaos Theory. |
 | **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, and Differential Geometry. |
 
 ---
@@ -121,6 +121,23 @@ let input = DMatrix::zeros(10, 512);
 let encoded = encoder.forward(input, None);
 ```
 
+### 🌌 Physics: MRI Simulation
+Simulate the quantum-mechanical basis of medical imaging (Bloch Equations).
+
+```rust
+use math_explorer::physics::mri::BlochSimulator;
+use nalgebra::Vector3;
+
+// Initialize Transverse Magnetization (after 90° pulse)
+let initial_m = Vector3::new(0.0, 1.0, 0.0);
+let mut sim = BlochSimulator::new(initial_m, 1.0);
+
+// Simulate 50ms of T2 decay (Tissue T2 = 80ms)
+sim.step(0.050, Vector3::zeros(), 0.600, 0.080);
+
+println!("Signal Remaining: {:.1}%", sim.magnetization.y * 100.0);
+```
+
 ### 🛠️ Applied Mathematics: Favoritism
 A "rigorous" mathematical model to determine who the favorite child is.
 
@@ -134,11 +151,6 @@ inputs.social.helped_during_crisis = true; // High social utility
 let score = calculate_favoritism_score(&inputs);
 println!("Favoritism Score: {}", score); // Higher is better
 ```
-
-### 🌌 Physics: Chaos Theory
-Explore the Lorenz System and Lyapunov exponents.
-
-*(See `math_explorer/src/physics/chaos/mod.rs` for implementation details)*
 
 ---
 

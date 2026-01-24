@@ -44,3 +44,11 @@
 - Removed deprecated `is_prime_placeholder` ("Rot Check").
 - Added comprehensive docstrings and a "Quick Start" example to `partitions.rs`, explaining the Pushpa and Vasuki functions.
 **Outcome:** Users can now navigate the number theory tools and understand how to generate restricted partition coefficients.
+
+## 2026-01-18 - Illuminating the Hidden Physics
+**Gap:** The physics module contained powerful tools for MRI and Solid State physics that were hidden behind empty module pages and absent from the main README.
+**Strategy:**
+- Overhauled `physics/mri/mod.rs` with a signal chain diagram and a T2 decay simulation example.
+- Overhauled `physics/solid_state/mod.rs` with a matter hierarchy diagram and a BCS Gap equation example.
+- Updated `README.md` to feature these modules and replaced the text-only Chaos deep dive with a runnable MRI example.
+**Outcome:** Users can now discover and run simulations for medical imaging and condensed matter physics immediately.

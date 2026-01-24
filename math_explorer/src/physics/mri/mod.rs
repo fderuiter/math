@@ -4,6 +4,71 @@
 //! covering Quantum Foundations, Classical Dynamics (Bloch Equations), Spatial Encoding,
 //! and Image Reconstruction.
 //!
+//! <div class="warning">
+//!
+//! **Mermaid Diagram: The MRI Signal Chain**
+//!
+//! ```mermaid
+//! graph TD
+//!     B0[Static Field B0] -->|Aligns| Spins[Nuclear Spins]
+//!     RF[RF Pulse] -->|Excites| Spins
+//!     Spins -->|Precession| Larmor[Larmor Frequency]
+//!     Larmor -->|Induces| Signal[Voltage Signal]
+//!     Signal -->|Decays| Relaxation[T1 & T2 Relaxation]
+//!     Relaxation -->|End| Equilibrium[Equilibrium]
+//!
+//!     style B0 fill:#f9f,stroke:#333
+//!     style RF fill:#fdd,stroke:#333
+//!     style Signal fill:#ddf,stroke:#333
+//! ```
+//! </div>
+//!
+//! ## ⚡ Quick Start: Simulating T2 Decay (FID)
+//!
+//! Simulate the "Free Induction Decay" of a signal after a 90-degree excitation pulse.
+//! This demonstrates how the transverse magnetization ($M_{xy}$) decays over time due to spin-spin interaction ($T_2$).
+//!
+//! ```rust
+//! use math_explorer::physics::mri::BlochSimulator;
+//! use nalgebra::Vector3;
+//!
+//! fn main() {
+//!     // 1. Setup: A proton in a 1.5 Tesla field
+//!     // We start AFTER excitation, so M is in the transverse plane (y-axis).
+//!     let initial_m = Vector3::new(0.0, 1.0, 0.0);
+//!     let m0 = 1.0; // Equilibrium magnetization magnitude
+//!     let mut sim = BlochSimulator::new(initial_m, m0);
+//!
+//!     // 2. Define Tissue Properties (e.g., White Matter at 1.5T)
+//!     let t1 = 0.600; // T1 Recovery: 600 ms
+//!     let t2 = 0.080; // T2 Decay: 80 ms
+//!
+//!     // 3. Simulation Parameters
+//!     let dt = 0.010; // 10 ms steps
+//!     // We simulate in the "Rotating Frame" (B_eff = 0) to observe the envelope
+//!     // without the high-frequency Larmor precession.
+//!     let b_rotating = Vector3::zeros();
+//!
+//!     // 4. Run Step-by-Step
+//!     let mut signal_strength = sim.magnetization.y;
+//!
+//!     // Check initial state
+//!     assert!(signal_strength > 0.99);
+//!
+//!     for _ in 0..8 {
+//!         // Step forward in time
+//!         sim.step(dt, b_rotating, t1, t2);
+//!     }
+//!
+//!     // After 80ms (1 * T2), signal should drop to ~37% (1/e)
+//!     let final_signal = sim.magnetization.y;
+//!     println!("Signal after 80ms: {:.4}", final_signal);
+//!
+//!     // 1/e is approx 0.3678
+//!     assert!((final_signal - 0.3678).abs() < 0.05);
+//! }
+//! ```
+//!
 //! # Domains
 //!
 //! 1. **Quantum Foundations**: Proton properties, Larmor frequency, and Boltzmann statistics.
