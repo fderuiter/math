@@ -94,6 +94,7 @@ pub mod activations;
 pub mod deep_learning_theory;
 pub mod error;
 pub mod gaussian_splatting;
+pub mod optimizers;
 pub mod reinforcement_learning;
 pub mod sds;
 pub mod self_calibration;

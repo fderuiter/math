@@ -39,3 +39,8 @@
 **Violation:** The `HodgkinHuxleyModel` contained hardcoded constants (magic numbers) for conductances and potentials in its `derivative` method, violating the "Hard-coding Constraints" rule and preventing configuration for different neuron types.
 **Refactor:** Applied **Extract Parameter Object**. Created `HodgkinHuxleyParameters` struct to hold model coefficients. Updated `HodgkinHuxleyModel` and `HodgkinHuxleyNeuron` to use this configuration object.
 **Trade-off:** Added a new struct to the public API, but enabled full configurability of the neuron model (Composability) while maintaining default behavior for the Squid Giant Axon.
+
+## 2026-12-05 - Strategy Pattern for AI Optimizers
+**Violation:** The `CeraTrainer` contained a hardcoded SGD loop, violating DRY and OCP. The `AdamOptimizer` in `sds/training.rs` was specific to `f64` and `DMatrix`, limiting reuse.
+**Refactor:** Applied the **Strategy Pattern**. Extracted a generic `Optimizer` trait in `math_explorer/src/ai/optimizers.rs`. Implemented `SgdOptimizer` and `AdamOptimizer` supporting `f32`/`f64`. Refactored `CeraTrainer` to use `SgdOptimizer`.
+**Trade-off:** The `Optimizer` trait uses `&mut [T]` (slices) to be agnostic of storage types (`DMatrix` vs `DVector`), which might slightly reduce expressiveness compared to matrix ops but ensures maximum compatibility.

@@ -1,4 +1,4 @@
-use crate::ai::sds::training::AdamOptimizer;
+use crate::ai::sds::training::{AdamOptimizer, Optimizer};
 use approx::assert_relative_eq;
 use nalgebra::DMatrix;
 

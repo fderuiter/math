@@ -1,5 +1,6 @@
 //! This module handles the training process for the CERA model.
 
+use crate::ai::optimizers::{Optimizer, SgdOptimizer};
 use crate::climate::cera::Cera;
 use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
 use nalgebra::{DMatrix, DVector};
@@ -7,12 +8,14 @@ use nalgebra::{DMatrix, DVector};
 /// A trainer for the CERA model.
 pub struct CeraTrainer<'a> {
     pub model: &'a mut Cera,
+    pub optimizer: SgdOptimizer<f32>,
 }
 
 impl<'a> CeraTrainer<'a> {
     /// Creates a new CeraTrainer.
     pub fn new(model: &'a mut Cera) -> Self {
-        Self { model }
+        let optimizer = SgdOptimizer::new(model.config.learning_rate);
+        Self { model, optimizer }
     }
 
     /// Placeholder for the backpropagation and optimization step.
@@ -24,30 +27,41 @@ impl<'a> CeraTrainer<'a> {
     /// A full implementation would require a proper autograd engine to compute
     /// gradients and an optimizer (e.g., Adam) to update the weights.
     fn optimizer_step(&mut self) {
-        let lr = self.model.config.learning_rate;
         for layer in self.model.autoencoder.encoder.layers.iter_mut() {
             let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
                 rand::random::<f32>() - 0.5
             });
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * lr;
-            layer.bias -= grad_b * lr;
+            self.optimizer
+                .update(layer.kernel.as_mut_slice(), grad_k.as_slice())
+                .expect("Gradient dimension mismatch");
+            self.optimizer
+                .update(layer.bias.as_mut_slice(), grad_b.as_slice())
+                .expect("Gradient dimension mismatch");
         }
         for layer in self.model.autoencoder.decoder.layers.iter_mut() {
             let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
                 rand::random::<f32>() - 0.5
             });
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * lr;
-            layer.bias -= grad_b * lr;
+            self.optimizer
+                .update(layer.kernel.as_mut_slice(), grad_k.as_slice())
+                .expect("Gradient dimension mismatch");
+            self.optimizer
+                .update(layer.bias.as_mut_slice(), grad_b.as_slice())
+                .expect("Gradient dimension mismatch");
         }
         for layer in self.model.predictor.layers.iter_mut() {
             let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
                 rand::random::<f32>() - 0.5
             });
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * lr;
-            layer.bias -= grad_b * lr;
+            self.optimizer
+                .update(layer.kernel.as_mut_slice(), grad_k.as_slice())
+                .expect("Gradient dimension mismatch");
+            self.optimizer
+                .update(layer.bias.as_mut_slice(), grad_b.as_slice())
+                .expect("Gradient dimension mismatch");
         }
     }
 
