@@ -1,6 +1,6 @@
 // Implementation of Scaled Dot-Product Attention and Multi-Head Attention.
 
-use crate::ai::activations::softmax_row_wise;
+use crate::ai::activations::{ActivationFunction, Softmax};
 use nalgebra::DMatrix;
 
 /// Computes the Scaled Dot-Product Attention.
@@ -39,7 +39,7 @@ pub fn scaled_dot_product_attention(
     }
 
     // 4. Apply softmax to get attention weights
-    let attention_weights = softmax_row_wise(&scores);
+    let attention_weights = Softmax.forward(&scores);
 
     // 5. Multiply weights by V to get the final output
     let output = &attention_weights * v;

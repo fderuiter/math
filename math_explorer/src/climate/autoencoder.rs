@@ -1,21 +1,8 @@
 //! This module defines the autoencoder architecture for the CERA framework.
 
+use crate::ai::activations::{ActivationFunction, LeakyReLU};
 use crate::climate::tensor_ops::conv1d;
 use nalgebra::{DMatrix, DVector};
-
-/// A simple leaky ReLU activation function.
-///
-/// # Arguments
-///
-/// * `x` - The matrix to apply the activation to (in-place).
-/// * `alpha` - The negative slope coefficient.
-pub fn leaky_relu(x: &mut DMatrix<f32>, alpha: f32) {
-    x.iter_mut().for_each(|val| {
-        if *val < 0.0 {
-            *val *= alpha;
-        }
-    });
-}
 
 /// A single layer for the Encoder or Decoder, consisting of a convolution and activation.
 pub struct ConvLayer {
@@ -98,7 +85,8 @@ impl Encoder {
             x = conv1d(&x, &layer.kernel, &layer.bias);
             // No activation on the final layer
             if i < self.layers.len() - 1 {
-                leaky_relu(&mut x, 0.01);
+                let activation = LeakyReLU { alpha: 0.01 };
+                activation.apply(&mut x);
             }
         }
         x
@@ -146,7 +134,8 @@ impl Decoder {
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
             if i < self.layers.len() - 1 {
-                leaky_relu(&mut x, 0.01);
+                let activation = LeakyReLU { alpha: 0.01 };
+                activation.apply(&mut x);
             }
         }
         x
@@ -224,7 +213,8 @@ mod tests {
     #[test]
     fn test_leaky_relu() {
         let mut matrix = DMatrix::from_row_slice(2, 2, &[-1.0, 2.0, -3.0, 0.0]);
-        leaky_relu(&mut matrix, 0.1);
+        let activation = LeakyReLU { alpha: 0.1 };
+        activation.apply(&mut matrix);
         let expected = DMatrix::from_row_slice(2, 2, &[-0.1, 2.0, -0.3, 0.0]);
         assert!((matrix - expected).abs().max() < 1e-6);
     }

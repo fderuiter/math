@@ -1,29 +1,87 @@
-// Implementation of various activation functions.
-use nalgebra::DMatrix;
+// Implementation of various activation functions using Strategy Pattern.
+use nalgebra::{DMatrix, RealField};
 
-/// Applies the Rectified Linear Unit (ReLU) activation function element-wise, in-place.
-/// ReLU(x) = max(0, x)
-pub fn relu(matrix: &mut DMatrix<f64>) {
-    // The apply method takes a closure that mutates the element.
-    matrix.apply(|x| *x = x.max(0.0));
+/// Trait defining an activation function.
+///
+/// This allows for different activation functions to be used interchangeably
+/// and genericized over the scalar type (e.g., f32, f64).
+pub trait ActivationFunction<T: RealField + Copy> {
+    /// Applies the activation function in-place.
+    fn apply(&self, x: &mut DMatrix<T>);
+
+    /// Applies the activation function and returns a new matrix.
+    fn forward(&self, x: &DMatrix<T>) -> DMatrix<T> {
+        let mut y = x.clone();
+        self.apply(&mut y);
+        y
+    }
 }
 
-/// Applies the softmax function to each row of a matrix for numerical stability.
-/// Softmax(x_i) = exp(x_i - max(x)) / sum(exp(x_j - max(x)))
-pub fn softmax_row_wise(matrix: &DMatrix<f64>) -> DMatrix<f64> {
-    let mut result = DMatrix::zeros(matrix.nrows(), matrix.ncols());
-    for r in 0..matrix.nrows() {
-        let row = matrix.row(r);
-        let max_val = row.max(); // Subtract max for numerical stability
-        let exps = row.map(|val| (val - max_val).exp());
-        let sum_exps = exps.sum();
-        if sum_exps > 0.0 {
-            let softmax_row = exps.map(|val| val / sum_exps);
-            result.set_row(r, &softmax_row);
-        }
-        // If sum_exps is 0, the row remains zeros, which is a reasonable default.
+/// Rectified Linear Unit (ReLU).
+/// ReLU(x) = max(0, x)
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ReLU;
+
+impl<T: RealField + Copy> ActivationFunction<T> for ReLU {
+    fn apply(&self, x: &mut DMatrix<T>) {
+        x.apply(|v| *v = v.max(T::zero()));
     }
-    result
+}
+
+/// Leaky ReLU.
+/// LeakyReLU(x) = x if x >= 0, else alpha * x
+#[derive(Debug, Clone, Copy)]
+pub struct LeakyReLU<T> {
+    pub alpha: T,
+}
+
+impl<T: RealField + Copy> ActivationFunction<T> for LeakyReLU<T> {
+    fn apply(&self, x: &mut DMatrix<T>) {
+        let alpha = self.alpha;
+        x.apply(|v| {
+            if *v < T::zero() {
+                *v *= alpha;
+            }
+        });
+    }
+}
+
+/// Softmax function.
+/// Applies softmax row-wise.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Softmax;
+
+impl<T: RealField + Copy> ActivationFunction<T> for Softmax {
+    fn apply(&self, x: &mut DMatrix<T>) {
+         // Softmax depends on the whole row, so we iterate rows.
+         for r in 0..x.nrows() {
+            let mut row = x.row_mut(r);
+            let max_val = row.max();
+
+            // Map row to exps
+            let exps = row.map(|v| (v - max_val).exp());
+            let sum_exps = exps.sum();
+
+            if sum_exps > T::zero() {
+                let softmax_row = exps.map(|v| v / sum_exps);
+                row.copy_from(&softmax_row);
+            }
+         }
+    }
+}
+
+// --- Legacy Wrappers ---
+
+/// Applies the Rectified Linear Unit (ReLU) activation function element-wise, in-place.
+#[deprecated(since = "0.2.0", note = "Use ReLU struct instead")]
+pub fn relu<T: RealField + Copy>(matrix: &mut DMatrix<T>) {
+    ReLU.apply(&mut *matrix);
+}
+
+/// Applies the softmax function to each row of a matrix.
+#[deprecated(since = "0.2.0", note = "Use Softmax struct instead")]
+pub fn softmax_row_wise<T: RealField + Copy>(matrix: &DMatrix<T>) -> DMatrix<T> {
+    Softmax.forward(matrix)
 }
 
 #[cfg(test)]
@@ -33,15 +91,25 @@ mod tests {
 
     #[test]
     fn test_relu() {
-        let mut matrix = DMatrix::from_row_slice(1, 4, &[-1.0, 0.0, 1.0, -2.0]);
+        let mut matrix = DMatrix::<f64>::from_row_slice(1, 4, &[-1.0, 0.0, 1.0, -2.0]);
         relu(&mut matrix);
         let expected = DMatrix::from_row_slice(1, 4, &[0.0, 0.0, 1.0, 0.0]);
         assert_eq!(matrix, expected);
     }
 
     #[test]
+    fn test_leaky_relu() {
+         let mut matrix = DMatrix::<f32>::from_row_slice(1, 2, &[-1.0, 2.0]);
+         let activation = LeakyReLU { alpha: 0.1 };
+         activation.apply(&mut matrix);
+         let expected = DMatrix::from_row_slice(1, 2, &[-0.1, 2.0]);
+         // f32 comparison
+         assert!((matrix[(0,0)] - expected[(0,0)]).abs() < 1e-6);
+    }
+
+    #[test]
     fn test_softmax_row_wise_sum() {
-        let matrix = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+        let matrix = DMatrix::<f64>::from_row_slice(2, 3, &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
         let softmax_result = softmax_row_wise(&matrix);
 
         // Each row should sum to 1.0

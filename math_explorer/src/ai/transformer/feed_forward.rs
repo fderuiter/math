@@ -1,6 +1,6 @@
 // Implementation of the Position-wise Feed-Forward Network.
 
-use crate::ai::activations::relu;
+use crate::ai::activations::{ActivationFunction, ReLU};
 use crate::ai::utils::AddRowVector;
 use nalgebra::{DMatrix, RowDVector};
 
@@ -45,7 +45,7 @@ impl FeedForward {
         hidden.add_row_vector_to_all_rows(&self.b1);
 
         // Apply ReLU activation
-        relu(&mut hidden);
+        ReLU.apply(&mut hidden);
 
         // Second linear transformation: hidden * W2 + b2
         let mut output = hidden * &self.w2;

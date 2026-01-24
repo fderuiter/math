@@ -6,7 +6,7 @@ use math_explorer::applied::clinical_trials::{
 #[test]
 fn test_simple_randomization() {
     let n = 100;
-    let assignments = design::simple_randomization(n);
+    let assignments = design::simple_randomization(n).unwrap();
     assert_eq!(assignments.len(), n);
     // Cannot assert exact split due to randomness, but can check it runs.
 }
