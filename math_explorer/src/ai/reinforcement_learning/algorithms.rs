@@ -1,3 +1,4 @@
+use super::strategies::ExplorationStrategy;
 use super::types::{Action, State};
 use std::collections::HashMap;
 use std::hash::Hash;
@@ -24,7 +25,6 @@ where
     q_table: HashMap<(S, A), f64>,
     learning_rate: f64,
     discount_factor: f64,
-    epsilon: f64, // For epsilon-greedy exploration
 }
 
 impl<S, A> TabularQAgent<S, A>
@@ -32,12 +32,11 @@ where
     S: State + Hash + Eq + Copy,
     A: Action + Hash + Eq + Copy,
 {
-    pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
+    pub fn new(learning_rate: f64, discount_factor: f64) -> Self {
         Self {
             q_table: HashMap::new(),
             learning_rate,
             discount_factor,
-            epsilon,
         }
     }
 
@@ -82,32 +81,14 @@ where
         self.q_table.insert((*state, *action), new_q);
     }
 
-    /// Selects an action using Epsilon-Greedy strategy.
-    pub fn select_action(&self, state: &S, available_actions: &[A]) -> Option<A> {
-        if available_actions.is_empty() {
-            return None;
-        }
-
-        let mut rng = rand::thread_rng();
-        use rand::Rng;
-
-        if rng.r#gen::<f64>() < self.epsilon {
-            // Explore: Random action
-            let index = rng.gen_range(0..available_actions.len());
-            Some(available_actions[index])
-        } else {
-            // Exploit: Best action
-            // Shuffle to break ties randomly? Or just take first best.
-            // For simplicity, take first best.
-            available_actions
-                .iter()
-                .max_by(|a, b| {
-                    let qa = self.get_q_value(state, a);
-                    let qb = self.get_q_value(state, b);
-                    qa.partial_cmp(&qb).unwrap_or(std::cmp::Ordering::Equal)
-                })
-                .copied()
-        }
+    /// Selects an action using the provided exploration strategy.
+    pub fn act<Strategy: ExplorationStrategy<A>>(
+        &self,
+        state: &S,
+        available_actions: &[A],
+        strategy: &mut Strategy,
+    ) -> Option<A> {
+        strategy.select_action(|a| self.get_q_value(state, a), available_actions)
     }
 }
 

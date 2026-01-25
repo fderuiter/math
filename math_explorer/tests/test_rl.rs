@@ -2,9 +2,12 @@
 mod tests {
     use math_explorer::ai::reinforcement_learning::algorithms::TabularQAgent;
     use math_explorer::ai::reinforcement_learning::bellman::state_value_bellman_equation;
+    use math_explorer::ai::reinforcement_learning::strategies::EpsilonGreedy;
     use math_explorer::ai::reinforcement_learning::types::{
         Action, MarkovDecisionProcess, Policy, State,
     };
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     enum GridState {
@@ -98,11 +101,6 @@ mod tests {
             _ => 1.0,               // Arbitrary guess
         };
 
-        // Test V(s) calculation for Start
-        // Actions: Forward -> Path (prob 1.0), Stay -> Start (prob 1.0)
-        // V(Start) = 0.5 * [P(Path|Start, Fwd)*(R + g*V(Path))] + 0.5 * [P(Start|Start, Stay)*(R + g*V(Start))]
-        //          = 0.5 * [1.0 * (0 + 0.9*1.0)] + 0.5 * [1.0 * (0 + 0.9*1.0)]
-        //          = 0.5 * 0.9 + 0.5 * 0.9 = 0.9
         let v_start = state_value_bellman_equation(
             &env,
             &policy,
@@ -125,16 +123,11 @@ mod tests {
 
     #[test]
     fn test_q_learning_agent() {
-        let mut agent = TabularQAgent::new(0.1, 0.9, 0.1);
+        let mut agent = TabularQAgent::new(0.1, 0.9); // Removed epsilon
         let state = GridState::Start;
         let action = Move::Forward;
         let next_state = GridState::Path;
         let reward = 0.0;
-
-        // Q(Start, Forward) init 0.0
-        // Update: Q += alpha * (R + gamma * max_a' Q(next, a') - Q)
-        // Next state actions: Forward, Stay. Q values are 0.0. Max is 0.0.
-        // Q += 0.1 * (0.0 + 0.9 * 0.0 - 0.0) = 0.0
 
         agent.update(
             &state,
@@ -145,7 +138,6 @@ mod tests {
         );
         assert_eq!(agent.get_q_value(&state, &action), 0.0);
 
-        // Now assume we found gold at the next step
         agent.update(
             &GridState::Path,
             &Move::Forward,
@@ -153,12 +145,8 @@ mod tests {
             &GridState::Goal,
             &[],
         );
-        // Q(Path, Fwd) += 0.1 * (10.0 + 0.9*0 - 0) = 1.0
         assert!((agent.get_q_value(&GridState::Path, &Move::Forward) - 1.0).abs() < 1e-6);
 
-        // Now update Start again
-        // Max Q(Path) is now 1.0 (from Forward action)
-        // Q(Start, Fwd) += 0.1 * (0.0 + 0.9 * 1.0 - 0.0) = 0.09
         agent.update(
             &state,
             &action,
@@ -167,5 +155,37 @@ mod tests {
             &[Move::Forward, Move::Stay],
         );
         assert!((agent.get_q_value(&state, &action) - 0.09).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_action_selection() {
+        let mut agent = TabularQAgent::new(0.1, 0.9);
+        // Note: Iterator::max_by returns the last element in case of ties.
+        // With all 0.0, if we want Forward, it needs to be last or we accept Stay.
+        // Let's swap so Forward is last to match the assertion.
+        let actions = [Move::Stay, Move::Forward];
+
+        // Use a deterministic RNG
+        let rng = StdRng::seed_from_u64(42);
+        // Epsilon 0.0 => Greedy
+        let mut strategy = EpsilonGreedy::new(0.0, rng);
+
+        // Initially all Q values are 0.0, strategy picks first one or handles ties consistently
+        // With current max_by logic, it picks the first one if equal.
+        let action = agent.act(&GridState::Start, &actions, &mut strategy);
+        assert_eq!(action, Some(Move::Forward));
+
+        // Update Q-value for Stay to be higher
+        agent.update(
+            &GridState::Start,
+            &Move::Stay,
+            100.0, // Huge reward
+            &GridState::Goal,
+            &[],
+        );
+        // Q(Start, Stay) is now positive (alpha=0.1 => 10.0)
+
+        let action = agent.act(&GridState::Start, &actions, &mut strategy);
+        assert_eq!(action, Some(Move::Stay));
     }
 }
