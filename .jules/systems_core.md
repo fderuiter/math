@@ -39,3 +39,8 @@
 **Violation:** The `HodgkinHuxleyModel` contained hardcoded constants (magic numbers) for conductances and potentials in its `derivative` method, violating the "Hard-coding Constraints" rule and preventing configuration for different neuron types.
 **Refactor:** Applied **Extract Parameter Object**. Created `HodgkinHuxleyParameters` struct to hold model coefficients. Updated `HodgkinHuxleyModel` and `HodgkinHuxleyNeuron` to use this configuration object.
 **Trade-off:** Added a new struct to the public API, but enabled full configurability of the neuron model (Composability) while maintaining default behavior for the Squid Giant Axon.
+
+## 2026-11-15 - Dependency Inversion for AI Optimization
+**Violation:** The `AdamOptimizer` in `ai::sds::training` was a concrete struct used directly, violating the Dependency Inversion Principle and preventing the interchangeability of optimization algorithms (e.g., SGD vs Adam).
+**Refactor:** Applied **Dependency Inversion**. Extracted an `Optimizer` trait with a `step` method. Implemented `Optimizer` for `AdamOptimizer` and added a new `SgdOptimizer`.
+**Trade-off:** Introduced a trait abstraction which requires importing the trait to use the `step` method, but enabled OCP for optimization strategies.
