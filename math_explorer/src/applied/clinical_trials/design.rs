@@ -1,3 +1,4 @@
+use super::types::ClinicalTrialError;
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 use std::collections::HashMap;
@@ -23,7 +24,7 @@ pub struct Patient {
 pub trait AllocationStrategy {
     /// Assigns `n_subjects` to groups using the provided RNG.
     fn assign<R: Rng + ?Sized>(&self, rng: &mut R, n_subjects: usize)
-    -> Result<Vec<Group>, String>;
+    -> Result<Vec<Group>, ClinicalTrialError>;
 }
 
 /// Simple Randomization Strategy.
@@ -36,7 +37,7 @@ impl AllocationStrategy for SimpleRandomizer {
         &self,
         rng: &mut R,
         n_subjects: usize,
-    ) -> Result<Vec<Group>, String> {
+    ) -> Result<Vec<Group>, ClinicalTrialError> {
         let mut assignments = Vec::with_capacity(n_subjects);
         for _ in 0..n_subjects {
             if rng.r#gen::<bool>() {
@@ -61,9 +62,9 @@ impl BlockRandomizer {
     ///
     /// # Arguments
     /// * `block_size` - The size of each block. Must be even.
-    pub fn new(block_size: usize) -> Result<Self, String> {
+    pub fn new(block_size: usize) -> Result<Self, ClinicalTrialError> {
         if !block_size.is_multiple_of(2) {
-            return Err("Block size must be even for 1:1 allocation.".to_string());
+            return Err(ClinicalTrialError::InvalidData("Block size must be even for 1:1 allocation.".to_string()));
         }
         Ok(Self { block_size })
     }
@@ -74,7 +75,7 @@ impl AllocationStrategy for BlockRandomizer {
         &self,
         rng: &mut R,
         n_subjects: usize,
-    ) -> Result<Vec<Group>, String> {
+    ) -> Result<Vec<Group>, ClinicalTrialError> {
         // Note: The original implementation didn't strictly check n_subjects % block_size,
         // it just filled enough blocks and truncated. We preserve that behavior.
 
@@ -113,7 +114,7 @@ impl<S: AllocationStrategy> StratifiedRandomizer<S> {
         &self,
         rng: &mut R,
         patients: &[Patient],
-    ) -> Result<HashMap<String, Group>, String> {
+    ) -> Result<HashMap<String, Group>, ClinicalTrialError> {
         let mut strata_map: HashMap<String, Vec<&Patient>> = HashMap::new();
         for p in patients {
             strata_map.entry(p.stratum.clone()).or_default().push(p);
@@ -145,8 +146,8 @@ pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
 #[deprecated(since = "0.2.0", note = "Use BlockRandomizer struct instead")]
 pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<Group>, String> {
     let mut rng = thread_rng();
-    let randomizer = BlockRandomizer::new(block_size)?;
-    randomizer.assign(&mut rng, n_patients)
+    let randomizer = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
+    randomizer.assign(&mut rng, n_patients).map_err(|e| e.to_string())
 }
 
 #[deprecated(since = "0.2.0", note = "Use StratifiedRandomizer struct instead")]
@@ -155,7 +156,7 @@ pub fn stratified_randomization(
     block_size: usize,
 ) -> Result<HashMap<String, Group>, String> {
     let mut rng = thread_rng();
-    let base_strategy = BlockRandomizer::new(block_size)?;
+    let base_strategy = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
     let randomizer = StratifiedRandomizer::new(base_strategy);
-    randomizer.assign_stratified(&mut rng, patients)
+    randomizer.assign_stratified(&mut rng, patients).map_err(|e| e.to_string())
 }

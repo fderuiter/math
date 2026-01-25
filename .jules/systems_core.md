@@ -39,3 +39,8 @@
 **Violation:** The `HodgkinHuxleyModel` contained hardcoded constants (magic numbers) for conductances and potentials in its `derivative` method, violating the "Hard-coding Constraints" rule and preventing configuration for different neuron types.
 **Refactor:** Applied **Extract Parameter Object**. Created `HodgkinHuxleyParameters` struct to hold model coefficients. Updated `HodgkinHuxleyModel` and `HodgkinHuxleyNeuron` to use this configuration object.
 **Trade-off:** Added a new struct to the public API, but enabled full configurability of the neuron model (Composability) while maintaining default behavior for the Squid Giant Axon.
+
+## 2026-10-30 - Error Hierarchy for Clinical Trials
+**Violation:** The `AllocationStrategy` trait relied on `Result<..., String>`, violating strict typing and making programmatic error handling brittle (string parsing required).
+**Refactor:** Applied **Error Hierarchy**. Replaced `String` with a domain-specific `ClinicalTrialError` enum. Updated all randomizer implementations and deprecated wrappers to propagate typed errors.
+**Trade-off:** Increased verbosity in `new` methods (wrapping errors), but achieved compiler-verified error handling and safe downstream matching.
