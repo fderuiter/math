@@ -1,6 +1,7 @@
 use super::strategies::{
     CombinationStrategy, L1RegularizationStrategy, LinearCombinationStrategy, ObjectiveStrategy,
 };
+use super::LoraError;
 use super::types::LoraStateDict;
 
 /// A specialized ensemble of LoRA modules that can be combined dynamically.
@@ -51,9 +52,9 @@ impl LoraEnsemble {
     /// * `weights` - A slice of weights corresponding to each LoRA module.
     ///
     /// # Returns
-    /// A `Result` containing the combined `LoraStateDict`, or an error message
+    /// A `Result` containing the combined `LoraStateDict`, or a `LoraError`
     /// if the inputs are invalid.
-    pub fn combine(&self, weights: &[f64]) -> Result<LoraStateDict, &'static str> {
+    pub fn combine(&self, weights: &[f64]) -> Result<LoraStateDict, LoraError> {
         self.combination_strategy.combine(&self.modules, weights)
     }
 

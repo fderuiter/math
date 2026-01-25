@@ -26,3 +26,8 @@
 **Problem:** `math_explorer/src/applied/isosurface/marching_cubes.rs` used manual component-wise arithmetic (e.g., `x + t * (x2 - x1)`) for vector interpolation and gradient calculation. This was verbose, error-prone, and obscured the mathematical intent.
 **Decision:** Applied "Traitification" to `Point3D` in `types.rs`, implementing `Add`, `Sub`, `Mul`, `Div`, `Neg`, and geometric helpers (`dot`, `cross`, `normalize`). Refactored `marching_cubes.rs` to use these operators.
 **Consequence:** The isosurface extraction logic is now significantly more readable and idiomatic ("Rust idioms"). Mathematical operations are expressed as vector algebra. Performance remains equivalent (inlined operations).
+
+## 2026-06-08 - [LoraHub Error Modeling]
+**Problem:** The `LoraEnsemble` and `CombinationStrategy` in `math_explorer/src/applied/lorahub` used string literals (`&'static str`) for error handling ("Stringly Typed"). This made it impossible for consumers to programmatically handle specific errors (e.g., distinguishing between a shape mismatch and an empty ensemble) without fragile string parsing.
+**Decision:** Applied "Error Modeling". Introduced a dedicated `LoraError` enum in `error.rs` using the `thiserror` pattern (manual implementation of `std::error::Error`). Updated function signatures to return `Result<T, LoraError>`.
+**Consequence:** Robust, strongly-typed error handling. API consumers can now `match` on errors. Error messages are more informative (including dimensions and keys) but separated from logic.
