@@ -1,6 +1,8 @@
 //! # Geometry
 //!
-//! This module provides geometric primitives for the algorithmic information library.
+//! This module provides geometric primitives for the algorithmic information library,
+//! utilizing arbitrary precision rational numbers to avoid floating point errors
+//! in complexity calculations.
 
 use nalgebra::SVector;
 use rug::{Integer, Rational};
@@ -16,6 +18,19 @@ pub struct Line {
 
 impl Line {
     /// Creates a new line from an origin point and a direction vector.
+    ///
+    /// The direction vector is normalized.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use math_explorer::pure_math::algorithmic_information::geometry::{Line, Point2D};
+    /// use rug::Rational;
+    ///
+    /// let origin = Point2D::new(Rational::from(0), Rational::from(0));
+    /// let dir = Point2D::new(Rational::from(1), Rational::from(1));
+    /// let line = Line::new(origin, dir);
+    /// ```
     pub fn new(origin: Point2D, direction: Point2D) -> Self {
         let norm_sq =
             (direction[0].clone() * &direction[0]) + (direction[1].clone() * &direction[1]);
@@ -27,6 +42,23 @@ impl Line {
     }
 
     /// Projects a point onto the line.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use math_explorer::pure_math::algorithmic_information::geometry::{Line, Point2D};
+    /// use rug::Rational;
+    ///
+    /// let origin = Point2D::new(Rational::from(0), Rational::from(0));
+    /// let dir = Point2D::new(Rational::from(1), Rational::from(0)); // X-axis
+    /// let line = Line::new(origin, dir);
+    ///
+    /// let p = Point2D::new(Rational::from(3), Rational::from(5));
+    /// let proj = line.project(&p);
+    ///
+    /// assert_eq!(proj[0], Rational::from(3));
+    /// assert_eq!(proj[1], Rational::from(0));
+    /// ```
     pub fn project(&self, point: &Point2D) -> Point2D {
         let v = point - &self.origin;
         let dist = dot(&v, &self.direction);
@@ -48,6 +80,9 @@ pub fn distance(p1: &Point2D, p2: &Point2D) -> Rational {
 }
 
 /// Calculates the square root of a rational number, if it is a perfect square.
+///
+/// **Note**: This is a simplified implementation used for demonstration and specific
+/// test cases where norms are rational.
 pub fn sqrt(r: &Rational) -> Rational {
     let numer = r.numer().clone();
     let denom = r.denom().clone();
