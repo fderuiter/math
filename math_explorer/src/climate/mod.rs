@@ -102,6 +102,7 @@
 pub mod autoencoder;
 pub mod cera;
 pub mod config;
+pub mod error;
 pub mod loss;
 pub mod predictor;
 pub mod tensor_ops;

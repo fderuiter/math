@@ -6,6 +6,9 @@
 
 use std::collections::HashMap;
 
+pub mod error;
+pub use error::EllipticError;
+
 /// Calculates the prime factorization of a given number `n`.
 ///
 /// The result is a map where keys are prime factors and values are their exponents.
@@ -92,31 +95,36 @@ pub struct Theorem11Bounds {
 ///
 /// The function returns `None` for a given prime if the condition on `N` is not met.
 ///
-/// # Panics
-/// Panics if `i + j >= ψ(N)`, as the theorem only applies for `i + j < ψ(N)`.
+/// # Errors
+/// Returns `EllipticError::TheoremConditionFailed` if `i + j >= ψ(N)`.
 ///
 /// # Examples
 ///
 /// ```
 /// use math_explorer::pure_math::elliptic_curves::{theorem_1_1_bounds, Theorem11Bounds};
 /// // For N=5, psi(5) = 6. Let's check a_{1,1} where i+j=2.
-/// let bounds = theorem_1_1_bounds(5, 1, 1);
+/// let bounds = theorem_1_1_bounds(5, 1, 1).unwrap();
 /// assert_eq!(bounds.v2_bound, Some(15 * (6 - 2))); // 2 does not divide 5
 /// assert_eq!(bounds.v3_bound, Some(3 * (6 - 2))); // 3 does not divide 5
 /// assert_eq!(bounds.v5_bound, None); // 5 divides 5
 ///
 /// // For N=7, psi(7) = 8. N=7 is 1 mod 3. Check a_{2,1} where i+j=3.
-/// let bounds_7 = theorem_1_1_bounds(7, 2, 1);
+/// let bounds_7 = theorem_1_1_bounds(7, 2, 1).unwrap();
 /// assert_eq!(bounds_7.v2_bound, Some(15 * (8 - 3)));
 /// // N=7 is 1 mod 3, so we use the ceil(9/2 * ...) formula.
 /// // ceil(4.5 * 5) = ceil(22.5) = 23
 /// assert_eq!(bounds_7.v3_bound, Some(23));
 /// assert_eq!(bounds_7.v5_bound, Some(3 * (8 - 3)));
 /// ```
-pub fn theorem_1_1_bounds(n: u64, i: u64, j: u64) -> Theorem11Bounds {
+pub fn theorem_1_1_bounds(n: u64, i: u64, j: u64) -> Result<Theorem11Bounds, EllipticError> {
     let psi_n = psi(n);
     if i + j >= psi_n {
-        panic!("The theorem applies only for i + j < psi(N).");
+        return Err(EllipticError::TheoremConditionFailed {
+            reason: "The theorem applies only for i + j < psi(N)".to_string(),
+            i,
+            j,
+            psi_n,
+        });
     }
     let diff = psi_n - i - j;
 
@@ -141,11 +149,11 @@ pub fn theorem_1_1_bounds(n: u64, i: u64, j: u64) -> Theorem11Bounds {
         None
     };
 
-    Theorem11Bounds {
+    Ok(Theorem11Bounds {
         v2_bound: v2,
         v3_bound: v3,
         v5_bound: v5,
-    }
+    })
 }
 
 /// Represents the lower bounds on p-adic valuations from Theorem 1.2.
@@ -166,23 +174,28 @@ pub struct Theorem12Bounds {
 /// - If `3 nmid N`, then `v_3(a_{i,j}) >= 6 * (ψ(N) - i - j)`.
 /// - If `7 nmid N`, then `v_7(a_{i,j}) >= 2 * (ψ(N) - i - j)`.
 ///
-/// # Panics
-/// Panics if `i + j >= ψ(N)`, as the theorem only applies for `i + j < ψ(N)`.
+/// # Errors
+/// Returns `EllipticError::TheoremConditionFailed` if `i + j >= ψ(N)`.
 ///
 /// # Examples
 ///
 /// ```
 /// use math_explorer::pure_math::elliptic_curves::{theorem_1_2_bounds, Theorem12Bounds};
 /// // For N=5, psi(5) = 6. N=5 is 1 mod 4. Check a_{0,0}.
-/// let bounds = theorem_1_2_bounds(5, 0, 0);
+/// let bounds = theorem_1_2_bounds(5, 0, 0).unwrap();
 /// assert_eq!(bounds.v2_bound, Some(10 * (6 - 0)));
 /// assert_eq!(bounds.v3_bound, Some(6 * (6 - 0)));
 /// assert_eq!(bounds.v7_bound, Some(2 * (6 - 0)));
 /// ```
-pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Theorem12Bounds {
+pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Result<Theorem12Bounds, EllipticError> {
     let psi_n = psi(n);
     if i + j >= psi_n {
-        panic!("The theorem applies only for i + j < psi(N).");
+        return Err(EllipticError::TheoremConditionFailed {
+            reason: "The theorem applies only for i + j < psi(N)".to_string(),
+            i,
+            j,
+            psi_n,
+        });
     }
     let diff = psi_n - i - j;
 
@@ -206,9 +219,9 @@ pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Theorem12Bounds {
         None
     };
 
-    Theorem12Bounds {
+    Ok(Theorem12Bounds {
         v2_bound: v2,
         v3_bound: v3,
         v7_bound: v7,
-    }
+    })
 }

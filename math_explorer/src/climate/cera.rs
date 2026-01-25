@@ -1,5 +1,6 @@
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
+use super::error::ClimateError;
 use crate::climate::autoencoder::Autoencoder;
 use crate::climate::predictor::Predictor;
 use nalgebra::DMatrix;
@@ -26,18 +27,30 @@ impl Cera {
     /// # Returns
     ///
     /// A result containing the new `Cera` instance or an error message.
-    pub fn new(config: CeraConfig) -> Result<Self, String> {
+    pub fn new(config: CeraConfig) -> Result<Self, ClimateError> {
         if config.aligned_channels > config.latent_channels {
-            return Err(format!(
-                "aligned_channels ({}) cannot be greater than latent_channels ({})",
-                config.aligned_channels, config.latent_channels
-            ));
+            return Err(ClimateError::InvalidConfiguration {
+                reason: format!(
+                    "Cannot be greater than latent_channels ({})",
+                    config.latent_channels
+                ),
+                parameter: "aligned_channels".to_string(),
+                value: config.aligned_channels.to_string(),
+            });
         }
         if config.aligned_channels == 0 {
-            return Err("aligned_channels must be greater than 0".to_string());
+            return Err(ClimateError::InvalidConfiguration {
+                reason: "Must be greater than 0".to_string(),
+                parameter: "aligned_channels".to_string(),
+                value: "0".to_string(),
+            });
         }
         if config.num_levels == 0 {
-            return Err("num_levels must be greater than 0".to_string());
+            return Err(ClimateError::InvalidConfiguration {
+                reason: "Must be greater than 0".to_string(),
+                parameter: "num_levels".to_string(),
+                value: "0".to_string(),
+            });
         }
 
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);

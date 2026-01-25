@@ -26,10 +26,12 @@
 //! *   **[Hurwitz-Kronecker](hurwitz_kronecker)**: Class number relations.
 
 pub mod class_number;
+pub mod error;
 pub mod hurwitz_kronecker;
 pub mod partitions;
 pub mod primes;
 pub mod q_series;
 
 // Re-exports for convenience
+pub use error::NumberTheoryError;
 pub use primes::{is_prime, primes_up_to};

@@ -4,6 +4,7 @@
 //! (power series in q), which are fundamental in the theory of partitions and
 //! other areas of number theory.
 
+use super::NumberTheoryError;
 use crate::pure_math::algebra::Ring;
 use std::ops::{Add, Div, Mul};
 
@@ -77,6 +78,44 @@ impl<T: Ring> QSeries<T> {
         }
         result
     }
+
+    /// Attempts to divide this QSeries by another.
+    ///
+    /// # Errors
+    ///
+    /// Returns `NumberTheoryError::DivisionByZeroQSeries` if the divisor is empty.
+    /// Returns `NumberTheoryError::DivisionByZeroConstantTerm` if the divisor's constant term is zero.
+    pub fn try_div(&self, other: &Self) -> Result<QSeries<T>, NumberTheoryError> {
+        let len1 = self.coeffs.len();
+        let len2 = other.coeffs.len();
+        if len2 == 0 {
+            return Err(NumberTheoryError::DivisionByZeroQSeries);
+        }
+        let b0 = other.get_coeff(0);
+        if b0.is_zero() {
+            return Err(NumberTheoryError::DivisionByZeroConstantTerm);
+        }
+
+        let precision = len1;
+        let mut new_coeffs = vec![T::zero(); precision];
+
+        for n in 0..precision {
+            let mut sum_val = T::zero();
+            // Use iterator to avoid indexing check
+            for (i, coeff) in new_coeffs.iter().enumerate().take(n) {
+                sum_val += coeff.clone() * other.get_coeff(n - i);
+            }
+
+            let numerator = self.get_coeff(n) - sum_val;
+            if (numerator.clone() % b0.clone()) != T::zero() {
+                // This can happen in intermediate calculations.
+                // The final result should have integer coefficients.
+            }
+            new_coeffs[n] = numerator / b0.clone();
+        }
+
+        Ok(QSeries { coeffs: new_coeffs })
+    }
 }
 
 impl<T: Ring> Add for &QSeries<T> {
@@ -134,35 +173,7 @@ impl<T: Ring> Div for &QSeries<T> {
     type Output = QSeries<T>;
 
     fn div(self, other: Self) -> QSeries<T> {
-        let len1 = self.coeffs.len();
-        let len2 = other.coeffs.len();
-        if len2 == 0 {
-            panic!("Division by zero QSeries");
-        }
-        let b0 = other.get_coeff(0);
-        if b0.is_zero() {
-            panic!("Division by a QSeries with zero constant term");
-        }
-
-        let precision = len1;
-        let mut new_coeffs = vec![T::zero(); precision];
-
-        for n in 0..precision {
-            let mut sum_val = T::zero();
-            // Use iterator to avoid indexing check
-            for (i, coeff) in new_coeffs.iter().enumerate().take(n) {
-                sum_val += coeff.clone() * other.get_coeff(n - i);
-            }
-
-            let numerator = self.get_coeff(n) - sum_val;
-            if (numerator.clone() % b0.clone()) != T::zero() {
-                // This can happen in intermediate calculations.
-                // The final result should have integer coefficients.
-            }
-            new_coeffs[n] = numerator / b0.clone();
-        }
-
-        QSeries { coeffs: new_coeffs }
+        self.try_div(other).expect("Division failed")
     }
 }
 
@@ -198,5 +209,12 @@ mod tests {
         let one_minus_q = QSeries::from_vec(vec![1i64, -1]);
         let geom_series = &one / &one_minus_q;
         assert_eq!(geom_series.coeffs, vec![1, 1, 1, 1, 1]);
+    }
+
+    #[test]
+    fn test_qseries_try_div_error() {
+        let one = QSeries::from_vec(vec![1i64]);
+        let zero = QSeries::from_vec(vec![0i64]);
+        assert!(one.try_div(&zero).is_err());
     }
 }
