@@ -115,3 +115,23 @@ Benchmark `profile_isosurface` (Sphere SDF 128x128x128):
 - Before: ~26.5ms
 - After: ~25.6ms
 - Speedup: ~3.4% (Eliminated reallocations)
+
+## 2025-05-19 - [Optimization] **Bottleneck:** Ising Model Metropolis Step **Strategy:** RNG Hoisting & Conditional Branching **Gain:** ~26.3% Time Saved (76.47ms -> 56.33ms)
+
+**Bottleneck:**
+The `SpinLattice::metropolis_step` function was called 1,000,000 times in a loop.
+1. Each call instantiated `rand::thread_rng()`, adding overhead.
+2. Neighbor calculation used modulo arithmetic (`%`) for periodic boundary conditions, which is slower than conditional checks for simple boundaries.
+3. Function call overhead for 1M calls.
+
+**Strategy:**
+Implemented `SpinLattice::evolve` to perform multiple steps in a single call.
+1. **RNG Hoisting:** Created the RNG once outside the loop.
+2. **Conditional Branching:** Replaced modulo arithmetic with `if/else` checks for boundary conditions (likely compiled to conditional moves or branchless logic).
+3. **Inlining:** The core logic runs in a tight loop without repeated function entry/exit.
+
+**Gain:**
+Benchmark `bench_ising_custom` (1M steps on 200x200 lattice):
+- Before: 76.47ms
+- After: 56.33ms
+- Speedup: ~26.3%

@@ -159,6 +159,59 @@ impl SpinLattice {
             self.set(x, y, -s);
         }
     }
+
+    /// Performs multiple Metropolis algorithm steps.
+    ///
+    /// Optimizations:
+    /// - Reuses the RNG generator (thread_rng).
+    /// - Uses conditional branching instead of modulo arithmetic for neighbor calculations.
+    pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
+        let mut rng = rand::thread_rng();
+        let beta = 1.0 / (KB * temperature);
+        let width = self.width;
+        let height = self.height;
+
+        for _ in 0..steps {
+            // 1. Select a random site.
+            let x = rng.gen_range(0..width);
+            let y = rng.gen_range(0..height);
+
+            let idx = y * width + x;
+            let s = self.spins[idx];
+
+            // 2. Neighbors (Optimized Modulo)
+            let left_x = if x == 0 { width - 1 } else { x - 1 };
+            let right_x = if x == width - 1 { 0 } else { x + 1 };
+            let up_y = if y == 0 { height - 1 } else { y - 1 };
+            let down_y = if y == height - 1 { 0 } else { y + 1 };
+
+            // Map (x, y) to flat indices
+            let left_idx = y * width + left_x;
+            let right_idx = y * width + right_x;
+            let up_idx = up_y * width + x;
+            let down_idx = down_y * width + x;
+
+            let sum_neighbors = self.spins[left_idx] as f64
+                + self.spins[right_idx] as f64
+                + self.spins[up_idx] as f64
+                + self.spins[down_idx] as f64;
+
+            // 3. Delta E
+            let delta_e = 2.0 * s as f64 * (j_coupling * sum_neighbors + h_field);
+
+            // 4. Accept/Reject
+            let should_flip = if delta_e < 0.0 {
+                true
+            } else {
+                let prob = (-beta * delta_e).exp();
+                rng.r#gen::<f64>() < prob
+            };
+
+            if should_flip {
+                self.spins[idx] = -s;
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -197,6 +250,37 @@ mod tests {
         assert!(
             avg_m_per_spin.abs() < 0.3,
             "High T Ising should be disordered (M ~ 0). Got {}",
+            avg_m_per_spin
+        );
+    }
+
+    #[test]
+    fn test_ising_ordered_evolve() {
+        // Low temperature limit (Ferromagnetic phase).
+        // J = 1.0
+        // T < Tc ~ 2.269 J/KB
+        // Let's pick T = 1.5 J/KB
+        let j_val = 1.0;
+        let h_val = 0.0;
+        let t_low = 1.5 * j_val / KB;
+
+        let width = 20;
+        let height = 20;
+        let mut lattice = SpinLattice::new(width, height);
+
+        // Run many steps using the optimized evolve method
+        let steps = 200_000;
+        lattice.evolve(steps, t_low, j_val, h_val);
+
+        let m = lattice.magnetization();
+        let max_m = (width * height) as f64;
+        let avg_m_per_spin = (m as f64).abs() / max_m;
+
+        // In ordered phase, magnetization should be high (> 0.5 usually)
+        // Note: It might be +1 or -1 (symmetry breaking).
+        assert!(
+            avg_m_per_spin > 0.6,
+            "Low T Ising should be ordered (M ~ 1). Got {}",
             avg_m_per_spin
         );
     }
