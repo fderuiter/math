@@ -133,3 +133,22 @@ Benchmark `profile_isosurface` (Sphere SDF 128x128x128):
 - Before: ~27.6ms
 - After: ~25.6ms
 - Speedup: ~7.2%
+## 2026-10-30 - [Optimization] **Bottleneck:** Matrix Allocation in LoRA Combination **Strategy:** Zero-Allocation Slice Iteration **Gain:** 91% Time Saved (729ms -> 66ms)
+
+**Bottleneck:**
+The `LinearCombinationStrategy` for LoRA ensembles was performing heavy matrix allocations inside the accumulation loop.
+- `tensor * weights[i]` allocated a new temporary `DMatrix` for every layer of every module.
+- `*final_tensor += ...` performed addition, but the intermediate product allocation was the killer.
+For 10 modules of size 1000x1000, this resulted in significant memory traffic (~270MB).
+
+**Strategy:**
+Refactored the inner loop to use "The Zero-Copy" approach with `nalgebra`.
+1. Accessed the underlying data using `as_mut_slice()` and `as_slice()`.
+2. Replaced the matrix multiplication `tensor * weight` with an in-place iterator loop: `*f += *t * weight`.
+3. Eliminated all intermediate matrix allocations during the accumulation phase.
+
+**Gain:**
+Benchmark `bench_lorahub` (10 modules, 1000x1000 matrices):
+- Before: 728.78ms
+- After: 66.35ms
+- Speedup: ~11x (91% reduction)

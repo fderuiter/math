@@ -129,3 +129,36 @@ impl GroupData {
         sum_sq_diff / (self.n() - 1) as f64
     }
 }
+
+/// A strictly non-negative time value for survival analysis.
+///
+/// Ensures that time is valid (>= 0.0 and not NaN).
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct SurvivalTime(f64);
+
+impl SurvivalTime {
+    /// Creates a new `SurvivalTime`.
+    ///
+    /// # Errors
+    /// Returns `ClinicalTrialError::InvalidData` if `t` is negative or NaN.
+    pub fn new(t: f64) -> Result<Self, ClinicalTrialError> {
+        if t.is_nan() || t < 0.0 {
+            return Err(ClinicalTrialError::InvalidData(format!(
+                "Time must be non-negative and finite, got {}",
+                t
+            )));
+        }
+        Ok(Self(t))
+    }
+
+    /// Returns the underlying `f64` value.
+    pub fn as_f64(&self) -> f64 {
+        self.0
+    }
+}
+
+impl fmt::Display for SurvivalTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}

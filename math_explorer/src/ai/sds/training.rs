@@ -25,6 +25,23 @@ pub trait DifferentiableNeRF: NeRFModel {
 /// Input: Weights theta, Gradients nabla_theta, Learning Rate eta.
 /// Operation: Update weights (e.g., using Adam optimizer).
 /// Output: Updated NeRF Model.
+pub trait Optimizer {
+    /// Performs a single optimization step.
+    ///
+    /// # Arguments
+    /// * `params` - The current parameters.
+    /// * `grads` - The gradients with respect to the parameters.
+    ///
+    /// # Returns
+    /// * `Ok(DMatrix<f64>)` - The updated parameters.
+    /// * `Err(AIError)` - If dimensions mismatch.
+    fn step(
+        &mut self,
+        params: &DMatrix<f64>,
+        grads: &DMatrix<f64>,
+    ) -> Result<DMatrix<f64>, AIError>;
+}
+
 /// Simplified Adam implementation for a single parameter tensor (e.g., NeRF weights).
 /// theta_{t+1} = theta_t - eta * m_t / (sqrt(v_t) + epsilon)
 pub struct AdamOptimizer {
@@ -49,13 +66,10 @@ impl AdamOptimizer {
             t: 0,
         }
     }
+}
 
-    /// Performs a single optimization step.
-    ///
-    /// # Returns
-    /// * `Ok(DMatrix<f64>)` - The updated parameters.
-    /// * `Err(AIError)` - If dimensions mismatch.
-    pub fn step(
+impl Optimizer for AdamOptimizer {
+    fn step(
         &mut self,
         params: &DMatrix<f64>,
         grads: &DMatrix<f64>,
@@ -102,6 +116,59 @@ impl AdamOptimizer {
         let update_term = m_hat.component_div(&v_hat.map(|x| x.sqrt() + self.epsilon));
 
         Ok(params - update_term * self.learning_rate)
+    }
+}
+
+/// Stochastic Gradient Descent with Momentum.
+/// v_{t+1} = momentum * v_t + g_t
+/// theta_{t+1} = theta_t - lr * v_{t+1}
+pub struct SgdOptimizer {
+    pub learning_rate: f64,
+    pub momentum: f64,
+    pub velocity: Option<DMatrix<f64>>,
+}
+
+impl SgdOptimizer {
+    pub fn new(learning_rate: f64, momentum: f64) -> Self {
+        Self {
+            learning_rate,
+            momentum,
+            velocity: None,
+        }
+    }
+}
+
+impl Optimizer for SgdOptimizer {
+    fn step(
+        &mut self,
+        params: &DMatrix<f64>,
+        grads: &DMatrix<f64>,
+    ) -> Result<DMatrix<f64>, AIError> {
+        if params.shape() != grads.shape() {
+            return Err(AIError::DimensionMismatch {
+                expected: format!("{:?}", params.shape()),
+                got: format!("{:?}", grads.shape()),
+            });
+        }
+
+        // Initialize state if needed
+        if self.velocity.is_none() {
+            self.velocity = Some(DMatrix::zeros(params.nrows(), params.ncols()));
+        }
+
+        let v = self
+            .velocity
+            .as_mut()
+            .expect("Optimizer state velocity should be initialized");
+
+        // Update velocity: v_{t+1} = momentum * v_t + g_t
+        // Note: Some implementations use v_{t+1} = momentum * v_t - lr * g_t.
+        // We stick to the additive accumulation of gradients, then subtract.
+        // v = mu * v + g
+        *v = &*v * self.momentum + grads;
+
+        // Update parameters: theta = theta - lr * v
+        Ok(params - &*v * self.learning_rate)
     }
 }
 

@@ -4,7 +4,7 @@
 //! The model describes how action potentials in neurons are initiated and propagated.
 //!
 //! The module is decomposed into:
-//! - `types`: Defines the state vector `HodgkinHuxleyState`.
+//! - `types`: Defines the state vector `HodgkinHuxleyState` and parameters `HodgkinHuxleyParameters`.
 //! - `model`: Defines the differential equations via `HodgkinHuxleyModel`.
 //! - `neuron`: Provides the public `HodgkinHuxleyNeuron` facade.
 //!
@@ -36,4 +36,4 @@ pub use neuron::HodgkinHuxleyNeuron;
 
 // Optionally re-export types if we want users to use the advanced API
 pub use model::HodgkinHuxleyModel;
-pub use types::HodgkinHuxleyState;
+pub use types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
