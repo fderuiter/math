@@ -1,7 +1,7 @@
 use math_explorer::applied::clinical_trials::survival_analysis::{
     Observation, try_estimate_hazard_ratio,
 };
-use math_explorer::applied::clinical_trials::types::SurvivalTime;
+use math_explorer::applied::clinical_trials::types::{ClinicalTrialError, SurvivalTime};
 
 #[test]
 fn test_hazard_ratio_valid() {
@@ -41,7 +41,12 @@ fn test_hazard_ratio_error() {
 
     let res = try_estimate_hazard_ratio(&group1, &group_empty);
     assert!(res.is_err());
-    assert_eq!(res.unwrap_err(), "Group 2 total time is zero or negative");
+    match res.unwrap_err() {
+        ClinicalTrialError::InvalidData(msg) => {
+            assert_eq!(msg, "Group 2 total time is zero or negative");
+        }
+        e => panic!("Expected InvalidData, got {:?}", e),
+    }
 }
 
 #[test]

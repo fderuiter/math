@@ -1,3 +1,4 @@
+use super::types::ClinicalTrialError;
 use statrs::distribution::{ContinuousCDF, Normal};
 
 /// Calculates the required sample size per group for a two-sample t-test (comparing means).
@@ -15,18 +16,25 @@ pub fn calculate_sample_size_means(
     power: f64,
     delta: f64,
     sigma: f64,
-) -> Result<usize, String> {
+) -> Result<usize, ClinicalTrialError> {
     if alpha <= 0.0 || alpha >= 1.0 {
-        return Err("Alpha must be between 0 and 1".to_string());
+        return Err(ClinicalTrialError::InvalidData(
+            "Alpha must be between 0 and 1".to_string(),
+        ));
     }
     if power <= 0.0 || power >= 1.0 {
-        return Err("Power must be between 0 and 1".to_string());
+        return Err(ClinicalTrialError::InvalidData(
+            "Power must be between 0 and 1".to_string(),
+        ));
     }
     if delta == 0.0 {
-        return Err("Effect size (delta) cannot be zero".to_string());
+        return Err(ClinicalTrialError::InvalidData(
+            "Effect size (delta) cannot be zero".to_string(),
+        ));
     }
 
-    let normal = Normal::new(0.0, 1.0).map_err(|e| e.to_string())?;
+    let normal =
+        Normal::new(0.0, 1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
 
     // Z value for alpha (two-tailed)
     let z_alpha = normal.inverse_cdf(1.0 - alpha / 2.0);
@@ -55,21 +63,30 @@ pub fn calculate_sample_size_proportions(
     power: f64,
     p1: f64,
     p2: f64,
-) -> Result<usize, String> {
+) -> Result<usize, ClinicalTrialError> {
     if alpha <= 0.0 || alpha >= 1.0 {
-        return Err("Alpha must be between 0 and 1".to_string());
+        return Err(ClinicalTrialError::InvalidData(
+            "Alpha must be between 0 and 1".to_string(),
+        ));
     }
     if power <= 0.0 || power >= 1.0 {
-        return Err("Power must be between 0 and 1".to_string());
+        return Err(ClinicalTrialError::InvalidData(
+            "Power must be between 0 and 1".to_string(),
+        ));
     }
     if !(0.0..=1.0).contains(&p1) || !(0.0..=1.0).contains(&p2) {
-        return Err("Proportions must be between 0 and 1".to_string());
+        return Err(ClinicalTrialError::InvalidData(
+            "Proportions must be between 0 and 1".to_string(),
+        ));
     }
     if (p1 - p2).abs() < 1e-9 {
-        return Err("Proportions cannot be equal".to_string());
+        return Err(ClinicalTrialError::InvalidData(
+            "Proportions cannot be equal".to_string(),
+        ));
     }
 
-    let normal = Normal::new(0.0, 1.0).map_err(|e| e.to_string())?;
+    let normal =
+        Normal::new(0.0, 1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
 
     let z_alpha = normal.inverse_cdf(1.0 - alpha / 2.0);
     let z_beta = normal.inverse_cdf(power);
