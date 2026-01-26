@@ -9,6 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   WORKING_DIRECTORY: math_explorer
+  toolchain: stable
 
 jobs:
   build-and-test:
