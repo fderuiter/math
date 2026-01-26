@@ -48,3 +48,8 @@
 **Violation:** The `AdamOptimizer` in `ai::sds::training` was a concrete struct used directly, violating the Dependency Inversion Principle and preventing the interchangeability of optimization algorithms (e.g., SGD vs Adam).
 **Refactor:** Applied **Dependency Inversion**. Extracted an `Optimizer` trait with a `step` method. Implemented `Optimizer` for `AdamOptimizer` and added a new `SgdOptimizer`.
 **Trade-off:** Introduced a trait abstraction which requires importing the trait to use the `step` method, but enabled OCP for optimization strategies.
+
+## 2026-12-10 - Error Hierarchy for Clinical Trials
+**Violation:** Inconsistent error handling in `applied::clinical_trials`, where `design`, `sample_size`, and `survival_analysis` modules used primitive `String` or `&'static str` errors, violating the "Error Hierarchy" pattern and preventing programmatic handling of specific failure modes.
+**Refactor:** Applied **Error Hierarchy**. Unified the module to use the existing `ClinicalTrialError` enum. Refactored `AllocationStrategy`, `calculate_sample_size_*`, and `try_estimate_hazard_ratio` to return typed errors.
+**Trade-off:** Increased verbosity in error construction (requires matching variants) and legacy wrappers needed updates, but achieved type-safety and consistency across the domain module.
