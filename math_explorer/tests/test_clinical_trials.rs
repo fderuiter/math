@@ -1,4 +1,4 @@
-use math_explorer::applied::clinical_trials::types::{ContingencyTable, GroupData};
+use math_explorer::applied::clinical_trials::types::{ContingencyTable, GroupData, SurvivalTime};
 use math_explorer::applied::clinical_trials::{
     analysis, design, hypothesis_testing, sample_size, survival_analysis,
 };
@@ -94,19 +94,19 @@ fn test_kaplan_meier() {
     use survival_analysis::Observation;
     let obs = vec![
         Observation {
-            time: 1.0,
+            time: SurvivalTime::new(1.0).unwrap(),
             event_occurred: true,
         },
         Observation {
-            time: 2.0,
+            time: SurvivalTime::new(2.0).unwrap(),
             event_occurred: true,
         },
         Observation {
-            time: 3.0,
+            time: SurvivalTime::new(3.0).unwrap(),
             event_occurred: false,
         }, // censored
         Observation {
-            time: 4.0,
+            time: SurvivalTime::new(4.0).unwrap(),
             event_occurred: true,
         },
     ];
