@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use math_explorer::biology::morphogenesis::{TuringSystem, TuringState};
+    use math_explorer::biology::morphogenesis::{TuringState, TuringSystem};
     use math_explorer::pure_math::analysis::ode::{RungeKutta4, Solver, TimeStepper};
 
     #[test]
@@ -18,6 +18,9 @@ mod tests {
 
         // Verify state changed
         let val_after = system.state.u()[50];
-        assert!(val_after < 1.0, "Value should have diffused/reacted away from 1.0");
+        assert!(
+            val_after < 1.0,
+            "Value should have diffused/reacted away from 1.0"
+        );
     }
 }
