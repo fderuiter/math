@@ -70,6 +70,36 @@ impl BlockRandomizer {
 }
 
 impl AllocationStrategy for BlockRandomizer {
+    /// Assigns subjects to groups using block randomization.
+    ///
+    /// # Behavior
+    ///
+    /// This method generates enough full blocks to cover the requested `n_subjects` and then
+    /// truncates the list to the exact size.
+    ///
+    /// If `n_subjects` is not a multiple of the block size, the final block will be incomplete.
+    /// This means the assignments in the last incomplete block may not be perfectly balanced
+    /// (e.g., you might get 2 Treatments and 1 Control if the block size is 4 and you request 3 subjects).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use math_explorer::applied::clinical_trials::design::{BlockRandomizer, AllocationStrategy, Group};
+    /// use rand::SeedableRng;
+    /// use rand::rngs::StdRng;
+    ///
+    /// let mut rng = StdRng::seed_from_u64(42);
+    /// let randomizer = BlockRandomizer::new(4).unwrap();
+    ///
+    /// // Request 5 subjects (1 full block + 1 partial block)
+    /// let assignments = randomizer.assign(&mut rng, 5).unwrap();
+    ///
+    /// assert_eq!(assignments.len(), 5);
+    /// // The first 4 are balanced (2 Treatment, 2 Control)
+    /// let first_four = &assignments[0..4];
+    /// let t_count = first_four.iter().filter(|&&g| g == Group::Treatment).count();
+    /// assert_eq!(t_count, 2);
+    /// ```
     fn assign<R: Rng + ?Sized>(
         &self,
         rng: &mut R,
