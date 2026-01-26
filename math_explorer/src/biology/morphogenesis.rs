@@ -6,6 +6,9 @@
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
 
+use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
+
 /// Defines the reaction kinetics for a 2-component reaction-diffusion system.
 pub trait ReactionKinetics {
     /// Calculates the reaction rates for activator u and inhibitor v.
@@ -58,7 +61,7 @@ impl ReactionKinetics for SchnakenbergKinetics {
 ///
 /// This struct encapsulates the concentration vectors for the activator and inhibitor,
 /// protecting them from invalid resizing while providing safe access.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TuringState {
     u: Vec<f64>,
     v: Vec<f64>,
@@ -101,6 +104,76 @@ impl TuringState {
     /// Returns true if the grid is empty.
     pub fn is_empty(&self) -> bool {
         self.u.is_empty()
+    }
+}
+
+impl Add for TuringState {
+    type Output = Self;
+
+    fn add(mut self, rhs: Self) -> Self {
+        for (u, r) in self.u.iter_mut().zip(rhs.u.iter()) {
+            *u += r;
+        }
+        for (v, r) in self.v.iter_mut().zip(rhs.v.iter()) {
+            *v += r;
+        }
+        self
+    }
+}
+
+impl AddAssign for TuringState {
+    fn add_assign(&mut self, rhs: Self) {
+        for (u, r) in self.u.iter_mut().zip(rhs.u.iter()) {
+            *u += r;
+        }
+        for (v, r) in self.v.iter_mut().zip(rhs.v.iter()) {
+            *v += r;
+        }
+    }
+}
+
+impl Mul<f64> for TuringState {
+    type Output = Self;
+
+    fn mul(mut self, scalar: f64) -> Self {
+        for u in self.u.iter_mut() {
+            *u *= scalar;
+        }
+        for v in self.v.iter_mut() {
+            *v *= scalar;
+        }
+        self
+    }
+}
+
+impl MulAssign<f64> for TuringState {
+    fn mul_assign(&mut self, scalar: f64) {
+        for u in self.u.iter_mut() {
+            *u *= scalar;
+        }
+        for v in self.v.iter_mut() {
+            *v *= scalar;
+        }
+    }
+}
+
+impl VectorOperations for TuringState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        for (u, r) in self.u.iter_mut().zip(other.u.iter()) {
+            *u += r * scale;
+        }
+        for (v, r) in self.v.iter_mut().zip(other.v.iter()) {
+            *v += r * scale;
+        }
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        if self.u.len() != other.u.len() {
+            self.u.resize(other.u.len(), 0.0);
+            self.v.resize(other.v.len(), 0.0);
+        }
+        self.u.copy_from_slice(&other.u);
+        self.v.copy_from_slice(&other.v);
     }
 }
 
@@ -169,8 +242,7 @@ impl<K: ReactionKinetics> TuringSystem<K> {
             return;
         }
 
-        // Ensure buffers are the right size (in case state was modified externally via some future API,
-        // though strictly TuringState prevents resizing).
+        // Ensure buffers are the right size
         if self.next_state.len() != n {
             self.next_state = TuringState::new(n);
         }
@@ -263,5 +335,127 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
+    }
+}
+
+impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
+    fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
+        let mut out = TuringState::new(state.len());
+        self.derivative_in_place(t, state, &mut out);
+        out
+    }
+
+    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
+        let n = state.len();
+        if n == 0 {
+            return;
+        }
+
+        // Ensure output buffer is the right size
+        if out.len() != n {
+            *out = TuringState::new(n);
+        }
+
+        let dx_sq = self.dx * self.dx;
+        let inv_dx_sq = 1.0 / dx_sq;
+
+        // Optimization: Lift boundary checks out of the loop and use slices
+        let u = &state.u;
+        let v = &state.v;
+        let out_u = &mut out.u;
+        let out_v = &mut out.v;
+
+        // 1. Handle i = 0
+        {
+            let i = 0;
+            // Safety: n > 0 checked above
+            let u_curr = unsafe { *u.get_unchecked(i) };
+            let v_curr = unsafe { *v.get_unchecked(i) };
+
+            let u_prev = u_curr;
+            let v_prev = v_curr;
+            let (u_next, v_next) = if n > 1 {
+                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
+            } else {
+                (u_curr, v_curr)
+            };
+
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+
+            unsafe {
+                *out_u.get_unchecked_mut(i) = self.d_u * lap_u + reaction_u;
+                *out_v.get_unchecked_mut(i) = self.d_v * lap_v + reaction_v;
+            }
+        }
+
+        // 2. Handle i = 1..n-1 (Hot Path)
+        if n > 2 {
+            // Optimization: Sliding Window / Register Rotation
+            unsafe {
+                let mut u_prev = *u.get_unchecked(0);
+                let mut u_curr = *u.get_unchecked(1);
+                let mut v_prev = *v.get_unchecked(0);
+                let mut v_curr = *v.get_unchecked(1);
+
+                for i in 1..n - 1 {
+                    let u_next = *u.get_unchecked(i + 1);
+                    let v_next = *v.get_unchecked(i + 1);
+
+                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+                    let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                    *out_u.get_unchecked_mut(i) = self.d_u * lap_u + reaction_u;
+                    *out_v.get_unchecked_mut(i) = self.d_v * lap_v + reaction_v;
+
+                    // Shift window
+                    u_prev = u_curr;
+                    u_curr = u_next;
+                    v_prev = v_curr;
+                    v_curr = v_next;
+                }
+            }
+        }
+
+        // 3. Handle i = n-1
+        if n > 1 {
+            let i = n - 1;
+            unsafe {
+                let u_curr = *u.get_unchecked(i);
+                let v_curr = *v.get_unchecked(i);
+                let u_prev = *u.get_unchecked(i - 1);
+                let v_prev = *v.get_unchecked(i - 1);
+                let u_next = u_curr;
+                let v_next = v_curr;
+
+                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+                let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                *out_u.get_unchecked_mut(i) = self.d_u * lap_u + reaction_u;
+                *out_v.get_unchecked_mut(i) = self.d_v * lap_v + reaction_v;
+            }
+        }
+    }
+}
+
+impl<K: ReactionKinetics> TimeStepper<TuringState> for TuringSystem<K> {
+    fn get_state(&self) -> &TuringState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut TuringState {
+        &mut self.state
+    }
+
+    fn step(&mut self, dt: f64) {
+        // Delegate to the optimized inherent method
+        // Inherent method shadows trait method, so self.step refers to TuringSystem::step
+        self.step(dt);
     }
 }

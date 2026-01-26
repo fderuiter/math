@@ -26,3 +26,8 @@
 **Problem:** `math_explorer/src/applied/isosurface/marching_cubes.rs` used manual component-wise arithmetic (e.g., `x + t * (x2 - x1)`) for vector interpolation and gradient calculation. This was verbose, error-prone, and obscured the mathematical intent.
 **Decision:** Applied "Traitification" to `Point3D` in `types.rs`, implementing `Add`, `Sub`, `Mul`, `Div`, `Neg`, and geometric helpers (`dot`, `cross`, `normalize`). Refactored `marching_cubes.rs` to use these operators.
 **Consequence:** The isosurface extraction logic is now significantly more readable and idiomatic ("Rust idioms"). Mathematical operations are expressed as vector algebra. Performance remains equivalent (inlined operations).
+
+## 2026-06-15 - [Turing System Traitification]
+**Problem:** `math_explorer/src/biology/morphogenesis.rs` implemented a custom solver loop inside `TuringSystem::step`, preventing the use of generic ODE solvers (like Runge-Kutta 4) and duplicating integration logic. The state `TuringState` lacked standard arithmetic operators, making it incompatible with the library's `OdeSystem` ecosystem.
+**Decision:** Applied "Traitification". Implemented `VectorOperations`, `OdeSystem`, and `TimeStepper` for `TuringSystem`. Preserved the highly optimized sliding-window stencil logic in `derivative_in_place` and the manual Euler step in `step`.
+**Consequence:** `TuringSystem` is now a first-class citizen in the generic analysis module. It can be simulated with any `Solver` while maintaining zero-cost abstraction for the default use case.
