@@ -1,5 +1,5 @@
-use math_explorer::physics::stat_mech::ising::SpinLattice;
 use math_explorer::physics::stat_mech::KB;
+use math_explorer::physics::stat_mech::ising::SpinLattice;
 use std::time::Instant;
 
 fn main() {
@@ -12,7 +12,10 @@ fn main() {
 
     let iterations = 10_000_000;
 
-    println!("Benchmarking Ising Model {}x{} for {} iterations...", width, height, iterations);
+    println!(
+        "Benchmarking Ising Model {}x{} for {} iterations...",
+        width, height, iterations
+    );
 
     // --- Before: metropolis_step loop ---
     let mut lattice = SpinLattice::new(width, height);
@@ -22,7 +25,11 @@ fn main() {
     }
     let duration = start.elapsed();
     let old_speed = (iterations as f64 / duration.as_secs_f64()) / 1_000_000.0;
-    println!("Before (metropolis_step): {:.4}s, {:.2} M/s", duration.as_secs_f64(), old_speed);
+    println!(
+        "Before (metropolis_step): {:.4}s, {:.2} M/s",
+        duration.as_secs_f64(),
+        old_speed
+    );
 
     // --- After: evolve batch ---
     let mut lattice = SpinLattice::new(width, height);
@@ -30,7 +37,11 @@ fn main() {
     lattice.evolve(iterations, temp, j_coupling, h_field);
     let duration = start.elapsed();
     let new_speed = (iterations as f64 / duration.as_secs_f64()) / 1_000_000.0;
-    println!("After (evolve):           {:.4}s, {:.2} M/s", duration.as_secs_f64(), new_speed);
+    println!(
+        "After (evolve):           {:.4}s, {:.2} M/s",
+        duration.as_secs_f64(),
+        new_speed
+    );
 
     let speedup = new_speed / old_speed;
     println!("Speedup: {:.2}x", speedup);
