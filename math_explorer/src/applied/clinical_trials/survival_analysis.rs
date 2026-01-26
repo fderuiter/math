@@ -1,8 +1,9 @@
+use super::types::SurvivalTime;
 use std::cmp::Ordering;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Observation {
-    pub time: f64,
+    pub time: SurvivalTime,
     pub event_occurred: bool, // true if event (e.g., death), false if censored
 }
 
@@ -23,14 +24,16 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     let mut obs = observations.to_vec();
     // Sort by time. If times are equal, put events before censored (conservative).
     obs.sort_by(|a, b| {
-        if (a.time - b.time).abs() < 1e-9 {
+        let ta = a.time.as_f64();
+        let tb = b.time.as_f64();
+        if (ta - tb).abs() < 1e-9 {
             // Equal time: events come first?
             // Standard KM handles ties. Usually event is counted against risk set.
             // If censored at T, they are in risk set at T? Yes.
             // If event at T, they are in risk set at T.
             // Order doesn't matter for risk set calculation if we group by time.
             Ordering::Equal
-        } else if a.time < b.time {
+        } else if ta < tb {
             Ordering::Less
         } else {
             Ordering::Greater
@@ -46,12 +49,12 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     let mut n_at_risk = total_subjects;
 
     while i < obs.len() {
-        let t = obs[i].time;
+        let t = obs[i].time.as_f64();
         let mut n_events = 0;
         let mut n_censored = 0;
 
         // Process all events at this time t
-        while i < obs.len() && (obs[i].time - t).abs() < 1e-9 {
+        while i < obs.len() && (obs[i].time.as_f64() - t).abs() < 1e-9 {
             if obs[i].event_occurred {
                 n_events += 1;
             } else {
@@ -96,13 +99,11 @@ pub fn try_estimate_hazard_ratio(
         let mut events = 0.0;
         let mut time = 0.0;
         for obs in group {
-            if obs.time < 0.0 {
-                return Err("Negative time values encountered");
-            }
+            // Negative check removed as SurvivalTime guarantees non-negativity
             if obs.event_occurred {
                 events += 1.0;
             }
-            time += obs.time;
+            time += obs.time.as_f64();
         }
         Ok((events, time))
     };

@@ -49,3 +49,7 @@
 **Gap:** The `lorahub` module was a "Black Box" with only an internal refactoring note, failing to explain the Strategy Pattern or how to combine models.
 **Strategy:** Overhauled `lorahub/mod.rs` with a Mermaid Class Diagram of the Strategy Pattern and a runnable "Quick Start" example for merging dummy tensors.
 **Outcome:** Users can now visualize the architecture and copy-paste code to merge LLM adapters.
+## 2026-01-25 - Demystifying Algorithmic Information
+**Gap:** The `algorithmic_information` module was a "Visual Void" with opaque submodule names and zero context for the mathematical theory.
+**Strategy:** Overhauled `mod.rs` with a primer on Kolmogorov Complexity, a Mermaid diagram, and a runnable Quick Start. Added doc examples to `kolmogorov.rs` and `geometry.rs`.
+**Outcome:** Users can now understand the connection between program size and complexity and use the approximation tools without reading the source code.
