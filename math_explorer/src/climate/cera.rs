@@ -1,6 +1,7 @@
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
 use crate::climate::autoencoder::Autoencoder;
+use crate::climate::error::ClimateError;
 use crate::climate::predictor::Predictor;
 use nalgebra::DMatrix;
 // Re-export CeraConfig for backward compatibility (or convenience)
@@ -25,19 +26,23 @@ impl Cera {
     ///
     /// # Returns
     ///
-    /// A result containing the new `Cera` instance or an error message.
-    pub fn new(config: CeraConfig) -> Result<Self, String> {
+    /// A result containing the new `Cera` instance or a `ClimateError`.
+    pub fn new(config: CeraConfig) -> Result<Self, ClimateError> {
         if config.aligned_channels > config.latent_channels {
-            return Err(format!(
+            return Err(ClimateError::InvalidConfig(format!(
                 "aligned_channels ({}) cannot be greater than latent_channels ({})",
                 config.aligned_channels, config.latent_channels
-            ));
+            )));
         }
         if config.aligned_channels == 0 {
-            return Err("aligned_channels must be greater than 0".to_string());
+            return Err(ClimateError::InvalidConfig(
+                "aligned_channels must be greater than 0".to_string(),
+            ));
         }
         if config.num_levels == 0 {
-            return Err("num_levels must be greater than 0".to_string());
+            return Err(ClimateError::InvalidConfig(
+                "num_levels must be greater than 0".to_string(),
+            ));
         }
 
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
@@ -144,7 +149,7 @@ mod tests {
 
         // Use Trainer
         let mut trainer = CeraTrainer::new(&mut cera);
-        trainer.train(&control_inputs, &control_targets, &warm_inputs);
+        trainer.train(&control_inputs, &control_targets, &warm_inputs).expect("Training failed");
 
         let (test_inputs, _) = generate_data(4, 0.5);
         let prediction = cera.predict(&test_inputs);
