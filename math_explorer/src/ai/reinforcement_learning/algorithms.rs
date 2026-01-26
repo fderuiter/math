@@ -1,4 +1,6 @@
+use super::strategies::{EpsilonGreedy, ExplorationStrategy};
 use super::types::{Action, State};
+use rand::Rng;
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -24,7 +26,7 @@ where
     q_table: HashMap<(S, A), f64>,
     learning_rate: f64,
     discount_factor: f64,
-    epsilon: f64, // For epsilon-greedy exploration
+    strategy: Box<dyn ExplorationStrategy<A>>,
 }
 
 impl<S, A> TabularQAgent<S, A>
@@ -37,7 +39,20 @@ where
             q_table: HashMap::new(),
             learning_rate,
             discount_factor,
-            epsilon,
+            strategy: Box::new(EpsilonGreedy::new(epsilon)),
+        }
+    }
+
+    pub fn with_strategy(
+        learning_rate: f64,
+        discount_factor: f64,
+        strategy: Box<dyn ExplorationStrategy<A>>,
+    ) -> Self {
+        Self {
+            q_table: HashMap::new(),
+            learning_rate,
+            discount_factor,
+            strategy,
         }
     }
 
@@ -82,32 +97,29 @@ where
         self.q_table.insert((*state, *action), new_q);
     }
 
-    /// Selects an action using Epsilon-Greedy strategy.
+    /// Selects an action using the injected strategy.
     pub fn select_action(&self, state: &S, available_actions: &[A]) -> Option<A> {
+        let mut rng = rand::thread_rng();
+        self.select_action_with_rng(state, available_actions, &mut rng)
+    }
+
+    /// Selects an action using the injected strategy and provided RNG.
+    pub fn select_action_with_rng<R: Rng>(
+        &self,
+        state: &S,
+        available_actions: &[A],
+        rng: &mut R,
+    ) -> Option<A> {
         if available_actions.is_empty() {
             return None;
         }
 
-        let mut rng = rand::thread_rng();
-        use rand::Rng;
+        let action_values: Vec<(A, f64)> = available_actions
+            .iter()
+            .map(|a| (*a, self.get_q_value(state, a)))
+            .collect();
 
-        if rng.r#gen::<f64>() < self.epsilon {
-            // Explore: Random action
-            let index = rng.gen_range(0..available_actions.len());
-            Some(available_actions[index])
-        } else {
-            // Exploit: Best action
-            // Shuffle to break ties randomly? Or just take first best.
-            // For simplicity, take first best.
-            available_actions
-                .iter()
-                .max_by(|a, b| {
-                    let qa = self.get_q_value(state, a);
-                    let qb = self.get_q_value(state, b);
-                    qa.partial_cmp(&qb).unwrap_or(std::cmp::Ordering::Equal)
-                })
-                .copied()
-        }
+        self.strategy.select_action(&action_values, rng)
     }
 }
 

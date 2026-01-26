@@ -2,6 +2,7 @@
 mod tests {
     use math_explorer::ai::reinforcement_learning::algorithms::TabularQAgent;
     use math_explorer::ai::reinforcement_learning::bellman::state_value_bellman_equation;
+    use math_explorer::ai::reinforcement_learning::strategies::ExplorationStrategy;
     use math_explorer::ai::reinforcement_learning::types::{
         Action, MarkovDecisionProcess, Policy, State,
     };
@@ -167,5 +168,48 @@ mod tests {
             &[Move::Forward, Move::Stay],
         );
         assert!((agent.get_q_value(&state, &action) - 0.09).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_select_action_baseline() {
+        let agent = TabularQAgent::new(0.1, 0.9, 0.0); // Epsilon = 0.0 (Greedy)
+        // Since epsilon is 0, it should always pick the action with max Q-value
+        // But Q-values are all 0.
+        // It should return one of the available actions.
+
+        let action = agent.select_action(
+            &GridState::Start,
+            &[Move::Forward, Move::Stay],
+        );
+        assert!(action.is_some());
+    }
+
+    struct FirstActionStrategy;
+    impl<A: Action> ExplorationStrategy<A> for FirstActionStrategy {
+        fn select_action(
+            &self,
+            action_values: &[(A, f64)],
+            _rng: &mut dyn rand::RngCore,
+        ) -> Option<A> {
+             action_values.first().map(|(a, _)| a.clone())
+        }
+    }
+
+    #[test]
+    fn test_strategy_injection() {
+        let strategy = Box::new(FirstActionStrategy);
+        let agent = TabularQAgent::with_strategy(0.1, 0.9, strategy);
+
+        let state = GridState::Start;
+        let actions = [Move::Stay, Move::Forward]; // Stay is first
+
+        // Even if Forward had higher Q (it doesn't yet, all 0), it would pick Stay.
+        let action = agent.select_action(&state, &actions);
+        assert_eq!(action, Some(Move::Stay));
+
+        // Test with different order to be sure
+        let actions_rev = [Move::Forward, Move::Stay];
+        let action_rev = agent.select_action(&state, &actions_rev);
+        assert_eq!(action_rev, Some(Move::Forward));
     }
 }
