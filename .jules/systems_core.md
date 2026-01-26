@@ -48,3 +48,8 @@
 **Violation:** The `AdamOptimizer` in `ai::sds::training` was a concrete struct used directly, violating the Dependency Inversion Principle and preventing the interchangeability of optimization algorithms (e.g., SGD vs Adam).
 **Refactor:** Applied **Dependency Inversion**. Extracted an `Optimizer` trait with a `step` method. Implemented `Optimizer` for `AdamOptimizer` and added a new `SgdOptimizer`.
 **Trade-off:** Introduced a trait abstraction which requires importing the trait to use the `step` method, but enabled OCP for optimization strategies.
+
+## 2026-11-25 - Typed Errors for Clinical Trials
+**Violation:** `AllocationStrategy` used `String` for error handling (Primitive Obsession), preventing programmatic handling of errors like `InsufficientSampleSize` or `InvalidData`.
+**Refactor:** Enforced **Typed Errors**. Updated `AllocationStrategy` to return `Result<Vec<Group>, ClinicalTrialError>`.
+**Trade-off:** Breaking change for the trait (mitigated by version bump), but legacy wrapper functions preserve backward compatibility for simple calls.
