@@ -135,3 +135,23 @@ Benchmark `bench_lorahub` (10 modules, 1000x1000 matrices):
 - Before: 728.78ms
 - After: 66.35ms
 - Speedup: ~11x (91% reduction)
+
+## 2026-11-01 - [Optimization] **Bottleneck:** Ising Model Metropolis Step Overhead **Strategy:** Lookup Table & Batching **Gain:** 85% Speedup (13.9M/s -> 25.7M/s)
+
+**Bottleneck:**
+The `SpinLattice::metropolis_step` function was called in a tight loop, causing:
+1. `rand::thread_rng()` initialization overhead for every single spin flip.
+2. Expensive `exp()` calculations for Boltzmann factors in the hot path.
+3. Repetitive neighbor indexing.
+
+**Strategy:**
+Implemented `SpinLattice::evolve` for batched updates.
+1. **Lookup Table:** Precomputed `exp(-beta * dE)` for all 10 possible local configurations (spin state vs neighbor sum), removing `exp()` from the loop.
+2. **RNG Reuse:** Instantiated the RNG once per batch.
+3. **Batching:** Processed multiple steps in a single function call to amortize setup costs.
+
+**Gain:**
+Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
+- Before: ~0.72s (13.9 M/s)
+- After: ~0.39s (25.7 M/s)
+- Speedup: ~1.85x
