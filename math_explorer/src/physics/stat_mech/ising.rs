@@ -174,16 +174,16 @@ impl SpinLattice {
         // sum_idx: 0..5 for sum in {-4, -2, 0, 2, 4} mapped via (sum + 4) / 2
         let mut lut = [[0.0; 5]; 2];
 
-        for s_idx in 0..2 {
+        for (s_idx, lut_row) in lut.iter_mut().enumerate() {
             let s_val = if s_idx == 0 { -1.0 } else { 1.0 };
-            for sum_idx in 0..5 {
+            for (sum_idx, entry) in lut_row.iter_mut().enumerate() {
                 let sum_val = (sum_idx as f64 * 2.0) - 4.0;
                 let delta_e = 2.0 * s_val * (j_coupling * sum_val + h_field);
 
                 if delta_e <= 0.0 {
-                    lut[s_idx][sum_idx] = 1.1; // Always accept (value > 1.0 ensures check passes)
+                    *entry = 1.1; // Always accept (value > 1.0 ensures check passes)
                 } else {
-                    lut[s_idx][sum_idx] = (-beta * delta_e).exp();
+                    *entry = (-beta * delta_e).exp();
                 }
             }
         }
