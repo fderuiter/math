@@ -49,3 +49,8 @@
 **Gap:** The `algorithmic_information` module was a "Visual Void" with opaque submodule names and zero context for the mathematical theory.
 **Strategy:** Overhauled `mod.rs` with a primer on Kolmogorov Complexity, a Mermaid diagram, and a runnable Quick Start. Added doc examples to `kolmogorov.rs` and `geometry.rs`.
 **Outcome:** Users can now understand the connection between program size and complexity and use the approximation tools without reading the source code.
+
+## 2026-01-26 - Visualizing LoraHub
+**Gap:** The `lorahub` module was a "Visual Void" with no explanation of the Strategy Pattern or how to use the ensemble.
+**Strategy:** Overhauled `lorahub/mod.rs` with a Mermaid class diagram showing the composition strategies and a runnable Quick Start example for merging LoRA weights.
+**Outcome:** Users can now understand the LoraHub architecture and merge weights without reading the source code.
