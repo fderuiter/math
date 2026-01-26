@@ -182,7 +182,9 @@ pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
 pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<Group>, String> {
     let mut rng = thread_rng();
     let randomizer = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
-    randomizer.assign(&mut rng, n_patients).map_err(|e| e.to_string())
+    randomizer
+        .assign(&mut rng, n_patients)
+        .map_err(|e| e.to_string())
 }
 
 #[deprecated(since = "0.2.0", note = "Use StratifiedRandomizer struct instead")]
