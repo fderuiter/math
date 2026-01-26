@@ -44,3 +44,8 @@
 - Removed deprecated `is_prime_placeholder` ("Rot Check").
 - Added comprehensive docstrings and a "Quick Start" example to `partitions.rs`, explaining the Pushpa and Vasuki functions.
 **Outcome:** Users can now navigate the number theory tools and understand how to generate restricted partition coefficients.
+
+## 2026-01-25 - Demystifying Algorithmic Information
+**Gap:** The `algorithmic_information` module was a "Visual Void" with opaque submodule names and zero context for the mathematical theory.
+**Strategy:** Overhauled `mod.rs` with a primer on Kolmogorov Complexity, a Mermaid diagram, and a runnable Quick Start. Added doc examples to `kolmogorov.rs` and `geometry.rs`.
+**Outcome:** Users can now understand the connection between program size and complexity and use the approximation tools without reading the source code.
