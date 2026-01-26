@@ -159,6 +159,74 @@ impl SpinLattice {
             self.set(x, y, -s);
         }
     }
+
+    /// Performs multiple Metropolis steps efficiently using a lookup table and batching.
+    ///
+    /// This method is significantly faster than calling `metropolis_step` in a loop because:
+    /// 1. It precomputes Boltzmann factors (`exp(-beta * dE)`) into a lookup table.
+    /// 2. It reuses the random number generator, avoiding TLS overhead.
+    pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
+        let mut rng = rand::thread_rng();
+        let beta = 1.0 / (KB * temperature);
+
+        // Precompute probabilities: lut[s_idx][sum_idx]
+        // s_idx: 0 for s=-1, 1 for s=1
+        // sum_idx: 0..5 for sum in {-4, -2, 0, 2, 4} mapped via (sum + 4) / 2
+        let mut lut = [[0.0; 5]; 2];
+
+        for s_idx in 0..2 {
+            let s_val = if s_idx == 0 { -1.0 } else { 1.0 };
+            for sum_idx in 0..5 {
+                let sum_val = (sum_idx as f64 * 2.0) - 4.0;
+                let delta_e = 2.0 * s_val * (j_coupling * sum_val + h_field);
+
+                if delta_e <= 0.0 {
+                    lut[s_idx][sum_idx] = 1.1; // Always accept (value > 1.0 ensures check passes)
+                } else {
+                    lut[s_idx][sum_idx] = (-beta * delta_e).exp();
+                }
+            }
+        }
+
+        let width = self.width;
+        let height = self.height;
+
+        for _ in 0..steps {
+            let x = rng.gen_range(0..width);
+            let y = rng.gen_range(0..height);
+
+            // Manual inline of get() to help optimizer
+            let idx = y * width + x;
+            let s = self.spins[idx];
+
+            // Neighbors
+            // Use wrapping arithmetic or simple checks to avoid modulo if possible,
+            // but for random access, modulo is robust.
+            // Optimizing modulo:
+            let left_x = if x == 0 { width - 1 } else { x - 1 };
+            let right_x = if x == width - 1 { 0 } else { x + 1 };
+            let up_y = if y == 0 { height - 1 } else { y - 1 };
+            let down_y = if y == height - 1 { 0 } else { y + 1 };
+
+            let neighbor_sum = self.spins[y * width + left_x] as i32
+                + self.spins[y * width + right_x] as i32
+                + self.spins[up_y * width + x] as i32
+                + self.spins[down_y * width + x] as i32;
+
+            // Map s (-1 or 1) to 0 or 1
+            let s_idx = if s == -1 { 0 } else { 1 };
+            // Map neighbor_sum (-4..4) to 0..4
+            let sum_idx = ((neighbor_sum + 4) / 2) as usize;
+
+            let prob = lut[s_idx][sum_idx];
+
+            // If prob > 1.0, it was delta_e < 0, so flip.
+            // Else compare with random.
+            if prob > 1.0 || rng.r#gen::<f64>() < prob {
+                self.spins[idx] = -s;
+            }
+        }
+    }
 }
 
 #[cfg(test)]
