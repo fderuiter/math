@@ -53,3 +53,8 @@
 **Violation:** Inconsistent error handling in `applied::clinical_trials`, where `design`, `sample_size`, and `survival_analysis` modules used primitive `String` or `&'static str` errors, violating the "Error Hierarchy" pattern and preventing programmatic handling of specific failure modes.
 **Refactor:** Applied **Error Hierarchy**. Unified the module to use the existing `ClinicalTrialError` enum. Refactored `AllocationStrategy`, `calculate_sample_size_*`, and `try_estimate_hazard_ratio` to return typed errors.
 **Trade-off:** Increased verbosity in error construction (requires matching variants) and legacy wrappers needed updates, but achieved type-safety and consistency across the domain module.
+
+## 2027-02-14 - Strategy Pattern for Stochastic Simulation
+**Violation:** The `gillespie_step_time` function in `epidemiology::stochastic` had hardcoded `rand::thread_rng()` dependency (Side Effect) and hardcoded 2-reaction logic, violating Dependency Inversion and Open/Closed Principle.
+**Refactor:** Applied the **Strategy Pattern**. Defined `StochasticSystem` trait for reaction networks and `GillespieSolver` struct with injected RNG (`R: Rng`).
+**Trade-off:** Increased complexity (Generics, Trait definition) compared to a single function, but enabled deterministic testing (seeded RNG) and support for any reaction network (Composability).
