@@ -1,6 +1,6 @@
-use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 use super::kinetics::{ReactionKinetics, SchnakenbergKinetics};
 use super::state::TuringState;
+use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 
 /// Represents a 1D Reaction-Diffusion system.
 pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
@@ -237,11 +237,9 @@ impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
             self.d_u,
             self.d_v,
             self.dx,
-            |i, _u, _v, du, dv| {
-                unsafe {
-                    *out_u.get_unchecked_mut(i) = du;
-                    *out_v.get_unchecked_mut(i) = dv;
-                }
+            |i, _u, _v, du, dv| unsafe {
+                *out_u.get_unchecked_mut(i) = du;
+                *out_v.get_unchecked_mut(i) = dv;
             },
         );
     }
