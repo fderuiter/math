@@ -92,7 +92,7 @@
 //!
 //! // 4. Train (using the mock optimizer)
 //! let mut trainer = CeraTrainer::new(&mut model);
-//! trainer.train(&inputs, &targets, &warm_inputs);
+//! trainer.train(&inputs, &targets, &warm_inputs).unwrap();
 //!
 //! // 5. Predict
 //! let prediction = model.predict(&inputs);
@@ -102,6 +102,7 @@
 pub mod autoencoder;
 pub mod cera;
 pub mod config;
+pub mod error;
 pub mod loss;
 pub mod predictor;
 pub mod tensor_ops;

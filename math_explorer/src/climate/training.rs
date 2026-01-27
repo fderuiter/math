@@ -1,6 +1,7 @@
 //! This module handles the training process for the CERA model.
 
 use crate::climate::cera::Cera;
+use crate::climate::error::ClimateError;
 use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
 use nalgebra::{DMatrix, DVector};
 
@@ -79,14 +80,14 @@ impl<'a> CeraTrainer<'a> {
         control_inputs: &DMatrix<f32>,
         control_targets: &DMatrix<f32>,
         warm_inputs: &DMatrix<f32>,
-    ) {
+    ) -> Result<(), ClimateError> {
         let batch_size = self.model.config.batch_size;
         let num_levels = self.model.config.num_levels;
         let aligned_channels = self.model.config.aligned_channels;
 
         // Ensure we don't divide by zero if inputs are empty, though new() checks dimensions.
         if control_inputs.nrows() == 0 || num_levels == 0 || batch_size == 0 {
-            return;
+            return Ok(());
         }
 
         let n_samples = control_inputs.nrows() / num_levels;
@@ -119,14 +120,14 @@ impl<'a> CeraTrainer<'a> {
                 let prediction = self.model.predictor.forward(&predictor_input);
 
                 // --- Calculate losses ---
-                let recon_loss_control = mse_loss(&control_input_batch, &control_recon);
-                let recon_loss_warm = mse_loss(&warm_input_batch, &warm_recon);
+                let recon_loss_control = mse_loss(&control_input_batch, &control_recon)?;
+                let recon_loss_warm = mse_loss(&warm_input_batch, &warm_recon)?;
                 let reconstruction_loss = (recon_loss_control + recon_loss_warm) / 2.0;
 
-                let prediction_loss = mse_loss(&control_target_batch, &prediction);
+                let prediction_loss = mse_loss(&control_target_batch, &prediction)?;
 
                 let warm_aligned_latent = warm_latent.columns(0, aligned_channels).clone_owned();
-                let emd_loss = earth_movers_distance(&control_aligned_latent, &warm_aligned_latent);
+                let emd_loss = earth_movers_distance(&control_aligned_latent, &warm_aligned_latent)?;
 
                 let loss = cera_loss(
                     reconstruction_loss,
@@ -148,5 +149,6 @@ impl<'a> CeraTrainer<'a> {
                 );
             }
         }
+        Ok(())
     }
 }
