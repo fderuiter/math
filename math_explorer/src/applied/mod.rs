@@ -23,8 +23,8 @@ pub mod cannibalism;
 /// for children based on wealth, social utility, and proximity.
 pub mod favoritism;
 
-/// Neuroimaging tools compatible with FreeSurfer formats, including cortical thickness
-/// analysis and segmentation logic.
+/// Neuroimaging pipeline for **Cortical Reconstruction**, including surface extraction,
+/// thickness measurement, and GLM statistics.
 pub mod freesurfer;
 
 /// Statistical methods for comparing outcomes using the Win Ratio approach, common
