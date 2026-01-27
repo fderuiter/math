@@ -41,14 +41,8 @@ impl<'a> CeraTrainer<'a> {
             layer.kernel -= grad_k * lr;
             layer.bias -= grad_b * lr;
         }
-        for layer in self.model.predictor.layers.iter_mut() {
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
-                rand::random::<f32>() - 0.5
-            });
-            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * lr;
-            layer.bias -= grad_b * lr;
-        }
+        // Use the predictor's interface for updates
+        self.model.predictor.update_weights(lr);
     }
 
     /// Reshapes a batch of latent vectors for the predictor.
