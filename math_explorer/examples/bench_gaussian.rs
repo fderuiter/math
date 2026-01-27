@@ -1,6 +1,6 @@
-use math_explorer::ai::gaussian_splatting::structs::Gaussian2D;
 use math_explorer::ai::gaussian_splatting::rendering::blend_gaussians;
-use nalgebra::{Point2, Matrix2, Vector3};
+use math_explorer::ai::gaussian_splatting::structs::Gaussian2D;
+use nalgebra::{Matrix2, Point2, Vector3};
 use std::time::Instant;
 
 fn main() {
