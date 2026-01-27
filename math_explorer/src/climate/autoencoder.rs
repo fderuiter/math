@@ -1,21 +1,8 @@
 //! This module defines the autoencoder architecture for the CERA framework.
 
+use crate::ai::activations::{ActivationFunction, LeakyReLU};
 use crate::climate::tensor_ops::conv1d;
 use nalgebra::{DMatrix, DVector};
-
-/// A simple leaky ReLU activation function.
-///
-/// # Arguments
-///
-/// * `x` - The matrix to apply the activation to (in-place).
-/// * `alpha` - The negative slope coefficient.
-pub fn leaky_relu(x: &mut DMatrix<f32>, alpha: f32) {
-    x.iter_mut().for_each(|val| {
-        if *val < 0.0 {
-            *val *= alpha;
-        }
-    });
-}
 
 /// A single layer for the Encoder or Decoder, consisting of a convolution and activation.
 pub struct ConvLayer {
@@ -57,48 +44,41 @@ impl ConvLayer {
 }
 
 /// The encoder component of the autoencoder.
-pub struct Encoder {
+pub struct EncoderGeneric<A: ActivationFunction<f32>> {
     /// The stack of convolutional layers.
     pub layers: Vec<ConvLayer>,
+    /// The activation function strategy.
+    pub activation: A,
 }
+
+/// Default Encoder type alias for backward compatibility.
+pub type Encoder = EncoderGeneric<LeakyReLU<f32>>;
 
 impl Encoder {
     /// Creates a new encoder with a hardcoded architecture.
-    /// Input (2 channels) -> 64 -> 64 -> Latent (3 channels)
-    ///
-    /// # Arguments
-    ///
-    /// * `in_channels` - Number of input channels.
-    /// * `latent_channels` - Dimension of the latent space.
-    ///
-    /// # Returns
-    ///
-    /// A new `Encoder`.
     pub fn new(in_channels: usize, latent_channels: usize) -> Self {
+        Self::new_with_activation(in_channels, latent_channels, LeakyReLU::new(0.01))
+    }
+}
+
+impl<A: ActivationFunction<f32>> EncoderGeneric<A> {
+    pub fn new_with_activation(in_channels: usize, latent_channels: usize, activation: A) -> Self {
         let layers = vec![
             ConvLayer::new(in_channels, 64),
             ConvLayer::new(64, 64),
             ConvLayer::new(64, latent_channels), // No activation on the latent layer
         ];
-        Self { layers }
+        Self { layers, activation }
     }
 
     /// Encodes the input data into a latent representation.
-    ///
-    /// # Arguments
-    ///
-    /// * `input` - The input data matrix.
-    ///
-    /// # Returns
-    ///
-    /// The latent representation matrix.
     pub fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = input.clone();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
             // No activation on the final layer
             if i < self.layers.len() - 1 {
-                leaky_relu(&mut x, 0.01);
+                self.activation.apply(&mut x);
             }
         }
         x
@@ -106,47 +86,44 @@ impl Encoder {
 }
 
 /// The decoder component of the autoencoder.
-pub struct Decoder {
+pub struct DecoderGeneric<A: ActivationFunction<f32>> {
     /// The stack of convolutional layers.
     pub layers: Vec<ConvLayer>,
+    /// The activation function strategy.
+    pub activation: A,
 }
+
+/// Default Decoder type alias.
+pub type Decoder = DecoderGeneric<LeakyReLU<f32>>;
 
 impl Decoder {
     /// Creates a new decoder with a hardcoded architecture.
-    /// Latent (3 channels) -> 64 -> 64 -> Output (2 channels)
-    ///
-    /// # Arguments
-    ///
-    /// * `latent_channels` - Dimension of the latent space.
-    /// * `out_channels` - Number of output channels.
-    ///
-    /// # Returns
-    ///
-    /// A new `Decoder`.
     pub fn new(latent_channels: usize, out_channels: usize) -> Self {
+        Self::new_with_activation(latent_channels, out_channels, LeakyReLU::new(0.01))
+    }
+}
+
+impl<A: ActivationFunction<f32>> DecoderGeneric<A> {
+    pub fn new_with_activation(
+        latent_channels: usize,
+        out_channels: usize,
+        activation: A,
+    ) -> Self {
         let layers = vec![
             ConvLayer::new(latent_channels, 64),
             ConvLayer::new(64, 64),
             ConvLayer::new(64, out_channels), // No activation on the output layer
         ];
-        Self { layers }
+        Self { layers, activation }
     }
 
     /// Reconstructs the input data from the latent representation.
-    ///
-    /// # Arguments
-    ///
-    /// * `latent_representation` - The latent representation matrix.
-    ///
-    /// # Returns
-    ///
-    /// The reconstructed data matrix.
     pub fn forward(&self, latent_representation: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = latent_representation.clone();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
             if i < self.layers.len() - 1 {
-                leaky_relu(&mut x, 0.01);
+                self.activation.apply(&mut x);
             }
         }
         x
@@ -154,41 +131,35 @@ impl Decoder {
 }
 
 /// The autoencoder model for the CERA framework.
-pub struct Autoencoder {
+pub struct AutoencoderGeneric<A: ActivationFunction<f32>> {
     /// The encoder component.
-    pub encoder: Encoder,
+    pub encoder: EncoderGeneric<A>,
     /// The decoder component.
-    pub decoder: Decoder,
+    pub decoder: DecoderGeneric<A>,
 }
+
+/// Default Autoencoder type alias.
+pub type Autoencoder = AutoencoderGeneric<LeakyReLU<f32>>;
 
 impl Autoencoder {
     /// Creates a new autoencoder.
-    /// The paper specifies 2 input channels and 3 latent channels.
-    ///
-    /// # Arguments
-    ///
-    /// * `in_channels` - Number of input channels.
-    /// * `latent_channels` - Dimension of the latent space.
-    ///
-    /// # Returns
-    ///
-    /// A new `Autoencoder`.
     pub fn new(in_channels: usize, latent_channels: usize) -> Self {
-        // The decoder's input is the encoder's output, and vice versa.
-        let encoder = Encoder::new(in_channels, latent_channels);
-        let decoder = Decoder::new(latent_channels, in_channels);
+        Self::new_with_activation(in_channels, latent_channels, LeakyReLU::new(0.01))
+    }
+}
+
+impl<A: ActivationFunction<f32> + Clone> AutoencoderGeneric<A> {
+    pub fn new_with_activation(
+        in_channels: usize,
+        latent_channels: usize,
+        activation: A,
+    ) -> Self {
+        let encoder = EncoderGeneric::new_with_activation(in_channels, latent_channels, activation.clone());
+        let decoder = DecoderGeneric::new_with_activation(latent_channels, in_channels, activation);
         Self { encoder, decoder }
     }
 
     /// Performs a forward pass through the autoencoder.
-    ///
-    /// # Arguments
-    ///
-    /// * `input` - The input data matrix.
-    ///
-    /// # Returns
-    ///
-    /// A tuple containing `(latent_representation, reconstruction)`.
     pub fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
@@ -221,11 +192,4 @@ mod tests {
         assert_eq!(reconstruction.ncols(), in_channels);
     }
 
-    #[test]
-    fn test_leaky_relu() {
-        let mut matrix = DMatrix::from_row_slice(2, 2, &[-1.0, 2.0, -3.0, 0.0]);
-        leaky_relu(&mut matrix, 0.1);
-        let expected = DMatrix::from_row_slice(2, 2, &[-0.1, 2.0, -0.3, 0.0]);
-        assert!((matrix - expected).abs().max() < 1e-6);
-    }
 }

@@ -291,3 +291,59 @@ pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
         *self.get_state_mut() = new_state;
     }
 }
+
+/// Macro to implement arithmetic traits and `VectorOperations` for a struct with named f64 fields.
+#[macro_export]
+macro_rules! impl_vector_ops {
+    ($struct_name:ident, $($field:ident),+) => {
+        impl std::ops::Add for $struct_name {
+            type Output = Self;
+            fn add(self, rhs: Self) -> Self {
+                Self {
+                    $(
+                        $field: self.$field + rhs.$field,
+                    )+
+                }
+            }
+        }
+
+        impl std::ops::AddAssign for $struct_name {
+            fn add_assign(&mut self, rhs: Self) {
+                $(
+                    self.$field += rhs.$field;
+                )+
+            }
+        }
+
+        impl std::ops::Mul<f64> for $struct_name {
+            type Output = Self;
+            fn mul(self, scalar: f64) -> Self {
+                Self {
+                    $(
+                        $field: self.$field * scalar,
+                    )+
+                }
+            }
+        }
+
+        impl std::ops::MulAssign<f64> for $struct_name {
+            fn mul_assign(&mut self, scalar: f64) {
+                $(
+                    self.$field *= scalar;
+                )+
+            }
+        }
+
+        impl $crate::pure_math::analysis::ode::VectorOperations for $struct_name {
+            fn scale_add(&mut self, other: &Self, scale: f64) {
+                $(
+                    self.$field += other.$field * scale;
+                )+
+            }
+
+            fn copy_from(&mut self, other: &Self) {
+                *self = *other;
+            }
+        }
+    };
+}

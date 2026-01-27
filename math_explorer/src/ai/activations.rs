@@ -1,5 +1,72 @@
 // Implementation of various activation functions.
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, RealField};
+
+/// Trait for activation functions to allow interchangeability (OCP).
+pub trait ActivationFunction<T: RealField + Copy> {
+    /// Applies the activation function in-place.
+    fn apply(&self, x: &mut DMatrix<T>);
+}
+
+/// Rectified Linear Unit (ReLU).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ReLU;
+
+impl<T: RealField + Copy> ActivationFunction<T> for ReLU {
+    fn apply(&self, x: &mut DMatrix<T>) {
+        x.apply(|val| {
+            if *val < T::zero() {
+                *val = T::zero();
+            }
+        });
+    }
+}
+
+/// Leaky ReLU.
+#[derive(Debug, Clone, Copy)]
+pub struct LeakyReLU<T> {
+    pub alpha: T,
+}
+
+impl<T: RealField + Copy> LeakyReLU<T> {
+    pub fn new(alpha: T) -> Self {
+        Self { alpha }
+    }
+}
+
+impl<T: RealField + Copy> ActivationFunction<T> for LeakyReLU<T> {
+    fn apply(&self, x: &mut DMatrix<T>) {
+        x.apply(|val| {
+            if *val < T::zero() {
+                *val *= self.alpha;
+            }
+        });
+    }
+}
+
+/// Sigmoid function.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Sigmoid;
+
+impl<T: RealField + Copy> ActivationFunction<T> for Sigmoid {
+    fn apply(&self, x: &mut DMatrix<T>) {
+        x.apply(|val| {
+            // 1 / (1 + exp(-x))
+            *val = T::one() / (T::one() + (-*val).exp());
+        });
+    }
+}
+
+/// Hyperbolic Tangent (Tanh).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Tanh;
+
+impl<T: RealField + Copy> ActivationFunction<T> for Tanh {
+    fn apply(&self, x: &mut DMatrix<T>) {
+        x.apply(|val| {
+            *val = val.tanh();
+        });
+    }
+}
 
 /// Applies the Rectified Linear Unit (ReLU) activation function element-wise, in-place.
 /// ReLU(x) = max(0, x)

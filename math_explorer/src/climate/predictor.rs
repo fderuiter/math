@@ -1,6 +1,7 @@
 //! This module defines the predictor model for the CERA framework.
 
-use crate::climate::autoencoder::{ConvLayer, leaky_relu};
+use crate::ai::activations::{ActivationFunction, LeakyReLU};
+use crate::climate::autoencoder::ConvLayer;
 use nalgebra::{DMatrix, DVector};
 
 /// A trait representing the predictor model interface.
@@ -18,9 +19,11 @@ pub trait PredictorModel {
 ///
 /// The predictor takes the flattened, aligned latent representation from the
 /// autoencoder's encoder and maps it to the target output variables.
-pub struct Predictor {
+pub struct Predictor<A: ActivationFunction<f32>> {
     /// The stack of layers (using `ConvLayer` for simplicity as dense layers).
     pub layers: Vec<ConvLayer>,
+    /// The activation function strategy.
+    pub activation: A,
     // Store dimensions for clarity
     #[allow(dead_code)]
     input_size: usize,
@@ -29,7 +32,7 @@ pub struct Predictor {
     output_size: usize,
 }
 
-impl Predictor {
+impl Predictor<LeakyReLU<f32>> {
     /// Creates a new predictor model with a hardcoded architecture.
     /// Input (60) -> 128 -> 128 -> 128 -> 128 -> Output (148)
     ///
@@ -42,6 +45,13 @@ impl Predictor {
     ///
     /// A new `Predictor` instance.
     pub fn new(input_size: usize, output_size: usize) -> Self {
+        Self::new_with_activation(input_size, output_size, LeakyReLU::new(0.01))
+    }
+}
+
+impl<A: ActivationFunction<f32>> Predictor<A> {
+    /// Creates a new predictor with a custom activation function.
+    pub fn new_with_activation(input_size: usize, output_size: usize, activation: A) -> Self {
         let layers = vec![
             ConvLayer::new(input_size, 128),
             ConvLayer::new(128, 128),
@@ -51,13 +61,14 @@ impl Predictor {
         ];
         Self {
             layers,
+            activation,
             input_size,
             output_size,
         }
     }
 }
 
-impl PredictorModel for Predictor {
+impl<A: ActivationFunction<f32>> PredictorModel for Predictor<A> {
     fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = input.clone();
         for (i, layer) in self.layers.iter().enumerate() {
@@ -67,7 +78,7 @@ impl PredictorModel for Predictor {
             x = crate::climate::tensor_ops::conv1d(&x, &layer.kernel, &layer.bias);
             // No activation on the final layer
             if i < self.layers.len() - 1 {
-                leaky_relu(&mut x, 0.01);
+                self.activation.apply(&mut x);
             }
         }
         x
