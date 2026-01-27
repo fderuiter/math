@@ -1,5 +1,5 @@
-use rand::Rng;
 use crate::epidemiology::compartmental::{SIRModel, SIRState};
+use rand::Rng;
 
 /// A trait for systems that can be simulated stochastically.
 ///
@@ -142,7 +142,10 @@ pub fn probability_of_extinction(r0: f64, initial_cases: f64) -> f64 {
 /// Calculates time to next event for SIR system (Gillespie).
 ///
 /// $\tau = - \ln(U) / (\text{rate}_{infect} + \text{rate}_{recover})$
-#[deprecated(since = "0.1.0", note = "Use GillespieSolver instead for full simulation")]
+#[deprecated(
+    since = "0.1.0",
+    note = "Use GillespieSolver instead for full simulation"
+)]
 pub fn gillespie_step_time(rate_infect: f64, rate_recover: f64) -> f64 {
     let mut rng = rand::thread_rng();
     let u: f64 = rng.r#gen(); // Uniform (0, 1)
@@ -161,8 +164,8 @@ pub fn gillespie_step_time(rate_infect: f64, rate_recover: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::rngs::StdRng;
     use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn test_extinction_probability() {
