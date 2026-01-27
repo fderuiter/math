@@ -30,7 +30,8 @@ impl Gaussian3D {
 #[derive(Clone, Debug)]
 pub struct Gaussian2D {
     pub mean: Point2<f64>,
-    pub covariance: Matrix2<f64>,
+    /// The conic matrix (inverse covariance with -0.5 factor) for fast evaluation.
+    pub conic: Matrix2<f64>,
     pub opacity: f64,
     pub color: Vector3<f64>,
     /// Depth is needed for sorting
