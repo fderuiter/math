@@ -104,11 +104,7 @@ impl Decoder {
 }
 
 impl<A: ActivationFunction<f32>> DecoderGeneric<A> {
-    pub fn new_with_activation(
-        latent_channels: usize,
-        out_channels: usize,
-        activation: A,
-    ) -> Self {
+    pub fn new_with_activation(latent_channels: usize, out_channels: usize, activation: A) -> Self {
         let layers = vec![
             ConvLayer::new(latent_channels, 64),
             ConvLayer::new(64, 64),
@@ -149,12 +145,9 @@ impl Autoencoder {
 }
 
 impl<A: ActivationFunction<f32> + Clone> AutoencoderGeneric<A> {
-    pub fn new_with_activation(
-        in_channels: usize,
-        latent_channels: usize,
-        activation: A,
-    ) -> Self {
-        let encoder = EncoderGeneric::new_with_activation(in_channels, latent_channels, activation.clone());
+    pub fn new_with_activation(in_channels: usize, latent_channels: usize, activation: A) -> Self {
+        let encoder =
+            EncoderGeneric::new_with_activation(in_channels, latent_channels, activation.clone());
         let decoder = DecoderGeneric::new_with_activation(latent_channels, in_channels, activation);
         Self { encoder, decoder }
     }
@@ -191,5 +184,4 @@ mod tests {
         assert_eq!(reconstruction.nrows(), n_samples);
         assert_eq!(reconstruction.ncols(), in_channels);
     }
-
 }
