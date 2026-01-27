@@ -1,5 +1,4 @@
 use super::structs::Gaussian2D;
-use nalgebra::Matrix2;
 use nalgebra::Vector3;
 
 /// Computes the accumulated color for a pixel using alpha blending.
@@ -37,23 +36,20 @@ pub fn blend_gaussians(
 ///
 /// alpha = alpha_raw * exp(-0.5 * (x - mu)^T * Sigma^-1 * (x - mu))
 pub fn evaluate_gaussian_opacity(gaussian: &Gaussian2D, point: &nalgebra::Point2<f64>) -> f64 {
-    let diff = point - gaussian.mean;
+    let dx = point.x - gaussian.mean.x;
+    let dy = point.y - gaussian.mean.y;
 
-    // Inverse covariance
-    let det = gaussian.covariance.determinant();
-    if det.abs() < 1e-6 {
-        return 0.0;
-    }
-    let inv_cov = gaussian
-        .covariance
-        .try_inverse()
-        .unwrap_or_else(Matrix2::identity);
+    // Power = d^T * Conic * d
+    // Conic is symmetric: [[a, b], [b, c]] (where conic = -0.5 * Sigma^-1)
+    // Result = a*x^2 + 2*b*x*y + c*y^2
+    let a = gaussian.conic[(0, 0)];
+    let b = gaussian.conic[(0, 1)];
+    let c = gaussian.conic[(1, 1)];
 
-    // Power = -0.5 * d^T * Sigma^-1 * d
-    let power = -0.5 * (diff.transpose() * inv_cov * diff)[(0, 0)];
+    let power = a * dx * dx + 2.0 * b * dx * dy + c * dy * dy;
 
     if power > 0.0 {
-        return 0.0; // Should not happen for positive definite covariance unless logic error
+        return 0.0;
     }
 
     gaussian.opacity * power.exp()
@@ -68,7 +64,7 @@ mod tests {
     fn test_evaluate_gaussian() {
         let g = Gaussian2D {
             mean: Point2::new(0.0, 0.0),
-            covariance: Matrix2::identity(),
+            conic: Matrix2::from_diagonal_element(-0.5),
             opacity: 1.0,
             color: Vector3::new(1.0, 0.0, 0.0),
             depth: 1.0,
@@ -87,14 +83,14 @@ mod tests {
     fn test_blend_gaussians() {
         let g1 = Gaussian2D {
             mean: Point2::new(0.0, 0.0),
-            covariance: Matrix2::identity(),
+            conic: Matrix2::from_diagonal_element(-0.5),
             opacity: 0.5,
             color: Vector3::new(1.0, 0.0, 0.0), // Red
             depth: 1.0,
         };
         let g2 = Gaussian2D {
             mean: Point2::new(0.0, 0.0),
-            covariance: Matrix2::identity(),
+            conic: Matrix2::from_diagonal_element(-0.5),
             opacity: 0.5,
             color: Vector3::new(0.0, 1.0, 0.0), // Green
             depth: 2.0,
