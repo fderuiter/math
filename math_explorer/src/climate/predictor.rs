@@ -74,7 +74,7 @@ impl PredictorModel for Predictor {
     }
 
     fn update_weights(&mut self, learning_rate: f32) {
-         for layer in self.layers.iter_mut() {
+        for layer in self.layers.iter_mut() {
             let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
                 rand::random::<f32>() - 0.5
             });

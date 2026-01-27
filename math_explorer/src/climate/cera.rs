@@ -65,7 +65,7 @@ impl Cera {
         predictor: Box<dyn PredictorModel>,
     ) -> Result<Self, String> {
         if config.aligned_channels > config.latent_channels {
-             return Err(format!(
+            return Err(format!(
                 "aligned_channels ({}) cannot be greater than latent_channels ({})",
                 config.aligned_channels, config.latent_channels
             ));
