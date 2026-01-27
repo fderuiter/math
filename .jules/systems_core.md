@@ -58,3 +58,8 @@
 **Violation:** The `gillespie_step_time` function in `epidemiology::stochastic` had hardcoded `rand::thread_rng()` dependency (Side Effect) and hardcoded 2-reaction logic, violating Dependency Inversion and Open/Closed Principle.
 **Refactor:** Applied the **Strategy Pattern**. Defined `StochasticSystem` trait for reaction networks and `GillespieSolver` struct with injected RNG (`R: Rng`).
 **Trade-off:** Increased complexity (Generics, Trait definition) compared to a single function, but enabled deterministic testing (seeded RNG) and support for any reaction network (Composability).
+
+## 2027-02-14 - Stencil Pattern for Turing System
+**Violation:** The `TuringSystem` contained duplicate logic for the reaction-diffusion finite difference stencil in `step` (manual Euler) and `derivative_in_place` (generic ODE), violating DRY.
+**Refactor:** Applied the **Stencil Pattern** (Variation of Template Method). Extracted `apply_stencil_impl` as a private static method to encapsulate the sliding window optimization and stencil math.
+**Trade-off:** Slight increase in verbosity for method arguments (passing fields explicitly to avoid borrow conflicts), but eliminated 100+ lines of duplicated code and ensured consistency between generic and optimized solvers.
