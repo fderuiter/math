@@ -256,12 +256,7 @@ impl<K: ReactionKinetics> TuringSystem<K> {
             &self.state,
             &mut self.next_state.u,
             &mut self.next_state.v,
-            |u_curr, v_curr, du_dt, dv_dt| {
-                (
-                    u_curr + dt * du_dt,
-                    v_curr + dt * dv_dt,
-                )
-            },
+            |u_curr, v_curr, du_dt, dv_dt| (u_curr + dt * du_dt, v_curr + dt * dv_dt),
         );
 
         // Swap buffers (states)
@@ -281,9 +276,8 @@ impl<K: ReactionKinetics> TuringSystem<K> {
         input_state: &TuringState,
         out_u: &mut [f64],
         out_v: &mut [f64],
-        mut op: F
-    )
-    where
+        mut op: F,
+    ) where
         F: FnMut(f64, f64, f64, f64) -> (f64, f64),
     {
         let n = input_state.len();
