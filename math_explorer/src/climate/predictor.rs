@@ -1,7 +1,18 @@
 //! This module defines the predictor model for the CERA framework.
 
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
-use nalgebra::DMatrix; // Re-use from autoencoder module
+use nalgebra::{DMatrix, DVector};
+
+/// A trait representing the predictor model interface.
+/// This allows for different predictor architectures and decouples the training loop.
+pub trait PredictorModel {
+    /// Performs a forward pass through the predictor.
+    fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32>;
+
+    /// Updates the weights of the predictor using a learning rate.
+    /// Note: This is a simplified update step for demonstration/simulation purposes.
+    fn update_weights(&mut self, learning_rate: f32);
+}
 
 /// A multi-layer perceptron (MLP) used as the predictor in the CERA framework.
 ///
@@ -11,7 +22,6 @@ pub struct Predictor {
     /// The stack of layers (using `ConvLayer` for simplicity as dense layers).
     pub layers: Vec<ConvLayer>,
     // Store dimensions for clarity
-    /// The size of the input vector.
     #[allow(dead_code)]
     input_size: usize,
     /// The size of the output vector.
@@ -45,17 +55,10 @@ impl Predictor {
             output_size,
         }
     }
+}
 
-    /// Performs a forward pass through the predictor.
-    ///
-    /// # Arguments
-    ///
-    /// * `input` - The flattened latent representation, with shape (batch_size, input_size).
-    ///
-    /// # Returns
-    ///
-    /// The predicted output matrix of shape (batch_size, output_size).
-    pub fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
+impl PredictorModel for Predictor {
+    fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = input.clone();
         for (i, layer) in self.layers.iter().enumerate() {
             // A dense layer is equivalent to a 1D convolution with kernel size 1
@@ -68,6 +71,17 @@ impl Predictor {
             }
         }
         x
+    }
+
+    fn update_weights(&mut self, learning_rate: f32) {
+         for layer in self.layers.iter_mut() {
+            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
+                rand::random::<f32>() - 0.5
+            });
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
+            layer.kernel -= grad_k * learning_rate;
+            layer.bias -= grad_b * learning_rate;
+        }
     }
 }
 

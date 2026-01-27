@@ -1,7 +1,7 @@
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
 use crate::climate::autoencoder::Autoencoder;
-use crate::climate::predictor::Predictor;
+use crate::climate::predictor::{Predictor, PredictorModel};
 use nalgebra::DMatrix;
 // Re-export CeraConfig for backward compatibility (or convenience)
 pub use crate::climate::config::CeraConfig;
@@ -11,7 +11,7 @@ pub struct Cera {
     /// The autoencoder component.
     pub autoencoder: Autoencoder,
     /// The predictor component.
-    pub predictor: Predictor,
+    pub predictor: Box<dyn PredictorModel>,
     /// The model configuration.
     pub config: CeraConfig,
 }
@@ -43,6 +43,43 @@ impl Cera {
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         let predictor_input_size = config.num_levels * config.aligned_channels;
         let predictor = Predictor::new(predictor_input_size, config.output_size);
+        Ok(Self {
+            autoencoder,
+            predictor: Box::new(predictor),
+            config,
+        })
+    }
+
+    /// Creates a new CERA model with a custom predictor.
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The configuration struct.
+    /// * `predictor` - A custom predictor implementation.
+    ///
+    /// # Returns
+    ///
+    /// A result containing the new `Cera` instance or an error message.
+    pub fn new_with_predictor(
+        config: CeraConfig,
+        predictor: Box<dyn PredictorModel>,
+    ) -> Result<Self, String> {
+        if config.aligned_channels > config.latent_channels {
+             return Err(format!(
+                "aligned_channels ({}) cannot be greater than latent_channels ({})",
+                config.aligned_channels, config.latent_channels
+            ));
+        }
+        // ... (Other checks omitted for brevity in this variant, but ideally shared)
+        // For strict correctness, we should validate config here too.
+        if config.aligned_channels == 0 {
+            return Err("aligned_channels must be greater than 0".to_string());
+        }
+        if config.num_levels == 0 {
+            return Err("num_levels must be greater than 0".to_string());
+        }
+
+        let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         Ok(Self {
             autoencoder,
             predictor,
