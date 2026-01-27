@@ -54,3 +54,8 @@
 **Gap:** The `lorahub` module was a "Visual Void" with no explanation of the Strategy Pattern or how to use the ensemble.
 **Strategy:** Overhauled `lorahub/mod.rs` with a Mermaid class diagram showing the composition strategies and a runnable Quick Start example for merging LoRA weights.
 **Outcome:** Users can now understand the LoraHub architecture and merge weights without reading the source code.
+
+## 2026-02-01 - Demystifying Neuroimaging
+**Gap:** The `freesurfer` module was a "Visual Void" with no explanation of the cortical reconstruction pipeline or usage.
+**Strategy:** Overhauled `freesurfer/mod.rs` with a Mermaid pipeline diagram and a runnable Quick Start example for cortical thickness calculation.
+**Outcome:** Users can now understand the MRI processing pipeline and use the tools for surface analysis.

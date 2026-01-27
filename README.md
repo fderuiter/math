@@ -62,7 +62,7 @@ graph TD
     Root --> Pure[📐 Pure Math]
 
     AI --> Trans[Transformers] & NeRF[NeRF-Diffusion]
-    Applied --> Fav[Favoritism] & Clinical[Clinical Trials]
+    Applied --> Fav[Favoritism] & Clinical[Clinical Trials] & NeuroImg[Neuroimaging]
     Bio --> Neuro[Neuroscience] & Morph[Morphogenesis]
     Epi --> SIR[SIR/SEIR Models] & Net[Network Spread]
     Phys --> Quant[Quantum] & Chaos[Chaos Theory]
@@ -74,7 +74,7 @@ graph TD
 | Domain | Module | Description |
 | :--- | :--- | :--- |
 | **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
-| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), and **LoraHub**. |
+| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), **LoraHub**, and **Neuroimaging**. |
 | **🧬 Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Morphogenesis** (Turing Patterns), and **Evolutionary Dynamics**. |
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
 | **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
