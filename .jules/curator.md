@@ -59,3 +59,10 @@
 **Gap:** The `freesurfer` module was a "Visual Void" with no explanation of the cortical reconstruction pipeline or usage.
 **Strategy:** Overhauled `freesurfer/mod.rs` with a Mermaid pipeline diagram and a runnable Quick Start example for cortical thickness calculation.
 **Outcome:** Users can now understand the MRI processing pipeline and use the tools for surface analysis.
+
+## 2026-02-02 - Closing the Loop on RL and Turing Patterns
+**Gap:** The `ai/reinforcement_learning` module was a "Blank Page" with zero documentation, and `biology/morphogenesis` was a "Visual Void" describing reaction-diffusion without visualizing it.
+**Strategy:**
+- Overhauled `reinforcement_learning/mod.rs` with a Mermaid diagram of the Agent-Environment loop, Bellman equations, and a runnable GridWorld solver.
+- Enhanced `morphogenesis.rs` with a Mermaid diagram of the diffusion stencil and a Quick Start example for Turing patterns.
+**Outcome:** Users can now understand and simulate intelligent agents and biological patterns without deciphering raw code.

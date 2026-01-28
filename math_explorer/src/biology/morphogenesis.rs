@@ -3,8 +3,57 @@
 //! This module implements a Reaction-Diffusion system capable of generating Turing patterns.
 //! It uses a 1D grid to simulate the interaction between an activator ($u$) and an inhibitor ($v$).
 //!
+//! ## 🧬 Concept: Reaction-Diffusion
+//!
+//! The patterns emerge from the interplay of local reaction (activation/inhibition) and spatial diffusion.
+//!
+//! ```mermaid
+//! graph LR
+//!     Cell[Cell i]
+//!     Left[Cell i-1]
+//!     Right[Cell i+1]
+//!
+//!     Left -->|Diffusion| Cell
+//!     Right -->|Diffusion| Cell
+//!     Cell -->|Reaction| Cell
+//!
+//!     subgraph Inside Cell
+//!     u[Activator u]
+//!     v[Inhibitor v]
+//!     u -->|Activate| u
+//!     u -->|Activate| v
+//!     v -->|Inhibit| u
+//!     end
+//! ```
+//!
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
+//!
+//! ## 🚀 Quick Start
+//!
+//! ```rust
+//! use math_explorer::biology::morphogenesis::TuringSystem;
+//! use math_explorer::pure_math::analysis::ode::TimeStepper;
+//!
+//! // 1. Initialize System
+//! // Size=100, Du=1.0, Dv=10.0, dx=1.0
+//! let mut system = TuringSystem::new(100, 1.0, 10.0, 1.0);
+//!
+//! // 2. Add random noise to initial state to break symmetry
+//! // (Here we just add a constant for the doc test, but normally this would be random)
+//! for x in system.u_mut().iter_mut() {
+//!     *x += 0.1;
+//! }
+//!
+//! // 3. Run Simulation
+//! let dt = 0.01;
+//! for _ in 0..100 {
+//!     system.step(dt);
+//! }
+//!
+//! // 4. Check results
+//! assert!(!system.u().is_empty());
+//! ```
 
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
