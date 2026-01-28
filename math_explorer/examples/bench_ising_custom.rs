@@ -1,5 +1,5 @@
 use math_explorer::physics::stat_mech::KB;
-use math_explorer::physics::stat_mech::ising::SpinLattice;
+use math_explorer::physics::stat_mech::ising::{IsingSolver, MetropolisSolver, SpinLattice};
 use std::time::Instant;
 
 fn main() {
@@ -31,14 +31,17 @@ fn main() {
         old_speed
     );
 
-    // --- After: evolve batch ---
+    // --- After: MetropolisSolver Strategy ---
     let mut lattice = SpinLattice::new(width, height);
+    // Explicitly using the new Strategy Pattern
+    let mut solver = MetropolisSolver::new(rand::thread_rng());
+
     let start = Instant::now();
-    lattice.evolve(iterations, temp, j_coupling, h_field);
+    solver.evolve(&mut lattice, iterations, temp, j_coupling, h_field);
     let duration = start.elapsed();
     let new_speed = (iterations as f64 / duration.as_secs_f64()) / 1_000_000.0;
     println!(
-        "After (evolve):           {:.4}s, {:.2} M/s",
+        "After (MetropolisSolver): {:.4}s, {:.2} M/s",
         duration.as_secs_f64(),
         new_speed
     );

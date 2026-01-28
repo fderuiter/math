@@ -58,3 +58,8 @@
 **Violation:** The `gillespie_step_time` function in `epidemiology::stochastic` had hardcoded `rand::thread_rng()` dependency (Side Effect) and hardcoded 2-reaction logic, violating Dependency Inversion and Open/Closed Principle.
 **Refactor:** Applied the **Strategy Pattern**. Defined `StochasticSystem` trait for reaction networks and `GillespieSolver` struct with injected RNG (`R: Rng`).
 **Trade-off:** Increased complexity (Generics, Trait definition) compared to a single function, but enabled deterministic testing (seeded RNG) and support for any reaction network (Composability).
+
+## 2027-04-10 - Strategy Pattern for Ising Model
+**Violation:** `SpinLattice` in `physics::stat_mech` was coupled to the Metropolis algorithm via hardcoded `metropolis_step` and `evolve` methods, violating OCP and hindering the addition of advanced solvers (e.g., Wolff).
+**Refactor:** Applied the **Strategy Pattern**. Extracted `IsingSolver` trait and implemented `MetropolisSolver`. Refactored `SpinLattice` to delegate to these solvers, maintaining backward compatibility via deprecated methods.
+**Trade-off:** Minimal boilerplate for trait/struct definition. Enables swapping update rules and deterministic testing (via injected RNG), while preserving high-performance batch updates.
