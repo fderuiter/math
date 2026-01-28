@@ -31,3 +31,8 @@
 **Problem:** `math_explorer/src/biology/morphogenesis.rs` implemented a custom solver loop inside `TuringSystem::step`, preventing the use of generic ODE solvers (like Runge-Kutta 4) and duplicating integration logic. The state `TuringState` lacked standard arithmetic operators, making it incompatible with the library's `OdeSystem` ecosystem.
 **Decision:** Applied "Traitification". Implemented `VectorOperations`, `OdeSystem`, and `TimeStepper` for `TuringSystem`. Preserved the highly optimized sliding-window stencil logic in `derivative_in_place` and the manual Euler step in `step`.
 **Consequence:** `TuringSystem` is now a first-class citizen in the generic analysis module. It can be simulated with any `Solver` while maintaining zero-cost abstraction for the default use case.
+
+## 2026-06-16 - [Reaction-Diffusion Stencil Unification]
+**Problem:** The Reaction-Diffusion stencil logic (finite difference Laplacian + kinetics) was duplicated in both `step` (optimized Euler) and `derivative_in_place` (generic ODE support) to preserve performance, leading to a DRY violation.
+**Decision:** Extracted the stencil logic into a private `apply_reaction_diffusion_stencil` method accepting a closure.
+**Consequence:** Eliminates code duplication while preserving the performance of the hot loop (unsafe access, unrolling).
