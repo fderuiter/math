@@ -1,3 +1,4 @@
+use super::error::LoraHubError;
 use super::strategies::{
     CombinationStrategy, L1RegularizationStrategy, LinearCombinationStrategy, ObjectiveStrategy,
 };
@@ -51,9 +52,9 @@ impl LoraEnsemble {
     /// * `weights` - A slice of weights corresponding to each LoRA module.
     ///
     /// # Returns
-    /// A `Result` containing the combined `LoraStateDict`, or an error message
+    /// A `Result` containing the combined `LoraStateDict`, or a `LoraHubError`
     /// if the inputs are invalid.
-    pub fn combine(&self, weights: &[f64]) -> Result<LoraStateDict, &'static str> {
+    pub fn combine(&self, weights: &[f64]) -> Result<LoraStateDict, LoraHubError> {
         self.combination_strategy.combine(&self.modules, weights)
     }
 

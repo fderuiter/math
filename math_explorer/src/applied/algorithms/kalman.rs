@@ -3,6 +3,7 @@
 //! A dimension-agnostic implementation of the Discrete Kalman Filter using `nalgebra::DMatrix`.
 //! This module allows for state estimation of linear systems with arbitrary state and measurement dimensions.
 
+use super::error::AlgorithmError;
 use nalgebra::{DMatrix, DVector};
 
 /// Defines the physics/dynamics model for the Kalman Filter.
@@ -99,7 +100,7 @@ impl<M: KalmanModel> KalmanFilter<M> {
     /// # Arguments
     ///
     /// * `measurement` - The measurement vector $z_k$.
-    pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), String> {
+    pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), AlgorithmError> {
         let h = self.model.measurement_matrix();
         let r = self.model.measurement_noise();
 
@@ -112,9 +113,7 @@ impl<M: KalmanModel> KalmanFilter<M> {
         // Invert S.
         // For 1D measurements, this is trivial. For nD, we need matrix inversion.
         // Kalman Filter requires S to be invertible (positive definite).
-        let s_inv = s
-            .try_inverse()
-            .ok_or("Failed to invert innovation covariance matrix (singular)")?;
+        let s_inv = s.try_inverse().ok_or(AlgorithmError::SingularMatrix)?;
 
         // Kalman Gain K = P H^T S^-1
         let k = &self.covariance * h.transpose() * s_inv;

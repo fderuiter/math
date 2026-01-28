@@ -75,8 +75,10 @@
 //! ```
 
 pub mod ensemble;
+pub mod error;
 pub mod strategies;
 pub mod types;
 
 pub use ensemble::LoraEnsemble;
+pub use error::LoraHubError;
 pub use types::LoraStateDict;

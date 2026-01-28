@@ -1,3 +1,4 @@
+use super::error::FavoritismError;
 use nalgebra::DVector;
 
 /// Time and proximity related parameters.
@@ -202,4 +203,61 @@ pub struct FavoritismInputs {
     pub compliments: ComplimentParams,
     /// Family context (siblings).
     pub family: FamilyParams,
+}
+
+impl FavoritismInputs {
+    /// Validates the input parameters.
+    ///
+    /// Checks for NaN, infinite, or invalid negative parameters.
+    pub fn validate(&self) -> Result<(), FavoritismError> {
+        // Validate Time Params
+        if self.time.t < 0.0 || !self.time.t.is_finite() {
+            return Err(FavoritismError::InvalidInput(format!(
+                "Time t must be non-negative and finite, got {}",
+                self.time.t
+            )));
+        }
+        if self.time.x_0 < 0.0 || !self.time.x_0.is_finite() {
+            return Err(FavoritismError::InvalidInput(format!(
+                "Initial distance x_0 must be non-negative and finite, got {}",
+                self.time.x_0
+            )));
+        }
+
+        // Validate Gift Params
+        if self.gifts.g_emotional < 0.0 || !self.gifts.g_emotional.is_finite() {
+            return Err(FavoritismError::InvalidInput(format!(
+                "Emotional gift value must be non-negative, got {}",
+                self.gifts.g_emotional
+            )));
+        }
+        if self.gifts.g_practical < 0.0 || !self.gifts.g_practical.is_finite() {
+            return Err(FavoritismError::InvalidInput(format!(
+                "Practical gift value must be non-negative, got {}",
+                self.gifts.g_practical
+            )));
+        }
+
+        // Validate Contact Params
+        if self.contact.time_since_last_contact < 0.0
+            || !self.contact.time_since_last_contact.is_finite()
+        {
+            return Err(FavoritismError::InvalidInput(format!(
+                "Time since last contact must be non-negative, got {}",
+                self.contact.time_since_last_contact
+            )));
+        }
+
+        // Validate Family Params (siblings)
+        for (i, d) in self.family.sibling_distances.iter().enumerate() {
+            if *d <= 0.0 || !d.is_finite() {
+                return Err(FavoritismError::InvalidInput(format!(
+                    "Sibling distance must be positive and finite. Sibling {} has distance {}",
+                    i, d
+                )));
+            }
+        }
+
+        Ok(())
+    }
 }

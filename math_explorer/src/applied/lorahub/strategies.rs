@@ -1,3 +1,4 @@
+use super::error::LoraHubError;
 use super::types::LoraStateDict;
 
 /// Strategy for combining multiple LoRA state dictionaries.
@@ -6,7 +7,7 @@ pub trait CombinationStrategy {
         &self,
         modules: &[LoraStateDict],
         weights: &[f64],
-    ) -> Result<LoraStateDict, &'static str>;
+    ) -> Result<LoraStateDict, LoraHubError>;
 }
 
 /// Strategy for calculating the objective score.
@@ -22,15 +23,15 @@ impl CombinationStrategy for LinearCombinationStrategy {
         &self,
         modules: &[LoraStateDict],
         weights: &[f64],
-    ) -> Result<LoraStateDict, &'static str> {
+    ) -> Result<LoraStateDict, LoraHubError> {
         if modules.is_empty() {
-            return Err("Ensemble is empty; cannot combine.");
+            return Err(LoraHubError::EmptyEnsemble);
         }
         if weights.is_empty() {
-            return Err("Weights cannot be empty.");
+            return Err(LoraHubError::EmptyWeights);
         }
         if modules.len() != weights.len() {
-            return Err("The number of weights must match the number of modules in the ensemble.");
+            return Err(LoraHubError::LengthMismatch);
         }
 
         let first_lora = &modules[0];
@@ -45,7 +46,7 @@ impl CombinationStrategy for LinearCombinationStrategy {
             for (key, final_tensor) in &mut final_state_dict {
                 if let Some(tensor) = lora_state_dict.get(key) {
                     if final_tensor.shape() != tensor.shape() {
-                        return Err("Mismatched tensor shapes for the same key.");
+                        return Err(LoraHubError::ShapeMismatch);
                     }
                     // Optimized in-place addition to avoid allocating intermediate matrix
                     let weight = weights[i];
@@ -55,7 +56,9 @@ impl CombinationStrategy for LinearCombinationStrategy {
                         *f += *t * weight;
                     }
                 } else {
-                    return Err("Mismatched keys between LoRA modules.");
+                    return Err(LoraHubError::StrategyError(
+                        "Mismatched keys between LoRA modules.".to_string(),
+                    ));
                 }
             }
         }
