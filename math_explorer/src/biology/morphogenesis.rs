@@ -235,26 +235,28 @@ impl<K: ReactionKinetics> TuringSystem<K> {
         self.state.v_mut()
     }
 
-    /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
-    pub fn step(&mut self, dt: f64) {
-        let n = self.state.len();
+    /// Applies the reaction-diffusion stencil to the grid, delegating the update rule to a closure.
+    fn apply_reaction_diffusion_stencil<F>(
+        state: &TuringState,
+        kinetics: &K,
+        d_u: f64,
+        d_v: f64,
+        dx: f64,
+        mut writer: F,
+    ) where
+        F: FnMut(usize, f64, f64, f64, f64), // i, u_curr, v_curr, du_dt, dv_dt
+    {
+        let n = state.len();
         if n == 0 {
             return;
         }
 
-        // Ensure buffers are the right size
-        if self.next_state.len() != n {
-            self.next_state = TuringState::new(n);
-        }
-
-        let dx_sq = self.dx * self.dx;
+        let dx_sq = dx * dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
         // Optimization: Lift boundary checks out of the loop and use slices
-        let u = &self.state.u;
-        let v = &self.state.v;
-        let next_u = &mut self.next_state.u;
-        let next_v = &mut self.next_state.v;
+        let u = &state.u;
+        let v = &state.v;
 
         // 1. Handle i = 0
         {
@@ -274,12 +276,12 @@ impl<K: ReactionKinetics> TuringSystem<K> {
             let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+            let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
 
-            unsafe {
-                *next_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                *next_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
-            }
+            let du_dt = d_u * lap_u + reaction_u;
+            let dv_dt = d_v * lap_v + reaction_v;
+
+            writer(i, u_curr, v_curr, du_dt, dv_dt);
         }
 
         // 2. Handle i = 1..n-1 (Hot Path)
@@ -298,10 +300,12 @@ impl<K: ReactionKinetics> TuringSystem<K> {
                     let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                     let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-                    let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+                    let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
 
-                    *next_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                    *next_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+                    let du_dt = d_u * lap_u + reaction_u;
+                    let dv_dt = d_v * lap_v + reaction_v;
+
+                    writer(i, u_curr, v_curr, du_dt, dv_dt);
 
                     // Shift window
                     u_prev = u_curr;
@@ -326,12 +330,46 @@ impl<K: ReactionKinetics> TuringSystem<K> {
                 let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                 let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-                let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
+                let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
 
-                *next_u.get_unchecked_mut(i) = u_curr + dt * (self.d_u * lap_u + reaction_u);
-                *next_v.get_unchecked_mut(i) = v_curr + dt * (self.d_v * lap_v + reaction_v);
+                let du_dt = d_u * lap_u + reaction_u;
+                let dv_dt = d_v * lap_v + reaction_v;
+
+                writer(i, u_curr, v_curr, du_dt, dv_dt);
             }
         }
+    }
+
+    /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
+    pub fn step(&mut self, dt: f64) {
+        let n = self.state.len();
+        if n == 0 {
+            return;
+        }
+
+        // Ensure buffers are the right size
+        if self.next_state.len() != n {
+            self.next_state = TuringState::new(n);
+        }
+
+        let next_u = &mut self.next_state.u;
+        let next_v = &mut self.next_state.v;
+
+        // Split borrow: pass immutable references to parameters and state
+        Self::apply_reaction_diffusion_stencil(
+            &self.state,
+            &self.kinetics,
+            self.d_u,
+            self.d_v,
+            self.dx,
+            |i, u_curr, v_curr, du_dt, dv_dt| {
+                // Forward Euler Step
+                unsafe {
+                    *next_u.get_unchecked_mut(i) = u_curr + dt * du_dt;
+                    *next_v.get_unchecked_mut(i) = v_curr + dt * dv_dt;
+                }
+            },
+        );
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
@@ -356,91 +394,24 @@ impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
             *out = TuringState::new(n);
         }
 
-        let dx_sq = self.dx * self.dx;
-        let inv_dx_sq = 1.0 / dx_sq;
-
-        // Optimization: Lift boundary checks out of the loop and use slices
-        let u = &state.u;
-        let v = &state.v;
         let out_u = &mut out.u;
         let out_v = &mut out.v;
 
-        // 1. Handle i = 0
-        {
-            let i = 0;
-            // Safety: n > 0 checked above
-            let u_curr = unsafe { *u.get_unchecked(i) };
-            let v_curr = unsafe { *v.get_unchecked(i) };
-
-            let u_prev = u_curr;
-            let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 {
-                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
-            } else {
-                (u_curr, v_curr)
-            };
-
-            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-            let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
-
-            unsafe {
-                *out_u.get_unchecked_mut(i) = self.d_u * lap_u + reaction_u;
-                *out_v.get_unchecked_mut(i) = self.d_v * lap_v + reaction_v;
-            }
-        }
-
-        // 2. Handle i = 1..n-1 (Hot Path)
-        if n > 2 {
-            // Optimization: Sliding Window / Register Rotation
-            unsafe {
-                let mut u_prev = *u.get_unchecked(0);
-                let mut u_curr = *u.get_unchecked(1);
-                let mut v_prev = *v.get_unchecked(0);
-                let mut v_curr = *v.get_unchecked(1);
-
-                for i in 1..n - 1 {
-                    let u_next = *u.get_unchecked(i + 1);
-                    let v_next = *v.get_unchecked(i + 1);
-
-                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                    let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                    *out_u.get_unchecked_mut(i) = self.d_u * lap_u + reaction_u;
-                    *out_v.get_unchecked_mut(i) = self.d_v * lap_v + reaction_v;
-
-                    // Shift window
-                    u_prev = u_curr;
-                    u_curr = u_next;
-                    v_prev = v_curr;
-                    v_curr = v_next;
+        // Use the shared stencil logic
+        Self::apply_reaction_diffusion_stencil(
+            state,
+            &self.kinetics,
+            self.d_u,
+            self.d_v,
+            self.dx,
+            |i, _u_curr, _v_curr, du_dt, dv_dt| {
+                // Just store the derivative
+                unsafe {
+                    *out_u.get_unchecked_mut(i) = du_dt;
+                    *out_v.get_unchecked_mut(i) = dv_dt;
                 }
-            }
-        }
-
-        // 3. Handle i = n-1
-        if n > 1 {
-            let i = n - 1;
-            unsafe {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-                let u_prev = *u.get_unchecked(i - 1);
-                let v_prev = *v.get_unchecked(i - 1);
-                let u_next = u_curr;
-                let v_next = v_curr;
-
-                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                let (reaction_u, reaction_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                *out_u.get_unchecked_mut(i) = self.d_u * lap_u + reaction_u;
-                *out_v.get_unchecked_mut(i) = self.d_v * lap_v + reaction_v;
-            }
-        }
+            },
+        );
     }
 }
 

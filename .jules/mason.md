@@ -26,3 +26,7 @@
 ## 2026-06-25 - Decoupling LoraHub Algorithms
 **Violation:** Open/Closed Principle (OCP). The `LoraEnsemble` hardcoded `combine` (weighted sum) and `evaluate_objective` (L1 Regularization), preventing extension for advanced merging techniques like SLERP or TIES.
 **Remedy:** Strategy Pattern. Extracted `CombinationStrategy` and `ObjectiveStrategy` traits. Implemented `LinearCombinationStrategy` and `L1RegularizationStrategy`. Refactored `LoraEnsemble` to use these strategies via dependency injection.
+
+## 2026-07-22 - Consolidating Reaction-Diffusion Logic
+**Violation:** Single Responsibility Principle (SRP) and Don't Repeat Yourself (DRY). The `TuringSystem` duplicated complex stencil iteration logic in both its inherent `step` method (Euler integration) and `derivative_in_place` implementation (OdeSystem). This coupled the spatial discretization tightly with the time integration method.
+**Remedy:** Extracted Method with Closure. Extracted `apply_reaction_diffusion_stencil` which handles the spatial discretization and delegates the update rule to a closure. This centralizes the logic and decouples the "what" (physics) from the "how" (state update).
