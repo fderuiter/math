@@ -59,9 +59,13 @@ pub struct SpinLattice {
 }
 
 impl SpinLattice {
-    /// Creates a new random spin lattice.
+    /// Creates a new random spin lattice using `thread_rng`.
     pub fn new(width: usize, height: usize) -> Self {
-        let mut rng = rand::thread_rng();
+        Self::new_with_rng(width, height, &mut rand::thread_rng())
+    }
+
+    /// Creates a new random spin lattice with a provided RNG.
+    pub fn new_with_rng<R: Rng + ?Sized>(width: usize, height: usize, rng: &mut R) -> Self {
         let count = width * height;
         let spins = (0..count)
             .map(|_| if rng.gen_bool(0.5) { 1 } else { -1 })
@@ -123,41 +127,11 @@ impl SpinLattice {
     /// 1. Select a random site.
     /// 2. Calculate energy cost to flip Delta E.
     /// 3. Accept flip if Delta E < 0 OR with probability e^(-beta * Delta E).
+    #[deprecated(note = "Use MetropolisSolver::step instead")]
     pub fn metropolis_step(&mut self, temperature: f64, j_coupling: f64, h_field: f64) {
-        let mut rng = rand::thread_rng();
-        let x = rng.gen_range(0..self.width);
-        let y = rng.gen_range(0..self.height);
-
-        let s = self.get(x, y);
-
-        // Neighbors for energy difference (all 4 neighbors needed for Delta E)
-        let left_x = (x + self.width - 1) % self.width;
-        let right_x = (x + 1) % self.width;
-        let up_y = (y + self.height - 1) % self.height;
-        let down_y = (y + 1) % self.height;
-
-        let sum_neighbors = self.get(left_x, y) as f64
-            + self.get(right_x, y) as f64
-            + self.get(x, up_y) as f64
-            + self.get(x, down_y) as f64;
-
-        // Delta E = E_new - E_old
-        // E_old_local = -J * s * sum_neighbors - h * s
-        // E_new_local = -J * (-s) * sum_neighbors - h * (-s)
-        // Delta E = 2 * J * s * sum_neighbors + 2 * h * s
-        let delta_e = 2.0 * s as f64 * (j_coupling * sum_neighbors + h_field);
-
-        let should_flip = if delta_e < 0.0 {
-            true
-        } else {
-            let beta = 1.0 / (KB * temperature);
-            let prob = (-beta * delta_e).exp();
-            rng.r#gen::<f64>() < prob
-        };
-
-        if should_flip {
-            self.set(x, y, -s);
-        }
+        let rng = rand::thread_rng();
+        let mut solver = MetropolisSolver::new(rng);
+        solver.step(self, temperature, j_coupling, h_field);
     }
 
     /// Performs multiple Metropolis steps efficiently using a lookup table and batching.
@@ -165,13 +139,79 @@ impl SpinLattice {
     /// This method is significantly faster than calling `metropolis_step` in a loop because:
     /// 1. It precomputes Boltzmann factors (`exp(-beta * dE)`) into a lookup table.
     /// 2. It reuses the random number generator, avoiding TLS overhead.
+    #[deprecated(note = "Use MetropolisSolver::evolve instead")]
     pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
-        let mut rng = rand::thread_rng();
+        let rng = rand::thread_rng();
+        let mut solver = MetropolisSolver::new(rng);
+        solver.evolve(self, steps, temperature, j_coupling, h_field);
+    }
+}
+
+/// A Solver for the Ising Model using the Metropolis-Hastings algorithm.
+///
+/// This struct enables deterministic simulation by injecting a random number generator.
+pub struct MetropolisSolver<R> {
+    rng: R,
+}
+
+impl<R: Rng> MetropolisSolver<R> {
+    /// Creates a new solver with the provided RNG.
+    pub fn new(rng: R) -> Self {
+        Self { rng }
+    }
+
+    /// Performs one Metropolis algorithm step.
+    pub fn step(
+        &mut self,
+        lattice: &mut SpinLattice,
+        temperature: f64,
+        j_coupling: f64,
+        h_field: f64,
+    ) {
+        let x = self.rng.gen_range(0..lattice.width);
+        let y = self.rng.gen_range(0..lattice.height);
+
+        let s = lattice.get(x, y);
+
+        // Neighbors for energy difference
+        let left_x = (x + lattice.width - 1) % lattice.width;
+        let right_x = (x + 1) % lattice.width;
+        let up_y = (y + lattice.height - 1) % lattice.height;
+        let down_y = (y + 1) % lattice.height;
+
+        let sum_neighbors = lattice.get(left_x, y) as f64
+            + lattice.get(right_x, y) as f64
+            + lattice.get(x, up_y) as f64
+            + lattice.get(x, down_y) as f64;
+
+        // Delta E calculation
+        let delta_e = 2.0 * s as f64 * (j_coupling * sum_neighbors + h_field);
+
+        let should_flip = if delta_e < 0.0 {
+            true
+        } else {
+            let beta = 1.0 / (KB * temperature);
+            let prob = (-beta * delta_e).exp();
+            self.rng.r#gen::<f64>() < prob
+        };
+
+        if should_flip {
+            lattice.set(x, y, -s);
+        }
+    }
+
+    /// Performs multiple Metropolis steps efficiently.
+    pub fn evolve(
+        &mut self,
+        lattice: &mut SpinLattice,
+        steps: usize,
+        temperature: f64,
+        j_coupling: f64,
+        h_field: f64,
+    ) {
         let beta = 1.0 / (KB * temperature);
 
         // Precompute probabilities: lut[s_idx][sum_idx]
-        // s_idx: 0 for s=-1, 1 for s=1
-        // sum_idx: 0..5 for sum in {-4, -2, 0, 2, 4} mapped via (sum + 4) / 2
         let mut lut = [[0.0; 5]; 2];
 
         for (s_idx, lut_row) in lut.iter_mut().enumerate() {
@@ -181,49 +221,43 @@ impl SpinLattice {
                 let delta_e = 2.0 * s_val * (j_coupling * sum_val + h_field);
 
                 if delta_e <= 0.0 {
-                    *entry = 1.1; // Always accept (value > 1.0 ensures check passes)
+                    *entry = 1.1; // Always accept
                 } else {
                     *entry = (-beta * delta_e).exp();
                 }
             }
         }
 
-        let width = self.width;
-        let height = self.height;
+        let width = lattice.width;
+        let height = lattice.height;
 
         for _ in 0..steps {
-            let x = rng.gen_range(0..width);
-            let y = rng.gen_range(0..height);
+            let x = self.rng.gen_range(0..width);
+            let y = self.rng.gen_range(0..height);
 
-            // Manual inline of get() to help optimizer
+            // Manual inline of get() via spins vector for performance
+            // lattice.get(x, y) is equivalent to lattice.spins[y * width + x]
             let idx = y * width + x;
-            let s = self.spins[idx];
+            let s = lattice.spins[idx];
 
             // Neighbors
-            // Use wrapping arithmetic or simple checks to avoid modulo if possible,
-            // but for random access, modulo is robust.
-            // Optimizing modulo:
             let left_x = if x == 0 { width - 1 } else { x - 1 };
             let right_x = if x == width - 1 { 0 } else { x + 1 };
             let up_y = if y == 0 { height - 1 } else { y - 1 };
             let down_y = if y == height - 1 { 0 } else { y + 1 };
 
-            let neighbor_sum = self.spins[y * width + left_x] as i32
-                + self.spins[y * width + right_x] as i32
-                + self.spins[up_y * width + x] as i32
-                + self.spins[down_y * width + x] as i32;
+            let neighbor_sum = lattice.spins[y * width + left_x] as i32
+                + lattice.spins[y * width + right_x] as i32
+                + lattice.spins[up_y * width + x] as i32
+                + lattice.spins[down_y * width + x] as i32;
 
-            // Map s (-1 or 1) to 0 or 1
             let s_idx = if s == -1 { 0 } else { 1 };
-            // Map neighbor_sum (-4..4) to 0..4
             let sum_idx = ((neighbor_sum + 4) / 2) as usize;
 
             let prob = lut[s_idx][sum_idx];
 
-            // If prob > 1.0, it was delta_e < 0, so flip.
-            // Else compare with random.
-            if prob > 1.0 || rng.r#gen::<f64>() < prob {
-                self.spins[idx] = -s;
+            if prob > 1.0 || self.rng.r#gen::<f64>() < prob {
+                lattice.spins[idx] = -s;
             }
         }
     }
@@ -233,6 +267,44 @@ impl SpinLattice {
 mod tests {
     use super::*;
     use crate::physics::stat_mech::KB;
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
+
+    #[test]
+    fn test_ising_deterministic() {
+        // Setup parameters
+        let width = 10;
+        let height = 10;
+        let j_val = 1.0;
+        let h_val = 0.0;
+        // Low temperature (Ferromagnetic)
+        let temp = 1.5 * j_val / KB;
+
+        // Run 1: Seed A
+        let mut rng1 = StdRng::seed_from_u64(42);
+        let mut lattice1 = SpinLattice::new_with_rng(width, height, &mut rng1);
+        let mut solver1 = MetropolisSolver::new(rng1);
+
+        solver1.evolve(&mut lattice1, 1000, temp, j_val, h_val);
+        let m1 = lattice1.magnetization();
+
+        // Run 2: Seed A (Should be identical)
+        let mut rng2 = StdRng::seed_from_u64(42);
+        let mut lattice2 = SpinLattice::new_with_rng(width, height, &mut rng2);
+        let mut solver2 = MetropolisSolver::new(rng2);
+
+        solver2.evolve(&mut lattice2, 1000, temp, j_val, h_val);
+        let m2 = lattice2.magnetization();
+
+        assert_eq!(
+            m1, m2,
+            "Deterministic simulation failed: Same seed produced different results"
+        );
+        assert_eq!(
+            lattice1.spins, lattice2.spins,
+            "Lattice states should be identical"
+        );
+    }
 
     #[test]
     fn test_ising_disordered() {
