@@ -1,3 +1,4 @@
+use super::FavoritismError;
 use nalgebra::DVector;
 
 /// Time and proximity related parameters.
@@ -202,4 +203,101 @@ pub struct FavoritismInputs {
     pub compliments: ComplimentParams,
     /// Family context (siblings).
     pub family: FamilyParams,
+}
+
+impl FavoritismInputs {
+    /// Validates the inputs for security and numerical stability.
+    pub fn validate(&self) -> Result<(), FavoritismError> {
+        // TimeParams
+        if !self.time.t.is_finite() || self.time.t < 0.0 {
+            return Err(FavoritismError::InvalidInput(
+                "Time 't' must be non-negative and finite".into(),
+            ));
+        }
+        if !self.time.x_0.is_finite() {
+            return Err(FavoritismError::InvalidInput(
+                "Initial distance 'x_0' must be finite".into(),
+            ));
+        }
+
+        // GiftParams
+        if !self.gifts.g_emotional.is_finite() || !self.gifts.g_practical.is_finite() {
+            return Err(FavoritismError::InvalidInput(
+                "Gift values must be finite".into(),
+            ));
+        }
+
+        // ContactParams
+        if !self.contact.f_initial.is_finite() {
+            return Err(FavoritismError::InvalidInput(
+                "Initial contact frequency must be finite".into(),
+            ));
+        }
+        if !self.contact.decay_constant.is_finite() || self.contact.decay_constant < 0.0 {
+            return Err(FavoritismError::InvalidInput(
+                "Decay constant must be non-negative and finite".into(),
+            ));
+        }
+        if !self.contact.time_since_last_contact.is_finite()
+            || self.contact.time_since_last_contact < 0.0
+        {
+            return Err(FavoritismError::InvalidInput(
+                "Time since last contact must be non-negative and finite".into(),
+            ));
+        }
+
+        // PersonalityParams
+        if !self.personality.intelligence.is_finite()
+            || !self.personality.emotional_sensitivity.is_finite()
+            || !self.personality.wealth.is_finite()
+            || !self.personality.talent.is_finite()
+            || !self.personality.w_i.is_finite()
+            || !self.personality.w_es.is_finite()
+            || !self.personality.w_w.is_finite()
+            || !self.personality.w_t.is_finite()
+        {
+            return Err(FavoritismError::InvalidInput(
+                "Personality traits and weights must be finite".into(),
+            ));
+        }
+
+        // SocialParams
+        if !self.social.birth_order_weight.is_finite() || !self.social.major_life_events.is_finite()
+        {
+            return Err(FavoritismError::InvalidInput(
+                "Social parameters must be finite".into(),
+            ));
+        }
+
+        // ComplimentParams
+        if self.compliments.compliments.iter().any(|x| !x.is_finite()) {
+            return Err(FavoritismError::InvalidInput(
+                "Compliment values must be finite".into(),
+            ));
+        }
+        if self
+            .compliments
+            .compliment_weights
+            .iter()
+            .any(|x| !x.is_finite())
+        {
+            return Err(FavoritismError::InvalidInput(
+                "Compliment weights must be finite".into(),
+            ));
+        }
+
+        // FamilyParams
+        if self
+            .family
+            .sibling_distances
+            .iter()
+            .any(|x| !x.is_finite() || *x < 0.0)
+        {
+            return Err(FavoritismError::InvalidInput(
+                "Sibling distances must be non-negative and finite".into(),
+            ));
+        }
+
+        Ok(())
+    }
 }

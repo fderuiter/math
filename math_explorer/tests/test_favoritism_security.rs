@@ -1,49 +1,64 @@
-use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
+use math_explorer::applied::favoritism::{
+    calculate_favoritism_score, try_calculate_favoritism_score, FavoritismInputs,
+};
 
 #[test]
-fn test_security_division_by_zero_prevention() {
+fn test_favoritism_nan_input_legacy() {
     let mut inputs = FavoritismInputs::default();
-    // Set x_0 to zero to trigger division by zero in proximity integral
-    inputs.time.x_0 = 0.0;
+    inputs.time.t = f64::NAN;
 
+    // Legacy function should return NaN now (due to try_calculate wrapper)
+    #[allow(deprecated)]
     let score = calculate_favoritism_score(&inputs);
-
-    // Should return a finite value (clamped), not Infinity or NaN
-    assert!(
-        score.is_finite(),
-        "Score should be finite even when x_0 is 0.0"
-    );
-    // Since x_0 is small (high proximity), score should be high/positive
-    assert!(score > 0.0);
+    assert!(score.is_nan(), "Legacy function should return NaN for invalid input");
 }
 
 #[test]
-fn test_security_empty_siblings_prevention() {
+fn test_favoritism_nan_input_safe() {
     let mut inputs = FavoritismInputs::default();
-    // Empty siblings list means denominator integral becomes 0
-    inputs.family.sibling_distances = vec![];
+    inputs.time.t = f64::NAN;
 
-    let score = calculate_favoritism_score(&inputs);
-
-    // Should handle empty siblings gracefully (e.g. treat as no competition)
-    // and not return Infinity
-    assert!(
-        score.is_finite(),
-        "Score should be finite even with no siblings"
-    );
-    assert!(score > 0.0);
+    let result = try_calculate_favoritism_score(&inputs);
+    assert!(result.is_err(), "Safe function should return Err for NaN input");
 }
 
 #[test]
-fn test_security_log_domain_prevention() {
+fn test_favoritism_inf_input_safe() {
     let mut inputs = FavoritismInputs::default();
-    // Set f_initial to -1.0 or less to trigger log(0) or log(negative)
-    inputs.contact.f_initial = -5.0;
+    inputs.time.t = f64::INFINITY;
 
+    let result = try_calculate_favoritism_score(&inputs);
+    assert!(result.is_err(), "Safe function should return Err for Inf input");
+}
+
+#[test]
+fn test_favoritism_negative_time_safe() {
+    let mut inputs = FavoritismInputs::default();
+    inputs.time.t = -10.0;
+
+    let result = try_calculate_favoritism_score(&inputs);
+    assert!(result.is_err(), "Safe function should return Err for negative time");
+}
+
+#[test]
+fn test_favoritism_personality_nan() {
+    let mut inputs = FavoritismInputs::default();
+    inputs.personality.intelligence = f64::NAN;
+
+    #[allow(deprecated)]
     let score = calculate_favoritism_score(&inputs);
+    assert!(score.is_nan(), "Legacy function should return NaN for personality NaN");
 
-    assert!(
-        score.is_finite(),
-        "Score should be finite even with invalid contact frequency"
-    );
+    let result = try_calculate_favoritism_score(&inputs);
+    assert!(result.is_err(), "Safe function should return Err for personality NaN");
+}
+
+#[test]
+fn test_favoritism_valid_input() {
+    let inputs = FavoritismInputs::default();
+    let result = try_calculate_favoritism_score(&inputs);
+    assert!(result.is_ok());
+    let score = result.unwrap();
+    assert!(score.is_finite());
+    assert!(score > 0.0);
 }

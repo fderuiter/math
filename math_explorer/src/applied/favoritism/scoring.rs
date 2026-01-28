@@ -1,7 +1,19 @@
 use super::strategies::UnifiedFavoritismModel;
 use super::types::FavoritismInputs;
+use super::FavoritismError;
 use crate::pure_math::analysis::integration::{ClenshawCurtis, Integrator};
 use rand::Rng;
+
+/// Calculates the favoritism score safely, validating inputs first.
+///
+/// # Returns
+/// * `Ok(f64)` - The calculated score.
+/// * `Err(FavoritismError)` - If inputs are invalid (NaN, Inf, negative time, etc.).
+pub fn try_calculate_favoritism_score(inputs: &FavoritismInputs) -> Result<f64, FavoritismError> {
+    inputs.validate()?;
+    let mut rng = rand::thread_rng();
+    Ok(calculate_favoritism_score_with_rng(inputs, &mut rng))
+}
 
 /// Calculates the favoritism score based on the provided inputs.
 ///
@@ -34,9 +46,9 @@ use rand::Rng;
 /// let score = calculate_favoritism_score(&inputs);
 /// assert!(score > 0.0);
 /// ```
+#[deprecated(since = "0.2.0", note = "Use try_calculate_favoritism_score instead")]
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
-    let mut rng = rand::thread_rng();
-    calculate_favoritism_score_with_rng(inputs, &mut rng)
+    try_calculate_favoritism_score(inputs).unwrap_or(f64::NAN)
 }
 
 /// Calculates the favoritism score using an injected RNG.

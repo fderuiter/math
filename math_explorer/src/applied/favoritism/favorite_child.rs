@@ -1,4 +1,4 @@
-use super::{FavoritismInputs, calculate_favoritism_score};
+use super::{FavoritismInputs, try_calculate_favoritism_score};
 
 /// Represents a child with a name and a set of attributes for favoritism calculation.
 #[derive(Debug, Clone)]
@@ -22,8 +22,8 @@ pub struct Child {
 /// Returns `None` if the slice is empty.
 pub fn find_favorite_child(children: &[Child]) -> Option<&Child> {
     children.iter().max_by(|a, b| {
-        let score_a = calculate_favoritism_score(&a.inputs);
-        let score_b = calculate_favoritism_score(&b.inputs);
+        let score_a = try_calculate_favoritism_score(&a.inputs).unwrap_or(f64::NEG_INFINITY);
+        let score_b = try_calculate_favoritism_score(&b.inputs).unwrap_or(f64::NEG_INFINITY);
         score_a
             .partial_cmp(&score_b)
             .unwrap_or(std::cmp::Ordering::Equal)

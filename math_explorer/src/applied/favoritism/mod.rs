@@ -76,14 +76,17 @@
 //! println!("Your Favoritism Score: {:.2}", score);
 //! ```
 
+pub mod error;
 pub mod favorite_child;
 pub mod scoring;
 pub mod strategies;
 pub mod types;
 
+pub use error::FavoritismError;
+#[allow(deprecated)]
 pub use scoring::{
     calculate_favoritism_score, calculate_favoritism_score_full,
-    calculate_favoritism_score_with_rng,
+    calculate_favoritism_score_with_rng, try_calculate_favoritism_score,
 };
 pub use types::{
     ComplimentParams, ContactParams, FamilyParams, FavoritismInputs, GiftParams, PersonalityParams,
