@@ -191,13 +191,21 @@ impl SpinLattice {
         let width = self.width;
         let height = self.height;
 
-        for _ in 0..steps {
-            let x = rng.gen_range(0..width);
-            let y = rng.gen_range(0..height);
+        let total_spins = self.spins.len();
 
-            // Manual inline of get() to help optimizer
-            let idx = y * width + x;
-            let s = self.spins[idx];
+        for _ in 0..steps {
+            // Optimization: Generate one random index instead of two random coords.
+            // This cuts RNG overhead in half.
+            let idx = rng.gen_range(0..total_spins);
+
+            // Derive x, y from idx. Compiler should optimize div/mod to single instruction.
+            let x = idx % width;
+            let y = idx / width;
+
+            // Optimization: Unsafe unchecked access.
+            // idx is guaranteed < total_spins by gen_range.
+            // SAFETY: idx is generated from 0..total_spins.
+            let s = unsafe { *self.spins.get_unchecked(idx) };
 
             // Neighbors
             // Use wrapping arithmetic or simple checks to avoid modulo if possible,
@@ -208,22 +216,28 @@ impl SpinLattice {
             let up_y = if y == 0 { height - 1 } else { y - 1 };
             let down_y = if y == height - 1 { 0 } else { y + 1 };
 
-            let neighbor_sum = self.spins[y * width + left_x] as i32
-                + self.spins[y * width + right_x] as i32
-                + self.spins[up_y * width + x] as i32
-                + self.spins[down_y * width + x] as i32;
+            // SAFETY: neighbor coordinates are guaranteed to be within bounds by logic.
+            let neighbor_sum = unsafe {
+                (*self.spins.get_unchecked(y * width + left_x) as i32)
+                    + (*self.spins.get_unchecked(y * width + right_x) as i32)
+                    + (*self.spins.get_unchecked(up_y * width + x) as i32)
+                    + (*self.spins.get_unchecked(down_y * width + x) as i32)
+            };
 
             // Map s (-1 or 1) to 0 or 1
             let s_idx = if s == -1 { 0 } else { 1 };
             // Map neighbor_sum (-4..4) to 0..4
             let sum_idx = ((neighbor_sum + 4) / 2) as usize;
 
-            let prob = lut[s_idx][sum_idx];
+            // SAFETY: s_idx is 0 or 1, sum_idx is 0..4. lut is [2][5].
+            let prob = unsafe { *lut.get_unchecked(s_idx).get_unchecked(sum_idx) };
 
             // If prob > 1.0, it was delta_e < 0, so flip.
             // Else compare with random.
             if prob > 1.0 || rng.r#gen::<f64>() < prob {
-                self.spins[idx] = -s;
+                unsafe {
+                    *self.spins.get_unchecked_mut(idx) = -s;
+                }
             }
         }
     }
@@ -266,6 +280,34 @@ mod tests {
             avg_m_per_spin.abs() < 0.3,
             "High T Ising should be disordered (M ~ 0). Got {}",
             avg_m_per_spin
+        );
+    }
+
+    #[test]
+    fn test_ising_evolve_ordered() {
+        // Low Temperature -> Ferromagnetic (Ordered)
+        let j_val = 1.0;
+        let h_val = 0.0;
+        // Tc ~ 2.269
+        let temp = 1.5 * j_val / KB; // T < Tc
+
+        let width = 20;
+        let height = 20;
+        let mut lattice = SpinLattice::new(width, height);
+
+        // Run evolve
+        let steps = 100_000;
+        lattice.evolve(steps, temp, j_val, h_val);
+
+        let m = lattice.magnetization();
+        let max_m = (width * height) as f64;
+        let ratio = (m as f64).abs() / max_m;
+
+        // At low T=1.5, magnetization should be high (> 0.8 usually near 0.98)
+        assert!(
+            ratio > 0.8,
+            "Low T Ising should be ordered (M ~ 1). Got {}",
+            ratio
         );
     }
 }

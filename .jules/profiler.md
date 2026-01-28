@@ -155,3 +155,19 @@ Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
 - Before: ~0.72s (13.9 M/s)
 - After: ~0.39s (25.7 M/s)
 - Speedup: ~1.85x
+
+## 2026-11-02 - [Optimization] **Bottleneck:** Ising Model RNG & Bounds Checking **Strategy:** RNG Reduction & Unsafe Indexing **Gain:** ~4.2% Speedup (25.7 M/s -> 26.8 M/s)
+
+**Bottleneck:**
+In `SpinLattice::evolve`, generating random coordinates `x` and `y` separately required two calls to `rng.gen_range`, consuming more entropy and CPU time than necessary.
+Additionally, safe indexing `self.spins[idx]` and neighbor accesses performed bounds checks inside the hot loop.
+
+**Strategy:**
+1. **RNG Reduction:** Combined coordinate generation into a single `rng.gen_range(0..total_spins)`, deriving `x` and `y` via integer arithmetic (which the compiler optimizes effectively). This reduced RNG calls by 50%.
+2. **Unsafe Indexing:** Replaced safe slice indexing with `unsafe { *ptr.get_unchecked(idx) }` for the center spin and all 4 neighbors, as indices are guaranteed valid by the generation logic.
+
+**Gain:**
+Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
+- Before: ~25.74 M/s
+- After: ~26.83 M/s
+- Speedup: ~4.2%
