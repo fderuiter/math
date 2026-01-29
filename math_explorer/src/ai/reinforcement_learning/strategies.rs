@@ -54,7 +54,9 @@ where
                 .iter()
                 .enumerate()
                 .max_by(|(_, a_val), (_, b_val)| {
-                    a_val.partial_cmp(b_val).unwrap_or(std::cmp::Ordering::Equal)
+                    a_val
+                        .partial_cmp(b_val)
+                        .unwrap_or(std::cmp::Ordering::Equal)
                 })?;
             Some(available_actions[best_idx].clone())
         }

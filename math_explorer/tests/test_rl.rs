@@ -186,7 +186,10 @@ mod tests {
         for _ in 0..20 {
             let action1 = agent.select_action_with_rng(&state, &actions, &mut rng1);
             let action2 = agent.select_action_with_rng(&state, &actions, &mut rng2);
-            assert_eq!(action1, action2, "Actions should be identical for same seed");
+            assert_eq!(
+                action1, action2,
+                "Actions should be identical for same seed"
+            );
         }
     }
 }
