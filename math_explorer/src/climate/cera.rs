@@ -98,24 +98,30 @@ impl Cera {
     /// # Returns
     ///
     /// The reshaped matrix ready for the predictor.
-    fn reshape_for_predictor(
+    fn reshape_for_predictor<S>(
         &self,
-        latent_matrix: &DMatrix<f32>,
+        latent_matrix: &nalgebra::Matrix<f32, nalgebra::Dyn, nalgebra::Dyn, S>,
         batch_size: usize,
-    ) -> DMatrix<f32> {
+    ) -> DMatrix<f32>
+    where
+        S: nalgebra::storage::Storage<f32, nalgebra::Dyn, nalgebra::Dyn>,
+    {
         let num_levels = self.config.num_levels;
         let aligned_channels = self.config.aligned_channels;
-        let mut reshaped_data = Vec::with_capacity(batch_size * num_levels * aligned_channels);
+        let mut out = DMatrix::zeros(batch_size, num_levels * aligned_channels);
+
         for i in 0..batch_size {
             let start_row = i * num_levels;
             let sample_latent = latent_matrix.rows(start_row, num_levels);
-            for r in sample_latent.row_iter() {
-                for element in r.iter() {
-                    reshaped_data.push(*element);
+
+            for r in 0..num_levels {
+                for c in 0..aligned_channels {
+                    // Safety: bounds checked by logic
+                    out[(i, r * aligned_channels + c)] = sample_latent[(r, c)];
                 }
             }
         }
-        DMatrix::from_row_slice(batch_size, num_levels * aligned_channels, &reshaped_data)
+        out
     }
 
     /// Makes a prediction using the trained CERA model.
@@ -133,7 +139,7 @@ impl Cera {
         let batch_size = inputs.nrows() / num_levels;
 
         let latent = self.autoencoder.encoder.forward(inputs);
-        let aligned_latent = latent.columns(0, aligned_channels).clone_owned();
+        let aligned_latent = latent.columns(0, aligned_channels);
         let predictor_input = self.reshape_for_predictor(&aligned_latent, batch_size);
         self.predictor.forward(&predictor_input)
     }

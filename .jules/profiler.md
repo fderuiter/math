@@ -155,3 +155,22 @@ Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
 - Before: ~0.72s (13.9 M/s)
 - After: ~0.39s (25.7 M/s)
 - Speedup: ~1.85x
+
+## 2026-11-02 - [Optimization] **Bottleneck:** Cera Prediction Reshape Allocation **Strategy:** Zero-Copy Matrix Reshape **Gain:** ~15% Time Saved (196ms -> 167ms)
+
+**Bottleneck:**
+The `Cera::predict` method was performing excessive data copying during the reshape phase:
+1. `clone_owned()` was called on the submatrix, creating a full copy.
+2. `reshape_for_predictor` accumulated elements into a temporary `Vec`.
+3. `DMatrix::from_row_slice` copied the data again into the final result.
+
+**Strategy:**
+1. **Zero-Copy View:** Refactored `predict` to pass a `MatrixView` instead of cloning.
+2. **Direct Write:** Updated `reshape_for_predictor` to allocate the result matrix once and write directly to it, iterating over the source view.
+3. **Generic Storage:** Made the method generic over `Storage` to accept views or owned matrices.
+
+**Gain:**
+Benchmark `bench_cera_reshape` (2000 batch size, 50 levels):
+- Before: ~196ms
+- After: ~167ms
+- Speedup: ~15% (Eliminated intermediate allocations)
