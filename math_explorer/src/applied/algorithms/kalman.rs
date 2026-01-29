@@ -3,6 +3,7 @@
 //! A dimension-agnostic implementation of the Discrete Kalman Filter using `nalgebra::DMatrix`.
 //! This module allows for state estimation of linear systems with arbitrary state and measurement dimensions.
 
+use super::error::AlgorithmError;
 use nalgebra::{DMatrix, DVector};
 
 /// Defines the physics/dynamics model for the Kalman Filter.
@@ -72,18 +73,39 @@ impl<M: KalmanModel> KalmanFilter<M> {
         }
     }
 
+    /// Helper to validate matrix dimensions.
+    fn validate_dims(
+        matrix: &DMatrix<f64>,
+        expected_rows: usize,
+        expected_cols: usize,
+        name: &str,
+    ) -> Result<(), AlgorithmError> {
+        if matrix.nrows() != expected_rows || matrix.ncols() != expected_cols {
+            return Err(AlgorithmError::DimensionMismatch {
+                expected: format!("{} {}x{}", name, expected_rows, expected_cols),
+                actual: format!("{}x{}", matrix.nrows(), matrix.ncols()),
+            });
+        }
+        Ok(())
+    }
+
     /// Performs the **Prediction Step**.
     ///
     /// Projects the current state estimate and covariance forward in time.
     ///
     /// $$ \hat{x}_{k|k-1} = F_k \hat{x}_{k-1|k-1} $$
     /// $$ P_{k|k-1} = F_k P_{k-1|k-1} F_k^T + Q_k $$
-    pub fn predict(&mut self) {
+    pub fn predict(&mut self) -> Result<(), AlgorithmError> {
         let f = self.model.transition_matrix(self.dt);
         let q = self.model.process_noise(self.dt);
+        let n = self.state.len();
+
+        Self::validate_dims(&f, n, n, "Transition Matrix")?;
+        Self::validate_dims(&q, n, n, "Process Noise")?;
 
         self.state = &f * &self.state;
         self.covariance = &f * &self.covariance * f.transpose() + q;
+        Ok(())
     }
 
     /// Performs the **Update Step** with a new measurement.
@@ -99,9 +121,14 @@ impl<M: KalmanModel> KalmanFilter<M> {
     /// # Arguments
     ///
     /// * `measurement` - The measurement vector $z_k$.
-    pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), String> {
+    pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), AlgorithmError> {
         let h = self.model.measurement_matrix();
         let r = self.model.measurement_noise();
+        let n = self.state.len();
+        let m = measurement.len();
+
+        Self::validate_dims(&h, m, n, "Measurement Matrix")?;
+        Self::validate_dims(&r, m, m, "Measurement Noise")?;
 
         // Innovation
         let y = measurement - &h * &self.state;
@@ -114,7 +141,7 @@ impl<M: KalmanModel> KalmanFilter<M> {
         // Kalman Filter requires S to be invertible (positive definite).
         let s_inv = s
             .try_inverse()
-            .ok_or("Failed to invert innovation covariance matrix (singular)")?;
+            .ok_or(AlgorithmError::SingularMatrix)?;
 
         // Kalman Gain K = P H^T S^-1
         let k = &self.covariance * h.transpose() * s_inv;
@@ -169,11 +196,54 @@ mod tests {
         let p_init = DMatrix::identity(2, 2);
 
         let mut kf = KalmanFilter::new(x_init, p_init, model, dt);
-        kf.predict();
+        kf.predict().unwrap();
 
         // New Pos = 0 + 10*1 = 10
         // New Vel = 10
         assert!((kf.state[0] - 10.0).abs() < 1e-6);
         assert!((kf.state[1] - 10.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_singular_matrix_error() {
+        let dt = 1.0;
+        let model = MockCvModel {
+            process_noise: 0.0,
+            measurement_noise: 0.0, // Zero noise might cause singular S if HPH' is singular
+        };
+        // H = [1, 0]
+        // P = [0, 0; 0, 0]
+        // S = HPH' + R = [0] + [0] = [0] -> Singular!
+
+        let x_init = DVector::from_vec(vec![0.0, 0.0]);
+        let p_init = DMatrix::zeros(2, 2);
+
+        let mut kf = KalmanFilter::new(x_init, p_init, model, dt);
+        let measurement = DVector::from_vec(vec![1.0]);
+
+        let result = kf.update(&measurement);
+        assert_eq!(result, Err(AlgorithmError::SingularMatrix));
+    }
+
+    #[test]
+    fn test_dimension_mismatch() {
+        let dt = 1.0;
+        let model = MockCvModel {
+            process_noise: 0.1,
+            measurement_noise: 0.1,
+        };
+        let x_init = DVector::from_vec(vec![0.0, 0.0]);
+        let p_init = DMatrix::identity(2, 2);
+
+        let mut kf = KalmanFilter::new(x_init, p_init, model, dt);
+
+        // MockCvModel expects measurement of dim 1. Let's give it 2.
+        let measurement = DVector::from_vec(vec![1.0, 2.0]);
+
+        let result = kf.update(&measurement);
+        match result {
+            Err(AlgorithmError::DimensionMismatch { .. }) => (),
+            _ => panic!("Expected DimensionMismatch error"),
+        }
     }
 }

@@ -75,7 +75,9 @@ impl TrackingFilter {
 
     /// Predicts the next state.
     pub fn predict(&mut self) {
-        self.inner.predict();
+        self.inner
+            .predict()
+            .expect("Kalman prediction failed: Dimension mismatch in system model");
     }
 
     /// Updates the state with a new measurement.
@@ -84,8 +86,10 @@ impl TrackingFilter {
         // though here we just need a 1-element vector. from_element is cleaner.
         let measurement = DVector::from_element(1, measured_amplitude);
         // Unwrap logic: In this controlled domain (scalar update), inversion should rarely fail given R > 0.
-        // If it fails, we simply skip the update (robustness).
-        let _ = self.inner.update(&measurement);
+        // We expect it to succeed.
+        self.inner
+            .update(&measurement)
+            .expect("Kalman update failed: Singular matrix or dimension mismatch");
     }
 
     /// Returns the current estimated amplitude (position).
