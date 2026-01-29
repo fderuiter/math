@@ -1,6 +1,6 @@
 //! Types for Fluid Dynamics.
 
-use nalgebra::Vector3;
+use nalgebra::{Matrix3, Vector3};
 
 /// Physical properties of the fluid.
 #[derive(Debug, Clone, Copy)]
@@ -55,4 +55,17 @@ impl FlowState {
     pub fn new(velocity: Vector3<f64>, pressure: f64) -> Self {
         Self { velocity, pressure }
     }
+}
+
+/// Encapsulates spatial derivatives needed for momentum equations.
+///
+/// Prevents "Primitive Obsession" by grouping related gradients.
+#[derive(Debug, Clone, Copy)]
+pub struct SpatialGradients {
+    /// Jacobian of velocity ($\nabla \mathbf{u}$).
+    pub velocity_gradient: Matrix3<f64>,
+    /// Gradient of pressure ($\nabla p$).
+    pub pressure_gradient: Vector3<f64>,
+    /// Laplacian of velocity ($\nabla^2 \mathbf{u}$). Optional for Inviscid flow.
+    pub laplacian_velocity: Option<Vector3<f64>>,
 }

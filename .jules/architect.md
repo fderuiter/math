@@ -36,3 +36,12 @@
 **Problem:** The Reaction-Diffusion stencil logic (finite difference Laplacian + kinetics) was duplicated in both `step` (optimized Euler) and `derivative_in_place` (generic ODE support) to preserve performance, leading to a DRY violation.
 **Decision:** Extracted the stencil logic into a private `apply_reaction_diffusion_stencil` method accepting a closure.
 **Consequence:** Eliminates code duplication while preserving the performance of the hot loop (unsafe access, unrolling).
+
+## 2026-01-29 - [Fluid Dynamics Momentum Strategy]
+**Problem:** `math_explorer/src/physics/fluid_dynamics/conservation.rs` contained duplicated logic for Navier-Stokes and Euler equations, with long argument lists (Primitive Obsession) and rigid function signatures preventing easy extension (e.g., adding turbulence models).
+**Decision:** Applied "Strategy Pattern" and "Parameter Object".
+1. Defined `MomentumEquation` trait in `conservation.rs`.
+2. Extracted `SpatialGradients` struct in `types.rs` to group derivatives.
+3. Implemented `NavierStokes` and `Euler` strategies.
+4. Introduced `FluidError` for robust error handling.
+**Consequence:** New models can be added by implementing the trait. Legacy functions are now thin wrappers around the strategies, maintaining backward compatibility while allowing the internal logic to evolve. Inputs are strictly typed and validated.
