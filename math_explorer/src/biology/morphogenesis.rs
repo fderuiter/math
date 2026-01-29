@@ -5,6 +5,61 @@
 //!
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
+//!
+//! ## 🚀 Quick Start
+//!
+//! ```rust
+//! use math_explorer::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
+//! use math_explorer::pure_math::analysis::ode::TimeStepper;
+//!
+//! // 1. Initialize System (Grid Size=100, Du=1.0, Dv=20.0, dx=1.0)
+//! // High ratio of diffusion coefficients (Dv >> Du) is required for patterns.
+//! let mut system = TuringSystem::<SchnakenbergKinetics>::new(100, 1.0, 20.0, 1.0);
+//!
+//! // 2. Perturb the center to break symmetry (crucial for pattern formation)
+//! system.u_mut()[50] += 1.0;
+//! system.v_mut()[50] += 1.0;
+//!
+//! // 3. Evolve for some time
+//! for _ in 0..100 {
+//!     system.step(0.01);
+//! }
+//!
+//! // 4. Inspect results
+//! let center_u = system.u()[50];
+//! println!("Center Activator Concentration: {:.4}", center_u);
+//! assert!(center_u != 0.0);
+//! ```
+//!
+//! ## ⚙️ Architecture: Stencil Optimization
+//!
+//! The solver uses a **Sliding Window** approach to compute the Laplacian $\nabla^2$ efficiently without
+//! unnecessary memory lookups. This allows the compiler to rotate registers for `u_prev`, `u_curr`, and `u_next`.
+//!
+//! ```mermaid
+//! graph LR
+//!     subgraph Memory[Grid Memory]
+//!     Cells[... u_{i-1}, u_{i}, u_{i+1} ...]
+//!     end
+//!
+//!     subgraph Registers[Sliding Window]
+//!     Prev[u_{i-1}]
+//!     Curr[u_{i}]
+//!     Next[u_{i+1}]
+//!     end
+//!
+//!     Cells -.->|Load| Next
+//!     Prev -->|Shift| Temp[Discard]
+//!     Curr -->|Shift| Prev
+//!     Next -->|Shift| Curr
+//!
+//!     Prev & Curr & Next -->|Finite Difference| Laplacian[∇²u]
+//!     Curr -->|Kinetics| Reaction[f(u,v)]
+//!
+//!     Laplacian & Reaction -->|Update| NewState[u_{i} + dt * du/dt]
+//!
+//!     style Curr fill:#f9f,stroke:#333,stroke-width:2px
+//! ```
 
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
