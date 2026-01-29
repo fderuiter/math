@@ -4,9 +4,10 @@ mod tests {
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
             continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            MomentumEquation, NavierStokes, Euler,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
-        types::{FlowState, FluidProperties},
+        types::{FlowState, FluidProperties, SpatialGradients},
     };
     use nalgebra::{Matrix3, Vector3};
 
@@ -112,5 +113,27 @@ mod tests {
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+
+    #[test]
+    fn test_momentum_strategies() {
+        let props = FluidProperties::new(1.0, 1.0); // rho=1, mu=1
+        let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
+
+        let vel_grad = Matrix3::zeros();
+        let p_grad = Vector3::zeros();
+        let lap_vel = Vector3::new(1.0, 0.0, 0.0);
+        let g = Vector3::zeros();
+
+        // Check Navier Stokes: should include viscosity
+        // Term = nu * lap_vel = 1.0 * 1.0 = 1.0
+        let gradients_ns = SpatialGradients::new(vel_grad, p_grad, Some(lap_vel));
+        let ns_accel = NavierStokes.compute_time_derivative(&props, &state, &gradients_ns, g);
+        assert!((ns_accel.x - 1.0).abs() < 1e-9);
+
+        // Check Euler: should ignore viscosity even if laplacian is provided
+        let gradients_euler_with_lap = SpatialGradients::new(vel_grad, p_grad, Some(lap_vel));
+        let euler_accel_2 = Euler.compute_time_derivative(&props, &state, &gradients_euler_with_lap, g);
+        assert!((euler_accel_2.x - 0.0).abs() < 1e-9);
     }
 }

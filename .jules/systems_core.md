@@ -58,3 +58,8 @@
 **Violation:** The `gillespie_step_time` function in `epidemiology::stochastic` had hardcoded `rand::thread_rng()` dependency (Side Effect) and hardcoded 2-reaction logic, violating Dependency Inversion and Open/Closed Principle.
 **Refactor:** Applied the **Strategy Pattern**. Defined `StochasticSystem` trait for reaction networks and `GillespieSolver` struct with injected RNG (`R: Rng`).
 **Trade-off:** Increased complexity (Generics, Trait definition) compared to a single function, but enabled deterministic testing (seeded RNG) and support for any reaction network (Composability).
+
+## 2027-04-10 - Strategy Pattern for Fluid Momentum
+**Violation:** `conservation.rs` contained duplicate logic for Navier-Stokes and Euler time derivatives, with hardcoded physics regimes (viscous vs inviscid) and parameter soup (`velocity_gradient`, `pressure_gradient`, `laplacian`), violating OCP and DRY.
+**Refactor:** Applied the **Strategy Pattern**. Extracted `MomentumEquation` trait. Implemented `NavierStokes` and `Euler` strategies. Introduced `SpatialGradients` struct to encapsulate spatial derivatives.
+**Trade-off:** Minimal boilerplate for trait definitions, but achieved full separation of physics models and eliminated argument soup.
