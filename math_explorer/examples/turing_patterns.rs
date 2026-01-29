@@ -5,7 +5,7 @@
 //!
 //! Run with: `cargo run --example turing_patterns`
 
-use math_explorer::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
+use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 
 fn main() {
     println!("🧪 Initializing Turing Pattern Simulation...");
@@ -31,7 +31,8 @@ fn main() {
 
     println!("   Steady State -> u*: {:.2}, v*: {:.2}", u_star, v_star);
 
-    let mut system = TuringSystem::<SchnakenbergKinetics>::new_with_kinetics(size, d_u, d_v, dx, kinetics);
+    let mut system =
+        TuringSystem::<SchnakenbergKinetics>::new_with_kinetics(size, d_u, d_v, dx, kinetics);
 
     // 2. Initialize to Steady State + Perturbation
     for i in 0..size {
