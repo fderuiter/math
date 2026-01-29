@@ -290,7 +290,13 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
             let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
 
-            output_op(i, u_curr, v_curr, d_u * lap_u + reaction_u, d_v * lap_v + reaction_v);
+            output_op(
+                i,
+                u_curr,
+                v_curr,
+                d_u * lap_u + reaction_u,
+                d_v * lap_v + reaction_v,
+            );
         }
 
         // 2. Handle i = 1..n-1 (Hot Path)
@@ -311,7 +317,13 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
                     let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
 
-                    output_op(i, u_curr, v_curr, d_u * lap_u + reaction_u, d_v * lap_v + reaction_v);
+                    output_op(
+                        i,
+                        u_curr,
+                        v_curr,
+                        d_u * lap_u + reaction_u,
+                        d_v * lap_v + reaction_v,
+                    );
 
                     // Shift window
                     u_prev = u_curr;
@@ -338,7 +350,13 @@ impl<K: ReactionKinetics> TuringSystem<K> {
 
                 let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
 
-                output_op(i, u_curr, v_curr, d_u * lap_u + reaction_u, d_v * lap_v + reaction_v);
+                output_op(
+                    i,
+                    u_curr,
+                    v_curr,
+                    d_u * lap_u + reaction_u,
+                    d_v * lap_v + reaction_v,
+                );
             }
         }
     }
@@ -367,12 +385,10 @@ impl<K: ReactionKinetics> TuringSystem<K> {
             self.d_u,
             self.d_v,
             self.dx,
-            |i, u, v, du, dv| {
-                unsafe {
-                    *next_u.get_unchecked_mut(i) = u + dt * du;
-                    *next_v.get_unchecked_mut(i) = v + dt * dv;
-                }
-            }
+            |i, u, v, du, dv| unsafe {
+                *next_u.get_unchecked_mut(i) = u + dt * du;
+                *next_v.get_unchecked_mut(i) = v + dt * dv;
+            },
         );
 
         // Swap buffers (states)
@@ -407,12 +423,10 @@ impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
             self.d_u,
             self.d_v,
             self.dx,
-            |i, _, _, du, dv| {
-                unsafe {
-                    *out_u.get_unchecked_mut(i) = du;
-                    *out_v.get_unchecked_mut(i) = dv;
-                }
-            }
+            |i, _, _, du, dv| unsafe {
+                *out_u.get_unchecked_mut(i) = du;
+                *out_v.get_unchecked_mut(i) = dv;
+            },
         );
     }
 }
