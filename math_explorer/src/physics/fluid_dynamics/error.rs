@@ -16,7 +16,10 @@ impl fmt::Display for FluidError {
         match self {
             FluidError::InvalidProperties(msg) => write!(f, "Invalid Fluid Properties: {}", msg),
             FluidError::MissingLaplacian => {
-                write!(f, "Missing Laplacian of velocity (required for Viscous flow)")
+                write!(
+                    f,
+                    "Missing Laplacian of velocity (required for Viscous flow)"
+                )
             }
         }
     }
