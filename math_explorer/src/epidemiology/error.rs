@@ -14,6 +14,8 @@ pub enum EpidemiologyError {
         v_rows: usize,
         v_cols: usize,
     },
+    /// Invalid reaction index for the system.
+    InvalidReactionIndex(usize),
 }
 
 impl fmt::Display for EpidemiologyError {
@@ -36,6 +38,7 @@ impl fmt::Display for EpidemiologyError {
                 "Matrix dimensions mismatch: F=({}, {}), V=({}, {})",
                 f_rows, f_cols, v_rows, v_cols
             ),
+            Self::InvalidReactionIndex(idx) => write!(f, "Invalid reaction index: {}", idx),
         }
     }
 }

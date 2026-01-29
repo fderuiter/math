@@ -13,3 +13,9 @@ Updated `li_ma_significance` to return `Result`.
 Updated `solve_linear_system` and `solve_normal_equation` to return `Result`.
 ## 2026-01-20 - [Physics/Chaos, Applied/Isosurface] **Debt:** Stringly Typed Errors **Risk:** Panic/Unpredictable Behavior
 Replaced `Result<T, String>` with typed error enums `ChaosError` and `IsosurfaceError`. This improves error handling safety and allows consumers to match on specific error cases instead of parsing strings.
+
+## 2026-06-21 - [Epidemiology/Stochastic] **Debt:** Panic in Library Code **Risk:** Panic risk
+`SIRModel::react` panics on invalid reaction index. This causes the entire simulation to crash instead of returning an error.
+
+## 2026-06-21 - [Physics/StatMech] **Debt:** Hardcoded RNG **Risk:** Architectural limitation
+`SpinLattice` and its methods hardcode `rand::thread_rng()`, making deterministic testing and reseeding impossible without mocking.

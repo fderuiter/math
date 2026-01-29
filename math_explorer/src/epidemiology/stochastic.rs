@@ -1,4 +1,5 @@
 use crate::epidemiology::compartmental::{SIRModel, SIRState};
+use crate::epidemiology::error::EpidemiologyError;
 use rand::Rng;
 
 /// A trait for systems that can be simulated stochastically.
@@ -10,7 +11,7 @@ pub trait StochasticSystem<State> {
     fn propensities(&self, state: &State) -> Vec<f64>;
 
     /// Updates the state according to the reaction that occurred.
-    fn react(&self, state: &mut State, reaction_index: usize);
+    fn react(&self, state: &mut State, reaction_index: usize) -> Result<(), EpidemiologyError>;
 }
 
 /// A solver for stochastic simulation using the Gillespie Algorithm (SSA).
@@ -55,8 +56,12 @@ impl<R: Rng> GillespieSolver<R> {
     /// Performs one step of the Gillespie algorithm.
     ///
     /// Returns the time elapsed for this step.
-    /// Returns `f64::INFINITY` if no reactions can occur (total propensity is 0).
-    pub fn step<S, State>(&mut self, system: &S, state: &mut State) -> f64
+    /// Returns `Ok(f64::INFINITY)` if no reactions can occur (total propensity is 0).
+    pub fn step<S, State>(
+        &mut self,
+        system: &S,
+        state: &mut State,
+    ) -> Result<f64, EpidemiologyError>
     where
         S: StochasticSystem<State>,
     {
@@ -64,7 +69,7 @@ impl<R: Rng> GillespieSolver<R> {
         let total_rate: f64 = rates.iter().sum();
 
         if total_rate <= 0.0 {
-            return f64::INFINITY;
+            return Ok(f64::INFINITY);
         }
 
         // 1. Determine time step tau
@@ -92,9 +97,9 @@ impl<R: Rng> GillespieSolver<R> {
         }
 
         // 3. Update state
-        system.react(state, reaction_index);
+        system.react(state, reaction_index)?;
 
-        tau
+        Ok(tau)
     }
 }
 
@@ -111,7 +116,7 @@ impl StochasticSystem<SIRState> for SIRModel {
         vec![infection_rate, recovery_rate]
     }
 
-    fn react(&self, state: &mut SIRState, reaction_index: usize) {
+    fn react(&self, state: &mut SIRState, reaction_index: usize) -> Result<(), EpidemiologyError> {
         match reaction_index {
             0 => {
                 // Infection: S decreases by 1, I increases by 1
@@ -123,8 +128,9 @@ impl StochasticSystem<SIRState> for SIRModel {
                 state.i -= 1.0;
                 state.r += 1.0;
             }
-            _ => panic!("Invalid reaction index for SIR Model"),
+            _ => return Err(EpidemiologyError::InvalidReactionIndex(reaction_index)),
         }
+        Ok(())
     }
 }
 
@@ -195,7 +201,7 @@ mod tests {
         let initial_i = state.i;
 
         // Take one step
-        let dt = solver.step(&model, &mut state);
+        let dt = solver.step(&model, &mut state).unwrap();
 
         assert!(dt > 0.0, "Time step should be positive");
         assert!(dt.is_finite());
