@@ -168,4 +168,25 @@ mod tests {
         );
         assert!((agent.get_q_value(&state, &action) - 0.09).abs() < 1e-6);
     }
+
+    #[test]
+    fn test_deterministic_action_selection() {
+        use rand::SeedableRng;
+        use rand::rngs::StdRng;
+
+        // Epsilon 0.5 to trigger both exploration and exploitation
+        let agent = TabularQAgent::new(0.1, 0.9, 0.5);
+        let state = GridState::Start;
+
+        let mut rng1 = StdRng::seed_from_u64(42);
+        let mut rng2 = StdRng::seed_from_u64(42);
+
+        let actions = [Move::Forward, Move::Stay];
+
+        for _ in 0..20 {
+            let action1 = agent.select_action_with_rng(&state, &actions, &mut rng1);
+            let action2 = agent.select_action_with_rng(&state, &actions, &mut rng2);
+            assert_eq!(action1, action2, "Actions should be identical for same seed");
+        }
+    }
 }
