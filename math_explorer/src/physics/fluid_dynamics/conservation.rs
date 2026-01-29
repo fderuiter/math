@@ -165,10 +165,6 @@ pub fn euler_time_derivative(
 ) -> Vector3<f64> {
     // Construct dummy properties with the given rho
     let properties = FluidProperties::new(rho, 0.0); // Viscosity ignored by Euler
-    let gradients = SpatialGradients::new(
-        *velocity_gradient,
-        pressure_gradient,
-        None,
-    );
+    let gradients = SpatialGradients::new(*velocity_gradient, pressure_gradient, None);
     Euler.compute_time_derivative(&properties, state, &gradients, body_force_accel)
 }

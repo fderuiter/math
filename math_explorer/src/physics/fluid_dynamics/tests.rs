@@ -3,8 +3,8 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
-            MomentumEquation, NavierStokes, Euler,
+            Euler, MomentumEquation, NavierStokes, continuity_divergence,
+            material_derivative_scalar, navier_stokes_time_derivative,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
         types::{FlowState, FluidProperties, SpatialGradients},
@@ -133,7 +133,8 @@ mod tests {
 
         // Check Euler: should ignore viscosity even if laplacian is provided
         let gradients_euler_with_lap = SpatialGradients::new(vel_grad, p_grad, Some(lap_vel));
-        let euler_accel_2 = Euler.compute_time_derivative(&props, &state, &gradients_euler_with_lap, g);
+        let euler_accel_2 =
+            Euler.compute_time_derivative(&props, &state, &gradients_euler_with_lap, g);
         assert!((euler_accel_2.x - 0.0).abs() < 1e-9);
     }
 }
