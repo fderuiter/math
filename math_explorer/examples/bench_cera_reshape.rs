@@ -28,7 +28,10 @@ fn main() {
     let total_rows = batch_size * num_levels;
     let inputs = DMatrix::from_fn(total_rows, in_channels, |_, _| rand::random::<f32>());
 
-    println!("Running benchmark with batch_size={}, num_levels={}, channels={}...", batch_size, num_levels, in_channels);
+    println!(
+        "Running benchmark with batch_size={}, num_levels={}, channels={}...",
+        batch_size, num_levels, in_channels
+    );
 
     // Warmup
     for _ in 0..5 {
