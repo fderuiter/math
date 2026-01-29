@@ -16,9 +16,15 @@ pub enum AlgorithmError {
 impl fmt::Display for AlgorithmError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AlgorithmError::SingularMatrix => write!(f, "Matrix is singular and cannot be inverted."),
+            AlgorithmError::SingularMatrix => {
+                write!(f, "Matrix is singular and cannot be inverted.")
+            }
             AlgorithmError::DimensionMismatch { expected, actual } => {
-                write!(f, "Dimension mismatch: expected {}, got {}", expected, actual)
+                write!(
+                    f,
+                    "Dimension mismatch: expected {}, got {}",
+                    expected, actual
+                )
             }
             AlgorithmError::InvalidInput(msg) => write!(f, "Invalid input: {}", msg),
         }
