@@ -26,3 +26,7 @@
 ## 2026-06-25 - Decoupling LoraHub Algorithms
 **Violation:** Open/Closed Principle (OCP). The `LoraEnsemble` hardcoded `combine` (weighted sum) and `evaluate_objective` (L1 Regularization), preventing extension for advanced merging techniques like SLERP or TIES.
 **Remedy:** Strategy Pattern. Extracted `CombinationStrategy` and `ObjectiveStrategy` traits. Implemented `LinearCombinationStrategy` and `L1RegularizationStrategy`. Refactored `LoraEnsemble` to use these strategies via dependency injection.
+
+## 2026-10-24 - Decoupling RL Exploration Logic
+**Violation:** Dependency Inversion Principle (DIP) and Open/Closed Principle (OCP). The `TabularQAgent` hardcoded the Epsilon-Greedy exploration strategy and `rand::thread_rng()`, making it non-deterministic, hard to test, and impossible to extend with new strategies (like Boltzmann or UCB) without modifying the agent.
+**Remedy:** Strategy Pattern. Extracted `ExplorationStrategy` trait and implemented `EpsilonGreedy`. Injected the strategy into `TabularQAgent` and exposed `select_action_with_rng` for deterministic testing.
