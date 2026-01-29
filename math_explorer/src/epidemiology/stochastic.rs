@@ -35,7 +35,7 @@ pub trait StochasticSystem<State> {
 ///
 /// // Run for 10 time units
 /// while time < 10.0 {
-///     let dt = solver.step(&model, &mut state);
+///     let dt = solver.step(&model, &mut state).unwrap();
 ///     if dt.is_infinite() { break; }
 ///     time += dt;
 /// }

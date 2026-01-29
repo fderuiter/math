@@ -21,7 +21,7 @@ use rand::Rng;
 /// Simulating a ferromagnetic phase transition (Low Temperature):
 ///
 /// ```
-/// use math_explorer::physics::stat_mech::ising::SpinLattice;
+/// use math_explorer::physics::stat_mech::ising::{SpinLattice, MetropolisSolver, IsingSolver};
 /// use math_explorer::physics::stat_mech::KB;
 ///
 /// // 1. Setup system parameters
@@ -39,9 +39,8 @@ use rand::Rng;
 ///
 /// // 4. Run Metropolis Simulation to reach equilibrium
 /// // Note: This is a probabilistic process.
-/// for _ in 0..100_000 {
-///     lattice.metropolis_step(temp, j_coupling, h_field);
-/// }
+/// let mut solver = MetropolisSolver::new(rand::thread_rng());
+/// solver.evolve(&mut lattice, 200_000, temp, j_coupling, h_field);
 ///
 /// // 5. Check Magnetization
 /// let m = lattice.magnetization();
