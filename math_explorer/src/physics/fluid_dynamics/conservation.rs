@@ -154,11 +154,7 @@ pub fn euler_time_derivative(
     pressure_gradient: Vector3<f64>,
     body_force_accel: Vector3<f64>,
 ) -> Result<Vector3<f64>, FluidError> {
-    let gradients = SpatialGradients::new(
-        *velocity_gradient,
-        pressure_gradient,
-        None,
-    );
+    let gradients = SpatialGradients::new(*velocity_gradient, pressure_gradient, None);
     // Create temporary properties with correct density and 0 viscosity.
     let props = FluidProperties::new(rho, 0.0);
     Euler.calculate_acceleration(&props, state, &gradients, body_force_accel)
