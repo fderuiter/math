@@ -1,4 +1,6 @@
-use math_explorer::ai::gaussian_splatting::rendering::{blend_gaussians, blend_gaussians_block_2x2};
+use math_explorer::ai::gaussian_splatting::rendering::{
+    blend_gaussians, blend_gaussians_block_2x2,
+};
 use math_explorer::ai::gaussian_splatting::structs::Gaussian2D;
 use nalgebra::{Matrix2, Point2, Vector3};
 use std::time::Instant;
@@ -59,7 +61,10 @@ fn main() {
 
     // Verify
     if (black_hole.x - black_hole_block.x).abs() > 1e-3 {
-        println!("Mismatch! AoS: {:?}, Block: {:?}", black_hole, black_hole_block);
+        println!(
+            "Mismatch! AoS: {:?}, Block: {:?}",
+            black_hole, black_hole_block
+        );
     } else {
         println!("Results match.");
     }
