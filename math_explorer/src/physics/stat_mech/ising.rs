@@ -25,8 +25,8 @@ use rand::Rng;
 /// use math_explorer::physics::stat_mech::KB;
 ///
 /// // 1. Setup system parameters
-/// let width = 20;
-/// let height = 20;
+/// let width = 10;
+/// let height = 10;
 /// let j_coupling = 1.0; // Interaction energy (J > 0 for Ferromagnetism)
 /// let h_field = 0.0;    // No external magnetic field
 ///
@@ -39,7 +39,8 @@ use rand::Rng;
 ///
 /// // 4. Run Metropolis Simulation to reach equilibrium
 /// // Note: This is a probabilistic process.
-/// for _ in 0..100_000 {
+/// // We run enough steps to ensure the system magnetizes even from a random start.
+/// for _ in 0..200_000 {
 ///     lattice.metropolis_step(temp, j_coupling, h_field);
 /// }
 ///
