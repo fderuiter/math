@@ -1,10 +1,76 @@
 use super::structs::Gaussian2D;
 use nalgebra::Vector3;
 
+/// Computes color for a 2x2 block of pixels.
+/// Returns 4 colors in row-major order: (x,y), (x+1,y), (x,y+1), (x+1,y+1).
+#[inline]
+pub fn blend_gaussians_block_2x2(
+    sorted_gaussians: &[Gaussian2D],
+    top_left: &nalgebra::Point2<f64>,
+    stride_x: f64,
+    stride_y: f64,
+) -> [Vector3<f64>; 4] {
+    let mut c = [Vector3::zeros(); 4];
+    let mut t = [1.0; 4];
+
+    // Offsets for the 4 pixels
+    let off_x = [0.0, stride_x, 0.0, stride_x];
+    let off_y = [0.0, 0.0, stride_y, stride_y];
+
+    for g in sorted_gaussians {
+        // Load Gaussian data once to reuse across 4 pixels
+        let mx = g.mean.x;
+        let my = g.mean.y;
+        let a = g.conic[(0, 0)];
+        let b = g.conic[(0, 1)];
+        let cc = g.conic[(1, 1)];
+        let op = g.opacity;
+
+        // Load color components once
+        let cr = g.color.x;
+        let cg = g.color.y;
+        let cb = g.color.z;
+
+        let mut all_opaque = true;
+
+        for k in 0..4 {
+            if t[k] >= 0.0001 {
+                all_opaque = false;
+
+                let px = top_left.x + off_x[k];
+                let py = top_left.y + off_y[k];
+
+                let dx = px - mx;
+                let dy = py - my;
+
+                let power = a * dx * dx + 2.0 * b * dx * dy + cc * dy * dy;
+
+                if power <= 0.0 {
+                    let alpha = op * power.exp();
+                    let contribution = alpha * t[k];
+
+                    c[k].x += cr * contribution;
+                    c[k].y += cg * contribution;
+                    c[k].z += cb * contribution;
+
+                    t[k] *= 1.0 - alpha;
+                }
+            }
+        }
+
+        if all_opaque {
+            break;
+        }
+    }
+
+    c
+}
+
 /// Computes the accumulated color for a pixel using alpha blending.
 ///
 /// C = sum(c_i * alpha_i * T_i)
 /// where T_i = prod(1 - alpha_j) for j < i
+#[inline]
 pub fn blend_gaussians(
     sorted_gaussians: &[Gaussian2D],
     pixel_coord: &nalgebra::Point2<f64>,
@@ -35,6 +101,7 @@ pub fn blend_gaussians(
 /// Evaluates the opacity of a 2D Gaussian at a specific point.
 ///
 /// alpha = alpha_raw * exp(-0.5 * (x - mu)^T * Sigma^-1 * (x - mu))
+#[inline]
 pub fn evaluate_gaussian_opacity(gaussian: &Gaussian2D, point: &nalgebra::Point2<f64>) -> f64 {
     let dx = point.x - gaussian.mean.x;
     let dy = point.y - gaussian.mean.y;

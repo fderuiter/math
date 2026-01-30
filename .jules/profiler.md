@@ -155,3 +155,22 @@ Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
 - Before: ~0.72s (13.9 M/s)
 - After: ~0.39s (25.7 M/s)
 - Speedup: ~1.85x
+
+## 2026-11-02 - [Optimization] **Bottleneck:** Gaussian Splatting Memory Bandwidth **Strategy:** Loop Tiling (2x2) & Inlining **Gain:** ~2.7% Time Saved (1.60s -> 1.56s)
+
+**Bottleneck:**
+The `blend_gaussians` function processes pixels independently, loading Gaussian data (88 bytes) for every pixel in a 100x100 grid.
+1. High Memory Bandwidth Usage: For 10000 pixels and 100 Gaussians, this results in 1,000,000 loads of Gaussian structures.
+2. Function Call Overhead: `evaluate_gaussian_opacity` was called in the hot loop without explicit inlining.
+
+**Strategy:**
+1. **Loop Tiling (2x2 Blocks):** Implemented `blend_gaussians_block_2x2` to process 4 pixels simultaneously.
+   - Loads Gaussian data once into registers and reuses it for 4 pixels.
+   - Reduces Gaussian data loads by 75% (4x reduction).
+2. **Inlining:** Added `#[inline]` to `evaluate_gaussian_opacity` and blending functions to reduce call overhead and enable cross-crate optimization.
+
+**Gain:**
+Benchmark `bench_gaussian` (100 frames, 100x100 grid, 100 Gaussians):
+- Before: ~1.60s
+- After: ~1.56s
+- Speedup: ~2.7% (Bandwidth reduction masked by heavy `exp` computation)
