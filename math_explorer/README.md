@@ -17,7 +17,7 @@ The library is organized into high-level domains:
 - **`biology`**: Biological modeling, including **Neuroscience** (Hodgkin-Huxley) and **Morphogenesis**.
 - **`climate`**: Climate modeling tools, featuring the **CERA** autoencoder framework.
 - **`epidemiology`**: Disease modeling, from standard **SIR/SEIR** compartmental models to stochastic network dynamics.
-- **`physics`**: Simulations of physical systems, including **Quantum Mechanics**, **Fluid Dynamics**, **Chaos Theory** (Lorenz System), and **MRI Physics**.
+- **`physics`**: Simulations of physical systems, including **Quantum Mechanics**, **Fluid Dynamics** (Navier-Stokes), **Statistical Mechanics** (Ising Model), **Chaos Theory** (Lorenz System), and **MRI Physics**.
 - **`pure_math`**: Foundational mathematics, covering **Algebra**, **Number Theory** (Partitions, Q-Series), **Graph Theory**, and **Differential Geometry**.
 
 ## 🚀 Usage

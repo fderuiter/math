@@ -59,3 +59,10 @@
 **Gap:** The `freesurfer` module was a "Visual Void" with no explanation of the cortical reconstruction pipeline or usage.
 **Strategy:** Overhauled `freesurfer/mod.rs` with a Mermaid pipeline diagram and a runnable Quick Start example for cortical thickness calculation.
 **Outcome:** Users can now understand the MRI processing pipeline and use the tools for surface analysis.
+
+## 2025-05-20 - Visualizing Fluid Dynamics & Stat Mech
+**Gap:** The `physics/fluid_dynamics` module was a "Blank Page" with no context, and `physics/stat_mech` lacked visual explanation of phase transitions.
+**Strategy:**
+- Overhauled `fluid_dynamics/mod.rs` with a Mermaid diagram of Conservation Laws and a runnable Reynolds Number example.
+- Overhauled `stat_mech/mod.rs` with a Mermaid diagram of the Ising Phase Transition and a runnable Ferromagnetism example.
+**Outcome:** Users can now visualize the physics of flow and statistical ordering without reading the source code.
