@@ -58,3 +58,8 @@
 **Violation:** The `gillespie_step_time` function in `epidemiology::stochastic` had hardcoded `rand::thread_rng()` dependency (Side Effect) and hardcoded 2-reaction logic, violating Dependency Inversion and Open/Closed Principle.
 **Refactor:** Applied the **Strategy Pattern**. Defined `StochasticSystem` trait for reaction networks and `GillespieSolver` struct with injected RNG (`R: Rng`).
 **Trade-off:** Increased complexity (Generics, Trait definition) compared to a single function, but enabled deterministic testing (seeded RNG) and support for any reaction network (Composability).
+
+## 2027-02-14 - Strategy Pattern for Dose Calculation
+**Violation:** The `dose_calculation.rs` module suffered from primitive obsession (raw `f64` arguments) and lacked extensibility, violating the Open/Closed Principle.
+**Refactor:** Applied **Strategy Pattern** and **Parameter Object**. Extracted `TermaModel` and `DoseKernel` traits. Introduced `TermaInput` and `KernelInput` for strict validation.
+**Trade-off:** Increased verbosity for simple calculations, but enabled type-safe, extensible dose algorithms and centralized validation logic.

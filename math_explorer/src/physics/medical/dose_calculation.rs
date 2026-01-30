@@ -1,4 +1,113 @@
 //! Dose Calculation Algorithms.
+//!
+//! # Refactoring Note
+//!
+//! This module has been refactored to use the Strategy Pattern for Dose Calculation.
+//! Legacy functions are preserved but deprecated.
+
+use std::fmt;
+
+// --- Domain Errors ---
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum DoseError {
+    InvalidInput(String),
+    CalculationError(String),
+}
+
+impl fmt::Display for DoseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            DoseError::InvalidInput(msg) => write!(f, "Invalid Input: {}", msg),
+            DoseError::CalculationError(msg) => write!(f, "Calculation Error: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for DoseError {}
+
+// --- Parameter Objects ---
+
+pub struct TermaInput {
+    pub incident_fluence: f64,
+    pub mu: f64,
+    pub depth: f64,
+}
+
+impl TermaInput {
+    pub fn new(incident_fluence: f64, mu: f64, depth: f64) -> Result<Self, DoseError> {
+        if incident_fluence < 0.0 {
+            return Err(DoseError::InvalidInput("Fluence must be non-negative".into()));
+        }
+        if mu < 0.0 {
+            return Err(DoseError::InvalidInput("Attenuation coefficient (mu) must be non-negative".into()));
+        }
+        if depth < 0.0 {
+            return Err(DoseError::InvalidInput("Depth must be non-negative".into()));
+        }
+        Ok(Self { incident_fluence, mu, depth })
+    }
+}
+
+pub struct KernelInput {
+    pub radius: f64,
+}
+
+impl KernelInput {
+    pub fn new(radius: f64) -> Result<Self, DoseError> {
+        if radius < 0.0 {
+             return Err(DoseError::InvalidInput("Radius must be non-negative".into()));
+        }
+        // Singularity check
+        if radius.abs() < 1e-6 {
+             return Err(DoseError::InvalidInput("Radius cannot be zero (singularity at r=0)".into()));
+        }
+        Ok(Self { radius })
+    }
+}
+
+// --- Strategies ---
+
+pub trait TermaModel {
+    fn calculate(&self, input: &TermaInput) -> Result<f64, DoseError>;
+}
+
+pub trait DoseKernel {
+    fn evaluate(&self, input: &KernelInput) -> Result<f64, DoseError>;
+}
+
+// --- Implementations ---
+
+pub struct ExponentialTerma;
+
+impl TermaModel for ExponentialTerma {
+    fn calculate(&self, input: &TermaInput) -> Result<f64, DoseError> {
+        // T = mu * Psi0 * e^(-mu * d)
+        Ok(input.mu * input.incident_fluence * (-input.mu * input.depth).exp())
+    }
+}
+
+pub struct PointSpreadKernel {
+    pub amplitude: f64,
+    pub beta: f64,
+}
+
+impl PointSpreadKernel {
+    pub fn new(amplitude: f64, beta: f64) -> Self {
+        Self { amplitude, beta }
+    }
+}
+
+impl DoseKernel for PointSpreadKernel {
+    fn evaluate(&self, input: &KernelInput) -> Result<f64, DoseError> {
+        let r = input.radius;
+        // K = (A / r^2) * e^(-beta * r)
+        let val = (self.amplitude / (r * r)) * (-self.beta * r).exp();
+        Ok(val)
+    }
+}
+
+// --- Legacy Functions ---
 
 /// Calculates the Total Energy Released per Mass (TERMA) for a ray segment.
 ///
@@ -18,12 +127,15 @@
 /// # Formula
 ///
 /// $T = \mu \Psi_0 e^{-\mu d}$
+#[deprecated(since = "0.2.0", note = "Use TermaModel strategy (ExponentialTerma) instead")]
 pub fn calculate_terma(incident_fluence: f64, mu: f64, depth: f64) -> f64 {
-    if incident_fluence < 0.0 || mu < 0.0 || depth < 0.0 {
-        // Physical quantities should be non-negative, but we return 0.0 or handle gracefully.
-        return 0.0;
-    }
-    mu * incident_fluence * (-mu * depth).exp()
+    let input = match TermaInput::new(incident_fluence, mu, depth) {
+        Ok(i) => i,
+        Err(_) => return 0.0, // Legacy behavior
+    };
+
+    let model = ExponentialTerma;
+    model.calculate(&input).unwrap_or(0.0)
 }
 
 /// Calculates a simplified analytical Point Spread Function (Kernel).
@@ -47,16 +159,12 @@ pub fn calculate_terma(incident_fluence: f64, mu: f64, depth: f64) -> f64 {
 ///
 /// *Note*: This is a singular kernel at r=0. In practice, finite voxel size integration is used.
 /// Here we return an error or handle the singularity if r is too close to 0.
+#[deprecated(since = "0.2.0", note = "Use DoseKernel strategy (PointSpreadKernel) instead")]
 pub fn point_kernel(radius: f64, amplitude: f64, beta: f64) -> Result<f64, String> {
-    if radius.abs() < 1e-6 {
-        return Err("Radius cannot be zero (singularity at r=0)".to_string());
-    }
-    if radius < 0.0 {
-        return Err("Radius must be non-negative".to_string());
-    }
+    let input = KernelInput::new(radius).map_err(|e| e.to_string())?;
 
-    let val = (amplitude / (radius * radius)) * (-beta * radius).exp();
-    Ok(val)
+    let kernel = PointSpreadKernel::new(amplitude, beta);
+    kernel.evaluate(&input).map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
@@ -64,6 +172,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[allow(deprecated)]
     fn test_terma_calculation() {
         // Simple case: no attenuation (mu=0) -> T = 0
         assert_eq!(calculate_terma(100.0, 0.0, 10.0), 0.0);
@@ -74,6 +183,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_point_kernel() {
         // Error on r=0
         assert!(point_kernel(0.0, 1.0, 1.0).is_err());
@@ -85,6 +195,30 @@ mod tests {
         // K = (4 / 4) * exp(-0.5 * 2) = 1 * e^-1 = 0.367879
         let k = point_kernel(r, a, b).unwrap();
         assert!((k - (-1.0_f64).exp()).abs() < 1e-5);
+    }
+
+    // New tests for refactored code
+    #[test]
+    fn test_terma_input_validation() {
+        assert!(TermaInput::new(-1.0, 0.1, 1.0).is_err());
+        assert!(TermaInput::new(100.0, -0.1, 1.0).is_err());
+        assert!(TermaInput::new(100.0, 0.1, -1.0).is_err());
+    }
+
+    #[test]
+    fn test_exponential_terma_strategy() {
+        let input = TermaInput::new(100.0, 0.1, 5.0).unwrap();
+        let model = ExponentialTerma;
+        let result = model.calculate(&input).unwrap();
+        // 0.1 * 100 * exp(-0.1 * 5) = 10 * exp(-0.5)
+        let expected = 10.0 * (-0.5_f64).exp();
+        assert!((result - expected).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_kernel_input_validation() {
+        assert!(KernelInput::new(-1.0).is_err());
+        assert!(KernelInput::new(0.0).is_err()); // Singularity
     }
 }
 
