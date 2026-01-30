@@ -37,15 +37,23 @@ pub struct TermaInput {
 impl TermaInput {
     pub fn new(incident_fluence: f64, mu: f64, depth: f64) -> Result<Self, DoseError> {
         if incident_fluence < 0.0 {
-            return Err(DoseError::InvalidInput("Fluence must be non-negative".into()));
+            return Err(DoseError::InvalidInput(
+                "Fluence must be non-negative".into(),
+            ));
         }
         if mu < 0.0 {
-            return Err(DoseError::InvalidInput("Attenuation coefficient (mu) must be non-negative".into()));
+            return Err(DoseError::InvalidInput(
+                "Attenuation coefficient (mu) must be non-negative".into(),
+            ));
         }
         if depth < 0.0 {
             return Err(DoseError::InvalidInput("Depth must be non-negative".into()));
         }
-        Ok(Self { incident_fluence, mu, depth })
+        Ok(Self {
+            incident_fluence,
+            mu,
+            depth,
+        })
     }
 }
 
@@ -56,11 +64,15 @@ pub struct KernelInput {
 impl KernelInput {
     pub fn new(radius: f64) -> Result<Self, DoseError> {
         if radius < 0.0 {
-             return Err(DoseError::InvalidInput("Radius must be non-negative".into()));
+            return Err(DoseError::InvalidInput(
+                "Radius must be non-negative".into(),
+            ));
         }
         // Singularity check
         if radius.abs() < 1e-6 {
-             return Err(DoseError::InvalidInput("Radius cannot be zero (singularity at r=0)".into()));
+            return Err(DoseError::InvalidInput(
+                "Radius cannot be zero (singularity at r=0)".into(),
+            ));
         }
         Ok(Self { radius })
     }
@@ -127,7 +139,10 @@ impl DoseKernel for PointSpreadKernel {
 /// # Formula
 ///
 /// $T = \mu \Psi_0 e^{-\mu d}$
-#[deprecated(since = "0.2.0", note = "Use TermaModel strategy (ExponentialTerma) instead")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use TermaModel strategy (ExponentialTerma) instead"
+)]
 pub fn calculate_terma(incident_fluence: f64, mu: f64, depth: f64) -> f64 {
     let input = match TermaInput::new(incident_fluence, mu, depth) {
         Ok(i) => i,
@@ -159,7 +174,10 @@ pub fn calculate_terma(incident_fluence: f64, mu: f64, depth: f64) -> f64 {
 ///
 /// *Note*: This is a singular kernel at r=0. In practice, finite voxel size integration is used.
 /// Here we return an error or handle the singularity if r is too close to 0.
-#[deprecated(since = "0.2.0", note = "Use DoseKernel strategy (PointSpreadKernel) instead")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use DoseKernel strategy (PointSpreadKernel) instead"
+)]
 pub fn point_kernel(radius: f64, amplitude: f64, beta: f64) -> Result<f64, String> {
     let input = KernelInput::new(radius).map_err(|e| e.to_string())?;
 
