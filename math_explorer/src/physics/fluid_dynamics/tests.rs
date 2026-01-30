@@ -3,10 +3,12 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            continuity_divergence, euler_time_derivative, material_derivative_scalar,
+            navier_stokes_time_derivative, Euler, MomentumEquation, NavierStokes,
         },
+        error::FluidError,
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
-        types::{FlowState, FluidProperties},
+        types::{FlowState, FluidProperties, SpatialGradients},
     };
     use nalgebra::{Matrix3, Vector3};
 
@@ -99,12 +101,14 @@ mod tests {
         let lap_vel = Vector3::zeros();
         let g = Vector3::zeros();
 
-        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g)
+            .expect("Valid NS calculation");
         assert_eq!(accel, Vector3::zeros());
 
         let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
         let accel_p =
-            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
+            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g)
+                .expect("Valid NS calculation");
         assert!((accel_p.x - (-2.0)).abs() < 1e-9);
     }
 
@@ -112,5 +116,31 @@ mod tests {
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+
+    #[test]
+    fn test_euler_equation() {
+        // Inviscid flow, so viscosity shouldn't matter (Euler ignores it)
+        let rho = 2.0;
+        let state = FlowState::new(Vector3::zeros(), 0.0);
+        let vel_grad = Matrix3::zeros();
+        let p_grad = Vector3::new(4.0, 0.0, 0.0);
+        let g = Vector3::zeros();
+
+        // dp/dx = 4, rho = 2 -> accel = -4/2 = -2
+        let accel = euler_time_derivative(rho, &state, &vel_grad, p_grad, g)
+            .expect("Valid Euler calculation");
+        assert!((accel.x - (-2.0)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_navier_stokes_missing_laplacian() {
+        let props = FluidProperties::new(1.0, 1.0);
+        let state = FlowState::new(Vector3::zeros(), 0.0);
+        let gradients = SpatialGradients::new(Matrix3::zeros(), Vector3::zeros(), None);
+        let g = Vector3::zeros();
+
+        let result = NavierStokes.calculate_acceleration(&props, &state, &gradients, g);
+        assert!(matches!(result, Err(FluidError::MissingLaplacian)));
     }
 }
