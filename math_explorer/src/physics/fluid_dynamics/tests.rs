@@ -3,10 +3,12 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            Euler, MomentumEquation, NavierStokes, continuity_divergence,
+            material_derivative_scalar, navier_stokes_time_derivative,
         },
+        error::FluidError,
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
-        types::{FlowState, FluidProperties},
+        types::{FlowState, FluidProperties, SpatialGradients},
     };
     use nalgebra::{Matrix3, Vector3};
 
@@ -99,12 +101,15 @@ mod tests {
         let lap_vel = Vector3::zeros();
         let g = Vector3::zeros();
 
-        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        // Update: Expecting Result
+        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g)
+            .expect("Valid NS calculation");
         assert_eq!(accel, Vector3::zeros());
 
         let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
         let accel_p =
-            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
+            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g)
+                .expect("Valid NS calculation");
         assert!((accel_p.x - (-2.0)).abs() < 1e-9);
     }
 
@@ -112,5 +117,34 @@ mod tests {
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+
+    #[test]
+    fn test_momentum_strategies() {
+        let props = FluidProperties::new(1.0, 1.0);
+        let state = FlowState::new(Vector3::zeros(), 0.0);
+        let g = Vector3::zeros();
+
+        // 1. Test Navier-Stokes Missing Laplacian
+        let grads_no_lap = SpatialGradients::new(Matrix3::zeros(), Vector3::zeros(), None);
+        let ns_result = NavierStokes.compute_acceleration(&props, &state, &grads_no_lap, g);
+        assert_eq!(ns_result, Err(FluidError::MissingLaplacian));
+
+        // 2. Test Euler ignores Laplacian (works even if None)
+        let euler_result = Euler.compute_acceleration(&props, &state, &grads_no_lap, g);
+        assert!(euler_result.is_ok());
+
+        // 3. Test Zero Density
+        let bad_props = FluidProperties::new(0.0, 1.0);
+        let grads =
+            SpatialGradients::new(Matrix3::zeros(), Vector3::zeros(), Some(Vector3::zeros()));
+        assert_eq!(
+            NavierStokes.compute_acceleration(&bad_props, &state, &grads, g),
+            Err(FluidError::ZeroDensity)
+        );
+        assert_eq!(
+            Euler.compute_acceleration(&bad_props, &state, &grads, g),
+            Err(FluidError::ZeroDensity)
+        );
     }
 }

@@ -2,8 +2,9 @@
 //!
 //! Implements the core Partial Differential Equations (PDEs) of Fluid Dynamics.
 
-use super::types::{FlowState, FluidProperties};
-use nalgebra::Vector3;
+use super::error::FluidError;
+use super::types::{FlowState, FluidProperties, SpatialGradients};
+use nalgebra::{Matrix3, Vector3};
 
 /// Calculates the Material Derivative ($D/Dt$) of a scalar property.
 ///
@@ -30,7 +31,7 @@ pub fn material_derivative_scalar(
 pub fn material_derivative_vector(
     local_change: Vector3<f64>,
     velocity: Vector3<f64>,
-    gradient_tensor: &nalgebra::Matrix3<f64>,
+    gradient_tensor: &Matrix3<f64>,
 ) -> Vector3<f64> {
     // (\mathbf{u} \cdot \nabla) \mathbf{A} corresponds to Jacobian * velocity vector
     // J = [ dA_x/dx  dA_x/dy  dA_x/dz ]
@@ -47,6 +48,95 @@ pub fn material_derivative_vector(
 /// Returns the divergence of the velocity field. Ideally, this should be zero.
 pub fn continuity_divergence(velocity_divergence: f64) -> f64 {
     velocity_divergence
+}
+
+/// Strategy for calculating momentum conservation (flow acceleration).
+///
+/// This trait allows for swapping between different flow regimes (e.g., Navier-Stokes, Euler)
+/// without changing the integration logic.
+pub trait MomentumEquation {
+    /// Computes the local acceleration $\frac{\partial \mathbf{u}}{\partial t}$.
+    ///
+    /// # Arguments
+    /// * `properties` - Fluid density and viscosity.
+    /// * `state` - Current velocity and pressure.
+    /// * `grads` - Spatial gradients of velocity and pressure.
+    /// * `body_force` - External body force (acceleration, e.g., gravity).
+    fn compute_acceleration(
+        &self,
+        properties: &FluidProperties,
+        state: &FlowState,
+        grads: &SpatialGradients,
+        body_force: Vector3<f64>,
+    ) -> Result<Vector3<f64>, FluidError>;
+}
+
+/// Navier-Stokes momentum equation for viscous flow.
+///
+/// Requires the Laplacian of velocity.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct NavierStokes;
+
+impl MomentumEquation for NavierStokes {
+    fn compute_acceleration(
+        &self,
+        properties: &FluidProperties,
+        state: &FlowState,
+        grads: &SpatialGradients,
+        body_force: Vector3<f64>,
+    ) -> Result<Vector3<f64>, FluidError> {
+        if properties.density.abs() < f64::EPSILON {
+            return Err(FluidError::ZeroDensity);
+        }
+
+        let laplacian = grads
+            .laplacian_velocity
+            .ok_or(FluidError::MissingLaplacian)?;
+
+        let nu = properties.kinematic_viscosity();
+        let rho = properties.density;
+
+        // Convective term: -(u . del) u
+        let convection = -(grads.velocity_gradient * state.velocity);
+
+        // Pressure term: -(1/rho) grad p
+        let pressure_term = -grads.pressure_gradient / rho;
+
+        // Viscous term: nu * del^2 u
+        let viscous_term = laplacian * nu;
+
+        Ok(convection + pressure_term + viscous_term + body_force)
+    }
+}
+
+/// Euler momentum equation for inviscid flow.
+///
+/// Ignores viscosity and velocity Laplacian.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Euler;
+
+impl MomentumEquation for Euler {
+    fn compute_acceleration(
+        &self,
+        properties: &FluidProperties,
+        state: &FlowState,
+        grads: &SpatialGradients,
+        body_force: Vector3<f64>,
+    ) -> Result<Vector3<f64>, FluidError> {
+        if properties.density.abs() < f64::EPSILON {
+            return Err(FluidError::ZeroDensity);
+        }
+
+        let rho = properties.density;
+
+        // Convective term: -(u . del) u
+        let convection = -(grads.velocity_gradient * state.velocity);
+
+        // Pressure term: -(1/rho) grad p
+        let pressure_term = -grads.pressure_gradient / rho;
+
+        Ok(convection + pressure_term + body_force)
+    }
 }
 
 /// Computes the time evolution of velocity based on the Navier-Stokes Equations.
@@ -66,25 +156,17 @@ pub fn continuity_divergence(velocity_divergence: f64) -> f64 {
 pub fn navier_stokes_time_derivative(
     properties: &FluidProperties,
     state: &FlowState,
-    velocity_gradient: &nalgebra::Matrix3<f64>,
+    velocity_gradient: &Matrix3<f64>,
     pressure_gradient: Vector3<f64>,
     laplacian_velocity: Vector3<f64>,
     body_force_accel: Vector3<f64>,
-) -> Vector3<f64> {
-    let nu = properties.kinematic_viscosity();
-    let rho = properties.density;
-
-    // Convective term: -(u . del) u
-    let convection = -(velocity_gradient * state.velocity);
-
-    // Pressure term: -(1/rho) grad p
-    let pressure_term = -pressure_gradient / rho;
-
-    // Viscous term: nu * del^2 u
-    let viscous_term = laplacian_velocity * nu;
-
-    // Sum
-    convection + pressure_term + viscous_term + body_force_accel
+) -> Result<Vector3<f64>, FluidError> {
+    let grads = SpatialGradients::new(
+        *velocity_gradient,
+        pressure_gradient,
+        Some(laplacian_velocity),
+    );
+    NavierStokes.compute_acceleration(properties, state, &grads, body_force_accel)
 }
 
 /// Computes the time evolution of velocity based on the Euler Equations (Inviscid).
@@ -95,15 +177,12 @@ pub fn navier_stokes_time_derivative(
 pub fn euler_time_derivative(
     rho: f64,
     state: &FlowState,
-    velocity_gradient: &nalgebra::Matrix3<f64>,
+    velocity_gradient: &Matrix3<f64>,
     pressure_gradient: Vector3<f64>,
     body_force_accel: Vector3<f64>,
-) -> Vector3<f64> {
-    // Convective term: -(u . del) u
-    let convection = -(velocity_gradient * state.velocity);
-
-    // Pressure term: -(1/rho) grad p
-    let pressure_term = -pressure_gradient / rho;
-
-    convection + pressure_term + body_force_accel
+) -> Result<Vector3<f64>, FluidError> {
+    // Create dummy properties for Euler (viscosity not used)
+    let properties = FluidProperties::new(rho, 0.0);
+    let grads = SpatialGradients::new(*velocity_gradient, pressure_gradient, None);
+    Euler.compute_acceleration(&properties, state, &grads, body_force_accel)
 }

@@ -36,3 +36,8 @@
 **Problem:** The Reaction-Diffusion stencil logic (finite difference Laplacian + kinetics) was duplicated in both `step` (optimized Euler) and `derivative_in_place` (generic ODE support) to preserve performance, leading to a DRY violation.
 **Decision:** Extracted the stencil logic into a private `apply_reaction_diffusion_stencil` method accepting a closure.
 **Consequence:** Eliminates code duplication while preserving the performance of the hot loop (unsafe access, unrolling).
+
+## 2026-06-25 - [Fluid Dynamics Conservation Strategy]
+**Problem:** `math_explorer/src/physics/fluid_dynamics/conservation.rs` contained loosely coupled functions `navier_stokes_time_derivative` and `euler_time_derivative` with "Data Clump" signatures (passing multiple gradient vectors individually) and duplicated logic. Error handling (e.g., zero density, missing Laplacian) was absent.
+**Decision:** Applied **Strategy Pattern** and **Parameter Object**. Defined `SpatialGradients` struct to encapsulate derivatives. Defined `MomentumEquation` trait with `NavierStokes` and `Euler` strategies. Introduced `FluidError` for robust error handling.
+**Consequence:** The API is now type-safe and extensible. New flow regimes can be added by implementing the trait. Error states are explicitly handled via `Result`.
