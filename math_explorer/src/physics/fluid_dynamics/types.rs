@@ -56,3 +56,33 @@ impl FlowState {
         Self { velocity, pressure }
     }
 }
+
+/// Encapsulates spatial gradients of flow properties.
+///
+/// This struct groups related derivatives to avoid primitive obsession and
+/// long argument lists in momentum equations.
+#[derive(Debug, Clone, Copy)]
+pub struct SpatialGradients {
+    /// Gradient of velocity ($\nabla \mathbf{u}$).
+    pub velocity_gradient: nalgebra::Matrix3<f64>,
+    /// Gradient of pressure ($\nabla p$).
+    pub pressure_gradient: Vector3<f64>,
+    /// Laplacian of velocity ($\nabla^2 \mathbf{u}$).
+    /// Optional because it is not required for Euler (inviscid) flow.
+    pub laplacian_velocity: Option<Vector3<f64>>,
+}
+
+impl SpatialGradients {
+    /// Creates a new `SpatialGradients` struct.
+    pub fn new(
+        velocity_gradient: nalgebra::Matrix3<f64>,
+        pressure_gradient: Vector3<f64>,
+        laplacian_velocity: Option<Vector3<f64>>,
+    ) -> Self {
+        Self {
+            velocity_gradient,
+            pressure_gradient,
+            laplacian_velocity,
+        }
+    }
+}

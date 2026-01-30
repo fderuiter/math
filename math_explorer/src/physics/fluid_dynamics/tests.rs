@@ -4,9 +4,11 @@ mod tests {
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
             continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            Euler, MomentumEquation, NavierStokes,
         },
+        error::FluidError,
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
-        types::{FlowState, FluidProperties},
+        types::{FlowState, FluidProperties, SpatialGradients},
     };
     use nalgebra::{Matrix3, Vector3};
 
@@ -90,6 +92,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)] // Testing deprecated wrapper
     fn test_navier_stokes_simple_couette() {
         let props = FluidProperties::new(1.0, 1.0); // rho=1, mu=1 -> nu=1
         let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
@@ -112,5 +115,65 @@ mod tests {
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+
+    #[test]
+    fn test_navier_stokes_strategy() {
+        let props = FluidProperties::new(1.0, 1.0);
+        let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
+        let g = Vector3::zeros();
+
+        let gradients = SpatialGradients {
+            velocity_gradient: Matrix3::zeros(),
+            pressure_gradient: Vector3::new(2.0, 0.0, 0.0),
+            laplacian_velocity: Some(Vector3::zeros()),
+        };
+
+        let strategy = NavierStokes;
+        let accel = strategy
+            .compute_time_derivative(&props, &state, &gradients, g)
+            .unwrap();
+
+        // Pressure term: -1/rho * grad_p = -2.0
+        assert!((accel.x - (-2.0)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_navier_stokes_missing_laplacian() {
+        let props = FluidProperties::new(1.0, 1.0);
+        let state = FlowState::new(Vector3::zeros(), 0.0);
+        let g = Vector3::zeros();
+
+        let gradients = SpatialGradients {
+            velocity_gradient: Matrix3::zeros(),
+            pressure_gradient: Vector3::zeros(),
+            laplacian_velocity: None, // Missing!
+        };
+
+        let strategy = NavierStokes;
+        let result = strategy.compute_time_derivative(&props, &state, &gradients, g);
+
+        assert_eq!(result, Err(FluidError::MissingLaplacian));
+    }
+
+    #[test]
+    fn test_euler_strategy() {
+        let props = FluidProperties::new(1.0, 0.0);
+        let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
+        let g = Vector3::zeros();
+
+        // Laplacian is None, but Euler shouldn't care
+        let gradients = SpatialGradients {
+            velocity_gradient: Matrix3::zeros(),
+            pressure_gradient: Vector3::new(2.0, 0.0, 0.0),
+            laplacian_velocity: None,
+        };
+
+        let strategy = Euler;
+        let accel = strategy
+            .compute_time_derivative(&props, &state, &gradients, g)
+            .unwrap();
+
+        assert!((accel.x - (-2.0)).abs() < 1e-9);
     }
 }
