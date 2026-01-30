@@ -13,8 +13,12 @@ pub enum FluidError {
 impl fmt::Display for FluidError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            FluidError::MissingLaplacian => write!(f, "Laplacian of velocity is required for this operation"),
-            FluidError::InvalidConfiguration(msg) => write!(f, "Invalid fluid configuration: {}", msg),
+            FluidError::MissingLaplacian => {
+                write!(f, "Laplacian of velocity is required for this operation")
+            }
+            FluidError::InvalidConfiguration(msg) => {
+                write!(f, "Invalid fluid configuration: {}", msg)
+            }
         }
     }
 }

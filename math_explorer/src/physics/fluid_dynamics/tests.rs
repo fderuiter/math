@@ -3,8 +3,8 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
-            Euler, MomentumEquation, NavierStokes,
+            Euler, MomentumEquation, NavierStokes, continuity_divergence,
+            material_derivative_scalar, navier_stokes_time_derivative,
         },
         error::FluidError,
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
