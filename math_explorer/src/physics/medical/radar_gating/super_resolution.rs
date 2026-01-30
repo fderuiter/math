@@ -121,8 +121,13 @@ impl MusicEstimator {
             .enumerate()
             .map(|(i, &v)| (v, i))
             .collect();
+
+        if pairs.iter().any(|(v, _)| v.is_nan()) {
+            return Err(RadarError::NumericalInstability);
+        }
+
         // Sort descending (largest first)
-        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+        pairs.sort_by(|a, b| b.0.total_cmp(&a.0));
 
         // 3. Extract Noise Subspace En
         // The last (N - P) eigenvectors correspond to noise.
@@ -199,5 +204,29 @@ impl MusicEstimator {
         }
 
         Ok(spectrum)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nalgebra::Complex;
+
+    #[test]
+    fn test_music_estimator_nan_handling() {
+        let n = 4;
+        let mut estimator = MusicEstimator::new(n, 2, 1);
+
+        // Add valid snapshots
+        let snap1 = vec![Complex::new(1.0, 0.0); n];
+        let snap2 = vec![Complex::new(0.0, 1.0); n];
+        estimator.add_snapshot(&snap1).unwrap();
+        estimator.add_snapshot(&snap2).unwrap();
+
+        // Normally we can't easily force eigen decomposition to produce NaNs without
+        // invalid input or matrix properties.
+        // However, we can assert that with valid input it doesn't return NumericalInstability.
+        let result = estimator.compute_spectrum(0.0, 1.0, 0.1, 1e9, 3e8);
+        assert!(result.is_ok());
     }
 }

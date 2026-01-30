@@ -15,7 +15,7 @@ impl Sorter<u64> for RadixSorter {
         }
 
         // Safe unwrap: sorted_data is not empty (checked above)
-        let max_val = *sorted_data.iter().max().expect("sorted_data is not empty");
+        let max_val = *sorted_data.iter().max().unwrap_or(&0);
         // Comparisons to find max? technically yes, but usually considered O(n) overhead not part of sort loop logic strictly.
         // We'll count them for rigorousness.
         stats.comparisons += sorted_data.len() as u64 - 1;

@@ -52,7 +52,7 @@ impl ReplicatorDynamics {
         initial_population: DVector<f64>,
         time_horizon: f64,
         dt: f64,
-    ) -> Vec<(f64, DVector<f64>)> {
+    ) -> Result<Vec<(f64, DVector<f64>)>, GameTheoryError> {
         self.simulate_with_strategy(initial_population, time_horizon, dt, &RungeKutta4)
     }
 
@@ -72,7 +72,7 @@ impl ReplicatorDynamics {
         time_horizon: f64,
         dt: f64,
         solver: &S,
-    ) -> Vec<(f64, DVector<f64>)>
+    ) -> Result<Vec<(f64, DVector<f64>)>, GameTheoryError>
     where
         S: Solver<DVector<f64>>,
     {
@@ -89,6 +89,9 @@ impl ReplicatorDynamics {
 
             // Normalize to prevent numerical drift from simplex
             let sum = current_x.sum();
+            if sum.abs() < 1e-12 {
+                return Err(GameTheoryError::PopulationExtinction);
+            }
             if (sum - 1.0).abs() > 1e-9 {
                 current_x /= sum;
             }
@@ -96,7 +99,7 @@ impl ReplicatorDynamics {
             trajectory.push((current_t, current_x.clone()));
         }
 
-        trajectory
+        Ok(trajectory)
     }
 }
 
@@ -142,7 +145,7 @@ mod tests {
 
         // Start off-center. Should cycle (closed orbits for zero-sum RPS).
         let init = DVector::from_vec(vec![0.4, 0.3, 0.3]);
-        let trajectory = system.simulate(init, 10.0, 0.01);
+        let trajectory = system.simulate(init, 10.0, 0.01).unwrap();
 
         // Check that we didn't leave the simplex significantly
         let last_state = &trajectory.last().unwrap().1;
@@ -163,7 +166,9 @@ mod tests {
         let init = DVector::from_vec(vec![0.4, 0.3, 0.3]);
 
         // Inject Euler solver
-        let trajectory = system.simulate_with_strategy(init, 5.0, 0.001, &Euler);
+        let trajectory = system
+            .simulate_with_strategy(init, 5.0, 0.001, &Euler)
+            .unwrap();
 
         let last_state = &trajectory.last().unwrap().1;
         assert!((last_state.sum() - 1.0).abs() < 1e-6);

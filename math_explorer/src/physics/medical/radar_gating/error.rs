@@ -9,6 +9,8 @@ pub enum RadarError {
     InsufficientSnapshots { required: usize, actual: usize },
     /// Signal subspace dimension error (e.g. >= samples).
     InvalidSignalSubspace { samples: usize, subspace: usize },
+    /// Eigenvalue decomposition failed or produced NaNs.
+    NumericalInstability,
 }
 
 impl fmt::Display for RadarError {
@@ -29,6 +31,9 @@ impl fmt::Display for RadarError {
                 "Signal subspace dimension {} equals or exceeds sample size {}",
                 subspace, samples
             ),
+            Self::NumericalInstability => {
+                write!(f, "Eigenvalue decomposition failed or produced NaNs.")
+            }
         }
     }
 }

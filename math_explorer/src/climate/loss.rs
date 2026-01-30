@@ -53,8 +53,8 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
 
         // The EMD for 1D distributions is the L1 norm of the difference
         // between the sorted samples.
-        col1.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        col2.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        col1.sort_by(|a, b| a.total_cmp(b));
+        col2.sort_by(|a, b| a.total_cmp(b));
 
         let emd_i: f32 = col1
             .iter()
@@ -125,5 +125,18 @@ mod tests {
         // Average EMD = (4 + 4) / 2 = 4.
         let emd = earth_movers_distance(&z1, &z2);
         assert!((emd - 4.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_earth_movers_distance_nan() {
+        let z1 = DMatrix::from_row_slice(2, 1, &[f32::NAN, 1.0]);
+        let z2 = DMatrix::from_row_slice(2, 1, &[2.0, 1.0]);
+
+        // This should not panic.
+        // total_cmp sorts NaN to the end (or beginning, depending on sign bit, but consistently).
+        // z1 sorted: [1.0, NaN] (likely) or [NaN, 1.0]
+        // z2 sorted: [1.0, 2.0]
+        // It computes distance.
+        let _emd = earth_movers_distance(&z1, &z2);
     }
 }
