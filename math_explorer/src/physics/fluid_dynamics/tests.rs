@@ -99,7 +99,8 @@ mod tests {
         let lap_vel = Vector3::zeros();
         let g = Vector3::zeros();
 
-        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g).unwrap();
+        let accel =
+            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g).unwrap();
         assert_eq!(accel, Vector3::zeros());
 
         let p_grad_x = Vector3::new(2.0, 0.0, 0.0);

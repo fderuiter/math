@@ -132,7 +132,8 @@ pub fn navier_stokes_time_derivative(
     laplacian_velocity: Vector3<f64>,
     body_force_accel: Vector3<f64>,
 ) -> Result<Vector3<f64>, FluidError> {
-    let gradients = SpatialGradients::new(*velocity_gradient, pressure_gradient, laplacian_velocity);
+    let gradients =
+        SpatialGradients::new(*velocity_gradient, pressure_gradient, laplacian_velocity);
     NavierStokes.calculate_acceleration(properties, state, &gradients, body_force_accel)
 }
 
@@ -150,10 +151,6 @@ pub fn euler_time_derivative(
     // Construct simplified properties (viscosity irrelevant for Euler)
     let properties = FluidProperties::new(rho, 0.0);
     // Laplacian is irrelevant for Euler
-    let gradients = SpatialGradients::new(
-        *velocity_gradient,
-        pressure_gradient,
-        Vector3::zeros(),
-    );
+    let gradients = SpatialGradients::new(*velocity_gradient, pressure_gradient, Vector3::zeros());
     Euler.calculate_acceleration(&properties, state, &gradients, body_force_accel)
 }
