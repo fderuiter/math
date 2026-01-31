@@ -52,11 +52,7 @@ fn main() {
     let duration = start.elapsed();
     let avg_time = duration / iterations as u32;
 
-    println!(
-        "Processed {} iterations in {:?}",
-        iterations,
-        duration
-    );
+    println!("Processed {} iterations in {:?}", iterations, duration);
     println!(
         "Average time per iteration: {:.2} ms",
         avg_time.as_secs_f64() * 1000.0
