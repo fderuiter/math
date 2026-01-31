@@ -1,6 +1,49 @@
 //! Types for Fluid Dynamics.
 
-use nalgebra::Vector3;
+use nalgebra::{Matrix3, Vector3};
+
+/// Errors that can occur in fluid dynamics calculations.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FluidError {
+    /// Density must be strictly positive.
+    InvalidDensity,
+    /// Numerical instability or invalid calculation.
+    CalculationError,
+}
+
+impl std::fmt::Display for FluidError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidDensity => write!(f, "Fluid density must be positive"),
+            Self::CalculationError => write!(f, "Numerical error in calculation"),
+        }
+    }
+}
+
+impl std::error::Error for FluidError {}
+
+/// Spatial gradients of flow variables.
+///
+/// Encapsulates the spatial derivatives needed for momentum equations.
+#[derive(Debug, Clone, Copy)]
+pub struct SpatialGradients {
+    /// Jacobian of velocity ($\nabla \mathbf{u}$).
+    pub velocity_gradient: Matrix3<f64>,
+    /// Gradient of pressure ($\nabla p$).
+    pub pressure_gradient: Vector3<f64>,
+    /// Laplacian of velocity ($\nabla^2 \mathbf{u}$).
+    pub laplacian_velocity: Vector3<f64>,
+}
+
+impl Default for SpatialGradients {
+    fn default() -> Self {
+        Self {
+            velocity_gradient: Matrix3::zeros(),
+            pressure_gradient: Vector3::zeros(),
+            laplacian_velocity: Vector3::zeros(),
+        }
+    }
+}
 
 /// Physical properties of the fluid.
 #[derive(Debug, Clone, Copy)]

@@ -3,10 +3,11 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            Euler, MomentumEquation, NavierStokes, continuity_divergence,
+            material_derivative_scalar,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
-        types::{FlowState, FluidProperties},
+        types::{FlowState, FluidError, FluidProperties, SpatialGradients},
     };
     use nalgebra::{Matrix3, Vector3};
 
@@ -93,19 +94,53 @@ mod tests {
     fn test_navier_stokes_simple_couette() {
         let props = FluidProperties::new(1.0, 1.0); // rho=1, mu=1 -> nu=1
         let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
-
-        let vel_grad = Matrix3::zeros();
-        let p_grad = Vector3::zeros();
-        let lap_vel = Vector3::zeros();
         let g = Vector3::zeros();
+        let solver = NavierStokes;
 
-        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        let gradients = SpatialGradients::default();
+
+        let accel = solver
+            .calculate_acceleration(&props, &state, &gradients, g)
+            .expect("Valid calculation");
         assert_eq!(accel, Vector3::zeros());
 
-        let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
-        let accel_p =
-            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
+        let mut gradients_p = SpatialGradients::default();
+        gradients_p.pressure_gradient = Vector3::new(2.0, 0.0, 0.0);
+
+        let accel_p = solver
+            .calculate_acceleration(&props, &state, &gradients_p, g)
+            .expect("Valid calculation");
         assert!((accel_p.x - (-2.0)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_euler_inviscid() {
+        let props = FluidProperties::new(1.0, 100.0); // High viscosity, but Euler should ignore it
+        let state = FlowState::new(Vector3::zeros(), 0.0);
+        let g = Vector3::zeros();
+        let solver = Euler;
+
+        let mut gradients = SpatialGradients::default();
+        gradients.laplacian_velocity = Vector3::new(100.0, 0.0, 0.0); // Should be ignored
+
+        let accel = solver
+            .calculate_acceleration(&props, &state, &gradients, g)
+            .unwrap();
+
+        // Viscous term would be nu * lap = 100 * 100 = 10000. Euler should be 0.
+        assert_eq!(accel, Vector3::zeros());
+    }
+
+    #[test]
+    fn test_invalid_density() {
+        let props = FluidProperties::new(-1.0, 1.0);
+        let state = FlowState::new(Vector3::zeros(), 0.0);
+        let g = Vector3::zeros();
+        let gradients = SpatialGradients::default();
+
+        let solver = NavierStokes;
+        let result = solver.calculate_acceleration(&props, &state, &gradients, g);
+        assert_eq!(result, Err(FluidError::InvalidDensity));
     }
 
     #[test]
