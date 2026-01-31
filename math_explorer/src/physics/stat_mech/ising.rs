@@ -39,7 +39,7 @@ use rand::Rng;
 ///
 /// // 4. Run Metropolis Simulation to reach equilibrium
 /// // Note: This is a probabilistic process.
-/// for _ in 0..100_000 {
+/// for _ in 0..300_000 {
 ///     lattice.metropolis_step(temp, j_coupling, h_field);
 /// }
 ///
