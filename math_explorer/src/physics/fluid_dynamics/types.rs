@@ -1,6 +1,13 @@
 //! Types for Fluid Dynamics.
 
-use nalgebra::Vector3;
+use nalgebra::{Matrix3, Vector3};
+
+/// Errors that can occur during fluid dynamics calculations.
+#[derive(Debug, Clone)]
+pub enum FluidError {
+    InvalidDensity(String),
+    NumericalInstability(String),
+}
 
 /// Physical properties of the fluid.
 #[derive(Debug, Clone, Copy)]
@@ -54,5 +61,33 @@ pub struct FlowState {
 impl FlowState {
     pub fn new(velocity: Vector3<f64>, pressure: f64) -> Self {
         Self { velocity, pressure }
+    }
+}
+
+/// Container for spatial derivatives required by momentum equations.
+///
+/// Encapsulates the various gradients needed to compute flow acceleration,
+/// reducing parameter bloat in solver functions.
+#[derive(Debug, Clone, Copy)]
+pub struct SpatialGradients {
+    /// Jacobian of velocity ($\nabla \mathbf{u}$).
+    pub velocity_gradient: Matrix3<f64>,
+    /// Gradient of pressure ($\nabla p$).
+    pub pressure_gradient: Vector3<f64>,
+    /// Laplacian of velocity ($\nabla^2 \mathbf{u}$).
+    pub laplacian_velocity: Vector3<f64>,
+}
+
+impl SpatialGradients {
+    pub fn new(
+        velocity_gradient: Matrix3<f64>,
+        pressure_gradient: Vector3<f64>,
+        laplacian_velocity: Vector3<f64>,
+    ) -> Self {
+        Self {
+            velocity_gradient,
+            pressure_gradient,
+            laplacian_velocity,
+        }
     }
 }
