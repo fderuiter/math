@@ -143,6 +143,10 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Isos
             // Cache for the "Right Face" gradients of the previous iteration (x-1).
             // Corresponds to vertices 1, 2, 5, 6 of (x-1), which become 0, 3, 4, 7 of (x).
             let mut cached_gradients: Option<[Point3D; 4]> = None;
+            // Cache for the "Right Face" values of the previous iteration.
+            let mut cached_values: Option<[f32; 4]> = None;
+            // Cache for the "Right Face" comparison bits of the previous iteration.
+            let mut cached_right_bits: u8 = 0;
 
             for x in 0..grid.width - 1 {
                 let base_idx = zy_base + x;
@@ -150,62 +154,80 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Isos
 
                 // 1. Determine the index of the case (0-255)
                 let mut cube_index = 0;
-                let mut corner_values = [0.0; 8];
-                let mut corner_pos = [Point3D::new(0.0, 0.0, 0.0); 8];
-                let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
 
                 // Direct access for corner values to avoid redundant index calculation
                 // Vertices are ordered:
                 // 0: (0,0,0), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)
                 // 4: (0,0,1), 5: (1,0,1), 6: (1,1,1), 7: (0,1,1)
 
-                // Safety: We are iterating up to width-1, height-1, depth-1.
-                // Max index accesses base_idx + 1 + stride_y + stride_z.
-                // base_idx = z*Sz + y*Sy + x.
-                // Max = (D-2)*Sz + (H-2)*Sy + (W-2) + 1 + Sy + Sz
-                //     = (D-1)*Sz + (H-1)*Sy + W-1
-                // Which is exactly the last element. So indices are valid.
-                let v0 = unsafe { *data.get_unchecked(base_idx) };
-                let v1 = unsafe { *data.get_unchecked(base_idx + 1) };
-                let v2 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y) };
-                let v3 = unsafe { *data.get_unchecked(base_idx + stride_y) };
-                let v4 = unsafe { *data.get_unchecked(base_idx + stride_z) };
-                let v5 = unsafe { *data.get_unchecked(base_idx + 1 + stride_z) };
-                let v6 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y + stride_z) };
-                let v7 = unsafe { *data.get_unchecked(base_idx + stride_y + stride_z) };
+                // Profiler Optimization: Sliding Window for Values and Bits
+                // Reuse Right Face of previous cube (1, 2, 5, 6) as Left Face of current cube (0, 3, 4, 7).
+                let (v0, v3, v4, v7) = if let Some(vals) = cached_values {
+                    // Profiler Optimization: Bit Reuse
+                    // Transform bits from Right Face of prev (1, 2, 5, 6) to Left Face of curr (0, 3, 4, 7)
+                    // 1 (mask 2) -> 0 (mask 1): >> 1
+                    // 2 (mask 4) -> 3 (mask 8): << 1
+                    // 5 (mask 32) -> 4 (mask 16): >> 1
+                    // 6 (mask 64) -> 7 (mask 128): << 1
+                    let left_bits = ((cached_right_bits & 2) >> 1)
+                        | ((cached_right_bits & 4) << 1)
+                        | ((cached_right_bits & 32) >> 1)
+                        | ((cached_right_bits & 64) << 1);
 
-                corner_values[0] = v0;
-                if v0 < threshold {
-                    cube_index |= 1;
-                }
-                corner_values[1] = v1;
+                    cube_index |= left_bits as usize;
+
+                    (vals[0], vals[1], vals[2], vals[3])
+                } else {
+                    let v0 = unsafe { *data.get_unchecked(base_idx) };
+                    let v3 = unsafe { *data.get_unchecked(base_idx + stride_y) };
+                    let v4 = unsafe { *data.get_unchecked(base_idx + stride_z) };
+                    let v7 = unsafe { *data.get_unchecked(base_idx + stride_y + stride_z) };
+
+                    if v0 < threshold {
+                        cube_index |= 1;
+                    }
+                    if v3 < threshold {
+                        cube_index |= 8;
+                    }
+                    if v4 < threshold {
+                        cube_index |= 16;
+                    }
+                    if v7 < threshold {
+                        cube_index |= 128;
+                    }
+                    (v0, v3, v4, v7)
+                };
+
+                // These are always new (Right Face)
+                let (v1, v2, v5, v6) = unsafe {
+                    (
+                        *data.get_unchecked(base_idx + 1),
+                        *data.get_unchecked(base_idx + 1 + stride_y),
+                        *data.get_unchecked(base_idx + 1 + stride_z),
+                        *data.get_unchecked(base_idx + 1 + stride_y + stride_z),
+                    )
+                };
+
+                // Compute Right Face bits
+                let mut right_bits = 0;
                 if v1 < threshold {
-                    cube_index |= 2;
+                    right_bits |= 2;
                 }
-                corner_values[2] = v2;
                 if v2 < threshold {
-                    cube_index |= 4;
+                    right_bits |= 4;
                 }
-                corner_values[3] = v3;
-                if v3 < threshold {
-                    cube_index |= 8;
-                }
-                corner_values[4] = v4;
-                if v4 < threshold {
-                    cube_index |= 16;
-                }
-                corner_values[5] = v5;
                 if v5 < threshold {
-                    cube_index |= 32;
+                    right_bits |= 32;
                 }
-                corner_values[6] = v6;
                 if v6 < threshold {
-                    cube_index |= 64;
+                    right_bits |= 64;
                 }
-                corner_values[7] = v7;
-                if v7 < threshold {
-                    cube_index |= 128;
-                }
+
+                cube_index |= right_bits as usize;
+
+                // Update cache for next iteration
+                cached_values = Some([v1, v2, v5, v6]);
+                cached_right_bits = right_bits;
 
                 // 2. Check if the cube is entirely inside or outside
                 let edge_flags = CUBE_EDGE_FLAGS[cube_index];
@@ -214,19 +236,25 @@ pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, Isos
                     continue;
                 }
 
+                // Initialize arrays only if we are processing this cube
+                let corner_values = [v0, v1, v2, v3, v4, v5, v6, v7];
+                let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
+
                 // Only compute positions if needed
                 let next_x_pos = x_pos + grid.voxel_size.x;
                 let next_y_pos = y_pos + grid.voxel_size.y;
                 let next_z_pos = z_pos + grid.voxel_size.z;
 
-                corner_pos[0] = Point3D::new(x_pos, y_pos, z_pos);
-                corner_pos[1] = Point3D::new(next_x_pos, y_pos, z_pos);
-                corner_pos[2] = Point3D::new(next_x_pos, next_y_pos, z_pos);
-                corner_pos[3] = Point3D::new(x_pos, next_y_pos, z_pos);
-                corner_pos[4] = Point3D::new(x_pos, y_pos, next_z_pos);
-                corner_pos[5] = Point3D::new(next_x_pos, y_pos, next_z_pos);
-                corner_pos[6] = Point3D::new(next_x_pos, next_y_pos, next_z_pos);
-                corner_pos[7] = Point3D::new(x_pos, next_y_pos, next_z_pos);
+                let corner_pos = [
+                    Point3D::new(x_pos, y_pos, z_pos),
+                    Point3D::new(next_x_pos, y_pos, z_pos),
+                    Point3D::new(next_x_pos, next_y_pos, z_pos),
+                    Point3D::new(x_pos, next_y_pos, z_pos),
+                    Point3D::new(x_pos, y_pos, next_z_pos),
+                    Point3D::new(next_x_pos, y_pos, next_z_pos),
+                    Point3D::new(next_x_pos, next_y_pos, next_z_pos),
+                    Point3D::new(x_pos, next_y_pos, next_z_pos),
+                ];
 
                 // Profiler Optimization: Lazy Gradient Computation & Sliding Window
 

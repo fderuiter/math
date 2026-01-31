@@ -155,3 +155,22 @@ Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
 - Before: ~0.72s (13.9 M/s)
 - After: ~0.39s (25.7 M/s)
 - Speedup: ~1.85x
+
+## 2026-11-04 - [Optimization] **Bottleneck:** Isosurface Marching Cubes Inner Loop **Strategy:** Sliding Window & Bit Reuse **Gain:** ~9.3% Time Saved (81.04ms -> 73.47ms)
+
+**Bottleneck:**
+The `extract_isosurface` function iterates over voxels, performing redundant data loads and comparisons.
+1. Each voxel loaded 8 scalar values from memory, but 4 of them were already loaded in the previous iteration (neighbors overlap).
+2. Each voxel performed 8 float comparisons (`val < threshold`) to determine the cube index, but 4 of these results were also computable from the previous iteration.
+3. Initialization of `corner_pos` and `corner_normals` arrays occurred before checking if the cube contained a surface (90% do not), wasting stack bandwidth.
+
+**Strategy:**
+1. **Sliding Window for Values:** Reused the "Right Face" values (`v1, v2, v5, v6`) of the previous voxel as the "Left Face" (`v0, v3, v4, v7`) of the current voxel, reducing memory loads from 8 to 4 per voxel.
+2. **Bit Reuse:** Reused the comparison results (bits) from the Right Face of the previous voxel, shifting them to the correct positions for the Left Face of the current voxel. This reduced float comparisons from 8 to 4 per voxel.
+3. **Lazy Initialization:** Deferred the initialization of `corner_pos` and `corner_normals` arrays until after the `edge_flags` check confirmed a surface intersection.
+
+**Gain:**
+Benchmark `bench_profiler_isosurface` (20 iterations, 200x200x200 grid):
+- Before: 81.04ms
+- After: 73.47ms
+- Speedup: ~9.3%
