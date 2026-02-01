@@ -2,7 +2,7 @@
 
 use crate::climate::cera::Cera;
 use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
-use nalgebra::{DMatrix, DVector};
+use nalgebra::DMatrix;
 
 /// A trainer for the CERA model.
 pub struct CeraTrainer<'a> {
