@@ -155,3 +155,22 @@ Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
 - Before: ~0.72s (13.9 M/s)
 - After: ~0.39s (25.7 M/s)
 - Speedup: ~1.85x
+
+## 2026-11-02 - [Optimization] **Bottleneck:** Ising Model Coordinate Arithmetic & RNG **Strategy:** Precomputed Neighbor Table & RNG Batching **Gain:** ~100% Speedup (14.7 M/s -> 29.4 M/s)
+
+**Bottleneck:**
+The `SpinLattice::evolve` function (the optimized batch update) still had significant overhead in its hot loop:
+1. Two calls to `rng.gen_range` per iteration (for x and y coordinates).
+2. Repeated coordinate arithmetic (multiplication, addition) and conditional branching to handle periodic boundary conditions for every neighbor of every site.
+3. This amounted to ~4 branches and ~10 arithmetic ops per spin flip attempt.
+
+**Strategy:**
+1. **Precomputed Neighbors:** Moved the neighbor index calculation out of the simulation loop. Added a `neighbors` field (`Vec<[usize; 4]>`) to `SpinLattice`, populated once during initialization.
+2. **Reduced RNG Calls:** Replaced the two coordinate RNG calls with a single `rng.gen_range(0..count)` to pick a flattened index.
+3. **Table Lookup:** The hot loop now performs a direct memory lookup `self.neighbors[idx]` to get all 4 neighbors instantly, eliminating all coordinate math and boundary checks.
+
+**Gain:**
+Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
+- Before: ~14.70 M/s
+- After: ~29.41 M/s
+- Speedup: ~2.00x (100% improvement)
