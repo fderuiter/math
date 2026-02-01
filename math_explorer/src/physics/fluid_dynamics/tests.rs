@@ -4,9 +4,10 @@ mod tests {
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
             continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            Euler, MomentumEquation, NavierStokes,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
-        types::{FlowState, FluidProperties},
+        types::{FlowState, FluidProperties, SpatialGradients},
     };
     use nalgebra::{Matrix3, Vector3};
 
@@ -112,5 +113,35 @@ mod tests {
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+
+    #[test]
+    fn test_strategy_pattern_composability() {
+        let props = FluidProperties::new(1000.0, 0.001);
+        let state = FlowState::new(Vector3::zeros(), 101325.0);
+        let gradients = SpatialGradients::new(
+            Matrix3::zeros(),
+            Vector3::new(100.0, 0.0, 0.0), // Pressure gradient
+            Vector3::zeros(),
+        );
+        let g = Vector3::zeros();
+
+        // 1. Test Navier-Stokes Strategy directly
+        let ns = NavierStokes;
+        let accel_ns = ns.acceleration(&props, &state, &gradients, g);
+        // a = -grad(p)/rho = -100 / 1000 = -0.1
+        assert!((accel_ns.x - (-0.1)).abs() < 1e-9);
+
+        // 2. Test Euler Strategy directly
+        let euler = Euler;
+        let accel_euler = euler.acceleration(&props, &state, &gradients, g);
+        assert!((accel_euler.x - (-0.1)).abs() < 1e-9);
+
+        // 3. Test dynamic dispatch (simulated)
+        let strategies: Vec<Box<dyn MomentumEquation>> = vec![Box::new(NavierStokes), Box::new(Euler)];
+        for strategy in strategies {
+            let acc = strategy.acceleration(&props, &state, &gradients, g);
+            assert!((acc.x - (-0.1)).abs() < 1e-9);
+        }
     }
 }
