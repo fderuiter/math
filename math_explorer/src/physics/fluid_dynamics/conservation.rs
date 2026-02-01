@@ -140,11 +140,8 @@ pub fn navier_stokes_time_derivative(
     laplacian_velocity: Vector3<f64>,
     body_force_accel: Vector3<f64>,
 ) -> Vector3<f64> {
-    let gradients = SpatialGradients::new(
-        *velocity_gradient,
-        pressure_gradient,
-        laplacian_velocity,
-    );
+    let gradients =
+        SpatialGradients::new(*velocity_gradient, pressure_gradient, laplacian_velocity);
     NavierStokes.calculate_acceleration(properties, state, &gradients, &body_force_accel)
 }
 
