@@ -1,0 +1,60 @@
+use std::ops::{Add, AddAssign, Mul, MulAssign};
+
+/// A trait defining the vector operations required by numerical integrators.
+///
+/// This trait allows the solver to be agnostic of the underlying storage (Heap vs Stack).
+/// It requires the type to support addition and scalar multiplication.
+pub trait VectorOperations:
+    Sized + Clone + Add<Output = Self> + Mul<f64, Output = Self> + AddAssign + MulAssign<f64>
+{
+    /// Adds `other` scaled by `scale` to `self`.
+    /// `self += other * scale`
+    fn scale_add(&mut self, other: &Self, scale: f64);
+
+    /// Copies the content of `other` into `self`.
+    /// This allows reusing allocated buffers.
+    fn copy_from(&mut self, other: &Self);
+}
+
+/// A trait defining a system of Ordinary Differential Equations.
+///
+/// $$ \frac{d\vec{y}}{dt} = f(t, \vec{y}) $$
+///
+/// The state type `State` must implement `VectorOperations`.
+pub trait OdeSystem<State: VectorOperations> {
+    /// Computes the time derivative of the system state.
+    ///
+    /// # Arguments
+    /// * `t` - The current time.
+    /// * `state` - The current state vector $\vec{y}$.
+    ///
+    /// # Returns
+    /// The derivative vector $\frac{d\vec{y}}{dt}$.
+    ///
+    /// # Performance
+    /// Default implementation allocates a new State. Implement `derivative_in_place` for better performance.
+    fn derivative(&self, t: f64, state: &State) -> State;
+
+    /// Computes the time derivative of the system state in-place.
+    ///
+    /// # Arguments
+    /// * `t` - The current time.
+    /// * `state` - The current state vector $\vec{y}$.
+    /// * `out` - The output vector to store $\frac{d\vec{y}}{dt}$.
+    fn derivative_in_place(&self, t: f64, state: &State, out: &mut State) {
+        *out = self.derivative(t, state);
+    }
+}
+
+/// A trait defining a numerical ODE solver strategy.
+pub trait Solver<State: VectorOperations> {
+    /// Advances the system state by one time step `dt`.
+    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized;
+
+    /// Advances the system state by one time step `dt` in-place.
+    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
+    where
+        S: OdeSystem<State> + ?Sized;
+}
