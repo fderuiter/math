@@ -114,6 +114,11 @@ impl MusicEstimator {
         // `eigen.eigenvalues` is a vector.
         // `eigen.eigenvectors` is a matrix where columns are eigenvectors.
 
+        // Check for NaN eigenvalues which indicate numerical instability
+        if eigen.eigenvalues.iter().any(|v| v.is_nan()) {
+            return Err(RadarError::NumericalInstability);
+        }
+
         // Sort eigenvalues and permute eigenvectors
         let mut pairs: Vec<(f64, usize)> = eigen
             .eigenvalues
@@ -122,7 +127,7 @@ impl MusicEstimator {
             .map(|(i, &v)| (v, i))
             .collect();
         // Sort descending (largest first)
-        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).expect("NaN check failed"));
 
         // 3. Extract Noise Subspace En
         // The last (N - P) eigenvectors correspond to noise.
