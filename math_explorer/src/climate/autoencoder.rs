@@ -3,6 +3,18 @@
 use crate::climate::tensor_ops::conv1d;
 use nalgebra::{DMatrix, DVector};
 
+/// A trait representing the Autoencoder model interface.
+pub trait AutoencoderModel {
+    /// Encodes the input data into a latent representation.
+    fn encode(&self, input: &DMatrix<f32>) -> DMatrix<f32>;
+
+    /// Performs a forward pass through the autoencoder.
+    fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>);
+
+    /// Updates the weights of the model.
+    fn update_weights(&mut self, learning_rate: f32);
+}
+
 /// A simple leaky ReLU activation function.
 ///
 /// # Arguments
@@ -54,6 +66,16 @@ impl ConvLayer {
             out_channels,
         }
     }
+
+    /// Updates the weights of the layer using a simple random gradient (placeholder).
+    pub fn update_weights(&mut self, lr: f32) {
+        let grad_k = DMatrix::from_fn(self.kernel.nrows(), self.kernel.ncols(), |_, _| {
+            rand::random::<f32>() - 0.5
+        });
+        let grad_b = DVector::from_fn(self.bias.len(), |_, _| rand::random::<f32>() - 0.5);
+        self.kernel -= grad_k * lr;
+        self.bias -= grad_b * lr;
+    }
 }
 
 /// The encoder component of the autoencoder.
@@ -103,6 +125,13 @@ impl Encoder {
         }
         x
     }
+
+    /// Updates weights for all layers.
+    pub fn update_weights(&mut self, lr: f32) {
+        for layer in self.layers.iter_mut() {
+            layer.update_weights(lr);
+        }
+    }
 }
 
 /// The decoder component of the autoencoder.
@@ -151,6 +180,13 @@ impl Decoder {
         }
         x
     }
+
+    /// Updates weights for all layers.
+    pub fn update_weights(&mut self, lr: f32) {
+        for layer in self.layers.iter_mut() {
+            layer.update_weights(lr);
+        }
+    }
 }
 
 /// The autoencoder model for the CERA framework.
@@ -193,6 +229,23 @@ impl Autoencoder {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)
+    }
+}
+
+impl AutoencoderModel for Autoencoder {
+    fn encode(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
+        self.encoder.forward(input)
+    }
+
+    fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>) {
+        let latent = self.encoder.forward(input);
+        let reconstruction = self.decoder.forward(&latent);
+        (latent, reconstruction)
+    }
+
+    fn update_weights(&mut self, learning_rate: f32) {
+        self.encoder.update_weights(learning_rate);
+        self.decoder.update_weights(learning_rate);
     }
 }
 

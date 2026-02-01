@@ -1,6 +1,6 @@
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
-use crate::climate::autoencoder::Autoencoder;
+use crate::climate::autoencoder::{Autoencoder, AutoencoderModel};
 use crate::climate::predictor::{Predictor, PredictorModel};
 use nalgebra::DMatrix;
 // Re-export CeraConfig for backward compatibility (or convenience)
@@ -9,7 +9,7 @@ pub use crate::climate::config::CeraConfig;
 /// The main CERA model.
 pub struct Cera {
     /// The autoencoder component.
-    pub autoencoder: Autoencoder,
+    pub autoencoder: Box<dyn AutoencoderModel>,
     /// The predictor component.
     pub predictor: Box<dyn PredictorModel>,
     /// The model configuration.
@@ -44,7 +44,7 @@ impl Cera {
         let predictor_input_size = config.num_levels * config.aligned_channels;
         let predictor = Predictor::new(predictor_input_size, config.output_size);
         Ok(Self {
-            autoencoder,
+            autoencoder: Box::new(autoencoder),
             predictor: Box::new(predictor),
             config,
         })
@@ -81,7 +81,7 @@ impl Cera {
 
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         Ok(Self {
-            autoencoder,
+            autoencoder: Box::new(autoencoder),
             predictor,
             config,
         })
@@ -132,7 +132,7 @@ impl Cera {
         let aligned_channels = self.config.aligned_channels;
         let batch_size = inputs.nrows() / num_levels;
 
-        let latent = self.autoencoder.encoder.forward(inputs);
+        let latent = self.autoencoder.encode(inputs);
         let aligned_latent = latent.columns(0, aligned_channels).clone_owned();
         let predictor_input = self.reshape_for_predictor(&aligned_latent, batch_size);
         self.predictor.forward(&predictor_input)
