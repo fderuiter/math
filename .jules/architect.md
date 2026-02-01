@@ -36,3 +36,8 @@
 **Problem:** The Reaction-Diffusion stencil logic (finite difference Laplacian + kinetics) was duplicated in both `step` (optimized Euler) and `derivative_in_place` (generic ODE support) to preserve performance, leading to a DRY violation.
 **Decision:** Extracted the stencil logic into a private `apply_reaction_diffusion_stencil` method accepting a closure.
 **Consequence:** Eliminates code duplication while preserving the performance of the hot loop (unsafe access, unrolling).
+
+## 2026-10-24 - [ODE Solvers Modularization]
+**Problem:** `math_explorer/src/pure_math/analysis/ode.rs` mixed concerns: core traits (`OdeSystem`), concrete solvers (`Euler`, `RungeKutta4`), state wrappers (`VecState`), and high-level traits (`TimeStepper`). This hampered extensibility and made the file difficult to navigate.
+**Decision:** Applied "Module Extraction". Split `ode.rs` into a module `math_explorer/src/pure_math/analysis/ode/` with `traits.rs`, `solvers.rs`, `state.rs`, and `stepper.rs`. Introduced `ArrayState<const N: usize>` in `state.rs` as a zero-dependency, stack-allocated alternative to `VecState` and `nalgebra` types.
+**Consequence:** Clearer separation of concerns. Adding new solvers or state types is now modular. The API remains backward compatible via re-exports. `ArrayState` provides a "Newtype" solution for small systems without external dependencies.
