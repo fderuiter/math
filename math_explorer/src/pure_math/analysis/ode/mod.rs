@@ -7,12 +7,12 @@
 //! with any vector-like type (e.g., `Vec<f64>`, `nalgebra::Vector3<f64>`, etc.),
 //! avoiding heap allocations when fixed-size arrays are sufficient.
 
-pub mod traits;
-pub mod state;
 pub mod solvers;
+pub mod state;
 pub mod stepper;
+pub mod traits;
 
-pub use traits::{OdeSystem, Solver, VectorOperations};
-pub use state::{VecState, ArrayState};
 pub use solvers::{Euler, RungeKutta4};
+pub use state::{ArrayState, VecState};
 pub use stepper::TimeStepper;
+pub use traits::{OdeSystem, Solver, VectorOperations};
