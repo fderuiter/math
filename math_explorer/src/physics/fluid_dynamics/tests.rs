@@ -3,8 +3,8 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
-            Euler, MomentumEquation, NavierStokes,
+            Euler, MomentumEquation, NavierStokes, continuity_divergence,
+            material_derivative_scalar, navier_stokes_time_derivative,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
         types::{FlowState, FluidProperties, SpatialGradients},
@@ -138,7 +138,8 @@ mod tests {
         assert!((accel_euler.x - (-0.1)).abs() < 1e-9);
 
         // 3. Test dynamic dispatch (simulated)
-        let strategies: Vec<Box<dyn MomentumEquation>> = vec![Box::new(NavierStokes), Box::new(Euler)];
+        let strategies: Vec<Box<dyn MomentumEquation>> =
+            vec![Box::new(NavierStokes), Box::new(Euler)];
         for strategy in strategies {
             let acc = strategy.acceleration(&props, &state, &gradients, g);
             assert!((acc.x - (-0.1)).abs() < 1e-9);
