@@ -8,6 +8,13 @@ pub use super::rewards::{binary_reward, composite_reward, repetition_penalty, un
 
 /// Calculates the response-level advantage using z-score normalization.
 ///
+/// This function normalizes a single reward against the statistics (mean, std dev)
+/// of the entire group of sampled outputs.
+///
+/// $$ A_i = \frac{r_i - \text{mean}(R)}{\text{std}(R) + \epsilon} $$
+///
+/// See the [module-level documentation](../index.html) for the theoretical background.
+///
 /// # Arguments
 ///
 /// * `rewards` - A slice of scalar rewards for a group of responses.
@@ -23,20 +30,27 @@ pub fn response_level_advantage(rewards: &[f64], reward_i: f64) -> f64 {
     (reward_i - mean) / (std_dev + EPSILON_NORM)
 }
 
-/// The clipped surrogate objective for the policy update in GRPO.
+/// The clipped surrogate objective (Loss) for the policy update in GRPO.
+///
+/// This calculates the loss value to be **minimized** by the optimizer. It combines the
+/// standard PPO clipped surrogate objective with a KL-divergence penalty.
+///
+/// $$ L = -\frac{1}{G} \sum_{i=1}^G \min \left( r_t(\theta) A_i, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_i \right) + \beta D_{KL} $$
+///
+/// Where $r_t(\theta) = \frac{\pi_\theta(o_i|q)}{\pi_{\theta_{old}}(o_i|q)}$.
 ///
 /// # Arguments
 ///
 /// * `pi_thetas` - Probabilities of the sampled outputs under the current policy.
 /// * `pi_theta_olds` - Probabilities of the sampled outputs under the old policy.
 /// * `advantages` - Calculated advantages for the sampled outputs.
-/// * `epsilon` - Clipping parameter to limit the policy update step size.
-/// * `beta` - Coefficient for the KL divergence term (unused in this formula as written, but part of the general objective).
-/// * `kl_divergence` - The KL divergence term.
+/// * `epsilon` - Clipping parameter to limit the policy update step size (e.g., 0.2).
+/// * `beta` - Coefficient for the KL divergence penalty.
+/// * `kl_divergence` - The calculated KL divergence term.
 ///
 /// # Returns
 ///
-/// The calculated objective value to be maximized (or minimized if negative).
+/// The scalar loss value.
 pub fn clipped_surrogate_objective(
     pi_thetas: &[f64],
     pi_theta_olds: &[f64],

@@ -59,3 +59,8 @@
 **Gap:** The `freesurfer` module was a "Visual Void" with no explanation of the cortical reconstruction pipeline or usage.
 **Strategy:** Overhauled `freesurfer/mod.rs` with a Mermaid pipeline diagram and a runnable Quick Start example for cortical thickness calculation.
 **Outcome:** Users can now understand the MRI processing pipeline and use the tools for surface analysis.
+
+## 2026-02-02 - Demystifying RL Optimization
+**Gap:** The `grpo` module was a "Black Box" of raw formulas with no explanation of how they fit into the Reinforcement Learning pipeline.
+**Strategy:** Overhauled `grpo/mod.rs` with a "Theory" section, a Mermaid diagram of the sampling/advantage loop, and a runnable Quick Start example. Added LaTeX equations to `formulas.rs` docstrings.
+**Outcome:** Users can now understand how GRPO optimizes policies without a Critic and can perform manual optimization steps.

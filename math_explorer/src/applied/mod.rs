@@ -42,7 +42,7 @@ pub mod lorahub;
 /// Applied Game Theory, including Mean Field Games and Evolutionary Dynamics.
 pub mod game_theory;
 
-/// Group Relative Policy Optimization (GRPO) components, often used in Reinforcement Learning.
+/// Group Relative Policy Optimization (GRPO), a reinforcement learning algorithm that eliminates the need for a Critic network.
 pub mod grpo;
 
 /// Algorithms for extracting surfaces from volumetric data, such as Marching Cubes.
