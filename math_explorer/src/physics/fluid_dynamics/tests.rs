@@ -3,10 +3,10 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            continuity_divergence, material_derivative_scalar, Euler, MomentumEquation, NavierStokes,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
-        types::{FlowState, FluidProperties},
+        types::{FlowState, FluidProperties, SpatialGradients},
     };
     use nalgebra::{Matrix3, Vector3};
 
@@ -99,13 +99,37 @@ mod tests {
         let lap_vel = Vector3::zeros();
         let g = Vector3::zeros();
 
-        let accel = navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        let gradients = SpatialGradients::new(vel_grad, p_grad, lap_vel);
+        let solver = NavierStokes;
+
+        let accel = solver.calculate_acceleration(&props, &state, &gradients, &g);
         assert_eq!(accel, Vector3::zeros());
 
         let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
-        let accel_p =
-            navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
+        let gradients_p = SpatialGradients::new(vel_grad, p_grad_x, lap_vel);
+        let accel_p = solver.calculate_acceleration(&props, &state, &gradients_p, &g);
+
+        // Pressure term = -grad(p)/rho = -2.0 / 1.0 = -2.0
         assert!((accel_p.x - (-2.0)).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_euler_inviscid() {
+        let props = FluidProperties::new(1.0, 1.0); // rho=1
+        let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
+
+        let vel_grad = Matrix3::zeros();
+        let p_grad = Vector3::zeros();
+        let lap_vel = Vector3::new(100.0, 0.0, 0.0); // High laplacian, should be ignored by Euler
+        let g = Vector3::zeros();
+
+        let gradients = SpatialGradients::new(vel_grad, p_grad, lap_vel);
+        let solver = Euler;
+
+        let accel = solver.calculate_acceleration(&props, &state, &gradients, &g);
+
+        // Should be zero because laplacian is ignored and other terms are zero
+        assert_eq!(accel, Vector3::zeros());
     }
 
     #[test]
