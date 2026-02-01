@@ -76,8 +76,8 @@ impl<const N: usize> Add for ArrayState<N> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         let mut arr = [0.0; N];
-        for i in 0..N {
-            arr[i] = self.0[i] + rhs.0[i];
+        for (i, val) in arr.iter_mut().enumerate() {
+            *val = self.0[i] + rhs.0[i];
         }
         Self(arr)
     }
@@ -87,8 +87,8 @@ impl<const N: usize> Mul<f64> for ArrayState<N> {
     type Output = Self;
     fn mul(self, scalar: f64) -> Self {
         let mut arr = [0.0; N];
-        for i in 0..N {
-            arr[i] = self.0[i] * scalar;
+        for (i, val) in arr.iter_mut().enumerate() {
+            *val = self.0[i] * scalar;
         }
         Self(arr)
     }
@@ -96,24 +96,24 @@ impl<const N: usize> Mul<f64> for ArrayState<N> {
 
 impl<const N: usize> AddAssign for ArrayState<N> {
     fn add_assign(&mut self, rhs: Self) {
-        for i in 0..N {
-            self.0[i] += rhs.0[i];
+        for (a, b) in self.0.iter_mut().zip(rhs.0.iter()) {
+            *a += b;
         }
     }
 }
 
 impl<const N: usize> MulAssign<f64> for ArrayState<N> {
     fn mul_assign(&mut self, scalar: f64) {
-        for i in 0..N {
-            self.0[i] *= scalar;
+        for val in self.0.iter_mut() {
+            *val *= scalar;
         }
     }
 }
 
 impl<const N: usize> VectorOperations for ArrayState<N> {
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for i in 0..N {
-            self.0[i] += other.0[i] * scale;
+        for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
+            *a += b * scale;
         }
     }
 
