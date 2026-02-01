@@ -53,7 +53,8 @@ use rand::Rng;
 pub struct SpinLattice {
     pub width: usize,
     pub height: usize,
-    pub spins: Vec<i8>, // Flattened 2D grid
+    pub spins: Vec<i8>,             // Flattened 2D grid
+    pub neighbors: Vec<[usize; 4]>, // Precomputed neighbor indices [left, right, up, down]
 }
 
 impl SpinLattice {
@@ -64,10 +65,39 @@ impl SpinLattice {
         let spins = (0..count)
             .map(|_| if rng.gen_bool(0.5) { 1 } else { -1 })
             .collect();
+
+        // Precompute neighbor indices
+        let mut neighbors = vec![[0; 4]; count];
+        for y in 0..height {
+            for x in 0..width {
+                let idx = y * width + x;
+
+                let left = if x == 0 { idx + width - 1 } else { idx - 1 };
+                let right = if x == width - 1 {
+                    idx + 1 - width
+                } else {
+                    idx + 1
+                };
+                let up = if y == 0 {
+                    idx + (height - 1) * width
+                } else {
+                    idx - width
+                };
+                let down = if y == height - 1 {
+                    idx - (height - 1) * width
+                } else {
+                    idx + width
+                };
+
+                neighbors[idx] = [left, right, up, down];
+            }
+        }
+
         SpinLattice {
             width,
             height,
             spins,
+            neighbors,
         }
     }
 
@@ -163,7 +193,12 @@ impl SpinLattice {
     /// This method is significantly faster than calling `metropolis_step` in a loop because:
     /// 1. It precomputes Boltzmann factors (`exp(-beta * dE)`) into a lookup table.
     /// 2. It reuses the random number generator, avoiding TLS overhead.
+    /// 3. It precomputes neighbor indices to avoid coordinate arithmetic in the loop.
     pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
+        if steps == 0 || self.spins.is_empty() {
+            return;
+        }
+
         let mut rng = rand::thread_rng();
         let beta = 1.0 / (KB * temperature);
 
@@ -186,30 +221,19 @@ impl SpinLattice {
             }
         }
 
-        let width = self.width;
-        let height = self.height;
+        let count = self.width * self.height;
 
         for _ in 0..steps {
-            let x = rng.gen_range(0..width);
-            let y = rng.gen_range(0..height);
+            // Pick a random site. Using a single range is faster than two.
+            let idx = rng.gen_range(0..count);
 
-            // Manual inline of get() to help optimizer
-            let idx = y * width + x;
             let s = self.spins[idx];
+            let neighbors = &self.neighbors[idx];
 
-            // Neighbors
-            // Use wrapping arithmetic or simple checks to avoid modulo if possible,
-            // but for random access, modulo is robust.
-            // Optimizing modulo:
-            let left_x = if x == 0 { width - 1 } else { x - 1 };
-            let right_x = if x == width - 1 { 0 } else { x + 1 };
-            let up_y = if y == 0 { height - 1 } else { y - 1 };
-            let down_y = if y == height - 1 { 0 } else { y + 1 };
-
-            let neighbor_sum = self.spins[y * width + left_x] as i32
-                + self.spins[y * width + right_x] as i32
-                + self.spins[up_y * width + x] as i32
-                + self.spins[down_y * width + x] as i32;
+            let neighbor_sum = self.spins[neighbors[0]] as i32
+                + self.spins[neighbors[1]] as i32
+                + self.spins[neighbors[2]] as i32
+                + self.spins[neighbors[3]] as i32;
 
             // Map s (-1 or 1) to 0 or 1
             let s_idx = if s == -1 { 0 } else { 1 };
