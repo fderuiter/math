@@ -174,3 +174,22 @@ Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
 - Before: ~14.70 M/s
 - After: ~29.41 M/s
 - Speedup: ~2.00x (100% improvement)
+
+## 2026-02-02 - [Optimization] **Bottleneck:** Memory Bandwidth/Cache Pressure in Ising Model (1000x1000 grid). **Strategy:** Shrink neighbor indices from usize (64-bit) to u32 (32-bit). **Gain:** 50% memory reduction for neighbors array (32MB -> 16MB), ~20% speedup on large grids (0.95s -> 0.75s).
+
+**Bottleneck:**
+On large grids (e.g. 1000x1000), the `neighbors` array (using `usize`) consumes 32MB, exceeding L3 cache size on many processors. This causes significant cache thrashing during the `evolve` loop, which performs random access lookups into this array. The "Precomputed Neighbors" optimization (Nov 02) turned into a bottleneck for large scales.
+
+**Strategy:**
+Changed the data type of the `neighbors` field in `SpinLattice` from `Vec<[usize; 4]>` to `Vec<[u32; 4]>`.
+1. Reduced the size of each neighbor entry from 32 bytes to 16 bytes.
+2. Updated `new` to cast indices to `u32` and assert `count <= u32::MAX`.
+3. Updated `evolve` to cast back to `usize` for indexing.
+This reduces the memory bandwidth requirement by half for the neighbor lookup.
+
+**Gain:**
+Benchmark `bench_ising_custom` (1000x1000 grid, 10M iterations):
+- Before: ~0.95s (10.5 M/s)
+- After: ~0.75s (13.3 M/s)
+- Speedup: ~1.27x (~20% improvement)
+- Memory Saved: 16MB per 1M sites (50% reduction for `neighbors`).

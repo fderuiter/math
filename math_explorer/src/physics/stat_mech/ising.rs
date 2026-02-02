@@ -54,7 +54,7 @@ pub struct SpinLattice {
     pub width: usize,
     pub height: usize,
     pub spins: Vec<i8>,             // Flattened 2D grid
-    pub neighbors: Vec<[usize; 4]>, // Precomputed neighbor indices [left, right, up, down]
+    pub neighbors: Vec<[u32; 4]>,   // Precomputed neighbor indices [left, right, up, down]
 }
 
 impl SpinLattice {
@@ -62,6 +62,10 @@ impl SpinLattice {
     pub fn new(width: usize, height: usize) -> Self {
         let mut rng = rand::thread_rng();
         let count = width * height;
+        assert!(
+            count <= u32::MAX as usize,
+            "Lattice size too large for u32 indexing"
+        );
         let spins = (0..count)
             .map(|_| if rng.gen_bool(0.5) { 1 } else { -1 })
             .collect();
@@ -89,7 +93,7 @@ impl SpinLattice {
                     idx + width
                 };
 
-                neighbors[idx] = [left, right, up, down];
+                neighbors[idx] = [left as u32, right as u32, up as u32, down as u32];
             }
         }
 
@@ -230,10 +234,10 @@ impl SpinLattice {
             let s = self.spins[idx];
             let neighbors = &self.neighbors[idx];
 
-            let neighbor_sum = self.spins[neighbors[0]] as i32
-                + self.spins[neighbors[1]] as i32
-                + self.spins[neighbors[2]] as i32
-                + self.spins[neighbors[3]] as i32;
+            let neighbor_sum = self.spins[neighbors[0] as usize] as i32
+                + self.spins[neighbors[1] as usize] as i32
+                + self.spins[neighbors[2] as usize] as i32
+                + self.spins[neighbors[3] as usize] as i32;
 
             // Map s (-1 or 1) to 0 or 1
             let s_idx = if s == -1 { 0 } else { 1 };
