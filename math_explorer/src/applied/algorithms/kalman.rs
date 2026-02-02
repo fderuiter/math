@@ -37,6 +37,51 @@ pub trait KalmanModel {
 ///
 /// Uses the **Strategy Pattern** via the `KalmanModel` trait to decouple the estimation algorithm
 /// from the specific system dynamics.
+///
+/// # Example
+///
+/// ```rust
+/// use math_explorer::applied::algorithms::kalman::{KalmanFilter, KalmanModel};
+/// use nalgebra::{DMatrix, DVector};
+///
+/// // 1. Define the System Model (e.g., 1D Constant Velocity)
+/// struct ConstantVelocity {
+///     noise: f64,
+/// }
+///
+/// impl KalmanModel for ConstantVelocity {
+///     fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
+///         // [1, dt]
+///         // [0, 1]
+///         DMatrix::from_row_slice(2, 2, &[1.0, dt, 0.0, 1.0])
+///     }
+///     fn measurement_matrix(&self) -> DMatrix<f64> {
+///         // [1, 0] (Measure position only)
+///         DMatrix::from_row_slice(1, 2, &[1.0, 0.0])
+///     }
+///     fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
+///         DMatrix::identity(2, 2) * self.noise
+///     }
+///     fn measurement_noise(&self) -> DMatrix<f64> {
+///         DMatrix::from_element(1, 1, 0.1)
+///     }
+/// }
+///
+/// // 2. Initialize
+/// let dt = 0.1;
+/// let model = ConstantVelocity { noise: 0.01 };
+/// let initial_state = DVector::from_vec(vec![0.0, 10.0]); // Pos=0, Vel=10
+/// let initial_cov = DMatrix::identity(2, 2);
+///
+/// let mut kf = KalmanFilter::new(initial_state, initial_cov, model, dt);
+///
+/// // 3. Predict & Update
+/// kf.predict();
+/// let measurement = DVector::from_vec(vec![1.1]); // Noisy measurement
+/// kf.update(&measurement).unwrap();
+///
+/// println!("Estimated State: {:?}", kf.state);
+/// ```
 #[derive(Debug, Clone)]
 pub struct KalmanFilter<M: KalmanModel> {
     /// State vector estimate ($\hat{x}$).
@@ -58,6 +103,16 @@ impl<M: KalmanModel> KalmanFilter<M> {
     /// * `initial_covariance` - Initial uncertainty covariance matrix.
     /// * `model` - The system model implementation.
     /// * `dt` - Default time step.
+    ///
+    /// # Panics
+    ///
+    /// This function does not explicitly panic, but `nalgebra` operations in `predict` and `update`
+    /// will panic if the dimensions of `initial_state`, `initial_covariance`, and the matrices
+    /// returned by `model` are inconsistent.
+    ///
+    /// * `initial_state` must have size $n$.
+    /// * `initial_covariance` must be $n \times n$.
+    /// * `model` matrices must align with $n$ (state dim) and $m$ (measurement dim).
     pub fn new(
         initial_state: DVector<f64>,
         initial_covariance: DMatrix<f64>,
