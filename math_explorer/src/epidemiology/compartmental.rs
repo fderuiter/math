@@ -1,6 +1,53 @@
 use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
+/// Local macro to implement vector operations for state structs.
+///
+/// This avoids code duplication for `Add`, `Mul`, `AddAssign`, `MulAssign`, and `VectorOperations`.
+macro_rules! impl_compartmental_ops {
+    ($Name:ident, $($field:ident),+) => {
+        impl Add for $Name {
+            type Output = Self;
+            fn add(self, rhs: Self) -> Self {
+                Self {
+                    $($field: self.$field + rhs.$field),+
+                }
+            }
+        }
+
+        impl AddAssign for $Name {
+            fn add_assign(&mut self, rhs: Self) {
+                $(self.$field += rhs.$field;)+
+            }
+        }
+
+        impl Mul<f64> for $Name {
+            type Output = Self;
+            fn mul(self, scalar: f64) -> Self {
+                Self {
+                    $($field: self.$field * scalar),+
+                }
+            }
+        }
+
+        impl MulAssign<f64> for $Name {
+            fn mul_assign(&mut self, scalar: f64) {
+                $(self.$field *= scalar;)+
+            }
+        }
+
+        impl VectorOperations for $Name {
+            fn scale_add(&mut self, other: &Self, scale: f64) {
+                $(self.$field += other.$field * scale;)+
+            }
+
+            fn copy_from(&mut self, other: &Self) {
+                *self = *other;
+            }
+        }
+    };
+}
+
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SIRState {
@@ -9,55 +56,8 @@ pub struct SIRState {
     pub r: f64,
 }
 
-impl Add for SIRState {
-    type Output = Self;
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            s: self.s + rhs.s,
-            i: self.i + rhs.i,
-            r: self.r + rhs.r,
-        }
-    }
-}
-
-impl AddAssign for SIRState {
-    fn add_assign(&mut self, rhs: Self) {
-        self.s += rhs.s;
-        self.i += rhs.i;
-        self.r += rhs.r;
-    }
-}
-
-impl Mul<f64> for SIRState {
-    type Output = Self;
-    fn mul(self, scalar: f64) -> Self {
-        Self {
-            s: self.s * scalar,
-            i: self.i * scalar,
-            r: self.r * scalar,
-        }
-    }
-}
-
-impl MulAssign<f64> for SIRState {
-    fn mul_assign(&mut self, scalar: f64) {
-        self.s *= scalar;
-        self.i *= scalar;
-        self.r *= scalar;
-    }
-}
-
-impl VectorOperations for SIRState {
-    fn scale_add(&mut self, other: &Self, scale: f64) {
-        self.s += other.s * scale;
-        self.i += other.i * scale;
-        self.r += other.r * scale;
-    }
-
-    fn copy_from(&mut self, other: &Self) {
-        *self = *other;
-    }
-}
+// Apply the macro to implement vector operations
+impl_compartmental_ops!(SIRState, s, i, r);
 
 /// SIR Model: Susceptible, Infectious, Recovered.
 ///
@@ -134,60 +134,8 @@ pub struct SEIRState {
     pub r: f64,
 }
 
-impl Add for SEIRState {
-    type Output = Self;
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            s: self.s + rhs.s,
-            e: self.e + rhs.e,
-            i: self.i + rhs.i,
-            r: self.r + rhs.r,
-        }
-    }
-}
-
-impl AddAssign for SEIRState {
-    fn add_assign(&mut self, rhs: Self) {
-        self.s += rhs.s;
-        self.e += rhs.e;
-        self.i += rhs.i;
-        self.r += rhs.r;
-    }
-}
-
-impl Mul<f64> for SEIRState {
-    type Output = Self;
-    fn mul(self, scalar: f64) -> Self {
-        Self {
-            s: self.s * scalar,
-            e: self.e * scalar,
-            i: self.i * scalar,
-            r: self.r * scalar,
-        }
-    }
-}
-
-impl MulAssign<f64> for SEIRState {
-    fn mul_assign(&mut self, scalar: f64) {
-        self.s *= scalar;
-        self.e *= scalar;
-        self.i *= scalar;
-        self.r *= scalar;
-    }
-}
-
-impl VectorOperations for SEIRState {
-    fn scale_add(&mut self, other: &Self, scale: f64) {
-        self.s += other.s * scale;
-        self.e += other.e * scale;
-        self.i += other.i * scale;
-        self.r += other.r * scale;
-    }
-
-    fn copy_from(&mut self, other: &Self) {
-        *self = *other;
-    }
-}
+// Apply the macro to implement vector operations
+impl_compartmental_ops!(SEIRState, s, e, i, r);
 
 /// SEIR Model: Susceptible, Exposed, Infectious, Recovered.
 ///
