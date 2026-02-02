@@ -59,3 +59,8 @@
 **Gap:** The `freesurfer` module was a "Visual Void" with no explanation of the cortical reconstruction pipeline or usage.
 **Strategy:** Overhauled `freesurfer/mod.rs` with a Mermaid pipeline diagram and a runnable Quick Start example for cortical thickness calculation.
 **Outcome:** Users can now understand the MRI processing pipeline and use the tools for surface analysis.
+
+## 2026-02-15 - Visualizing Fluid Dynamics
+**Gap:** The `physics/fluid_dynamics` module is a core domain but has a practically empty `mod.rs` ("Visual Void"), hiding the well-structured Strategy Pattern implementation of conservation laws.
+**Strategy:** Overhaul `fluid_dynamics/mod.rs` with a Mermaid diagram showing the relationship between Properties, State, and Momentum Equations, and add a "Quick Start" example using Navier-Stokes.
+**Outcome:** Users can now understand how to simulate fluid flow and use the Strategy Pattern for different flow regimes.
