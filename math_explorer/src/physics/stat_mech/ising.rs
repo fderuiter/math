@@ -53,8 +53,8 @@ use rand::Rng;
 pub struct SpinLattice {
     pub width: usize,
     pub height: usize,
-    pub spins: Vec<i8>,             // Flattened 2D grid
-    pub neighbors: Vec<[u32; 4]>,   // Precomputed neighbor indices [left, right, up, down]
+    pub spins: Vec<i8>,           // Flattened 2D grid
+    pub neighbors: Vec<[u32; 4]>, // Precomputed neighbor indices [left, right, up, down]
 }
 
 impl SpinLattice {
