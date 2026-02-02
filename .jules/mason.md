@@ -30,3 +30,7 @@
 ## 2026-10-24 - Decoupling RL Exploration Logic
 **Violation:** Dependency Inversion Principle (DIP) and Open/Closed Principle (OCP). The `TabularQAgent` hardcoded the Epsilon-Greedy exploration strategy and `rand::thread_rng()`, making it non-deterministic, hard to test, and impossible to extend with new strategies (like Boltzmann or UCB) without modifying the agent.
 **Remedy:** Strategy Pattern. Extracted `ExplorationStrategy` trait and implemented `EpsilonGreedy`. Injected the strategy into `TabularQAgent` and exposed `select_action_with_rng` for deterministic testing.
+
+## 2026-10-27 - Decoupling Fluid Momentum Equations
+**Violation:** Open/Closed Principle (OCP). The simulation logic for fluid momentum updates was hardcoded into separate functions (`navier_stokes_time_derivative`, `euler_time_derivative`), requiring modification to the solver loop or additional conditional logic to support new physics models (e.g., Stokes flow).
+**Remedy:** Strategy Pattern. Extracted `MomentumSolver` trait and implemented `NavierStokes` and `Euler` strategies. Refactored the original functions to serve as backward-compatible wrappers around these strategies.

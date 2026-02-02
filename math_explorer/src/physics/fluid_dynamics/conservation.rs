@@ -5,6 +5,78 @@
 use super::types::{FlowState, FluidProperties};
 use nalgebra::Vector3;
 
+/// Defines a strategy for solving the Momentum Equation.
+///
+/// This trait allows switching between different physics models (e.g., Navier-Stokes, Euler, Stokes)
+/// without changing the simulation loop structure.
+pub trait MomentumSolver {
+    /// Computes the time evolution of velocity ($\frac{\partial \mathbf{u}}{\partial t}$).
+    fn compute_time_derivative(
+        &self,
+        properties: &FluidProperties,
+        state: &FlowState,
+        velocity_gradient: &nalgebra::Matrix3<f64>,
+        pressure_gradient: Vector3<f64>,
+        laplacian_velocity: Vector3<f64>,
+        body_force_accel: Vector3<f64>,
+    ) -> Vector3<f64>;
+}
+
+/// Strategy for Full Navier-Stokes Equations (Viscous Flow).
+pub struct NavierStokes;
+
+impl MomentumSolver for NavierStokes {
+    fn compute_time_derivative(
+        &self,
+        properties: &FluidProperties,
+        state: &FlowState,
+        velocity_gradient: &nalgebra::Matrix3<f64>,
+        pressure_gradient: Vector3<f64>,
+        laplacian_velocity: Vector3<f64>,
+        body_force_accel: Vector3<f64>,
+    ) -> Vector3<f64> {
+        let nu = properties.kinematic_viscosity();
+        let rho = properties.density;
+
+        // Convective term: -(u . del) u
+        let convection = -(velocity_gradient * state.velocity);
+
+        // Pressure term: -(1/rho) grad p
+        let pressure_term = -pressure_gradient / rho;
+
+        // Viscous term: nu * del^2 u
+        let viscous_term = laplacian_velocity * nu;
+
+        // Sum
+        convection + pressure_term + viscous_term + body_force_accel
+    }
+}
+
+/// Strategy for Euler Equations (Inviscid Flow).
+pub struct Euler;
+
+impl MomentumSolver for Euler {
+    fn compute_time_derivative(
+        &self,
+        properties: &FluidProperties,
+        state: &FlowState,
+        velocity_gradient: &nalgebra::Matrix3<f64>,
+        pressure_gradient: Vector3<f64>,
+        _laplacian_velocity: Vector3<f64>, // Ignored for inviscid flow
+        body_force_accel: Vector3<f64>,
+    ) -> Vector3<f64> {
+        let rho = properties.density;
+
+        // Convective term: -(u . del) u
+        let convection = -(velocity_gradient * state.velocity);
+
+        // Pressure term: -(1/rho) grad p
+        let pressure_term = -pressure_gradient / rho;
+
+        convection + pressure_term + body_force_accel
+    }
+}
+
 /// Calculates the Material Derivative ($D/Dt$) of a scalar property.
 ///
 /// $$\frac{D\phi}{Dt} = \frac{\partial \phi}{\partial t} + \mathbf{u} \cdot \nabla \phi$$
@@ -71,20 +143,14 @@ pub fn navier_stokes_time_derivative(
     laplacian_velocity: Vector3<f64>,
     body_force_accel: Vector3<f64>,
 ) -> Vector3<f64> {
-    let nu = properties.kinematic_viscosity();
-    let rho = properties.density;
-
-    // Convective term: -(u . del) u
-    let convection = -(velocity_gradient * state.velocity);
-
-    // Pressure term: -(1/rho) grad p
-    let pressure_term = -pressure_gradient / rho;
-
-    // Viscous term: nu * del^2 u
-    let viscous_term = laplacian_velocity * nu;
-
-    // Sum
-    convection + pressure_term + viscous_term + body_force_accel
+    NavierStokes.compute_time_derivative(
+        properties,
+        state,
+        velocity_gradient,
+        pressure_gradient,
+        laplacian_velocity,
+        body_force_accel,
+    )
 }
 
 /// Computes the time evolution of velocity based on the Euler Equations (Inviscid).
@@ -99,11 +165,17 @@ pub fn euler_time_derivative(
     pressure_gradient: Vector3<f64>,
     body_force_accel: Vector3<f64>,
 ) -> Vector3<f64> {
-    // Convective term: -(u . del) u
-    let convection = -(velocity_gradient * state.velocity);
+    let properties = FluidProperties {
+        density: rho,
+        dynamic_viscosity: 0.0,
+    };
 
-    // Pressure term: -(1/rho) grad p
-    let pressure_term = -pressure_gradient / rho;
-
-    convection + pressure_term + body_force_accel
+    Euler.compute_time_derivative(
+        &properties,
+        state,
+        velocity_gradient,
+        pressure_gradient,
+        Vector3::zeros(),
+        body_force_accel,
+    )
 }

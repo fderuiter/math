@@ -4,6 +4,7 @@ mod tests {
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
             continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            Euler, MomentumSolver, NavierStokes,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
         types::{FlowState, FluidProperties},
@@ -112,5 +113,29 @@ mod tests {
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
+    }
+
+    #[test]
+    fn test_strategy_pattern_composability() {
+        let props = FluidProperties::new(1000.0, 0.001);
+        let state = FlowState::new(Vector3::zeros(), 101325.0);
+        let vel_grad = Matrix3::zeros();
+        let p_grad = Vector3::zeros();
+        let lap_vel = Vector3::new(1.0, 0.0, 0.0);
+        let g = Vector3::zeros();
+
+        // Direct strategy usage
+        let ns = NavierStokes;
+        let euler = Euler;
+
+        // NS should include viscosity term: nu * lap_vel
+        // nu = 0.001 / 1000 = 1e-6
+        // term = 1e-6 * 1.0 = 1e-6
+        let res_ns = ns.compute_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        assert!((res_ns.x - 1e-6).abs() < 1e-12);
+
+        // Euler should ignore viscosity term -> 0.0
+        let res_euler = euler.compute_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        assert!((res_euler.x).abs() < 1e-12);
     }
 }
