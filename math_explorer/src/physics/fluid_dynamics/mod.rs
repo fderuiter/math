@@ -111,6 +111,7 @@
 
 pub mod analysis;
 pub mod conservation;
+pub mod ode_bridge;
 pub mod regimes;
 pub mod turbulence;
 pub mod types;
