@@ -145,4 +145,50 @@ mod tests {
             assert!((acc.x - (-0.1)).abs() < 1e-9);
         }
     }
+
+    #[test]
+    fn test_rk4_integration_bridge() {
+        use crate::physics::fluid_dynamics::ode_bridge::PointFlowSolver;
+        use crate::pure_math::analysis::ode::RungeKutta4;
+
+        let props = FluidProperties::new(1.0, 0.1); // rho=1, mu=0.1
+        let gradients = SpatialGradients::new(
+            Matrix3::zeros(),            // No convection (u . grad u = 0)
+            Vector3::new(1.0, 0.0, 0.0), // Constant pressure gradient dx
+            Vector3::zeros(),            // No viscous diffusion yet
+        );
+        let strategy = NavierStokes;
+        let body_force = Vector3::zeros();
+
+        let solver_system = PointFlowSolver {
+            properties: &props,
+            gradients: &gradients,
+            strategy: &strategy,
+            body_force,
+        };
+
+        // Initial velocity is zero
+        let u0 = Vector3::new(0.0, 0.0, 0.0);
+
+        // Acceleration should be:
+        // - (1/rho) * grad_p = -1.0 / 1.0 = -1.0
+        // v(t) = a * t = -1.0 * t
+
+        let dt = 0.1;
+        let u1 = RungeKutta4::step(&solver_system, 0.0, &u0, dt);
+
+        assert!(
+            (u1.x - (-0.1)).abs() < 1e-6,
+            "Expected velocity -0.1, got {}",
+            u1.x
+        );
+
+        // Take another step
+        let u2 = RungeKutta4::step(&solver_system, 0.1, &u1, dt);
+        assert!(
+            (u2.x - (-0.2)).abs() < 1e-6,
+            "Expected velocity -0.2, got {}",
+            u2.x
+        );
+    }
 }
