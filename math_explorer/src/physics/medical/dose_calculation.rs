@@ -59,35 +59,6 @@ pub fn point_kernel(radius: f64, amplitude: f64, beta: f64) -> Result<f64, Strin
     Ok(val)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_terma_calculation() {
-        // Simple case: no attenuation (mu=0) -> T = 0
-        assert_eq!(calculate_terma(100.0, 0.0, 10.0), 0.0);
-
-        // d=0 -> T = mu * Psi0
-        let t0 = calculate_terma(100.0, 0.1, 0.0);
-        assert!((t0 - 10.0).abs() < 1e-6);
-    }
-
-    #[test]
-    fn test_point_kernel() {
-        // Error on r=0
-        assert!(point_kernel(0.0, 1.0, 1.0).is_err());
-
-        // Check calculation
-        let r = 2.0;
-        let a = 4.0;
-        let b = 0.5;
-        // K = (4 / 4) * exp(-0.5 * 2) = 1 * e^-1 = 0.367879
-        let k = point_kernel(r, a, b).unwrap();
-        assert!((k - (-1.0_f64).exp()).abs() < 1e-5);
-    }
-}
-
 /// Calculates the average energy for the Beam Loading Line.
 ///
 /// $$ E = 5.925 - I_b \times 0.00808 $$
@@ -157,4 +128,33 @@ pub fn dirac_pulse_count(t_on: f64, t_off: f64, delta_t: f64) -> usize {
 /// * `f64` - The delay time.
 pub fn signal_front_delay(phase_slope_high_freq: f64) -> f64 {
     phase_slope_high_freq
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_terma_calculation() {
+        // Simple case: no attenuation (mu=0) -> T = 0
+        assert_eq!(calculate_terma(100.0, 0.0, 10.0), 0.0);
+
+        // d=0 -> T = mu * Psi0
+        let t0 = calculate_terma(100.0, 0.1, 0.0);
+        assert!((t0 - 10.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_point_kernel() {
+        // Error on r=0
+        assert!(point_kernel(0.0, 1.0, 1.0).is_err());
+
+        // Check calculation
+        let r = 2.0;
+        let a = 4.0;
+        let b = 0.5;
+        // K = (4 / 4) * exp(-0.5 * 2) = 1 * e^-1 = 0.367879
+        let k = point_kernel(r, a, b).unwrap();
+        assert!((k - (-1.0_f64).exp()).abs() < 1e-5);
+    }
 }

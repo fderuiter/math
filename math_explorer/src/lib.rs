@@ -48,6 +48,9 @@ pub mod epidemiology;
 pub mod physics;
 pub mod pure_math;
 
+/// The self-calibration module.
+pub use ai::self_calibration;
+
 #[cfg(test)]
 mod tests {
     use super::applied::favoritism::{self, FavoritismInputs};
@@ -219,6 +222,3 @@ mod tests {
         assert_eq!(favorite.name, "Child B");
     }
 }
-
-/// The self-calibration module.
-pub use ai::self_calibration;

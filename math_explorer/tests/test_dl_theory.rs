@@ -12,7 +12,7 @@ fn test_deep_learning_cycle() {
     let y_true = DVector::from_vec(vec![1.0, 0.0]);
 
     // Initial prediction should be close to uniform or random
-    let initial_pred = network.predict(&x);
+    let _initial_pred = network.predict(&x);
     let initial_loss = network.train_step(&x, &y_true);
 
     // Train for a few steps
