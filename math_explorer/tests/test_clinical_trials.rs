@@ -4,7 +4,6 @@ use math_explorer::applied::clinical_trials::{
 };
 
 #[test]
-#[allow(deprecated)]
 fn test_simple_randomization() {
     let n = 100;
     let assignments = design::simple_randomization(n);
@@ -13,7 +12,6 @@ fn test_simple_randomization() {
 }
 
 #[test]
-#[allow(deprecated)]
 fn test_block_randomization() {
     let n = 20;
     let block_size = 4;

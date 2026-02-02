@@ -138,8 +138,8 @@ mod tests {
         assert_eq!(points.len(), 11 * 50);
         // Check bounds
         for (r, x) in points {
-            assert!((3.0..=4.0).contains(&r));
-            assert!((0.0..=1.0).contains(&x));
+            assert!(r >= 3.0 && r <= 4.0);
+            assert!(x >= 0.0 && x <= 1.0);
         }
     }
 

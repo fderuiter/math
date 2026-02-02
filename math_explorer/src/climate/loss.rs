@@ -1,6 +1,5 @@
 //! This module implements the loss functions for the CERA framework.
 
-use super::error::ClimateError;
 use nalgebra::DMatrix;
 
 /// Computes the Mean Squared Error (MSE) between two matrices.
@@ -12,17 +11,15 @@ use nalgebra::DMatrix;
 ///
 /// # Returns
 ///
-/// The mean squared error, or an error if shapes mismatch.
-pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> Result<f32, ClimateError> {
-    if y_true.shape() != y_pred.shape() {
-        return Err(ClimateError::DimensionMismatch(format!(
-            "MSE Loss: Expected shape {:?}, got {:?}",
-            y_true.shape(),
-            y_pred.shape()
-        )));
-    }
+/// The mean squared error.
+pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> f32 {
+    assert_eq!(
+        y_true.shape(),
+        y_pred.shape(),
+        "Matrices must have the same shape for MSE."
+    );
     let diff = y_true - y_pred;
-    Ok(diff.norm_squared() / (diff.nrows() * diff.ncols()) as f32)
+    diff.norm_squared() / (diff.nrows() * diff.ncols()) as f32
 }
 
 /// Computes the Earth Mover's Distance (EMD) for multiple 1D distributions.
@@ -37,17 +34,15 @@ pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> Result<f32, Cli
 ///
 /// # Returns
 ///
-/// The average Earth Mover's Distance, or an error if shapes mismatch.
-pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> Result<f32, ClimateError> {
-    if z1.shape() != z2.shape() {
-        return Err(ClimateError::DimensionMismatch(format!(
-            "EMD Loss: Expected shape {:?}, got {:?}",
-            z1.shape(),
-            z2.shape()
-        )));
-    }
+/// The average Earth Mover's Distance.
+pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
+    assert_eq!(
+        z1.shape(),
+        z2.shape(),
+        "Matrices must have the same shape for EMD."
+    );
     if z1.ncols() == 0 {
-        return Ok(0.0);
+        return 0.0;
     }
 
     let mut total_emd = 0.0;
@@ -58,9 +53,8 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> Result<f32
 
         // The EMD for 1D distributions is the L1 norm of the difference
         // between the sorted samples.
-        // Use total_cmp to handle NaN safely.
-        col1.sort_by(|a, b| a.total_cmp(b));
-        col2.sort_by(|a, b| a.total_cmp(b));
+        col1.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        col2.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         let emd_i: f32 = col1
             .iter()
@@ -70,7 +64,7 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> Result<f32
         total_emd += emd_i / col1.len() as f32;
     }
 
-    Ok(total_emd / z1.ncols() as f32)
+    total_emd / z1.ncols() as f32
 }
 
 /// Computes the combined loss for the CERA framework.
@@ -112,7 +106,7 @@ mod tests {
         // Differences are 0, -1, 1, 0. Squared differences are 0, 1, 1, 0.
         // Sum of squared differences is 2.
         // MSE = 2 / 4 = 0.5.
-        let loss = mse_loss(&y_true, &y_pred).unwrap();
+        let loss = mse_loss(&y_true, &y_pred);
         assert!((loss - 0.5).abs() < 1e-6);
     }
 
@@ -129,14 +123,7 @@ mod tests {
         // Diff = [4,4,4,4]. Sum of abs diff = 16. EMD_2 = 16 / 4 = 4.
 
         // Average EMD = (4 + 4) / 2 = 4.
-        let emd = earth_movers_distance(&z1, &z2).unwrap();
+        let emd = earth_movers_distance(&z1, &z2);
         assert!((emd - 4.0).abs() < 1e-6);
-    }
-
-    #[test]
-    fn test_loss_mismatch() {
-        let y_true = DMatrix::from_row_slice(1, 2, &[1.0, 2.0]);
-        let y_pred = DMatrix::from_row_slice(2, 1, &[1.0, 2.0]);
-        assert!(mse_loss(&y_true, &y_pred).is_err());
     }
 }

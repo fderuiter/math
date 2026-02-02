@@ -181,9 +181,7 @@ mod tests {
 
         // Use Trainer
         let mut trainer = CeraTrainer::new(&mut cera);
-        trainer
-            .train(&control_inputs, &control_targets, &warm_inputs)
-            .expect("Training failed");
+        trainer.train(&control_inputs, &control_targets, &warm_inputs);
 
         let (test_inputs, _) = generate_data(4, 0.5);
         let prediction = cera.predict(&test_inputs);

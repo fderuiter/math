@@ -37,10 +37,11 @@ fn test_stratified_sampling() {
     let samples = stratified_sampling(t_near, t_far, n_samples);
     assert_eq!(samples.len(), n_samples);
 
-    for (i, t) in samples.iter().enumerate().take(n_samples) {
+    for i in 0..n_samples {
+        let t = samples[i];
         let bin_start = t_near + i as f64;
         let bin_end = t_near + (i + 1) as f64;
-        assert!(*t >= bin_start && *t <= bin_end);
+        assert!(t >= bin_start && t <= bin_end);
     }
 }
 

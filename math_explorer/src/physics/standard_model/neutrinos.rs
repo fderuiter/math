@@ -27,7 +27,7 @@ mod tests {
     fn test_neutrino_oscillation() {
         // Check bounds [0, 1]
         let p = oscillation_prob(0.5, 0.0025, 295.0, 0.6);
-        assert!((0.0..=1.0).contains(&p));
+        assert!(p >= 0.0 && p <= 1.0);
 
         // Check zero probability for zero mixing angle
         let p_zero_angle = oscillation_prob(0.0, 0.0025, 295.0, 0.6);

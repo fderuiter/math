@@ -43,7 +43,7 @@ fn test_cera_integration() {
     // 4. Train the model
     // This will print the loss for each epoch to the console.
     let mut trainer = CeraTrainer::new(&mut cera);
-    trainer.train(&control_inputs, &control_targets, &warm_inputs).expect("Training failed");
+    trainer.train(&control_inputs, &control_targets, &warm_inputs);
 
     // 5. Generate test data and make a prediction
     let n_test_samples = 4;

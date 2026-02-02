@@ -1,5 +1,6 @@
 use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
+use std::collections::HashMap;
 
 #[test]
 fn test_lorahub_linear_combination() {

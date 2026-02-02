@@ -139,8 +139,8 @@ fn test_mean_curvature_flow_shrinkage() {
 
     let mut points = vec![vec![Point3::origin(); nv]; nu];
 
-    for (i, row) in points.iter_mut().enumerate().take(nu) {
-        for (j, point) in row.iter_mut().enumerate().take(nv) {
+    for i in 0..nu {
+        for j in 0..nv {
             let u = 2.0 * PI * i as f64 / nu as f64;
             // Avoid exact 0 and PI to prevent singularities in parameterization derivatives
             let v_frac = j as f64 / (nv as f64 - 1.0);
@@ -149,7 +149,7 @@ fn test_mean_curvature_flow_shrinkage() {
             let x = radius * v.sin() * u.cos();
             let y = radius * v.sin() * u.sin();
             let z = radius * v.cos();
-            *point = Point3::new(x, y, z);
+            points[i][j] = Point3::new(x, y, z);
         }
     }
 
