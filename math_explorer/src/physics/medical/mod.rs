@@ -4,10 +4,11 @@
 //! It covers four main domains:
 //!
 //! 1.  **Calibration**: Converting CT imaging data (Hounsfield Units) into physical density for dose calculation.
-//! 2.  **Dose Calculation**: Modeling how radiation interacts with matter using convolution/superposition principles.
-//! 3.  **Inverse Planning**: Optimizing beam intensities (IMRT/VMAT) to maximize tumor control while sparing healthy tissue.
-//! 4.  **Evaluation**: Quantifying plan quality using Dose-Volume Histograms (DVH) and biological modeling (TCP).
-//! 5.  **Motion Management**:
+//! 2.  **Dose Calculation**: Modeling how radiation interacts with matter (`dose`).
+//! 3.  **Machine Physics**: Modeling the treatment machine (`accelerator`).
+//! 4.  **Inverse Planning**: Optimizing beam intensities (IMRT/VMAT) to maximize tumor control while sparing healthy tissue.
+//! 5.  **Evaluation**: Quantifying plan quality using Dose-Volume Histograms (DVH) and biological modeling (TCP).
+//! 6.  **Motion Management**:
 //!     - Radar-based respiratory gating (`radar_gating`).
 //!     - Optical surface monitoring (`optical_motion`).
 //!
@@ -24,10 +25,14 @@
 //! - **Density**: g/cm³.
 //! - **Hounsfield Units (HU)**: Dimensionless scale where Water = 0, Air = -1000.
 
+pub mod accelerator;
 pub mod calibration;
-pub mod dose_calculation;
+pub mod dose;
+pub mod error;
 pub mod evaluation;
+pub mod geometry;
 pub mod optical_motion;
 pub mod optimization;
 pub mod radar_gating;
+pub mod signal;
 pub mod thermodynamics;

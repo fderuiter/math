@@ -41,3 +41,11 @@
 **Problem:** `math_explorer/src/pure_math/analysis/ode.rs` mixed concerns: core traits (`OdeSystem`), concrete solvers (`Euler`, `RungeKutta4`), state wrappers (`VecState`), and high-level traits (`TimeStepper`). This hampered extensibility and made the file difficult to navigate.
 **Decision:** Applied "Module Extraction". Split `ode.rs` into a module `math_explorer/src/pure_math/analysis/ode/` with `traits.rs`, `solvers.rs`, `state.rs`, and `stepper.rs`. Introduced `ArrayState<const N: usize>` in `state.rs` as a zero-dependency, stack-allocated alternative to `VecState` and `nalgebra` types.
 **Consequence:** Clearer separation of concerns. Adding new solvers or state types is now modular. The API remains backward compatible via re-exports. `ArrayState` provides a "Newtype" solution for small systems without external dependencies.
+
+## 2026-10-27 - [Medical Physics Dose Calculation Decomposition]
+**Problem:** `math_explorer/src/physics/medical/dose_calculation.rs` was a "Kitchen Sink" file (mixed concerns) containing Radiation Physics (`calculate_terma`, `point_kernel`), Machine Physics (`beam_loading_energy`), Geometry (`tracking_error`), and Signal Processing (`dirac_pulse_count`). This violated the Single Responsibility Principle and hindered scalability.
+**Decision:** Applied "Module Extraction" and "Error Modeling".
+1. Split `dose_calculation.rs` into `dose.rs` (core radiation), `accelerator.rs` (machine physics), `geometry.rs` (IGRT), and `signal.rs` (processing).
+2. Introduced `MedicalPhysicsError` (Error Modeling) to replace stringly-typed errors.
+3. Introduced `BeamLoadingModel` (Structification) to encapsulate machine constants.
+**Consequence:** Improved cohesion and type safety. Each module now focuses on a single domain. `dose_calculation` file was removed, but functionalities are preserved in more logical homes.
