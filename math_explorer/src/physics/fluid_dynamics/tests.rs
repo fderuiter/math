@@ -3,8 +3,8 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
-            Euler, MomentumSolver, NavierStokes,
+            Euler, MomentumSolver, NavierStokes, continuity_divergence, material_derivative_scalar,
+            navier_stokes_time_derivative,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
         types::{FlowState, FluidProperties},
@@ -135,7 +135,8 @@ mod tests {
         assert!((res_ns.x - 1e-6).abs() < 1e-12);
 
         // Euler should ignore viscosity term -> 0.0
-        let res_euler = euler.compute_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
+        let res_euler =
+            euler.compute_time_derivative(&props, &state, &vel_grad, p_grad, lap_vel, g);
         assert!((res_euler.x).abs() < 1e-12);
     }
 }
