@@ -55,7 +55,7 @@ mod tests {
             },
         ];
         let scores = calculate_soft_self_consistency_scores(&responses);
-        let expected_scores = vec![0.85, 0.15, 0.85, 0.15];
+        let expected_scores = [0.85, 0.15, 0.85, 0.15];
         assert_eq!(scores.len(), expected_scores.len());
         for (score, expected) in scores.iter().zip(expected_scores.iter()) {
             assert!((score - expected).abs() < 1e-9);

@@ -47,6 +47,7 @@ fn test_adult_dynamics() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_dndt() {
     let n = 100.0;
     let c = 10.0;
@@ -60,6 +61,7 @@ fn test_dndt() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_dcdt() {
     let n = 100.0;
     let c = 10.0;

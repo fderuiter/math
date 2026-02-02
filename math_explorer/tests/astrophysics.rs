@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use math_explorer::physics::astrophysics::galaxies::{
     GalaxyType, calculate_apparent_magnitude_from_distance,
     calculate_log_mass_from_absolute_magnitude, calculate_log_mass_from_distance,
@@ -30,14 +32,14 @@ fn test_calculate_apparent_magnitude_from_distance() {
     let distance = 10.0; // Mpc
 
     // Test case for GalaxyType::All
-    let expected = Some(0.0206 * distance + 16.0010);
+    let expected = 0.0206 * distance + 16.0010;
     let result = calculate_apparent_magnitude_from_distance(distance, &GalaxyType::All);
-    assert!((result.unwrap() - expected.unwrap()).abs() < F64_TOLERANCE);
+    assert!((result.unwrap() - expected).abs() < F64_TOLERANCE);
 
     // Test case for GalaxyType::TypeCode10
-    let expected = Some(0.0140 * distance + 16.575);
+    let expected = 0.0140 * distance + 16.575;
     let result = calculate_apparent_magnitude_from_distance(distance, &GalaxyType::TypeCode10);
-    assert!((result.unwrap() - expected.unwrap()).abs() < F64_TOLERANCE);
+    assert!((result.unwrap() - expected).abs() < F64_TOLERANCE);
 
     // Test case for GalaxyType::TypeCode9_5To9_9 (should be None)
     let result =
