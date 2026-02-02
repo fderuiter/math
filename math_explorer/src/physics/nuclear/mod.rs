@@ -131,8 +131,7 @@ mod tests {
 
     #[test]
     fn test_constants() {
-        // Redundant check removed to satisfy Clippy assertions_on_constants
-        // assert!(constants::PROTON_MASS > 900.0);
+        assert!(constants::PROTON_MASS > 900.0);
     }
 
     #[test]
