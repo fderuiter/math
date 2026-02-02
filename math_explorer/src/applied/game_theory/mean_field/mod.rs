@@ -6,13 +6,14 @@
 //!
 //! This module provides the configuration types and solver strategies for 1D MFGs.
 
+pub mod operators;
 pub mod physics;
 pub mod solver;
 pub mod types;
 
 pub use physics::{Hamiltonian, QuadraticHamiltonian};
 pub use solver::{FixedPointSolver, MFGSolver};
-pub use types::MFGConfig;
+pub use types::{MFGConfig, MeanFieldSolution};
 
 // Re-export for backward compatibility, though the API has changed slightly (requires solver struct).
 // We can provide a type alias if MeanFieldGame1D was just a struct.
@@ -52,7 +53,7 @@ impl MeanFieldGame1D {
         terminal_cost: impl Fn(f64, f64) -> f64,
         initial_distribution: impl Fn(f64) -> f64,
         iterations: usize,
-    ) -> (nalgebra::DMatrix<f64>, nalgebra::DMatrix<f64>) {
+    ) -> MeanFieldSolution {
         let solver = FixedPointSolver::new(iterations);
         solver.solve(
             &self.config,
@@ -75,10 +76,10 @@ mod tests {
         let term_fn = |x: f64, _m: f64| -> f64 { x * x };
         let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
 
-        let (u, m) = mfg.solve(cost_fn, term_fn, init_dist, 5);
+        let solution = mfg.solve(cost_fn, term_fn, init_dist, 5);
 
-        assert_eq!(u.nrows(), 50);
-        assert_eq!(u.ncols(), 101);
+        assert_eq!(solution.value_function.nrows(), 50);
+        assert_eq!(solution.value_function.ncols(), 101);
     }
 
     #[test]
@@ -92,9 +93,9 @@ mod tests {
         let term_fn = |x: f64, _m: f64| -> f64 { x * x };
         let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
 
-        let (u, m) = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
+        let solution = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
 
-        assert_eq!(u.nrows(), 50);
-        assert_eq!(u.ncols(), 101);
+        assert_eq!(solution.value_function.nrows(), 50);
+        assert_eq!(solution.value_function.ncols(), 101);
     }
 }

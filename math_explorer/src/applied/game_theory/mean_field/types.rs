@@ -1,3 +1,5 @@
+use nalgebra::DMatrix;
+
 /// Represents a 1D Mean Field Game (MFG) configuration.
 ///
 /// # Field Descriptions
@@ -38,4 +40,15 @@ impl MFGConfig {
             space_max,
         }
     }
+}
+
+/// Result of a Mean Field Game simulation.
+///
+/// Encapsulates the solution fields for value function and population distribution.
+#[derive(Debug, Clone)]
+pub struct MeanFieldSolution {
+    /// The value function $u(x, t)$ representing the optimal cost-to-go.
+    pub value_function: DMatrix<f64>,
+    /// The population distribution $m(x, t)$.
+    pub distribution: DMatrix<f64>,
 }

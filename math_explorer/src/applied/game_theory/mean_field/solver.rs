@@ -1,5 +1,6 @@
+use super::operators::{central_grad, central_laplacian, upwind_divergence};
 use super::physics::{Hamiltonian, QuadraticHamiltonian};
-use super::types::MFGConfig;
+use super::types::{MFGConfig, MeanFieldSolution};
 use nalgebra::DMatrix;
 
 /// Strategy trait for solving Mean Field Games.
@@ -16,14 +17,14 @@ pub trait MFGSolver {
     /// - `initial_distribution`: $m_0(x)$ - Initial population distribution.
     ///
     /// # Returns
-    /// Tuple `(u, m)` containing the value function and distribution matrices.
+    /// `MeanFieldSolution` containing the value function and distribution matrices.
     fn solve(
         &self,
         config: &MFGConfig,
         cost_function: &impl Fn(f64, f64) -> f64,
         terminal_cost: &impl Fn(f64, f64) -> f64,
         initial_distribution: &impl Fn(f64) -> f64,
-    ) -> (DMatrix<f64>, DMatrix<f64>);
+    ) -> MeanFieldSolution;
 }
 
 /// A Fixed-Point Iteration solver for Mean Field Games.
@@ -62,7 +63,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
         cost_function: &impl Fn(f64, f64) -> f64,
         terminal_cost: &impl Fn(f64, f64) -> f64,
         initial_distribution: &impl Fn(f64) -> f64,
-    ) -> (DMatrix<f64>, DMatrix<f64>) {
+    ) -> MeanFieldSolution {
         let nx = config.grid_points;
         let nt = config.time_steps;
 
@@ -104,12 +105,11 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
                 for i in 1..nx - 1 {
                     let x = config.space_min + (i as f64) * config.dx;
 
-                    // Finite differences
+                    // Finite differences using helper operators
                     // u(i, n) = u(i, n+1) + dt * ( H + nu * lapl + F )
 
-                    let du_dx = (u[(i + 1, n + 1)] - u[(i - 1, n + 1)]) / (2.0 * config.dx);
-                    let d2u_dx2 = (u[(i + 1, n + 1)] - 2.0 * u[(i, n + 1)] + u[(i - 1, n + 1)])
-                        / (config.dx * config.dx);
+                    let du_dx = central_grad(&u, i, n + 1, config.dx);
+                    let d2u_dx2 = central_laplacian(&u, i, n + 1, config.dx);
 
                     let hamiltonian = self.hamiltonian.evaluate(du_dx);
                     let running_cost = cost_function(x, m[(i, n + 1)]);
@@ -126,20 +126,15 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
             for n in 0..nt {
                 for i in 1..nx - 1 {
                     // Calculate v at current step n
-                    let du_dx = (u[(i + 1, n)] - u[(i - 1, n)]) / (2.0 * config.dx);
+                    let du_dx = central_grad(&u, i, n, config.dx);
 
                     // The drift velocity v = - H_p(p)
                     let v = -self.hamiltonian.derivative(du_dx);
 
-                    let d2m_dx2 =
-                        (m[(i + 1, n)] - 2.0 * m[(i, n)] + m[(i - 1, n)]) / (config.dx * config.dx);
+                    let d2m_dx2 = central_laplacian(&m, i, n, config.dx);
 
                     // Upwind for drift term
-                    let drift_flux = if v > 0.0 {
-                        (m[(i, n)] * v - m[(i - 1, n)] * v) / config.dx
-                    } else {
-                        (m[(i + 1, n)] * v - m[(i, n)] * v) / config.dx
-                    };
+                    let drift_flux = upwind_divergence(&m, v, i, n, config.dx);
 
                     let rhs = -drift_flux + config.viscosity * d2m_dx2;
                     m[(i, n + 1)] = m[(i, n)] + config.dt * rhs;
@@ -158,6 +153,9 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
             }
         }
 
-        (u, m)
+        MeanFieldSolution {
+            value_function: u,
+            distribution: m,
+        }
     }
 }
