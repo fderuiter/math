@@ -96,7 +96,7 @@ where
     let max = l;
     let eps = 1e-6;
     let range = n_terms as isize;
-    let mut coeffs = Vec::with_capacity((2 * n_terms + 1) as usize);
+    let mut coeffs = Vec::with_capacity(2 * n_terms + 1);
 
     for n in -range..=range {
         let n_f = n as f64;
