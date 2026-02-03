@@ -29,7 +29,7 @@
 //! *   We assume a solution $x(t) = v e^{i\omega t}$, leading to the eigenvalue problem $Av = -\omega^2 v$, where $\lambda = -\omega^2$.
 //! *   The square roots of the eigenvalues give the **natural frequencies** ($\omega$) of the system, and the eigenvectors represent the **normal modes** (the patterns of vibration where all parts move sinusoidally with the same frequency).
 
-use nalgebra::{ComplexField, DMatrix};
+use nalgebra::DMatrix;
 
 /// Checks if a linear dynamical system represented by matrix $A$ is stable.
 ///

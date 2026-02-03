@@ -31,7 +31,7 @@ use nalgebra::DMatrix;
 ///
 /// * `matrix` - The input matrix.
 /// * `tolerance` - The threshold below which singular values are considered zero.
-///                 If `None`, a default tolerance of 1e-10 is used.
+///   If `None`, a default tolerance of 1e-10 is used.
 ///
 /// # Returns
 ///
