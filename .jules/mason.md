@@ -1,3 +1,7 @@
 ## 2025-05-18 - [Decoupling CERA from Concrete Autoencoder]
 **Violation:** **Dependency Inversion Principle (DIP)** and **Open/Closed Principle (OCP)**. The `Cera` class (High-level module) depends directly on the concrete `Autoencoder` struct (Low-level module). Additionally, `CeraTrainer` violates **Law of Demeter** and **Encapsulation** by manually iterating over the autoencoder's internal layers to apply weight updates.
 **Remedy:** **Extract Interface** (`AutoencoderModel`) and **Dependency Injection**. I will introduce an `AutoencoderModel` trait that exposes `forward`, `encode`, and `update_weights`. `Cera` will hold a `Box<dyn AutoencoderModel>`. The weight update logic will be moved from the trainer to the model, respecting encapsulation.
+
+## 2025-05-18 - [Decoupling Win Ratio Simulation from Weibull Model]
+**Violation:** **Interface Segregation Principle (ISP)** and **Dependency Inversion Principle (DIP)**. `ProbabilityWinRatioContext` required callers to construct 4 separate closures, exposing internal integration details. `simulation.rs` coupled the simulation logic to a concrete `BivariateWeibullModel`.
+**Remedy:** **Strategy Pattern** and **Dependency Injection**. Introduced `SurvivalModel` trait. Implemented it for `BivariateWeibullModel`. Refactored `ProbabilityWinRatioContext` to accept `&impl SurvivalModel`, significantly simplifying the client API and allowing for future extension to other survival distributions.
