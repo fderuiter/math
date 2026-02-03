@@ -29,3 +29,5 @@ pub mod elliptic_curves;
 pub mod graph_theory;
 pub mod number_theory;
 pub mod special_functions;
+pub mod tensor;
+pub mod vector_calculus;
