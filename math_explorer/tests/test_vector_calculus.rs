@@ -1,5 +1,5 @@
 use math_explorer::pure_math::vector_calculus::coordinates::Cartesian;
-use math_explorer::pure_math::vector_calculus::theorems::{verify_divergence_theorem, Domain};
+use math_explorer::pure_math::vector_calculus::theorems::{Domain, verify_divergence_theorem};
 use nalgebra::Vector3;
 
 #[test]
