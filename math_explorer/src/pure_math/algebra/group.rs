@@ -145,8 +145,8 @@ impl Semigroup for Permutation {
         );
         let n = a.map.len();
         let mut new_map = vec![0; n];
-        for i in 0..n {
-            new_map[i] = a.map[b.map[i]];
+        for (i, val) in new_map.iter_mut().enumerate().take(n) {
+            *val = a.map[b.map[i]];
         }
         Permutation { map: new_map }
     }
