@@ -70,39 +70,39 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
         let mut m = DMatrix::zeros(nx, nt + 1);
         let mut u = DMatrix::zeros(nx, nt + 1);
 
+        // Precompute x values
+        let xs: Vec<f64> = (0..nx)
+            .map(|i| config.space_min + (i as f64) * config.dx)
+            .collect();
+
         // Initialize m at t=0
         for i in 0..nx {
-            let x = config.space_min + (i as f64) * config.dx;
-            m[(i, 0)] = initial_distribution(x);
+            m[(i, 0)] = initial_distribution(xs[i]);
         }
 
         // Normalize initial distribution
         let sum_0: f64 = m.column(0).sum();
         if sum_0 > 1e-9 {
-            for i in 0..nx {
-                m[(i, 0)] /= sum_0;
-            }
+            m.column_mut(0).scale_mut(1.0 / sum_0);
         }
 
         // Make an initial guess for m for all t (copy m0)
+        let m0 = m.column(0).clone_owned();
         for n in 1..=nt {
-            for i in 0..nx {
-                m[(i, n)] = m[(i, 0)];
-            }
+            m.column_mut(n).copy_from(&m0);
         }
 
         for _iter in 0..self.iterations {
             // 1. Solve HJB Backward
             // Terminal condition
             for i in 0..nx {
-                let x = config.space_min + (i as f64) * config.dx;
-                u[(i, nt)] = terminal_cost(x, m[(i, nt)]);
+                u[(i, nt)] = terminal_cost(xs[i], m[(i, nt)]);
             }
 
             // Backward in time
             for n in (0..nt).rev() {
                 for i in 1..nx - 1 {
-                    let x = config.space_min + (i as f64) * config.dx;
+                    let x = xs[i];
 
                     // Finite differences
                     // u(i, n) = u(i, n+1) + dt * ( H + nu * lapl + F )
@@ -151,9 +151,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
                 // Normalize mass to prevent explosion/vanishing
                 let sum: f64 = m.column(n + 1).sum();
                 if sum > 1e-9 {
-                    for i in 0..nx {
-                        m[(i, n + 1)] /= sum;
-                    }
+                    m.column_mut(n + 1).scale_mut(1.0 / sum);
                 }
             }
         }
