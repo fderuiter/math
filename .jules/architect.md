@@ -41,3 +41,8 @@
 **Problem:** `math_explorer/src/pure_math/analysis/ode.rs` mixed concerns: core traits (`OdeSystem`), concrete solvers (`Euler`, `RungeKutta4`), state wrappers (`VecState`), and high-level traits (`TimeStepper`). This hampered extensibility and made the file difficult to navigate.
 **Decision:** Applied "Module Extraction". Split `ode.rs` into a module `math_explorer/src/pure_math/analysis/ode/` with `traits.rs`, `solvers.rs`, `state.rs`, and `stepper.rs`. Introduced `ArrayState<const N: usize>` in `state.rs` as a zero-dependency, stack-allocated alternative to `VecState` and `nalgebra` types.
 **Consequence:** Clearer separation of concerns. Adding new solvers or state types is now modular. The API remains backward compatible via re-exports. `ArrayState` provides a "Newtype" solution for small systems without external dependencies.
+
+## 2026-10-27 - [Advanced Linear Algebra Module]
+**Problem:** The library lacked comprehensive support for Advanced Linear Algebra concepts like Canonical Forms, Decomposition analysis (beyond basic `nalgebra` usage), and their physical interpretations.
+**Decision:** Created a new module `math_explorer/src/pure_math/algebra/linear_algebra/` decomposed into `eigen.rs`, `canonical.rs`, and `decomposition.rs`.
+**Consequence:** Provides a dedicated space for educational and practical implementations of advanced linear algebra, bridging the gap between raw matrix libraries (`nalgebra`) and physical/theoretical applications. Enforced strong typing (e.g., `JordanBlock` struct) and extensive documentation.

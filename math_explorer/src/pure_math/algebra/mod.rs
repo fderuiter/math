@@ -7,6 +7,8 @@
 pub mod traits;
 pub use traits::Ring;
 
+pub mod linear_algebra;
+
 /// A placeholder function to demonstrate module structure.
 ///
 /// This function adds two unsigned 64-bit integers. It's a stand-in for
