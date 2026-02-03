@@ -50,7 +50,10 @@ use nalgebra::DMatrix;
 pub fn effective_rank(matrix: &DMatrix<f64>, tolerance: Option<f64>) -> usize {
     let svd = matrix.clone().svd(false, false);
     let tol = tolerance.unwrap_or(1e-10);
-    svd.singular_values.iter().filter(|&sigma| *sigma > tol).count()
+    svd.singular_values
+        .iter()
+        .filter(|&sigma| *sigma > tol)
+        .count()
 }
 
 /// Computes a low-rank approximation of a matrix using SVD.

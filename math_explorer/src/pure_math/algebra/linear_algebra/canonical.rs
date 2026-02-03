@@ -14,7 +14,7 @@
 //! *   A linear operator $T$ has a unique block diagonal representation $M = \text{diag}(C_1, \dots, C_r)$, where each $C_i$ is a **companion matrix** associated with specific polynomials (elementary divisors or invariant factors).
 //! *   A companion matrix for a polynomial $f(t) = t^n + a_{n-1}t^{n-1} + \dots + a_0$ has $1$s on the sub-diagonal and the negative coefficients of $f(t)$ in the last column.
 
-use nalgebra::{DMatrix, Complex};
+use nalgebra::{Complex, DMatrix};
 
 /// Represents a Jordan Block.
 pub struct JordanBlock {

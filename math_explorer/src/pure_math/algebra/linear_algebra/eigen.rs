@@ -29,7 +29,7 @@
 //! *   We assume a solution $x(t) = v e^{i\omega t}$, leading to the eigenvalue problem $Av = -\omega^2 v$, where $\lambda = -\omega^2$.
 //! *   The square roots of the eigenvalues give the **natural frequencies** ($\omega$) of the system, and the eigenvectors represent the **normal modes** (the patterns of vibration where all parts move sinusoidally with the same frequency).
 
-use nalgebra::{DMatrix, ComplexField};
+use nalgebra::{ComplexField, DMatrix};
 
 /// Checks if a linear dynamical system represented by matrix $A$ is stable.
 ///
@@ -87,25 +87,28 @@ pub fn is_stable(matrix: &DMatrix<f64>) -> bool {
 /// ```
 pub fn natural_frequencies(matrix: &DMatrix<f64>) -> Vec<f64> {
     let eigens = matrix.complex_eigenvalues();
-    eigens.iter().map(|lambda| {
-        // We expect lambda to be real and negative for stable oscillation.
-        // lambda = -omega^2
-        // -lambda = omega^2
-        let neg_lambda = -lambda;
+    eigens
+        .iter()
+        .map(|lambda| {
+            // We expect lambda to be real and negative for stable oscillation.
+            // lambda = -omega^2
+            // -lambda = omega^2
+            let neg_lambda = -lambda;
 
-        // Check if effectively real
-        if neg_lambda.im.abs() < 1e-10 {
-            if neg_lambda.re >= 0.0 {
-                neg_lambda.re.sqrt()
+            // Check if effectively real
+            if neg_lambda.im.abs() < 1e-10 {
+                if neg_lambda.re >= 0.0 {
+                    neg_lambda.re.sqrt()
+                } else {
+                    f64::NAN
+                }
             } else {
+                // Complex eigenvalue case? For now treat magnitude or NaN.
+                // Given the context of "Natural Frequencies", usually implies real.
                 f64::NAN
             }
-        } else {
-             // Complex eigenvalue case? For now treat magnitude or NaN.
-             // Given the context of "Natural Frequencies", usually implies real.
-             f64::NAN
-        }
-    }).collect()
+        })
+        .collect()
 }
 
 #[cfg(test)]
