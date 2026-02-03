@@ -61,3 +61,7 @@
 **Violation:** Advanced Linear Algebra concepts (Eigenvalues, Canonical Forms) often rely on raw matrices and primitive types, leading to "Primitive Obsession" and lack of semantic clarity (e.g., distinguishing a Jordan Block from a generic matrix).
 **Refactor:** Applied **Strong Typing** and **Domain-Driven Design**. Introduced `JordanBlock` and `CompanionMatrix` structs to encapsulate the mathematical invariants of these forms. Wrapped SVD results in semantic helpers like `effective_rank`.
 **Trade-off:** Requires conversion to/from `nalgebra` types, but ensures that canonical forms are constructed correctly and their properties are explicit in the type system.
+## 2027-05-23 - Strategy Pattern for Coordinate Systems
+**Violation:** Hardcoding gradient/divergence formulas for Cartesian coordinates would violate OCP and prevent usage in Cylindrical/Spherical systems.
+**Refactor:** Applied **Strategy Pattern**. Extracted `OrthogonalCoordinateSystem` trait. Implemented `Cylindrical` and `Spherical` strategies. Operators (`gradient`, etc.) are generic over this trait.
+**Trade-off:** Numerical differentiation introduces small errors compared to analytical solutions, but allows generic implementation for any orthogonal system.

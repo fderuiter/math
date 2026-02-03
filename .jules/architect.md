@@ -46,3 +46,7 @@
 **Problem:** The library lacked comprehensive support for Advanced Linear Algebra concepts like Canonical Forms, Decomposition analysis (beyond basic `nalgebra` usage), and their physical interpretations.
 **Decision:** Created a new module `math_explorer/src/pure_math/algebra/linear_algebra/` decomposed into `eigen.rs`, `canonical.rs`, and `decomposition.rs`.
 **Consequence:** Provides a dedicated space for educational and practical implementations of advanced linear algebra, bridging the gap between raw matrix libraries (`nalgebra`) and physical/theoretical applications. Enforced strong typing (e.g., `JordanBlock` struct) and extensive documentation.
+## 2027-05-23 - [Tensor & Vector Calculus Implementation]
+**Problem:** The `pure_math` module lacked generalized Tensor Analysis and Vector Calculus tools, limiting the project's ability to model physics in curvilinear coordinates or general manifolds.
+**Decision:** Implemented `math_explorer/src/pure_math/tensor` (Metric, Christoffel, Differentiation) and `math_explorer/src/pure_math/vector_calculus` (Orthogonal Coordinates, Operators, Integral Theorems).
+**Consequence:** Enables rigorous mathematical modeling in arbitrary coordinate systems. Enforced "Newtype" pattern for Tensors and "Strategy Pattern" for Coordinate Systems to maintain architectural standards.
