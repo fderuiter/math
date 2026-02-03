@@ -64,3 +64,13 @@
 **Gap:** The `physics/fluid_dynamics` module is a core domain but has a practically empty `mod.rs` ("Visual Void"), hiding the well-structured Strategy Pattern implementation of conservation laws.
 **Strategy:** Overhaul `fluid_dynamics/mod.rs` with a Mermaid diagram showing the relationship between Properties, State, and Momentum Equations, and add a "Quick Start" example using Navier-Stokes.
 **Outcome:** Users can now understand how to simulate fluid flow and use the Strategy Pattern for different flow regimes.
+
+## 2026-02-16 - Visualizing Abstract Algebra
+**Gap:** The `pure_math/algebra` module contained placeholder code ("Rot") and a sparse description, failing to explain the rich type hierarchy (Groups, Rings, Fields) implemented.
+**Strategy:** Remove `placeholder_add`. Add a Mermaid Class Diagram of the algebraic hierarchy and a "Quick Start" example demonstrating Finite Fields (`Fp`) and Polynomial arithmetic.
+**Outcome:** Users can now visualize the mathematical structure and immediately start using finite field arithmetic.
+
+## 2026-02-16 - Demystifying GRPO
+**Gap:** The `applied/grpo` module was a "Blank Page" with zero context, hiding a complex Reinforcement Learning algorithm.
+**Strategy:** Add a Mermaid Flowchart of the optimization loop and a "Quick Start" example for calculating the clipped surrogate objective.
+**Outcome:** Users can now understand the flow of Group Relative Policy Optimization and use the objective function components.

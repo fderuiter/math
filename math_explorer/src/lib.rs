@@ -53,14 +53,8 @@ mod tests {
     use super::applied::favoritism::{self, FavoritismInputs};
     use super::applied::lorahub;
     use super::physics::quantum;
-    use super::pure_math::algebra;
     use super::pure_math::number_theory;
     use nalgebra::DMatrix;
-
-    #[test]
-    fn test_algebra_placeholder() {
-        assert_eq!(algebra::placeholder_add(5, 3), 8);
-    }
 
     #[test]
     fn test_number_theory_is_prime() {

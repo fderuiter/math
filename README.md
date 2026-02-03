@@ -62,11 +62,11 @@ graph TD
     Root --> Pure[📐 Pure Math]
 
     AI --> Trans[Transformers] & NeRF[NeRF-Diffusion]
-    Applied --> Fav[Favoritism] & Clinical[Clinical Trials] & NeuroImg[Neuroimaging]
+    Applied --> Fav[Favoritism] & Clinical[Clinical Trials] & NeuroImg[Neuroimaging] & GRPO[GRPO]
     Bio --> Neuro[Neuroscience] & Morph[Morphogenesis]
     Epi --> SIR[SIR/SEIR Models] & Net[Network Spread]
     Phys --> Quant[Quantum] & Chaos[Chaos Theory]
-    Pure --> Num[Number Theory] & Geo[Diff Geometry]
+    Pure --> Num[Number Theory] & Geo[Diff Geometry] & Alg[Algebra]
 
     style Root fill:#f9f,stroke:#333,stroke-width:2px
 ```
@@ -74,12 +74,12 @@ graph TD
 | Domain | Module | Description |
 | :--- | :--- | :--- |
 | **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
-| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), **LoraHub**, and **Neuroimaging**. |
+| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), **LoraHub**, **Neuroimaging**, and **GRPO** (Policy Optimization). |
 | **🧬 Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Morphogenesis** (Turing Patterns), and **Evolutionary Dynamics**. |
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
 | **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
-| **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, and Differential Geometry. |
+| **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, Differential Geometry, and **Abstract Algebra** (Groups, Rings, Fields). |
 
 ---
 
