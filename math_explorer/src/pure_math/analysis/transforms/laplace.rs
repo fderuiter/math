@@ -23,12 +23,7 @@ use num_complex::Complex64;
 /// * `s` - The complex frequency parameter $s = \sigma + i\omega$.
 /// * `max_t` - The upper limit for integration (approximating infinity). Choose a value where $e^{-st}f(t)$ is negligible.
 /// * `integrator` - The integration strategy.
-pub fn laplace_transform<F, I>(
-    f: F,
-    s: Complex64,
-    max_t: f64,
-    integrator: &I,
-) -> Complex64
+pub fn laplace_transform<F, I>(f: F, s: Complex64, max_t: f64, integrator: &I) -> Complex64
 where
     F: Fn(f64) -> f64 + Copy,
     I: Integrator,

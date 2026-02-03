@@ -63,13 +63,7 @@ where
 }
 
 /// Evaluates the real Fourier series at a given point $x$.
-pub fn evaluate_fourier_series_real(
-    x: f64,
-    l: f64,
-    a0: f64,
-    an: &[f64],
-    bn: &[f64],
-) -> f64 {
+pub fn evaluate_fourier_series_real(x: f64, l: f64, a0: f64, an: &[f64], bn: &[f64]) -> f64 {
     let mut sum = a0 / 2.0;
     for (i, (a, b)) in an.iter().zip(bn.iter()).enumerate() {
         let n = (i + 1) as f64;
@@ -145,12 +139,7 @@ where
 /// * `omega` - The angular frequency $\omega$.
 /// * `bounds` - The integration bounds $(t_{min}, t_{max})$. Since numerical integration requires finite bounds, approximate infinity with a sufficiently large interval where $f(t) \to 0$.
 /// * `integrator` - The integration strategy.
-pub fn fourier_transform<F, I>(
-    f: F,
-    omega: f64,
-    bounds: (f64, f64),
-    integrator: &I,
-) -> Complex64
+pub fn fourier_transform<F, I>(f: F, omega: f64, bounds: (f64, f64), integrator: &I) -> Complex64
 where
     F: Fn(f64) -> f64 + Copy,
     I: Integrator,
