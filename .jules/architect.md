@@ -50,3 +50,8 @@
 **Problem:** The `pure_math` module lacked generalized Tensor Analysis and Vector Calculus tools, limiting the project's ability to model physics in curvilinear coordinates or general manifolds.
 **Decision:** Implemented `math_explorer/src/pure_math/tensor` (Metric, Christoffel, Differentiation) and `math_explorer/src/pure_math/vector_calculus` (Orthogonal Coordinates, Operators, Integral Theorems).
 **Consequence:** Enables rigorous mathematical modeling in arbitrary coordinate systems. Enforced "Newtype" pattern for Tensors and "Strategy Pattern" for Coordinate Systems to maintain architectural standards.
+
+## 2027-05-24 - [Algebra Ring Decomposition]
+**Problem:** `math_explorer/src/pure_math/algebra/ring.rs` contained mixed implementations of Finite Fields (`Fp`) and Polynomial Rings (`Polynomial`), conflating two distinct algebraic structures and limiting clarity.
+**Decision:** Applied "Module Extraction". Decomposed `ring.rs` into `fields.rs` (containing `Fp`) and `polynomial.rs` (containing `Polynomial`). Updated `mod.rs` to re-export them, maintaining backward compatibility.
+**Consequence:** Improved separation of concerns. `Polynomial` is now a standalone module, ready for future expansion (e.g., GCD, factorization), while `Fp` is isolated in `fields.rs`.

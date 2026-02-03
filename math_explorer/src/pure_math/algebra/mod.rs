@@ -4,12 +4,14 @@
 //! It will include structures like groups, rings, fields, vector spaces,
 //! and algorithms related to them.
 
+pub mod fields;
 pub mod group;
-pub mod ring;
+pub mod polynomial;
 pub mod traits;
 
+pub use fields::Fp;
 pub use group::{CyclicElement, Permutation, Zn};
-pub use ring::{Fp, Polynomial};
+pub use polynomial::Polynomial;
 pub use traits::{EuclideanDomain, Field, Group, Ring};
 
 pub mod linear_algebra;
