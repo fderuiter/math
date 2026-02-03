@@ -2,9 +2,9 @@
 //!
 //! This module provides implementations of Rings and Fields, including Polynomial Rings and Finite Fields.
 
-use crate::pure_math::algebra::traits::{Ring, Field, EuclideanDomain};
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
+use crate::pure_math::algebra::traits::{EuclideanDomain, Field, Ring};
 use std::fmt;
+use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
 
 // ============================================================================
 // Finite Fields (Integers Modulo Prime P)
@@ -19,7 +19,9 @@ pub struct Fp<const P: i64> {
 
 impl<const P: i64> Fp<P> {
     pub fn new(value: i64) -> Self {
-        Fp { value: value.rem_euclid(P) }
+        Fp {
+            value: value.rem_euclid(P),
+        }
     }
 }
 
@@ -71,8 +73,12 @@ impl<const P: i64> Neg for Fp<P> {
 }
 
 impl<const P: i64> Ring for Fp<P> {
-    fn zero() -> Self { Fp::new(0) }
-    fn one() -> Self { Fp::new(1) }
+    fn zero() -> Self {
+        Fp::new(0)
+    }
+    fn one() -> Self {
+        Fp::new(1)
+    }
 }
 
 impl<const P: i64> Div for Fp<P> {

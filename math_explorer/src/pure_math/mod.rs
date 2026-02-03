@@ -24,8 +24,8 @@
 pub mod algebra;
 pub mod algorithmic_information;
 pub mod analysis;
-pub mod logic;
 pub mod differential_geometry;
 pub mod elliptic_curves;
 pub mod graph_theory;
+pub mod logic;
 pub mod number_theory;
