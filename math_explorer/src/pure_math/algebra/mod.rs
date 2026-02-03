@@ -5,7 +5,12 @@
 //! and algorithms related to them.
 
 pub mod traits;
-pub use traits::Ring;
+pub mod group;
+pub mod ring;
+
+pub use traits::{Group, Ring, Field, EuclideanDomain};
+pub use group::{CyclicElement, Zn, Permutation};
+pub use ring::{Fp, Polynomial};
 
 /// A placeholder function to demonstrate module structure.
 ///
