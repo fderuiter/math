@@ -38,3 +38,8 @@ pub enum BoundaryCondition {
     Neumann(Box<dyn Fn(f64, f64) -> f64>),
     // Robin omitted for simplicity but follows $\alpha u + \beta u_n = h$
 }
+
+pub mod greens;
+pub mod heat;
+pub mod laplace;
+pub mod wave;
