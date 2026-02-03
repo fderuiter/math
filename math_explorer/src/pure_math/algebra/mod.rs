@@ -4,13 +4,13 @@
 //! It will include structures like groups, rings, fields, vector spaces,
 //! and algorithms related to them.
 
-pub mod traits;
 pub mod group;
 pub mod ring;
+pub mod traits;
 
-pub use traits::{Group, Ring, Field, EuclideanDomain};
-pub use group::{CyclicElement, Zn, Permutation};
+pub use group::{CyclicElement, Permutation, Zn};
 pub use ring::{Fp, Polynomial};
+pub use traits::{EuclideanDomain, Field, Group, Ring};
 
 /// A placeholder function to demonstrate module structure.
 ///

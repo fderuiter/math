@@ -1,6 +1,8 @@
+use math_explorer::pure_math::algebra::group::{
+    Permutation, Zn, generate_right_coset, is_normal_subgroup, is_subgroup,
+};
+use math_explorer::pure_math::algebra::traits::{Field, Group, Monoid, Ring, Semigroup};
 use math_explorer::pure_math::algebra::*;
-use math_explorer::pure_math::algebra::group::{is_subgroup, is_normal_subgroup, generate_right_coset, Zn, Permutation};
-use math_explorer::pure_math::algebra::traits::{Group, Ring, Field, Semigroup, Monoid};
 
 #[test]
 fn test_cyclic_group_z5() {

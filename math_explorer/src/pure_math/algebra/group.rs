@@ -2,7 +2,7 @@
 //!
 //! This module provides implementations of common groups and tools for group theory analysis.
 
-use crate::pure_math::algebra::traits::{Semigroup, Monoid, Group};
+use crate::pure_math::algebra::traits::{Group, Monoid, Semigroup};
 use std::collections::HashSet;
 use std::hash::Hash;
 
@@ -28,7 +28,10 @@ impl CyclicElement {
 
 impl Semigroup for CyclicElement {
     fn operate(a: &Self, b: &Self) -> Self {
-        assert_eq!(a.modulo, b.modulo, "Cannot operate on elements from different groups");
+        assert_eq!(
+            a.modulo, b.modulo,
+            "Cannot operate on elements from different groups"
+        );
         CyclicElement {
             value: (a.value + b.value) % a.modulo,
             modulo: a.modulo,
@@ -57,7 +60,9 @@ impl Monoid for CyclicElement {
 
         // Let's use 0 mod 1 as a dummy default, but this is flawed.
         // BETTER APPROACH: Use const generics for CyclicGroup<N>.
-        panic!("Use CyclicGroup::<N>::identity() or specific constructors. Generic trait identity cannot infer modulo.")
+        panic!(
+            "Use CyclicGroup::<N>::identity() or specific constructors. Generic trait identity cannot infer modulo."
+        )
     }
 }
 
@@ -75,7 +80,9 @@ impl<const N: usize> Zn<N> {
 
 impl<const N: usize> Semigroup for Zn<N> {
     fn operate(a: &Self, b: &Self) -> Self {
-        Zn { value: (a.value + b.value) % N }
+        Zn {
+            value: (a.value + b.value) % N,
+        }
     }
 }
 
@@ -90,7 +97,9 @@ impl<const N: usize> Group for Zn<N> {
         if self.value == 0 {
             Zn { value: 0 }
         } else {
-            Zn { value: N - self.value }
+            Zn {
+                value: N - self.value,
+            }
         }
     }
 }
@@ -120,14 +129,20 @@ impl Permutation {
     }
 
     pub fn identity(n: usize) -> Self {
-        Permutation { map: (0..n).collect() }
+        Permutation {
+            map: (0..n).collect(),
+        }
     }
 }
 
 impl Semigroup for Permutation {
     fn operate(a: &Self, b: &Self) -> Self {
         // Function composition: (a * b)(x) = a(b(x))
-        assert_eq!(a.map.len(), b.map.len(), "Permutations must be of same size");
+        assert_eq!(
+            a.map.len(),
+            b.map.len(),
+            "Permutations must be of same size"
+        );
         let n = a.map.len();
         let mut new_map = vec![0; n];
         for i in 0..n {

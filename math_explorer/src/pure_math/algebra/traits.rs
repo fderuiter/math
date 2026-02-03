@@ -63,15 +63,23 @@ pub trait Field: Ring + Div<Output = Self> {
 // Implementations for primitives
 
 impl Ring for i64 {
-    fn zero() -> Self { 0 }
-    fn one() -> Self { 1 }
+    fn zero() -> Self {
+        0
+    }
+    fn one() -> Self {
+        1
+    }
 }
 
 impl EuclideanDomain for i64 {}
 
 impl Ring for f64 {
-    fn zero() -> Self { 0.0 }
-    fn one() -> Self { 1.0 }
+    fn zero() -> Self {
+        0.0
+    }
+    fn one() -> Self {
+        1.0
+    }
 }
 
 impl Field for f64 {
