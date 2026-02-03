@@ -4,7 +4,7 @@
 //! (power series in q), which are fundamental in the theory of partitions and
 //! other areas of number theory.
 
-use crate::pure_math::algebra::traits::{EuclideanDomain, Ring};
+use crate::pure_math::algebra::traits::EuclideanDomain;
 use std::ops::{Add, Div, Mul};
 
 /// Represents a q-series, a power series in q.

@@ -2,7 +2,7 @@
 //!
 //! This module provides implementations of Rings and Fields, including Polynomial Rings and Finite Fields.
 
-use crate::pure_math::algebra::traits::{EuclideanDomain, Field, Ring};
+use crate::pure_math::algebra::traits::{Field, Ring};
 use std::fmt;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -83,6 +83,7 @@ impl<const P: i64> Ring for Fp<P> {
 
 impl<const P: i64> Div for Fp<P> {
     type Output = Self;
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, other: Self) -> Self {
         self * other.multiplicative_inverse()
     }
@@ -139,7 +140,7 @@ impl<T: Ring> Polynomial<T> {
 
     /// Removes trailing zeros.
     fn trim(&mut self) {
-        while self.coeffs.len() > 1 && self.coeffs.last().map_or(false, |c| c.is_zero()) {
+        while self.coeffs.len() > 1 && self.coeffs.last().is_some_and(|c| c.is_zero()) {
             self.coeffs.pop();
         }
         // Ensure at least one element (0) exists if empty?
