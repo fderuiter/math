@@ -1,0 +1,102 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{Advanced Linear Algebra: Eigenvalues, Canonical Forms, and Decompositions}
+\author{Jules}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document provides a comprehensive overview of Advanced Linear Algebra concepts implemented in the \texttt{math\_explorer} library. We cover Eigenvalues and Eigenvectors, Canonical Forms (Jordan and Rational), and Matrix Decompositions (LU and SVD), along with their physical interpretations and applications.
+\end{abstract}
+
+\section{Advanced Linear Algebra}
+
+This field extends matrix theory into the analysis of dynamic systems, vibrations, and fundamental structure theorems for matrices.
+
+\subsection{Eigenvalues and Eigenvectors}
+The core problem of linear algebra is to find those special vectors $x$ that are not changed in direction by a transformation $A$, but only scaled.
+
+\subsubsection{Definition}
+For a square matrix $A$, a scalar $\lambda$ is an \textbf{eigenvalue} and a non-zero vector $x$ is the corresponding \textbf{eigenvector} if they satisfy the equation:
+\[ Ax = \lambda x \quad \text{or} \quad (A - \lambda I)x = 0 \]
+where $I$ is the identity matrix.
+
+\subsubsection{The Characteristic Equation}
+To find the eigenvalues, one solves for the roots of the characteristic polynomial:
+\[ \det(A - \lambda I) = 0 \]
+This is a polynomial of degree $N$ for an $N \times N$ matrix. The sum of the eigenvalues equals the \textbf{trace} ($\text{Tr} A = \sum \lambda_i$), and their product equals the \textbf{determinant} ($\det A = \prod \lambda_i$).
+
+\subsubsection{Symmetric and Hermitian Matrices}
+\begin{itemize}
+    \item A real symmetric matrix ($A^T = A$) or a complex Hermitian matrix ($A^\dagger = A$) guarantees that all eigenvalues are \textbf{real numbers}.
+    \item Eigenvectors corresponding to distinct eigenvalues are \textbf{orthogonal} (or can be chosen to be orthonormal).
+    \item \textbf{Spectral Theorem:} A real symmetric matrix can be factored as $A = Q\Lambda Q^T$, where $Q$ is an orthogonal matrix of eigenvectors and $\Lambda$ is a diagonal matrix of eigenvalues.
+\end{itemize}
+
+\subsubsection{Physical Interpretations}
+\begin{itemize}
+    \item \textbf{Stability Analysis:} In systems of differential equations $u' = Au$, the solution involves terms like $e^{\lambda t}$.
+    \begin{itemize}
+        \item The system is \textbf{stable} (solutions approach zero) if all eigenvalues have negative real parts ($\text{Re}(\lambda) < 0$).
+        \item It is \textbf{unstable} if any $\text{Re}(\lambda) > 0$. Purely imaginary eigenvalues correspond to neutral stability (oscillations).
+    \end{itemize}
+    \item \textbf{Vibration and Normal Modes:} In oscillating systems (like masses connected by springs), the equations of motion often take the form $\ddot{x} = Ax$.
+    \begin{itemize}
+        \item We assume a solution $x(t) = v e^{i\omega t}$, leading to the eigenvalue problem $Av = -\omega^2 v$, where $\lambda = -\omega^2$.
+        \item The square roots of the eigenvalues give the \textbf{natural frequencies} ($\omega$) of the system, and the eigenvectors represent the \textbf{normal modes} (the patterns of vibration where all parts move sinusoidally with the same frequency).
+    \end{itemize}
+\end{itemize}
+
+\subsection{Canonical Forms}
+Canonical forms categorize matrices that cannot be fully diagonalized (defective matrices) or provide a standard representation for similarity classes.
+
+\subsubsection{Jordan Canonical Form}
+\begin{itemize}
+    \item If a matrix $A$ has $s$ linearly independent eigenvectors, it is similar to a block diagonal matrix $J$ (i.e., $J = M^{-1}AM$), where:
+        \[ J = \begin{bmatrix} J_1 & & \\ & \ddots & \\ & & J_s \end{bmatrix} \]
+    \item Each \textbf{Jordan block} $J_i$ is a triangular matrix with a single eigenvalue $\lambda_i$ on the diagonal and $1$s on the super-diagonal (just above the main diagonal):
+        \[ J_i = \begin{bmatrix} \lambda_i & 1 & & \\ & \lambda_i & \ddots & \\ & & \ddots & 1 \\ & & & \lambda_i \end{bmatrix} \]
+    \item This form is essential for solving differential equations involving defective matrices (where geometric multiplicity < algebraic multiplicity), introducing terms like $t e^{\lambda t}$ into the solution.
+\end{itemize}
+
+\subsubsection{Rational Canonical Form}
+\begin{itemize}
+    \item This form exists even when the characteristic polynomial does not factor into linear terms (e.g., over the rational numbers).
+    \item A linear operator $T$ has a unique block diagonal representation $M = \text{diag}(C_1, \dots, C_r)$, where each $C_i$ is a \textbf{companion matrix} associated with specific polynomials (elementary divisors or invariant factors).
+    \item A companion matrix for a polynomial $f(t) = t^n + a_{n-1}t^{n-1} + \dots + a_0$ has $1$s on the sub-diagonal and the negative coefficients of $f(t)$ in the last column.
+\end{itemize}
+
+\subsection{Matrix Decomposition}
+Factorizing matrices into products of simpler matrices is fundamental for computation and theoretical analysis.
+
+\subsubsection{LU Decomposition (Gaussian Elimination)}
+\begin{itemize}
+    \item Any square matrix $A$ can be factored into a lower triangular matrix $L$ and an upper triangular matrix $U$:
+        \[ A = LU \]
+    \item \textbf{L (Lower):} Contains the multipliers used during Gaussian elimination, with $1$s on the diagonal.
+    \item \textbf{U (Upper):} The echelon form resulting from elimination; its diagonal entries are the \textbf{pivots}.
+    \item \textbf{Application:} This allows solving systems $Ax = b$ efficiently by splitting the problem into two triangular systems: $Lc = b$ (forward substitution) and $Ux = c$ (back substitution).
+    \item For symmetric matrices, this becomes $A = LDL^T$.
+\end{itemize}
+
+\subsubsection{Singular Value Decomposition (SVD)}
+\begin{itemize}
+    \item Any $m \times n$ matrix $A$ can be factored into:
+        \[ A = U \Sigma V^T \]
+    \item \textbf{U (Left Singular Vectors):} An $m \times m$ orthogonal matrix containing the eigenvectors of $AA^T$.
+    \item \textbf{V (Right Singular Vectors):} An $n \times n$ orthogonal matrix containing the eigenvectors of $A^T A$.
+    \item \textbf{$\Sigma$ (Singular Values):} An $m \times n$ diagonal matrix containing the \textbf{singular values} $\sigma_i \ge 0$.
+    \item \textbf{Formula:} The singular values are the square roots of the non-zero eigenvalues of $A^T A$ (or $AA^T$):
+        \[ \sigma_i = \sqrt{\lambda_i(A^T A)} \]
+    \item \textbf{Rank:} The number of non-zero singular values equals the \textbf{rank} of the matrix.
+    \item \textbf{Application:} SVD is used for least squares estimation, image compression (by keeping only the largest $\sigma_i$), and determining the effective rank of a matrix.
+\end{itemize}
+
+\end{document}

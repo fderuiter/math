@@ -12,6 +12,8 @@ pub use group::{CyclicElement, Permutation, Zn};
 pub use ring::{Fp, Polynomial};
 pub use traits::{EuclideanDomain, Field, Group, Ring};
 
+pub mod linear_algebra;
+
 /// A placeholder function to demonstrate module structure.
 ///
 /// This function adds two unsigned 64-bit integers. It's a stand-in for
