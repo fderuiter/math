@@ -1,4 +1,4 @@
-use statrs::function::{gamma, beta};
+use statrs::function::{beta, gamma};
 
 /// Gamma Function $\Gamma(x) = \int_0^\infty t^{x-1} e^{-t} dt$.
 ///

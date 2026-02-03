@@ -32,13 +32,7 @@ impl<I: Integrator> GreenFunctionSolver1D<I> {
     /// * `domain` - The integration domain (start, end).
     /// * `g` - The Green's function G(x, xi). Takes (x, xi).
     /// * `f` - The source function f(xi).
-    pub fn solve_at<G, F>(
-        &self,
-        x: f64,
-        domain: (f64, f64),
-        g: G,
-        source: F,
-    ) -> f64
+    pub fn solve_at<G, F>(&self, x: f64, domain: (f64, f64), g: G, source: F) -> f64
     where
         G: Fn(f64, f64) -> f64,
         F: Fn(f64) -> f64,
@@ -69,7 +63,7 @@ impl MethodOfImages {
             let dx = a[0] - b[0];
             let dy = a[1] - b[1];
             let dz = a[2] - b[2];
-            (dx*dx + dy*dy + dz*dz).sqrt()
+            (dx * dx + dy * dy + dz * dz).sqrt()
         };
 
         // Image source at (x', y', -z')

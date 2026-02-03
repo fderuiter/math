@@ -21,7 +21,9 @@ pub fn bessel_j(nu: f64, x: f64) -> f64 {
         let term = (num / denom) * x_2.powf(nu + 2.0 * k_f);
         sum += term;
 
-        if term.abs() < 1e-15 { break; }
+        if term.abs() < 1e-15 {
+            break;
+        }
     }
     sum
 }
@@ -38,7 +40,11 @@ pub fn bessel_y(_nu: f64, _x: f64) -> f64 {
 /// Defined as $j_\ell(x) = \sqrt{\frac{\pi}{2x}} J_{\ell+1/2}(x)$.
 pub fn spherical_bessel_j(l: u64, x: f64) -> f64 {
     if x.abs() < 1e-10 {
-        if l == 0 { return 1.0; } else { return 0.0; }
+        if l == 0 {
+            return 1.0;
+        } else {
+            return 0.0;
+        }
     }
     let nu = l as f64 + 0.5;
     (PI / (2.0 * x)).sqrt() * bessel_j(nu, x)

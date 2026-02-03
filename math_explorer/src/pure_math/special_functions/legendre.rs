@@ -2,11 +2,15 @@
 ///
 /// $(n+1)P_{n+1}(x) = (2n+1)x P_n(x) - n P_{n-1}(x)$
 pub fn legendre_p(l: u64, x: f64) -> f64 {
-    if l == 0 { return 1.0; }
-    if l == 1 { return x; }
+    if l == 0 {
+        return 1.0;
+    }
+    if l == 1 {
+        return x;
+    }
 
     let mut p_prev = 1.0; // P_0
-    let mut p_curr = x;   // P_1
+    let mut p_curr = x; // P_1
 
     for n in 1..l {
         let n_f = n as f64;
@@ -29,7 +33,9 @@ pub fn legendre_p_associated(l: u64, m: i64, x: f64) -> f64 {
         return 0.0;
     }
     let m = m as u64;
-    if m > l { return 0.0; }
+    if m > l {
+        return 0.0;
+    }
 
     // 1. Compute P_m^m(x)
     // P_m^m(x) = (-1)^m (2m-1)!! (1-x^2)^(m/2)
@@ -42,17 +48,21 @@ pub fn legendre_p_associated(l: u64, m: i64, x: f64) -> f64 {
             fact += 2.0;
         }
     }
-    if l == m { return p_mm; }
+    if l == m {
+        return p_mm;
+    }
 
     // 2. Compute P_{m+1}^m(x)
     // P_{m+1}^m(x) = x(2m+1) P_m^m(x)
     let p_m1m = x * (2.0 * m as f64 + 1.0) * p_mm;
-    if l == m + 1 { return p_m1m; }
+    if l == m + 1 {
+        return p_m1m;
+    }
 
     // 3. Compute P_l^m(x) for l > m+1
     // (l-m) P_l^m = x(2l-1) P_{l-1}^m - (l+m-1) P_{l-2}^m
-    let mut p_prev = p_mm;   // P_m^m
-    let mut p_curr = p_m1m;  // P_{m+1}^m
+    let mut p_prev = p_mm; // P_m^m
+    let mut p_curr = p_m1m; // P_{m+1}^m
 
     for ll in (m + 2)..=l {
         let ll_f = ll as f64;

@@ -3,8 +3,12 @@
 /// Recurrence: $H_{n+1}(x) = 2xH_n(x) - 2nH_{n-1}(x)$
 /// $H_0(x) = 1$, $H_1(x) = 2x$.
 pub fn hermite(n: u64, x: f64) -> f64 {
-    if n == 0 { return 1.0; }
-    if n == 1 { return 2.0 * x; }
+    if n == 0 {
+        return 1.0;
+    }
+    if n == 1 {
+        return 2.0 * x;
+    }
 
     let mut h_prev = 1.0;
     let mut h_curr = 2.0 * x;
@@ -23,8 +27,12 @@ pub fn hermite(n: u64, x: f64) -> f64 {
 /// Recurrence: $(n+1)L_{n+1}(x) = (2n+1-x)L_n(x) - nL_{n-1}(x)$
 /// $L_0(x) = 1$, $L_1(x) = 1 - x$.
 pub fn laguerre(n: u64, x: f64) -> f64 {
-    if n == 0 { return 1.0; }
-    if n == 1 { return 1.0 - x; }
+    if n == 0 {
+        return 1.0;
+    }
+    if n == 1 {
+        return 1.0 - x;
+    }
 
     let mut l_prev = 1.0;
     let mut l_curr = 1.0 - x;

@@ -1,15 +1,9 @@
-use math_explorer::pure_math::analysis::pde::{
-    wave::WaveEquation1D,
-    heat::HeatEquation1D,
-    laplace::LaplaceEquation2D,
-    greens::GreenFunctionSolver1D,
-};
-use math_explorer::pure_math::special_functions::{
-    legendre,
-    polynomials,
-    bessel,
-};
 use approx::assert_abs_diff_eq;
+use math_explorer::pure_math::analysis::pde::{
+    greens::GreenFunctionSolver1D, heat::HeatEquation1D, laplace::LaplaceEquation2D,
+    wave::WaveEquation1D,
+};
+use math_explorer::pure_math::special_functions::{bessel, legendre, polynomials};
 
 #[test]
 fn test_wave_equation_dalembert() {
@@ -41,7 +35,13 @@ fn test_heat_equation_separated() {
 #[test]
 fn test_laplace_equation() {
     // u(x,y) = sin(x) * sinh(y) => A=0, B=1, C=0, D=1, lambda=1
-    let val = LaplaceEquation2D::separated_mode_cartesian(1.0, (0.0, 1.0), (0.0, 1.0), std::f64::consts::PI/2.0, 1.0);
+    let val = LaplaceEquation2D::separated_mode_cartesian(
+        1.0,
+        (0.0, 1.0),
+        (0.0, 1.0),
+        std::f64::consts::PI / 2.0,
+        1.0,
+    );
     // sin(pi/2) = 1. sinh(1) = 1.1752
     assert_abs_diff_eq!(val, 1.0f64.sinh(), epsilon = 1e-6);
 }
@@ -86,7 +86,7 @@ fn test_legendre_orthogonality() {
 
     // Norm of P_1: integral P_1^2 = 2/(2*1+1) = 2/3 = 0.6666
     let norm = legendre::check_orthogonality_legendre(1, 1);
-    assert_abs_diff_eq!(norm, 2.0/3.0, epsilon = 1e-3);
+    assert_abs_diff_eq!(norm, 2.0 / 3.0, epsilon = 1e-3);
 }
 
 #[test]
