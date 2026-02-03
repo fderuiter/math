@@ -174,3 +174,22 @@ Benchmark `bench_ising_custom` (10M iterations, 100x100 grid):
 - Before: ~14.70 M/s
 - After: ~29.41 M/s
 - Speedup: ~2.00x (100% improvement)
+
+## 2024-05-21 - [Optimization] **Bottleneck:** Repeated Grid Calculation & Allocations in MFG Solver **Strategy:** Precomputation & In-Place Matrix Ops **Gain:** 26% Time Saved (489ms -> 360ms)
+
+**Bottleneck:**
+The `FixedPointSolver::solve` function for Mean Field Games contained several redundant operations in its hot loops:
+1. `x = min + i * dx` was recomputed for every spatial point, at every time step, in every iteration (`nx * nt * iterations` times).
+2. Initialization of the `m` matrix and its propagation (`copy m0 to all t`) was done via manual nested loops with bounds checking.
+3. Normalization logic used manual loops instead of vectorized operations.
+
+**Strategy:**
+1. **Precomputation:** Calculated spatial `x` values once into a `Vec<f64>` and reused them via simple indexing.
+2. **Vectorization:** Replaced manual initialization loops with `nalgebra`'s `column_mut(n).copy_from(&col)` and `scale_mut()`, which leverage contiguous memory copies (memcpy) and optimized BLAS-like operations.
+3. **Allocation Reduction:** Avoided repeated index calculations and bounds checks implicit in the manual loops.
+
+**Gain:**
+Benchmark `bench_mfg` (200x2000 grid, 100 iterations):
+- Before: ~488.75ms
+- After: ~359.67ms
+- Speedup: ~26.4%
