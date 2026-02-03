@@ -41,3 +41,8 @@
 **Problem:** `math_explorer/src/pure_math/analysis/ode.rs` mixed concerns: core traits (`OdeSystem`), concrete solvers (`Euler`, `RungeKutta4`), state wrappers (`VecState`), and high-level traits (`TimeStepper`). This hampered extensibility and made the file difficult to navigate.
 **Decision:** Applied "Module Extraction". Split `ode.rs` into a module `math_explorer/src/pure_math/analysis/ode/` with `traits.rs`, `solvers.rs`, `state.rs`, and `stepper.rs`. Introduced `ArrayState<const N: usize>` in `state.rs` as a zero-dependency, stack-allocated alternative to `VecState` and `nalgebra` types.
 **Consequence:** Clearer separation of concerns. Adding new solvers or state types is now modular. The API remains backward compatible via re-exports. `ArrayState` provides a "Newtype" solution for small systems without external dependencies.
+
+## 2027-05-23 - [Tensor & Vector Calculus Implementation]
+**Problem:** The `pure_math` module lacked generalized Tensor Analysis and Vector Calculus tools, limiting the project's ability to model physics in curvilinear coordinates or general manifolds.
+**Decision:** Implemented `math_explorer/src/pure_math/tensor` (Metric, Christoffel, Differentiation) and `math_explorer/src/pure_math/vector_calculus` (Orthogonal Coordinates, Operators, Integral Theorems).
+**Consequence:** Enables rigorous mathematical modeling in arbitrary coordinate systems. Enforced "Newtype" pattern for Tensors and "Strategy Pattern" for Coordinate Systems to maintain architectural standards.
