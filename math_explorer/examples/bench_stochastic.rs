@@ -1,5 +1,5 @@
-use math_explorer::epidemiology::stochastic::{GillespieSolver, StochasticSystem};
 use math_explorer::epidemiology::compartmental::{SIRModel, SIRState};
+use math_explorer::epidemiology::stochastic::{GillespieSolver, StochasticSystem};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 use std::time::Instant;
