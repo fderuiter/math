@@ -58,7 +58,7 @@ impl FluidProperties {
     /// # Panics
     /// Panics if internal values are invalid (should never happen).
     pub fn water() -> Self {
-        Self::new(998.2, 1.002e-3).unwrap()
+        Self::new(998.2, 1.002e-3).expect("Standard water properties should be valid")
     }
 
     /// Standard properties for Air at 15°C (Sea Level).
@@ -66,7 +66,7 @@ impl FluidProperties {
     /// # Panics
     /// Panics if internal values are invalid (should never happen).
     pub fn air() -> Self {
-        Self::new(1.225, 1.81e-5).unwrap()
+        Self::new(1.225, 1.81e-5).expect("Standard air properties should be valid")
     }
 }
 

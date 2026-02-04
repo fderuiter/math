@@ -1,5 +1,50 @@
+use super::error::EpidemiologyError;
 use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
+
+macro_rules! impl_compartmental_ops {
+    ($type:ty, $($field:ident),+) => {
+        impl Add for $type {
+            type Output = Self;
+            fn add(self, rhs: Self) -> Self {
+                Self {
+                    $($field: self.$field + rhs.$field),+
+                }
+            }
+        }
+
+        impl AddAssign for $type {
+            fn add_assign(&mut self, rhs: Self) {
+                $(self.$field += rhs.$field;)+
+            }
+        }
+
+        impl Mul<f64> for $type {
+            type Output = Self;
+            fn mul(self, scalar: f64) -> Self {
+                Self {
+                    $($field: self.$field * scalar),+
+                }
+            }
+        }
+
+        impl MulAssign<f64> for $type {
+            fn mul_assign(&mut self, scalar: f64) {
+                $(self.$field *= scalar;)+
+            }
+        }
+
+        impl VectorOperations for $type {
+            fn scale_add(&mut self, other: &Self, scale: f64) {
+                $(self.$field += other.$field * scale;)+
+            }
+
+            fn copy_from(&mut self, other: &Self) {
+                *self = *other;
+            }
+        }
+    };
+}
 
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -9,55 +54,7 @@ pub struct SIRState {
     pub r: f64,
 }
 
-impl Add for SIRState {
-    type Output = Self;
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            s: self.s + rhs.s,
-            i: self.i + rhs.i,
-            r: self.r + rhs.r,
-        }
-    }
-}
-
-impl AddAssign for SIRState {
-    fn add_assign(&mut self, rhs: Self) {
-        self.s += rhs.s;
-        self.i += rhs.i;
-        self.r += rhs.r;
-    }
-}
-
-impl Mul<f64> for SIRState {
-    type Output = Self;
-    fn mul(self, scalar: f64) -> Self {
-        Self {
-            s: self.s * scalar,
-            i: self.i * scalar,
-            r: self.r * scalar,
-        }
-    }
-}
-
-impl MulAssign<f64> for SIRState {
-    fn mul_assign(&mut self, scalar: f64) {
-        self.s *= scalar;
-        self.i *= scalar;
-        self.r *= scalar;
-    }
-}
-
-impl VectorOperations for SIRState {
-    fn scale_add(&mut self, other: &Self, scale: f64) {
-        self.s += other.s * scale;
-        self.i += other.i * scale;
-        self.r += other.r * scale;
-    }
-
-    fn copy_from(&mut self, other: &Self) {
-        *self = *other;
-    }
-}
+impl_compartmental_ops!(SIRState, s, i, r);
 
 /// SIR Model: Susceptible, Infectious, Recovered.
 ///
@@ -84,8 +81,33 @@ impl TimeStepper<SIRState> for SIRModel {
 }
 
 impl SIRModel {
-    pub fn new(n: f64, i0: f64, beta: f64, gamma: f64) -> Self {
-        Self {
+    pub fn new(n: f64, i0: f64, beta: f64, gamma: f64) -> Result<Self, EpidemiologyError> {
+        if n <= 0.0 {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "n (population)".to_string(),
+                value: n,
+            });
+        }
+        if i0 < 0.0 || i0 > n {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "i0 (initial infected)".to_string(),
+                value: i0,
+            });
+        }
+        if beta < 0.0 {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "beta (transmission rate)".to_string(),
+                value: beta,
+            });
+        }
+        if gamma < 0.0 {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "gamma (recovery rate)".to_string(),
+                value: gamma,
+            });
+        }
+
+        Ok(Self {
             state: SIRState {
                 s: n - i0,
                 i: i0,
@@ -94,7 +116,7 @@ impl SIRModel {
             n,
             beta,
             gamma,
-        }
+        })
     }
 
     /// Advances the state by dt using Runge-Kutta 4.
@@ -134,60 +156,7 @@ pub struct SEIRState {
     pub r: f64,
 }
 
-impl Add for SEIRState {
-    type Output = Self;
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            s: self.s + rhs.s,
-            e: self.e + rhs.e,
-            i: self.i + rhs.i,
-            r: self.r + rhs.r,
-        }
-    }
-}
-
-impl AddAssign for SEIRState {
-    fn add_assign(&mut self, rhs: Self) {
-        self.s += rhs.s;
-        self.e += rhs.e;
-        self.i += rhs.i;
-        self.r += rhs.r;
-    }
-}
-
-impl Mul<f64> for SEIRState {
-    type Output = Self;
-    fn mul(self, scalar: f64) -> Self {
-        Self {
-            s: self.s * scalar,
-            e: self.e * scalar,
-            i: self.i * scalar,
-            r: self.r * scalar,
-        }
-    }
-}
-
-impl MulAssign<f64> for SEIRState {
-    fn mul_assign(&mut self, scalar: f64) {
-        self.s *= scalar;
-        self.e *= scalar;
-        self.i *= scalar;
-        self.r *= scalar;
-    }
-}
-
-impl VectorOperations for SEIRState {
-    fn scale_add(&mut self, other: &Self, scale: f64) {
-        self.s += other.s * scale;
-        self.e += other.e * scale;
-        self.i += other.i * scale;
-        self.r += other.r * scale;
-    }
-
-    fn copy_from(&mut self, other: &Self) {
-        *self = *other;
-    }
-}
+impl_compartmental_ops!(SEIRState, s, e, i, r);
 
 /// SEIR Model: Susceptible, Exposed, Infectious, Recovered.
 ///
@@ -214,8 +183,45 @@ impl TimeStepper<SEIRState> for SEIRModel {
 }
 
 impl SEIRModel {
-    pub fn new(n: f64, i0: f64, beta: f64, sigma: f64, gamma: f64) -> Self {
-        Self {
+    pub fn new(
+        n: f64,
+        i0: f64,
+        beta: f64,
+        sigma: f64,
+        gamma: f64,
+    ) -> Result<Self, EpidemiologyError> {
+        if n <= 0.0 {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "n (population)".to_string(),
+                value: n,
+            });
+        }
+        if i0 < 0.0 || i0 > n {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "i0 (initial infected)".to_string(),
+                value: i0,
+            });
+        }
+        if beta < 0.0 {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "beta (transmission rate)".to_string(),
+                value: beta,
+            });
+        }
+        if sigma < 0.0 {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "sigma (incubation rate)".to_string(),
+                value: sigma,
+            });
+        }
+        if gamma < 0.0 {
+            return Err(EpidemiologyError::InvalidParameter {
+                name: "gamma (recovery rate)".to_string(),
+                value: gamma,
+            });
+        }
+
+        Ok(Self {
             state: SEIRState {
                 s: n - i0,
                 e: 0.0,
@@ -226,7 +232,7 @@ impl SEIRModel {
             beta,
             sigma,
             gamma,
-        }
+        })
     }
 
     pub fn step(&mut self, dt: f64) {
@@ -278,7 +284,7 @@ mod tests {
         let n = 1000.0;
         let i0 = 10.0;
         // R0 = beta / gamma = 0.5 / 1.0 = 0.5 < 1
-        let mut model = SIRModel::new(n, i0, 0.5, 1.0);
+        let mut model = SIRModel::new(n, i0, 0.5, 1.0).unwrap();
 
         let initial_i = model.state.i;
         model.step(0.1);
@@ -293,8 +299,8 @@ mod tests {
     fn test_sir_step_with_rk4() {
         let n = 1000.0;
         let i0 = 10.0;
-        let mut model_std = SIRModel::new(n, i0, 0.5, 0.1);
-        let mut model_with = SIRModel::new(n, i0, 0.5, 0.1);
+        let mut model_std = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
+        let mut model_with = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
 
         let dt = 0.1;
         model_std.step(dt);
@@ -310,8 +316,8 @@ mod tests {
     fn test_seir_step_with_rk4() {
         let n = 1000.0;
         let i0 = 10.0;
-        let mut model_std = SEIRModel::new(n, i0, 0.5, 0.2, 0.1);
-        let mut model_with = SEIRModel::new(n, i0, 0.5, 0.2, 0.1);
+        let mut model_std = SEIRModel::new(n, i0, 0.5, 0.2, 0.1).unwrap();
+        let mut model_with = SEIRModel::new(n, i0, 0.5, 0.2, 0.1).unwrap();
 
         let dt = 0.1;
         model_std.step(dt);
@@ -327,7 +333,7 @@ mod tests {
     fn test_sir_step_with_euler() {
         let n = 1000.0;
         let i0 = 10.0;
-        let mut model = SIRModel::new(n, i0, 0.5, 0.1);
+        let mut model = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
 
         // Euler is less accurate but should still run without panic
         model.step_with(&Euler, 0.1);
