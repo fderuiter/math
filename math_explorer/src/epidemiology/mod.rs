@@ -18,7 +18,7 @@
 //! let i0 = 10.0;
 //! let beta = 0.5;
 //! let gamma = 0.1;
-//! let mut model = SIRModel::new(n, i0, beta, gamma);
+//! let mut model = SIRModel::new(n, i0, beta, gamma).expect("Valid parameters");
 //!
 //! // 2. Run the simulation
 //! let dt = 0.1;
