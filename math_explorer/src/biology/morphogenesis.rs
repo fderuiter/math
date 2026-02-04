@@ -215,13 +215,7 @@ impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D> {
 
 impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
     /// Creates a new Turing System with custom kinetics and diffusion strategy.
-    pub fn new_with_kinetics(
-        size: usize,
-        d_u: f64,
-        d_v: f64,
-        kinetics: K,
-        diffusion: D,
-    ) -> Self {
+    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
         Self {
             state: TuringState::new(size),
             next_state: TuringState::new(size),
@@ -319,8 +313,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for Turing
         let out_v = &mut out.v;
 
         // 1. Compute Diffusion
-        self.diffusion
-            .apply(u, v, out_u, out_v, self.d_u, self.d_v);
+        self.diffusion.apply(u, v, out_u, out_v, self.d_u, self.d_v);
 
         // 2. Compute Reaction and Accumulate
         unsafe {
@@ -383,21 +376,47 @@ mod tests {
 
         // Expected values captured from baseline run
         let expected_u = vec![
-            0.9798926377401955, 1.0722504645444493, 1.1685990805783317, 1.2642647090938448,
-            1.359028327357602, 1.4527705800845148, 1.5453811790730032, 1.6367576303434268,
-            1.7267186541725483, 1.8109737170223916
+            0.9798926377401955,
+            1.0722504645444493,
+            1.1685990805783317,
+            1.2642647090938448,
+            1.359028327357602,
+            1.4527705800845148,
+            1.5453811790730032,
+            1.6367576303434268,
+            1.7267186541725483,
+            1.8109737170223916,
         ];
         let expected_v = vec![
-            0.47709091921002866, 0.4263770084483741, 0.3750152156844884, 0.32443296992262166,
-            0.2747722006954079, 0.22615405798594523, 0.1786914141249832, 0.1324883911255509,
-            0.08765106523936222, 0.04531981611374585
+            0.47709091921002866,
+            0.4263770084483741,
+            0.3750152156844884,
+            0.32443296992262166,
+            0.2747722006954079,
+            0.22615405798594523,
+            0.1786914141249832,
+            0.1324883911255509,
+            0.08765106523936222,
+            0.04531981611374585,
         ];
 
         // Assert with tolerance
         let tolerance = 1e-10;
         for i in 0..n {
-            assert!((u_out[i] - expected_u[i]).abs() < tolerance, "U mismatch at {}: {} vs {}", i, u_out[i], expected_u[i]);
-            assert!((v_out[i] - expected_v[i]).abs() < tolerance, "V mismatch at {}: {} vs {}", i, v_out[i], expected_v[i]);
+            assert!(
+                (u_out[i] - expected_u[i]).abs() < tolerance,
+                "U mismatch at {}: {} vs {}",
+                i,
+                u_out[i],
+                expected_u[i]
+            );
+            assert!(
+                (v_out[i] - expected_v[i]).abs() < tolerance,
+                "V mismatch at {}: {} vs {}",
+                i,
+                v_out[i],
+                expected_v[i]
+            );
         }
     }
 }
