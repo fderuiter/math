@@ -60,3 +60,11 @@
 **Problem:** `FluidProperties` in `physics::fluid_dynamics` allowed invalid physical states (negative density/viscosity), leading to potential silent failures or NaNs in solvers.
 **Decision:** Implemented the **Builder Pattern** and strictly validated constructors. `FluidProperties` now enforces `density > 0` and `viscosity >= 0` via a `Result`-returning constructor and a fluent Builder API. Fields are private to prevent bypassing validation.
 **Consequence:** Prevents "Illegal States" in the fluid dynamics module. This introduces a breaking change to `FluidProperties::new`, improving safety at the cost of requiring error handling in initialization logic.
+
+## 2027-06-01 - [Linear Algebra Consolidation & Optimization Extraction]
+**Problem:** `math_explorer/src/pure_math/analysis/linear_algebra.rs` was a misplaced file containing both numerical linear algebra solvers (which belong in `algebra`) and optimization structures (`L1RegularizedLeastSquares`), blurring the lines between "Analysis" and "Algebra".
+**Decision:**
+1. Extracted `L1RegularizedLeastSquares` to a new module `math_explorer/src/pure_math/analysis/optimization.rs`.
+2. Moved numerical solvers (`solve_linear_system`, `solve_normal_equation`, etc.) to `math_explorer/src/pure_math/algebra/linear_algebra/numerical.rs`.
+3. Deleted the legacy `analysis/linear_algebra.rs`.
+**Consequence:** Enforced strict domain boundaries. Optimization logic is now distinct from Linear Algebra. All Linear Algebra functionality (abstract and numerical) is consolidated under `pure_math/algebra`.

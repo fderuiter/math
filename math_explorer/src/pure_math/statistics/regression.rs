@@ -3,7 +3,7 @@
 //! Implementations of regression analysis techniques.
 
 use nalgebra::{DMatrix, DVector};
-use crate::pure_math::analysis::linear_algebra::solve_normal_equation;
+use crate::pure_math::algebra::linear_algebra::numerical::solve_normal_equation;
 
 /// Multivariate Linear Regression.
 ///
@@ -24,7 +24,7 @@ pub fn multivariate_linear_regression(
     targets: &DVector<f64>,
 ) -> Option<DVector<f64>> {
     // This is mathematically equivalent to solving the Normal Equation for B.
-    solve_normal_equation(features, targets)
+    solve_normal_equation(features, targets).ok()
 }
 
 #[cfg(test)]
