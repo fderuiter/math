@@ -1,3 +1,4 @@
+use math_explorer::biology::diffusion::FiniteDifference1D;
 use math_explorer::biology::morphogenesis::{ReactionKinetics, TuringSystem};
 
 struct GrayScottKinetics {
@@ -47,7 +48,8 @@ fn test_custom_kinetics_strategy() {
 
     // Use Gray-Scott kinetics via the Strategy Pattern
     let kinetics = GrayScottKinetics { f: 0.055, k: 0.062 };
-    let mut system = TuringSystem::new_with_kinetics(size, 0.2, 0.1, 1.0, kinetics);
+    let diffusion = FiniteDifference1D::new(1.0);
+    let mut system = TuringSystem::new_with_kinetics(size, 0.2, 0.1, kinetics, diffusion);
 
     // Seed
     system.u_mut()[25] = 0.5;
