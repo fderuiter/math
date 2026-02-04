@@ -50,6 +50,11 @@ impl SpatialDiffusion for FiniteDifference1D {
             return;
         }
 
+        // Validate slice lengths to prevent Undefined Behavior in unsafe blocks
+        assert!(v.len() >= n, "v buffer too small");
+        assert!(out_u.len() >= n, "out_u buffer too small");
+        assert!(out_v.len() >= n, "out_v buffer too small");
+
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
