@@ -27,12 +27,12 @@ impl EnzymeReaction {
         Ok(Self { v_max, k_m })
     }
 
-    /// Calculates the reaction velocity for a given substrate concentration $[S]$.
+    /// Calculates the reaction velocity for a given substrate concentration `[S]`.
     ///
-    /// Formula: $v = V_{max} \frac{[S]}{K_m + [S]}$
+    /// Formula: $v = V_{max} \frac{\[S\]}{K_m + \[S\]}$
     ///
     /// # Arguments
-    /// * `substrate_conc` - The concentration of the substrate ($[S]$).
+    /// * `substrate_conc` - The concentration of the substrate (`[S]`).
     ///
     /// # Returns
     /// The reaction velocity. Returns an error if concentration is negative.

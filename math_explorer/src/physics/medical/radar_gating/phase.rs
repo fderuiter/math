@@ -10,9 +10,9 @@ use std::f64::consts::PI;
 /// Handles phase extraction and unwrapping to track displacement over time.
 #[derive(Debug, Clone)]
 pub struct PhaseUnwrapper {
-    /// The phase from the previous time step ($\phi[n-1]$).
+    /// The phase from the previous time step ($\phi_{n-1}$).
     last_phase: f64,
-    /// The accumulated displacement since the start of tracking ($D[n-1]$).
+    /// The accumulated displacement since the start of tracking ($D_{n-1}$).
     accumulated_displacement: f64,
     /// The wavelength of the radar signal ($\lambda$).
     wavelength: f64,
@@ -38,10 +38,10 @@ impl PhaseUnwrapper {
     /// Processes a new complex sample to update displacement.
     ///
     /// Steps:
-    /// 1. Extract Phase ($\phi[n]$).
+    /// 1. Extract Phase ($\phi_n$).
     /// 2. Calculate Differential Phase ($\Delta \phi$).
     /// 3. Unwrap Phase (Handle aliasing).
-    /// 4. Update Accumulated Displacement ($D[n]$).
+    /// 4. Update Accumulated Displacement ($D_n$).
     ///
     /// # Arguments
     ///

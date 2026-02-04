@@ -28,6 +28,10 @@
 //! - **Population**: [`evolution`] - Evolutionary game theory (Hawk-Dove).
 
 /// Michaelis-Menten enzyme kinetics.
+///
+/// Implements the Michaelis-Menten equation relating reaction rate $v$ to substrate concentration `[S]`:
+///
+/// $$ v = \frac{V_{max}[S]}{K_m + [S]} $$
 pub mod kinetics;
 
 /// Hodgkin-Huxley neuron model.
