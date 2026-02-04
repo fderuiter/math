@@ -29,7 +29,11 @@ pub fn scaled_dot_product_attention(
     let mut scores = q * k.transpose();
 
     // 2. Scale scores
-    scores /= d_k.sqrt();
+    // Prevent division by zero if d_k is 0 (which would cause NaNs).
+    // If d_k is 0, we skip scaling, leaving scores as 0 (valid for dot product of empty vectors).
+    if d_k > 0.0 {
+        scores /= d_k.sqrt();
+    }
 
     // 3. Apply mask if provided (e.g., for padding or preventing future token peeking)
     if let Some(m) = mask {
@@ -160,5 +164,26 @@ mod tests {
 
         assert_eq!(output.nrows(), seq_len);
         assert_eq!(output.ncols(), d_model);
+    }
+
+    #[test]
+    fn test_scaled_dot_product_attention_zero_dim() {
+        use approx::assert_relative_eq;
+        let seq_len = 5;
+        let d_k = 0; // Trigger potential division by zero
+        let d_v = 10;
+
+        let q = DMatrix::zeros(seq_len, d_k);
+        let k = DMatrix::zeros(seq_len, d_k);
+        let v = DMatrix::zeros(seq_len, d_v);
+
+        let (_output, weights) = scaled_dot_product_attention(&q, &k, &v, None);
+
+        // With d_k=0, scores should be 0. Softmax should be uniform (1/seq_len = 0.2).
+        let expected_weight = 1.0 / (seq_len as f64);
+
+        // Check that we don't have NaNs and weights are uniform
+        assert!(!weights[(0, 0)].is_nan());
+        assert_relative_eq!(weights[(0, 0)], expected_weight, epsilon = 1e-6);
     }
 }
