@@ -20,6 +20,8 @@
 //!
 //! // 1. Setup Fluid (Water @ 20°C)
 //! let water = FluidProperties::water();
+//! // Or create a custom fluid (returns Result)
+//! let custom = FluidProperties::new(1000.0, 0.001).expect("Invalid fluid properties");
 //!
 //! // 2. Setup Flow State
 //! // Velocity: 10 m/s in X-direction
@@ -56,8 +58,8 @@
 //! ```mermaid
 //! classDiagram
 //!     class FluidProperties {
-//!         +density: f64
-//!         +dynamic_viscosity: f64
+//!         +density(): f64
+//!         +dynamic_viscosity(): f64
 //!         +kinematic_viscosity()
 //!     }
 //!
@@ -111,6 +113,7 @@
 
 pub mod analysis;
 pub mod conservation;
+pub mod error;
 pub mod regimes;
 pub mod turbulence;
 pub mod types;

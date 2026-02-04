@@ -55,3 +55,8 @@
 **Problem:** `math_explorer/src/pure_math/algebra/ring.rs` contained mixed implementations of Finite Fields (`Fp`) and Polynomial Rings (`Polynomial`), conflating two distinct algebraic structures and limiting clarity.
 **Decision:** Applied "Module Extraction". Decomposed `ring.rs` into `fields.rs` (containing `Fp`) and `polynomial.rs` (containing `Polynomial`). Updated `mod.rs` to re-export them, maintaining backward compatibility.
 **Consequence:** Improved separation of concerns. `Polynomial` is now a standalone module, ready for future expansion (e.g., GCD, factorization), while `Fp` is isolated in `fields.rs`.
+
+## 2025-05-23 - [Safe Fluid Construction]
+**Problem:** `FluidProperties` in `physics::fluid_dynamics` allowed invalid physical states (negative density/viscosity), leading to potential silent failures or NaNs in solvers.
+**Decision:** Implemented the **Builder Pattern** and strictly validated constructors. `FluidProperties` now enforces `density > 0` and `viscosity >= 0` via a `Result`-returning constructor and a fluent Builder API. Fields are private to prevent bypassing validation.
+**Consequence:** Prevents "Illegal States" in the fluid dynamics module. This introduces a breaking change to `FluidProperties::new`, improving safety at the cost of requiring error handling in initialization logic.
