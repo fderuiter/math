@@ -21,6 +21,21 @@ When you submit a PR, you aren't just merging code; you are merging knowledge. E
     git checkout -b feature/amazing-new-math
     ```
 
+## 💻 Local Development
+
+To ensure your code meets our standards before submitting, we use [pre-commit](https://pre-commit.com/).
+
+1.  **Install pre-commit**:
+    ```bash
+    pip install pre-commit
+    ```
+2.  **Install the git hooks**:
+    ```bash
+    pre-commit install
+    ```
+
+Now, every time you commit, it will automatically run formatting and linting checks.
+
 ## 🔄 Workflow
 
 ```mermaid
@@ -88,3 +103,7 @@ pub fn area_circle(radius: f64) -> f64 { ... }
 4.  **Wait for review**. We might ask for changes to code or documentation.
 
 Thank you for helping us fight Knowledge Rot! 📜
+
+## 🛡️ Security
+
+If you discover a security vulnerability, please refer to our [Security Policy](SECURITY.md) for reporting instructions.
