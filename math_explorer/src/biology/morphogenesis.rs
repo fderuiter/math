@@ -6,6 +6,7 @@
 //! The general equation is:
 //! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
 
+use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
@@ -177,8 +178,11 @@ impl VectorOperations for TuringState {
     }
 }
 
-/// Represents a 1D Reaction-Diffusion system.
-pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
+/// Represents a Reaction-Diffusion system.
+pub struct TuringSystem<
+    K: ReactionKinetics = SchnakenbergKinetics,
+    D: SpatialDiffusion = FiniteDifference1D,
+> {
     /// The current state of the system.
     pub state: TuringState,
 
@@ -189,29 +193,42 @@ pub struct TuringSystem<K: ReactionKinetics = SchnakenbergKinetics> {
     pub d_u: f64,
     /// Diffusion coefficient for v
     pub d_v: f64,
-    /// Grid spacing
-    pub dx: f64,
     /// Reaction kinetics strategy
     pub kinetics: K,
+    /// Spatial diffusion strategy
+    pub diffusion: D,
 }
 
-impl TuringSystem<SchnakenbergKinetics> {
-    /// Creates a new Turing System with default Schnakenberg kinetics.
+impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D> {
+    /// Creates a new Turing System with default Schnakenberg kinetics and 1D Finite Difference.
     pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
-        Self::new_with_kinetics(size, d_u, d_v, dx, SchnakenbergKinetics::default())
-    }
-}
-
-impl<K: ReactionKinetics> TuringSystem<K> {
-    /// Creates a new Turing System with custom kinetics.
-    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, dx: f64, kinetics: K) -> Self {
         Self {
             state: TuringState::new(size),
             next_state: TuringState::new(size),
             d_u,
             d_v,
-            dx,
+            kinetics: SchnakenbergKinetics::default(),
+            diffusion: FiniteDifference1D::new(dx),
+        }
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
+    /// Creates a new Turing System with custom kinetics and diffusion strategy.
+    pub fn new_with_kinetics(
+        size: usize,
+        d_u: f64,
+        d_v: f64,
+        kinetics: K,
+        diffusion: D,
+    ) -> Self {
+        Self {
+            state: TuringState::new(size),
+            next_state: TuringState::new(size),
+            d_u,
+            d_v,
             kinetics,
+            diffusion,
         }
     }
 
@@ -235,133 +252,7 @@ impl<K: ReactionKinetics> TuringSystem<K> {
         self.state.v_mut()
     }
 
-    /// Applies the reaction-diffusion stencil to the input state.
-    ///
-    /// This is an internal helper that centralizes the optimized sliding-window
-    /// logic used by both the Euler stepper and the generic ODE derivative calculation.
-    ///
-    /// # Arguments
-    /// * `state` - The current system state.
-    /// * `kinetics` - The reaction kinetics strategy.
-    /// * `d_u` - Diffusion coefficient for u.
-    /// * `d_v` - Diffusion coefficient for v.
-    /// * `dx` - Grid spacing.
-    /// * `output_op` - A closure `(index, u_curr, v_curr, du_dt, dv_dt) -> ()` that defines how to store the result.
-    #[inline(always)]
-    fn apply_stencil_logic<F>(
-        state: &TuringState,
-        kinetics: &K,
-        d_u: f64,
-        d_v: f64,
-        dx: f64,
-        mut output_op: F,
-    ) where
-        F: FnMut(usize, f64, f64, f64, f64),
-    {
-        let n = state.len();
-        if n == 0 {
-            return;
-        }
-
-        let dx_sq = dx * dx;
-        let inv_dx_sq = 1.0 / dx_sq;
-
-        // Optimization: Lift boundary checks out of the loop and use slices
-        let u = &state.u;
-        let v = &state.v;
-
-        // 1. Handle i = 0
-        {
-            let i = 0;
-            // Safety: n > 0 checked above
-            let u_curr = unsafe { *u.get_unchecked(i) };
-            let v_curr = unsafe { *v.get_unchecked(i) };
-
-            let u_prev = u_curr;
-            let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 {
-                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
-            } else {
-                (u_curr, v_curr)
-            };
-
-            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-            let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
-
-            output_op(
-                i,
-                u_curr,
-                v_curr,
-                d_u * lap_u + reaction_u,
-                d_v * lap_v + reaction_v,
-            );
-        }
-
-        // 2. Handle i = 1..n-1 (Hot Path)
-        if n > 2 {
-            // Optimization: Sliding Window / Register Rotation
-            unsafe {
-                let mut u_prev = *u.get_unchecked(0);
-                let mut u_curr = *u.get_unchecked(1);
-                let mut v_prev = *v.get_unchecked(0);
-                let mut v_curr = *v.get_unchecked(1);
-
-                for i in 1..n - 1 {
-                    let u_next = *u.get_unchecked(i + 1);
-                    let v_next = *v.get_unchecked(i + 1);
-
-                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                    let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
-
-                    output_op(
-                        i,
-                        u_curr,
-                        v_curr,
-                        d_u * lap_u + reaction_u,
-                        d_v * lap_v + reaction_v,
-                    );
-
-                    // Shift window
-                    u_prev = u_curr;
-                    u_curr = u_next;
-                    v_prev = v_curr;
-                    v_curr = v_next;
-                }
-            }
-        }
-
-        // 3. Handle i = n-1
-        if n > 1 {
-            let i = n - 1;
-            unsafe {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-                let u_prev = *u.get_unchecked(i - 1);
-                let v_prev = *v.get_unchecked(i - 1);
-                let u_next = u_curr;
-                let v_next = v_curr;
-
-                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                let (reaction_u, reaction_v) = kinetics.reaction(u_curr, v_curr);
-
-                output_op(
-                    i,
-                    u_curr,
-                    v_curr,
-                    d_u * lap_u + reaction_u,
-                    d_v * lap_v + reaction_v,
-                );
-            }
-        }
-    }
-
-    /// Updates the grid using a finite-difference Laplacian and reaction kinetics.
+    /// Updates the grid using the diffusion strategy and reaction kinetics.
     pub fn step(&mut self, dt: f64) {
         let n = self.state.len();
         if n == 0 {
@@ -373,30 +264,38 @@ impl<K: ReactionKinetics> TuringSystem<K> {
             self.next_state = TuringState::new(n);
         }
 
-        // We capture mutable references to the next state vectors.
-        // Rust's borrow checker allows this because we only borrow `self.state` (immutable)
-        // and fields (immutable) for the arguments, while `next_state` (mutable) is disjoint.
+        let u = &self.state.u;
+        let v = &self.state.v;
         let next_u = &mut self.next_state.u;
         let next_v = &mut self.next_state.v;
 
-        Self::apply_stencil_logic(
-            &self.state,
-            &self.kinetics,
-            self.d_u,
-            self.d_v,
-            self.dx,
-            |i, u, v, du, dv| unsafe {
-                *next_u.get_unchecked_mut(i) = u + dt * du;
-                *next_v.get_unchecked_mut(i) = v + dt * dv;
-            },
-        );
+        // 1. Compute Diffusion (writes to next_state buffers)
+        self.diffusion
+            .apply(u, v, next_u, next_v, self.d_u, self.d_v);
+
+        // 2. Compute Reaction and Integrate
+        // Using `unsafe` here to match the performance of the original implementation's loop
+        unsafe {
+            for i in 0..n {
+                let diff_u = *next_u.get_unchecked(i);
+                let diff_v = *next_v.get_unchecked(i);
+                let u_curr = *u.get_unchecked(i);
+                let v_curr = *v.get_unchecked(i);
+
+                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                // Euler step: u_new = u + dt * (D*Lap + Reaction)
+                *next_u.get_unchecked_mut(i) = u_curr + dt * (diff_u + reac_u);
+                *next_v.get_unchecked_mut(i) = v_curr + dt * (diff_v + reac_v);
+            }
+        }
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
     }
 }
 
-impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
+impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for TuringSystem<K, D> {
     fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
         let mut out = TuringState::new(state.len());
         self.derivative_in_place(t, state, &mut out);
@@ -414,24 +313,31 @@ impl<K: ReactionKinetics> OdeSystem<TuringState> for TuringSystem<K> {
             *out = TuringState::new(n);
         }
 
+        let u = &state.u;
+        let v = &state.v;
         let out_u = &mut out.u;
         let out_v = &mut out.v;
 
-        Self::apply_stencil_logic(
-            state,
-            &self.kinetics,
-            self.d_u,
-            self.d_v,
-            self.dx,
-            |i, _, _, du, dv| unsafe {
-                *out_u.get_unchecked_mut(i) = du;
-                *out_v.get_unchecked_mut(i) = dv;
-            },
-        );
+        // 1. Compute Diffusion
+        self.diffusion
+            .apply(u, v, out_u, out_v, self.d_u, self.d_v);
+
+        // 2. Compute Reaction and Accumulate
+        unsafe {
+            for i in 0..n {
+                let u_curr = *u.get_unchecked(i);
+                let v_curr = *v.get_unchecked(i);
+
+                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                *out_u.get_unchecked_mut(i) += reac_u;
+                *out_v.get_unchecked_mut(i) += reac_v;
+            }
+        }
     }
 }
 
-impl<K: ReactionKinetics> TimeStepper<TuringState> for TuringSystem<K> {
+impl<K: ReactionKinetics, D: SpatialDiffusion> TimeStepper<TuringState> for TuringSystem<K, D> {
     fn get_state(&self) -> &TuringState {
         &self.state
     }
@@ -442,7 +348,56 @@ impl<K: ReactionKinetics> TimeStepper<TuringState> for TuringSystem<K> {
 
     fn step(&mut self, dt: f64) {
         // Delegate to the optimized inherent method
-        // Inherent method shadows trait method, so self.step refers to TuringSystem::step
         self.step(dt);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_turing_system_logic_preservation() {
+        // Setup a small system
+        let n = 10;
+        let d_u = 1.0;
+        let d_v = 0.5;
+        let dx = 1.0;
+        let mut system = TuringSystem::new(n, d_u, d_v, dx);
+
+        // Initialize with some pattern
+        for i in 0..n {
+            system.state.u_mut()[i] = 1.0 + 0.1 * (i as f64);
+            system.state.v_mut()[i] = 0.5 - 0.05 * (i as f64);
+        }
+
+        // Run for a few steps
+        let dt = 0.01;
+        for _ in 0..5 {
+            system.step(dt);
+        }
+
+        // Capture output
+        let u_out = system.u().to_vec();
+        let v_out = system.v().to_vec();
+
+        // Expected values captured from baseline run
+        let expected_u = vec![
+            0.9798926377401955, 1.0722504645444493, 1.1685990805783317, 1.2642647090938448,
+            1.359028327357602, 1.4527705800845148, 1.5453811790730032, 1.6367576303434268,
+            1.7267186541725483, 1.8109737170223916
+        ];
+        let expected_v = vec![
+            0.47709091921002866, 0.4263770084483741, 0.3750152156844884, 0.32443296992262166,
+            0.2747722006954079, 0.22615405798594523, 0.1786914141249832, 0.1324883911255509,
+            0.08765106523936222, 0.04531981611374585
+        ];
+
+        // Assert with tolerance
+        let tolerance = 1e-10;
+        for i in 0..n {
+            assert!((u_out[i] - expected_u[i]).abs() < tolerance, "U mismatch at {}: {} vs {}", i, u_out[i], expected_u[i]);
+            assert!((v_out[i] - expected_v[i]).abs() < tolerance, "V mismatch at {}: {} vs {}", i, v_out[i], expected_v[i]);
+        }
     }
 }

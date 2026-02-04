@@ -65,3 +65,8 @@
 **Violation:** Hardcoding gradient/divergence formulas for Cartesian coordinates would violate OCP and prevent usage in Cylindrical/Spherical systems.
 **Refactor:** Applied **Strategy Pattern**. Extracted `OrthogonalCoordinateSystem` trait. Implemented `Cylindrical` and `Spherical` strategies. Operators (`gradient`, etc.) are generic over this trait.
 **Trade-off:** Numerical differentiation introduces small errors compared to analytical solutions, but allows generic implementation for any orthogonal system.
+
+## 2025-05-24 - Strategy Pattern for Spatial Diffusion
+**Violation:** The `TuringSystem` hardcoded 1D Finite Difference logic with specific boundary conditions, violating the Open/Closed Principle and preventing the use of alternative spatial solvers (e.g., 2D, Spectral) or boundary conditions.
+**Refactor:** Applied the **Strategy Pattern**. Extracted `SpatialDiffusion` trait and moved the stencil logic to `FiniteDifference1D`. `TuringSystem` is now generic over `D: SpatialDiffusion`.
+**Trade-off:** Separated diffusion and reaction into distinct steps (two passes over memory instead of one fused loop), but achieved complete decoupling of physics (Reaction) from geometry (Diffusion).
