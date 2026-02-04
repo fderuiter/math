@@ -14,11 +14,18 @@ mod tests {
     #[test]
     fn test_fluid_properties() {
         let water = FluidProperties::water();
-        assert!((water.density - 998.2).abs() < 1e-6);
-        assert!((water.dynamic_viscosity - 1.002e-3).abs() < 1e-6);
+        assert!((water.density() - 998.2).abs() < 1e-6);
+        assert!((water.dynamic_viscosity() - 1.002e-3).abs() < 1e-6);
 
         let nu = water.kinematic_viscosity();
         assert!((nu - 1.002e-3 / 998.2).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_fluid_properties_validation() {
+        assert!(FluidProperties::new(-10.0, 1.0).is_err()); // Negative density
+        assert!(FluidProperties::new(10.0, -1.0).is_err()); // Negative viscosity
+        assert!(FluidProperties::new(0.0, 1.0).is_err()); // Zero density
     }
 
     #[test]
@@ -34,7 +41,7 @@ mod tests {
 
     #[test]
     fn test_reynolds_number_and_strategies() {
-        let props = FluidProperties::new(1000.0, 0.001); // Water-like
+        let props = FluidProperties::new(1000.0, 0.001).unwrap(); // Water-like
         let u = 2.0;
         let l = 0.5;
 
@@ -68,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_bernoulli() {
-        let props = FluidProperties::new(1000.0, 1.0); // rho=1000
+        let props = FluidProperties::new(1000.0, 1.0).unwrap(); // rho=1000
         let g = 9.81;
         let state = FlowState::new(Vector3::new(10.0, 0.0, 0.0), 101325.0);
         let h = 5.0;
@@ -82,7 +89,7 @@ mod tests {
 
     #[test]
     fn test_shear_stress() {
-        let props = FluidProperties::new(1000.0, 0.001); // mu = 0.001
+        let props = FluidProperties::new(1000.0, 0.001).unwrap(); // mu = 0.001
         let grad_u = 500.0; // 1/s
 
         // tau = mu * du/dy = 0.001 * 500 = 0.5 Pa
@@ -92,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_navier_stokes_simple_couette() {
-        let props = FluidProperties::new(1.0, 1.0); // rho=1, mu=1 -> nu=1
+        let props = FluidProperties::new(1.0, 1.0).unwrap(); // rho=1, mu=1 -> nu=1
         let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
 
         let vel_grad = Matrix3::zeros();
@@ -117,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_strategy_pattern_composability() {
-        let props = FluidProperties::new(1000.0, 0.001);
+        let props = FluidProperties::new(1000.0, 0.001).unwrap();
         let state = FlowState::new(Vector3::zeros(), 101325.0);
         let gradients = SpatialGradients::new(
             Matrix3::zeros(),

@@ -1,23 +1,49 @@
 //! Types for Fluid Dynamics.
 
+use super::error::FluidError;
 use nalgebra::{Matrix3, Vector3};
 
 /// Physical properties of the fluid.
 #[derive(Debug, Clone, Copy)]
 pub struct FluidProperties {
     /// Density ($\rho$) in kg/m^3.
-    pub density: f64,
+    density: f64,
     /// Dynamic viscosity ($\mu$) in Pa·s.
-    pub dynamic_viscosity: f64,
+    dynamic_viscosity: f64,
 }
 
 impl FluidProperties {
-    /// Creates a new `FluidProperties`.
-    pub fn new(density: f64, dynamic_viscosity: f64) -> Self {
-        Self {
+    /// Creates a new `FluidProperties` with validation.
+    ///
+    /// # Errors
+    /// Returns `FluidError::InvalidDensity` if `density <= 0`.
+    /// Returns `FluidError::InvalidViscosity` if `dynamic_viscosity < 0`.
+    pub fn new(density: f64, dynamic_viscosity: f64) -> Result<Self, FluidError> {
+        if density <= 0.0 {
+            return Err(FluidError::InvalidDensity { value: density });
+        }
+        if dynamic_viscosity < 0.0 {
+            return Err(FluidError::InvalidViscosity { value: dynamic_viscosity });
+        }
+        Ok(Self {
             density,
             dynamic_viscosity,
-        }
+        })
+    }
+
+    /// Returns a new builder for constructing `FluidProperties`.
+    pub fn builder() -> FluidPropertiesBuilder {
+        FluidPropertiesBuilder::default()
+    }
+
+    /// Returns the density ($\rho$) in kg/m^3.
+    pub fn density(&self) -> f64 {
+        self.density
+    }
+
+    /// Returns the dynamic viscosity ($\mu$) in Pa·s.
+    pub fn dynamic_viscosity(&self) -> f64 {
+        self.dynamic_viscosity
     }
 
     /// Calculates the kinematic viscosity ($\nu = \mu / \rho$) in m^2/s.
@@ -26,19 +52,51 @@ impl FluidProperties {
     }
 
     /// Standard properties for Water at 20°C.
+    ///
+    /// # Panics
+    /// Panics if internal values are invalid (should never happen).
     pub fn water() -> Self {
-        Self {
-            density: 998.2,
-            dynamic_viscosity: 1.002e-3,
-        }
+        Self::new(998.2, 1.002e-3).unwrap()
     }
 
     /// Standard properties for Air at 15°C (Sea Level).
+    ///
+    /// # Panics
+    /// Panics if internal values are invalid (should never happen).
     pub fn air() -> Self {
-        Self {
-            density: 1.225,
-            dynamic_viscosity: 1.81e-5,
-        }
+        Self::new(1.225, 1.81e-5).unwrap()
+    }
+}
+
+/// Builder for `FluidProperties`.
+#[derive(Debug, Clone, Default)]
+pub struct FluidPropertiesBuilder {
+    density: Option<f64>,
+    dynamic_viscosity: Option<f64>,
+}
+
+impl FluidPropertiesBuilder {
+    /// Sets the density ($\rho$) in kg/m^3.
+    pub fn density(mut self, density: f64) -> Self {
+        self.density = Some(density);
+        self
+    }
+
+    /// Sets the dynamic viscosity ($\mu$) in Pa·s.
+    pub fn dynamic_viscosity(mut self, dynamic_viscosity: f64) -> Self {
+        self.dynamic_viscosity = Some(dynamic_viscosity);
+        self
+    }
+
+    /// Builds the `FluidProperties`.
+    ///
+    /// # Errors
+    /// Returns error if density is not set or invalid, or if viscosity is invalid.
+    /// If viscosity is not set, it defaults to 0.0 (inviscid).
+    pub fn build(self) -> Result<FluidProperties, FluidError> {
+        let density = self.density.unwrap_or(0.0);
+        let dynamic_viscosity = self.dynamic_viscosity.unwrap_or(0.0);
+        FluidProperties::new(density, dynamic_viscosity)
     }
 }
 
