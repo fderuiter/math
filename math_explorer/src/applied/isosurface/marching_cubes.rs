@@ -254,12 +254,8 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     if can_use_fast_path {
                         let next_x_idx = base_idx + 1;
                         corner_normals[1] = unsafe {
-                            self.estimator.gradient_unchecked(
-                                data,
-                                next_x_idx,
-                                stride_y,
-                                stride_z,
-                            )
+                            self.estimator
+                                .gradient_unchecked(data, next_x_idx, stride_y, stride_z)
                         };
                         corner_normals[2] = unsafe {
                             self.estimator.gradient_unchecked(
