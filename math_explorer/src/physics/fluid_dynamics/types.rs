@@ -23,7 +23,9 @@ impl FluidProperties {
             return Err(FluidError::InvalidDensity { value: density });
         }
         if dynamic_viscosity < 0.0 {
-            return Err(FluidError::InvalidViscosity { value: dynamic_viscosity });
+            return Err(FluidError::InvalidViscosity {
+                value: dynamic_viscosity,
+            });
         }
         Ok(Self {
             density,
