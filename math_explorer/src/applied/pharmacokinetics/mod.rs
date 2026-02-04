@@ -1,10 +1,69 @@
-//! # Pharmacokinetics
+//! # Pharmacokinetics (ADME Modeling)
 //!
-//! This module provides tools for pharmacokinetic modeling, including the Bateman function,
-//! superposition principles, and support for enantiomer and extended-release formulations.
+//! This module implements core algorithms for modeling the Absorption, Distribution, Metabolism,
+//! and Excretion (ADME) of drugs. It provides a composable framework for simulating drug
+//! concentration over time in a subject's plasma.
 //!
-//! It uses a trait-based approach `PharmacokineticModel` to allow composition of different
-//! drug behaviors (e.g., superposition of extended-release enantiomers).
+//! ## Architecture
+//!
+//! The module is built around the `PharmacokineticModel` trait, which allows for the flexible
+//! composition of different drug behaviors. Base models (like the Bateman function) can be
+//! wrapped by higher-order models (like Superposition or Two-Pulse) to create complex simulations.
+//!
+//! ```mermaid
+//! graph TD
+//!     Trait[Trait: PharmacokineticModel]
+//!
+//!     Bateman[BatemanModel<br/>(Single Dose, 1-Compartment)]
+//!     Enantiomer[EnantiomerModel<br/>(Chiral Mixture)]
+//!
+//!     Super[SuperpositionModel<br/>(Multiple Doses)]
+//!     TwoPulse[TwoPulseModel<br/>(Extended Release)]
+//!
+//!     Trait <|.. Bateman
+//!     Trait <|.. Enantiomer
+//!
+//!     Super -->|wraps| Trait
+//!     TwoPulse -->|wraps| Trait
+//!
+//!     style Trait fill:#f9f,stroke:#333,stroke-width:2px
+//! ```
+//!
+//! ## Quick Start
+//!
+//! Simulate the concentration of a single oral dose of a drug (e.g., Caffeine) over time.
+//!
+//! ```rust
+//! use math_explorer::applied::pharmacokinetics::{BatemanModel, PKParameters, PharmacokineticModel};
+//!
+//! fn main() {
+//!     // 1. Define Drug Parameters (e.g., Caffeine ~100mg)
+//!     let params = PKParameters {
+//!         f: 1.0,   // Bioavailability (100%)
+//!         d: 100.0, // Dose (mg)
+//!         ka: 2.5,  // Absorption rate (fast)
+//!         ke: 0.15, // Elimination rate (Half-life ~4.6h)
+//!         v: 50.0,  // Volume of distribution (L)
+//!     };
+//!
+//!     // 2. Create the Model
+//!     let model = BatemanModel::new(params);
+//!
+//!     // 3. Simulate
+//!     let t_hours = 1.0;
+//!     let concentration = model.concentration(t_hours);
+//!
+//!     println!("Concentration at {}h: {:.2} mg/L", t_hours, concentration);
+//!     assert!(concentration > 0.0);
+//! }
+//! ```
+//!
+//! ## Key Components
+//!
+//! - **`BatemanModel`**: The standard one-compartment model with first-order absorption and elimination.
+//! - **`SuperpositionModel`**: Calculates accumulation from multiple doses.
+//! - **`EnantiomerModel`**: Models drugs with chiral centers (e.g., Adderall) where isomers have different kinetics.
+//! - **`TwoPulseModel`**: Simulates biphasic release profiles common in Extended Release (XR) formulations.
 
 pub mod bateman;
 pub mod enantiomer;
