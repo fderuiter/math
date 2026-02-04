@@ -193,3 +193,20 @@ Benchmark `bench_mfg` (200x2000 grid, 100 iterations):
 - Before: ~488.75ms
 - After: ~359.67ms
 - Speedup: ~26.4%
+
+## 2026-11-03 - [Optimization] **Bottleneck:** Gillespie Stochastic Solver Allocations **Strategy:** Zero-Allocation Buffer Reuse **Gain:** ~38% Time Saved (28.4ms -> 17.6ms)
+
+**Bottleneck:**
+The `GillespieSolver::step` loop was allocating a new `Vec<f64>` for propensities in every iteration via the `StochasticSystem::propensities` return value.
+For a simulation with 500,000 steps, this meant 500,000 heap allocations and deallocations.
+
+**Strategy:**
+1. **Trait Change:** Modified `StochasticSystem::propensities` to accept a mutable buffer `&mut Vec<f64>` instead of returning a new vector.
+2. **Buffer Reuse:** Added a `buffer` field to `GillespieSolver` which is reused across steps. The buffer is cleared at the start of each step.
+3. **Refactor:** Updated `SIRModel` to append rates to the provided buffer.
+
+**Gain:**
+Benchmark `bench_stochastic` (500,000 steps):
+- Before: ~28.4ms (56ns/step)
+- After: ~17.6ms (35ns/step)
+- Speedup: ~38%
