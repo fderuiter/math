@@ -4,23 +4,24 @@
 //! (power series in q), which are fundamental in the theory of partitions and
 //! other areas of number theory.
 
-use crate::pure_math::algebra::Ring;
+use crate::pure_math::algebra::traits::EuclideanDomain;
 use std::ops::{Add, Div, Mul};
 
 /// Represents a q-series, a power series in q.
 /// The vector `coeffs` stores the coefficients, where the index represents the power of q.
+/// The coefficient type T must be a Euclidean Domain to support division.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct QSeries<T: Ring> {
+pub struct QSeries<T: EuclideanDomain> {
     pub coeffs: Vec<T>,
 }
 
-impl<T: Ring> Default for QSeries<T> {
+impl<T: EuclideanDomain> Default for QSeries<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: Ring> QSeries<T> {
+impl<T: EuclideanDomain> QSeries<T> {
     /// Creates a new empty QSeries.
     pub fn new() -> Self {
         QSeries { coeffs: vec![] }
@@ -79,7 +80,7 @@ impl<T: Ring> QSeries<T> {
     }
 }
 
-impl<T: Ring> Add for &QSeries<T> {
+impl<T: EuclideanDomain> Add for &QSeries<T> {
     type Output = QSeries<T>;
 
     fn add(self, other: Self) -> QSeries<T> {
@@ -96,7 +97,7 @@ impl<T: Ring> Add for &QSeries<T> {
     }
 }
 
-impl<T: Ring> Mul for &QSeries<T> {
+impl<T: EuclideanDomain> Mul for &QSeries<T> {
     type Output = QSeries<T>;
 
     fn mul(self, other: Self) -> QSeries<T> {
@@ -130,7 +131,7 @@ impl<T: Ring> Mul for &QSeries<T> {
     }
 }
 
-impl<T: Ring> Div for &QSeries<T> {
+impl<T: EuclideanDomain> Div for &QSeries<T> {
     type Output = QSeries<T>;
 
     fn div(self, other: Self) -> QSeries<T> {

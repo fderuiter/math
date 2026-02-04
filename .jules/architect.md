@@ -49,3 +49,21 @@
 2. Introduced `MedicalPhysicsError` (Error Modeling) to replace stringly-typed errors.
 3. Introduced `BeamLoadingModel` (Structification) to encapsulate machine constants.
 **Consequence:** Improved cohesion and type safety. Each module now focuses on a single domain. `dose_calculation` file was removed, but functionalities are preserved in more logical homes.
+## 2026-10-27 - [Advanced Linear Algebra Module]
+**Problem:** The library lacked comprehensive support for Advanced Linear Algebra concepts like Canonical Forms, Decomposition analysis (beyond basic `nalgebra` usage), and their physical interpretations.
+**Decision:** Created a new module `math_explorer/src/pure_math/algebra/linear_algebra/` decomposed into `eigen.rs`, `canonical.rs`, and `decomposition.rs`.
+**Consequence:** Provides a dedicated space for educational and practical implementations of advanced linear algebra, bridging the gap between raw matrix libraries (`nalgebra`) and physical/theoretical applications. Enforced strong typing (e.g., `JordanBlock` struct) and extensive documentation.
+## 2027-05-23 - [Tensor & Vector Calculus Implementation]
+**Problem:** The `pure_math` module lacked generalized Tensor Analysis and Vector Calculus tools, limiting the project's ability to model physics in curvilinear coordinates or general manifolds.
+**Decision:** Implemented `math_explorer/src/pure_math/tensor` (Metric, Christoffel, Differentiation) and `math_explorer/src/pure_math/vector_calculus` (Orthogonal Coordinates, Operators, Integral Theorems).
+**Consequence:** Enables rigorous mathematical modeling in arbitrary coordinate systems. Enforced "Newtype" pattern for Tensors and "Strategy Pattern" for Coordinate Systems to maintain architectural standards.
+
+## 2027-05-24 - [Algebra Ring Decomposition]
+**Problem:** `math_explorer/src/pure_math/algebra/ring.rs` contained mixed implementations of Finite Fields (`Fp`) and Polynomial Rings (`Polynomial`), conflating two distinct algebraic structures and limiting clarity.
+**Decision:** Applied "Module Extraction". Decomposed `ring.rs` into `fields.rs` (containing `Fp`) and `polynomial.rs` (containing `Polynomial`). Updated `mod.rs` to re-export them, maintaining backward compatibility.
+**Consequence:** Improved separation of concerns. `Polynomial` is now a standalone module, ready for future expansion (e.g., GCD, factorization), while `Fp` is isolated in `fields.rs`.
+
+## 2025-05-23 - [Safe Fluid Construction]
+**Problem:** `FluidProperties` in `physics::fluid_dynamics` allowed invalid physical states (negative density/viscosity), leading to potential silent failures or NaNs in solvers.
+**Decision:** Implemented the **Builder Pattern** and strictly validated constructors. `FluidProperties` now enforces `density > 0` and `viscosity >= 0` via a `Result`-returning constructor and a fluent Builder API. Fields are private to prevent bypassing validation.
+**Consequence:** Prevents "Illegal States" in the fluid dynamics module. This introduces a breaking change to `FluidProperties::new`, improving safety at the cost of requiring error handling in initialization logic.

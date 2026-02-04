@@ -15,7 +15,8 @@ pub fn reynolds_number(
     velocity_magnitude: f64,
     characteristic_length: f64,
 ) -> f64 {
-    (properties.density * velocity_magnitude * characteristic_length) / properties.dynamic_viscosity
+    (properties.density() * velocity_magnitude * characteristic_length)
+        / properties.dynamic_viscosity()
 }
 
 /// Determines the flow regime from the Reynolds number using the standard Pipe Flow strategy.
@@ -48,7 +49,7 @@ pub fn bernoulli_constant(
     gravity: f64,
 ) -> f64 {
     let v_sq = state.velocity.norm_squared();
-    state.pressure + 0.5 * properties.density * v_sq + properties.density * gravity * height
+    state.pressure + 0.5 * properties.density() * v_sq + properties.density() * gravity * height
 }
 
 /// Calculates Shear Stress ($\tau$) in a Boundary Layer (Newtonian Fluid).
@@ -58,5 +59,5 @@ pub fn bernoulli_constant(
 /// * `properties`: Fluid properties (specifically dynamic viscosity $\mu$).
 /// * `velocity_gradient_normal`: Gradient of velocity perpendicular to the wall ($\frac{\partial u}{\partial y}$).
 pub fn shear_stress(properties: &FluidProperties, velocity_gradient_normal: f64) -> f64 {
-    properties.dynamic_viscosity * velocity_gradient_normal
+    properties.dynamic_viscosity() * velocity_gradient_normal
 }

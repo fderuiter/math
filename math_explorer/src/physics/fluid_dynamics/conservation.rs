@@ -2,6 +2,7 @@
 //!
 //! Implements the core Partial Differential Equations (PDEs) of Fluid Dynamics.
 
+use super::error::FluidError;
 use super::types::{FlowState, FluidProperties, SpatialGradients};
 use nalgebra::Vector3;
 
@@ -78,7 +79,7 @@ impl MomentumEquation for NavierStokes {
         body_force_accel: Vector3<f64>,
     ) -> Vector3<f64> {
         let nu = properties.kinematic_viscosity();
-        let rho = properties.density;
+        let rho = properties.density();
 
         // Convective term: -(u . del) u
         let convection = -(gradients.velocity_gradient * state.velocity);
@@ -107,7 +108,7 @@ impl MomentumEquation for Euler {
         gradients: &SpatialGradients,
         body_force_accel: Vector3<f64>,
     ) -> Vector3<f64> {
-        let rho = properties.density;
+        let rho = properties.density();
 
         // Convective term: -(u . del) u
         let convection = -(gradients.velocity_gradient * state.velocity);
@@ -144,13 +145,13 @@ pub fn euler_time_derivative(
     velocity_gradient: &nalgebra::Matrix3<f64>,
     pressure_gradient: Vector3<f64>,
     body_force_accel: Vector3<f64>,
-) -> Vector3<f64> {
+) -> Result<Vector3<f64>, FluidError> {
     // Construct minimal properties for Euler (viscosity irrelevant)
-    let properties = FluidProperties::new(rho, 0.0);
+    let properties = FluidProperties::new(rho, 0.0)?;
     let gradients = SpatialGradients::new(
         *velocity_gradient,
         pressure_gradient,
         Vector3::zeros(), // Irrelevant for Euler
     );
-    Euler.acceleration(&properties, state, &gradients, body_force_accel)
+    Ok(Euler.acceleration(&properties, state, &gradients, body_force_accel))
 }

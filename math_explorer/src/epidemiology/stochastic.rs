@@ -26,7 +26,7 @@ pub trait StochasticSystem<State> {
 ///
 /// let mut rng = StdRng::seed_from_u64(42);
 /// let mut solver = GillespieSolver::new(rng);
-/// let mut model = SIRModel::new(100.0, 5.0, 0.5, 0.1);
+/// let mut model = SIRModel::new(100.0, 5.0, 0.5, 0.1).unwrap();
 /// let mut time = 0.0;
 ///
 /// // Decouple state from model to avoid borrow checker errors
@@ -188,7 +188,7 @@ mod tests {
         let n = 100.0;
         let i0 = 10.0;
         // High beta, low gamma -> likely infection
-        let model = SIRModel::new(n, i0, 2.0, 0.1);
+        let model = SIRModel::new(n, i0, 2.0, 0.1).unwrap();
 
         let mut state = model.state; // Working copy of state
         let initial_s = state.s;
