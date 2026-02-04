@@ -74,3 +74,8 @@
 **Gap:** The `applied/grpo` module was a "Blank Page" with zero context, hiding a complex Reinforcement Learning algorithm.
 **Strategy:** Add a Mermaid Flowchart of the optimization loop and a "Quick Start" example for calculating the clipped surrogate objective.
 **Outcome:** Users can now understand the flow of Group Relative Policy Optimization and use the objective function components.
+
+## 2026-02-17 - Visualizing Pharmacokinetics
+**Gap:** The `applied/pharmacokinetics` module was a "Visual Void" with sparse docs, hiding the powerful Trait-based composition system for ADME modeling.
+**Strategy:** Overhauled `pharmacokinetics/mod.rs` with a Mermaid diagram of the model hierarchy and a runnable Quick Start example for simulating drug concentration.
+**Outcome:** Users can now understand the relationship between Base and Wrapper models and simulate dosing regimens without reading the source code.
