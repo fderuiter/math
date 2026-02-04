@@ -36,5 +36,8 @@ pub mod neuroscience;
 /// Turing reaction-diffusion systems.
 pub mod morphogenesis;
 
+/// Spatial diffusion strategies.
+pub mod diffusion;
+
 /// Evolutionary game theory models.
 pub mod evolution;
