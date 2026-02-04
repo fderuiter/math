@@ -6,8 +6,10 @@ use rand::Rng;
 /// Unlike ODE systems which are continuous, stochastic systems define discrete events
 /// that occur with specific propensities (rates).
 pub trait StochasticSystem<State> {
-    /// Returns the propensity (rate) of each reaction in the current state.
-    fn propensities(&self, state: &State) -> Vec<f64>;
+    /// Appends the propensity (rate) of each reaction in the current state to the output buffer.
+    ///
+    /// The buffer is cleared by the solver before calling this method.
+    fn propensities(&self, state: &State, out: &mut Vec<f64>);
 
     /// Updates the state according to the reaction that occurred.
     fn react(&self, state: &mut State, reaction_index: usize);
@@ -42,6 +44,8 @@ pub trait StochasticSystem<State> {
 /// ```
 pub struct GillespieSolver<R> {
     rng: R,
+    /// Reusable buffer for propensities to avoid allocation per step.
+    buffer: Vec<f64>,
 }
 
 impl<R: Rng> GillespieSolver<R> {
@@ -49,7 +53,11 @@ impl<R: Rng> GillespieSolver<R> {
     ///
     /// This allows for deterministic simulations by passing a seeded RNG.
     pub fn new(rng: R) -> Self {
-        Self { rng }
+        Self {
+            rng,
+            // Pre-allocate space for a reasonable number of reactions
+            buffer: Vec::with_capacity(16),
+        }
     }
 
     /// Performs one step of the Gillespie algorithm.
@@ -60,7 +68,11 @@ impl<R: Rng> GillespieSolver<R> {
     where
         S: StochasticSystem<State>,
     {
-        let rates = system.propensities(state);
+        // Reuse internal buffer
+        self.buffer.clear();
+        system.propensities(state, &mut self.buffer);
+        let rates = &self.buffer;
+
         let total_rate: f64 = rates.iter().sum();
 
         if total_rate <= 0.0 {
@@ -99,7 +111,7 @@ impl<R: Rng> GillespieSolver<R> {
 }
 
 impl StochasticSystem<SIRState> for SIRModel {
-    fn propensities(&self, state: &SIRState) -> Vec<f64> {
+    fn propensities(&self, state: &SIRState, out: &mut Vec<f64>) {
         // Reaction 0: Infection (S + I -> 2I)
         // Rate: beta * S * I / N
         let infection_rate = self.beta * state.s * state.i / self.n;
@@ -108,7 +120,8 @@ impl StochasticSystem<SIRState> for SIRModel {
         // Rate: gamma * I
         let recovery_rate = self.gamma * state.i;
 
-        vec![infection_rate, recovery_rate]
+        out.push(infection_rate);
+        out.push(recovery_rate);
     }
 
     fn react(&self, state: &mut SIRState, reaction_index: usize) {
