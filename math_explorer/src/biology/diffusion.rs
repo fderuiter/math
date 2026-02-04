@@ -36,7 +36,15 @@ impl FiniteDifference1D {
 }
 
 impl SpatialDiffusion for FiniteDifference1D {
-    fn apply(&self, u: &[f64], v: &[f64], out_u: &mut [f64], out_v: &mut [f64], d_u: f64, d_v: f64) {
+    fn apply(
+        &self,
+        u: &[f64],
+        v: &[f64],
+        out_u: &mut [f64],
+        out_v: &mut [f64],
+        d_u: f64,
+        d_v: f64,
+    ) {
         let n = u.len();
         if n == 0 {
             return;
