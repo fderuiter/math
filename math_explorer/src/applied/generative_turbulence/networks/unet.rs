@@ -78,7 +78,12 @@ impl UpBlock {
     }
 
     fn forward(&self, xs: &Tensor, skip: &Tensor, t: Option<&Tensor>) -> Tensor {
-        let (_, _, h, w) = skip.size4().unwrap();
+        let size = skip.size();
+        if size.len() != 4 {
+            panic!("UpBlock expects 4D skip connection (N, C, H, W), got {:?}", size);
+        }
+        let h = size[2];
+        let w = size[3];
         let upsampled = xs.upsample_nearest2d(&[h, w], None, None);
         let combined = Tensor::cat(&[skip, &upsampled], 1);
         let mut features = self.conv.forward(&combined);

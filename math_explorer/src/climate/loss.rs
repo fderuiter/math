@@ -53,8 +53,8 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
 
         // The EMD for 1D distributions is the L1 norm of the difference
         // between the sorted samples.
-        col1.sort_by(|a, b| a.partial_cmp(b).unwrap());
-        col2.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        col1.sort_by(|a, b| a.total_cmp(b));
+        col2.sort_by(|a, b| a.total_cmp(b));
 
         let emd_i: f32 = col1
             .iter()

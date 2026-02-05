@@ -1,7 +1,9 @@
 //! Types for Fluid Dynamics.
 
 use super::error::FluidError;
+use crate::pure_math::analysis::ode::VectorOperations;
 use nalgebra::{Matrix3, Vector3};
+use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Physical properties of the fluid.
 #[derive(Debug, Clone, Copy)]
@@ -103,7 +105,7 @@ impl FluidPropertiesBuilder {
 }
 
 /// Represents the state of a fluid element at a specific point in space and time.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct FlowState {
     /// Velocity vector ($\mathbf{u}$) in m/s.
     pub velocity: Vector3<f64>,
@@ -114,6 +116,51 @@ pub struct FlowState {
 impl FlowState {
     pub fn new(velocity: Vector3<f64>, pressure: f64) -> Self {
         Self { velocity, pressure }
+    }
+}
+
+impl Add for FlowState {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
+        Self {
+            velocity: self.velocity + rhs.velocity,
+            pressure: self.pressure + rhs.pressure,
+        }
+    }
+}
+
+impl AddAssign for FlowState {
+    fn add_assign(&mut self, rhs: Self) {
+        self.velocity += rhs.velocity;
+        self.pressure += rhs.pressure;
+    }
+}
+
+impl Mul<f64> for FlowState {
+    type Output = Self;
+    fn mul(self, scalar: f64) -> Self {
+        Self {
+            velocity: self.velocity * scalar,
+            pressure: self.pressure * scalar,
+        }
+    }
+}
+
+impl MulAssign<f64> for FlowState {
+    fn mul_assign(&mut self, scalar: f64) {
+        self.velocity *= scalar;
+        self.pressure *= scalar;
+    }
+}
+
+impl VectorOperations for FlowState {
+    fn scale_add(&mut self, other: &Self, scale: f64) {
+        self.velocity += other.velocity * scale;
+        self.pressure += other.pressure * scale;
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        *self = *other;
     }
 }
 

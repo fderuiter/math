@@ -3,12 +3,14 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            Euler, MomentumEquation, NavierStokes, continuity_divergence,
+            Euler as FluidEuler, MomentumEquation, NavierStokes, continuity_divergence,
             material_derivative_scalar, navier_stokes_time_derivative,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
+        solver::FluidParticleSystem,
         types::{FlowState, FluidProperties, SpatialGradients},
     };
+    use crate::pure_math::analysis::ode::{Euler as OdeEuler, Solver};
     use nalgebra::{Matrix3, Vector3};
 
     #[test]
@@ -140,16 +142,46 @@ mod tests {
         assert!((accel_ns.x - (-0.1)).abs() < 1e-9);
 
         // 2. Test Euler Strategy directly
-        let euler = Euler;
+        let euler = FluidEuler;
         let accel_euler = euler.acceleration(&props, &state, &gradients, g);
         assert!((accel_euler.x - (-0.1)).abs() < 1e-9);
 
         // 3. Test dynamic dispatch (simulated)
         let strategies: Vec<Box<dyn MomentumEquation>> =
-            vec![Box::new(NavierStokes), Box::new(Euler)];
+            vec![Box::new(NavierStokes), Box::new(FluidEuler)];
         for strategy in strategies {
             let acc = strategy.acceleration(&props, &state, &gradients, g);
             assert!((acc.x - (-0.1)).abs() < 1e-9);
         }
+    }
+
+    #[test]
+    fn test_fluid_particle_integration() {
+        // Setup: Water particle driven by pressure gradient
+        let props = FluidProperties::water();
+        let initial_velocity = Vector3::zeros();
+        let state = FlowState::new(initial_velocity, 101325.0);
+
+        // Gradient: dp/dx = -100 Pa/m (pressure drops in +x direction)
+        // This should cause acceleration a = -(-100)/998.2 = +0.10018 m/s^2
+        let gradients = SpatialGradients::new(
+            Matrix3::zeros(),
+            Vector3::new(-100.0, 0.0, 0.0),
+            Vector3::zeros(),
+        );
+
+        let body_force = Vector3::zeros();
+        let strategy = NavierStokes;
+
+        let system = FluidParticleSystem::new(&props, strategy, gradients, body_force, state);
+
+        // Integrate for 1 second
+        let dt = 1.0;
+        let solver = OdeEuler;
+        let next_state = solver.solve(&system, 0.0, &state, dt);
+
+        let expected_accel = 100.0 / 998.2;
+        assert!((next_state.velocity.x - expected_accel).abs() < 1e-4);
+        assert!((next_state.pressure - 101325.0).abs() < 1e-9); // Pressure should be constant
     }
 }
