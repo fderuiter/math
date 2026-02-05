@@ -68,3 +68,8 @@
 2. Moved numerical solvers (`solve_linear_system`, `solve_normal_equation`, etc.) to `math_explorer/src/pure_math/algebra/linear_algebra/numerical.rs`.
 3. Deleted the legacy `analysis/linear_algebra.rs`.
 **Consequence:** Enforced strict domain boundaries. Optimization logic is now distinct from Linear Algebra. All Linear Algebra functionality (abstract and numerical) is consolidated under `pure_math/algebra`.
+
+## 2027-06-10 - [Epidemiology Compartmental Decomposition]
+**Problem:** `math_explorer/src/epidemiology/compartmental.rs` was becoming a monolithic file containing multiple distinct disease models (SIR, SEIR) and shared utility logic, violating the Single Responsibility Principle.
+**Decision:** Applied "Module Extraction". Decomposed `compartmental.rs` into a directory-based module `math_explorer/src/epidemiology/compartmental/` with `sir.rs`, `seir.rs`, `common.rs` (for validation and R0), and `macros.rs` (for arithmetic ops).
+**Consequence:** Improved separation of concerns and scalability. New compartmental models (e.g., SIS, SIRS) can be added as separate files without bloating a single source file. API backward compatibility is preserved via re-exports.
