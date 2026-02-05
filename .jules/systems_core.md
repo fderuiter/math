@@ -65,3 +65,8 @@
 **Violation:** Hardcoding gradient/divergence formulas for Cartesian coordinates would violate OCP and prevent usage in Cylindrical/Spherical systems.
 **Refactor:** Applied **Strategy Pattern**. Extracted `OrthogonalCoordinateSystem` trait. Implemented `Cylindrical` and `Spherical` strategies. Operators (`gradient`, etc.) are generic over this trait.
 **Trade-off:** Numerical differentiation introduces small errors compared to analytical solutions, but allows generic implementation for any orthogonal system.
+
+## 2027-05-24 - Builder Pattern for Compartmental Models
+**Violation:** `SIRModel` and `SEIRModel` constructors contained duplicated validation logic for parameters (DRY violation) and suffered from "Primitive Obsession" with long lists of `f64` arguments.
+**Refactor:** Applied **Builder Pattern** and **Centralized Validation**. Refactored `compartmental.rs` into a module, extracted validation to `validation.rs`, and implemented `SIRModelBuilder` and `SEIRModelBuilder`.
+**Trade-off:** Increased file count (module split), but eliminated code duplication and provided a fluent, safe API for model construction.
