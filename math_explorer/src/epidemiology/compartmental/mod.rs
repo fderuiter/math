@@ -48,12 +48,12 @@ macro_rules! impl_compartmental_ops {
     };
 }
 
-pub mod validation;
-pub mod sir;
 pub mod seir;
+pub mod sir;
+pub mod validation;
 
-pub use sir::{SIRModel, SIRModelBuilder, SIRState};
 pub use seir::{SEIRModel, SEIRModelBuilder, SEIRState};
+pub use sir::{SIRModel, SIRModelBuilder, SIRState};
 
 /// Calculates the Basic Reproduction Number ($R_0$).
 ///

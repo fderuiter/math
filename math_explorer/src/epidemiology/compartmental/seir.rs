@@ -1,6 +1,6 @@
+use super::validation::{validate_initial_infected, validate_population, validate_rate};
 use crate::epidemiology::error::EpidemiologyError;
 use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper, VectorOperations};
-use super::validation::{validate_initial_infected, validate_population, validate_rate};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// State for the SEIR Model.
@@ -144,20 +144,16 @@ impl SEIRModelBuilder {
 
     /// Builds the SEIRModel, validating all parameters.
     pub fn build(self) -> Result<SEIRModel, EpidemiologyError> {
-        let n = self
-            .n
-            .ok_or_else(|| EpidemiologyError::InvalidParameter {
-                name: "n (population)".to_string(),
-                value: 0.0,
-            })?;
+        let n = self.n.ok_or_else(|| EpidemiologyError::InvalidParameter {
+            name: "n (population)".to_string(),
+            value: 0.0,
+        })?;
         validate_population(n)?;
 
-        let i0 = self
-            .i0
-            .ok_or_else(|| EpidemiologyError::InvalidParameter {
-                name: "i0 (initial infected)".to_string(),
-                value: 0.0,
-            })?;
+        let i0 = self.i0.ok_or_else(|| EpidemiologyError::InvalidParameter {
+            name: "i0 (initial infected)".to_string(),
+            value: 0.0,
+        })?;
         validate_initial_infected(i0, n)?;
 
         let beta = self
