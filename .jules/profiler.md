@@ -210,3 +210,5 @@ Benchmark `bench_stochastic` (500,000 steps):
 - Before: ~28.4ms (56ns/step)
 - After: ~17.6ms (35ns/step)
 - Speedup: ~38%
+
+## 2024-10-26 - [Optimization] **Bottleneck:** ReplicatorDynamics::derivative allocated 2 vectors per call. **Strategy:** Implemented derivative_in_place using output buffer as scratchpad. **Gain:** 20% simulation speedup for N=10 systems (Zero allocations per RK4 step).
