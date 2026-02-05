@@ -101,15 +101,25 @@ impl ReplicatorDynamics {
 }
 
 impl OdeSystem<DVector<f64>> for ReplicatorDynamics {
-    fn derivative(&self, _t: f64, x: &DVector<f64>) -> DVector<f64> {
-        let fitness_vector = &self.payoff_matrix * x;
-        let average_fitness = x.dot(&fitness_vector);
+    fn derivative(&self, t: f64, x: &DVector<f64>) -> DVector<f64> {
+        let mut out = DVector::zeros(x.len());
+        self.derivative_in_place(t, x, &mut out);
+        out
+    }
 
-        let mut dxdt = DVector::zeros(x.len());
-        for i in 0..x.len() {
-            dxdt[i] = x[i] * (fitness_vector[i] - average_fitness);
+    fn derivative_in_place(&self, _t: f64, x: &DVector<f64>, out: &mut DVector<f64>) {
+        // Optimization: Use 'out' as a scratchpad for fitness_vector (A * x)
+        // This avoids allocating a new vector for the matrix-vector multiplication.
+        self.payoff_matrix.mul_to(x, out);
+
+        // average_fitness = x . (A * x)
+        let average_fitness = x.dot(out);
+
+        // dx_i/dt = x_i * (fitness_i - average_fitness)
+        // 'out' currently holds 'fitness_i', so we update it in-place.
+        for (o, xi) in out.iter_mut().zip(x.iter()) {
+            *o = *xi * (*o - average_fitness);
         }
-        dxdt
     }
 }
 
