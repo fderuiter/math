@@ -1,5 +1,6 @@
 use crate::applied::game_theory::error::GameTheoryError;
 use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
+use crate::pure_math::analysis::ode::{Euler, Solver};
 use nalgebra::{DMatrix, DVector};
 
 /// Represents a population playing the Hawk-Dove game.
@@ -59,15 +60,12 @@ impl HawkDovePopulation {
         let p_d = 1.0 - p_h;
 
         let current_state = DVector::from_vec(vec![p_h, p_d]);
-        let solver = self.to_replicator_dynamics()?;
-        let derivative = solver.derivative(&current_state);
+        let system = self.to_replicator_dynamics()?;
+        let solver = Euler;
 
-        // Manual Euler step to preserve legacy behavior (solver.simulate uses RK4)
-        // dp/dt = derivative
-        // new_p = p + dp/dt * dt
-        let dp_h = derivative[0];
-
-        let mut new_p_h = p_h + dp_h * dt;
+        // Use the generic solver strategy instead of manual Euler
+        let next_state = solver.solve(&system, 0.0, &current_state, dt);
+        let mut new_p_h = next_state[0];
 
         // Clamp to [0, 1] to handle numerical drift
         new_p_h = new_p_h.clamp(0.0, 1.0);
