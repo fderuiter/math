@@ -32,7 +32,7 @@ macro_rules! impl_compartmental_ops {
             }
         }
 
-        impl crate::pure_math::analysis::ode::VectorOperations for $type {
+        impl $crate::pure_math::analysis::ode::VectorOperations for $type {
             fn scale_add(&mut self, other: &Self, scale: f64) {
                 $(self.$field += other.$field * scale;)+
             }
