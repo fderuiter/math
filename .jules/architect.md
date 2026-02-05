@@ -68,3 +68,8 @@
 2. Moved numerical solvers (`solve_linear_system`, `solve_normal_equation`, etc.) to `math_explorer/src/pure_math/algebra/linear_algebra/numerical.rs`.
 3. Deleted the legacy `analysis/linear_algebra.rs`.
 **Consequence:** Enforced strict domain boundaries. Optimization logic is now distinct from Linear Algebra. All Linear Algebra functionality (abstract and numerical) is consolidated under `pure_math/algebra`.
+
+## 2027-06-03 - [Epidemiology Compartmental Decomposition]
+**Problem:** `math_explorer/src/epidemiology/compartmental.rs` was becoming a "God File" mixing multiple models (SIR, SEIR). Constructors suffered from "Primitive Obsession" (too many `f64` arguments), making them error-prone and hard to extend.
+**Decision:** Applied **Module Extraction** and **Builder Pattern**. Decomposed the file into `compartmental/sir.rs` and `compartmental/seir.rs`. Implemented `SIRBuilder` and `SEIRBuilder` to enforce validation logic ($N>0$, rates $\ge 0$) and improve ergonomics.
+**Consequence:** Models are now isolated in their own files, allowing for easy addition of new compartmental models (e.g., SIS, SEIRS) without bloat. The Builder pattern ensures safe construction and readable initialization code. Backward compatibility is maintained via re-exports.
