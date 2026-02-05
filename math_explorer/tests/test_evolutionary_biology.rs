@@ -22,5 +22,9 @@ fn test_hawk_dove_update() {
     // dp_H = p_H * (f_H - avg_f) = 0.8 * (-0.4 - (-0.28)) = 0.8 * (-0.12) = -0.096
     // new_p_H = 0.8 + (-0.096) * 0.1 = 0.8 - 0.0096 = 0.7904
 
-    assert!((next_p_h - 0.7904).abs() < 1e-6, "Expected 0.7904, got {}", next_p_h);
+    assert!(
+        (next_p_h - 0.7904).abs() < 1e-6,
+        "Expected 0.7904, got {}",
+        next_p_h
+    );
 }
