@@ -1,7 +1,7 @@
-pub mod macros;
 pub mod common;
-pub mod sir;
+pub mod macros;
 pub mod seir;
+pub mod sir;
 
 pub use common::basic_reproduction_number;
 pub use seir::{SEIRModel, SEIRState};
