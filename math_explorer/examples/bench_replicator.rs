@@ -7,7 +7,10 @@ fn main() {
     // Scenario 2: Small system (N=10), many iterations.
     // This highlights allocation overhead.
     let size = 10;
-    println!("Benchmarking ReplicatorDynamics with {} strategies...", size);
+    println!(
+        "Benchmarking ReplicatorDynamics with {} strategies...",
+        size
+    );
 
     let mut data = Vec::with_capacity(size * size);
     for i in 0..size {
@@ -36,7 +39,10 @@ fn main() {
     let duration = start.elapsed();
 
     println!("Time: {:.2?}", duration);
-    println!("Average time per call: {:.2?}", duration / iterations as u32);
+    println!(
+        "Average time per call: {:.2?}",
+        duration / iterations as u32
+    );
     println!("Dummy: {}", dummy_acc);
 
     // Benchmarking simulation
