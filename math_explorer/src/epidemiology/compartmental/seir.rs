@@ -1,7 +1,7 @@
+use super::common::{validate_initial_infected, validate_population, validate_rate};
 use crate::epidemiology::error::EpidemiologyError;
-use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
 use crate::impl_compartmental_ops;
-use super::common::{validate_population, validate_initial_infected, validate_rate};
+use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
 
 /// State for the SEIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
