@@ -79,3 +79,13 @@
 **Gap:** The `applied/pharmacokinetics` module was a "Visual Void" with sparse docs, hiding the powerful Trait-based composition system for ADME modeling.
 **Strategy:** Overhauled `pharmacokinetics/mod.rs` with a Mermaid diagram of the model hierarchy and a runnable Quick Start example for simulating drug concentration.
 **Outcome:** Users can now understand the relationship between Base and Wrapper models and simulate dosing regimens without reading the source code.
+
+## 2026-02-18 - Visualizing Win Ratio Analysis
+**Gap:** The `applied/win_ratio` module was a "Visual Void" with sparse documentation and no explanation of the complex hierarchical comparison logic.
+**Strategy:** Overhauled `win_ratio/mod.rs` with a Mermaid flowchart of the comparison decision tree and a runnable Quick Start example. Added detailed docstrings to the `pair_comparison` module.
+**Outcome:** Users can now understand the pairwise comparison logic (Death > HF > QoL) and calculate statistics without reading the source code.
+
+## 2026-02-18 - Unearthing Battery Degradation
+**Gap:** The `battery_degradation` module was a "Ghost Module" (missing from the root README) and its documentation pointed to deprecated functions.
+**Strategy:** Updated `battery_degradation/mod.rs` to promote the modern `PowerLawModel` API with a clear example. Added the module to the root README "Features" table and diagram.
+**Outcome:** The module is now discoverable and users are guided to use the correct, type-safe API.

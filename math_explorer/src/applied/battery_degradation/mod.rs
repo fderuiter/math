@@ -1,38 +1,47 @@
-//! Battery degradation model based on depth-of-discharge (DoD).
+//! # Battery Degradation Modeling
 //!
 //! This module provides functions to estimate battery cycle life and capacity fade
-//! for Li-ion batteries. The model is based on a power law fit to experimental data.
+//! for Li-ion batteries based on Depth-of-Discharge (DoD).
 //!
-//! # How to Use
+//! ## The Model
 //!
-//! 1.  Determine your charge window (e.g., 20% to 80%) to find the depth-of-discharge `d`.
-//!     For a window `[L, U]`, the DoD is `d = U - L`. For 20-80%, `d = 60`.
-//! 2.  Use the `n70(d)` function to calculate the cycle life to 70% capacity for your DoD.
-//! 3.  Use `capacity(n, d)` to plot capacity over time, or `cycles_to_capacity(target, d)`
-//!     to predict when the battery will reach a specific capacity.
+//! The degradation is modeled using a Power Law fit to experimental data:
+//! $$ N_{70}(d) = \alpha \cdot d^\beta $$
 //!
-//! All cycle counts (`n`) are in "equivalent full cycles" (EFC). For example, ten 10%
-//! discharges are equivalent to one full cycle (1 EFC).
+//! Where:
+//! - $d$ is the Depth of Discharge (0-100%).
+//! - $N_{70}$ is the number of equivalent full cycles until the battery reaches 70% capacity.
+//! - $\alpha, \beta$ are empirical constants (Standard Li-ion: $\alpha \approx 1.019 \times 10^5, \beta \approx -1.26$).
 //!
-//! # Model Details
+//! This implies that **shallower discharges drastically increase cycle life**.
 //!
-//! The model uses a power law `N₇₀(d) = α * d^β` fit to the following anchor data
-//! for cycles to 70% capacity (N₇₀):
+//! ## Quick Start
 //!
-//! - (DoD=100%, N₇₀=300)
-//! - (DoD=80%, N₇₀=400)
-//! - (DoD=60%, N₇₀=600)
-//! - (DoD=40%, N₇₀=1000)
-//! - (DoD=20%, N₇₀=2000)
-//! - (DoD=10%, N₇₀=6000)
+//! ```rust
+//! use math_explorer::applied::battery_degradation::{PowerLawModel, DepthOfDischarge, Cycles};
 //!
-//! The least squares fit resulted in `α ≈ 1.019e5` and `β ≈ -1.2639`.
+//! fn main() {
+//!     // 1. Initialize the standard model
+//!     let model = PowerLawModel::standard();
 //!
-//! # Limits
+//!     // 2. Define a scenario: 80% to 20% charge window = 60% DoD
+//!     let dod = DepthOfDischarge::new(60.0);
 //!
-//! This is a DoD-only model. It does not account for other factors that affect battery
-//! aging, such as heat, high charge/discharge rates, or calendar aging (time-based decay).
-//! The results should be treated as order-of-magnitude estimates, not guarantees.
+//!     // 3. Estimate Life Expectancy (Cycles to 70% SOH)
+//!     let life_cycles = model.n70(dod);
+//!     println!("Expected Life: {:.0} cycles", life_cycles.as_f64());
+//!
+//!     // 4. Predict Capacity after 1000 cycles
+//!     let current_cycles = Cycles::new(1000.0);
+//!     let remaining_capacity = model.capacity(current_cycles, dod);
+//!     println!("Capacity after 1000 cycles: {:.1}%", remaining_capacity.as_f64() * 100.0);
+//! }
+//! ```
+//!
+//! ## Modules
+//!
+//! - [`model`]: Core logic including the `PowerLawModel` struct.
+//! - [`types`]: Type-safe wrappers for `Capacity`, `Cycles`, and `DepthOfDischarge`.
 
 pub mod model;
 pub mod types;
@@ -40,23 +49,12 @@ pub mod types;
 pub use model::PowerLawModel;
 pub use types::{Capacity, Cycles, DepthOfDischarge};
 
-/// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
-/// for a given depth-of-discharge (DoD).
-///
-/// # Arguments
-///
-/// * `d` - Depth-of-discharge, as a percentage (e.g., 60.0 for 60%).
-///
-/// # Returns
-///
-/// The estimated number of cycles to reach 70% capacity.
+/// Calculates the number of equivalent full cycles to 70% capacity (N₇₀).
 #[deprecated(
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().n70(DepthOfDischarge::new(d))` instead"
 )]
 pub fn n70(d: f64) -> f64 {
-    // Avoid panics for legacy users who might be passing bad values (though unlikely to work well)
-    // We clamp to 0-100 to be safe
     let d_clamped = d.clamp(0.0, 100.0);
     PowerLawModel::standard()
         .n70(DepthOfDischarge::new(d_clamped))
@@ -64,15 +62,6 @@ pub fn n70(d: f64) -> f64 {
 }
 
 /// Calculates the remaining battery capacity after a number of cycles.
-///
-/// # Arguments
-///
-/// * `n` - Number of equivalent full cycles.
-/// * `d` - Depth-of-discharge, as a percentage (e.g., 60.0 for 60%).
-///
-/// # Returns
-///
-/// The battery capacity as a fraction of its initial capacity (e.g., 0.9 for 90%).
 #[deprecated(
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().capacity(...)` instead"
@@ -86,15 +75,6 @@ pub fn capacity(n: f64, d: f64) -> f64 {
 }
 
 /// Calculates the number of equivalent full cycles to reach a target capacity.
-///
-/// # Arguments
-///
-/// * `target_capacity` - The target capacity as a fraction (e.g., 0.9 for 90%).
-/// * `d` - Depth-of-discharge, as a percentage (e.g., 60.0 for 60%).
-///
-/// # Returns
-///
-/// The estimated number of cycles to reach the target capacity.
 #[deprecated(
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().cycles_to_capacity(...)` instead"

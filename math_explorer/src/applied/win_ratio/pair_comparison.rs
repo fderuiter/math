@@ -7,7 +7,30 @@ pub enum ComparisonResult {
     Tie,
 }
 
-/// Compare two subjects based on their clinical outcomes.
+/// Compares two subjects outcome-by-outcome based on a hierarchy of events.
+///
+/// This function iterates through the outcomes provided for two subjects. The `outcomes`
+/// slices must be ordered by clinical priority (e.g., [Death, Heart Failure, QoL]).
+///
+/// # Logic
+///
+/// 1. Compare the first outcome (Highest Priority).
+/// 2. If `subject1 > subject2` (Outcome 1 is better for subject 1), return `Win`.
+/// 3. If `subject1 < subject2`, return `Loss`.
+/// 4. If they are equal (Tie), move to the next outcome.
+/// 5. If all outcomes are tied, return `Tie`.
+///
+/// # Arguments
+///
+/// * `subject1` - A slice of outcomes for the first subject (e.g., Treatment Group).
+/// * `subject2` - A slice of outcomes for the second subject (e.g., Control Group).
+///
+/// # Type Constraints
+///
+/// The outcomes `T` must implement `PartialOrd`.
+/// Note: Ensure that "Higher" means "Better" for the comparison to be intuitive.
+/// For example, "Days to Death" (Higher is Better) vs "Hospitalization Count" (Lower is Better).
+/// You should invert negative outcomes before passing them here so they align directionally.
 pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> ComparisonResult {
     for (outcome1, outcome2) in subject1.iter().zip(subject2.iter()) {
         if outcome1 > outcome2 {
@@ -19,7 +42,19 @@ pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> Compar
     ComparisonResult::Tie
 }
 
-/// Simulate the unmatched pair comparison.
+/// Performs an Unmatched Pair comparison (All-Pairs).
+///
+/// Compares every subject in `group1` against every subject in `group2`.
+/// This is an $O(N \times M)$ operation.
+///
+/// # Arguments
+///
+/// * `group1` - A list of subjects (each subject is a list of outcomes) for the first group.
+/// * `group2` - A list of subjects for the second group.
+///
+/// # Returns
+///
+/// A tuple `(wins, losses)` representing the total number of wins and losses for `group1`.
 pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
     let mut wins = 0;
     let mut losses = 0;
@@ -35,7 +70,14 @@ pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (
     (wins, losses)
 }
 
-/// Simulate the matched pair comparison.
+/// Performs a Matched Pair comparison.
+///
+/// Compares `group1[i]` against `group2[i]`. Useful for studies with matched cohorts
+/// (e.g., twin studies or propensity score matching).
+///
+/// # Panics
+///
+/// Panics if the groups have different lengths.
 pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
     assert_eq!(
         group1.len(),
@@ -54,7 +96,11 @@ pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i3
     (wins, losses)
 }
 
-/// Calculate the win ratio.
+/// Calculates the raw Win Ratio.
+///
+/// $$ WR = \frac{N_{wins}}{N_{losses}} $$
+///
+/// Returns `f64::INFINITY` if losses are zero.
 pub fn calculate_win_ratio(wins: i32, losses: i32) -> f64 {
     if losses == 0 {
         f64::INFINITY
@@ -63,14 +109,32 @@ pub fn calculate_win_ratio(wins: i32, losses: i32) -> f64 {
     }
 }
 
+/// Statistical results for a Win Ratio analysis.
+#[derive(Debug, Clone, Copy)]
 pub struct WinRatioStats {
+    /// The calculated win ratio ($N_W / N_L$).
     pub win_ratio: f64,
+    /// Lower bound of the 95% Confidence Interval.
     pub ci_low: f64,
+    /// Upper bound of the 95% Confidence Interval.
     pub ci_high: f64,
+    /// Two-sided P-value testing the null hypothesis that $WR = 1$.
     pub p_value: f64,
 }
 
-/// Calculate 95% confidence interval and p-value for the win ratio.
+/// Calculates 95% Confidence Intervals and P-values for the Win Ratio.
+///
+/// Uses the normal approximation for the log-win-ratio.
+///
+/// # Returns
+///
+/// `None` if the total number of pairs is zero.
+///
+/// # Mathematical Details
+///
+/// The standard error is estimated as:
+/// $$ SE = \sqrt{\frac{p(1-p)}{N}} $$
+/// Where $p$ is the proportion of wins among untied pairs (simplified).
 pub fn calculate_statistics(wins: i32, losses: i32) -> Option<WinRatioStats> {
     let total_pairs = wins + losses;
     if total_pairs == 0 {
