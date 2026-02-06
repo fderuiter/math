@@ -175,8 +175,7 @@ impl<S: AllocationStrategy> StratifiedRandomizer<S> {
 #[deprecated(since = "0.2.0", note = "Use SimpleRandomizer struct instead")]
 pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
     let mut rng = thread_rng();
-    SimpleRandomizer.assign(&mut rng, n_patients)
-        .expect("SimpleRandomizer should never fail")
+    SimpleRandomizer.assign(&mut rng, n_patients).unwrap()
 }
 
 #[deprecated(since = "0.2.0", note = "Use BlockRandomizer struct instead")]
