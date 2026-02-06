@@ -1,5 +1,7 @@
 use crate::epidemiology::compartmental::{SIRModel, SIRState};
-pub use crate::pure_math::analysis::stochastic::{GillespieSolver, StochasticSystem, StochasticError};
+pub use crate::pure_math::analysis::stochastic::{
+    GillespieSolver, StochasticError, StochasticSystem,
+};
 use rand::Rng;
 
 impl StochasticSystem<SIRState> for SIRModel {
