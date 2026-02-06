@@ -1,5 +1,5 @@
-use math_explorer::epidemiology::compartmental::SIRModel;
-use math_explorer::epidemiology::stochastic::GillespieSolver;
+use math_explorer::epidemiology::compartmental::{SIRModel, SIRState};
+use math_explorer::epidemiology::stochastic::{GillespieSolver, StochasticSystem};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 use std::time::Instant;
@@ -9,7 +9,7 @@ fn main() {
     println!("Benchmarking Gillespie Solver with {} steps...", steps);
 
     // Setup
-    let rng = StdRng::seed_from_u64(42);
+    let mut rng = StdRng::seed_from_u64(42);
     let mut solver = GillespieSolver::new(rng);
 
     // Large population to prevent extinction early
@@ -20,18 +20,18 @@ fn main() {
 
     // Warmup
     for _ in 0..100 {
-        let _ = solver.step(&model, &mut state);
+        solver.step(&model, &mut state);
     }
 
     // Reset state for actual bench
     state = model.state;
-    let rng = StdRng::seed_from_u64(42);
+    let mut rng = StdRng::seed_from_u64(42);
     solver = GillespieSolver::new(rng);
 
     let start = Instant::now();
 
     for _ in 0..steps {
-        let dt = solver.step(&model, &mut state).expect("Step failed");
+        let dt = solver.step(&model, &mut state);
         if dt.is_infinite() {
             println!("Simulation ended early (extinction)!");
             break;
