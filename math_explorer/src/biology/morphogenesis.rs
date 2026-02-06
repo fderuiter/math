@@ -264,16 +264,10 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
         let next_v = &mut self.next_state.v;
 
         // Fused Diffusion + Reaction + Integration
-        self.diffusion.apply_step(
-            u,
-            v,
-            next_u,
-            next_v,
-            self.d_u,
-            self.d_v,
-            dt,
-            |u, v| self.kinetics.reaction(u, v),
-        );
+        self.diffusion
+            .apply_step(u, v, next_u, next_v, self.d_u, self.d_v, dt, |u, v| {
+                self.kinetics.reaction(u, v)
+            });
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);

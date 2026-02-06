@@ -5,7 +5,10 @@ fn main() {
     let size = 10_000;
     let iterations = 10_000;
 
-    println!("Benchmarking TuringSystem with size {} for {} iterations...", size, iterations);
+    println!(
+        "Benchmarking TuringSystem with size {} for {} iterations...",
+        size, iterations
+    );
 
     // Setup
     // d_u = 1.0, d_v = 0.5, dx = 1.0
@@ -13,8 +16,8 @@ fn main() {
 
     // Initialize with noise to ensure non-trivial behavior
     for i in 0..size {
-         system.u_mut()[i] = 1.0 + (i as f64 % 100.0) * 0.001;
-         system.v_mut()[i] = 0.5 - (i as f64 % 100.0) * 0.001;
+        system.u_mut()[i] = 1.0 + (i as f64 % 100.0) * 0.001;
+        system.v_mut()[i] = 0.5 - (i as f64 % 100.0) * 0.001;
     }
 
     // Warmup
