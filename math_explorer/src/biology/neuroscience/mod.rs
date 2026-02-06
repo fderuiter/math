@@ -32,9 +32,9 @@ pub mod model;
 pub mod neuron;
 pub mod types;
 
+pub use error::HodgkinHuxleyError;
 // Re-export the public facade to maintain backward compatibility
 pub use neuron::HodgkinHuxleyNeuron;
-pub use error::HodgkinHuxleyError;
 
 // Optionally re-export types if we want users to use the advanced API
 pub use model::HodgkinHuxleyModel;
