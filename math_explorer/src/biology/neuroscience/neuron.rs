@@ -90,13 +90,13 @@ impl HodgkinHuxleyNeuronBuilder {
 
         // Validate params (e.g. non-negative conductance)
         if self.params.g_na < 0.0 {
-             return Err(HodgkinHuxleyError::InvalidConductance(self.params.g_na));
+            return Err(HodgkinHuxleyError::InvalidConductance(self.params.g_na));
         }
         if self.params.g_k < 0.0 {
-             return Err(HodgkinHuxleyError::InvalidConductance(self.params.g_k));
+            return Err(HodgkinHuxleyError::InvalidConductance(self.params.g_k));
         }
         if self.params.g_l < 0.0 {
-             return Err(HodgkinHuxleyError::InvalidConductance(self.params.g_l));
+            return Err(HodgkinHuxleyError::InvalidConductance(self.params.g_l));
         }
 
         Ok(HodgkinHuxleyNeuron {
@@ -158,7 +158,10 @@ impl HodgkinHuxleyNeuron {
     /// # Returns
     /// - `Ok(neuron)` if parameters are valid.
     /// - `Err(HodgkinHuxleyError)` if parameters are invalid.
-    pub fn try_new_with_params(v_initial: f64, params: HodgkinHuxleyParameters) -> Result<Self, HodgkinHuxleyError> {
+    pub fn try_new_with_params(
+        v_initial: f64,
+        params: HodgkinHuxleyParameters,
+    ) -> Result<Self, HodgkinHuxleyError> {
         Self::builder()
             .with_initial_v(v_initial)
             .with_params(params)
