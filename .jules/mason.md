@@ -5,3 +5,7 @@
 ## 2024-10-14 - Decoupled Gradient Estimation from Marching Cubes
 **Violation:** SRP/OCP. The `extract_isosurface` function was a God Function mixing grid iteration, optimization logic, and gradient calculation strategies (Central Differences), making it impossible to extend with new estimators (e.g., Sobel) without modifying core logic.
 **Remedy:** Extracted `GradientEstimator` Strategy interface and `CentralDifferenceEstimator`. Refactored `MarchingCubes` to use dependency injection for the estimator, preserving the optimized fast-path via a specialized unsafe trait method.
+
+## 2025-05-19 - [Decoupling Enzyme Kinetics from Concrete Implementation]
+**Violation:** **Open/Closed Principle (OCP)** and **Dependency Inversion Principle (DIP)**. The `EnzymeReaction` struct was a concrete implementation of Michaelis-Menten kinetics, preventing the extension of the system to support other kinetic models (e.g., Hill, Inhibition) without modifying the existing struct.
+**Remedy:** **Extract Interface** (`KineticsModel`). Renamed `EnzymeReaction` to `MichaelisMenten` and implemented the trait. Added `HillKinetics` as a new implementation to demonstrate extensibility. Maintained backward compatibility via a deprecated type alias.
