@@ -127,7 +127,11 @@ mod tests {
             }
         }
 
-        fn react(&self, state: &mut DecayState, reaction_index: usize) -> Result<(), StochasticError> {
+        fn react(
+            &self,
+            state: &mut DecayState,
+            reaction_index: usize,
+        ) -> Result<(), StochasticError> {
             if reaction_index == 0 {
                 state.x -= 1;
                 Ok(())
@@ -147,7 +151,9 @@ mod tests {
         let mut time = 0.0;
         while time < 10.0 {
             let dt = solver.step(&model, &mut state).unwrap();
-            if dt.is_infinite() { break; }
+            if dt.is_infinite() {
+                break;
+            }
             time += dt;
         }
 
