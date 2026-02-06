@@ -1,114 +1,7 @@
 use crate::epidemiology::compartmental::{SIRModel, SIRState};
 use rand::Rng;
 
-/// A trait for systems that can be simulated stochastically.
-///
-/// Unlike ODE systems which are continuous, stochastic systems define discrete events
-/// that occur with specific propensities (rates).
-pub trait StochasticSystem<State> {
-    /// Appends the propensity (rate) of each reaction in the current state to the output buffer.
-    ///
-    /// The buffer is cleared by the solver before calling this method.
-    fn propensities(&self, state: &State, out: &mut Vec<f64>);
-
-    /// Updates the state according to the reaction that occurred.
-    fn react(&self, state: &mut State, reaction_index: usize);
-}
-
-/// A solver for stochastic simulation using the Gillespie Algorithm (SSA).
-///
-/// It uses the Direct Method to simulate exact stochastic trajectories.
-///
-/// # Example
-/// ```
-/// use math_explorer::epidemiology::stochastic::{GillespieSolver, StochasticSystem};
-/// use math_explorer::epidemiology::compartmental::{SIRModel, SIRState};
-/// use rand::SeedableRng;
-/// use rand::rngs::StdRng;
-///
-/// let mut rng = StdRng::seed_from_u64(42);
-/// let mut solver = GillespieSolver::new(rng);
-/// let mut model = SIRModel::new(100.0, 5.0, 0.5, 0.1).unwrap();
-/// let mut time = 0.0;
-///
-/// // Decouple state from model to avoid borrow checker errors
-/// let mut state = model.state;
-///
-/// // Run for 10 time units
-/// while time < 10.0 {
-///     let dt = solver.step(&model, &mut state);
-///     if dt.is_infinite() { break; }
-///     time += dt;
-/// }
-/// model.state = state;
-/// ```
-pub struct GillespieSolver<R> {
-    rng: R,
-    /// Reusable buffer for propensities to avoid allocation per step.
-    buffer: Vec<f64>,
-}
-
-impl<R: Rng> GillespieSolver<R> {
-    /// Creates a new solver with the provided random number generator.
-    ///
-    /// This allows for deterministic simulations by passing a seeded RNG.
-    pub fn new(rng: R) -> Self {
-        Self {
-            rng,
-            // Pre-allocate space for a reasonable number of reactions
-            buffer: Vec::with_capacity(16),
-        }
-    }
-
-    /// Performs one step of the Gillespie algorithm.
-    ///
-    /// Returns the time elapsed for this step.
-    /// Returns `f64::INFINITY` if no reactions can occur (total propensity is 0).
-    pub fn step<S, State>(&mut self, system: &S, state: &mut State) -> f64
-    where
-        S: StochasticSystem<State>,
-    {
-        // Reuse internal buffer
-        self.buffer.clear();
-        system.propensities(state, &mut self.buffer);
-        let rates = &self.buffer;
-
-        let total_rate: f64 = rates.iter().sum();
-
-        if total_rate <= 0.0 {
-            return f64::INFINITY;
-        }
-
-        // 1. Determine time step tau
-        // r1 in (0, 1]
-        let r1: f64 = self.rng.r#gen();
-        let r1 = if r1 <= 0.0 { f64::MIN_POSITIVE } else { r1 };
-        let tau = -r1.ln() / total_rate;
-
-        // 2. Determine which reaction mu occurred
-        let r2: f64 = self.rng.r#gen();
-        let threshold = r2 * total_rate;
-        let mut cumulative = 0.0;
-        let mut reaction_index = 0;
-
-        for (i, &rate) in rates.iter().enumerate() {
-            cumulative += rate;
-            if cumulative >= threshold {
-                reaction_index = i;
-                break;
-            }
-        }
-        // Fallback for floating point errors
-        if cumulative < threshold {
-            reaction_index = rates.len().saturating_sub(1);
-        }
-
-        // 3. Update state
-        system.react(state, reaction_index);
-
-        tau
-    }
-}
+pub use crate::pure_math::analysis::stochastic::{GillespieSolver, StochasticSystem, StochasticError};
 
 impl StochasticSystem<SIRState> for SIRModel {
     fn propensities(&self, state: &SIRState, out: &mut Vec<f64>) {
@@ -124,7 +17,7 @@ impl StochasticSystem<SIRState> for SIRModel {
         out.push(recovery_rate);
     }
 
-    fn react(&self, state: &mut SIRState, reaction_index: usize) {
+    fn react(&self, state: &mut SIRState, reaction_index: usize) -> Result<(), StochasticError> {
         match reaction_index {
             0 => {
                 // Infection: S decreases by 1, I increases by 1
@@ -136,8 +29,9 @@ impl StochasticSystem<SIRState> for SIRModel {
                 state.i -= 1.0;
                 state.r += 1.0;
             }
-            _ => panic!("Invalid reaction index for SIR Model"),
+            _ => return Err(StochasticError::InvalidReactionIndex(reaction_index)),
         }
+        Ok(())
     }
 }
 
@@ -208,7 +102,7 @@ mod tests {
         let initial_i = state.i;
 
         // Take one step
-        let dt = solver.step(&model, &mut state);
+        let dt = solver.step(&model, &mut state).unwrap();
 
         assert!(dt > 0.0, "Time step should be positive");
         assert!(dt.is_finite());
