@@ -32,6 +32,7 @@ pub trait SpatialDiffusion {
     /// * `d_v` - Diffusion coefficient for v.
     /// * `dt` - Time step.
     /// * `reaction` - Closure computing reaction rates (du/dt, dv/dt) given (u, v).
+    #[allow(clippy::too_many_arguments)]
     fn apply_step<F>(
         &self,
         u: &[f64],
