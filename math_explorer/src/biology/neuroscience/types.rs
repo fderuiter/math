@@ -1,13 +1,17 @@
 //! Type definitions for the Hodgkin-Huxley model.
 
+use super::kinetics::{
+    GatingKinetics, StandardPotassiumKinetics, StandardSodiumActivationKinetics,
+    StandardSodiumInactivationKinetics,
+};
 use crate::pure_math::analysis::ode::VectorOperations;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Parameters for the Hodgkin-Huxley model.
 ///
-/// Defines the conductances and equilibrium potentials for the ion channels.
+/// Defines the conductances, equilibrium potentials, and gating kinetics.
 /// Default values correspond to the Squid Giant Axon (Hodgkin & Huxley, 1952).
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug)]
 pub struct HodgkinHuxleyParameters {
     /// Maximum Sodium conductance ($mS/cm^2$).
     pub g_na: f64,
@@ -23,6 +27,30 @@ pub struct HodgkinHuxleyParameters {
     pub e_l: f64,
     /// Resting potential (mV). Used for gating variable rate calculations.
     pub v_rest: f64,
+
+    /// Kinetics strategy for the Potassium activation gate (n).
+    pub n_gate: Box<dyn GatingKinetics>,
+    /// Kinetics strategy for the Sodium activation gate (m).
+    pub m_gate: Box<dyn GatingKinetics>,
+    /// Kinetics strategy for the Sodium inactivation gate (h).
+    pub h_gate: Box<dyn GatingKinetics>,
+}
+
+impl Clone for HodgkinHuxleyParameters {
+    fn clone(&self) -> Self {
+        Self {
+            g_na: self.g_na,
+            e_na: self.e_na,
+            g_k: self.g_k,
+            e_k: self.e_k,
+            g_l: self.g_l,
+            e_l: self.e_l,
+            v_rest: self.v_rest,
+            n_gate: self.n_gate.clone(),
+            m_gate: self.m_gate.clone(),
+            h_gate: self.h_gate.clone(),
+        }
+    }
 }
 
 impl Default for HodgkinHuxleyParameters {
@@ -36,6 +64,9 @@ impl Default for HodgkinHuxleyParameters {
             g_l: 0.3,
             e_l: v_rest + 10.6,
             v_rest,
+            n_gate: Box::new(StandardPotassiumKinetics),
+            m_gate: Box::new(StandardSodiumActivationKinetics),
+            h_gate: Box::new(StandardSodiumInactivationKinetics),
         }
     }
 }

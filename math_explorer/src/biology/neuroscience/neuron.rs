@@ -75,7 +75,7 @@ impl HodgkinHuxleyNeuron {
         };
 
         // Create the model with current parameters
-        let model = HodgkinHuxleyModel::new(self.params, i_ext);
+        let model = HodgkinHuxleyModel::new(&self.params, i_ext);
 
         // Solve using the provided solver
         let new_state = solver.solve(&model, 0.0, &state, dt);

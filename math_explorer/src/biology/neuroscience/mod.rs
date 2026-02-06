@@ -7,6 +7,7 @@
 //! - `types`: Defines the state vector `HodgkinHuxleyState` and parameters `HodgkinHuxleyParameters`.
 //! - `model`: Defines the differential equations via `HodgkinHuxleyModel`.
 //! - `neuron`: Provides the public `HodgkinHuxleyNeuron` facade.
+//! - `kinetics`: Defines the gating variable kinetics (Strategy Pattern).
 //!
 //! # Example
 //!
@@ -27,6 +28,7 @@
 //! assert!(spiked, "Neuron should have generated an action potential");
 //! ```
 
+pub mod kinetics;
 pub mod model;
 pub mod neuron;
 pub mod types;
@@ -35,5 +37,9 @@ pub mod types;
 pub use neuron::HodgkinHuxleyNeuron;
 
 // Optionally re-export types if we want users to use the advanced API
+pub use kinetics::{
+    GatingKinetics, StandardPotassiumKinetics, StandardSodiumActivationKinetics,
+    StandardSodiumInactivationKinetics,
+};
 pub use model::HodgkinHuxleyModel;
 pub use types::{HodgkinHuxleyParameters, HodgkinHuxleyState};

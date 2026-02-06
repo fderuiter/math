@@ -65,3 +65,8 @@
 **Violation:** Hardcoding gradient/divergence formulas for Cartesian coordinates would violate OCP and prevent usage in Cylindrical/Spherical systems.
 **Refactor:** Applied **Strategy Pattern**. Extracted `OrthogonalCoordinateSystem` trait. Implemented `Cylindrical` and `Spherical` strategies. Operators (`gradient`, etc.) are generic over this trait.
 **Trade-off:** Numerical differentiation introduces small errors compared to analytical solutions, but allows generic implementation for any orthogonal system.
+
+## 2027-06-10 - Strategy Pattern for Hodgkin-Huxley Kinetics
+**Violation:** The `HodgkinHuxleyModel` had hardcoded methods (`alpha_n`, `beta_n`, etc.) for gating kinetics, violating OCP and making it impossible to simulate different neuron types (e.g., Cortical Pyramidal) without modifying the source code.
+**Refactor:** Applied the **Strategy Pattern**. Extracted `GatingKinetics` trait. Implemented `StandardPotassiumKinetics` etc. Refactored `HodgkinHuxleyModel` to use injected strategies. Enforced Single Source of Truth by passing `v_rest` as context to strategies.
+**Trade-off:** `HodgkinHuxleyParameters` lost `Copy` and `PartialEq` derivations due to `Box<dyn Trait>`, but achieved full composability for channel modeling.
