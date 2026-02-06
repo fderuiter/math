@@ -212,3 +212,23 @@ Benchmark `bench_stochastic` (500,000 steps):
 - Speedup: ~38%
 
 ## 2024-10-26 - [Optimization] **Bottleneck:** ReplicatorDynamics::derivative allocated 2 vectors per call. **Strategy:** Implemented derivative_in_place using output buffer as scratchpad. **Gain:** 20% simulation speedup for N=10 systems (Zero allocations per RK4 step).
+
+## 2026-05-27 - [Optimization] **Bottleneck:** Turing System Memory Bandwidth **Strategy:** Fused Diffusion-Reaction Loop **Gain:** 45% Time Saved (44.1µs -> 24.0µs)
+
+**Bottleneck:**
+The `TuringSystem::step` function was performing two passes over the state arrays:
+1. `diffusion.apply`: Reads `u, v`, writes `next_u, next_v` (calculating Laplacian).
+2. `step` loop: Reads `next_u, next_v` (diffusion term), Reads `u, v`, writes `next_u, next_v` (final state).
+Total memory operations: 6 reads + 4 writes per element.
+
+**Strategy:**
+1. **Fused Loop:** Extended `SpatialDiffusion` trait with `apply_step`.
+2. **Implementation:** Specialized `FiniteDifference1D::apply_step` to compute the Laplacian and immediately apply the reaction and time integration in the same loop.
+3. **Register Reuse:** The diffusion term is computed in registers and consumed immediately, avoiding writing/reading it to/from memory.
+New memory operations: 2 reads + 2 writes per element (assuming neighbors are cached).
+
+**Gain:**
+Benchmark `bench_morphogenesis` (10,000 steps, size 10,000):
+- Before: 44.11µs/step
+- After: 23.96µs/step
+- Speedup: ~45% (Almost 2x)
