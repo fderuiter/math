@@ -81,3 +81,12 @@
 2. Introduced `HodgkinHuxleyNeuronBuilder` for safe, validated construction.
 3. Added getters and validated setters (`set_n` checks bounds).
 **Consequence:** The API is now safe against invalid states. This is a breaking change for code accessing fields directly (must now use getters).
+
+## 2027-06-30 - [Stochastic Simulation Extraction]
+**Problem:** `math_explorer/src/epidemiology/stochastic.rs` contained the general-purpose Gillespie Algorithm (SSA) and the `StochasticSystem` trait, tightly coupling a fundamental mathematical tool to the Epidemiology domain. This prevented reuse for other stochastic systems (e.g., Chemistry, Physics).
+**Decision:** Applied "Module Extraction".
+1. Created `math_explorer/src/pure_math/analysis/stochastic.rs`.
+2. Moved `StochasticSystem` trait and `GillespieSolver` struct there.
+3. Introduced `StochasticError` for explicit error handling (replacing `panic!`).
+4. Updated `epidemiology/stochastic.rs` to import/re-export these tools.
+**Consequence:** The Gillespie Algorithm is now a first-class citizen in the `pure_math` library, available for any domain. The API is safer (`Result` return type) and more modular.
