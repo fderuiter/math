@@ -9,5 +9,5 @@ fn test_neuron_rk4() {
     neuron.update_with(0.01, 10.0, &RungeKutta4);
 
     // Check if values changed (simple smoke test)
-    assert_ne!(neuron.v, -65.0);
+    assert_ne!(neuron.v(), -65.0);
 }

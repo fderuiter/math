@@ -73,3 +73,11 @@
 **Problem:** `math_explorer/src/epidemiology/compartmental.rs` was becoming a monolithic file containing multiple distinct disease models (SIR, SEIR) and shared utility logic, violating the Single Responsibility Principle.
 **Decision:** Applied "Module Extraction". Decomposed `compartmental.rs` into a directory-based module `math_explorer/src/epidemiology/compartmental/` with `sir.rs`, `seir.rs`, `common.rs` (for validation and R0), and `macros.rs` (for arithmetic ops).
 **Consequence:** Improved separation of concerns and scalability. New compartmental models (e.g., SIS, SIRS) can be added as separate files without bloating a single source file. API backward compatibility is preserved via re-exports.
+
+## 2027-06-25 - [Hodgkin-Huxley Neuron Encapsulation]
+**Problem:** `HodgkinHuxleyNeuron` exposed raw public fields (`v`, `n`, `m`, `h`), allowing users to construct invalid states (e.g., probability > 1.0) and bypassing internal logic.
+**Decision:** Applied "Encapsulation" and "Builder Pattern".
+1. Made all fields private.
+2. Introduced `HodgkinHuxleyNeuronBuilder` for safe, validated construction.
+3. Added getters and validated setters (`set_n` checks bounds).
+**Consequence:** The API is now safe against invalid states. This is a breaking change for code accessing fields directly (must now use getters).

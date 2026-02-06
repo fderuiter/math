@@ -20,19 +20,21 @@
 //!
 //! for _ in 0..1000 {
 //!     neuron.update(dt, 10.0);
-//!     if neuron.v > 0.0 {
+//!     if neuron.v() > 0.0 {
 //!         spiked = true;
 //!     }
 //! }
 //! assert!(spiked, "Neuron should have generated an action potential");
 //! ```
 
+pub mod error;
 pub mod model;
 pub mod neuron;
 pub mod types;
 
 // Re-export the public facade to maintain backward compatibility
 pub use neuron::HodgkinHuxleyNeuron;
+pub use error::HodgkinHuxleyError;
 
 // Optionally re-export types if we want users to use the advanced API
 pub use model::HodgkinHuxleyModel;
