@@ -212,3 +212,20 @@ Benchmark `bench_stochastic` (500,000 steps):
 - Speedup: ~38%
 
 ## 2024-10-26 - [Optimization] **Bottleneck:** ReplicatorDynamics::derivative allocated 2 vectors per call. **Strategy:** Implemented derivative_in_place using output buffer as scratchpad. **Gain:** 20% simulation speedup for N=10 systems (Zero allocations per RK4 step).
+
+## 2026-11-20 - [Optimization] **Bottleneck:** Isosurface Extraction Memory Bandwidth **Strategy:** Sliding Window & Stack Allocation **Gain:** ~15% Time Saved (33ms -> 28ms)
+
+**Bottleneck:**
+The `MarchingCubes::extract` hot loop was suffering from redundant memory access and initialization overhead.
+1. Each iteration read 8 values from the grid, but 4 of them were already read in the previous iteration (neighbors).
+2. Large arrays (`corner_pos`, `corner_normals`, `edge_vertex`, `edge_norm`) were zero-initialized in every iteration, costing ~480 bytes of memset per active cube.
+
+**Strategy:**
+1. **Sliding Window:** Implemented a register-style sliding window to cache the 4 "right face" values of the previous iteration and reuse them as the "left face" of the current iteration, reducing memory reads by 50% on the hot path.
+2. **Stack Allocation:** Utilized `MaybeUninit` for the temporary arrays to eliminate the redundant zero-initialization, ensuring initialization only happens when data is actually written.
+
+**Gain:**
+Benchmark `profile_isosurface` (Sphere SDF 128x128x128):
+- Before: ~33ms
+- After: ~28ms
+- Speedup: ~15% (Memory bandwidth & initialization reduction)

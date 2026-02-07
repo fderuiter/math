@@ -109,6 +109,10 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                 // Corresponds to vertices 1, 2, 5, 6 of (x-1), which become 0, 3, 4, 7 of (x).
                 let mut cached_gradients: Option<[Point3D; 4]> = None;
 
+                // Cache for the "Right Face" values of the previous iteration (x-1).
+                // These become the "Left Face" values (v0, v3, v4, v7) of the current iteration (x).
+                let mut left_face_values = [0.0; 4];
+
                 for x in 0..grid.width - 1 {
                     let base_idx = zy_base + x;
                     let x_pos = grid.origin.x + (x as f32) * grid.voxel_size.x;
@@ -116,61 +120,74 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     // 1. Determine the index of the case (0-255)
                     let mut cube_index = 0;
                     let mut corner_values = [0.0; 8];
-                    let mut corner_pos = [Point3D::new(0.0, 0.0, 0.0); 8];
-                    let mut corner_normals = [Point3D::new(0.0, 0.0, 0.0); 8];
+                    // Use MaybeUninit to avoid redundant zeroing of large arrays on stack
+                    use std::mem::MaybeUninit;
+                    let mut corner_pos: [MaybeUninit<Point3D>; 8] = unsafe { MaybeUninit::uninit().assume_init() };
+                    let mut corner_normals: [MaybeUninit<Point3D>; 8] = unsafe { MaybeUninit::uninit().assume_init() };
 
                     // Direct access for corner values to avoid redundant index calculation
                     // Vertices are ordered:
                     // 0: (0,0,0), 1: (1,0,0), 2: (1,1,0), 3: (0,1,0)
                     // 4: (0,0,1), 5: (1,0,1), 6: (1,1,1), 7: (0,1,1)
 
-                    // Safety: We are iterating up to width-1, height-1, depth-1.
-                    // Max index accesses base_idx + 1 + stride_y + stride_z.
-                    // base_idx = z*Sz + y*Sy + x.
-                    // Max = (D-2)*Sz + (H-2)*Sy + (W-2) + 1 + Sy + Sz
-                    //     = (D-1)*Sz + (H-1)*Sy + W-1
-                    // Which is exactly the last element. So indices are valid.
-                    let v0 = unsafe { *data.get_unchecked(base_idx) };
-                    let v1 = unsafe { *data.get_unchecked(base_idx + 1) };
-                    let v2 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y) };
-                    let v3 = unsafe { *data.get_unchecked(base_idx + stride_y) };
-                    let v4 = unsafe { *data.get_unchecked(base_idx + stride_z) };
-                    let v5 = unsafe { *data.get_unchecked(base_idx + 1 + stride_z) };
-                    let v6 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y + stride_z) };
-                    let v7 = unsafe { *data.get_unchecked(base_idx + stride_y + stride_z) };
+                    // Profiler Optimization: Sliding Window for Voxel Values
+                    // We reuse values read in the previous iteration.
+                    // v0 (curr) = v1 (prev), v3 (curr) = v2 (prev), etc.
 
-                    corner_values[0] = v0;
-                    if v0 < threshold {
-                        cube_index |= 1;
+                    let v1; let v2; let v5; let v6;
+
+                    if x == 0 {
+                        // First iteration: Read all 8 values
+                        // Safety: Check logic ensures validity.
+                        let v0 = unsafe { *data.get_unchecked(base_idx) };
+                        v1 = unsafe { *data.get_unchecked(base_idx + 1) };
+                        v2 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y) };
+                        let v3 = unsafe { *data.get_unchecked(base_idx + stride_y) };
+                        let v4 = unsafe { *data.get_unchecked(base_idx + stride_z) };
+                        v5 = unsafe { *data.get_unchecked(base_idx + 1 + stride_z) };
+                        v6 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y + stride_z) };
+                        let v7 = unsafe { *data.get_unchecked(base_idx + stride_y + stride_z) };
+
+                        corner_values[0] = v0;
+                        corner_values[3] = v3;
+                        corner_values[4] = v4;
+                        corner_values[7] = v7;
+                    } else {
+                        // Subsequent iterations: Reuse left face values
+                        corner_values[0] = left_face_values[0];
+                        corner_values[3] = left_face_values[1];
+                        corner_values[4] = left_face_values[2];
+                        corner_values[7] = left_face_values[3];
+
+                        // Read only the new Right Face (indices 1, 2, 5, 6)
+                        v1 = unsafe { *data.get_unchecked(base_idx + 1) };
+                        v2 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y) };
+                        v5 = unsafe { *data.get_unchecked(base_idx + 1 + stride_z) };
+                        v6 = unsafe { *data.get_unchecked(base_idx + 1 + stride_y + stride_z) };
                     }
+
+                    // Assign Right Face values
                     corner_values[1] = v1;
-                    if v1 < threshold {
-                        cube_index |= 2;
-                    }
                     corner_values[2] = v2;
-                    if v2 < threshold {
-                        cube_index |= 4;
-                    }
-                    corner_values[3] = v3;
-                    if v3 < threshold {
-                        cube_index |= 8;
-                    }
-                    corner_values[4] = v4;
-                    if v4 < threshold {
-                        cube_index |= 16;
-                    }
                     corner_values[5] = v5;
-                    if v5 < threshold {
-                        cube_index |= 32;
-                    }
                     corner_values[6] = v6;
-                    if v6 < threshold {
-                        cube_index |= 64;
-                    }
-                    corner_values[7] = v7;
-                    if v7 < threshold {
-                        cube_index |= 128;
-                    }
+
+                    // Update sliding window for next iteration
+                    // Next Left Face (v0, v3, v4, v7) comes from Current Right Face (v1, v2, v5, v6)
+                    left_face_values[0] = v1;
+                    left_face_values[1] = v2;
+                    left_face_values[2] = v5;
+                    left_face_values[3] = v6;
+
+                    // Compute Cube Index
+                    if corner_values[0] < threshold { cube_index |= 1; }
+                    if corner_values[1] < threshold { cube_index |= 2; }
+                    if corner_values[2] < threshold { cube_index |= 4; }
+                    if corner_values[3] < threshold { cube_index |= 8; }
+                    if corner_values[4] < threshold { cube_index |= 16; }
+                    if corner_values[5] < threshold { cube_index |= 32; }
+                    if corner_values[6] < threshold { cube_index |= 64; }
+                    if corner_values[7] < threshold { cube_index |= 128; }
 
                     // 2. Check if the cube is entirely inside or outside
                     let edge_flags = CUBE_EDGE_FLAGS[cube_index];
@@ -184,142 +201,91 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     let next_y_pos = y_pos + grid.voxel_size.y;
                     let next_z_pos = z_pos + grid.voxel_size.z;
 
-                    corner_pos[0] = Point3D::new(x_pos, y_pos, z_pos);
-                    corner_pos[1] = Point3D::new(next_x_pos, y_pos, z_pos);
-                    corner_pos[2] = Point3D::new(next_x_pos, next_y_pos, z_pos);
-                    corner_pos[3] = Point3D::new(x_pos, next_y_pos, z_pos);
-                    corner_pos[4] = Point3D::new(x_pos, y_pos, next_z_pos);
-                    corner_pos[5] = Point3D::new(next_x_pos, y_pos, next_z_pos);
-                    corner_pos[6] = Point3D::new(next_x_pos, next_y_pos, next_z_pos);
-                    corner_pos[7] = Point3D::new(x_pos, next_y_pos, next_z_pos);
+                    corner_pos[0].write(Point3D::new(x_pos, y_pos, z_pos));
+                    corner_pos[1].write(Point3D::new(next_x_pos, y_pos, z_pos));
+                    corner_pos[2].write(Point3D::new(next_x_pos, next_y_pos, z_pos));
+                    corner_pos[3].write(Point3D::new(x_pos, next_y_pos, z_pos));
+                    corner_pos[4].write(Point3D::new(x_pos, y_pos, next_z_pos));
+                    corner_pos[5].write(Point3D::new(next_x_pos, y_pos, next_z_pos));
+                    corner_pos[6].write(Point3D::new(next_x_pos, next_y_pos, next_z_pos));
+                    corner_pos[7].write(Point3D::new(x_pos, next_y_pos, next_z_pos));
 
-                    // Profiler Optimization: Lazy Gradient Computation & Sliding Window
+                    // Profiler Optimization: Sliding Window
 
                     // Check if X is interior.
                     // We need gradients at x and x+1.
                     // x > 0 && x < width - 2.
                     let x_interior = x > 0 && x < grid.width - 2;
-
                     let can_use_fast_path = row_is_interior && x_interior;
 
                     // 1. Fill Left Face (0, 3, 4, 7) from cache or compute
                     if let Some(grads) = cached_gradients {
-                        corner_normals[0] = grads[0];
-                        corner_normals[3] = grads[1];
-                        corner_normals[4] = grads[2];
-                        corner_normals[7] = grads[3];
+                        corner_normals[0].write(grads[0]);
+                        corner_normals[3].write(grads[1]);
+                        corner_normals[4].write(grads[2]);
+                        corner_normals[7].write(grads[3]);
                     } else if can_use_fast_path {
-                        corner_normals[0] = unsafe {
-                            self.estimator
-                                .gradient_unchecked(data, base_idx, stride_y, stride_z)
-                        };
-                        corner_normals[3] = unsafe {
-                            self.estimator.gradient_unchecked(
-                                data,
-                                base_idx + stride_y,
-                                stride_y,
-                                stride_z,
-                            )
-                        };
-                        corner_normals[4] = unsafe {
-                            self.estimator.gradient_unchecked(
-                                data,
-                                base_idx + stride_z,
-                                stride_y,
-                                stride_z,
-                            )
-                        };
-                        corner_normals[7] = unsafe {
-                            self.estimator.gradient_unchecked(
-                                data,
-                                base_idx + stride_y + stride_z,
-                                stride_y,
-                                stride_z,
-                            )
-                        };
+                        corner_normals[0].write(unsafe { self.estimator.gradient_unchecked(data, base_idx, stride_y, stride_z) });
+                        corner_normals[3].write(unsafe { self.estimator.gradient_unchecked(data, base_idx + stride_y, stride_y, stride_z) });
+                        corner_normals[4].write(unsafe { self.estimator.gradient_unchecked(data, base_idx + stride_z, stride_y, stride_z) });
+                        corner_normals[7].write(unsafe { self.estimator.gradient_unchecked(data, base_idx + stride_y + stride_z, stride_y, stride_z) });
                     } else {
-                        corner_normals[0] = self.estimator.gradient(grid, x, y, z);
-                        corner_normals[3] = self.estimator.gradient(grid, x, y + 1, z);
-                        corner_normals[4] = self.estimator.gradient(grid, x, y, z + 1);
-                        corner_normals[7] = self.estimator.gradient(grid, x, y + 1, z + 1);
+                        corner_normals[0].write(self.estimator.gradient(grid, x, y, z));
+                        corner_normals[3].write(self.estimator.gradient(grid, x, y + 1, z));
+                        corner_normals[4].write(self.estimator.gradient(grid, x, y, z + 1));
+                        corner_normals[7].write(self.estimator.gradient(grid, x, y + 1, z + 1));
                     }
 
-                    // 2. Compute Right Face (1, 2, 5, 6) - these are always new
-                    // Vertices:
-                    // 1: (x+1, y, z)
-                    // 2: (x+1, y+1, z)
-                    // 5: (x+1, y, z+1)
-                    // 6: (x+1, y+1, z+1)
-
+                    // 2. Compute Right Face (1, 2, 5, 6)
                     if can_use_fast_path {
                         let next_x_idx = base_idx + 1;
-                        corner_normals[1] = unsafe {
-                            self.estimator
-                                .gradient_unchecked(data, next_x_idx, stride_y, stride_z)
-                        };
-                        corner_normals[2] = unsafe {
-                            self.estimator.gradient_unchecked(
-                                data,
-                                next_x_idx + stride_y,
-                                stride_y,
-                                stride_z,
-                            )
-                        };
-                        corner_normals[5] = unsafe {
-                            self.estimator.gradient_unchecked(
-                                data,
-                                next_x_idx + stride_z,
-                                stride_y,
-                                stride_z,
-                            )
-                        };
-                        corner_normals[6] = unsafe {
-                            self.estimator.gradient_unchecked(
-                                data,
-                                next_x_idx + stride_y + stride_z,
-                                stride_y,
-                                stride_z,
-                            )
-                        };
+                        corner_normals[1].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx, stride_y, stride_z) });
+                        corner_normals[2].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx + stride_y, stride_y, stride_z) });
+                        corner_normals[5].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx + stride_z, stride_y, stride_z) });
+                        corner_normals[6].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx + stride_y + stride_z, stride_y, stride_z) });
                     } else {
-                        corner_normals[1] = self.estimator.gradient(grid, x + 1, y, z);
-                        corner_normals[2] = self.estimator.gradient(grid, x + 1, y + 1, z);
-                        corner_normals[5] = self.estimator.gradient(grid, x + 1, y, z + 1);
-                        corner_normals[6] = self.estimator.gradient(grid, x + 1, y + 1, z + 1);
+                        corner_normals[1].write(self.estimator.gradient(grid, x + 1, y, z));
+                        corner_normals[2].write(self.estimator.gradient(grid, x + 1, y + 1, z));
+                        corner_normals[5].write(self.estimator.gradient(grid, x + 1, y, z + 1));
+                        corner_normals[6].write(self.estimator.gradient(grid, x + 1, y + 1, z + 1));
                     }
 
-                    // 3. Update cache for next iteration (which will use these as Left Face)
+                    // 3. Update cache
                     cached_gradients = Some([
-                        corner_normals[1],
-                        corner_normals[2],
-                        corner_normals[5],
-                        corner_normals[6],
+                        unsafe { corner_normals[1].assume_init() },
+                        unsafe { corner_normals[2].assume_init() },
+                        unsafe { corner_normals[5].assume_init() },
+                        unsafe { corner_normals[6].assume_init() },
                     ]);
 
                     // 3. Compute intersection points on required edges
-                    let mut edge_vertex = [Point3D::new(0.0, 0.0, 0.0); 12];
-                    let mut edge_norm = [Point3D::new(0.0, 0.0, 0.0); 12];
+                    let mut edge_vertex: [MaybeUninit<Point3D>; 12] =
+                        unsafe { MaybeUninit::uninit().assume_init() };
+                    let mut edge_norm: [MaybeUninit<Point3D>; 12] =
+                        unsafe { MaybeUninit::uninit().assume_init() };
 
                     for i in 0..12 {
                         if (edge_flags & (1 << i)) != 0 {
                             let v1_idx = EDGE_CONNECTION[i][0];
                             let v2_idx = EDGE_CONNECTION[i][1];
 
-                            edge_vertex[i] = interpolate(
-                                corner_pos[v1_idx],
-                                corner_values[v1_idx],
-                                corner_pos[v2_idx],
-                                corner_values[v2_idx],
-                                threshold,
-                            );
+                            // SAFETY: All corner_pos and corner_normals are initialized above.
+                            let p1 = unsafe { corner_pos[v1_idx].assume_init() };
+                            let p2 = unsafe { corner_pos[v2_idx].assume_init() };
+                            let n1 = unsafe { corner_normals[v1_idx].assume_init() };
+                            let n2 = unsafe { corner_normals[v2_idx].assume_init() };
 
-                            edge_norm[i] = interpolate_normal(
-                                corner_normals[v1_idx],
-                                corner_values[v1_idx],
-                                corner_normals[v2_idx],
-                                corner_values[v2_idx],
+                            edge_vertex[i].write(interpolate(
+                                p1, corner_values[v1_idx],
+                                p2, corner_values[v2_idx],
                                 threshold,
-                            );
+                            ));
+
+                            edge_norm[i].write(interpolate_normal(
+                                n1, corner_values[v1_idx],
+                                n2, corner_values[v2_idx],
+                                threshold,
+                            ));
                         }
                     }
 
@@ -330,14 +296,17 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                         let v2 = TRIANGLE_CONNECTION_TABLE[cube_index][i + 1] as usize;
                         let v3 = TRIANGLE_CONNECTION_TABLE[cube_index][i + 2] as usize;
 
-                        triangles.push(Triangle {
-                            v1: edge_vertex[v1],
-                            v2: edge_vertex[v2],
-                            v3: edge_vertex[v3],
-                            n1: edge_norm[v1],
-                            n2: edge_norm[v2],
-                            n3: edge_norm[v3],
-                        });
+                        // SAFETY: TRIANGLE_CONNECTION_TABLE entries correspond to edges that are cut.
+                        unsafe {
+                            triangles.push(Triangle {
+                                v1: edge_vertex[v1].assume_init(),
+                                v2: edge_vertex[v2].assume_init(),
+                                v3: edge_vertex[v3].assume_init(),
+                                n1: edge_norm[v1].assume_init(),
+                                n2: edge_norm[v2].assume_init(),
+                                n3: edge_norm[v3].assume_init(),
+                            });
+                        }
 
                         i += 3;
                     }

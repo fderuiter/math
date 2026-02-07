@@ -81,4 +81,13 @@ fn main() {
         mesh.triangles.len(),
         duration_macro
     );
+
+    // Compute checksum for correctness verification
+    let mut vertex_checksum = 0.0;
+    for t in &mesh.triangles {
+        vertex_checksum += t.v1.x + t.v1.y + t.v1.z;
+        vertex_checksum += t.v2.x + t.v2.y + t.v2.z;
+        vertex_checksum += t.v3.x + t.v3.y + t.v3.z;
+    }
+    println!("Mesh Vertex Checksum: {:.6}", vertex_checksum);
 }
