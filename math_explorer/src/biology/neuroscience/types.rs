@@ -1,13 +1,18 @@
 //! Type definitions for the Hodgkin-Huxley model.
 
+use super::kinetics::{
+    GatingKinetics, StandardPotassiumKinetics, StandardSodiumActivationKinetics,
+    StandardSodiumInactivationKinetics,
+};
 use crate::pure_math::analysis::ode::VectorOperations;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
+use std::sync::Arc;
 
 /// Parameters for the Hodgkin-Huxley model.
 ///
 /// Defines the conductances and equilibrium potentials for the ion channels.
 /// Default values correspond to the Squid Giant Axon (Hodgkin & Huxley, 1952).
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct HodgkinHuxleyParameters {
     /// Maximum Sodium conductance ($mS/cm^2$).
     pub g_na: f64,
@@ -23,6 +28,13 @@ pub struct HodgkinHuxleyParameters {
     pub e_l: f64,
     /// Resting potential (mV). Used for gating variable rate calculations.
     pub v_rest: f64,
+
+    /// Kinetics strategy for Potassium activation ($n$).
+    pub n_kinetics: Arc<dyn GatingKinetics>,
+    /// Kinetics strategy for Sodium activation ($m$).
+    pub m_kinetics: Arc<dyn GatingKinetics>,
+    /// Kinetics strategy for Sodium inactivation ($h$).
+    pub h_kinetics: Arc<dyn GatingKinetics>,
 }
 
 impl Default for HodgkinHuxleyParameters {
@@ -36,6 +48,9 @@ impl Default for HodgkinHuxleyParameters {
             g_l: 0.3,
             e_l: v_rest + 10.6,
             v_rest,
+            n_kinetics: Arc::new(StandardPotassiumKinetics::default()),
+            m_kinetics: Arc::new(StandardSodiumActivationKinetics::default()),
+            h_kinetics: Arc::new(StandardSodiumInactivationKinetics::default()),
         }
     }
 }

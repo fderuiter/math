@@ -28,6 +28,7 @@
 //! ```
 
 pub mod error;
+pub mod kinetics;
 pub mod model;
 pub mod neuron;
 pub mod types;
