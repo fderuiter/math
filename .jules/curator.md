@@ -94,3 +94,8 @@
 **Gap:** The `gaussian_splatting` module was a "Visual Void" with opaque submodules (projection, rendering) and no high-level explanation of the rasterization pipeline.
 **Strategy:** Overhaul `gaussian_splatting/mod.rs` with a Mermaid diagram of the Forward Pass (3D->2D->Image) and Adaptive Density Control, plus a runnable "Quick Start" example.
 **Outcome:** Users can now visualize the rendering flow and understand how 3D Gaussians are projected and blended.
+
+## 2026-02-21 - Visualizing Algorithms
+**Gap:** The `applied/algorithms` module is a "Visual Void" with minimal documentation, failing to explain the purpose or usage of key algorithms like the Kalman Filter.
+**Strategy:** Overhaul `algorithms/mod.rs` with a "Taxonomy" Mermaid diagram, a detailed description, and a runnable "Quick Start" example for 1D Kalman tracking.
+**Outcome:** Users can now visualize the estimation loop and implement state tracking immediately.
