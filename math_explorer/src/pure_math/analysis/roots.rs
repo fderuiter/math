@@ -287,9 +287,7 @@ mod tests {
         // x^2 - 2 = 0
         let f = |x: f64| x * x - 2.0;
         let df = |x: f64| 2.0 * x;
-        let root = solver
-            .find_root_with_derivative(f, df, 1.5, None)
-            .unwrap();
+        let root = solver.find_root_with_derivative(f, df, 1.5, None).unwrap();
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
     }
 
