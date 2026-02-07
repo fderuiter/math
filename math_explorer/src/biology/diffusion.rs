@@ -5,18 +5,15 @@
 
 /// Defines a strategy for computing spatial diffusion.
 pub trait SpatialDiffusion {
-    /// Applies the diffusion operator to the state vectors.
+    /// Applies the diffusion operator to the state vector.
     ///
-    /// Computes $D_u \nabla^2 u$ and $D_v \nabla^2 v$ and stores the result in `out_u` and `out_v`.
+    /// Computes $D \nabla^2 u$ and stores the result in `out`.
     ///
     /// # Arguments
-    /// * `u` - Input activator concentration slice.
-    /// * `v` - Input inhibitor concentration slice.
-    /// * `out_u` - Output buffer for activator diffusion term.
-    /// * `out_v` - Output buffer for inhibitor diffusion term.
-    /// * `d_u` - Diffusion coefficient for u.
-    /// * `d_v` - Diffusion coefficient for v.
-    fn apply(&self, u: &[f64], v: &[f64], out_u: &mut [f64], out_v: &mut [f64], d_u: f64, d_v: f64);
+    /// * `field` - Input concentration slice (u).
+    /// * `out` - Output buffer for diffusion term.
+    /// * `d` - Diffusion coefficient.
+    fn apply(&self, field: &[f64], out: &mut [f64], d: f64);
 }
 
 /// A 1D Finite Difference implementation using a 3-point stencil.
@@ -36,98 +33,55 @@ impl FiniteDifference1D {
 }
 
 impl SpatialDiffusion for FiniteDifference1D {
-    fn apply(
-        &self,
-        u: &[f64],
-        v: &[f64],
-        out_u: &mut [f64],
-        out_v: &mut [f64],
-        d_u: f64,
-        d_v: f64,
-    ) {
-        let n = u.len();
+    fn apply(&self, field: &[f64], out: &mut [f64], d: f64) {
+        let n = field.len();
         if n == 0 {
             return;
         }
 
-        // Validate slice lengths to prevent Undefined Behavior in unsafe blocks
-        assert!(v.len() >= n, "v buffer too small");
-        assert!(out_u.len() >= n, "out_u buffer too small");
-        assert!(out_v.len() >= n, "out_v buffer too small");
+        assert!(out.len() >= n, "Output buffer too small");
 
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
+        let coeff = d * inv_dx_sq;
 
-        // 1. Handle i = 0
+        // 1. Handle i = 0 (Left Boundary)
         {
-            let i = 0;
-            // Safety: n > 0 checked above
-            let u_curr = unsafe { *u.get_unchecked(i) };
-            let v_curr = unsafe { *v.get_unchecked(i) };
+            let u_curr = field[0];
+            let u_prev = u_curr; // Neumann BC: u_{-1} = u_0 (zero flux)
 
-            let u_prev = u_curr; // Neumann BC: u_{-1} = u_0
-            let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 {
-                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
-            } else {
-                (u_curr, v_curr)
-            };
+            let u_next = if n > 1 { field[1] } else { u_curr };
 
-            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-            unsafe {
-                *out_u.get_unchecked_mut(i) = d_u * lap_u;
-                *out_v.get_unchecked_mut(i) = d_v * lap_v;
-            }
+            // Laplacian: (u_{i+1} - 2u_i + u_{i-1}) / dx^2
+            let lap = u_next - 2.0 * u_curr + u_prev;
+            out[0] = coeff * lap;
         }
 
         // 2. Handle i = 1..n-1 (Hot Path)
         if n > 2 {
-            // Optimization: Sliding Window / Register Rotation
-            unsafe {
-                let mut u_prev = *u.get_unchecked(0);
-                let mut u_curr = *u.get_unchecked(1);
-                let mut v_prev = *v.get_unchecked(0);
-                let mut v_curr = *v.get_unchecked(1);
+            // Using windows(3) allows the compiler to optimize the loop efficiently.
+            // Iterates over [u_{i-1}, u_i, u_{i+1}]
+            // zip with out[1..n-1]
+            for (window, out_val) in field.windows(3).zip(out.iter_mut().skip(1)) {
+                let u_prev = window[0];
+                let u_curr = window[1];
+                let u_next = window[2];
 
-                for i in 1..n - 1 {
-                    let u_next = *u.get_unchecked(i + 1);
-                    let v_next = *v.get_unchecked(i + 1);
-
-                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                    *out_u.get_unchecked_mut(i) = d_u * lap_u;
-                    *out_v.get_unchecked_mut(i) = d_v * lap_v;
-
-                    // Shift window
-                    u_prev = u_curr;
-                    u_curr = u_next;
-                    v_prev = v_curr;
-                    v_curr = v_next;
-                }
+                let lap = u_next - 2.0 * u_curr + u_prev;
+                *out_val = coeff * lap;
             }
         }
 
-        // 3. Handle i = n-1
+        // 3. Handle i = n-1 (Right Boundary)
         if n > 1 {
             let i = n - 1;
-            unsafe {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-                let u_prev = *u.get_unchecked(i - 1);
-                let v_prev = *v.get_unchecked(i - 1);
+            let u_curr = field[i];
+            let u_prev = field[i - 1];
 
-                let u_next = u_curr; // Neumann BC: u_{N} = u_{N-1}
-                let v_next = v_curr;
+            let u_next = u_curr; // Neumann BC: u_{N} = u_{N-1} (zero flux)
 
-                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                *out_u.get_unchecked_mut(i) = d_u * lap_u;
-                *out_v.get_unchecked_mut(i) = d_v * lap_v;
-            }
+            let lap = u_next - 2.0 * u_curr + u_prev;
+            out[i] = coeff * lap;
         }
     }
 }

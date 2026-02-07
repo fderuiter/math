@@ -264,24 +264,22 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
         let next_v = &mut self.next_state.v;
 
         // 1. Compute Diffusion (writes to next_state buffers)
-        self.diffusion
-            .apply(u, v, next_u, next_v, self.d_u, self.d_v);
+        self.diffusion.apply(u, next_u, self.d_u);
+        self.diffusion.apply(v, next_v, self.d_v);
 
         // 2. Compute Reaction and Integrate
-        // Using `unsafe` here to match the performance of the original implementation's loop
-        unsafe {
-            for i in 0..n {
-                let diff_u = *next_u.get_unchecked(i);
-                let diff_v = *next_v.get_unchecked(i);
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
+        // Using iterators for safe and efficient traversal
+        for (((&u_curr, &v_curr), next_u_val), next_v_val) in
+            u.iter().zip(v).zip(next_u).zip(next_v)
+        {
+            let diff_u = *next_u_val;
+            let diff_v = *next_v_val;
 
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
+            let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
 
-                // Euler step: u_new = u + dt * (D*Lap + Reaction)
-                *next_u.get_unchecked_mut(i) = u_curr + dt * (diff_u + reac_u);
-                *next_v.get_unchecked_mut(i) = v_curr + dt * (diff_v + reac_v);
-            }
+            // Euler step: u_new = u + dt * (D*Lap + Reaction)
+            *next_u_val = u_curr + dt * (diff_u + reac_u);
+            *next_v_val = v_curr + dt * (diff_v + reac_v);
         }
 
         // Swap buffers (states)
@@ -313,19 +311,15 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for Turing
         let out_v = &mut out.v;
 
         // 1. Compute Diffusion
-        self.diffusion.apply(u, v, out_u, out_v, self.d_u, self.d_v);
+        self.diffusion.apply(u, out_u, self.d_u);
+        self.diffusion.apply(v, out_v, self.d_v);
 
         // 2. Compute Reaction and Accumulate
-        unsafe {
-            for i in 0..n {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
+        for (((&u_curr, &v_curr), out_u_val), out_v_val) in u.iter().zip(v).zip(out_u).zip(out_v) {
+            let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
 
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                *out_u.get_unchecked_mut(i) += reac_u;
-                *out_v.get_unchecked_mut(i) += reac_v;
-            }
+            *out_u_val += reac_u;
+            *out_v_val += reac_v;
         }
     }
 }
