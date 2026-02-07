@@ -90,11 +90,3 @@
 3. Introduced `StochasticError` for explicit error handling (replacing `panic!`).
 4. Updated `epidemiology/stochastic.rs` to import/re-export these tools.
 **Consequence:** The Gillespie Algorithm is now a first-class citizen in the `pure_math` library, available for any domain. The API is safer (`Result` return type) and more modular.
-
-## 2027-08-15 - [Diffusion Operator Generalization]
-**Problem:** `SpatialDiffusion` trait in `biology/diffusion.rs` was tightly coupled to a 2-component system (`u`, `v`), preventing its use for single-component problems (like heat equation) or N-component systems. The implementation used `unsafe` pointer arithmetic for optimization, which was brittle and unidiomatic.
-**Decision:**
-1. Refactored `SpatialDiffusion` trait to be component-agnostic: `apply(&self, field: &[f64], out: &mut [f64], d: f64)`.
-2. Refactored `FiniteDifference1D` to use safe `windows(3)` iterators, removing all `unsafe` blocks while maintaining O(N) performance.
-3. Updated `TuringSystem` to compose the diffusion operator for each component separately.
-**Consequence:** The diffusion operator is now generic and safe. It can be reused for any number of chemical species. This is a breaking change for `SpatialDiffusion` implementors, but improves modularity and safety significantly.
