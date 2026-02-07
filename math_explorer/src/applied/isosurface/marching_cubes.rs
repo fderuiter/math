@@ -122,8 +122,10 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     let mut corner_values = [0.0; 8];
                     // Use MaybeUninit to avoid redundant zeroing of large arrays on stack
                     use std::mem::MaybeUninit;
-                    let mut corner_pos: [MaybeUninit<Point3D>; 8] = unsafe { MaybeUninit::uninit().assume_init() };
-                    let mut corner_normals: [MaybeUninit<Point3D>; 8] = unsafe { MaybeUninit::uninit().assume_init() };
+                    let mut corner_pos: [MaybeUninit<Point3D>; 8] =
+                        unsafe { MaybeUninit::uninit().assume_init() };
+                    let mut corner_normals: [MaybeUninit<Point3D>; 8] =
+                        unsafe { MaybeUninit::uninit().assume_init() };
 
                     // Direct access for corner values to avoid redundant index calculation
                     // Vertices are ordered:
@@ -134,7 +136,10 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     // We reuse values read in the previous iteration.
                     // v0 (curr) = v1 (prev), v3 (curr) = v2 (prev), etc.
 
-                    let v1; let v2; let v5; let v6;
+                    let v1;
+                    let v2;
+                    let v5;
+                    let v6;
 
                     if x == 0 {
                         // First iteration: Read all 8 values
@@ -180,14 +185,30 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     left_face_values[3] = v6;
 
                     // Compute Cube Index
-                    if corner_values[0] < threshold { cube_index |= 1; }
-                    if corner_values[1] < threshold { cube_index |= 2; }
-                    if corner_values[2] < threshold { cube_index |= 4; }
-                    if corner_values[3] < threshold { cube_index |= 8; }
-                    if corner_values[4] < threshold { cube_index |= 16; }
-                    if corner_values[5] < threshold { cube_index |= 32; }
-                    if corner_values[6] < threshold { cube_index |= 64; }
-                    if corner_values[7] < threshold { cube_index |= 128; }
+                    if corner_values[0] < threshold {
+                        cube_index |= 1;
+                    }
+                    if corner_values[1] < threshold {
+                        cube_index |= 2;
+                    }
+                    if corner_values[2] < threshold {
+                        cube_index |= 4;
+                    }
+                    if corner_values[3] < threshold {
+                        cube_index |= 8;
+                    }
+                    if corner_values[4] < threshold {
+                        cube_index |= 16;
+                    }
+                    if corner_values[5] < threshold {
+                        cube_index |= 32;
+                    }
+                    if corner_values[6] < threshold {
+                        cube_index |= 64;
+                    }
+                    if corner_values[7] < threshold {
+                        cube_index |= 128;
+                    }
 
                     // 2. Check if the cube is entirely inside or outside
                     let edge_flags = CUBE_EDGE_FLAGS[cube_index];
@@ -225,10 +246,34 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                         corner_normals[4].write(grads[2]);
                         corner_normals[7].write(grads[3]);
                     } else if can_use_fast_path {
-                        corner_normals[0].write(unsafe { self.estimator.gradient_unchecked(data, base_idx, stride_y, stride_z) });
-                        corner_normals[3].write(unsafe { self.estimator.gradient_unchecked(data, base_idx + stride_y, stride_y, stride_z) });
-                        corner_normals[4].write(unsafe { self.estimator.gradient_unchecked(data, base_idx + stride_z, stride_y, stride_z) });
-                        corner_normals[7].write(unsafe { self.estimator.gradient_unchecked(data, base_idx + stride_y + stride_z, stride_y, stride_z) });
+                        corner_normals[0].write(unsafe {
+                            self.estimator
+                                .gradient_unchecked(data, base_idx, stride_y, stride_z)
+                        });
+                        corner_normals[3].write(unsafe {
+                            self.estimator.gradient_unchecked(
+                                data,
+                                base_idx + stride_y,
+                                stride_y,
+                                stride_z,
+                            )
+                        });
+                        corner_normals[4].write(unsafe {
+                            self.estimator.gradient_unchecked(
+                                data,
+                                base_idx + stride_z,
+                                stride_y,
+                                stride_z,
+                            )
+                        });
+                        corner_normals[7].write(unsafe {
+                            self.estimator.gradient_unchecked(
+                                data,
+                                base_idx + stride_y + stride_z,
+                                stride_y,
+                                stride_z,
+                            )
+                        });
                     } else {
                         corner_normals[0].write(self.estimator.gradient(grid, x, y, z));
                         corner_normals[3].write(self.estimator.gradient(grid, x, y + 1, z));
@@ -239,10 +284,34 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     // 2. Compute Right Face (1, 2, 5, 6)
                     if can_use_fast_path {
                         let next_x_idx = base_idx + 1;
-                        corner_normals[1].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx, stride_y, stride_z) });
-                        corner_normals[2].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx + stride_y, stride_y, stride_z) });
-                        corner_normals[5].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx + stride_z, stride_y, stride_z) });
-                        corner_normals[6].write(unsafe { self.estimator.gradient_unchecked(data, next_x_idx + stride_y + stride_z, stride_y, stride_z) });
+                        corner_normals[1].write(unsafe {
+                            self.estimator
+                                .gradient_unchecked(data, next_x_idx, stride_y, stride_z)
+                        });
+                        corner_normals[2].write(unsafe {
+                            self.estimator.gradient_unchecked(
+                                data,
+                                next_x_idx + stride_y,
+                                stride_y,
+                                stride_z,
+                            )
+                        });
+                        corner_normals[5].write(unsafe {
+                            self.estimator.gradient_unchecked(
+                                data,
+                                next_x_idx + stride_z,
+                                stride_y,
+                                stride_z,
+                            )
+                        });
+                        corner_normals[6].write(unsafe {
+                            self.estimator.gradient_unchecked(
+                                data,
+                                next_x_idx + stride_y + stride_z,
+                                stride_y,
+                                stride_z,
+                            )
+                        });
                     } else {
                         corner_normals[1].write(self.estimator.gradient(grid, x + 1, y, z));
                         corner_normals[2].write(self.estimator.gradient(grid, x + 1, y + 1, z));
@@ -276,14 +345,18 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                             let n2 = unsafe { corner_normals[v2_idx].assume_init() };
 
                             edge_vertex[i].write(interpolate(
-                                p1, corner_values[v1_idx],
-                                p2, corner_values[v2_idx],
+                                p1,
+                                corner_values[v1_idx],
+                                p2,
+                                corner_values[v2_idx],
                                 threshold,
                             ));
 
                             edge_norm[i].write(interpolate_normal(
-                                n1, corner_values[v1_idx],
-                                n2, corner_values[v2_idx],
+                                n1,
+                                corner_values[v1_idx],
+                                n2,
+                                corner_values[v2_idx],
                                 threshold,
                             ));
                         }
