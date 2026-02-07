@@ -14,6 +14,8 @@ pub enum EpidemiologyError {
         v_rows: usize,
         v_cols: usize,
     },
+    /// Numerical Analysis Error (e.g., solver convergence).
+    AnalysisError(crate::pure_math::analysis::roots::AnalysisError),
 }
 
 impl fmt::Display for EpidemiologyError {
@@ -36,8 +38,15 @@ impl fmt::Display for EpidemiologyError {
                 "Matrix dimensions mismatch: F=({}, {}), V=({}, {})",
                 f_rows, f_cols, v_rows, v_cols
             ),
+            Self::AnalysisError(e) => write!(f, "Analysis error: {}", e),
         }
     }
 }
 
 impl std::error::Error for EpidemiologyError {}
+
+impl From<crate::pure_math::analysis::roots::AnalysisError> for EpidemiologyError {
+    fn from(err: crate::pure_math::analysis::roots::AnalysisError) -> Self {
+        EpidemiologyError::AnalysisError(err)
+    }
+}

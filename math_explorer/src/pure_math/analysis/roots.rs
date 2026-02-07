@@ -135,6 +135,124 @@ impl RootFinder for Bisection {
     }
 }
 
+/// Newton-Raphson method implementation.
+///
+/// Uses the derivative of the function to iteratively find a root.
+/// $x_{n+1} = x_n - f(x_n) / f'(x_n)$
+#[derive(Debug, Clone, Copy)]
+pub struct NewtonRaphson {
+    /// Maximum number of iterations before giving up.
+    pub max_iterations: usize,
+    /// Absolute tolerance for the root value (convergence criteria).
+    pub tolerance: f64,
+    /// Step size for numerical differentiation.
+    pub epsilon: f64,
+}
+
+impl Default for NewtonRaphson {
+    fn default() -> Self {
+        Self {
+            max_iterations: 100,
+            tolerance: 1e-7,
+            epsilon: 1e-5,
+        }
+    }
+}
+
+impl NewtonRaphson {
+    /// Creates a new Newton-Raphson solver.
+    pub fn new(max_iterations: usize, tolerance: f64) -> Self {
+        Self {
+            max_iterations,
+            tolerance,
+            epsilon: 1e-5,
+        }
+    }
+
+    /// Finds a root using the analytical derivative df.
+    ///
+    /// # Arguments
+    /// * `f` - The objective function.
+    /// * `df` - The derivative of the objective function.
+    /// * `initial_guess` - Initial guess for the root.
+    /// * `bounds` - Optional strict bounds [min, max]. If the next step falls outside,
+    ///              a fallback strategy (midpoint towards bound) is used.
+    pub fn find_root_with_derivative<F, DF>(
+        &self,
+        f: F,
+        df: DF,
+        initial_guess: f64,
+        bounds: Option<(f64, f64)>,
+    ) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+        DF: Fn(f64) -> f64,
+    {
+        let mut x = initial_guess;
+
+        // Initial bounds check
+        if let Some((min, max)) = bounds {
+            if x < min {
+                x = min + self.tolerance;
+            }
+            if x > max {
+                x = max - self.tolerance;
+            }
+        }
+
+        for _ in 0..self.max_iterations {
+            let fx = f(x);
+
+            // Convergence check on function value
+            if fx.abs() < self.tolerance {
+                return Ok(x);
+            }
+
+            let dfx = df(x);
+            if dfx.abs() < 1e-10 {
+                return Err(AnalysisError::ConvergenceError(x));
+            }
+
+            let next_x = x - fx / dfx;
+
+            if (next_x - x).abs() < self.tolerance {
+                return Ok(next_x);
+            }
+
+            // Bounds handling
+            if let Some((min, max)) = bounds {
+                if next_x <= min {
+                    // Backtrack towards min
+                    x = (x + min) / 2.0;
+                } else if next_x >= max {
+                    // Backtrack towards max
+                    x = (x + max) / 2.0;
+                } else {
+                    x = next_x;
+                }
+            } else {
+                x = next_x;
+            }
+        }
+
+        Err(AnalysisError::ConvergenceError(x))
+    }
+}
+
+impl RootFinder for NewtonRaphson {
+    fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+    {
+        // Use midpoint as guess
+        let guess = (min + max) / 2.0;
+        // Numerical differentiation
+        let df = |x| (f(x + self.epsilon) - f(x - self.epsilon)) / (2.0 * self.epsilon);
+
+        self.find_root_with_derivative(&f, df, guess, Some((min, max)))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -161,5 +279,51 @@ mod tests {
         // x^2 + 1 = 0 has no real roots. And signs are always positive.
         let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
         assert!(matches!(result, Err(AnalysisError::InvalidParameters(_))));
+    }
+
+    #[test]
+    fn test_newton_raphson_square_root() {
+        let solver = NewtonRaphson::default();
+        // x^2 - 2 = 0
+        let f = |x: f64| x * x - 2.0;
+        let df = |x: f64| 2.0 * x;
+        let root = solver
+            .find_root_with_derivative(f, df, 1.5, None)
+            .unwrap();
+        assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_newton_raphson_numerical_diff() {
+        let solver = NewtonRaphson::default();
+        // x^2 - 2 = 0. Range [1.0, 2.0]. Guess will be 1.5.
+        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+        assert!((root - std::f64::consts::SQRT_2).abs() < 1e-5); // Slightly looser tolerance due to epsilon
+    }
+
+    #[test]
+    fn test_newton_raphson_bounded() {
+        let solver = NewtonRaphson::default();
+        // f(x) = x - 1. Root is 1.
+        // Bounds [0.5, 1.5].
+        // Start at 0.6.
+        // f(0.6) = -0.4. f'(0.6) = 1.
+        // next_x = 0.6 - (-0.4)/1 = 1.0. Correct.
+
+        // Use a function that overshoots.
+        // f(x) = atan(x). Root 0.
+        // f'(x) = 1/(1+x^2).
+        // If x is large, f(x) ~ pi/2, f'(x) is small. Step is huge.
+        // x = 2. f(2) = 1.1. f'(2) = 0.2.
+        // next_x = 2 - 1.1/0.2 = 2 - 5.5 = -3.5.
+        // Bound [-3, 3]. -3.5 is out.
+        // Should trigger backtracking.
+        let f = |x: f64| x.atan();
+        let df = |x: f64| 1.0 / (1.0 + x * x);
+        let bounds = Some((-3.0, 3.0));
+
+        let result = solver.find_root_with_derivative(f, df, 2.0, bounds);
+        assert!(result.is_ok());
+        assert!(result.unwrap().abs() < 1e-6);
     }
 }

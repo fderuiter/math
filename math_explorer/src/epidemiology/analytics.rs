@@ -1,56 +1,38 @@
+use crate::epidemiology::error::EpidemiologyError;
+use crate::pure_math::analysis::roots::NewtonRaphson;
+
 /// Solves the final size equation for S_inf using Newton-Raphson.
 ///
 /// Equation: $\ln(S_0 / S_\infty) = R_0 (1 - S_\infty / N)$
 /// Rearranged for root finding: $f(x) = \ln(S_0 / x) - R_0 (1 - x / N) = 0$
-pub fn calculate_final_size(r0: f64, s0: f64, n: f64) -> Result<f64, String> {
+pub fn calculate_final_size(r0: f64, s0: f64, n: f64) -> Result<f64, EpidemiologyError> {
     if r0 <= 0.0 {
-        return Err("R0 must be positive".to_string());
+        return Err(EpidemiologyError::InvalidParameter {
+            name: "R0".to_string(),
+            value: r0,
+        });
     }
-
-    // f(x) = ln(S0) - ln(x) - R0 + R0*x/N
-    // f'(x) = -1/x + R0/N
 
     // Initial guess strategy:
     // If R0 > 1, the final size S_inf is approximately S0 * exp(-R0).
     // If R0 <= 1, the epidemic doesn't take off, S_inf ~ S0.
-    let mut x = if r0 > 1.0 { s0 * (-r0).exp() } else { s0 };
+    let guess = if r0 > 1.0 { s0 * (-r0).exp() } else { s0 };
 
-    // Ensure x is within reasonable bounds
-    if x < 1e-5 {
-        x = 1e-5;
-    }
-    if x > n {
-        x = n - 1e-5;
-    }
+    // f(x) = ln(S0) - ln(x) - R0 + R0*x/N
+    // f'(x) = -1/x + R0/N
+    let f = |x: f64| s0.ln() - x.ln() - r0 * (1.0 - x / n);
+    let df = |x: f64| -1.0 / x + r0 / n;
 
-    let tolerance = 1e-7;
-    let max_iter = 100;
+    let solver = NewtonRaphson::default();
 
-    for _ in 0..max_iter {
-        let fx = s0.ln() - x.ln() - r0 * (1.0 - x / n);
-        let dfx = -1.0 / x + r0 / n;
+    // Bounds: (0, N).
+    // Although mathematical domain is (0, infinity), physically it's [0, N].
+    // And ln(x) requires x > 0.
+    let bounds = Some((1e-5, n));
 
-        if dfx.abs() < 1e-10 {
-            return Err("Derivative too close to zero".to_string());
-        }
+    let root = solver.find_root_with_derivative(f, df, guess, bounds)?;
 
-        let next_x = x - fx / dfx;
-
-        if (next_x - x).abs() < tolerance {
-            return Ok(next_x);
-        }
-
-        // Safety check to keep x within bounds
-        if next_x <= 0.0 {
-            x /= 2.0; // Backtrack towards 0
-        } else if next_x > n {
-            x = (x + n) / 2.0; // Backtrack towards N
-        } else {
-            x = next_x;
-        }
-    }
-
-    Err("Newton-Raphson failed to converge".to_string())
+    Ok(root)
 }
 
 #[cfg(test)]
