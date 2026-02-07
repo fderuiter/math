@@ -40,8 +40,10 @@ pub mod feed_forward;
 pub mod layer_norm;
 pub mod model;
 pub mod positional_encoding;
+pub mod traits;
 
 pub use decoder::{Decoder, DecoderLayer};
 pub use encoder::{Encoder, EncoderLayer};
 pub use layer_norm::LayerNorm;
 pub use model::Transformer;
+pub use traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};

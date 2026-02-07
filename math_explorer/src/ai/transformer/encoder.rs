@@ -1,19 +1,20 @@
 use super::attention::MultiHeadAttention;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
 use nalgebra::DMatrix;
 
 /// A single Encoder layer, containing self-attention and a feed-forward network,
 /// with residual connections and layer normalization.
 pub struct EncoderLayer {
     /// The multi-head self-attention mechanism.
-    pub self_attn: MultiHeadAttention,
+    pub self_attn: Box<dyn AttentionMechanism>,
     /// The position-wise feed-forward network.
-    pub feed_forward: FeedForward,
+    pub feed_forward: Box<dyn FeedForwardNetwork>,
     /// Layer normalization applied after the attention mechanism.
-    pub norm1: LayerNorm,
+    pub norm1: Box<dyn NormalizationLayer>,
     /// Layer normalization applied after the feed-forward network.
-    pub norm2: LayerNorm,
+    pub norm2: Box<dyn NormalizationLayer>,
 }
 
 impl EncoderLayer {
@@ -30,10 +31,25 @@ impl EncoderLayer {
     /// A new `EncoderLayer` instance initialized with the given parameters.
     pub fn new(d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
-            self_attn: MultiHeadAttention::new(d_model, h),
-            feed_forward: FeedForward::new(d_model, d_ff),
-            norm1: LayerNorm::new(d_model),
-            norm2: LayerNorm::new(d_model),
+            self_attn: Box::new(MultiHeadAttention::new(d_model, h)),
+            feed_forward: Box::new(FeedForward::new(d_model, d_ff)),
+            norm1: Box::new(LayerNorm::new(d_model)),
+            norm2: Box::new(LayerNorm::new(d_model)),
+        }
+    }
+
+    /// Creates a new `EncoderLayer` with custom components.
+    pub fn new_with_components(
+        self_attn: Box<dyn AttentionMechanism>,
+        feed_forward: Box<dyn FeedForwardNetwork>,
+        norm1: Box<dyn NormalizationLayer>,
+        norm2: Box<dyn NormalizationLayer>,
+    ) -> Self {
+        Self {
+            self_attn,
+            feed_forward,
+            norm1,
+            norm2,
         }
     }
 

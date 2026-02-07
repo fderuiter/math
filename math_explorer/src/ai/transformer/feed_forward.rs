@@ -1,6 +1,7 @@
 // Implementation of the Position-wise Feed-Forward Network.
 
 use crate::ai::activations::relu;
+use crate::ai::transformer::traits::FeedForwardNetwork;
 use crate::ai::utils::AddRowVector;
 use nalgebra::{DMatrix, RowDVector};
 
@@ -52,6 +53,12 @@ impl FeedForward {
         output.add_row_vector_to_all_rows(&self.b2);
 
         output
+    }
+}
+
+impl FeedForwardNetwork for FeedForward {
+    fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
+        self.forward(x)
     }
 }
 
