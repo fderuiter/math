@@ -176,7 +176,7 @@ impl NewtonRaphson {
     /// * `df` - The derivative of the objective function.
     /// * `initial_guess` - Initial guess for the root.
     /// * `bounds` - Optional strict bounds [min, max]. If the next step falls outside,
-    ///              a fallback strategy (midpoint towards bound) is used.
+    ///   a fallback strategy (midpoint towards bound) is used.
     pub fn find_root_with_derivative<F, DF>(
         &self,
         f: F,
