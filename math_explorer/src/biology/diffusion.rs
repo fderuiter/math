@@ -94,7 +94,7 @@ impl SpatialDiffusion for FiniteDifference1D {
             return;
         }
 
-        // Validate slice lengths to prevent Undefined Behavior in unsafe blocks
+        // Validate slice lengths
         assert!(v.len() >= n, "v buffer too small");
         assert!(out_u.len() >= n, "out_u buffer too small");
         assert!(out_v.len() >= n, "out_v buffer too small");
@@ -102,76 +102,55 @@ impl SpatialDiffusion for FiniteDifference1D {
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
-        // 1. Handle i = 0
+        // 1. Handle i = 0 (Left Boundary)
         {
-            let i = 0;
-            // Safety: n > 0 checked above
-            let u_curr = unsafe { *u.get_unchecked(i) };
-            let v_curr = unsafe { *v.get_unchecked(i) };
-
-            let u_prev = u_curr; // Neumann BC: u_{-1} = u_0
+            let u_curr = u[0];
+            let v_curr = v[0];
+            // Neumann BC: u_{-1} = u_0
+            let u_prev = u_curr;
             let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 {
-                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
-            } else {
-                (u_curr, v_curr)
-            };
+            let (u_next, v_next) = if n > 1 { (u[1], v[1]) } else { (u_curr, v_curr) };
 
-            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-            unsafe {
-                *out_u.get_unchecked_mut(i) = d_u * lap_u;
-                *out_v.get_unchecked_mut(i) = d_v * lap_v;
-            }
+            out_u[0] = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            out_v[0] = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
         }
 
-        // 2. Handle i = 1..n-1 (Hot Path)
+        // 2. Interior (Safe Windows)
         if n > 2 {
-            // Optimization: Sliding Window / Register Rotation
-            unsafe {
-                let mut u_prev = *u.get_unchecked(0);
-                let mut u_curr = *u.get_unchecked(1);
-                let mut v_prev = *v.get_unchecked(0);
-                let mut v_curr = *v.get_unchecked(1);
+            // Iterate over windows of 3 elements: [prev, curr, next]
+            // We write to out starting at index 1
+            for (((win_u, win_v), o_u), o_v) in u
+                .windows(3)
+                .zip(v.windows(3))
+                .zip(out_u.iter_mut().skip(1))
+                .zip(out_v.iter_mut().skip(1))
+            {
+                let u_prev = win_u[0];
+                let u_curr = win_u[1];
+                let u_next = win_u[2];
 
-                for i in 1..n - 1 {
-                    let u_next = *u.get_unchecked(i + 1);
-                    let v_next = *v.get_unchecked(i + 1);
+                let v_prev = win_v[0];
+                let v_curr = win_v[1];
+                let v_next = win_v[2];
 
-                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                    *out_u.get_unchecked_mut(i) = d_u * lap_u;
-                    *out_v.get_unchecked_mut(i) = d_v * lap_v;
-
-                    // Shift window
-                    u_prev = u_curr;
-                    u_curr = u_next;
-                    v_prev = v_curr;
-                    v_curr = v_next;
-                }
+                *o_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                *o_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
             }
         }
 
-        // 3. Handle i = n-1
+        // 3. Handle i = n-1 (Right Boundary)
         if n > 1 {
             let i = n - 1;
-            unsafe {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-                let u_prev = *u.get_unchecked(i - 1);
-                let v_prev = *v.get_unchecked(i - 1);
+            let u_curr = u[i];
+            let v_curr = v[i];
+            let u_prev = u[i - 1];
+            let v_prev = v[i - 1];
+            // Neumann BC: u_{N} = u_{N-1}
+            let u_next = u_curr;
+            let v_next = v_curr;
 
-                let u_next = u_curr; // Neumann BC: u_{N} = u_{N-1}
-                let v_next = v_curr;
-
-                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                *out_u.get_unchecked_mut(i) = d_u * lap_u;
-                *out_v.get_unchecked_mut(i) = d_v * lap_v;
-            }
+            out_u[i] = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            out_v[i] = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
         }
     }
 

@@ -6,7 +6,7 @@ use crate::pure_math::analysis::ode::OdeSystem;
 /// The Hodgkin-Huxley system of differential equations.
 ///
 /// Defines the derivatives for the state variables $V, n, m, h$.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct HodgkinHuxleyModel {
     /// Parameters of the model (conductances, potentials).
     pub params: HodgkinHuxleyParameters,
@@ -19,56 +19,13 @@ impl HodgkinHuxleyModel {
         Self { params, i_ext }
     }
 
-    /// Rate constant $\alpha_n$ for Potassium activation.
-    fn alpha_n(v: f64, v_rest: f64) -> f64 {
-        let x = 10.0 - (v - v_rest);
-        if x.abs() < 1e-9 {
-            0.1 // Limit as x -> 0
-        } else {
-            0.01 * x / ((0.1 * x).exp() - 1.0)
-        }
-    }
-
-    /// Rate constant $\beta_n$ for Potassium activation.
-    fn beta_n(v: f64, v_rest: f64) -> f64 {
-        let dv = v - v_rest;
-        0.125 * (-dv / 80.0).exp()
-    }
-
-    /// Rate constant $\alpha_m$ for Sodium activation.
-    fn alpha_m(v: f64, v_rest: f64) -> f64 {
-        let dv = v - v_rest;
-        let x = 25.0 - dv;
-        if x.abs() < 1e-9 {
-            1.0
-        } else {
-            0.1 * x / ((0.1 * x).exp() - 1.0)
-        }
-    }
-
-    /// Rate constant $\beta_m$ for Sodium activation.
-    fn beta_m(v: f64, v_rest: f64) -> f64 {
-        let dv = v - v_rest;
-        4.0 * (-dv / 18.0).exp()
-    }
-
-    /// Rate constant $\alpha_h$ for Sodium inactivation.
-    fn alpha_h(v: f64, v_rest: f64) -> f64 {
-        let dv = v - v_rest;
-        0.07 * (-dv / 20.0).exp()
-    }
-
-    /// Rate constant $\beta_h$ for Sodium inactivation.
-    fn beta_h(v: f64, v_rest: f64) -> f64 {
-        let dv = v - v_rest;
-        1.0 / ((3.0 - 0.1 * dv).exp() + 1.0)
-    }
 }
 
 impl OdeSystem<HodgkinHuxleyState> for HodgkinHuxleyModel {
     fn derivative(&self, _t: f64, state: &HodgkinHuxleyState) -> HodgkinHuxleyState {
         // Unpack parameters
         let p = &self.params;
+        let k = &p.kinetics;
 
         let v = state.v;
         let n = state.n;
@@ -84,9 +41,9 @@ impl OdeSystem<HodgkinHuxleyState> for HodgkinHuxleyModel {
 
         // Gating variable derivatives
         // dx/dt = alpha_x * (1 - x) - beta_x * x
-        let dn_dt = Self::alpha_n(v, p.v_rest) * (1.0 - n) - Self::beta_n(v, p.v_rest) * n;
-        let dm_dt = Self::alpha_m(v, p.v_rest) * (1.0 - m) - Self::beta_m(v, p.v_rest) * m;
-        let dh_dt = Self::alpha_h(v, p.v_rest) * (1.0 - h) - Self::beta_h(v, p.v_rest) * h;
+        let dn_dt = k.alpha_n(v, p.v_rest) * (1.0 - n) - k.beta_n(v, p.v_rest) * n;
+        let dm_dt = k.alpha_m(v, p.v_rest) * (1.0 - m) - k.beta_m(v, p.v_rest) * m;
+        let dh_dt = k.alpha_h(v, p.v_rest) * (1.0 - h) - k.beta_h(v, p.v_rest) * h;
 
         HodgkinHuxleyState {
             v: dv_dt,

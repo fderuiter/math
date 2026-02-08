@@ -8,7 +8,7 @@ use crate::pure_math::analysis::ode::{Euler, Solver};
 /// Builder for constructing a [`HodgkinHuxleyNeuron`] with validated parameters.
 ///
 /// Ensures that initial states (especially gating variables) are within valid ranges.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct HodgkinHuxleyNeuronBuilder {
     v_initial: f64,
     n_initial: Option<f64>,
@@ -243,7 +243,7 @@ impl HodgkinHuxleyNeuron {
         };
 
         // Create the model with current parameters
-        let model = HodgkinHuxleyModel::new(self.params, i_ext);
+        let model = HodgkinHuxleyModel::new(self.params.clone(), i_ext);
 
         // Solve using the provided solver
         let new_state = solver.solve(&model, 0.0, &state, dt);
