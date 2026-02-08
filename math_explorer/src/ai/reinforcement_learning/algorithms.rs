@@ -1,5 +1,5 @@
-use super::strategies::{EpsilonGreedy, ExplorationStrategy};
 use super::storage::{HashMapQFunction, QFunction};
+use super::strategies::{EpsilonGreedy, ExplorationStrategy};
 use super::types::{Action, State};
 use rand::RngCore;
 use std::hash::Hash;
