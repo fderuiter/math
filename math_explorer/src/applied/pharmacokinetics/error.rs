@@ -1,5 +1,5 @@
-use thiserror::Error;
 use crate::pure_math::analysis::roots::AnalysisError;
+use thiserror::Error;
 
 /// Errors that can occur in pharmacokinetic modeling.
 #[derive(Debug, Error)]

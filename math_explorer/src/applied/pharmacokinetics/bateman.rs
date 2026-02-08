@@ -85,15 +85,13 @@ pub fn solve_ka(
     let solver = NewtonRaphson::new(max_iter, tolerance);
 
     // Objective function: f(ka) = t_max(ka, ke) - t_max_target
-    let f = |ka: f64| -> f64 {
-        t_max(ka, ke) - t_max_target
-    };
+    let f = |ka: f64| -> f64 { t_max(ka, ke) - t_max_target };
 
     // Derivative: f'(ka) = d(t_max)/d(ka)
     let f_prime = |ka: f64| -> f64 {
         if (ka - ke).abs() < 1e-9 {
-             // Limit as ka -> ke is -1 / (2 * ke^2)
-             -1.0 / (2.0 * ke * ke)
+            // Limit as ka -> ke is -1 / (2 * ke^2)
+            -1.0 / (2.0 * ke * ke)
         } else {
             ((ka - ke) / ka - (ka.ln() - ke.ln())) / (ka - ke).powi(2)
         }

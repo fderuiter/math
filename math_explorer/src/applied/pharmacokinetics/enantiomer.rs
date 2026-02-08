@@ -23,13 +23,19 @@ impl EnantiomerModel {
         // We assume f_d is non-negative. If dose becomes negative, with_dose returns Error.
         // Since we can't easily propagate error from here (trait signature), we unwrap.
         // This implies EnantiomerModel should be constructed carefully.
-        let params = self.d_params.with_dose(dose).expect("Invalid dose calculated in EnantiomerModel");
+        let params = self
+            .d_params
+            .with_dose(dose)
+            .expect("Invalid dose calculated in EnantiomerModel");
         BatemanModel::new(params)
     }
 
     fn get_l_model(&self) -> BatemanModel {
         let dose = self.l_params.d() * self.f_l;
-        let params = self.l_params.with_dose(dose).expect("Invalid dose calculated in EnantiomerModel");
+        let params = self
+            .l_params
+            .with_dose(dose)
+            .expect("Invalid dose calculated in EnantiomerModel");
         BatemanModel::new(params)
     }
 }
