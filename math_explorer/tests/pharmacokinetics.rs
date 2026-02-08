@@ -15,12 +15,13 @@ fn get_d_amphetamine_params() -> PKParameters {
     let ka_d = solve_ka(t_max_target, ke_d, 1.0, 100, TOLERANCE).expect("Failed to solve for ka_d");
 
     PKParameters::new(
-        1.0,   // f
-        20.0,  // d
-        ka_d,  // ka
-        ke_d,  // ke
-        1.0    // v
-    ).unwrap()
+        1.0,  // f
+        20.0, // d
+        ka_d, // ka
+        ke_d, // ke
+        1.0,  // v
+    )
+    .unwrap()
 }
 
 // Helper function to create parameters for l-amphetamine based on the prompt.
@@ -35,8 +36,9 @@ fn get_l_amphetamine_params() -> PKParameters {
         d_params.d(),
         d_params.ka(),
         ke_l,
-        d_params.v()
-    ).unwrap()
+        d_params.v(),
+    )
+    .unwrap()
 }
 
 #[test]
@@ -80,11 +82,13 @@ fn test_bateman_function() {
         params.d(),
         params.ke(), // ka = ke
         params.ke(),
-        params.v()
-    ).unwrap();
+        params.v(),
+    )
+    .unwrap();
 
     let t = 5.0;
-    let expected_c = (params_ka_eq_ke.f() * params_ka_eq_ke.d() * params_ka_eq_ke.ka() * t / params_ka_eq_ke.v())
+    let expected_c = (params_ka_eq_ke.f() * params_ka_eq_ke.d() * params_ka_eq_ke.ka() * t
+        / params_ka_eq_ke.v())
         * (-params_ka_eq_ke.ka() * t).exp();
     let c = concentration_bateman(&params_ka_eq_ke, t);
     assert!((c - expected_c).abs() < TOLERANCE);
@@ -120,11 +124,17 @@ fn test_enantiomer_model_ir() {
 
     // Expected value is C_d(t) + C_l(t) with scaled doses.
     let c_d = concentration_bateman(
-        &model.d_params.with_dose(model.d_params.d() * model.f_d).unwrap(),
+        &model
+            .d_params
+            .with_dose(model.d_params.d() * model.f_d)
+            .unwrap(),
         t,
     );
     let c_l = concentration_bateman(
-        &model.l_params.with_dose(model.l_params.d() * model.f_l).unwrap(),
+        &model
+            .l_params
+            .with_dose(model.l_params.d() * model.f_l)
+            .unwrap(),
         t,
     );
     let expected_c = c_d + c_l;

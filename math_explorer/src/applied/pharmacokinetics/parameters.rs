@@ -140,21 +140,21 @@ impl PKParametersBuilder {
 
     /// Builds the `PKParameters` struct, validating all fields.
     pub fn build(self) -> Result<PKParameters, PharmacokineticsError> {
-        let f = self
-            .f
-            .ok_or_else(|| PharmacokineticsError::InvalidParameter("Bioavailability (f) is required".to_string()))?;
-        let d = self
-            .d
-            .ok_or_else(|| PharmacokineticsError::InvalidParameter("Dose (d) is required".to_string()))?;
-        let ka = self
-            .ka
-            .ok_or_else(|| PharmacokineticsError::InvalidParameter("Absorption rate (ka) is required".to_string()))?;
-        let ke = self
-            .ke
-            .ok_or_else(|| PharmacokineticsError::InvalidParameter("Elimination rate (ke) is required".to_string()))?;
-        let v = self
-            .v
-            .ok_or_else(|| PharmacokineticsError::InvalidParameter("Volume (v) is required".to_string()))?;
+        let f = self.f.ok_or_else(|| {
+            PharmacokineticsError::InvalidParameter("Bioavailability (f) is required".to_string())
+        })?;
+        let d = self.d.ok_or_else(|| {
+            PharmacokineticsError::InvalidParameter("Dose (d) is required".to_string())
+        })?;
+        let ka = self.ka.ok_or_else(|| {
+            PharmacokineticsError::InvalidParameter("Absorption rate (ka) is required".to_string())
+        })?;
+        let ke = self.ke.ok_or_else(|| {
+            PharmacokineticsError::InvalidParameter("Elimination rate (ke) is required".to_string())
+        })?;
+        let v = self.v.ok_or_else(|| {
+            PharmacokineticsError::InvalidParameter("Volume (v) is required".to_string())
+        })?;
 
         PKParameters::new(f, d, ka, ke, v)
     }
