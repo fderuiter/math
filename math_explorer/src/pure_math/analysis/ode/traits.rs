@@ -49,12 +49,12 @@ pub trait OdeSystem<State: VectorOperations> {
 /// A trait defining a numerical ODE solver strategy.
 pub trait Solver<State: VectorOperations> {
     /// Advances the system state by one time step `dt`.
-    fn solve<S>(&self, system: &S, t: f64, state: &State, dt: f64) -> State
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
     where
         S: OdeSystem<State> + ?Sized;
 
     /// Advances the system state by one time step `dt` in-place.
-    fn step<S>(&self, system: &S, t: f64, state: &mut State, dt: f64)
+    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized;
 }

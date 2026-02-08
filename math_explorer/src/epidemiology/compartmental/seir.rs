@@ -71,7 +71,7 @@ impl SEIRModel {
     }
 
     /// Advances the state by dt using a provided solver strategy.
-    pub fn step_with<S: Solver<SEIRState>>(&mut self, solver: &S, dt: f64) {
+    pub fn step_with<S: Solver<SEIRState>>(&mut self, solver: &mut S, dt: f64) {
         <Self as TimeStepper<SEIRState>>::step_with(self, solver, dt);
     }
 }
@@ -111,7 +111,7 @@ mod tests {
 
         let dt = 0.1;
         model_std.step(dt);
-        model_with.step_with(&RungeKutta4, dt);
+        model_with.step_with(&mut RungeKutta4::default(), dt);
 
         assert_eq!(
             model_std.state, model_with.state,

@@ -47,14 +47,14 @@ fn main() {
 
     // Benchmarking simulation
     println!("Running long simulation with RK4...");
-    let solver = RungeKutta4;
+    let mut solver = RungeKutta4::default();
     // Simulate 10000 steps
     let steps = 10_000;
     let dt = 0.01;
     let time_horizon = steps as f64 * dt;
 
     let start_sim = Instant::now();
-    let _traj = system.simulate_with_strategy(initial_state.clone(), time_horizon, dt, &solver);
+    let _traj = system.simulate_with_strategy(initial_state.clone(), time_horizon, dt, &mut solver);
     let duration_sim = start_sim.elapsed();
     println!("Simulation Time: {:.2?}", duration_sim);
 }

@@ -88,7 +88,7 @@ mod tests {
         // 1 second simulation
         let steps = (1.0 / dt) as usize;
         for _ in 0..steps {
-            bloch.step_with(dt, b_field, t1, t2, &RungeKutta4);
+            bloch.step_with(dt, b_field, t1, t2, &mut RungeKutta4::default());
         }
 
         let expected_y = (-1.0_f64).exp();

@@ -53,7 +53,12 @@ impl ReplicatorDynamics {
         time_horizon: f64,
         dt: f64,
     ) -> Vec<(f64, DVector<f64>)> {
-        self.simulate_with_strategy(initial_population, time_horizon, dt, &RungeKutta4)
+        self.simulate_with_strategy(
+            initial_population,
+            time_horizon,
+            dt,
+            &mut RungeKutta4::default(),
+        )
     }
 
     /// Simulates the dynamics over time using a provided **Solver** strategy.
@@ -71,7 +76,7 @@ impl ReplicatorDynamics {
         initial_population: DVector<f64>,
         time_horizon: f64,
         dt: f64,
-        solver: &S,
+        solver: &mut S,
     ) -> Vec<(f64, DVector<f64>)>
     where
         S: Solver<DVector<f64>>,
@@ -173,7 +178,7 @@ mod tests {
         let init = DVector::from_vec(vec![0.4, 0.3, 0.3]);
 
         // Inject Euler solver
-        let trajectory = system.simulate_with_strategy(init, 5.0, 0.001, &Euler);
+        let trajectory = system.simulate_with_strategy(init, 5.0, 0.001, &mut Euler::default());
 
         let last_state = &trajectory.last().unwrap().1;
         assert!((last_state.sum() - 1.0).abs() < 1e-6);

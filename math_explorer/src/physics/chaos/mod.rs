@@ -152,7 +152,7 @@ mod tests {
         // Test with RK4
         let lambda_rk4 = metrics::lorenz_lyapunov(
             &system,
-            &RungeKutta4,
+            &mut RungeKutta4::default(),
             na::Vector3::new(10.0, 10.0, 10.0),
             0.01,
             100,
@@ -169,7 +169,7 @@ mod tests {
         // Test with Euler (less accurate, but should run)
         let lambda_euler = metrics::lorenz_lyapunov(
             &system,
-            &Euler,
+            &mut Euler::default(),
             na::Vector3::new(10.0, 10.0, 10.0),
             0.0001, // Euler needs smaller step for stability
             100,

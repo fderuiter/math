@@ -14,7 +14,7 @@ mod tests {
         system.state.u_mut()[50] = 1.0;
 
         // Verify we can call step_with (requires TimeStepper trait)
-        system.step_with(&RungeKutta4, 0.1);
+        system.step_with(&mut RungeKutta4::default(), 0.1);
 
         // Verify state changed
         let val_after = system.state.u()[50];

@@ -22,7 +22,7 @@ fn test_vec_state_ode() {
     let mut state = initial_state;
     let mut t = 0.0;
 
-    let solver = RungeKutta4;
+    let mut solver = RungeKutta4::default();
 
     for _ in 0..steps {
         state = solver.solve(&system, t, &state, dt);

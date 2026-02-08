@@ -65,3 +65,8 @@
 **Violation:** Hardcoding gradient/divergence formulas for Cartesian coordinates would violate OCP and prevent usage in Cylindrical/Spherical systems.
 **Refactor:** Applied **Strategy Pattern**. Extracted `OrthogonalCoordinateSystem` trait. Implemented `Cylindrical` and `Spherical` strategies. Operators (`gradient`, etc.) are generic over this trait.
 **Trade-off:** Numerical differentiation introduces small errors compared to analytical solutions, but allows generic implementation for any orthogonal system.
+
+## 2026-02-08 - Buffered Solver Pattern
+**Violation:** Stateless Solvers allocated temporary vectors on every step, causing significant GC pressure in tight simulation loops.
+**Refactor:** Converted Solvers to stateful structs with internal buffers (`&mut self`), enabling zero-allocation steps.
+**Trade-off:** Solvers must now be mutable and instantiated, slightly increasing API verbosity for one-off calls.

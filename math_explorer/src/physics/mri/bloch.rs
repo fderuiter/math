@@ -62,7 +62,7 @@ impl BlochSimulator {
     /// * `t1` - Longitudinal relaxation time in seconds.
     /// * `t2` - Transverse relaxation time in seconds.
     /// * `solver` - The numerical solver strategy to use.
-    pub fn step_with<S>(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64, solver: &S)
+    pub fn step_with<S>(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64, solver: &mut S)
     where
         S: Solver<Vector3<f64>>,
     {
@@ -89,6 +89,6 @@ impl BlochSimulator {
     /// * `t1` - Longitudinal relaxation time in seconds.
     /// * `t2` - Transverse relaxation time in seconds.
     pub fn step(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64) {
-        self.step_with(dt, b_field, t1, t2, &Euler)
+        self.step_with(dt, b_field, t1, t2, &mut Euler::default())
     }
 }
