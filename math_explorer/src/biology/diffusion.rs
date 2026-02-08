@@ -17,6 +17,50 @@ pub trait SpatialDiffusion {
     /// * `d_u` - Diffusion coefficient for u.
     /// * `d_v` - Diffusion coefficient for v.
     fn apply(&self, u: &[f64], v: &[f64], out_u: &mut [f64], out_v: &mut [f64], d_u: f64, d_v: f64);
+
+    /// Applies the diffusion operator and reaction kinetics in a fused loop.
+    ///
+    /// This method is intended for performance optimization, allowing the diffusion
+    /// and reaction terms to be computed in a single pass over the data.
+    ///
+    /// # Arguments
+    /// * `u` - Input activator concentration slice.
+    /// * `v` - Input inhibitor concentration slice.
+    /// * `out_u` - Output buffer for activator state (u + dt * du/dt).
+    /// * `out_v` - Output buffer for inhibitor state (v + dt * dv/dt).
+    /// * `d_u` - Diffusion coefficient for u.
+    /// * `d_v` - Diffusion coefficient for v.
+    /// * `dt` - Time step.
+    /// * `reaction` - Closure that computes the reaction rates (du/dt, dv/dt) given (u, v).
+    #[allow(clippy::too_many_arguments)]
+    fn apply_step<F>(
+        &self,
+        u: &[f64],
+        v: &[f64],
+        out_u: &mut [f64],
+        out_v: &mut [f64],
+        d_u: f64,
+        d_v: f64,
+        dt: f64,
+        reaction: F,
+    ) where
+        F: Fn(f64, f64) -> (f64, f64),
+    {
+        // Default implementation: calculate diffusion then apply reaction
+        self.apply(u, v, out_u, out_v, d_u, d_v);
+
+        let n = u.len();
+        // Safety: we assume out buffers are sized correctly if apply succeeded,
+        // but let's be safe with bounds checks in default impl or use unsafe if we trust apply.
+        // Let's use safe indexing for default impl as it is the fallback.
+        for i in 0..n {
+            let diff_u = out_u[i];
+            let diff_v = out_v[i];
+            let (reac_u, reac_v) = reaction(u[i], v[i]);
+            out_u[i] = u[i] + dt * (diff_u + reac_u);
+            out_v[i] = v[i] + dt * (diff_v + reac_v);
+        }
+    }
 }
 
 /// A 1D Finite Difference implementation using a 3-point stencil.
@@ -127,6 +171,111 @@ impl SpatialDiffusion for FiniteDifference1D {
 
                 *out_u.get_unchecked_mut(i) = d_u * lap_u;
                 *out_v.get_unchecked_mut(i) = d_v * lap_v;
+            }
+        }
+    }
+
+    fn apply_step<F>(
+        &self,
+        u: &[f64],
+        v: &[f64],
+        out_u: &mut [f64],
+        out_v: &mut [f64],
+        d_u: f64,
+        d_v: f64,
+        dt: f64,
+        reaction: F,
+    ) where
+        F: Fn(f64, f64) -> (f64, f64),
+    {
+        let n = u.len();
+        if n == 0 {
+            return;
+        }
+
+        // Validate slice lengths to prevent Undefined Behavior in unsafe blocks
+        assert!(v.len() >= n, "v buffer too small");
+        assert!(out_u.len() >= n, "out_u buffer too small");
+        assert!(out_v.len() >= n, "out_v buffer too small");
+
+        let dx_sq = self.dx * self.dx;
+        let inv_dx_sq = 1.0 / dx_sq;
+
+        // 1. Handle i = 0
+        {
+            let i = 0;
+            // Safety: n > 0 checked above
+            let u_curr = unsafe { *u.get_unchecked(i) };
+            let v_curr = unsafe { *v.get_unchecked(i) };
+
+            let u_prev = u_curr; // Neumann BC: u_{-1} = u_0
+            let v_prev = v_curr;
+            let (u_next, v_next) = if n > 1 {
+                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
+            } else {
+                (u_curr, v_curr)
+            };
+
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+            let (reac_u, reac_v) = reaction(u_curr, v_curr);
+
+            unsafe {
+                *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
+                *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
+            }
+        }
+
+        // 2. Handle i = 1..n-1 (Hot Path)
+        if n > 2 {
+            // Optimization: Sliding Window / Register Rotation
+            unsafe {
+                let mut u_prev = *u.get_unchecked(0);
+                let mut u_curr = *u.get_unchecked(1);
+                let mut v_prev = *v.get_unchecked(0);
+                let mut v_curr = *v.get_unchecked(1);
+
+                for i in 1..n - 1 {
+                    let u_next = *u.get_unchecked(i + 1);
+                    let v_next = *v.get_unchecked(i + 1);
+
+                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+                    let (reac_u, reac_v) = reaction(u_curr, v_curr);
+
+                    *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
+                    *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
+
+                    // Shift window
+                    u_prev = u_curr;
+                    u_curr = u_next;
+                    v_prev = v_curr;
+                    v_curr = v_next;
+                }
+            }
+        }
+
+        // 3. Handle i = n-1
+        if n > 1 {
+            let i = n - 1;
+            unsafe {
+                let u_curr = *u.get_unchecked(i);
+                let v_curr = *v.get_unchecked(i);
+                let u_prev = *u.get_unchecked(i - 1);
+                let v_prev = *v.get_unchecked(i - 1);
+
+                let u_next = u_curr; // Neumann BC: u_{N} = u_{N-1}
+                let v_next = v_curr;
+
+                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+                let (reac_u, reac_v) = reaction(u_curr, v_curr);
+
+                *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
+                *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
             }
         }
     }
