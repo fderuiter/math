@@ -90,3 +90,13 @@
 3. Introduced `StochasticError` for explicit error handling (replacing `panic!`).
 4. Updated `epidemiology/stochastic.rs` to import/re-export these tools.
 **Consequence:** The Gillespie Algorithm is now a first-class citizen in the `pure_math` library, available for any domain. The API is safer (`Result` return type) and more modular.
+
+## 2024-03-24 - Strategy Pattern for Ion Channel Kinetics
+**Problem:** The `HodgkinHuxleyModel` contained hardcoded private methods (`alpha_n`, `beta_n`, etc.) for calculating channel gating rates. This coupling prevented users from modeling different neuron types, temperature dependencies, or experimental conditions without modifying the core library code.
+**Decision:** Implemented the **Strategy Pattern** by introducing a `GatingKinetics` trait.
+- `HodgkinHuxleyParameters` now holds `Arc<dyn GatingKinetics>` instead of being a pure data struct.
+- Standard HH kinetics are provided as default implementations.
+**Consequence:**
+- `HodgkinHuxleyParameters` is no longer `Copy` or `PartialEq`, requiring explicit `.clone()` in some contexts.
+- Users can now inject custom kinetics logic (e.g., `MyCustomChannelKinetics`) into the neuron model.
+- The physics kernel (`derivative`) is now decoupled from the specific mathematical form of the rate constants.
