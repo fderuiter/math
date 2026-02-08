@@ -90,3 +90,8 @@
 3. Introduced `StochasticError` for explicit error handling (replacing `panic!`).
 4. Updated `epidemiology/stochastic.rs` to import/re-export these tools.
 **Consequence:** The Gillespie Algorithm is now a first-class citizen in the `pure_math` library, available for any domain. The API is safer (`Result` return type) and more modular.
+
+## 2027-10-15 - [Pharmacokinetics Parameters Validation]
+**Problem:** `math_explorer/src/applied/pharmacokinetics` exposed raw public fields in `PKParameters`, allowing invalid physical states (e.g., negative dose, zero volume) and coupling the model to primitive types. The `solve_ka` function also duplicated Newton-Raphson logic.
+**Decision:** Applied "Encapsulation" and "Builder Pattern" for `PKParameters`. Applied "Generic Promotion" by moving `NewtonRaphson` to `pure_math/analysis/roots.rs` and reusing it in `solve_ka`.
+**Consequence:** Enforces invariants at compile/runtime (via `Result`). Breaking change for consumers accessing `PKParameters` fields directly, but significantly safer API.

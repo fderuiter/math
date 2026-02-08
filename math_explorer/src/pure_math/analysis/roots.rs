@@ -135,9 +135,121 @@ impl RootFinder for Bisection {
     }
 }
 
+/// Newton-Raphson method implementation.
+///
+/// Uses the derivative of the function to converge quadratically to the root.
+/// If the derivative is not provided (via `RootFinder` trait), a numerical approximation is used.
+#[derive(Debug, Clone, Copy)]
+pub struct NewtonRaphson {
+    /// Maximum number of iterations.
+    pub max_iterations: usize,
+    /// Absolute tolerance for the root value.
+    pub tolerance: f64,
+}
+
+impl NewtonRaphson {
+    /// Creates a new Newton-Raphson solver.
+    pub fn new(max_iterations: usize, tolerance: f64) -> Self {
+        Self {
+            max_iterations,
+            tolerance,
+        }
+    }
+
+    /// Finds a root using an analytical derivative $f'(x)$.
+    ///
+    /// # Arguments
+    /// * `f` - The objective function.
+    /// * `f_prime` - The derivative of the objective function.
+    /// * `guess` - Initial guess for the root.
+    pub fn find_root_with_derivative<F, D>(
+        &self,
+        f: F,
+        f_prime: D,
+        guess: f64,
+    ) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+        D: Fn(f64) -> f64,
+    {
+        let mut x = guess;
+
+        for _ in 0..self.max_iterations {
+            let y = f(x);
+            if y.abs() < self.tolerance {
+                return Ok(x);
+            }
+
+            let dy = f_prime(x);
+            if dy.abs() < 1e-14 {
+                return Err(AnalysisError::InvalidParameters(format!(
+                    "Derivative too small at x={}: {}",
+                    x, dy
+                )));
+            }
+
+            let next_x = x - y / dy;
+
+            // Check convergence on domain step
+            if (next_x - x).abs() < self.tolerance {
+                return Ok(next_x);
+            }
+
+            x = next_x;
+        }
+
+        Err(AnalysisError::ConvergenceError(x))
+    }
+}
+
+impl Default for NewtonRaphson {
+    fn default() -> Self {
+        Self {
+            max_iterations: 100,
+            tolerance: 1e-6,
+        }
+    }
+}
+
+impl RootFinder for NewtonRaphson {
+    fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+    {
+        // Use midpoint as initial guess
+        let guess = (min + max) / 2.0;
+
+        // Numerical derivative step size
+        let h = 1e-7;
+
+        let derivative = |x: f64| (f(x + h) - f(x - h)) / (2.0 * h);
+
+        // We use the specialized method with our numerical derivative
+        self.find_root_with_derivative(&f, derivative, guess)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_newton_raphson_sqrt() {
+        let solver = NewtonRaphson::default();
+        // x^2 - 2 = 0, derivative 2x
+        let root = solver
+            .find_root_with_derivative(|x| x * x - 2.0, |x| 2.0 * x, 1.5)
+            .unwrap();
+        assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_newton_raphson_numerical() {
+        let solver = NewtonRaphson::default();
+        // x^2 - 2 = 0
+        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+        assert!((root - std::f64::consts::SQRT_2).abs() < 1e-5);
+    }
 
     #[test]
     fn test_bisection_square_root() {
