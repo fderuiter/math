@@ -1,7 +1,7 @@
 use super::strategies::{EpsilonGreedy, ExplorationStrategy};
+use super::storage::{HashMapQFunction, QFunction};
 use super::types::{Action, State};
 use rand::RngCore;
-use std::collections::HashMap;
 use std::hash::Hash;
 
 /// Q-Learning Update Rule.
@@ -17,49 +17,52 @@ pub fn q_learning_update(
     current_q + alpha * (target - current_q)
 }
 
-/// Simple Tabular Q-Agent for discrete states and actions.
-pub struct TabularQAgent<S, A>
+/// A Q-Learning Agent that uses a generic Q-Function storage.
+///
+/// This struct decouples the learning algorithm from the storage mechanism.
+pub struct QAgent<S, A, Q>
 where
-    S: State + Hash + Eq,
-    A: Action + Hash + Eq,
+    S: State,
+    A: Action,
+    Q: QFunction<S, A>,
 {
-    q_table: HashMap<(S, A), f64>,
+    q_function: Q,
     learning_rate: f64,
     discount_factor: f64,
     strategy: Box<dyn ExplorationStrategy<S, A>>,
 }
 
-impl<S, A> TabularQAgent<S, A>
-where
-    S: State + Hash + Eq + Copy,
-    A: Action + Hash + Eq + Copy,
-{
-    pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
-        Self {
-            q_table: HashMap::new(),
-            learning_rate,
-            discount_factor,
-            strategy: Box::new(EpsilonGreedy::new(epsilon)),
-        }
-    }
+/// Type alias for backward compatibility.
+/// Users who used `TabularQAgent` will now get a `QAgent` backed by a `HashMapQFunction`.
+pub type TabularQAgent<S, A> = QAgent<S, A, HashMapQFunction<S, A>>;
 
-    pub fn new_with_strategy(
+impl<S, A, Q> QAgent<S, A, Q>
+where
+    S: State + Copy,
+    A: Action + Copy,
+    Q: QFunction<S, A>,
+{
+    /// Creates a new Q-Agent with a custom Q-Function backend.
+    pub fn new_generic(
+        q_function: Q,
         learning_rate: f64,
         discount_factor: f64,
         strategy: Box<dyn ExplorationStrategy<S, A>>,
     ) -> Self {
         Self {
-            q_table: HashMap::new(),
+            q_function,
             learning_rate,
             discount_factor,
             strategy,
         }
     }
 
+    /// Retrieves the Q-value for a given state-action pair.
     pub fn get_q_value(&self, state: &S, action: &A) -> f64 {
-        *self.q_table.get(&(*state, *action)).unwrap_or(&0.0)
+        self.q_function.get_value(state, action)
     }
 
+    /// Updates the Q-value based on the transition (s, a, r, s').
     pub fn update(
         &mut self,
         state: &S,
@@ -68,19 +71,16 @@ where
         next_state: &S,
         possible_next_actions: &[A],
     ) {
-        let current_q = self.get_q_value(state, action);
+        let current_q = self.q_function.get_value(state, action);
 
         let max_next_q = if possible_next_actions.is_empty() {
             0.0
         } else {
             possible_next_actions
                 .iter()
-                .map(|a| self.get_q_value(next_state, a))
+                .map(|a| self.q_function.get_value(next_state, a))
                 .fold(f64::NEG_INFINITY, f64::max)
         };
-        // Handle case where max_next_q is still NEG_INFINITY (e.g. no entries yet and fold default?)
-        // actually fold with NEG_INFINITY on empty list is problematic if not checked, but we check is_empty.
-        // If map returns 0.0 for defaults, then max is at least 0.0.
 
         let new_q = q_learning_update(
             current_q,
@@ -94,7 +94,7 @@ where
             self.discount_factor,
         );
 
-        self.q_table.insert((*state, *action), new_q);
+        self.q_function.set_value(*state, *action, new_q);
     }
 
     /// Selects an action using the injected strategy.
@@ -115,11 +115,40 @@ where
         // Pre-calculate Q-values
         let q_values: Vec<f64> = available_actions
             .iter()
-            .map(|a| self.get_q_value(state, a))
+            .map(|a| self.q_function.get_value(state, a))
             .collect();
 
         self.strategy
             .select_action(state, available_actions, &q_values, rng)
+    }
+}
+
+// Backward compatibility for TabularQAgent constructor
+impl<S, A> QAgent<S, A, HashMapQFunction<S, A>>
+where
+    S: State + Hash + Eq + Copy,
+    A: Action + Hash + Eq + Copy,
+{
+    pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
+        Self {
+            q_function: HashMapQFunction::new(),
+            learning_rate,
+            discount_factor,
+            strategy: Box::new(EpsilonGreedy::new(epsilon)),
+        }
+    }
+
+    pub fn new_with_strategy(
+        learning_rate: f64,
+        discount_factor: f64,
+        strategy: Box<dyn ExplorationStrategy<S, A>>,
+    ) -> Self {
+        Self {
+            q_function: HashMapQFunction::new(),
+            learning_rate,
+            discount_factor,
+            strategy,
+        }
     }
 }
 
