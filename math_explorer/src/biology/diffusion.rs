@@ -65,7 +65,11 @@ impl SpatialDiffusion for FiniteDifference1D {
             // Neumann BC: u_{-1} = u_0
             let u_prev = u_curr;
             let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 { (u[1], v[1]) } else { (u_curr, v_curr) };
+            let (u_next, v_next) = if n > 1 {
+                (u[1], v[1])
+            } else {
+                (u_curr, v_curr)
+            };
 
             out_u[0] = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             out_v[0] = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
