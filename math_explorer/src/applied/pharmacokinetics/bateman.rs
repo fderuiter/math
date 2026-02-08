@@ -1,19 +1,7 @@
+use super::error::PharmacokineticsError;
+use super::parameters::PKParameters;
 use super::traits::PharmacokineticModel;
-
-/// Parameters for a standard one-compartment pharmacokinetic model with first-order absorption.
-#[derive(Debug, Clone, Copy)]
-pub struct PKParameters {
-    /// Bioavailability (fraction).
-    pub f: f64,
-    /// Dose (amount).
-    pub d: f64,
-    /// Absorption rate constant (1/time).
-    pub ka: f64,
-    /// Elimination rate constant (1/time).
-    pub ke: f64,
-    /// Apparent volume of distribution (volume).
-    pub v: f64,
-}
+use crate::pure_math::analysis::roots::NewtonRaphson;
 
 /// A model representing a single dose with first-order absorption and elimination (Bateman function).
 #[derive(Debug, Clone, Copy)]
@@ -22,6 +10,7 @@ pub struct BatemanModel {
 }
 
 impl BatemanModel {
+    /// Creates a new Bateman model with the given parameters.
     pub fn new(params: PKParameters) -> Self {
         Self { params }
     }
@@ -33,7 +22,11 @@ impl PharmacokineticModel for BatemanModel {
             return 0.0;
         }
 
-        let PKParameters { f, d, ka, ke, v } = self.params;
+        let f = self.params.f();
+        let d = self.params.d();
+        let ka = self.params.ka();
+        let ke = self.params.ke();
+        let v = self.params.v();
 
         // Handle the case where ka is very close to ke
         if (ka - ke).abs() < 1e-9 {
@@ -57,7 +50,7 @@ pub fn half_life(ke: f64) -> f64 {
 /// Calculates the time to maximum concentration (T_max).
 pub fn t_max(ka: f64, ke: f64) -> f64 {
     if ka <= 0.0 || ke <= 0.0 {
-        return 0.0; // Invalid input
+        return 0.0; // Invalid input, though PKParameters prevents this.
     }
     if (ka - ke).abs() < 1e-9 {
         1.0 / ke
@@ -66,56 +59,55 @@ pub fn t_max(ka: f64, ke: f64) -> f64 {
     }
 }
 
-/// Solves for the absorption rate constant (ka) given T_max and ke using Newton's method.
+/// Solves for the absorption rate constant (ka) given T_max and ke.
+///
+/// Uses the Newton-Raphson method to find the root of the equation $T_{max}(ka) - T_{target} = 0$.
+///
+/// # Arguments
+/// * `t_max_target` - The target time to maximum concentration.
+/// * `ke` - The elimination rate constant.
+/// * `initial_guess` - Initial guess for ka.
+/// * `max_iter` - Maximum number of iterations.
+/// * `tolerance` - Convergence tolerance.
 pub fn solve_ka(
     t_max_target: f64,
     ke: f64,
     initial_guess: f64,
-    max_iter: u32,
+    max_iter: usize,
     tolerance: f64,
-) -> Option<f64> {
+) -> Result<f64, PharmacokineticsError> {
     if t_max_target <= 0.0 || ke <= 0.0 {
-        return None;
+        return Err(PharmacokineticsError::InvalidParameter(
+            "Target T_max and ke must be positive".into(),
+        ));
     }
 
-    let mut ka = initial_guess;
-    if ka <= 0.0 {
-        ka = ke * 2.0;
-    }
+    let solver = NewtonRaphson::new(max_iter, tolerance);
 
-    for _ in 0..max_iter {
-        if ka <= 0.0 {
-            return None;
-        }
+    // Objective function: f(ka) = t_max(ka, ke) - t_max_target
+    let f = |ka: f64| -> f64 {
+        t_max(ka, ke) - t_max_target
+    };
 
+    // Derivative: f'(ka) = d(t_max)/d(ka)
+    let f_prime = |ka: f64| -> f64 {
         if (ka - ke).abs() < 1e-9 {
-            let t_max_at_ke = 1.0 / ke;
-            if (t_max_at_ke - t_max_target).abs() < tolerance {
-                return Some(ke);
-            }
-            ka += 1e-6;
+             // Limit as ka -> ke is -1 / (2 * ke^2)
+             -1.0 / (2.0 * ke * ke)
+        } else {
+            ((ka - ke) / ka - (ka.ln() - ke.ln())) / (ka - ke).powi(2)
         }
+    };
 
-        let current_t_max = t_max(ka, ke);
-        let fx = current_t_max - t_max_target;
+    // Handle initial guess <= 0
+    let guess = if initial_guess <= 0.0 {
+        ke * 2.0
+    } else {
+        initial_guess
+    };
 
-        if fx.abs() < tolerance {
-            return Some(ka);
-        }
-
-        let f_prime_ka = (1.0 / ka * (ka - ke) - (ka.ln() - ke.ln())) / (ka - ke).powi(2);
-
-        if f_prime_ka.abs() < 1e-9 {
-            return None;
-        }
-
-        let next_ka = ka - fx / f_prime_ka;
-
-        if !next_ka.is_finite() {
-            return None;
-        }
-        ka = next_ka;
-    }
-
-    None
+    // The find_root_with_derivative method might return AnalysisError
+    solver
+        .find_root_with_derivative(f, f_prime, guess)
+        .map_err(PharmacokineticsError::AnalysisError)
 }

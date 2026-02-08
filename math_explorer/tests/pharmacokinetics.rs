@@ -14,13 +14,13 @@ fn get_d_amphetamine_params() -> PKParameters {
     // The user prompt suggests ka ~ 1.0, which is a good initial guess.
     let ka_d = solve_ka(t_max_target, ke_d, 1.0, 100, TOLERANCE).expect("Failed to solve for ka_d");
 
-    PKParameters {
-        f: 1.0,  // Assume 100% bioavailability for simplicity.
-        d: 20.0, // Assume a 20mg dose for testing.
-        ka: ka_d,
-        ke: ke_d,
-        v: 1.0, // Assume V=1 L for simplicity, so concentration is in mg/L.
-    }
+    PKParameters::new(
+        1.0,   // f
+        20.0,  // d
+        ka_d,  // ka
+        ke_d,  // ke
+        1.0    // v
+    ).unwrap()
 }
 
 // Helper function to create parameters for l-amphetamine based on the prompt.
@@ -30,10 +30,13 @@ fn get_l_amphetamine_params() -> PKParameters {
     // As per prompt, assume same ka as d-amphetamine.
     let d_params = get_d_amphetamine_params();
 
-    PKParameters {
-        ke: ke_l,
-        ..d_params // copy F, D, ka, V from d-amphetamine params
-    }
+    PKParameters::new(
+        d_params.f(),
+        d_params.d(),
+        d_params.ka(),
+        ke_l,
+        d_params.v()
+    ).unwrap()
 }
 
 #[test]
@@ -65,17 +68,24 @@ fn test_bateman_function() {
     assert!(concentration_bateman(&params, 0.0).abs() < TOLERANCE);
 
     // At t=T_max, concentration should be at its peak.
-    let tmax = t_max(params.ka, params.ke);
+    let tmax = t_max(params.ka(), params.ke());
     let c_max = concentration_bateman(&params, tmax);
     let c_before = concentration_bateman(&params, tmax - 0.1);
     let c_after = concentration_bateman(&params, tmax + 0.1);
     assert!(c_max > c_before && c_max > c_after);
 
     // Test the special case where ka == ke.
-    let mut params_ka_eq_ke = params;
-    params_ka_eq_ke.ka = params_ka_eq_ke.ke;
+    let params_ka_eq_ke = PKParameters::new(
+        params.f(),
+        params.d(),
+        params.ke(), // ka = ke
+        params.ke(),
+        params.v()
+    ).unwrap();
+
     let t = 5.0;
-    let expected_c = (params.f * params.d * params.ke * t / params.v) * (-params.ke * t).exp();
+    let expected_c = (params_ka_eq_ke.f() * params_ka_eq_ke.d() * params_ka_eq_ke.ka() * t / params_ka_eq_ke.v())
+        * (-params_ka_eq_ke.ka() * t).exp();
     let c = concentration_bateman(&params_ka_eq_ke, t);
     assert!((c - expected_c).abs() < TOLERANCE);
 }
@@ -110,17 +120,11 @@ fn test_enantiomer_model_ir() {
 
     // Expected value is C_d(t) + C_l(t) with scaled doses.
     let c_d = concentration_bateman(
-        &PKParameters {
-            d: model.d_params.d * model.f_d,
-            ..model.d_params
-        },
+        &model.d_params.with_dose(model.d_params.d() * model.f_d).unwrap(),
         t,
     );
     let c_l = concentration_bateman(
-        &PKParameters {
-            d: model.l_params.d * model.f_l,
-            ..model.l_params
-        },
+        &model.l_params.with_dose(model.l_params.d() * model.f_l).unwrap(),
         t,
     );
     let expected_c = c_d + c_l;
@@ -162,4 +166,39 @@ fn test_enantiomer_model_xr() {
     let expected_c_multi = c_xr1 + c_xr2;
 
     assert!((c_xr_multi - expected_c_multi).abs() < TOLERANCE);
+}
+
+#[test]
+fn test_pk_parameter_validation() {
+    // Test negative dose
+    let res = PKParameters::new(1.0, -10.0, 1.0, 1.0, 1.0);
+    assert!(res.is_err());
+    assert!(res.unwrap_err().to_string().contains("Dose"));
+
+    // Test negative ka
+    let res = PKParameters::new(1.0, 10.0, -1.0, 1.0, 1.0);
+    assert!(res.is_err());
+
+    // Test negative volume
+    let res = PKParameters::new(1.0, 10.0, 1.0, 1.0, 0.0);
+    assert!(res.is_err());
+
+    // Test valid
+    let res = PKParameters::new(1.0, 10.0, 1.0, 1.0, 1.0);
+    assert!(res.is_ok());
+}
+
+#[test]
+fn test_builder() {
+    let params = PKParametersBuilder::new()
+        .bioavailability(0.8)
+        .dose(50.0)
+        .absorption_rate(1.5)
+        .elimination_rate(0.2)
+        .volume(10.0)
+        .build()
+        .unwrap();
+
+    assert_eq!(params.f(), 0.8);
+    assert_eq!(params.d(), 50.0);
 }

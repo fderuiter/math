@@ -1,4 +1,5 @@
-use super::bateman::{BatemanModel, PKParameters};
+use super::bateman::BatemanModel;
+use super::parameters::PKParameters;
 use super::superposition::SuperpositionModel;
 use super::traits::PharmacokineticModel;
 use super::two_pulse::TwoPulseModel;
@@ -18,15 +19,18 @@ pub struct EnantiomerModel {
 
 impl EnantiomerModel {
     fn get_d_model(&self) -> BatemanModel {
-        let mut p = self.d_params;
-        p.d *= self.f_d;
-        BatemanModel::new(p)
+        let dose = self.d_params.d() * self.f_d;
+        // We assume f_d is non-negative. If dose becomes negative, with_dose returns Error.
+        // Since we can't easily propagate error from here (trait signature), we unwrap.
+        // This implies EnantiomerModel should be constructed carefully.
+        let params = self.d_params.with_dose(dose).expect("Invalid dose calculated in EnantiomerModel");
+        BatemanModel::new(params)
     }
 
     fn get_l_model(&self) -> BatemanModel {
-        let mut p = self.l_params;
-        p.d *= self.f_l;
-        BatemanModel::new(p)
+        let dose = self.l_params.d() * self.f_l;
+        let params = self.l_params.with_dose(dose).expect("Invalid dose calculated in EnantiomerModel");
+        BatemanModel::new(params)
     }
 }
 

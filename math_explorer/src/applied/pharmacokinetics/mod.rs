@@ -38,13 +38,14 @@
 //!
 //! fn main() {
 //!     // 1. Define Drug Parameters (e.g., Caffeine ~100mg)
-//!     let params = PKParameters {
-//!         f: 1.0,   // Bioavailability (100%)
-//!         d: 100.0, // Dose (mg)
-//!         ka: 2.5,  // Absorption rate (fast)
-//!         ke: 0.15, // Elimination rate (Half-life ~4.6h)
-//!         v: 50.0,  // Volume of distribution (L)
-//!     };
+//!     // Using new validated constructor
+//!     let params = PKParameters::new(
+//!         1.0,   // Bioavailability (100%)
+//!         100.0, // Dose (mg)
+//!         2.5,   // Absorption rate (fast)
+//!         0.15,  // Elimination rate (Half-life ~4.6h)
+//!         50.0   // Volume of distribution (L)
+//!     ).unwrap();
 //!
 //!     // 2. Create the Model
 //!     let model = BatemanModel::new(params);
@@ -67,12 +68,16 @@
 
 pub mod bateman;
 pub mod enantiomer;
+pub mod error;
+pub mod parameters;
 pub mod superposition;
 pub mod traits;
 pub mod two_pulse;
 
-pub use bateman::{BatemanModel, PKParameters, half_life, solve_ka, t_max};
+pub use bateman::{BatemanModel, half_life, solve_ka, t_max};
 pub use enantiomer::EnantiomerModel;
+pub use error::PharmacokineticsError;
+pub use parameters::{PKParameters, PKParametersBuilder};
 pub use superposition::SuperpositionModel;
 pub use traits::PharmacokineticModel;
 pub use two_pulse::TwoPulseModel;
