@@ -19,12 +19,13 @@ pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
         // For strictly time-dependent systems, `step` might need to track `t`.
         // However, existing models pass 0.0, so we preserve that behavior.
         let current_state = self.get_state().clone();
-        let new_state = RungeKutta4::step(self, 0.0, &current_state, dt);
+        // Use generic parameter State to call the static method on the generic struct
+        let new_state = RungeKutta4::<State>::step(self, 0.0, &current_state, dt);
         *self.get_state_mut() = new_state;
     }
 
     /// Advances the system by `dt` using a provided solver.
-    fn step_with<S: Solver<State>>(&mut self, solver: &S, dt: f64) {
+    fn step_with<S: Solver<State>>(&mut self, solver: &mut S, dt: f64) {
         let current_state = self.get_state().clone();
         let new_state = solver.solve(self, 0.0, &current_state, dt);
         *self.get_state_mut() = new_state;

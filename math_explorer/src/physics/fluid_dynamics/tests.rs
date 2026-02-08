@@ -177,7 +177,7 @@ mod tests {
 
         // Integrate for 1 second
         let dt = 1.0;
-        let solver = OdeEuler;
+        let mut solver = OdeEuler::default();
         let next_state = solver.solve(&system, 0.0, &state, dt);
 
         let expected_accel = 100.0 / 998.2;

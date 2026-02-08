@@ -44,7 +44,7 @@ pub fn logistic_lyapunov(r: f64, x0: f64, n: usize) -> f64 {
 /// Estimated largest Lyapunov exponent.
 pub fn lorenz_lyapunov<S, Sol>(
     system: &S,
-    solver: &Sol,
+    solver: &mut Sol,
     initial_state: Vector3<f64>,
     time_step: f64,
     iterations: usize,

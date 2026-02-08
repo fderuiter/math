@@ -222,13 +222,18 @@ impl HodgkinHuxleyNeuron {
     /// * `dt` - Time step in milliseconds (e.g., 0.01).
     /// * `i_ext` - External injected current ($\mu A/cm^2$).
     pub fn update(&mut self, dt: f64, i_ext: f64) {
-        self.update_with(dt, i_ext, &Euler);
+        self.update_with(dt, i_ext, &mut Euler::default());
     }
 
     /// Updates the neuron state using a provided solver strategy.
     ///
     /// Allows switching between Euler, Runge-Kutta, etc.
-    pub fn update_with<S: Solver<HodgkinHuxleyState>>(&mut self, dt: f64, i_ext: f64, solver: &S) {
+    pub fn update_with<S: Solver<HodgkinHuxleyState>>(
+        &mut self,
+        dt: f64,
+        i_ext: f64,
+        solver: &mut S,
+    ) {
         // Convert to strongly typed state
         let state = HodgkinHuxleyState {
             v: self.v,

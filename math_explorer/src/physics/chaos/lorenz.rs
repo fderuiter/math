@@ -120,7 +120,7 @@ impl LorenzSystem {
     /// Advances the system by time `dt` using a provided solver strategy.
     ///
     /// This allows the user to switch integrators (e.g., Euler, RK4) dynamically.
-    pub fn step_with<S: Solver<Vector3<f64>>>(&mut self, solver: &S, dt: f64) {
+    pub fn step_with<S: Solver<Vector3<f64>>>(&mut self, solver: &mut S, dt: f64) {
         <Self as TimeStepper<Vector3<f64>>>::step_with(self, solver, dt);
     }
 }
