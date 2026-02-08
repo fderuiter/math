@@ -28,6 +28,7 @@
 //! ```
 
 pub mod error;
+pub mod kinetics;
 pub mod model;
 pub mod neuron;
 pub mod types;
@@ -37,5 +38,6 @@ pub use error::HodgkinHuxleyError;
 pub use neuron::HodgkinHuxleyNeuron;
 
 // Optionally re-export types if we want users to use the advanced API
+pub use kinetics::GatingKinetics;
 pub use model::HodgkinHuxleyModel;
 pub use types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
