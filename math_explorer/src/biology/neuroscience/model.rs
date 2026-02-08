@@ -18,7 +18,6 @@ impl HodgkinHuxleyModel {
     pub fn new(params: HodgkinHuxleyParameters, i_ext: f64) -> Self {
         Self { params, i_ext }
     }
-
 }
 
 impl OdeSystem<HodgkinHuxleyState> for HodgkinHuxleyModel {
