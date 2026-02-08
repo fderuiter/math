@@ -263,26 +263,12 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
         let next_u = &mut self.next_state.u;
         let next_v = &mut self.next_state.v;
 
-        // 1. Compute Diffusion (writes to next_state buffers)
+        // Fused Diffusion-Reaction-Integration Step
+        // This is significantly faster than separate passes because it keeps data in registers/L1 cache.
         self.diffusion
-            .apply(u, v, next_u, next_v, self.d_u, self.d_v);
-
-        // 2. Compute Reaction and Integrate
-        // Using `unsafe` here to match the performance of the original implementation's loop
-        unsafe {
-            for i in 0..n {
-                let diff_u = *next_u.get_unchecked(i);
-                let diff_v = *next_v.get_unchecked(i);
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                // Euler step: u_new = u + dt * (D*Lap + Reaction)
-                *next_u.get_unchecked_mut(i) = u_curr + dt * (diff_u + reac_u);
-                *next_v.get_unchecked_mut(i) = v_curr + dt * (diff_v + reac_v);
-            }
-        }
+            .apply_step(u, v, next_u, next_v, self.d_u, self.d_v, dt, |u, v| {
+                self.kinetics.reaction(u, v)
+            });
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
