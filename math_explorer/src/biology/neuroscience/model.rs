@@ -39,9 +39,12 @@ impl OdeSystem<HodgkinHuxleyState> for HodgkinHuxleyModel {
 
         // Gating variable derivatives
         // dx/dt = alpha_x * (1 - x) - beta_x * x
-        let dn_dt = p.n_kinetics.alpha(v, p.v_rest) * (1.0 - n) - p.n_kinetics.beta(v, p.v_rest) * n;
-        let dm_dt = p.m_kinetics.alpha(v, p.v_rest) * (1.0 - m) - p.m_kinetics.beta(v, p.v_rest) * m;
-        let dh_dt = p.h_kinetics.alpha(v, p.v_rest) * (1.0 - h) - p.h_kinetics.beta(v, p.v_rest) * h;
+        let dn_dt =
+            p.n_kinetics.alpha(v, p.v_rest) * (1.0 - n) - p.n_kinetics.beta(v, p.v_rest) * n;
+        let dm_dt =
+            p.m_kinetics.alpha(v, p.v_rest) * (1.0 - m) - p.m_kinetics.beta(v, p.v_rest) * m;
+        let dh_dt =
+            p.h_kinetics.alpha(v, p.v_rest) * (1.0 - h) - p.h_kinetics.beta(v, p.v_rest) * h;
 
         HodgkinHuxleyState {
             v: dv_dt,
