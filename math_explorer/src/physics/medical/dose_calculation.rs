@@ -8,7 +8,8 @@
 pub use super::accelerator::beam_loading_energy;
 pub use super::imaging::tracking_error;
 pub use super::signal::{dirac_pulse_count, signal_front_delay};
-pub use super::dose::algorithm::calculate_terma as calculate_terma_new;
+
+use super::dose::algorithm::calculate_terma as calculate_terma_new;
 use super::dose::kernel::{DoseKernel, ExponentialKernel};
 
 /// Calculates the Total Energy Released per Mass (TERMA) for a ray segment.

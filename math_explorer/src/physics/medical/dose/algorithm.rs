@@ -18,15 +18,25 @@ use super::error::DoseFluenceError;
 /// # Formula
 ///
 /// $T = \mu \Psi_0 e^{-\mu d}$
-pub fn calculate_terma(incident_fluence: f64, mu: f64, depth: f64) -> Result<f64, DoseFluenceError> {
+pub fn calculate_terma(
+    incident_fluence: f64,
+    mu: f64,
+    depth: f64,
+) -> Result<f64, DoseFluenceError> {
     if incident_fluence < 0.0 {
-        return Err(DoseFluenceError::InvalidPhysicalQuantity("incident_fluence".to_string()));
+        return Err(DoseFluenceError::InvalidPhysicalQuantity(
+            "incident_fluence".to_string(),
+        ));
     }
     if mu < 0.0 {
-        return Err(DoseFluenceError::InvalidPhysicalQuantity("attenuation_coefficient".to_string()));
+        return Err(DoseFluenceError::InvalidPhysicalQuantity(
+            "attenuation_coefficient".to_string(),
+        ));
     }
     if depth < 0.0 {
-        return Err(DoseFluenceError::InvalidPhysicalQuantity("depth".to_string()));
+        return Err(DoseFluenceError::InvalidPhysicalQuantity(
+            "depth".to_string(),
+        ));
     }
 
     Ok(mu * incident_fluence * (-mu * depth).exp())
