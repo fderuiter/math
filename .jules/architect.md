@@ -103,3 +103,12 @@
 2. Implemented `MatrixPayoff` as the default strategy.
 3. Refactored `ReplicatorDynamics` to be generic over `S: FitnessStrategy`.
 **Consequence:** Significantly improved extensibility. Users can now implement custom fitness landscapes (e.g., non-linear functions) while maintaining backward compatibility for standard matrix games. Breaking change: `payoff_matrix` field is now private (accessed via getter).
+
+## 2027-11-05 - [Medical Physics Dose Decomposition]
+**Problem:** `math_explorer/src/physics/medical/dose_calculation.rs` was a "God File" (albeit small) containing mixed domains: Radiotherapy Dose Algorithms, Accelerator Physics, Imaging/Tracking, and Signal Processing. This violated the Single Responsibility Principle and made the API confusing.
+**Decision:** Applied "Module Extraction" and "Traitification".
+1. Decomposed `dose_calculation.rs` into `dose/` (Dose Algorithms), `accelerator.rs`, `imaging.rs`, and `signal.rs`.
+2. Defined `DoseKernel` trait (Strategy Pattern) and `ExponentialKernel` struct in `dose/kernel.rs`.
+3. Introduced `DoseFluenceError` for explicit error handling (replacing `String` errors).
+4. Deprecated `dose_calculation.rs` but maintained backward compatibility via re-exports and wrappers.
+**Consequence:** Improved separation of concerns. Each medical physics sub-domain is now distinct. The API is safer (`Result<f64, DoseFluenceError>`) and extensible (users can implement custom `DoseKernel`s).
