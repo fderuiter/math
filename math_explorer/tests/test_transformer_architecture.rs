@@ -1,5 +1,5 @@
 use math_explorer::ai::transformer::traits::NormalizationLayer;
-use math_explorer::ai::transformer::{EncoderLayer, MultiHeadAttention, FeedForward};
+use math_explorer::ai::transformer::{EncoderLayer, FeedForward, MultiHeadAttention};
 use nalgebra::DMatrix;
 
 /// A mock normalization layer that does nothing (Identity).
