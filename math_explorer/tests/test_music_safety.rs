@@ -1,5 +1,5 @@
-use math_explorer::physics::medical::radar_gating::super_resolution::MusicEstimator;
 use math_explorer::physics::medical::radar_gating::error::RadarError;
+use math_explorer::physics::medical::radar_gating::super_resolution::MusicEstimator;
 use num_complex::Complex;
 
 #[test]
@@ -54,9 +54,11 @@ fn test_music_nan_handling() {
 #[test]
 fn test_music_invalid_compute_args() {
     let mut estimator = MusicEstimator::new(64, 10, 1).unwrap();
-     // Add dummy data
+    // Add dummy data
     for _ in 0..10 {
-        estimator.add_snapshot(&vec![Complex::new(0.0, 0.0); 64]).unwrap();
+        estimator
+            .add_snapshot(&vec![Complex::new(0.0, 0.0); 64])
+            .unwrap();
     }
 
     // Step <= 0
