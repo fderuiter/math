@@ -95,3 +95,11 @@
 **Problem:** `math_explorer/src/applied/pharmacokinetics` exposed raw public fields in `PKParameters`, allowing invalid physical states (e.g., negative dose, zero volume) and coupling the model to primitive types. The `solve_ka` function also duplicated Newton-Raphson logic.
 **Decision:** Applied "Encapsulation" and "Builder Pattern" for `PKParameters`. Applied "Generic Promotion" by moving `NewtonRaphson` to `pure_math/analysis/roots.rs` and reusing it in `solve_ka`.
 **Consequence:** Enforces invariants at compile/runtime (via `Result`). Breaking change for consumers accessing `PKParameters` fields directly, but significantly safer API.
+
+## 2027-10-30 - [Evolutionary Game Theory Strategy Pattern]
+**Problem:** `ReplicatorDynamics` in `game_theory/evolutionary` was tightly coupled to `nalgebra::DMatrix`, restricting it to linear fitness games. This prevented modeling non-linear or frequency-dependent games (e.g., Public Goods, Coordination Games).
+**Decision:** Applied "Strategy Pattern".
+1. Extracted `FitnessStrategy` trait.
+2. Implemented `MatrixPayoff` as the default strategy.
+3. Refactored `ReplicatorDynamics` to be generic over `S: FitnessStrategy`.
+**Consequence:** Significantly improved extensibility. Users can now implement custom fitness landscapes (e.g., non-linear functions) while maintaining backward compatibility for standard matrix games. Breaking change: `payoff_matrix` field is now private (accessed via getter).
