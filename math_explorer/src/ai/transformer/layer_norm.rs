@@ -1,3 +1,4 @@
+use crate::ai::transformer::traits::NormalizationLayer;
 use nalgebra::{DMatrix, RowDVector};
 
 /// Layer Normalization.
@@ -29,15 +30,7 @@ impl LayerNorm {
     }
 
     /// Applies layer normalization to the input.
-    ///
-    /// # Arguments
-    ///
-    /// * `x`: The input matrix.
-    ///
-    /// # Returns
-    ///
-    /// The normalized matrix.
-    pub fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
+    pub fn forward_impl(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         let mut output = DMatrix::zeros(x.nrows(), x.ncols());
         for r in 0..x.nrows() {
             let row = x.row(r);
@@ -54,6 +47,17 @@ impl LayerNorm {
             output.set_row(r, &final_row);
         }
         output
+    }
+
+    /// Applies layer normalization to the input.
+    pub fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
+        self.forward_impl(x)
+    }
+}
+
+impl NormalizationLayer for LayerNorm {
+    fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
+        self.forward_impl(x)
     }
 }
 

@@ -1,6 +1,7 @@
 // Implementation of the Position-wise Feed-Forward Network.
 
 use crate::ai::activations::relu;
+use crate::ai::transformer::traits::FeedForwardNetwork;
 use crate::ai::utils::AddRowVector;
 use nalgebra::{DMatrix, RowDVector};
 
@@ -39,7 +40,7 @@ impl FeedForward {
     }
 
     /// Performs the forward pass of the FFN.
-    pub fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
+    pub fn forward_impl(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         // First linear transformation: x * W1 + b1
         let mut hidden = x * &self.w1;
         hidden.add_row_vector_to_all_rows(&self.b1);
@@ -52,6 +53,17 @@ impl FeedForward {
         output.add_row_vector_to_all_rows(&self.b2);
 
         output
+    }
+
+    /// Performs the forward pass of the FFN.
+    pub fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
+        self.forward_impl(x)
+    }
+}
+
+impl FeedForwardNetwork for FeedForward {
+    fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
+        self.forward_impl(x)
     }
 }
 

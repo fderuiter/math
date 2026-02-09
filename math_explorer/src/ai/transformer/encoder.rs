@@ -1,23 +1,28 @@
 use super::attention::MultiHeadAttention;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
 use nalgebra::DMatrix;
 
 /// A single Encoder layer, containing self-attention and a feed-forward network,
 /// with residual connections and layer normalization.
-pub struct EncoderLayer {
+pub struct EncoderLayer<
+    A: AttentionMechanism = MultiHeadAttention,
+    F: FeedForwardNetwork = FeedForward,
+    N: NormalizationLayer = LayerNorm,
+> {
     /// The multi-head self-attention mechanism.
-    pub self_attn: MultiHeadAttention,
+    pub self_attn: A,
     /// The position-wise feed-forward network.
-    pub feed_forward: FeedForward,
+    pub feed_forward: F,
     /// Layer normalization applied after the attention mechanism.
-    pub norm1: LayerNorm,
+    pub norm1: N,
     /// Layer normalization applied after the feed-forward network.
-    pub norm2: LayerNorm,
+    pub norm2: N,
 }
 
-impl EncoderLayer {
-    /// Creates a new `EncoderLayer` instance.
+impl EncoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
+    /// Creates a new `EncoderLayer` instance with default components.
     ///
     /// # Arguments
     ///
@@ -34,6 +39,18 @@ impl EncoderLayer {
             feed_forward: FeedForward::new(d_model, d_ff),
             norm1: LayerNorm::new(d_model),
             norm2: LayerNorm::new(d_model),
+        }
+    }
+}
+
+impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> EncoderLayer<A, F, N> {
+    /// Creates a new `EncoderLayer` with injected components.
+    pub fn new_with_components(self_attn: A, feed_forward: F, norm1: N, norm2: N) -> Self {
+        Self {
+            self_attn,
+            feed_forward,
+            norm1,
+            norm2,
         }
     }
 
@@ -59,13 +76,17 @@ impl EncoderLayer {
 }
 
 /// The full Encoder, composed of a stack of identical EncoderLayers.
-pub struct Encoder {
+pub struct Encoder<
+    A: AttentionMechanism = MultiHeadAttention,
+    F: FeedForwardNetwork = FeedForward,
+    N: NormalizationLayer = LayerNorm,
+> {
     /// A vector of `EncoderLayer` instances.
-    pub layers: Vec<EncoderLayer>,
+    pub layers: Vec<EncoderLayer<A, F, N>>,
 }
 
-impl Encoder {
-    /// Creates a new `Encoder` instance.
+impl Encoder<MultiHeadAttention, FeedForward, LayerNorm> {
+    /// Creates a new `Encoder` instance with default components.
     ///
     /// # Arguments
     ///
@@ -83,6 +104,13 @@ impl Encoder {
                 .map(|_| EncoderLayer::new(d_model, h, d_ff))
                 .collect(),
         }
+    }
+}
+
+impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Encoder<A, F, N> {
+    /// Creates a new `Encoder` with injected layers.
+    pub fn new_with_layers(layers: Vec<EncoderLayer<A, F, N>>) -> Self {
+        Self { layers }
     }
 
     /// Performs the forward pass through all encoder layers.

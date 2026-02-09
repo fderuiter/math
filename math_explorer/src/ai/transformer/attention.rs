@@ -1,6 +1,7 @@
 // Implementation of Scaled Dot-Product Attention and Multi-Head Attention.
 
 use crate::ai::activations::softmax_row_wise;
+use crate::ai::transformer::traits::AttentionMechanism;
 use nalgebra::DMatrix;
 
 /// Computes the Scaled Dot-Product Attention.
@@ -93,7 +94,7 @@ impl MultiHeadAttention {
     }
 
     /// Performs the forward pass for the Multi-Head Attention layer.
-    pub fn forward(
+    pub fn forward_impl(
         &self,
         q: &DMatrix<f64>,
         k: &DMatrix<f64>,
@@ -125,6 +126,29 @@ impl MultiHeadAttention {
 
         // 3. Apply the final linear projection
         concatenated_output * &self.w_o
+    }
+
+    /// Helper for backward compatibility or direct usage
+    pub fn forward(
+        &self,
+        q: &DMatrix<f64>,
+        k: &DMatrix<f64>,
+        v: &DMatrix<f64>,
+        mask: Option<&DMatrix<f64>>,
+    ) -> DMatrix<f64> {
+        self.forward_impl(q, k, v, mask)
+    }
+}
+
+impl AttentionMechanism for MultiHeadAttention {
+    fn forward(
+        &self,
+        q: &DMatrix<f64>,
+        k: &DMatrix<f64>,
+        v: &DMatrix<f64>,
+        mask: Option<&DMatrix<f64>>,
+    ) -> DMatrix<f64> {
+        self.forward_impl(q, k, v, mask)
     }
 }
 

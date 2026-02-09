@@ -1,5 +1,9 @@
+use super::attention::MultiHeadAttention;
 use super::decoder::Decoder;
 use super::encoder::Encoder;
+use super::feed_forward::FeedForward;
+use super::layer_norm::LayerNorm;
+use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
 
 /// The full Transformer model container.
 ///
@@ -38,9 +42,13 @@ use super::encoder::Encoder;
 ///
 /// // 3. (User Responsibility) Add Embeddings & Positional Encoding here...
 /// ```
-pub struct Transformer {
+pub struct Transformer<
+    A: AttentionMechanism = MultiHeadAttention,
+    F: FeedForwardNetwork = FeedForward,
+    N: NormalizationLayer = LayerNorm,
+> {
     /// The stack of Encoder layers (Self-Attention + Feed-Forward).
-    pub encoder: Encoder,
+    pub encoder: Encoder<A, F, N>,
     /// The stack of Decoder layers (Masked Self-Attention + Cross-Attention + Feed-Forward).
-    pub decoder: Decoder,
+    pub decoder: Decoder<A, F, N>,
 }

@@ -1,25 +1,30 @@
 use super::attention::MultiHeadAttention;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
 use nalgebra::DMatrix;
 
 /// A single Decoder layer.
-pub struct DecoderLayer {
+pub struct DecoderLayer<
+    A: AttentionMechanism = MultiHeadAttention,
+    F: FeedForwardNetwork = FeedForward,
+    N: NormalizationLayer = LayerNorm,
+> {
     /// The masked multi-head self-attention mechanism.
-    pub self_attn: MultiHeadAttention,
+    pub self_attn: A,
     /// The multi-head cross-attention mechanism.
-    pub cross_attn: MultiHeadAttention,
+    pub cross_attn: A,
     /// The position-wise feed-forward network.
-    pub feed_forward: FeedForward,
+    pub feed_forward: F,
     /// Layer normalization applied after the self-attention mechanism.
-    pub norm1: LayerNorm,
+    pub norm1: N,
     /// Layer normalization applied after the cross-attention mechanism.
-    pub norm2: LayerNorm,
+    pub norm2: N,
     /// Layer normalization applied after the feed-forward network.
-    pub norm3: LayerNorm,
+    pub norm3: N,
 }
 
-impl DecoderLayer {
+impl DecoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
     /// Creates a new `DecoderLayer` instance.
     ///
     /// # Arguments
@@ -39,6 +44,27 @@ impl DecoderLayer {
             norm1: LayerNorm::new(d_model),
             norm2: LayerNorm::new(d_model),
             norm3: LayerNorm::new(d_model),
+        }
+    }
+}
+
+impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> DecoderLayer<A, F, N> {
+    /// Creates a new `DecoderLayer` with injected components.
+    pub fn new_with_components(
+        self_attn: A,
+        cross_attn: A,
+        feed_forward: F,
+        norm1: N,
+        norm2: N,
+        norm3: N,
+    ) -> Self {
+        Self {
+            self_attn,
+            cross_attn,
+            feed_forward,
+            norm1,
+            norm2,
+            norm3,
         }
     }
 
@@ -81,12 +107,16 @@ impl DecoderLayer {
 }
 
 /// The full Decoder, composed of a stack of identical DecoderLayers.
-pub struct Decoder {
+pub struct Decoder<
+    A: AttentionMechanism = MultiHeadAttention,
+    F: FeedForwardNetwork = FeedForward,
+    N: NormalizationLayer = LayerNorm,
+> {
     /// A vector of `DecoderLayer` instances.
-    pub layers: Vec<DecoderLayer>,
+    pub layers: Vec<DecoderLayer<A, F, N>>,
 }
 
-impl Decoder {
+impl Decoder<MultiHeadAttention, FeedForward, LayerNorm> {
     /// Creates a new `Decoder` instance.
     ///
     /// # Arguments
@@ -105,6 +135,13 @@ impl Decoder {
                 .map(|_| DecoderLayer::new(d_model, h, d_ff))
                 .collect(),
         }
+    }
+}
+
+impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Decoder<A, F, N> {
+    /// Creates a new `Decoder` with injected layers.
+    pub fn new_with_layers(layers: Vec<DecoderLayer<A, F, N>>) -> Self {
+        Self { layers }
     }
 
     /// Performs the forward pass through all decoder layers.

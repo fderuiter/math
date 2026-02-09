@@ -9,3 +9,7 @@
 ## 2025-05-19 - [Decoupling Enzyme Kinetics from Concrete Implementation]
 **Violation:** **Open/Closed Principle (OCP)** and **Dependency Inversion Principle (DIP)**. The `EnzymeReaction` struct was a concrete implementation of Michaelis-Menten kinetics, preventing the extension of the system to support other kinetic models (e.g., Hill, Inhibition) without modifying the existing struct.
 **Remedy:** **Extract Interface** (`KineticsModel`). Renamed `EnzymeReaction` to `MichaelisMenten` and implemented the trait. Added `HillKinetics` as a new implementation to demonstrate extensibility. Maintained backward compatibility via a deprecated type alias.
+
+## 2025-05-24 - [Decoupling Transformer Layers from Concrete Implementations]
+**Violation:** **Dependency Inversion Principle (DIP)**. `EncoderLayer` and `DecoderLayer` directly depended on concrete structs (`MultiHeadAttention`, `FeedForward`, `LayerNorm`), making it impossible to swap implementations (e.g., for Sparse Attention or RMSNorm) or mock them for testing.
+**Remedy:** **Dependency Injection with Generics**. Extracted `AttentionMechanism`, `FeedForwardNetwork`, and `NormalizationLayer` traits. Refactored `EncoderLayer`, `DecoderLayer`, and `Transformer` to accept these dependencies via generics, defaulting to the original implementations for full backward compatibility.
