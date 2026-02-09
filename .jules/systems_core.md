@@ -70,3 +70,8 @@
 **Violation:** Stateless Solvers allocated temporary vectors on every step, causing significant GC pressure in tight simulation loops.
 **Refactor:** Converted Solvers to stateful structs with internal buffers (`&mut self`), enabling zero-allocation steps.
 **Trade-off:** Solvers must now be mutable and instantiated, slightly increasing API verbosity for one-off calls.
+
+## 2027-05-24 - Strategy Pattern for Dose Kernel
+**Violation:** The `point_kernel` function in `medical::dose_calculation` was a hardcoded exponential formula, violating OCP (could not support other kernels like Gaussian) and using "Primitive Obsession" (returning `Result<f64, String>`).
+**Refactor:** Applied **Strategy Pattern**. Extracted `DoseKernel` trait and implemented `ExponentialKernel`. Introduced `DoseFluenceError` for strong typing. Deprecated the legacy function.
+**Trade-off:** Increased verbosity for simple calls (need to instantiate struct), but enabled type-safe, extensible kernel definitions and robust error handling.

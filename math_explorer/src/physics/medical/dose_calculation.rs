@@ -1,4 +1,84 @@
 //! Dose Calculation Algorithms.
+use thiserror::Error;
+
+/// Errors related to Dose and Fluence calculations.
+#[derive(Debug, Clone, Error)]
+pub enum DoseFluenceError {
+    /// Calculation resulted in a singularity (e.g., division by zero).
+    #[error("Singularity detected: {0}")]
+    Singularity(String),
+    /// Invalid parameter value (e.g., negative radius or attenuation).
+    #[error("Invalid parameter: {0}")]
+    InvalidParameter(String),
+}
+
+/// Trait for Point Spread Functions (Kernels) used in Dose Calculation.
+///
+/// A kernel describes the radial distribution of dose deposited by secondary particles
+/// originating from a primary interaction site.
+pub trait DoseKernel {
+    /// Evaluates the kernel at a given radial distance.
+    ///
+    /// # Arguments
+    ///
+    /// * `radius` - The radial distance from the interaction point (cm).
+    ///
+    /// # Returns
+    ///
+    /// * `Result<f64, DoseFluenceError>` - The kernel value or an error.
+    fn evaluate(&self, radius: f64) -> Result<f64, DoseFluenceError>;
+}
+
+/// A simplified analytical exponential point kernel.
+///
+/// Formula: $K(r) = \frac{A}{r^2} e^{-\beta r}$
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ExponentialKernel {
+    amplitude: f64,
+    beta: f64,
+}
+
+/// Tolerance for treating radius as zero (singularity check).
+const SINGULARITY_TOLERANCE: f64 = 1e-6;
+
+impl ExponentialKernel {
+    /// Creates a new ExponentialKernel.
+    ///
+    /// # Arguments
+    ///
+    /// * `amplitude` - Scaling factor.
+    /// * `beta` - Decay constant.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<Self, DoseFluenceError>`
+    pub fn new(amplitude: f64, beta: f64) -> Result<Self, DoseFluenceError> {
+        if beta <= 0.0 {
+            return Err(DoseFluenceError::InvalidParameter(
+                "Beta must be positive".to_string(),
+            ));
+        }
+        Ok(Self { amplitude, beta })
+    }
+}
+
+impl DoseKernel for ExponentialKernel {
+    fn evaluate(&self, radius: f64) -> Result<f64, DoseFluenceError> {
+        if radius.abs() < SINGULARITY_TOLERANCE {
+            return Err(DoseFluenceError::Singularity(
+                "Radius cannot be zero".to_string(),
+            ));
+        }
+        if radius < 0.0 {
+            return Err(DoseFluenceError::InvalidParameter(
+                "Radius must be non-negative".to_string(),
+            ));
+        }
+
+        let val = (self.amplitude / (radius * radius)) * (-self.beta * radius).exp();
+        Ok(val)
+    }
+}
 
 /// Calculates the Total Energy Released per Mass (TERMA) for a ray segment.
 ///
@@ -47,16 +127,12 @@ pub fn calculate_terma(incident_fluence: f64, mu: f64, depth: f64) -> f64 {
 ///
 /// *Note*: This is a singular kernel at r=0. In practice, finite voxel size integration is used.
 /// Here we return an error or handle the singularity if r is too close to 0.
+#[deprecated(since = "0.2.0", note = "Use ExponentialKernel struct instead")]
 pub fn point_kernel(radius: f64, amplitude: f64, beta: f64) -> Result<f64, String> {
-    if radius.abs() < 1e-6 {
-        return Err("Radius cannot be zero (singularity at r=0)".to_string());
-    }
-    if radius < 0.0 {
-        return Err("Radius must be non-negative".to_string());
-    }
-
-    let val = (amplitude / (radius * radius)) * (-beta * radius).exp();
-    Ok(val)
+    // We delegate to the new Strategy-based implementation.
+    // Note: This enforces beta > 0, which corrects the previous permissive behavior.
+    let kernel = ExponentialKernel::new(amplitude, beta).map_err(|e| e.to_string())?;
+    kernel.evaluate(radius).map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
@@ -83,8 +159,55 @@ mod tests {
         let a = 4.0;
         let b = 0.5;
         // K = (4 / 4) * exp(-0.5 * 2) = 1 * e^-1 = 0.367879
+        #[allow(deprecated)]
         let k = point_kernel(r, a, b).unwrap();
         assert!((k - (-1.0_f64).exp()).abs() < 1e-5);
+    }
+
+    #[test]
+    fn test_exponential_kernel() {
+        // Valid kernel
+        let kernel = ExponentialKernel::new(1.0, 1.0).unwrap();
+
+        // Evaluate at r=1
+        // K = (1/1^2) * exp(-1*1) = exp(-1) = 0.367879
+        let k = kernel.evaluate(1.0).unwrap();
+        assert!((k - (-1.0_f64).exp()).abs() < 1e-6);
+
+        // Invalid Beta
+        assert!(matches!(
+            ExponentialKernel::new(1.0, 0.0),
+            Err(DoseFluenceError::InvalidParameter(_))
+        ));
+        assert!(matches!(
+            ExponentialKernel::new(1.0, -1.0),
+            Err(DoseFluenceError::InvalidParameter(_))
+        ));
+
+        // Singularity at r=0
+        assert!(matches!(
+            kernel.evaluate(0.0),
+            Err(DoseFluenceError::Singularity(_))
+        ));
+
+        // Invalid radius
+        assert!(matches!(
+            kernel.evaluate(-1.0),
+            Err(DoseFluenceError::InvalidParameter(_))
+        ));
+    }
+
+    #[test]
+    fn test_legacy_point_kernel() {
+        // Should still work for valid inputs
+        #[allow(deprecated)]
+        let res = point_kernel(2.0, 4.0, 0.5);
+        assert!(res.is_ok());
+
+        // Should error for invalid beta now (new behavior)
+        #[allow(deprecated)]
+        let invalid_beta = point_kernel(2.0, 4.0, 0.0);
+        assert!(invalid_beta.is_err());
     }
 }
 
