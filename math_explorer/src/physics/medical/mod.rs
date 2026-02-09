@@ -24,10 +24,15 @@
 //! - **Density**: g/cm³.
 //! - **Hounsfield Units (HU)**: Dimensionless scale where Water = 0, Air = -1000.
 
+pub mod accelerator;
 pub mod calibration;
+pub mod dose;
+#[deprecated(note = "Use 'dose', 'accelerator', 'imaging', or 'signal' modules instead.")]
 pub mod dose_calculation;
 pub mod evaluation;
+pub mod imaging;
 pub mod optical_motion;
 pub mod optimization;
 pub mod radar_gating;
+pub mod signal;
 pub mod thermodynamics;
