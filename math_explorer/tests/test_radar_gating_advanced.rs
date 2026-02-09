@@ -111,7 +111,7 @@ fn test_czt_config_smoke() {
 #[test]
 fn test_music_smoke() {
     // 64 samples per chirp, 10 snapshots, 1 target
-    let mut estimator = MusicEstimator::new(64, 10, 1);
+    let mut estimator = MusicEstimator::new(64, 10, 1).unwrap();
 
     // Add 10 dummy snapshots
     for _ in 0..10 {
