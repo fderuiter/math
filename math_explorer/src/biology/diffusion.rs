@@ -32,6 +32,27 @@ pub trait SpatialDiffusion {
     /// * `d_v` - Diffusion coefficient for v.
     /// * `dt` - Time step.
     /// * `reaction` - Closure that computes the reaction rates (du/dt, dv/dt) given (u, v).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use math_explorer::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
+    ///
+    /// let diff = FiniteDifference1D::new(0.1);
+    /// let u = vec![1.0; 10];
+    /// let v = vec![0.5; 10];
+    /// let mut out_u = vec![0.0; 10];
+    /// let mut out_v = vec![0.0; 10];
+    ///
+    /// // Fused update: du/dt = D*lap(u) - u, dv/dt = D*lap(v)
+    /// diff.apply_step(
+    ///     &u, &v,
+    ///     &mut out_u, &mut out_v,
+    ///     0.1, 0.1,  // d_u, d_v
+    ///     0.01,      // dt
+    ///     |u, _v| (-u, 0.0) // reaction closure
+    /// );
+    /// ```
     #[allow(clippy::too_many_arguments)]
     fn apply_step<F>(
         &self,
@@ -187,13 +208,16 @@ impl SpatialDiffusion for FiniteDifference1D {
         // 1. Handle i = 0
         {
             let i = 0;
-            // Safety: n > 0 checked above
+            // Safety:
+            // 1. `n > 0` checked above, so index 0 is valid for length `n`.
+            // 2. `get_unchecked` avoids bounds checks on the hot path.
             let u_curr = unsafe { *u.get_unchecked(i) };
             let v_curr = unsafe { *v.get_unchecked(i) };
 
             let u_prev = u_curr; // Neumann BC: u_{-1} = u_0
             let v_prev = v_curr;
             let (u_next, v_next) = if n > 1 {
+                // Safety: If `n > 1`, indices 0 and 1 are valid.
                 unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
             } else {
                 (u_curr, v_curr)
@@ -204,6 +228,7 @@ impl SpatialDiffusion for FiniteDifference1D {
 
             let (reac_u, reac_v) = reaction(u_curr, v_curr);
 
+            // Safety: Output buffers are validated to be >= n. Index i=0 is valid.
             unsafe {
                 *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
                 *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
@@ -213,6 +238,11 @@ impl SpatialDiffusion for FiniteDifference1D {
         // 2. Handle i = 1..n-1 (Hot Path)
         if n > 2 {
             // Optimization: Sliding Window / Register Rotation
+            // Safety:
+            // 1. We iterate `i` from `1` to `n-2` (inclusive).
+            // 2. Max index accessed is `i+1` -> `(n-2)+1 = n-1`.
+            // 3. Since buffers are length `n`, `n-1` is the last valid index.
+            // 4. `u_prev` and `u_curr` are preloaded from indices 0 and 1 (valid since n > 2).
             unsafe {
                 let mut u_prev = *u.get_unchecked(0);
                 let mut u_curr = *u.get_unchecked(1);
@@ -220,6 +250,7 @@ impl SpatialDiffusion for FiniteDifference1D {
                 let mut v_curr = *v.get_unchecked(1);
 
                 for i in 1..n - 1 {
+                    // Safety: `i+1` <= `n-1`, which is within bounds [0, n).
                     let u_next = *u.get_unchecked(i + 1);
                     let v_next = *v.get_unchecked(i + 1);
 
@@ -228,6 +259,7 @@ impl SpatialDiffusion for FiniteDifference1D {
 
                     let (reac_u, reac_v) = reaction(u_curr, v_curr);
 
+                    // Safety: Output buffers are validated >= n. `i` <= `n-2` is valid.
                     *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
                     *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
 
@@ -243,6 +275,10 @@ impl SpatialDiffusion for FiniteDifference1D {
         // 3. Handle i = n-1
         if n > 1 {
             let i = n - 1;
+            // Safety:
+            // 1. `n > 1` implies `n >= 2`.
+            // 2. `i` is `n-1` (last index). `i-1` is `n-2` (>= 0).
+            // 3. All indices are within [0, n).
             unsafe {
                 let u_curr = *u.get_unchecked(i);
                 let v_curr = *v.get_unchecked(i);
