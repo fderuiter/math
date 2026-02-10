@@ -15,6 +15,7 @@
 //! *   **[Elliptic Curves](elliptic_curves)**: Cryptography primitives and geometric arithmetic.
 //! *   **[Graph Theory](graph_theory)**: Network analysis and traversal algorithms.
 //! *   **[Number Theory](number_theory)**: Primes, Partitions, and Modular Arithmetic.
+//! *   **[Statistics](statistics)**: Competitive modeling (Glicko-2), Stochastic processes (Markov), and Data Analysis.
 //!
 //! ## Philosophy
 //!
