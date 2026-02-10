@@ -1,7 +1,7 @@
 use super::strategies::{EpsilonGreedy, ExplorationStrategy};
 use super::types::{Action, State};
+use super::{HashMapQFunction, QFunction};
 use rand::RngCore;
-use std::collections::HashMap;
 use std::hash::Hash;
 
 /// Q-Learning Update Rule.
@@ -17,39 +17,71 @@ pub fn q_learning_update(
     current_q + alpha * (target - current_q)
 }
 
-/// Simple Tabular Q-Agent for discrete states and actions.
-pub struct TabularQAgent<S, A>
+/// Generic Q-Agent supporting any Q-Function implementation (Tabular, Neural Net, etc.).
+///
+/// This struct uses the **Strategy Pattern** via the `QFunction` trait to decouple the
+/// learning algorithm from the storage mechanism.
+pub struct QAgent<S, A, Q>
 where
-    S: State + Hash + Eq,
-    A: Action + Hash + Eq,
+    S: State,
+    A: Action,
+    Q: QFunction<S, A>,
 {
-    q_table: HashMap<(S, A), f64>,
+    /// The Q-Function strategy (storage or approximation).
+    pub q_function: Q,
     learning_rate: f64,
     discount_factor: f64,
     strategy: Box<dyn ExplorationStrategy<S, A>>,
 }
+
+/// Type alias for the classic Tabular Q-Agent backed by a HashMap.
+pub type TabularQAgent<S, A> = QAgent<S, A, HashMapQFunction<S, A>>;
 
 impl<S, A> TabularQAgent<S, A>
 where
     S: State + Hash + Eq + Copy,
     A: Action + Hash + Eq + Copy,
 {
+    /// Creates a new Tabular Q-Agent with Epsilon-Greedy exploration.
     pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
         Self {
-            q_table: HashMap::new(),
+            q_function: HashMapQFunction::new(),
             learning_rate,
             discount_factor,
             strategy: Box::new(EpsilonGreedy::new(epsilon)),
         }
     }
 
+    /// Creates a new Tabular Q-Agent with a custom exploration strategy.
     pub fn new_with_strategy(
         learning_rate: f64,
         discount_factor: f64,
         strategy: Box<dyn ExplorationStrategy<S, A>>,
     ) -> Self {
         Self {
-            q_table: HashMap::new(),
+            q_function: HashMapQFunction::new(),
+            learning_rate,
+            discount_factor,
+            strategy,
+        }
+    }
+}
+
+impl<S, A, Q> QAgent<S, A, Q>
+where
+    S: State + Copy,
+    A: Action + Copy,
+    Q: QFunction<S, A>,
+{
+    /// Creates a new Generic Q-Agent.
+    pub fn new_generic(
+        q_function: Q,
+        learning_rate: f64,
+        discount_factor: f64,
+        strategy: Box<dyn ExplorationStrategy<S, A>>,
+    ) -> Self {
+        Self {
+            q_function,
             learning_rate,
             discount_factor,
             strategy,
@@ -57,7 +89,7 @@ where
     }
 
     pub fn get_q_value(&self, state: &S, action: &A) -> f64 {
-        *self.q_table.get(&(*state, *action)).unwrap_or(&0.0)
+        self.q_function.get(state, action)
     }
 
     pub fn update(
@@ -78,9 +110,6 @@ where
                 .map(|a| self.get_q_value(next_state, a))
                 .fold(f64::NEG_INFINITY, f64::max)
         };
-        // Handle case where max_next_q is still NEG_INFINITY (e.g. no entries yet and fold default?)
-        // actually fold with NEG_INFINITY on empty list is problematic if not checked, but we check is_empty.
-        // If map returns 0.0 for defaults, then max is at least 0.0.
 
         let new_q = q_learning_update(
             current_q,
@@ -94,7 +123,7 @@ where
             self.discount_factor,
         );
 
-        self.q_table.insert((*state, *action), new_q);
+        self.q_function.update(state, action, new_q);
     }
 
     /// Selects an action using the injected strategy.
