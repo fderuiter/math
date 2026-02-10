@@ -153,22 +153,28 @@ pub fn vietoris_rips_complex(
     }
 
     // Add edges (1-simplices) where distance ≤ radius
-    for i in 0..n {
-        for j in (i + 1)..n {
-            if dist[i][j] <= radius {
+    for (i, row) in dist.iter().enumerate().take(n) {
+        for (j, &d) in row.iter().enumerate().take(n).skip(i + 1) {
+            if d <= radius {
                 complex.add_simplex(Simplex::new(vec![i, j]).unwrap());
             }
         }
     }
 
     // Add triangles (2-simplices) where all pairwise distances ≤ radius
-    for i in 0..n {
-        for j in (i + 1)..n {
-            if dist[i][j] > radius {
+    for (i, row) in dist.iter().enumerate().take(n) {
+        for (j, &d_ij) in row.iter().enumerate().take(n).skip(i + 1) {
+            if d_ij > radius {
                 continue;
             }
-            for k in (j + 1)..n {
-                if dist[i][k] <= radius && dist[j][k] <= radius {
+            // Use dist[j] for row j
+            let row_j = &dist[j];
+            for (k, &d_ik) in row.iter().enumerate().take(n).skip(j + 1) {
+                // d_ik is distance from i to k
+                // We also need d_jk (distance from j to k)
+                let d_jk = row_j[k];
+
+                if d_ik <= radius && d_jk <= radius {
                     complex.add_simplex(Simplex::new(vec![i, j, k]).unwrap());
                 }
             }

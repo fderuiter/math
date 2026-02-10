@@ -206,7 +206,7 @@ impl SystemConstant {
     /// assert_eq!(tau.value(), 0.5);
     /// ```
     pub fn new(value: f64) -> Result<Self, Glicko2Error> {
-        if value < 0.3 || value > 1.2 || !value.is_finite() {
+        if !(0.3..=1.2).contains(&value) || !value.is_finite() {
             return Err(Glicko2Error::InvalidSystemConstant { value });
         }
         Ok(Self(value))

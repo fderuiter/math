@@ -3,8 +3,8 @@
 use super::core::{Correlation, CorrelationMatrix, Probability};
 use super::error::CopulaError;
 use super::transforms::{inverse_standard_normal, standard_normal_cdf};
-use nalgebra::{DMatrix, DVector};
-use statrs::distribution::{ContinuousCDF, MultivariateNormal};
+use nalgebra::DVector;
+use statrs::distribution::MultivariateNormal;
 
 /// Bivariate Gaussian copula.
 ///
@@ -194,7 +194,7 @@ impl GaussianCopula {
         let mean = DVector::zeros(u.len());
         let cov = self.correlation.matrix().clone();
 
-        let mvn = MultivariateNormal::new(mean.as_slice().to_vec(), cov.as_slice().to_vec())
+        let _mvn = MultivariateNormal::new(mean.as_slice().to_vec(), cov.as_slice().to_vec())
             .map_err(|e| CopulaError::NumericalError {
                 reason: format!("Failed to create MVN: {}", e),
             })?;

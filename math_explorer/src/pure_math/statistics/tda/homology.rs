@@ -1,7 +1,6 @@
 //! Homology computations and Betti numbers.
 
 use super::complex::SimplicialComplex;
-use super::core::Simplex;
 use super::error::TdaError;
 use std::collections::{HashMap, HashSet};
 
@@ -186,7 +185,7 @@ pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
     // So: β₁ = (e - v + β₀) - t
 
     let cycles = if e >= v { e - v + beta0 } else { 0 };
-    let beta1 = if cycles > t { cycles - t } else { 0 };
+    let beta1 = cycles.saturating_sub(t);
 
     Ok(beta1)
 }
@@ -226,7 +225,7 @@ pub fn betti_numbers(complex: &SimplicialComplex) -> Result<(usize, usize), TdaE
 mod tests {
     use super::*;
     use crate::pure_math::statistics::tda::complex::vietoris_rips_complex;
-    use crate::pure_math::statistics::tda::core::{Point2D, PointCloud};
+    use crate::pure_math::statistics::tda::core::{Point2D, PointCloud, Simplex};
 
     #[test]
     fn test_betti_number_0_single_vertex() {

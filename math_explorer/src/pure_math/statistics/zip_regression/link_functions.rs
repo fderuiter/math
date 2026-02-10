@@ -59,7 +59,7 @@ impl LogLink {
 
     /// Applies the log link to a vector of linear predictors.
     pub fn link_vector(linear_predictors: &DVector<f64>) -> DVector<f64> {
-        linear_predictors.map(|eta| Self::link(eta))
+        linear_predictors.map(Self::link)
     }
 }
 
@@ -125,7 +125,7 @@ impl LogitLink {
 
     /// Applies the logit link to a vector of linear predictors.
     pub fn link_vector(linear_predictors: &DVector<f64>) -> DVector<f64> {
-        linear_predictors.map(|gamma| Self::link(gamma))
+        linear_predictors.map(Self::link)
     }
 }
 

@@ -3,7 +3,7 @@
 //! This module implements the probability mass function (PMF) and statistical
 //! properties of the Zero-Inflated Poisson (ZIP) distribution.
 
-use super::core::{Count, PoissonRate, ZeroInflation, ZipParams};
+use super::core::{Count, ZipParams};
 use super::error::ZipError;
 use statrs::function::gamma::ln_gamma;
 
