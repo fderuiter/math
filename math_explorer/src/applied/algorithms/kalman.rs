@@ -33,12 +33,75 @@ pub trait KalmanModel {
     fn measurement_noise(&self) -> DMatrix<f64>;
 }
 
+/// Defines a generalized Kalman System (Linear or Non-Linear).
+///
+/// This trait supports both Standard Kalman Filters (Linear) and Extended Kalman Filters (EKF).
+///
+/// # Mathematical Model
+///
+/// State Evolution: $x_k = f(x_{k-1}) + w_k$
+/// Measurement: $z_k = h(x_k) + v_k$
+///
+/// Where:
+/// - $f(x)$: State Transition Function
+/// - $h(x)$: Measurement Function
+/// - $F_k = \frac{\partial f}{\partial x}$: Jacobian of State Transition
+/// - $H_k = \frac{\partial h}{\partial x}$: Jacobian of Measurement
+pub trait KalmanSystem {
+    /// Predicts the next state $x_k$ and returns the transition Jacobian $F_k$.
+    ///
+    /// # Arguments
+    /// * `state` - The current state estimate $\hat{x}_{k-1|k-1}$.
+    /// * `dt` - The time step $\Delta t$.
+    ///
+    /// # Returns
+    /// A tuple `(predicted_state, transition_jacobian)`.
+    fn predict_state(&self, state: &DVector<f64>, dt: f64) -> (DVector<f64>, DMatrix<f64>);
+
+    /// Predicts the measurement $z_k$ and returns the measurement Jacobian $H_k$.
+    ///
+    /// # Arguments
+    /// * `state` - The predicted state estimate $\hat{x}_{k|k-1}$.
+    ///
+    /// # Returns
+    /// A tuple `(predicted_measurement, measurement_jacobian)`.
+    fn predict_measurement(&self, state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>);
+
+    /// Returns the Process Noise Covariance $Q_k$.
+    fn process_noise(&self, dt: f64) -> DMatrix<f64>;
+
+    /// Returns the Measurement Noise Covariance $R_k$.
+    fn measurement_noise(&self) -> DMatrix<f64>;
+}
+
+impl<T: KalmanModel> KalmanSystem for T {
+    fn predict_state(&self, state: &DVector<f64>, dt: f64) -> (DVector<f64>, DMatrix<f64>) {
+        let f = self.transition_matrix(dt);
+        let x_pred = &f * state;
+        (x_pred, f)
+    }
+
+    fn predict_measurement(&self, state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
+        let h = self.measurement_matrix();
+        let z_pred = &h * state;
+        (z_pred, h)
+    }
+
+    fn process_noise(&self, dt: f64) -> DMatrix<f64> {
+        KalmanModel::process_noise(self, dt)
+    }
+
+    fn measurement_noise(&self) -> DMatrix<f64> {
+        KalmanModel::measurement_noise(self)
+    }
+}
+
 /// A generic Discrete Kalman Filter.
 ///
-/// Uses the **Strategy Pattern** via the `KalmanModel` trait to decouple the estimation algorithm
+/// Uses the **Strategy Pattern** via the `KalmanSystem` trait to decouple the estimation algorithm
 /// from the specific system dynamics.
 #[derive(Debug, Clone)]
-pub struct KalmanFilter<M: KalmanModel> {
+pub struct KalmanFilter<M: KalmanSystem> {
     /// State vector estimate ($\hat{x}$).
     pub state: DVector<f64>,
     /// State covariance matrix ($P$).
@@ -49,7 +112,7 @@ pub struct KalmanFilter<M: KalmanModel> {
     pub dt: f64,
 }
 
-impl<M: KalmanModel> KalmanFilter<M> {
+impl<M: KalmanSystem> KalmanFilter<M> {
     /// Creates a new Kalman Filter.
     ///
     /// # Arguments
@@ -76,13 +139,14 @@ impl<M: KalmanModel> KalmanFilter<M> {
     ///
     /// Projects the current state estimate and covariance forward in time.
     ///
-    /// $$ \hat{x}_{k|k-1} = F_k \hat{x}_{k-1|k-1} $$
+    /// $$ \hat{x}_{k|k-1} = f(\hat{x}_{k-1|k-1}) $$
     /// $$ P_{k|k-1} = F_k P_{k-1|k-1} F_k^T + Q_k $$
     pub fn predict(&mut self) {
-        let f = self.model.transition_matrix(self.dt);
+        // Generalized Prediction
+        let (x_pred, f) = self.model.predict_state(&self.state, self.dt);
         let q = self.model.process_noise(self.dt);
 
-        self.state = &f * &self.state;
+        self.state = x_pred;
         self.covariance = &f * &self.covariance * f.transpose() + q;
     }
 
@@ -90,7 +154,7 @@ impl<M: KalmanModel> KalmanFilter<M> {
     ///
     /// Incorporates the new observation $z_k$ to refine the state estimate.
     ///
-    /// $$ y_k = z_k - H_k \hat{x}_{k|k-1} $$
+    /// $$ y_k = z_k - h(\hat{x}_{k|k-1}) $$
     /// $$ S_k = H_k P_{k|k-1} H_k^T + R_k $$
     /// $$ K_k = P_{k|k-1} H_k^T S_k^{-1} $$
     /// $$ \hat{x}_{k|k} = \hat{x}_{k|k-1} + K_k y_k $$
@@ -100,11 +164,12 @@ impl<M: KalmanModel> KalmanFilter<M> {
     ///
     /// * `measurement` - The measurement vector $z_k$.
     pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), String> {
-        let h = self.model.measurement_matrix();
+        // Generalized Update
+        let (z_pred, h) = self.model.predict_measurement(&self.state);
         let r = self.model.measurement_noise();
 
         // Innovation
-        let y = measurement - &h * &self.state;
+        let y = measurement - z_pred;
 
         // Innovation Covariance S = H P H^T + R
         let s = &h * &self.covariance * h.transpose() + r;
@@ -175,5 +240,73 @@ mod tests {
         // New Vel = 10
         assert!((kf.state[0] - 10.0).abs() < 1e-6);
         assert!((kf.state[1] - 10.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_extended_kalman_filter() {
+        // Define a non-linear model: x_{k} = sqrt(x_{k-1})
+        // Measurement: z_k = x_k^2
+        struct NonLinearModel;
+
+        impl KalmanSystem for NonLinearModel {
+            fn predict_state(
+                &self,
+                state: &DVector<f64>,
+                _dt: f64,
+            ) -> (DVector<f64>, DMatrix<f64>) {
+                let x = state[0];
+                let x_pred = x.sqrt();
+                // Derivative of sqrt(x) is 1 / (2 * sqrt(x))
+                let f_jacobian = 0.5 / x.sqrt();
+
+                (
+                    DVector::from_element(1, x_pred),
+                    DMatrix::from_element(1, 1, f_jacobian),
+                )
+            }
+
+            fn predict_measurement(&self, state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
+                let x = state[0];
+                let z_pred = x.powi(2);
+                // Derivative of x^2 is 2x
+                let h_jacobian = 2.0 * x;
+
+                (
+                    DVector::from_element(1, z_pred),
+                    DMatrix::from_element(1, 1, h_jacobian),
+                )
+            }
+
+            fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
+                DMatrix::from_element(1, 1, 0.1)
+            }
+
+            fn measurement_noise(&self) -> DMatrix<f64> {
+                DMatrix::from_element(1, 1, 0.1)
+            }
+        }
+
+        let model = NonLinearModel;
+        // Start at x=100.
+        // Predict -> sqrt(100) = 10.
+        // Update with z=100 (which corresponds to x=10).
+        let initial_state = DVector::from_element(1, 100.0);
+        let initial_covariance = DMatrix::from_element(1, 1, 1.0);
+
+        let mut kf = KalmanFilter::new(initial_state, initial_covariance, model, 1.0);
+
+        kf.predict();
+        assert!((kf.state[0] - 10.0).abs() < 1e-6, "Prediction step failed");
+
+        // Measurement z=100 (perfect measurement for x=10)
+        let measurement = DVector::from_element(1, 100.0);
+        kf.update(&measurement).unwrap();
+
+        // Should stay close to 10
+        assert!(
+            (kf.state[0] - 10.0).abs() < 0.5,
+            "Update step diverged: {}",
+            kf.state[0]
+        );
     }
 }
