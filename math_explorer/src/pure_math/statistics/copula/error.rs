@@ -23,18 +23,10 @@ impl fmt::Display for CopulaError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::InvalidProbability { value } => {
-                write!(
-                    f,
-                    "Invalid probability: {} (must be in [0, 1])",
-                    value
-                )
+                write!(f, "Invalid probability: {} (must be in [0, 1])", value)
             }
             Self::InvalidCorrelation { value } => {
-                write!(
-                    f,
-                    "Invalid correlation: {} (must be in [-1, 1])",
-                    value
-                )
+                write!(f, "Invalid correlation: {} (must be in [-1, 1])", value)
             }
             Self::DimensionMismatch { expected, actual } => {
                 write!(

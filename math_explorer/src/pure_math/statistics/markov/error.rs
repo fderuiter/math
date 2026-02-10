@@ -68,7 +68,11 @@ impl fmt::Display for MarkovError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             MarkovError::InvalidProbability { value } => {
-                write!(f, "Invalid probability value: {} (must be in [0, 1])", value)
+                write!(
+                    f,
+                    "Invalid probability value: {} (must be in [0, 1])",
+                    value
+                )
             }
             MarkovError::DimensionMismatch { expected, actual } => {
                 write!(

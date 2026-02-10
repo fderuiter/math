@@ -141,7 +141,11 @@ impl Odds {
     /// assert!((odds.value() - 3.5).abs() < 0.01);
     /// ```
     pub fn from_fractional(numerator: f64, denominator: f64) -> Result<Self, KellyError> {
-        if denominator <= 0.0 || numerator < 0.0 || !numerator.is_finite() || !denominator.is_finite() {
+        if denominator <= 0.0
+            || numerator < 0.0
+            || !numerator.is_finite()
+            || !denominator.is_finite()
+        {
             return Err(KellyError::InvalidOdds {
                 value: numerator / denominator,
             });

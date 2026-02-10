@@ -5,6 +5,7 @@
 
 use super::core::{Count, PoissonRate, ZeroInflation, ZipParams};
 use super::error::ZipError;
+use statrs::function::gamma::ln_gamma;
 
 /// Zero-Inflated Poisson distribution.
 ///
@@ -199,20 +200,9 @@ impl ZipDistribution {
         }
     }
 
-    /// Helper function to compute log(Γ(x)) using Stirling's approximation.
-    /// For better accuracy, we could use a library, but this is sufficient for most cases.
+    /// Helper function to compute log(Γ(x)) using statrs.
     fn log_gamma(x: f64) -> f64 {
-        if x <= 0.0 {
-            return f64::NAN;
-        }
-        // Use the standard library's gamma function via statrs if available
-        // For now, use a simple approximation for integer values
-        if x == 1.0 {
-            0.0
-        } else {
-            // Stirling's approximation: log(Γ(x)) ≈ (x-0.5)log(x) - x + 0.5*log(2π)
-            (x - 0.5) * x.ln() - x + 0.5 * (2.0 * std::f64::consts::PI).ln()
-        }
+        ln_gamma(x)
     }
 }
 
@@ -226,7 +216,7 @@ mod tests {
         // P(Y=0) = 0.2 + 0.8 * e^(-3.0)
         let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
         let prob = dist.pmf(Count::new(0));
-        
+
         let expected = 0.2 + 0.8 * (-3.0_f64).exp();
         assert!((prob - expected).abs() < 1e-9);
     }
@@ -237,7 +227,7 @@ mod tests {
         // P(Y=1) = 0.8 * (3^1 * e^(-3)) / 1!
         let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
         let prob = dist.pmf(Count::new(1));
-        
+
         let lambda = 3.0_f64;
         let poisson_prob = lambda * (-lambda).exp();
         let expected = 0.8 * poisson_prob;
@@ -267,7 +257,7 @@ mod tests {
         let dist = ZipDistribution::from_values(0.3, 2.5).unwrap();
         let mean = dist.mean();
         let variance = dist.variance();
-        
+
         // Variance should be strictly greater than mean
         assert!(variance > mean);
     }
@@ -278,7 +268,7 @@ mod tests {
         let dist = ZipDistribution::from_values(0.0, 2.0).unwrap();
         let mean = dist.mean();
         let variance = dist.variance();
-        
+
         // For standard Poisson, mean = variance = lambda
         assert!((mean - 2.0).abs() < 1e-9);
         assert!((variance - 2.0).abs() < 1e-9);
@@ -288,19 +278,19 @@ mod tests {
     fn test_pmf_sums_to_one() {
         let dist = ZipDistribution::from_values(0.2, 2.0).unwrap();
         let mut sum = 0.0;
-        
+
         // Sum over first 20 values (should be very close to 1.0)
         for k in 0..20 {
             sum += dist.pmf(Count::new(k));
         }
-        
+
         assert!((sum - 1.0).abs() < 1e-3);
     }
 
     #[test]
     fn test_cdf_monotonic() {
         let dist = ZipDistribution::from_values(0.15, 2.5).unwrap();
-        
+
         let mut prev_cdf = 0.0;
         for k in 0..10 {
             let cdf = dist.cdf(Count::new(k));

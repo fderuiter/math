@@ -13,7 +13,8 @@ fn main() {
     println!("   ----------------------------------------");
 
     let player = glicko2::GlickoPlayer::default();
-    println!("   Initial player: Rating={}, RD={}, Volatility={}",
+    println!(
+        "   Initial player: Rating={}, RD={}, Volatility={}",
         player.rating.value(),
         player.rating_deviation.value(),
         player.volatility.value()
@@ -26,9 +27,11 @@ fn main() {
     );
 
     let results = vec![glicko2::MatchResult::new(opponent, 1.0).unwrap()];
-    let updated = glicko2::update_rating(&player, &results, &glicko2::SystemConstant::default()).unwrap();
+    let updated =
+        glicko2::update_rating(&player, &results, &glicko2::SystemConstant::default()).unwrap();
 
-    println!("   After win: Rating={:.1}, RD={:.1}, Volatility={:.4}",
+    println!(
+        "   After win: Rating={:.1}, RD={:.1}, Volatility={:.4}",
         updated.rating.value(),
         updated.rating_deviation.value(),
         updated.volatility.value()
@@ -51,12 +54,21 @@ fn main() {
 
     println!("   Scenario: 55% win probability, 2.0 decimal odds");
     println!("   Expected Value: {:.3} per $1 bet", ev);
-    println!("   Full Kelly: {:.1}% of bankroll", full_kelly.value() * 100.0);
-    println!("   Half Kelly: {:.1}% of bankroll (conservative)", half_kelly.value() * 100.0);
+    println!(
+        "   Full Kelly: {:.1}% of bankroll",
+        full_kelly.value() * 100.0
+    );
+    println!(
+        "   Half Kelly: {:.1}% of bankroll (conservative)",
+        half_kelly.value() * 100.0
+    );
 
     let bankroll = 10000.0;
     let bet_amount = half_kelly.bet_amount(bankroll).unwrap();
-    println!("   Recommended bet with ${:.0} bankroll: ${:.2}", bankroll, bet_amount);
+    println!(
+        "   Recommended bet with ${:.0} bankroll: ${:.2}",
+        bankroll, bet_amount
+    );
     println!("   ✓ Optimal sizing for positive expected growth!\n");
 
     // ========================================
@@ -76,7 +88,10 @@ fn main() {
         .collect();
 
     let cloud = tda::PointCloud::new(circle_points).unwrap();
-    println!("   Point cloud: {} points arranged in a circle", cloud.size());
+    println!(
+        "   Point cloud: {} points arranged in a circle",
+        cloud.size()
+    );
 
     // Build complex at different radii
     let small_radius = 0.5;
@@ -89,10 +104,16 @@ fn main() {
     let (beta0_medium, beta1_medium) = tda::betti_numbers(&complex_medium).unwrap();
 
     println!("   At radius {:.1}:", small_radius);
-    println!("     β₀={} (components), β₁={} (holes)", beta0_small, beta1_small);
+    println!(
+        "     β₀={} (components), β₁={} (holes)",
+        beta0_small, beta1_small
+    );
 
     println!("   At radius {:.1}:", medium_radius);
-    println!("     β₀={} (components), β₁={} (holes)", beta0_medium, beta1_medium);
+    println!(
+        "     β₀={} (components), β₁={} (holes)",
+        beta0_medium, beta1_medium
+    );
 
     // Compute persistence
     let radii: Vec<f64> = (0..40).map(|i| i as f64 * 0.05).collect();
@@ -103,8 +124,12 @@ fn main() {
 
     if let Some(hole) = barcode.most_persistent(1) {
         println!("     Most persistent hole:");
-        println!("       Birth: {:.3}, Death: {:.3}, Persistence: {:.3}",
-            hole.birth, hole.death, hole.persistence());
+        println!(
+            "       Birth: {:.3}, Death: {:.3}, Persistence: {:.3}",
+            hole.birth,
+            hole.death,
+            hole.persistence()
+        );
         println!("   ✓ Circular structure detected!\n");
     }
 
@@ -112,8 +137,14 @@ fn main() {
     // Summary
     // ========================================
     println!("=== SUMMARY ===");
-    println!("✓ Glicko-2: Updated player rating from 1500 to ~{:.0}", updated.rating.value());
-    println!("✓ Kelly: Optimal bet is {:.1}% of bankroll for positive EV", half_kelly.value() * 100.0);
+    println!(
+        "✓ Glicko-2: Updated player rating from 1500 to ~{:.0}",
+        updated.rating.value()
+    );
+    println!(
+        "✓ Kelly: Optimal bet is {:.1}% of bankroll for positive EV",
+        half_kelly.value() * 100.0
+    );
     println!("✓ TDA: Detected circular topology with β₁={}", beta1_medium);
     println!("\nAll three modules working perfectly! 🎉");
 }

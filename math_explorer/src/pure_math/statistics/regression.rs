@@ -2,8 +2,8 @@
 //!
 //! Implementations of regression analysis techniques.
 
-use nalgebra::{DMatrix, DVector};
 use crate::pure_math::algebra::linear_algebra::numerical::solve_normal_equation;
+use nalgebra::{DMatrix, DVector};
 
 /// Multivariate Linear Regression.
 ///
@@ -40,11 +40,7 @@ mod tests {
         // 2, 1 -> 8
         // Design matrix X (add column of 1s for bias at end or beginning)
         // Let's put bias first: [1, x1, x2]
-        let x_data = vec![
-            1.0, 1.0, 1.0,
-            1.0, 1.0, 2.0,
-            1.0, 2.0, 1.0
-        ];
+        let x_data = vec![1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 2.0, 1.0];
         let x = DMatrix::from_row_slice(3, 3, &x_data);
         let y = DVector::from_column_slice(&[6.0, 9.0, 8.0]);
 

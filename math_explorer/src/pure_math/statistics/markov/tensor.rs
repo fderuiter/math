@@ -387,18 +387,20 @@ mod tests {
         let mut tensor = TransitionTensor::new(3, min_t, max_t);
 
         // States: 0=offense, 1=shot attempt, 2=turnover (absorbing)
-        
+
         // At t=24 (full clock): patient, low shot rate
         let p_24 = DMatrix::from_row_slice(
             3,
             3,
             &[
                 0.85, 0.10, 0.05, // Offense: mostly stay, few shots, few turnovers
-                0.0, 1.0, 0.0,     // Shot (absorbing)
-                0.0, 0.0, 1.0,     // Turnover (absorbing)
+                0.0, 1.0, 0.0, // Shot (absorbing)
+                0.0, 0.0, 1.0, // Turnover (absorbing)
             ],
         );
-        tensor.add_time_slice(TimeIndex::new(24.0).unwrap(), p_24).unwrap();
+        tensor
+            .add_time_slice(TimeIndex::new(24.0).unwrap(), p_24)
+            .unwrap();
 
         // At t=5 (expiring): urgent, high shot rate
         let p_5 = DMatrix::from_row_slice(
@@ -406,22 +408,28 @@ mod tests {
             3,
             &[
                 0.40, 0.50, 0.10, // Offense: fewer transitions, many shots, more turnovers
-                0.0, 1.0, 0.0,     // Shot (absorbing)
-                0.0, 0.0, 1.0,     // Turnover (absorbing)
+                0.0, 1.0, 0.0, // Shot (absorbing)
+                0.0, 0.0, 1.0, // Turnover (absorbing)
             ],
         );
-        tensor.add_time_slice(TimeIndex::new(5.0).unwrap(), p_5).unwrap();
+        tensor
+            .add_time_slice(TimeIndex::new(5.0).unwrap(), p_5)
+            .unwrap();
 
         // Check interpolation at t=15
-        let p_15 = tensor.transition_matrix_at(TimeIndex::new(15.0).unwrap()).unwrap();
-        
+        let p_15 = tensor
+            .transition_matrix_at(TimeIndex::new(15.0).unwrap())
+            .unwrap();
+
         // Shot rate should be between 0.10 and 0.50
         let shot_rate_15 = p_15[(0, 1)];
         assert!(shot_rate_15 > 0.10);
         assert!(shot_rate_15 < 0.50);
-        
+
         // At t=20 (closer to full clock), should be closer to patient behavior
-        let p_20 = tensor.transition_matrix_at(TimeIndex::new(20.0).unwrap()).unwrap();
+        let p_20 = tensor
+            .transition_matrix_at(TimeIndex::new(20.0).unwrap())
+            .unwrap();
         let shot_rate_20 = p_20[(0, 1)];
         assert!(shot_rate_20 < shot_rate_15); // Less urgent than at t=15
     }
@@ -433,10 +441,14 @@ mod tests {
         let mut tensor = TransitionTensor::new(2, min_t, max_t);
 
         let p1 = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
-        tensor.add_time_slice(TimeIndex::new(0.0).unwrap(), p1).unwrap();
+        tensor
+            .add_time_slice(TimeIndex::new(0.0).unwrap(), p1)
+            .unwrap();
 
         let p2 = DMatrix::from_row_slice(2, 2, &[0.6, 0.4, 0.5, 0.5]);
-        tensor.add_time_slice(TimeIndex::new(10.0).unwrap(), p2).unwrap();
+        tensor
+            .add_time_slice(TimeIndex::new(10.0).unwrap(), p2)
+            .unwrap();
 
         let avg = tensor
             .average_transition(
@@ -458,7 +470,7 @@ mod tests {
         let mut tensor = TransitionTensor::new(2, min_t, max_t);
 
         let p = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
-        
+
         // Try to add slice outside bounds
         let result = tensor.add_time_slice(TimeIndex::new(30.0).unwrap(), p);
         assert!(result.is_err());

@@ -129,4 +129,4 @@ pub use core::{Count, PoissonRate, ZeroInflation, ZipParams};
 pub use distribution::ZipDistribution;
 pub use error::ZipError;
 pub use link_functions::{LogLink, LogitLink};
-pub use regression::{simple_zip_fit, ZipRegression};
+pub use regression::{ZipRegression, simple_zip_fit};

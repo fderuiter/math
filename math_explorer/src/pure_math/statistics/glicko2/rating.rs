@@ -1,6 +1,9 @@
 //! Rating update algorithms for Glicko-2.
 
-use super::core::{expected_outcome, g_function, GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility};
+use super::core::{
+    GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
+    expected_outcome, g_function,
+};
 use super::error::Glicko2Error;
 
 /// Maximum iterations for volatility convergence.
@@ -408,15 +411,24 @@ mod tests {
         // New rating ≈ 1464.06
         // New RD ≈ 151.52
         // New volatility ≈ 0.05999
-        
+
         // Allow for some numerical differences
-        assert!((updated.rating.value() - 1464.06).abs() < 10.0, 
-            "Rating: expected ≈1464.06, got {}", updated.rating.value());
-        assert!((updated.rating_deviation.value() - 151.52).abs() < 10.0,
-            "RD: expected ≈151.52, got {}", updated.rating_deviation.value());
+        assert!(
+            (updated.rating.value() - 1464.06).abs() < 10.0,
+            "Rating: expected ≈1464.06, got {}",
+            updated.rating.value()
+        );
+        assert!(
+            (updated.rating_deviation.value() - 151.52).abs() < 10.0,
+            "RD: expected ≈151.52, got {}",
+            updated.rating_deviation.value()
+        );
         // Volatility computation can have more variance due to iterative methods
-        assert!((updated.volatility.value() - 0.06).abs() < 0.02,
-            "Volatility: expected ≈0.06, got {}", updated.volatility.value());
+        assert!(
+            (updated.volatility.value() - 0.06).abs() < 0.02,
+            "Volatility: expected ≈0.06, got {}",
+            updated.volatility.value()
+        );
     }
 
     #[test]

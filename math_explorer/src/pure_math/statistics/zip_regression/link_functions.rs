@@ -137,10 +137,10 @@ mod tests {
     fn test_log_link() {
         // exp(0) = 1
         assert!((LogLink::link(0.0) - 1.0).abs() < 1e-9);
-        
+
         // exp(1) ≈ 2.718
         assert!((LogLink::link(1.0) - std::f64::consts::E).abs() < 1e-9);
-        
+
         // exp(2) ≈ 7.389
         assert!((LogLink::link(2.0) - 7.389056099).abs() < 1e-6);
     }
@@ -165,10 +165,10 @@ mod tests {
     fn test_logit_link() {
         // expit(0) = 0.5
         assert!((LogitLink::link(0.0) - 0.5).abs() < 1e-9);
-        
+
         // expit(large positive) ≈ 1
         assert!(LogitLink::link(10.0) > 0.9999);
-        
+
         // expit(large negative) ≈ 0
         assert!(LogitLink::link(-10.0) < 0.0001);
     }
@@ -202,7 +202,7 @@ mod tests {
     fn test_log_link_vector() {
         let predictors = DVector::from_vec(vec![0.0, 1.0, 2.0]);
         let rates = LogLink::link_vector(&predictors);
-        
+
         assert!((rates[0] - 1.0).abs() < 1e-9);
         assert!((rates[1] - std::f64::consts::E).abs() < 1e-9);
         assert!((rates[2] - 7.389056099).abs() < 1e-6);
@@ -212,7 +212,7 @@ mod tests {
     fn test_logit_link_vector() {
         let predictors = DVector::from_vec(vec![-1.0, 0.0, 1.0]);
         let probs = LogitLink::link_vector(&predictors);
-        
+
         assert!(probs[0] < 0.5);
         assert!((probs[1] - 0.5).abs() < 1e-9);
         assert!(probs[2] > 0.5);
