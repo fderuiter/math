@@ -209,11 +209,12 @@ pub fn compute_persistence(
             // Components merged (died)
             let deaths = prev_beta0 - beta0;
             for _ in 0..deaths {
-                if let Some((_, birth)) = component_births.pop() {
-                    if birth < radius {
+                match component_births.pop() {
+                    Some((_, birth)) if birth < radius => {
                         // Only record if it has non-zero persistence
                         barcode.add_interval(PersistenceInterval::new(birth, radius, 0).unwrap());
                     }
+                    _ => {}
                 }
             }
         }
@@ -228,10 +229,11 @@ pub fn compute_persistence(
             // Holes filled (died)
             let deaths = prev_beta1 - beta1;
             for _ in 0..deaths {
-                if let Some(birth) = hole_births.pop() {
-                    if birth < radius {
+                match hole_births.pop() {
+                    Some(birth) if birth < radius => {
                         barcode.add_interval(PersistenceInterval::new(birth, radius, 1).unwrap());
                     }
+                    _ => {}
                 }
             }
         }
