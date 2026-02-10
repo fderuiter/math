@@ -7,8 +7,6 @@ pub enum GameTheoryError {
     NonSquarePayoffMatrix { rows: usize, cols: usize },
     /// Invalid parameter value (e.g. frequency outside [0, 1]).
     InvalidParameter { name: String, value: f64 },
-    /// Numerical calculation failed (e.g. ODE solver error).
-    CalculationError(String),
 }
 
 impl fmt::Display for GameTheoryError {
@@ -22,7 +20,6 @@ impl fmt::Display for GameTheoryError {
             Self::InvalidParameter { name, value } => {
                 write!(f, "Invalid parameter {}: {}", name, value)
             }
-            Self::CalculationError(msg) => write!(f, "Calculation error: {}", msg),
         }
     }
 }

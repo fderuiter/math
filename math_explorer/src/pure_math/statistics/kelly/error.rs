@@ -31,11 +31,7 @@ impl fmt::Display for KellyError {
                 write!(f, "Invalid odds: {} (must be > 1.0)", value)
             }
             Self::InvalidFraction { value } => {
-                write!(
-                    f,
-                    "Invalid fraction: {} (must be between 0 and 1)",
-                    value
-                )
+                write!(f, "Invalid fraction: {} (must be between 0 and 1)", value)
             }
             Self::NoEdge { probability, odds } => {
                 write!(

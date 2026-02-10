@@ -198,5 +198,7 @@ pub mod error;
 
 // Re-export main types and functions
 pub use core::{BankrollFraction, EdgeProbability, Odds};
-pub use criterion::{expected_growth_rate, expected_value, fractional_kelly, kelly_fraction, variants};
+pub use criterion::{
+    expected_growth_rate, expected_value, fractional_kelly, kelly_fraction, variants,
+};
 pub use error::KellyError;

@@ -220,8 +220,8 @@ impl EulerMaruyama {
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
-    use rand::rngs::StdRng;
     use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn test_time_step_valid() {
@@ -321,14 +321,14 @@ mod tests {
         let solver = EulerMaruyama::new(params, dt);
 
         let mut rng = StdRng::seed_from_u64(12345);
-        let n_steps = 500;  // Long enough to reach equilibrium
+        let n_steps = 500; // Long enough to reach equilibrium
         let n_paths = 5000;
-        
+
         let paths = solver.simulate_paths(mu, n_steps, n_paths, &mut rng);
-        
+
         // Average final value across all paths
         let final_mean: f64 = paths.iter().map(|p| p.last().unwrap()).sum::<f64>() / n_paths as f64;
-        
+
         // Should be close to mu
         assert!((final_mean - mu).abs() < 0.05);
     }

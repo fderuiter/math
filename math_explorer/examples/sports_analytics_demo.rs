@@ -2,13 +2,16 @@
 
 use math_explorer::pure_math::statistics::{
     copula::{Correlation, CorrelationMatrix, Probability, sgp_joint_probability},
-    glicko2::{GlickoPlayer, MatchResult, Rating, RatingDeviation, Volatility, update_rating},
+    glicko2::{
+        GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
+        update_rating,
+    },
     kelly::{EdgeProbability, Odds, kelly_fraction},
     markov::dtmc::{MarkovChain, StateType},
     ou_process::{EulerMaruyama, OuParams, TimeStep},
     zip_regression::{Count, ZipDistribution, ZipParams},
 };
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, DVector};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
@@ -21,8 +24,11 @@ fn main() {
     let zip_dist = ZipDistribution::new(zip_params);
     println!("   Zero-inflation: 25%, Poisson rate: 1.5");
     println!("   P(0 blocks) = {:.3}", zip_dist.pmf(Count::new(0)));
-    println!("   Mean: {:.2}, Variance: {:.2} (overdispersed!)", 
-        zip_dist.mean(), zip_dist.variance());
+    println!(
+        "   Mean: {:.2}, Variance: {:.2} (overdispersed!)",
+        zip_dist.mean(),
+        zip_dist.variance()
+    );
 
     // 2. OU Process: Model shooting percentage momentum
     println!("\n2. OU PROCESS - Shooting Percentage Momentum");
@@ -32,7 +38,10 @@ fn main() {
     let mut rng = StdRng::seed_from_u64(42);
     let trajectory = solver.simulate(0.60, 100, &mut rng);
     println!("   True skill: 45%, Currently: 60% (hot)");
-    println!("   After 100 possessions: {:.1}%", trajectory.last().unwrap() * 100.0);
+    println!(
+        "   After 100 possessions: {:.1}%",
+        trajectory.last().unwrap() * 100.0
+    );
 
     // 3. Copula: Same Game Parlay pricing
     println!("\n3. GAUSSIAN COPULA - Same Game Parlay");
@@ -50,14 +59,23 @@ fn main() {
     let mut player = GlickoPlayer::new(
         Rating::new(1500.0).unwrap(),
         RatingDeviation::new(200.0).unwrap(),
-        Volatility::new(0.06).unwrap()
+        Volatility::new(0.06).unwrap(),
     );
     let opponent_rating = Rating::new(1400.0).unwrap();
     let opponent_rd = RatingDeviation::new(30.0).unwrap();
-    let results = vec![MatchResult::win(opponent_rating, opponent_rd)];
-    player = update_rating(&player, &results, 0.5).unwrap();
+    let opponent = GlickoPlayer::new(opponent_rating, opponent_rd, Volatility::new(0.06).unwrap());
+    // Fix 1: Use MatchResult::new
+    let results = vec![MatchResult::new(opponent, 1.0).unwrap()];
+    // Fix 2: Pass SystemConstant
+    let tau = SystemConstant::new(0.5).unwrap();
+    player = update_rating(&player, &results, &tau).unwrap();
     println!("   Before: R=1500, RD=200");
-    println!("   After win: R={:.0}, RD={:.0}", player.rating().value(), player.rd().value());
+    // Fix 3: Access fields directly
+    println!(
+        "   After win: R={:.0}, RD={:.0}",
+        player.rating.value(),
+        player.rating_deviation.value()
+    );
 
     // 5. Kelly Criterion: Optimal bet sizing
     println!("\n5. KELLY CRITERION - Bet Sizing");
@@ -66,23 +84,31 @@ fn main() {
     let kelly = kelly_fraction(&prob, &odds).unwrap();
     println!("   Win probability: 55%, Odds: 2.0");
     println!("   Full Kelly: {:.1}%", kelly.value() * 100.0);
-    println!("   Quarter Kelly: {:.1}% (recommended)", kelly.value() * 25.0);
+    println!(
+        "   Quarter Kelly: {:.1}% (recommended)",
+        kelly.value() * 25.0
+    );
 
     // 6. Markov Chain: Expected Possession Value
     println!("\n6. MARKOV CHAIN - Expected Possession Value");
     let states = vec![
-        StateType::Transient, StateType::Transient,
-        StateType::Absorbing, StateType::Absorbing
+        StateType::Transient,
+        StateType::Transient,
+        StateType::Absorbing,
+        StateType::Absorbing,
     ];
-    let p = DMatrix::from_row_slice(4, 4, &[
-        0.3, 0.5, 0.1, 0.1,
-        0.2, 0.4, 0.3, 0.1,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0,
-    ]);
-    let chain = MarkovChain::new(states, p).unwrap();
-    let rewards = vec![3.0, 0.0];
-    let epv = chain.expected_reward(&rewards).unwrap();
+    let p = DMatrix::from_row_slice(
+        4,
+        4,
+        &[
+            0.3, 0.5, 0.1, 0.1, 0.2, 0.4, 0.3, 0.1, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        ],
+    );
+    // Fix 4: Correct argument order
+    let chain = MarkovChain::new(p, states).unwrap();
+    let rewards = DVector::from_vec(vec![3.0, 0.0]);
+    // Fix 5: Use expected_possession_value
+    let epv = chain.expected_possession_value(&rewards).unwrap();
     println!("   State 0 EPV: {:.2} points", epv[0]);
     println!("   State 1 EPV: {:.2} points", epv[1]);
 

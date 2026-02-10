@@ -76,12 +76,8 @@ where
     for _ in 0..iterations {
         // Evolve both systems
         for _ in 0..steps_per_iter {
-            current_state = solver
-                .solve(system, 0.0, &current_state, time_step)
-                .map_err(|e| ChaosError::CalculationError(e.to_string()))?;
-            shadow_state = solver
-                .solve(system, 0.0, &shadow_state, time_step)
-                .map_err(|e| ChaosError::CalculationError(e.to_string()))?;
+            current_state = solver.solve(system, 0.0, &current_state, time_step);
+            shadow_state = solver.solve(system, 0.0, &shadow_state, time_step);
         }
 
         // Measure distance

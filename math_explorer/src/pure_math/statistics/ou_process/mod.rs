@@ -128,7 +128,7 @@ pub mod core;
 pub mod error;
 pub mod solver;
 
-pub use analysis::{estimate_ou_params, MomentumType, OuAnalyzer, PerformanceStats};
+pub use analysis::{MomentumType, OuAnalyzer, PerformanceStats, estimate_ou_params};
 pub use core::{LongTermMean, MeanReversionRate, OuParams, Volatility};
 pub use error::OuError;
 pub use solver::{EulerMaruyama, TimeStep};

@@ -1,4 +1,3 @@
-use crate::pure_math::analysis::ode::OdeError;
 use thiserror::Error;
 
 /// Errors related to Hodgkin-Huxley neuron modeling.
@@ -8,6 +7,4 @@ pub enum HodgkinHuxleyError {
     InvalidGatingVariable(f64),
     #[error("Invalid conductance value: {0} (must be non-negative)")]
     InvalidConductance(f64),
-    #[error(transparent)]
-    Ode(#[from] OdeError),
 }

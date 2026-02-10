@@ -109,7 +109,9 @@ impl ContinuousMarkovChain {
                 return Err(MarkovError::InvalidGenerator {
                     reason: format!(
                         "Diagonal element G[{},{}] = {} must be non-positive",
-                        i, i, generator[(i, i)]
+                        i,
+                        i,
+                        generator[(i, i)]
                     ),
                 });
             }
@@ -192,7 +194,7 @@ impl ContinuousMarkovChain {
     /// a specialized library like `nalgebra::linalg::Exp`.
     fn matrix_exponential(&self, a: &DMatrix<f64>) -> Result<DMatrix<f64>> {
         let n = a.nrows();
-        
+
         // Scaling: choose s such that ||A/2^s|| < 1
         let norm = self.matrix_norm_1(a);
         let s = if norm > 1.0 {
@@ -200,15 +202,15 @@ impl ContinuousMarkovChain {
         } else {
             0
         };
-        
+
         let scale = 2.0_f64.powi(s);
         let a_scaled = a / scale;
-        
+
         // Padé approximation of order 6
         let a2 = &a_scaled * &a_scaled;
         let a4 = &a2 * &a2;
         let a6 = &a2 * &a4;
-        
+
         // Coefficients for Padé(6,6)
         let c0 = 1.0;
         let c1 = 0.5;
@@ -217,27 +219,29 @@ impl ContinuousMarkovChain {
         let c4 = 1.0 / 1008.0;
         let c5 = 1.0 / 30240.0;
         let c6 = 1.0 / 1814400.0;
-        
+
         let id = DMatrix::identity(n, n);
-        
+
         let u = &a_scaled * (&a6 * c6 + &a4 * c4 + &a2 * c2 + &id * c0);
         let v = &a6 * c5 + &a4 * c3 + &a2 * c1 + &id * c0;
-        
+
         // Solve (V - U)R = V + U for R
         let lhs = v.clone() - &u;
         let rhs = v + u;
-        
-        let r = lhs.try_inverse()
+
+        let r = lhs
+            .try_inverse()
             .ok_or_else(|| MarkovError::NumericalError {
                 reason: "Failed to invert (V-U) in Padé approximation".to_string(),
-            })? * rhs;
-        
+            })?
+            * rhs;
+
         // Squaring: compute R^(2^s)
         let mut result = r;
         for _ in 0..s {
             result = &result * &result;
         }
-        
+
         Ok(result)
     }
 
@@ -264,21 +268,21 @@ impl ContinuousMarkovChain {
     pub fn steady_state(&self) -> Option<DVector<f64>> {
         // For irreducible CTMCs, we can find the steady state by computing
         // the null space of G^T and normalizing.
-        
+
         // Alternative approach: simulate for a long time
         // π ≈ e^T·P(t) for large t, where e^T is any initial distribution
-        
+
         const LONG_TIME: f64 = 100.0;
         const MAX_ATTEMPTS: usize = 5;
-        
+
         for attempt in 0..MAX_ATTEMPTS {
             let t = LONG_TIME * (1 + attempt) as f64;
-            
+
             if let Ok(p_t) = self.transition_probabilities(t) {
                 // Use uniform initial distribution
                 let mut pi = DVector::from_element(self.num_states, 1.0 / self.num_states as f64);
                 pi = p_t.transpose() * pi;
-                
+
                 // Check if it's approximately stationary
                 let pi_next = self.generator.transpose() * &pi;
                 if pi_next.norm() < 1e-6 {
@@ -291,7 +295,7 @@ impl ContinuousMarkovChain {
                 }
             }
         }
-        
+
         None
     }
 
@@ -330,7 +334,7 @@ impl ContinuousMarkovChain {
 
         // Solve Q·t = -1
         let ones = DVector::from_element(n_t, -1.0);
-        
+
         q.try_inverse()
             .ok_or_else(|| MarkovError::SingularMatrix {
                 context: "Cannot invert Q matrix for absorption times".to_string(),
@@ -414,7 +418,7 @@ impl ContinuousMarkovChain {
             let dist = WeightedIndex::new(&weights).map_err(|_| MarkovError::NumericalError {
                 reason: "Failed to create weighted distribution".to_string(),
             })?;
-            
+
             let next_idx = dist.sample(rng);
             current_state = next_states[next_idx];
             trajectory.push((current_time, current_state));
@@ -470,7 +474,7 @@ mod tests {
         // For long time, should approach steady state
         let p_large = chain.transition_probabilities(10.0).unwrap();
         let pi = chain.steady_state().unwrap();
-        
+
         // Each row should be approximately π
         for i in 0..2 {
             assert_relative_eq!(p_large[(i, 0)], pi[0], epsilon = 1e-3);
@@ -530,7 +534,7 @@ mod tests {
             &[
                 -2.0, 1.0, 1.0, // State 0 → 1 or 2
                 1.0, -2.0, 1.0, // State 1 → 0 or 2
-                0.0, 0.0, 0.0,   // State 2 (absorbing)
+                0.0, 0.0, 0.0, // State 2 (absorbing)
             ],
         );
 
@@ -542,7 +546,7 @@ mod tests {
         // Both transient states should have positive expected absorption times
         assert!(times[0] > 0.0);
         assert!(times[1] > 0.0);
-        
+
         // By symmetry, they should be equal
         assert_relative_eq!(times[0], times[1], epsilon = 1e-10);
     }

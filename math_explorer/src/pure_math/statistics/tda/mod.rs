@@ -258,8 +258,8 @@ pub mod homology;
 pub mod persistence;
 
 // Re-export main types and functions
-pub use complex::{vietoris_rips_complex, SimplicialComplex};
+pub use complex::{SimplicialComplex, vietoris_rips_complex};
 pub use core::{Point2D, PointCloud, Simplex};
 pub use error::TdaError;
 pub use homology::{betti_number_0, betti_number_1, betti_numbers};
-pub use persistence::{compute_persistence, PersistenceBarcode, PersistenceInterval};
+pub use persistence::{PersistenceBarcode, PersistenceInterval, compute_persistence};

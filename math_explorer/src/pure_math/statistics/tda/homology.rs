@@ -161,14 +161,14 @@ pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
     //
     // But we need to account for filled triangles differently.
     // Each triangle "fills" a potential hole.
-    
+
     // Simple approximation for 2D:
     // β₁ = number of cycles - number of filled regions
     // β₁ = (e - v + 1) - t for a single component
-    
+
     // More generally:
     // β₁ = e - v + β₀ - t (for simple 2D complexes)
-    
+
     if e < v {
         return Ok(0); // Not enough edges to form cycles
     }
@@ -176,14 +176,14 @@ pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
     // Euler characteristic: χ = v - e + t = β₀ - β₁
     // Solving for β₁: β₁ = v - e + t - β₀
     // But this needs correction for our specific case
-    
+
     // For a connected graph: β₁ = e - v + 1
     // For multiple components: β₁ = e - v + β₀
     // But we need to subtract filled triangles
-    
+
     // Each triangle fills one potential cycle
     // So: β₁ = (e - v + β₀) - t
-    
+
     let cycles = if e >= v { e - v + beta0 } else { 0 };
     let beta1 = if cycles > t { cycles - t } else { 0 };
 

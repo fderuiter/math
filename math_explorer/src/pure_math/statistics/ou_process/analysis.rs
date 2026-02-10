@@ -258,10 +258,7 @@ pub fn estimate_ou_params(observations: &[f64], dt: f64) -> Result<OuParams, OuE
     let mu = observations.iter().sum::<f64>() / observations.len() as f64;
 
     // Estimate sigma from sample variance
-    let variance = observations
-        .iter()
-        .map(|&x| (x - mu).powi(2))
-        .sum::<f64>()
+    let variance = observations.iter().map(|&x| (x - mu).powi(2)).sum::<f64>()
         / (observations.len() - 1) as f64;
     let sigma = variance.sqrt();
 
@@ -278,14 +275,14 @@ pub fn estimate_ou_params(observations: &[f64], dt: f64) -> Result<OuParams, OuE
     let rho1 = if denominator > 1e-10 {
         numerator / denominator
     } else {
-        0.5  // Default if variance is too small
+        0.5 // Default if variance is too small
     };
 
     // theta ≈ -ln(ρ₁) / Δt
     let theta = if rho1 > 0.0 && rho1 < 1.0 {
         -rho1.ln() / dt
     } else {
-        1.0  // Default if autocorrelation is out of range
+        1.0 // Default if autocorrelation is out of range
     };
 
     OuParams::from_values(mu, theta.max(0.01), sigma.max(0.01))
@@ -294,8 +291,8 @@ pub fn estimate_ou_params(observations: &[f64], dt: f64) -> Result<OuParams, OuE
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::rngs::StdRng;
     use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn test_momentum_type_classification() {

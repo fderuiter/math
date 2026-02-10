@@ -62,7 +62,7 @@
 //! ```
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-use crate::pure_math::analysis::ode::{OdeError, OdeSystem, TimeStepper, VectorOperations};
+use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Defines the reaction kinetics for a 2-component reaction-diffusion system.
@@ -388,10 +388,9 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TimeStepper<TuringState> for Turi
         &mut self.state
     }
 
-    fn step(&mut self, dt: f64) -> Result<(), OdeError> {
+    fn step(&mut self, dt: f64) {
         // Delegate to the optimized inherent method
         self.step(dt);
-        Ok(())
     }
 }
 

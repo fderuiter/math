@@ -56,7 +56,7 @@
 //! // 2. Simulate forward in time
 //! let dt = 0.01;
 //! for _ in 0..1000 {
-//!     system.step(dt).unwrap();
+//!     system.step(dt);
 //! }
 //!
 //! // 3. Observe the result (The state stays bounded within the attractor)
@@ -123,7 +123,7 @@ mod tests {
 
         let dt = 0.01;
         for _ in 0..1000 {
-            system.step(dt).unwrap();
+            system.step(dt);
             let s = system.state.vec;
             assert!(s.x.abs() < 100.0, "x diverged: {}", s.x);
             assert!(s.y.abs() < 100.0, "y diverged: {}", s.y);
@@ -221,7 +221,7 @@ mod tests {
 
         // Ensure it runs
         let mut running_system = system;
-        running_system.step(0.01).unwrap();
+        running_system.step(0.01);
         assert!(running_system.state.vec.x.is_finite());
     }
 }

@@ -64,9 +64,7 @@ impl HawkDovePopulation {
         let mut solver = Euler::default();
 
         // Use the generic solver strategy instead of manual Euler
-        let next_state = solver
-            .solve(&system, 0.0, &current_state, dt)
-            .map_err(|e| GameTheoryError::CalculationError(e.to_string()))?;
+        let next_state = solver.solve(&system, 0.0, &current_state, dt);
         let mut new_p_h = next_state[0];
 
         // Clamp to [0, 1] to handle numerical drift
