@@ -1,7 +1,7 @@
 //! Classical Dynamics Simulator using Bloch Equations.
 
 use super::proton;
-use crate::pure_math::analysis::ode::{Euler, OdeSystem, Solver};
+use crate::pure_math::analysis::ode::{Euler, OdeError, OdeSystem, Solver};
 use nalgebra::Vector3;
 
 /// Internal helper struct to define the Bloch equations as an OdeSystem.
@@ -62,7 +62,14 @@ impl BlochSimulator {
     /// * `t1` - Longitudinal relaxation time in seconds.
     /// * `t2` - Transverse relaxation time in seconds.
     /// * `solver` - The numerical solver strategy to use.
-    pub fn step_with<S>(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64, solver: &mut S)
+    pub fn step_with<S>(
+        &mut self,
+        dt: f64,
+        b_field: Vector3<f64>,
+        t1: f64,
+        t2: f64,
+        solver: &mut S,
+    ) -> Result<(), OdeError>
     where
         S: Solver<Vector3<f64>>,
     {
@@ -73,7 +80,8 @@ impl BlochSimulator {
             b_field,
         };
         // Time is treated as 0.0 for the step since B is constant over the interval
-        self.magnetization = solver.solve(&system, 0.0, &self.magnetization, dt);
+        self.magnetization = solver.solve(&system, 0.0, &self.magnetization, dt)?;
+        Ok(())
     }
 
     /// Performs a time-step update of the magnetization vector using the Bloch equations.
@@ -88,7 +96,13 @@ impl BlochSimulator {
     /// * `b_field` - Magnetic field vector $\vec{B}$ in Tesla.
     /// * `t1` - Longitudinal relaxation time in seconds.
     /// * `t2` - Transverse relaxation time in seconds.
-    pub fn step(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64) {
+    pub fn step(
+        &mut self,
+        dt: f64,
+        b_field: Vector3<f64>,
+        t1: f64,
+        t2: f64,
+    ) -> Result<(), OdeError> {
         self.step_with(dt, b_field, t1, t2, &mut Euler::default())
     }
 }

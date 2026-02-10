@@ -63,13 +63,13 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
     /// - `dt`: Time step size.
     ///
     /// # Returns
-    /// A time-series of population states: `Vec<(Time, State)>`.
+    /// A time-series of population states: `Result<Vec<(Time, State)>, GameTheoryError>`.
     pub fn simulate(
         &self,
         initial_population: DVector<f64>,
         time_horizon: f64,
         dt: f64,
-    ) -> Vec<(f64, DVector<f64>)> {
+    ) -> Result<Vec<(f64, DVector<f64>)>, GameTheoryError> {
         self.simulate_with_strategy(
             initial_population,
             time_horizon,
@@ -94,7 +94,7 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
         time_horizon: f64,
         dt: f64,
         solver: &mut Solve,
-    ) -> Vec<(f64, DVector<f64>)>
+    ) -> Result<Vec<(f64, DVector<f64>)>, GameTheoryError>
     where
         Solve: Solver<DVector<f64>>,
     {
@@ -106,7 +106,9 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
         trajectory.push((current_t, current_x.clone()));
 
         for _ in 0..steps {
-            current_x = solver.solve(self, current_t, &current_x, dt);
+            current_x = solver
+                .solve(self, current_t, &current_x, dt)
+                .map_err(|e| GameTheoryError::CalculationError(e.to_string()))?;
             current_t += dt;
 
             // Normalize to prevent numerical drift from simplex
@@ -118,7 +120,7 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
             trajectory.push((current_t, current_x.clone()));
         }
 
-        trajectory
+        Ok(trajectory)
     }
 }
 
@@ -166,7 +168,7 @@ mod tests {
 
         // Simulation check
         let init = DVector::from_vec(vec![0.4, 0.3, 0.3]);
-        let trajectory = system.simulate(init, 10.0, 0.01);
+        let trajectory = system.simulate(init, 10.0, 0.01).unwrap();
         let last_state = &trajectory.last().unwrap().1;
         assert!((last_state.sum() - 1.0).abs() < 1e-6);
     }

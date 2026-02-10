@@ -1,3 +1,4 @@
+use super::error::OdeError;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// A trait defining the vector operations required by numerical integrators.
@@ -49,12 +50,18 @@ pub trait OdeSystem<State: VectorOperations> {
 /// A trait defining a numerical ODE solver strategy.
 pub trait Solver<State: VectorOperations> {
     /// Advances the system state by one time step `dt`.
-    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> Result<State, OdeError>
     where
         S: OdeSystem<State> + ?Sized;
 
     /// Advances the system state by one time step `dt` in-place.
-    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
+    fn step<S>(
+        &mut self,
+        system: &S,
+        t: f64,
+        state: &mut State,
+        dt: f64,
+    ) -> Result<(), OdeError>
     where
         S: OdeSystem<State> + ?Sized;
 }

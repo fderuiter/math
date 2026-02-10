@@ -1,3 +1,4 @@
+use super::error::OdeError;
 use super::traits::{OdeSystem, Solver, VectorOperations};
 
 /// Euler's Method Solver.
@@ -23,34 +24,34 @@ impl<State> Euler<State> {
 }
 
 impl<State: VectorOperations> Solver<State> for Euler<State> {
-    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> Result<State, OdeError>
     where
         S: OdeSystem<State> + ?Sized,
     {
         // For solve (returning new state), we can clone the input and step in-place.
         let mut new_state = state.clone();
-        self.step(system, t, &mut new_state, dt);
-        new_state
+        self.step(system, t, &mut new_state, dt)?;
+        Ok(new_state)
     }
 
-    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
+    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64) -> Result<(), OdeError>
     where
         S: OdeSystem<State> + ?Sized,
     {
-        // Initialize buffer if needed or if size changed (though VectorOperations doesn't imply resizing capability easily,
-        // we assume same type has compatible size. Ideally we'd check size, but trait doesn't expose len().)
-        // For now, lazy init.
-        if self.buffer.is_none() {
-            self.buffer = Some(state.clone());
-        }
+        // Initialize buffer if needed or if size changed
+        let derivative = self.buffer.get_or_insert_with(|| state.clone());
 
-        let derivative = self.buffer.as_mut().unwrap();
+        // Ensure buffer is ready (in case of re-use with different size, though specific implementations handle copy/resize)
+        // Ideally we'd check dimensions here if VectorOperations exposed them.
+        // For now, we rely on the implementation of copy_from or implicit behavior.
 
         // derivative = f(t, y)
         system.derivative_in_place(t, state, derivative);
 
         // y += derivative * dt
         state.scale_add(derivative, dt);
+
+        Ok(())
     }
 }
 
@@ -85,7 +86,7 @@ impl<State> RungeKutta4<State> {
     ///
     /// This method allocates a new solver (and thus buffers) on every call.
     /// For performance-critical code, instantiate a `RungeKutta4` struct and reuse it.
-    pub fn step<S>(system: &S, t: f64, state: &State, dt: f64) -> State
+    pub fn step<S>(system: &S, t: f64, state: &State, dt: f64) -> Result<State, OdeError>
     where
         State: VectorOperations,
         S: OdeSystem<State> + ?Sized,
@@ -96,30 +97,24 @@ impl<State> RungeKutta4<State> {
 }
 
 impl<State: VectorOperations> Solver<State> for RungeKutta4<State> {
-    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> Result<State, OdeError>
     where
         S: OdeSystem<State> + ?Sized,
     {
         let mut new_state = state.clone();
-        self.step(system, t, &mut new_state, dt);
-        new_state
+        self.step(system, t, &mut new_state, dt)?;
+        Ok(new_state)
     }
 
-    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
+    fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64) -> Result<(), OdeError>
     where
         S: OdeSystem<State> + ?Sized,
     {
         // Lazy initialization of buffers
-        if self.k.is_none() {
-            self.k = Some(state.clone());
-            self.tmp = Some(state.clone());
-            self.initial_state = Some(state.clone());
-        }
-
-        // Unsafe unwrap? We just set them.
-        let k = self.k.as_mut().unwrap();
-        let tmp = self.tmp.as_mut().unwrap();
-        let initial_state = self.initial_state.as_mut().unwrap();
+        // We use get_or_insert_with to avoid unwrap()
+        let k = self.k.get_or_insert_with(|| state.clone());
+        let tmp = self.tmp.get_or_insert_with(|| state.clone());
+        let initial_state = self.initial_state.get_or_insert_with(|| state.clone());
 
         // Copy current state to initial_state buffer to preserve it
         initial_state.copy_from(state);
@@ -152,5 +147,7 @@ impl<State: VectorOperations> Solver<State> for RungeKutta4<State> {
         system.derivative_in_place(t + dt, tmp, k);
         // y += k4 * dt/6
         state.scale_add(k, dt / 6.0);
+
+        Ok(())
     }
 }

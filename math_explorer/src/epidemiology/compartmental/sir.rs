@@ -1,7 +1,7 @@
 use super::common::{validate_initial_infected, validate_population, validate_rate};
 use crate::epidemiology::error::EpidemiologyError;
 use crate::impl_compartmental_ops;
-use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
+use crate::pure_math::analysis::ode::{OdeError, OdeSystem, Solver, TimeStepper};
 
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -57,13 +57,17 @@ impl SIRModel {
     }
 
     /// Advances the state by dt using Runge-Kutta 4.
-    pub fn step(&mut self, dt: f64) {
-        <Self as TimeStepper<SIRState>>::step(self, dt);
+    pub fn step(&mut self, dt: f64) -> Result<(), OdeError> {
+        <Self as TimeStepper<SIRState>>::step(self, dt)
     }
 
     /// Advances the state by dt using a provided solver strategy.
-    pub fn step_with<S: Solver<SIRState>>(&mut self, solver: &mut S, dt: f64) {
-        <Self as TimeStepper<SIRState>>::step_with(self, solver, dt);
+    pub fn step_with<S: Solver<SIRState>>(
+        &mut self,
+        solver: &mut S,
+        dt: f64,
+    ) -> Result<(), OdeError> {
+        <Self as TimeStepper<SIRState>>::step_with(self, solver, dt)
     }
 }
 
@@ -97,7 +101,7 @@ mod tests {
         let mut model = SIRModel::new(n, i0, 0.5, 1.0).unwrap();
 
         let initial_i = model.state.i;
-        model.step(0.1);
+        model.step(0.1).unwrap();
 
         assert!(
             model.state.i < initial_i,
@@ -113,8 +117,10 @@ mod tests {
         let mut model_with = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
 
         let dt = 0.1;
-        model_std.step(dt);
-        model_with.step_with(&mut RungeKutta4::default(), dt);
+        model_std.step(dt).unwrap();
+        model_with
+            .step_with(&mut RungeKutta4::default(), dt)
+            .unwrap();
 
         assert_eq!(
             model_std.state, model_with.state,
@@ -129,7 +135,7 @@ mod tests {
         let mut model = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
 
         // Euler is less accurate but should still run without panic
-        model.step_with(&mut Euler::default(), 0.1);
+        model.step_with(&mut Euler::default(), 0.1).unwrap();
 
         assert!(model.state.s <= n);
         assert!(model.state.i >= 0.0);

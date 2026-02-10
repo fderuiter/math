@@ -1,6 +1,6 @@
 //! Continuous Chaos (The Lorenz System)
 
-use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
+use crate::pure_math::analysis::ode::{OdeError, OdeSystem, Solver, TimeStepper};
 use nalgebra::Vector3;
 
 /// Represents the state of the Lorenz system $(x, y, z)$.
@@ -113,15 +113,15 @@ impl LorenzSystem {
     /// Advances the system by time `dt` using the Runge-Kutta 4 (RK4) method.
     ///
     /// This now delegates to the generic `RungeKutta4` solver via `TimeStepper`.
-    pub fn step(&mut self, dt: f64) {
-        <Self as TimeStepper<Vector3<f64>>>::step(self, dt);
+    pub fn step(&mut self, dt: f64) -> Result<(), OdeError> {
+        <Self as TimeStepper<Vector3<f64>>>::step(self, dt)
     }
 
     /// Advances the system by time `dt` using a provided solver strategy.
     ///
     /// This allows the user to switch integrators (e.g., Euler, RK4) dynamically.
-    pub fn step_with<S: Solver<Vector3<f64>>>(&mut self, solver: &mut S, dt: f64) {
-        <Self as TimeStepper<Vector3<f64>>>::step_with(self, solver, dt);
+    pub fn step_with<S: Solver<Vector3<f64>>>(&mut self, solver: &mut S, dt: f64) -> Result<(), OdeError> {
+        <Self as TimeStepper<Vector3<f64>>>::step_with(self, solver, dt)
     }
 }
 
