@@ -8,6 +8,7 @@
 use super::error::RadarError;
 use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;
+use std::collections::VecDeque;
 use std::f64::consts::PI;
 
 /// Implements the MUSIC algorithm for high-resolution range estimation.
@@ -19,7 +20,7 @@ pub struct MusicEstimator {
     /// Estimated number of targets/signals ($P$).
     signal_subspace_dim: usize,
     /// Signal covariance matrix buffer.
-    snapshots: Vec<DVector<Complex<f64>>>,
+    snapshots: VecDeque<DVector<Complex<f64>>>,
 }
 
 impl MusicEstimator {
@@ -30,13 +31,37 @@ impl MusicEstimator {
     /// * `samples_per_chirp` - Length of the FMCW chirp ($N$).
     /// * `smoothing_factor` - Number of snapshots to average for covariance matrix stability (e.g., 10).
     /// * `num_targets` - Expected number of reflecting surfaces (e.g., 1 for just skin, 2 for skin+clothes).
-    pub fn new(samples_per_chirp: usize, smoothing_factor: usize, num_targets: usize) -> Self {
-        Self {
+    ///
+    /// # Errors
+    /// Returns `RadarError::InvalidConfiguration` if parameters are invalid.
+    pub fn new(
+        samples_per_chirp: usize,
+        smoothing_factor: usize,
+        num_targets: usize,
+    ) -> Result<Self, RadarError> {
+        if samples_per_chirp == 0 {
+            return Err(RadarError::InvalidConfiguration(
+                "samples_per_chirp must be > 0".into(),
+            ));
+        }
+        if smoothing_factor == 0 {
+            return Err(RadarError::InvalidConfiguration(
+                "smoothing_factor must be > 0".into(),
+            ));
+        }
+        if num_targets == 0 || num_targets >= samples_per_chirp {
+            return Err(RadarError::InvalidConfiguration(format!(
+                "num_targets {} must be > 0 and < samples_per_chirp {}",
+                num_targets, samples_per_chirp
+            )));
+        }
+
+        Ok(Self {
             snapshot_count: smoothing_factor,
             samples_per_chirp,
             signal_subspace_dim: num_targets,
-            snapshots: Vec::with_capacity(smoothing_factor),
-        }
+            snapshots: VecDeque::with_capacity(smoothing_factor),
+        })
     }
 
     /// Adds a chirp snapshot to the estimator.
@@ -53,9 +78,9 @@ impl MusicEstimator {
         let vec = DVector::from_iterator(chirp.len(), chirp.iter().cloned());
 
         if self.snapshots.len() >= self.snapshot_count {
-            self.snapshots.remove(0);
+            self.snapshots.pop_front();
         }
-        self.snapshots.push(vec);
+        self.snapshots.push_back(vec);
         Ok(())
     }
 
@@ -88,6 +113,16 @@ impl MusicEstimator {
                 actual: self.snapshots.len(),
             });
         }
+        if step_range <= 0.0 {
+            return Err(RadarError::InvalidConfiguration(
+                "step_range must be > 0".into(),
+            ));
+        }
+        if start_range > end_range {
+            return Err(RadarError::InvalidConfiguration(
+                "start_range must be <= end_range".into(),
+            ));
+        }
 
         // 1. Estimate Covariance Matrix Rxx
         // Rxx = (1/K) * sum(x_k * x_k^H)
@@ -106,6 +141,13 @@ impl MusicEstimator {
         // We use SVD or Eigendecomposition. Rxx is Hermitian.
         let eigen = r_xx.symmetric_eigen();
 
+        // Check for numerical instability (NaNs in eigenvalues)
+        if eigen.eigenvalues.iter().any(|v| v.is_nan()) {
+            return Err(RadarError::NumericalInstability(
+                "Eigenvalues contain NaN".into(),
+            ));
+        }
+
         // Eigenvalues are sorted in ascending order by default in nalgebra::symmetric_eigen?
         // Actually we need to check documentation or assume.
         // Usually noise eigenvalues are the smallest ones.
@@ -121,8 +163,9 @@ impl MusicEstimator {
             .enumerate()
             .map(|(i, &v)| (v, i))
             .collect();
-        // Sort descending (largest first)
-        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+        // Sort descending (largest first).
+        // Safe to unwrap because we checked for NaNs above.
+        pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
 
         // 3. Extract Noise Subspace En
         // The last (N - P) eigenvectors correspond to noise.

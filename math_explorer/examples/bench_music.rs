@@ -6,7 +6,7 @@ fn main() {
     let samples = 64;
     let snapshots = 20;
     let targets = 2;
-    let mut estimator = MusicEstimator::new(samples, snapshots, targets);
+    let mut estimator = MusicEstimator::new(samples, snapshots, targets).unwrap();
 
     // Feed dummy data
     for _ in 0..snapshots {
