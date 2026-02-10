@@ -79,11 +79,34 @@ graph TD
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
 | **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
-| **📐 Pure Math** | `math_explorer::pure_math` | Number Theory (Partitions), Graph Theory, Differential Geometry, and **Abstract Algebra** (Groups, Rings, Fields). |
+| **📐 Pure Math** | `math_explorer::pure_math` | **Statistics** (Glicko-2, Markov, TDA), Number Theory, Graph Theory, Differential Geometry, and **Abstract Algebra**. |
 
 ---
 
 ## 🔍 Deep Dive: Modules
+
+### 🏆 Competitive Statistics: Glicko-2
+Implement the same rating system used by professional esports leagues.
+
+```rust
+use math_explorer::pure_math::statistics::glicko2::{
+    GlickoPlayer, Rating, RatingDeviation, Volatility, MatchResult, update_rating, SystemConstant
+};
+
+// Player wins against a 1700-rated opponent
+let player = GlickoPlayer::default(); // 1500 rating
+let opponent = GlickoPlayer::new(
+    Rating::new(1700.0).unwrap(),
+    RatingDeviation::new(300.0).unwrap(),
+    Volatility::default()
+);
+
+let result = MatchResult::new(opponent, 1.0).unwrap(); // Win
+let tau = SystemConstant::new(0.5).unwrap();
+
+let new_player = update_rating(&player, &[result], &tau).unwrap();
+println!("New Rating: {:.0}", new_player.rating.value());
+```
 
 ### 🧬 Biology & Neuroscience
 Simulate the electrical characteristics of excitable cells using the Hodgkin-Huxley model.
