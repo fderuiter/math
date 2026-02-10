@@ -26,8 +26,8 @@ pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
 
     /// Advances the system by `dt` using a provided solver.
     fn step_with<S: Solver<State>>(&mut self, solver: &mut S, dt: f64) {
-        let current_state = self.get_state().clone();
-        let new_state = solver.solve(self, 0.0, &current_state, dt);
-        *self.get_state_mut() = new_state;
+        let mut state = self.get_state().clone();
+        solver.step(self, 0.0, &mut state, dt);
+        *self.get_state_mut() = state;
     }
 }
