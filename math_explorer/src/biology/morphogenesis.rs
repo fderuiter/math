@@ -1,10 +1,65 @@
-//! Morphogenesis (Turing Patterns)
+//! # Morphogenesis (Turing Patterns)
 //!
 //! This module implements a Reaction-Diffusion system capable of generating Turing patterns.
 //! It uses a 1D grid to simulate the interaction between an activator ($u$) and an inhibitor ($v$).
 //!
-//! The general equation is:
-//! $$ \frac{\partial \mathbf{u}}{\partial t} = D \nabla^2 \mathbf{u} + \mathbf{f}(\mathbf{u}) $$
+//! Turing patterns arise when a stable uniform state becomes unstable due to diffusion (Diffusion-driven instability),
+//! typically when the inhibitor diffuses much faster than the activator ($D_v \gg D_u$).
+//!
+//! ## 🔄 The Mechanism
+//!
+//! ```mermaid
+//! graph TD
+//!     subgraph "Local Reaction"
+//!     A[Activator U] -->|Self-Catalysis| A
+//!     A -->|Activates| B[Inhibitor V]
+//!     B -->|Inhibits| A
+//!     end
+//!
+//!     subgraph "Spatial Diffusion"
+//!     DiffA[Diffusion of U]
+//!     DiffB[Diffusion of V]
+//!     end
+//!
+//!     A --- DiffA
+//!     B --- DiffB
+//!
+//!     DiffA -->|Short Range| Patterns
+//!     DiffB -->|Long Range| Patterns
+//!
+//!     style A fill:#a5d6a7,stroke:#2e7d32
+//!     style B fill:#ef9a9a,stroke:#c62828
+//! ```
+//!
+//! ## 🚀 Quick Start
+//!
+//! Simulate the emergence of a pattern from random noise.
+//!
+//! ```rust
+//! use math_explorer::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
+//!
+//! // 1. System Configuration
+//! // Activator diffuses slowly (1.0), Inhibitor diffuses fast (40.0)
+//! let n = 100;
+//! let mut system = TuringSystem::new(n, 1.0, 40.0, 1.0);
+//!
+//! // 2. Initialize with Random Noise
+//! // A uniform state would be stable without noise
+//! for i in 0..n {
+//!     system.u_mut()[i] = 1.0 + (i as f64 * 0.01).sin(); // Add some perturbation
+//!     system.v_mut()[i] = 0.5 + (i as f64 * 0.02).cos();
+//! }
+//!
+//! // 3. Run Simulation
+//! let dt = 0.01;
+//! for _ in 0..100 {
+//!     system.step(dt);
+//! }
+//!
+//! // 4. Analyze Results
+//! let u_center = system.u()[50];
+//! println!("Concentration of Activator at center: {:.4}", u_center);
+//! ```
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
@@ -25,14 +80,22 @@ pub trait ReactionKinetics {
 
 /// Schnakenberg kinetics (often used for Turing patterns).
 ///
-/// Equations:
-/// $$ f(u, v) = a - u + u^2 v $$
-/// $$ g(u, v) = b - u^2 v $$
+/// This model is famous for generating spot-like patterns (like leopard spots).
+///
+/// ## Equations
+///
+/// $$ \frac{du}{dt} = a - u + u^2 v $$
+/// $$ \frac{dv}{dt} = b - u^2 v $$
+///
+/// Where:
+/// - $a$: Production rate of the activator.
+/// - $b$: Production rate of the inhibitor.
+/// - $u^2 v$: Non-linear autocatalysis term (Activator requires Inhibitor to grow, but consumes it).
 #[derive(Debug, Clone, Copy)]
 pub struct SchnakenbergKinetics {
-    /// Production rate of activator.
+    /// Production rate of activator ($a$).
     pub a: f64,
-    /// Production rate of inhibitor.
+    /// Production rate of inhibitor ($b$).
     pub b: f64,
 }
 
