@@ -13,3 +13,7 @@
 ## 2025-05-24 - [Decoupling Transformer Layers from Concrete Implementations]
 **Violation:** **Dependency Inversion Principle (DIP)**. `EncoderLayer` and `DecoderLayer` directly depended on concrete structs (`MultiHeadAttention`, `FeedForward`, `LayerNorm`), making it impossible to swap implementations (e.g., for Sparse Attention or RMSNorm) or mock them for testing.
 **Remedy:** **Dependency Injection with Generics**. Extracted `AttentionMechanism`, `FeedForwardNetwork`, and `NormalizationLayer` traits. Refactored `EncoderLayer`, `DecoderLayer`, and `Transformer` to accept these dependencies via generics, defaulting to the original implementations for full backward compatibility.
+
+## 2025-05-25 - [Decoupling Auction Mechanism from Simulation Harness]
+**Violation:** **Open/Closed Principle (OCP)**. The `MechanismDesign` struct was a "Utility Class" anti-pattern that hardcoded logic for Optimal Auctions (Myerson's Lemma) within static methods, making it impossible to simulate other auction types (e.g., Second-Price, First-Price) without modifying the core simulation loop.
+**Remedy:** **Strategy Pattern**. Extracted `AuctionMechanism` trait. Refactored `MechanismDesign` to delegate to a new `OptimalAuction` strategy. Implemented `SecondPriceAuction` to prove extensibility. The simulation harness now depends on the abstraction, not the concrete implementation.

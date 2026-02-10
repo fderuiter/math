@@ -40,10 +40,34 @@ impl<D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + Ran
 {
 }
 
-/// Mechanism Design utilities.
-pub struct MechanismDesign;
+/// A strategy for conducting an auction.
+///
+/// This trait allows different auction mechanisms (e.g., Second-Price, First-Price, Optimal)
+/// to be simulated interchangeably.
+pub trait AuctionMechanism {
+    /// Simulates the expected revenue of the auction mechanism.
+    ///
+    /// # Arguments
+    /// * `dist` - The distribution of bidder valuations.
+    /// * `n_bidders` - The number of bidders in the auction.
+    /// * `n_simulations` - The number of Monte Carlo iterations.
+    /// * `rng` - The random number generator to use.
+    fn simulate_expected_revenue<D: ValuationDistribution + ?Sized, R: Rng + ?Sized>(
+        &self,
+        dist: &D,
+        n_bidders: usize,
+        n_simulations: usize,
+        rng: &mut R,
+    ) -> f64;
+}
 
-impl MechanismDesign {
+/// The Optimal Auction Mechanism (Myerson).
+///
+/// Allocates the item to the bidder with the highest virtual valuation $J(v_i)$,
+/// provided $J(v_i) \ge 0$.
+pub struct OptimalAuction;
+
+impl OptimalAuction {
     /// Calculates the **Optimal Reserve Price** for a single-item auction.
     ///
     /// According to Myerson (1981), for a "regular" distribution (where $J(v)$ is strictly increasing),
@@ -57,18 +81,6 @@ impl MechanismDesign {
     /// - `dist`: The probability distribution of bidder valuations.
     /// - `lower_bound`: The lower bound for the search (e.g., min possible valuation).
     /// - `upper_bound`: The upper bound for the search (e.g., max possible valuation).
-    ///
-    /// # Example
-    /// ```
-    /// use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
-    /// use statrs::distribution::Uniform;
-    ///
-    /// // For Uniform(0, 100), J(v) = 2v - 100.
-    /// // J(r) = 0 => 2r = 100 => r = 50.
-    /// let dist = Uniform::new(0.0, 100.0).unwrap();
-    /// let r_star = MechanismDesign::optimal_reserve_price(&dist, 0.0, 100.0);
-    /// assert!((r_star - 50.0).abs() < 1e-4);
-    /// ```
     pub fn optimal_reserve_price<D: ValuationDistribution>(
         dist: &D,
         lower_bound: f64,
@@ -103,27 +115,11 @@ impl MechanismDesign {
     ) -> Result<f64, AnalysisError> {
         solver.find_root(|v| dist.virtual_valuation(v), lower_bound, upper_bound)
     }
+}
 
-    /// Estimates the expected revenue of an optimal auction with `n_bidders`
-    /// via Monte Carlo simulation.
-    ///
-    /// The revenue of the optimal auction is given by:
-    /// $$ \text{Revenue} = \mathbb{E} \left[ \max(0, J(v_1), \dots, J(v_n)) \right] $$
-    ///
-    /// This simulation draws random valuations for $n$ bidders, calculates their virtual valuations,
-    /// and averages the maximum non-negative virtual valuation over `n_simulations`.
-    pub fn simulate_optimal_revenue<D: ValuationDistribution>(
-        dist: &D,
-        n_bidders: usize,
-        n_simulations: usize,
-    ) -> f64 {
-        let mut rng = rand::thread_rng();
-        Self::simulate_optimal_revenue_with_rng(dist, n_bidders, n_simulations, &mut rng)
-    }
-
-    /// Same as `simulate_optimal_revenue` but allows injecting a custom RNG
-    /// for deterministic testing.
-    pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Sized>(
+impl AuctionMechanism for OptimalAuction {
+    fn simulate_expected_revenue<D: ValuationDistribution + ?Sized, R: Rng + ?Sized>(
+        &self,
         dist: &D,
         n_bidders: usize,
         n_simulations: usize,
@@ -144,6 +140,173 @@ impl MechanismDesign {
         }
 
         total_revenue / (n_simulations as f64)
+    }
+}
+
+/// A Second-Price (Vickrey) Auction with a reserve price.
+///
+/// The item is awarded to the highest bidder if their bid exceeds the reserve price.
+/// The winner pays the maximum of the second-highest bid and the reserve price.
+pub struct SecondPriceAuction {
+    /// The reserve price (minimum acceptable bid).
+    pub reserve_price: f64,
+}
+
+impl SecondPriceAuction {
+    /// Creates a new Second-Price Auction with the given reserve price.
+    pub fn new(reserve_price: f64) -> Self {
+        Self { reserve_price }
+    }
+}
+
+impl AuctionMechanism for SecondPriceAuction {
+    fn simulate_expected_revenue<D: ValuationDistribution + ?Sized, R: Rng + ?Sized>(
+        &self,
+        dist: &D,
+        n_bidders: usize,
+        n_simulations: usize,
+        rng: &mut R,
+    ) -> f64 {
+        let mut total_revenue = 0.0;
+        // Pre-allocate buffer for bids to avoid reallocation in loop
+        let mut bids = vec![0.0; n_bidders];
+
+        for _ in 0..n_simulations {
+            // 1. Draw bids (assuming truthful bidding: bid = valuation)
+            for i in 0..n_bidders {
+                bids[i] = dist.sample(rng);
+            }
+
+            // 2. Determine outcome
+            // Find highest and second highest bids
+            let mut highest = -f64::INFINITY;
+            let mut second_highest = -f64::INFINITY;
+
+            for &bid in &bids {
+                if bid > highest {
+                    second_highest = highest;
+                    highest = bid;
+                } else if bid > second_highest {
+                    second_highest = bid;
+                }
+            }
+
+            // 3. Calculate revenue
+            if highest >= self.reserve_price {
+                // Winner exists
+                // Payment is max(reserve, second_highest)
+                // Note: If only 1 bidder > reserve, second_highest might be < reserve or -inf
+                // If second_highest < reserve, payment is reserve.
+                let payment = f64::max(self.reserve_price, second_highest);
+                total_revenue += payment;
+            } else {
+                // No sale
+                total_revenue += 0.0;
+            }
+        }
+
+        total_revenue / (n_simulations as f64)
+    }
+}
+
+/// Mechanism Design utilities.
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `OptimalAuction` or `SecondPriceAuction` strategies instead."
+)]
+pub struct MechanismDesign;
+
+#[allow(deprecated)]
+impl MechanismDesign {
+    /// Calculates the **Optimal Reserve Price** for a single-item auction.
+    ///
+    /// According to Myerson (1981), for a "regular" distribution (where $J(v)$ is strictly increasing),
+    /// the revenue-maximizing reserve price $r^*$ is the value such that the virtual valuation is zero:
+    ///
+    /// $$ J(r^*) = r^* - \frac{1 - F(r^*)}{f(r^*)} = 0 $$
+    ///
+    /// This function finds the root of $J(r) = 0$ using the bisection method within the given bounds.
+    ///
+    /// # Parameters
+    /// - `dist`: The probability distribution of bidder valuations.
+    /// - `lower_bound`: The lower bound for the search (e.g., min possible valuation).
+    /// - `upper_bound`: The upper bound for the search (e.g., max possible valuation).
+    ///
+    /// # Example
+    /// ```
+    /// use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
+    /// use statrs::distribution::Uniform;
+    ///
+    /// // For Uniform(0, 100), J(v) = 2v - 100.
+    /// // J(r) = 0 => 2r = 100 => r = 50.
+    /// #[allow(deprecated)]
+    /// let dist = Uniform::new(0.0, 100.0).unwrap();
+    /// #[allow(deprecated)]
+    /// let r_star = MechanismDesign::optimal_reserve_price(&dist, 0.0, 100.0);
+    /// assert!((r_star - 50.0).abs() < 1e-4);
+    /// ```
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `OptimalAuction::optimal_reserve_price` instead."
+    )]
+    pub fn optimal_reserve_price<D: ValuationDistribution>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+    ) -> f64 {
+        OptimalAuction::optimal_reserve_price(dist, lower_bound, upper_bound)
+    }
+
+    /// Calculates the **Optimal Reserve Price** for a single-item auction using a custom solver.
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `OptimalAuction::optimal_reserve_price_with_solver` instead."
+    )]
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
+        dist: &D,
+        lower_bound: f64,
+        upper_bound: f64,
+        solver: &S,
+    ) -> Result<f64, AnalysisError> {
+        OptimalAuction::optimal_reserve_price_with_solver(dist, lower_bound, upper_bound, solver)
+    }
+
+    /// Estimates the expected revenue of an optimal auction with `n_bidders`
+    /// via Monte Carlo simulation.
+    ///
+    /// The revenue of the optimal auction is given by:
+    /// $$ \text{Revenue} = \mathbb{E} \left[ \max(0, J(v_1), \dots, J(v_n)) \right] $$
+    ///
+    /// This simulation draws random valuations for $n$ bidders, calculates their virtual valuations,
+    /// and averages the maximum non-negative virtual valuation over `n_simulations`.
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `OptimalAuction` struct with `AuctionMechanism` trait."
+    )]
+    pub fn simulate_optimal_revenue<D: ValuationDistribution>(
+        dist: &D,
+        n_bidders: usize,
+        n_simulations: usize,
+    ) -> f64 {
+        let auction = OptimalAuction;
+        let mut rng = rand::thread_rng();
+        auction.simulate_expected_revenue(dist, n_bidders, n_simulations, &mut rng)
+    }
+
+    /// Same as `simulate_optimal_revenue` but allows injecting a custom RNG
+    /// for deterministic testing.
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use `OptimalAuction` struct with `AuctionMechanism` trait."
+    )]
+    pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Sized>(
+        dist: &D,
+        n_bidders: usize,
+        n_simulations: usize,
+        rng: &mut R,
+    ) -> f64 {
+        let auction = OptimalAuction;
+        auction.simulate_expected_revenue(dist, n_bidders, n_simulations, rng)
     }
 }
 
@@ -168,6 +331,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_optimal_reserve_uniform() {
         // For Uniform(0, 1), J(r) = 2r - 1 = 0 => r = 0.5.
         let dist = Uniform::new(0.0, 1.0).unwrap();
@@ -176,6 +340,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_revenue_simulation() {
         // 1 bidder, Uniform(0, 1). Optimal auction sets reserve r=0.5.
         // Revenue = E[max(0, J(v))]. J(v) = 2v-1.
@@ -190,6 +355,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_optimal_reserve_unbracketed_fallback() {
         // Uniform(0, 100). J(v) = 2v - 100. Root at 50.
         let dist = Uniform::new(0.0, 100.0).unwrap();
@@ -203,5 +369,25 @@ mod tests {
         // Should return upper bound (40) as J is increasing and negative.
         let r = MechanismDesign::optimal_reserve_price(&dist, 0.0, 40.0);
         assert!((r - 40.0).abs() < 1e-4);
+    }
+
+    #[test]
+    fn test_second_price_auction_revenue() {
+        // Uniform(0, 1). Optimal reserve = 0.5.
+        // SPA with r=0.5 should match OptimalAuction revenue (~0.25).
+        let dist = Uniform::new(0.0, 1.0).unwrap();
+        let auction = SecondPriceAuction::new(0.5);
+        let mut rng = rand::thread_rng();
+        let revenue = auction.simulate_expected_revenue(&dist, 1, 10_000, &mut rng);
+        assert!((revenue - 0.25).abs() < 0.02);
+    }
+
+    #[test]
+    fn test_optimal_auction_trait_usage() {
+        let dist = Uniform::new(0.0, 1.0).unwrap();
+        let auction = OptimalAuction;
+        let mut rng = rand::thread_rng();
+        let revenue = auction.simulate_expected_revenue(&dist, 1, 10_000, &mut rng);
+        assert!((revenue - 0.25).abs() < 0.02);
     }
 }
