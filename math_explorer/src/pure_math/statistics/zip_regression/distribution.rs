@@ -5,6 +5,7 @@
 
 use super::core::{Count, PoissonRate, ZeroInflation, ZipParams};
 use super::error::ZipError;
+use statrs::function::gamma::ln_gamma;
 
 /// Zero-Inflated Poisson distribution.
 ///
@@ -124,7 +125,8 @@ impl ZipDistribution {
         for i in 0..=k {
             sum += self.pmf(Count::new(i));
         }
-        sum
+        // Ensure numerical stability doesn't exceed 1.0
+        sum.min(1.0)
     }
 
     /// Computes the mean (expected value) of the distribution.
@@ -195,23 +197,7 @@ impl ZipDistribution {
             0.0
         } else {
             // log(k!) = log(Γ(k+1))
-            Self::log_gamma((k + 1) as f64)
-        }
-    }
-
-    /// Helper function to compute log(Γ(x)) using Stirling's approximation.
-    /// For better accuracy, we could use a library, but this is sufficient for most cases.
-    fn log_gamma(x: f64) -> f64 {
-        if x <= 0.0 {
-            return f64::NAN;
-        }
-        // Use the standard library's gamma function via statrs if available
-        // For now, use a simple approximation for integer values
-        if x == 1.0 {
-            0.0
-        } else {
-            // Stirling's approximation: log(Γ(x)) ≈ (x-0.5)log(x) - x + 0.5*log(2π)
-            (x - 0.5) * x.ln() - x + 0.5 * (2.0 * std::f64::consts::PI).ln()
+            ln_gamma((k + 1) as f64)
         }
     }
 }
@@ -241,7 +227,7 @@ mod tests {
         let lambda = 3.0_f64;
         let poisson_prob = lambda * (-lambda).exp();
         let expected = 0.8 * poisson_prob;
-        assert!((prob - expected).abs() < 1e-6);
+        assert!((prob - expected).abs() < 1e-9);
     }
 
     #[test]
@@ -305,7 +291,7 @@ mod tests {
         for k in 0..10 {
             let cdf = dist.cdf(Count::new(k));
             assert!(cdf >= prev_cdf);
-            assert!(cdf <= 1.0);
+            assert!(cdf <= 1.0 + 1e-9);
             prev_cdf = cdf;
         }
     }
