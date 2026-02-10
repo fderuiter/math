@@ -1,6 +1,6 @@
 //! Zero-Inflated Poisson regression implementation.
 
-use super::core::{Count, PoissonRate, ZeroInflation, ZipParams};
+use super::core::{Count, ZipParams};
 use super::distribution::ZipDistribution;
 use super::error::ZipError;
 use super::link_functions::{LogLink, LogitLink};
@@ -246,7 +246,7 @@ pub fn simple_zip_fit(counts: &[Count]) -> Result<ZipParams, ZipError> {
     };
 
     // Ensure valid parameter ranges
-    let rho_final = rho_est.max(0.0).min(0.95);
+    let rho_final = rho_est.clamp(0.0, 0.95);
     let lambda_final = lambda_adj.max(0.01);
 
     ZipParams::from_values(rho_final, lambda_final)

@@ -31,7 +31,7 @@ pub trait ProbabilityTransform {
     /// # Returns
     ///
     /// The value in the original distribution
-    fn from_uniform(&self, u: Probability) -> f64;
+    fn from_uniform_prob(&self, u: Probability) -> f64;
 }
 
 /// Standard normal (Gaussian) transformation.
@@ -75,7 +75,7 @@ impl ProbabilityTransform for NormalTransform {
         Probability::new(u)
     }
 
-    fn from_uniform(&self, u: Probability) -> f64 {
+    fn from_uniform_prob(&self, u: Probability) -> f64 {
         // Inverse CDF (quantile function)
         self.normal.inverse_cdf(u.value())
     }
@@ -152,7 +152,7 @@ mod tests {
 
         // Test inverse
         let u = Probability::new(0.5).unwrap();
-        let z = transform.from_uniform(u);
+        let z = transform.from_uniform_prob(u);
         assert_relative_eq!(z, 0.0, epsilon = 1e-6);
     }
 
@@ -195,7 +195,7 @@ mod tests {
 
         for &value in &[-2.0, -1.0, 0.0, 1.0, 2.0] {
             let u = transform.to_uniform(value).unwrap();
-            let recovered = transform.from_uniform(u);
+            let recovered = transform.from_uniform_prob(u);
             assert_relative_eq!(recovered, value, epsilon = 1e-9);
         }
     }

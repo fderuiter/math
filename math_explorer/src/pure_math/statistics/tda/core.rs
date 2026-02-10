@@ -77,11 +77,18 @@ impl PointCloud {
         let n = self.points.len();
         let mut dist = vec![vec![0.0; n]; n];
 
-        for i in 0..n {
-            for j in (i + 1)..n {
+        for (i, row) in dist.iter_mut().enumerate().take(n) {
+            for (j, val) in row.iter_mut().enumerate().take(n).skip(i + 1) {
                 let d = self.points[i].distance(&self.points[j]);
-                dist[i][j] = d;
-                dist[j][i] = d;
+                *val = d;
+            }
+        }
+
+        // Mirror the matrix
+        #[allow(clippy::needless_range_loop)]
+        for i in 0..n {
+            for j in 0..i {
+                dist[i][j] = dist[j][i];
             }
         }
 
