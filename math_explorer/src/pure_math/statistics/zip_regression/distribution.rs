@@ -238,7 +238,7 @@ mod tests {
         let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
         let prob = dist.pmf(Count::new(1));
         
-        let lambda = 3.0;
+        let lambda = 3.0_f64;
         let poisson_prob = lambda * (-lambda).exp();
         let expected = 0.8 * poisson_prob;
         assert!((prob - expected).abs() < 1e-6);
