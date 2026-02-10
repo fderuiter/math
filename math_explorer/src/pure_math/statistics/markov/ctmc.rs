@@ -1,0 +1,567 @@
+//! Continuous-Time Markov Chains (CTMC).
+//!
+//! This module implements continuous-time Markov chains, where transitions
+//! can occur at any continuous time point rather than discrete steps.
+
+use crate::pure_math::statistics::markov::error::{MarkovError, Result};
+use nalgebra::{DMatrix, DVector};
+
+/// A continuous-time Markov chain characterized by its generator matrix.
+///
+/// # Mathematical Background
+///
+/// A continuous-time Markov chain (CTMC) is characterized by a generator matrix G
+/// (also called rate matrix or infinitesimal generator) where:
+/// - G[i,j] for i ≠ j: the rate of transition from state i to state j
+/// - G[i,i] = -Σⱼ≠ᵢ G[i,j]: chosen so each row sums to 0
+///
+/// The transition probability matrix over time t is:
+/// P(t) = exp(Gt) = Σₖ₌₀^∞ (Gt)^k / k!
+///
+/// The steady-state distribution π satisfies:
+/// π·G = 0 and Σᵢ πᵢ = 1
+///
+/// # Example
+///
+/// ```rust
+/// use math_explorer::pure_math::statistics::markov::ctmc::ContinuousMarkovChain;
+/// use nalgebra::DMatrix;
+///
+/// // Two-state birth-death process
+/// // State 0 → State 1 at rate 2.0
+/// // State 1 → State 0 at rate 3.0
+/// let generator = DMatrix::from_row_slice(2, 2, &[
+///     -2.0,  2.0,
+///      3.0, -3.0,
+/// ]);
+///
+/// let chain = ContinuousMarkovChain::new(generator).unwrap();
+///
+/// // Compute transition probabilities at t=1.0
+/// let p_t = chain.transition_probabilities(1.0).unwrap();
+/// println!("P(1.0) = {:?}", p_t);
+///
+/// // Compute steady-state distribution
+/// if let Some(pi) = chain.steady_state() {
+///     println!("Steady state: {:?}", pi);
+/// }
+/// ```
+#[derive(Debug, Clone)]
+pub struct ContinuousMarkovChain {
+    /// The generator matrix G.
+    generator: DMatrix<f64>,
+    /// Number of states.
+    num_states: usize,
+}
+
+impl ContinuousMarkovChain {
+    /// Creates a new continuous-time Markov chain.
+    ///
+    /// # Arguments
+    ///
+    /// * `generator` - The generator matrix G
+    ///
+    /// # Returns
+    ///
+    /// A new `ContinuousMarkovChain` or an error if validation fails.
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidGenerator`: If the matrix is not a valid generator
+    pub fn new(generator: DMatrix<f64>) -> Result<Self> {
+        let n = generator.nrows();
+
+        if generator.ncols() != n {
+            return Err(MarkovError::DimensionMismatch {
+                expected: n,
+                actual: generator.ncols(),
+            });
+        }
+
+        Self::validate_generator(&generator)?;
+
+        Ok(ContinuousMarkovChain {
+            generator,
+            num_states: n,
+        })
+    }
+
+    /// Validates that a matrix is a valid generator.
+    ///
+    /// Requirements:
+    /// 1. Each row sums to 0 (within tolerance)
+    /// 2. Off-diagonal elements are non-negative
+    /// 3. Diagonal elements are non-positive
+    fn validate_generator(generator: &DMatrix<f64>) -> Result<()> {
+        const TOLERANCE: f64 = 1e-10;
+
+        for i in 0..generator.nrows() {
+            // Check row sum is 0
+            let row_sum: f64 = generator.row(i).iter().sum();
+            if row_sum.abs() > TOLERANCE {
+                return Err(MarkovError::InvalidGenerator {
+                    reason: format!("Row {} sums to {} instead of 0.0", i, row_sum),
+                });
+            }
+
+            // Check diagonal is non-positive
+            if generator[(i, i)] > TOLERANCE {
+                return Err(MarkovError::InvalidGenerator {
+                    reason: format!(
+                        "Diagonal element G[{},{}] = {} must be non-positive",
+                        i, i, generator[(i, i)]
+                    ),
+                });
+            }
+
+            // Check off-diagonals are non-negative
+            for j in 0..generator.ncols() {
+                if i != j {
+                    let rate = generator[(i, j)];
+                    if rate < -TOLERANCE {
+                        return Err(MarkovError::InvalidGenerator {
+                            reason: format!(
+                                "Off-diagonal element G[{},{}] = {} must be non-negative",
+                                i, j, rate
+                            ),
+                        });
+                    }
+                }
+            }
+
+            // Check all values are finite
+            for j in 0..generator.ncols() {
+                if !generator[(i, j)].is_finite() {
+                    return Err(MarkovError::InvalidGenerator {
+                        reason: format!("G[{},{}] is not finite", i, j),
+                    });
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Returns the generator matrix.
+    pub fn generator(&self) -> &DMatrix<f64> {
+        &self.generator
+    }
+
+    /// Returns the number of states.
+    pub fn num_states(&self) -> usize {
+        self.num_states
+    }
+
+    /// Computes the transition probability matrix P(t) = exp(Gt).
+    ///
+    /// # Arguments
+    ///
+    /// * `t` - Time value (must be non-negative)
+    ///
+    /// # Returns
+    ///
+    /// The transition probability matrix at time t.
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidState`: If t is negative or not finite
+    /// - `NumericalError`: If matrix exponential computation fails
+    ///
+    /// # Implementation
+    ///
+    /// Uses the scaling and squaring method with Padé approximation.
+    pub fn transition_probabilities(&self, t: f64) -> Result<DMatrix<f64>> {
+        if !t.is_finite() || t < 0.0 {
+            return Err(MarkovError::InvalidState {
+                reason: format!("Time t must be non-negative and finite, got {}", t),
+            });
+        }
+
+        if t == 0.0 {
+            return Ok(DMatrix::identity(self.num_states, self.num_states));
+        }
+
+        // Compute exp(Gt) using Padé approximation with scaling and squaring
+        let gt = &self.generator * t;
+        self.matrix_exponential(&gt)
+    }
+
+    /// Computes the matrix exponential using Padé approximation with scaling and squaring.
+    ///
+    /// This is a simplified implementation. For production use, consider using
+    /// a specialized library like `nalgebra::linalg::Exp`.
+    fn matrix_exponential(&self, a: &DMatrix<f64>) -> Result<DMatrix<f64>> {
+        let n = a.nrows();
+        
+        // Scaling: choose s such that ||A/2^s|| < 1
+        let norm = self.matrix_norm_1(a);
+        let s = if norm > 1.0 {
+            (norm.log2().ceil() as i32).max(0)
+        } else {
+            0
+        };
+        
+        let scale = 2.0_f64.powi(s);
+        let a_scaled = a / scale;
+        
+        // Padé approximation of order 6
+        let a2 = &a_scaled * &a_scaled;
+        let a4 = &a2 * &a2;
+        let a6 = &a2 * &a4;
+        
+        // Coefficients for Padé(6,6)
+        let c0 = 1.0;
+        let c1 = 0.5;
+        let c2 = 1.0 / 9.0;
+        let c3 = 1.0 / 72.0;
+        let c4 = 1.0 / 1008.0;
+        let c5 = 1.0 / 30240.0;
+        let c6 = 1.0 / 1814400.0;
+        
+        let id = DMatrix::identity(n, n);
+        
+        let u = &a_scaled * (&a6 * c6 + &a4 * c4 + &a2 * c2 + &id * c0);
+        let v = &a6 * c5 + &a4 * c3 + &a2 * c1 + &id * c0;
+        
+        // Solve (V - U)R = V + U for R
+        let lhs = v.clone() - &u;
+        let rhs = v + u;
+        
+        let r = lhs.try_inverse()
+            .ok_or_else(|| MarkovError::NumericalError {
+                reason: "Failed to invert (V-U) in Padé approximation".to_string(),
+            })? * rhs;
+        
+        // Squaring: compute R^(2^s)
+        let mut result = r;
+        for _ in 0..s {
+            result = &result * &result;
+        }
+        
+        Ok(result)
+    }
+
+    /// Computes the 1-norm of a matrix (maximum absolute column sum).
+    fn matrix_norm_1(&self, a: &DMatrix<f64>) -> f64 {
+        let mut max_sum: f64 = 0.0;
+        for j in 0..a.ncols() {
+            let col_sum: f64 = a.column(j).iter().map(|x| x.abs()).sum();
+            max_sum = max_sum.max(col_sum);
+        }
+        max_sum
+    }
+
+    /// Computes the steady-state distribution.
+    ///
+    /// # Mathematical Background
+    ///
+    /// The steady-state distribution π satisfies:
+    /// π·G = 0 and Σᵢ πᵢ = 1
+    ///
+    /// # Returns
+    ///
+    /// The steady-state distribution if it exists and converges, or None otherwise.
+    pub fn steady_state(&self) -> Option<DVector<f64>> {
+        // For irreducible CTMCs, we can find the steady state by computing
+        // the null space of G^T and normalizing.
+        
+        // Alternative approach: simulate for a long time
+        // π ≈ e^T·P(t) for large t, where e^T is any initial distribution
+        
+        const LONG_TIME: f64 = 100.0;
+        const MAX_ATTEMPTS: usize = 5;
+        
+        for attempt in 0..MAX_ATTEMPTS {
+            let t = LONG_TIME * (1 + attempt) as f64;
+            
+            if let Ok(p_t) = self.transition_probabilities(t) {
+                // Use uniform initial distribution
+                let mut pi = DVector::from_element(self.num_states, 1.0 / self.num_states as f64);
+                pi = p_t.transpose() * pi;
+                
+                // Check if it's approximately stationary
+                let pi_next = self.generator.transpose() * &pi;
+                if pi_next.norm() < 1e-6 {
+                    // Normalize to ensure exact sum to 1
+                    let sum = pi.sum();
+                    if sum > 1e-10 {
+                        pi /= sum;
+                        return Some(pi);
+                    }
+                }
+            }
+        }
+        
+        None
+    }
+
+    /// Computes the expected time to absorption from a transient state.
+    ///
+    /// For CTMCs with absorbing states, this computes the mean time until
+    /// absorption from each transient state.
+    ///
+    /// # Arguments
+    ///
+    /// * `transient_states` - Indices of transient states
+    ///
+    /// # Returns
+    ///
+    /// A vector of expected absorption times for each transient state.
+    ///
+    /// # Mathematical Background
+    ///
+    /// The expected time satisfies: Q·t = -1, where Q is the transient
+    /// submatrix of the generator.
+    pub fn expected_absorption_times(&self, transient_states: &[usize]) -> Result<DVector<f64>> {
+        let n_t = transient_states.len();
+        if n_t == 0 {
+            return Err(MarkovError::InvalidState {
+                reason: "No transient states specified".to_string(),
+            });
+        }
+
+        // Extract Q submatrix
+        let mut q = DMatrix::zeros(n_t, n_t);
+        for (i, &idx_i) in transient_states.iter().enumerate() {
+            for (j, &idx_j) in transient_states.iter().enumerate() {
+                q[(i, j)] = self.generator[(idx_i, idx_j)];
+            }
+        }
+
+        // Solve Q·t = -1
+        let ones = DVector::from_element(n_t, -1.0);
+        
+        q.try_inverse()
+            .ok_or_else(|| MarkovError::SingularMatrix {
+                context: "Cannot invert Q matrix for absorption times".to_string(),
+            })
+            .map(|q_inv| q_inv * ones)
+    }
+
+    /// Generates a sample trajectory from the continuous-time Markov chain.
+    ///
+    /// # Arguments
+    ///
+    /// * `initial_state` - Starting state
+    /// * `max_time` - Maximum simulation time
+    /// * `rng` - Random number generator
+    ///
+    /// # Returns
+    ///
+    /// A vector of (time, state) pairs representing the trajectory.
+    ///
+    /// # Algorithm
+    ///
+    /// Uses the Gillespie algorithm:
+    /// 1. In state i, the holding time is Exponential(-G[i,i])
+    /// 2. Next state is chosen with probabilities G[i,j] / (-G[i,i])
+    pub fn simulate_trajectory<R: rand::Rng>(
+        &self,
+        initial_state: usize,
+        max_time: f64,
+        rng: &mut R,
+    ) -> Result<Vec<(f64, usize)>> {
+        use rand_distr::{Distribution, Exp, WeightedIndex};
+
+        if initial_state >= self.num_states {
+            return Err(MarkovError::InvalidState {
+                reason: format!("Initial state {} out of bounds", initial_state),
+            });
+        }
+
+        let mut trajectory = vec![(0.0, initial_state)];
+        let mut current_state = initial_state;
+        let mut current_time = 0.0;
+
+        while current_time < max_time {
+            // Get rate out of current state
+            let rate = -self.generator[(current_state, current_state)];
+
+            if rate < 1e-10 {
+                // Absorbing state or very slow rate
+                break;
+            }
+
+            // Sample holding time
+            let exp_dist = Exp::new(rate).map_err(|_| MarkovError::NumericalError {
+                reason: format!("Invalid rate for exponential: {}", rate),
+            })?;
+            let holding_time: f64 = exp_dist.sample(rng);
+            current_time += holding_time;
+
+            if current_time >= max_time {
+                break;
+            }
+
+            // Sample next state
+            let mut weights = Vec::new();
+            let mut next_states = Vec::new();
+            for j in 0..self.num_states {
+                if j != current_state {
+                    let transition_rate = self.generator[(current_state, j)];
+                    if transition_rate > 1e-10 {
+                        weights.push(transition_rate);
+                        next_states.push(j);
+                    }
+                }
+            }
+
+            if weights.is_empty() {
+                // No transitions possible (shouldn't happen if rate > 0)
+                break;
+            }
+
+            let dist = WeightedIndex::new(&weights).map_err(|_| MarkovError::NumericalError {
+                reason: "Failed to create weighted distribution".to_string(),
+            })?;
+            
+            let next_idx = dist.sample(rng);
+            current_state = next_states[next_idx];
+            trajectory.push((current_time, current_state));
+        }
+
+        Ok(trajectory)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use approx::assert_relative_eq;
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
+
+    #[test]
+    fn test_two_state_birth_death() {
+        // State 0 → State 1 at rate 2.0
+        // State 1 → State 0 at rate 3.0
+        let generator = DMatrix::from_row_slice(2, 2, &[-2.0, 2.0, 3.0, -3.0]);
+
+        let chain = ContinuousMarkovChain::new(generator).unwrap();
+
+        assert_eq!(chain.num_states(), 2);
+
+        // Steady-state should be π = [3/5, 2/5]
+        let pi = chain.steady_state().unwrap();
+        assert_relative_eq!(pi[0], 0.6, epsilon = 1e-4);
+        assert_relative_eq!(pi[1], 0.4, epsilon = 1e-4);
+    }
+
+    #[test]
+    fn test_transition_probabilities() {
+        let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 1.0, -1.0]);
+
+        let chain = ContinuousMarkovChain::new(generator).unwrap();
+
+        // At t=0, P(0) should be identity
+        let p_0 = chain.transition_probabilities(0.0).unwrap();
+        assert_relative_eq!(p_0[(0, 0)], 1.0, epsilon = 1e-10);
+        assert_relative_eq!(p_0[(0, 1)], 0.0, epsilon = 1e-10);
+        assert_relative_eq!(p_0[(1, 0)], 0.0, epsilon = 1e-10);
+        assert_relative_eq!(p_0[(1, 1)], 1.0, epsilon = 1e-10);
+
+        // At t > 0, check stochasticity
+        let p_t = chain.transition_probabilities(1.0).unwrap();
+        for i in 0..2 {
+            let row_sum: f64 = p_t.row(i).iter().sum();
+            assert_relative_eq!(row_sum, 1.0, epsilon = 1e-6);
+        }
+
+        // For long time, should approach steady state
+        let p_large = chain.transition_probabilities(10.0).unwrap();
+        let pi = chain.steady_state().unwrap();
+        
+        // Each row should be approximately π
+        for i in 0..2 {
+            assert_relative_eq!(p_large[(i, 0)], pi[0], epsilon = 1e-3);
+            assert_relative_eq!(p_large[(i, 1)], pi[1], epsilon = 1e-3);
+        }
+    }
+
+    #[test]
+    fn test_simulation() {
+        let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 2.0, -2.0]);
+
+        let chain = ContinuousMarkovChain::new(generator).unwrap();
+        let mut rng = StdRng::seed_from_u64(42);
+
+        let trajectory = chain.simulate_trajectory(0, 10.0, &mut rng).unwrap();
+
+        // Check trajectory properties
+        assert!(!trajectory.is_empty());
+        assert_eq!(trajectory[0], (0.0, 0)); // Starts at state 0
+
+        // Times should be increasing
+        for i in 1..trajectory.len() {
+            assert!(trajectory[i].0 > trajectory[i - 1].0);
+        }
+
+        // All states should be valid
+        for (_, state) in &trajectory {
+            assert!(*state < 2);
+        }
+    }
+
+    #[test]
+    fn test_validation_errors() {
+        // Non-square matrix
+        let g = DMatrix::from_row_slice(2, 3, &[-1.0, 1.0, 0.0, 1.0, -1.0, 0.0]);
+        assert!(ContinuousMarkovChain::new(g).is_err());
+
+        // Rows don't sum to 0
+        let g = DMatrix::from_row_slice(2, 2, &[-1.0, 1.5, 1.0, -1.0]);
+        assert!(ContinuousMarkovChain::new(g).is_err());
+
+        // Positive diagonal
+        let g = DMatrix::from_row_slice(2, 2, &[1.0, 1.0, 1.0, -2.0]);
+        assert!(ContinuousMarkovChain::new(g).is_err());
+
+        // Negative off-diagonal
+        let g = DMatrix::from_row_slice(2, 2, &[-1.0, -1.0, 2.0, -2.0]);
+        assert!(ContinuousMarkovChain::new(g).is_err());
+    }
+
+    #[test]
+    fn test_absorption_times() {
+        // States 0, 1 are transient; state 2 is absorbing
+        let generator = DMatrix::from_row_slice(
+            3,
+            3,
+            &[
+                -2.0, 1.0, 1.0, // State 0 → 1 or 2
+                1.0, -2.0, 1.0, // State 1 → 0 or 2
+                0.0, 0.0, 0.0,   // State 2 (absorbing)
+            ],
+        );
+
+        let chain = ContinuousMarkovChain::new(generator).unwrap();
+        let transient = vec![0, 1];
+
+        let times = chain.expected_absorption_times(&transient).unwrap();
+
+        // Both transient states should have positive expected absorption times
+        assert!(times[0] > 0.0);
+        assert!(times[1] > 0.0);
+        
+        // By symmetry, they should be equal
+        assert_relative_eq!(times[0], times[1], epsilon = 1e-10);
+    }
+
+    #[test]
+    fn test_deterministic_simulation() {
+        let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 1.0, -1.0]);
+        let chain = ContinuousMarkovChain::new(generator).unwrap();
+
+        let mut rng1 = StdRng::seed_from_u64(12345);
+        let traj1 = chain.simulate_trajectory(0, 5.0, &mut rng1).unwrap();
+
+        let mut rng2 = StdRng::seed_from_u64(12345);
+        let traj2 = chain.simulate_trajectory(0, 5.0, &mut rng2).unwrap();
+
+        // Same seed should produce same trajectory
+        assert_eq!(traj1.len(), traj2.len());
+        for i in 0..traj1.len() {
+            assert_eq!(traj1[i], traj2[i]);
+        }
+    }
+}
