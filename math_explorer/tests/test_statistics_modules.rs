@@ -3,8 +3,8 @@
 #[cfg(test)]
 mod glicko2_tests {
     use math_explorer::pure_math::statistics::glicko2::{
-        update_rating, GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant,
-        Volatility,
+        GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
+        update_rating,
     };
 
     #[test]
@@ -28,14 +28,18 @@ mod glicko2_tests {
 
         // Rating should increase after winning
         assert!(updated.rating.value() > player.rating.value());
-        println!("Glicko-2: Rating changed from {} to {}", player.rating.value(), updated.rating.value());
+        println!(
+            "Glicko-2: Rating changed from {} to {}",
+            player.rating.value(),
+            updated.rating.value()
+        );
     }
 }
 
 #[cfg(test)]
 mod kelly_tests {
     use math_explorer::pure_math::statistics::kelly::{
-        expected_value, kelly_fraction, EdgeProbability, Odds,
+        EdgeProbability, Odds, expected_value, kelly_fraction,
     };
 
     #[test]
@@ -56,7 +60,7 @@ mod kelly_tests {
 #[cfg(test)]
 mod tda_tests {
     use math_explorer::pure_math::statistics::tda::{
-        betti_numbers, vietoris_rips_complex, Point2D, PointCloud,
+        Point2D, PointCloud, betti_numbers, vietoris_rips_complex,
     };
 
     #[test]

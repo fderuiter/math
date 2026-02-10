@@ -337,9 +337,8 @@ impl HiddenMarkovModel {
             for i in 0..self.num_states {
                 let mut sum = 0.0;
                 for j in 0..self.num_states {
-                    sum += self.transitions[(i, j)]
-                        * self.emissions[(j, y_next)]
-                        * beta[(j, t + 1)];
+                    sum +=
+                        self.transitions[(i, j)] * self.emissions[(j, y_next)] * beta[(j, t + 1)];
                 }
                 beta[(i, t)] = sum / scaling_factors[t];
             }
@@ -524,17 +523,19 @@ impl HiddenMarkovModel {
         let mut observations = Vec::with_capacity(length);
 
         // Sample initial state
-        let initial_dist = WeightedIndex::new(self.initial.as_slice())
-            .map_err(|_| MarkovError::NumericalError {
+        let initial_dist = WeightedIndex::new(self.initial.as_slice()).map_err(|_| {
+            MarkovError::NumericalError {
                 reason: "Failed to create initial distribution".to_string(),
-            })?;
+            }
+        })?;
         let mut current_state = initial_dist.sample(rng);
         states.push(current_state);
 
         // Sample initial observation
-        let emission_weights: Vec<f64> = self.emissions.row(current_state).iter().copied().collect();
-        let emission_dist = WeightedIndex::new(&emission_weights)
-            .map_err(|_| MarkovError::NumericalError {
+        let emission_weights: Vec<f64> =
+            self.emissions.row(current_state).iter().copied().collect();
+        let emission_dist =
+            WeightedIndex::new(&emission_weights).map_err(|_| MarkovError::NumericalError {
                 reason: "Failed to create emission distribution".to_string(),
             })?;
         observations.push(emission_dist.sample(rng));
@@ -542,23 +543,26 @@ impl HiddenMarkovModel {
         // Generate remaining sequence
         for _ in 1..length {
             // Sample next state
-            let transition_weights: Vec<f64> = self.transitions.row(current_state).iter().copied().collect();
-            let transition_dist =
-                WeightedIndex::new(&transition_weights).map_err(
-                    |_| MarkovError::NumericalError {
-                        reason: "Failed to create transition distribution".to_string(),
-                    },
-                )?;
+            let transition_weights: Vec<f64> = self
+                .transitions
+                .row(current_state)
+                .iter()
+                .copied()
+                .collect();
+            let transition_dist = WeightedIndex::new(&transition_weights).map_err(|_| {
+                MarkovError::NumericalError {
+                    reason: "Failed to create transition distribution".to_string(),
+                }
+            })?;
             current_state = transition_dist.sample(rng);
             states.push(current_state);
 
             // Sample observation
-            let emission_weights: Vec<f64> = self.emissions.row(current_state).iter().copied().collect();
+            let emission_weights: Vec<f64> =
+                self.emissions.row(current_state).iter().copied().collect();
             let emission_dist =
-                WeightedIndex::new(&emission_weights).map_err(|_| {
-                    MarkovError::NumericalError {
-                        reason: "Failed to create emission distribution".to_string(),
-                    }
+                WeightedIndex::new(&emission_weights).map_err(|_| MarkovError::NumericalError {
+                    reason: "Failed to create emission distribution".to_string(),
                 })?;
             observations.push(emission_dist.sample(rng));
         }
@@ -667,7 +671,7 @@ mod tests {
 
         // Filtering: current belief
         let posterior = hmm.filter(&observations).unwrap();
-        
+
         // After 3 makes then a miss, should still believe somewhat in hot
         assert!(posterior[1] > 0.0);
     }

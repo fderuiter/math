@@ -100,10 +100,7 @@ impl MarkovChain {
     ///
     /// - `DimensionMismatch`: If matrix size doesn't match state_types length
     /// - `NotStochastic`: If matrix rows don't sum to 1
-    pub fn new(
-        transition_matrix: DMatrix<f64>,
-        state_types: Vec<StateType>,
-    ) -> Result<Self> {
+    pub fn new(transition_matrix: DMatrix<f64>, state_types: Vec<StateType>) -> Result<Self> {
         let n = transition_matrix.nrows();
 
         // Validate dimensions
@@ -282,9 +279,11 @@ impl MarkovChain {
         let n_t = q.nrows();
         let i_minus_q = DMatrix::identity(n_t, n_t) - q;
 
-        i_minus_q.try_inverse().ok_or_else(|| MarkovError::SingularMatrix {
-            context: "Cannot invert (I - Q) for fundamental matrix".to_string(),
-        })
+        i_minus_q
+            .try_inverse()
+            .ok_or_else(|| MarkovError::SingularMatrix {
+                context: "Cannot invert (I - Q) for fundamental matrix".to_string(),
+            })
     }
 
     /// Computes absorption probabilities B = N·R.
@@ -389,12 +388,12 @@ impl MarkovChain {
         if !self.absorbing_indices.is_empty() {
             let mut pi = DVector::zeros(self.num_states());
             let n_absorbing = self.absorbing_indices.len();
-            
+
             // Each absorbing state gets equal probability
             for &idx in &self.absorbing_indices {
                 pi[idx] = 1.0 / n_absorbing as f64;
             }
-            
+
             return Some(pi);
         }
 
@@ -406,13 +405,13 @@ impl MarkovChain {
 
         for _ in 0..MAX_ITERS {
             let pi_next = self.transition_matrix.transpose() * &pi;
-            
+
             // Check convergence
             let diff = (&pi_next - &pi).norm();
             if diff < TOLERANCE {
                 return Some(pi_next);
             }
-            
+
             pi = pi_next;
         }
 
@@ -534,31 +533,31 @@ mod tests {
         );
 
         let states = vec![
-            StateType::Absorbing,  // 0
-            StateType::Transient,  // 1
-            StateType::Transient,  // 2
-            StateType::Transient,  // 3
-            StateType::Absorbing,  // 4
+            StateType::Absorbing, // 0
+            StateType::Transient, // 1
+            StateType::Transient, // 2
+            StateType::Transient, // 3
+            StateType::Absorbing, // 4
         ];
 
         let chain = MarkovChain::new(p, states).unwrap();
 
         let absorption = chain.absorption_probabilities().unwrap();
-        
+
         // absorption[i,0] = probability of reaching state 0 from transient state i
         // absorption[i,1] = probability of reaching state 4 from transient state i
-        
+
         // For symmetric random walk, probability of reaching 0 from state i is (4-i)/4
         // and probability of reaching 4 is i/4
-        
+
         // Transient state 1 (index 0 in absorption matrix)
         assert_relative_eq!(absorption[(0, 0)], 0.75, epsilon = 1e-10); // Reach 0
         assert_relative_eq!(absorption[(0, 1)], 0.25, epsilon = 1e-10); // Reach 4
-        
+
         // Transient state 2 (index 1 in absorption matrix)
         assert_relative_eq!(absorption[(1, 0)], 0.5, epsilon = 1e-10);
         assert_relative_eq!(absorption[(1, 1)], 0.5, epsilon = 1e-10);
-        
+
         // Transient state 3 (index 2 in absorption matrix)
         assert_relative_eq!(absorption[(2, 0)], 0.25, epsilon = 1e-10);
         assert_relative_eq!(absorption[(2, 1)], 0.75, epsilon = 1e-10);
@@ -595,21 +594,14 @@ mod tests {
         // EPV should be positive for both transient states
         assert!(epv[0] > 0.0);
         assert!(epv[1] > 0.0);
-        
+
         // State 1 (advantage) should have higher EPV than state 0
         assert!(epv[1] > epv[0]);
     }
 
     #[test]
     fn test_n_step_transition() {
-        let p = DMatrix::from_row_slice(
-            2,
-            2,
-            &[
-                0.7, 0.3,
-                0.4, 0.6,
-            ],
-        );
+        let p = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
 
         let states = vec![StateType::Transient, StateType::Transient];
         let chain = MarkovChain::new(p.clone(), states).unwrap();
@@ -639,14 +631,7 @@ mod tests {
     #[test]
     fn test_stationary_distribution_ergodic() {
         // Simple ergodic chain
-        let p = DMatrix::from_row_slice(
-            2,
-            2,
-            &[
-                0.7, 0.3,
-                0.4, 0.6,
-            ],
-        );
+        let p = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
 
         let states = vec![StateType::Transient, StateType::Transient];
         let chain = MarkovChain::new(p, states).unwrap();

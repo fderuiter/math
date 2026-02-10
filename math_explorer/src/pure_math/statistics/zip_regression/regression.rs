@@ -30,7 +30,7 @@ use nalgebra::{DMatrix, DVector};
 ///
 /// // Simple example with intercept-only models
 /// let counts = vec![Count::new(0), Count::new(1), Count::new(0), Count::new(2)];
-/// 
+///
 /// // Intercept-only design matrices
 /// let x = DMatrix::from_element(4, 1, 1.0);  // Count model
 /// let z = DMatrix::from_element(4, 1, 1.0);  // Zero-inflation model
@@ -217,7 +217,7 @@ pub fn simple_zip_fit(counts: &[Count]) -> Result<ZipParams, ZipError> {
     // Method of moments estimates
     // For ZIP: E[Y] = (1-ρ)λ, Var[Y] = (1-ρ)λ(1 + ρλ)
     // If we assume mean > 0, we can solve:
-    
+
     if mean <= 0.0 || variance <= 0.0 {
         // Degenerate case: all zeros
         return ZipParams::from_values(0.99, 0.01);
@@ -226,16 +226,16 @@ pub fn simple_zip_fit(counts: &[Count]) -> Result<ZipParams, ZipError> {
     // Simple method: estimate λ from mean and ρ from excess zeros
     // P(Y=0) in Poisson is e^(-λ), excess is ρ
     // prop_zeros = ρ + (1-ρ)e^(-λ)
-    
+
     // Start with Poisson estimate
     let lambda_init = mean;
     let poisson_zero_prob = (-lambda_init).exp();
-    
+
     // Estimate ρ from excess zeros
     let rho_est = if prop_zeros > poisson_zero_prob {
         (prop_zeros - poisson_zero_prob) / (1.0 - poisson_zero_prob)
     } else {
-        0.0  // No zero-inflation needed
+        0.0 // No zero-inflation needed
     };
 
     // Adjust λ based on estimated ρ
@@ -270,7 +270,7 @@ mod tests {
     #[test]
     fn test_zip_regression_dimension_mismatch() {
         let counts = vec![Count::new(0), Count::new(1), Count::new(2)];
-        let x = DMatrix::from_element(2, 1, 1.0);  // Wrong size
+        let x = DMatrix::from_element(2, 1, 1.0); // Wrong size
         let z = DMatrix::from_element(3, 1, 1.0);
 
         let model = ZipRegression::new(counts, x, z);
@@ -285,7 +285,7 @@ mod tests {
         let alpha = DVector::from_vec(vec![-1.0, 0.2]);
 
         let params = ZipRegression::predict(&x_row, &z_row, &beta, &alpha).unwrap();
-        
+
         // eta = 1.0*0.5 + 2.0*0.3 = 1.1
         // lambda = exp(1.1)
         let expected_lambda = 1.1_f64.exp();
@@ -301,12 +301,16 @@ mod tests {
     fn test_simple_zip_fit() {
         // Simulate data with known parameters
         let counts = vec![
-            Count::new(0), Count::new(0), Count::new(0),
-            Count::new(1), Count::new(2), Count::new(1),
+            Count::new(0),
+            Count::new(0),
+            Count::new(0),
+            Count::new(1),
+            Count::new(2),
+            Count::new(1),
         ];
 
         let params = simple_zip_fit(&counts).unwrap();
-        
+
         // Should estimate reasonable parameters
         assert!(params.rho.value() >= 0.0 && params.rho.value() <= 1.0);
         assert!(params.lambda.value() > 0.0);
@@ -316,7 +320,7 @@ mod tests {
     fn test_simple_zip_fit_all_zeros() {
         let counts = vec![Count::new(0), Count::new(0), Count::new(0)];
         let params = simple_zip_fit(&counts).unwrap();
-        
+
         // Should estimate high zero-inflation
         assert!(params.rho.value() > 0.5);
     }
@@ -328,12 +332,12 @@ mod tests {
         let z = DMatrix::from_element(3, 1, 1.0);
 
         let model = ZipRegression::new(counts, x, z).unwrap();
-        
+
         let beta = DVector::from_vec(vec![0.5]);
         let alpha = DVector::from_vec(vec![-1.0]);
 
         let ll = model.log_likelihood(&beta, &alpha);
-        
+
         // Log-likelihood should be finite and negative
         assert!(ll.is_finite());
         assert!(ll < 0.0);

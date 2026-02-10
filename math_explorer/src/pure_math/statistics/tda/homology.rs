@@ -127,16 +127,17 @@ pub fn betti_number_0(complex: &SimplicialComplex) -> Result<usize, TdaError> {
 ///     PointCloud, Point2D, vietoris_rips_complex, betti_number_1
 /// };
 ///
-/// // Points forming a triangle (one hole in the middle)
+/// // Points forming a square (one hole in the middle)
 /// let points = vec![
 ///     Point2D::new(0.0, 0.0),
-///     Point2D::new(2.0, 0.0),
-///     Point2D::new(1.0, 1.7),
+///     Point2D::new(1.0, 0.0),
+///     Point2D::new(1.0, 1.0),
+///     Point2D::new(0.0, 1.0),
 /// ];
 /// let cloud = PointCloud::new(points).unwrap();
 ///
-/// // Small radius: edges but no filled triangle
-/// let complex = vietoris_rips_complex(&cloud, 1.8).unwrap();
+/// // Radius 1.1 connects adjacent points (dist=1.0) but not diagonals (dist=1.414)
+/// let complex = vietoris_rips_complex(&cloud, 1.1).unwrap();
 /// let beta1 = betti_number_1(&complex).unwrap();
 /// assert_eq!(beta1, 1); // One hole
 /// ```
@@ -161,14 +162,14 @@ pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
     //
     // But we need to account for filled triangles differently.
     // Each triangle "fills" a potential hole.
-    
+
     // Simple approximation for 2D:
     // β₁ = number of cycles - number of filled regions
     // β₁ = (e - v + 1) - t for a single component
-    
+
     // More generally:
     // β₁ = e - v + β₀ - t (for simple 2D complexes)
-    
+
     if e < v {
         return Ok(0); // Not enough edges to form cycles
     }
@@ -176,14 +177,14 @@ pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
     // Euler characteristic: χ = v - e + t = β₀ - β₁
     // Solving for β₁: β₁ = v - e + t - β₀
     // But this needs correction for our specific case
-    
+
     // For a connected graph: β₁ = e - v + 1
     // For multiple components: β₁ = e - v + β₀
     // But we need to subtract filled triangles
-    
+
     // Each triangle fills one potential cycle
     // So: β₁ = (e - v + β₀) - t
-    
+
     let cycles = if e >= v { e - v + beta0 } else { 0 };
     let beta1 = if cycles > t { cycles - t } else { 0 };
 

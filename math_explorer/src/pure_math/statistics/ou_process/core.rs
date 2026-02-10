@@ -249,10 +249,10 @@ mod tests {
     fn test_ou_params_invalid() {
         // Invalid theta (negative)
         assert!(OuParams::from_values(0.5, -1.0, 0.3).is_err());
-        
+
         // Invalid sigma (negative)
         assert!(OuParams::from_values(0.5, 1.0, -0.3).is_err());
-        
+
         // Invalid mu (NaN)
         assert!(OuParams::from_values(f64::NAN, 1.0, 0.3).is_err());
     }

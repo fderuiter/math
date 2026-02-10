@@ -212,9 +212,7 @@ pub fn compute_persistence(
                 if let Some((_, birth)) = component_births.pop() {
                     if birth < radius {
                         // Only record if it has non-zero persistence
-                        barcode.add_interval(
-                            PersistenceInterval::new(birth, radius, 0).unwrap(),
-                        );
+                        barcode.add_interval(PersistenceInterval::new(birth, radius, 0).unwrap());
                     }
                 }
             }
@@ -232,9 +230,7 @@ pub fn compute_persistence(
             for _ in 0..deaths {
                 if let Some(birth) = hole_births.pop() {
                     if birth < radius {
-                        barcode.add_interval(
-                            PersistenceInterval::new(birth, radius, 1).unwrap(),
-                        );
+                        barcode.add_interval(PersistenceInterval::new(birth, radius, 1).unwrap());
                     }
                 }
             }
@@ -246,7 +242,7 @@ pub fn compute_persistence(
 
     // Handle features that persist to the end
     let final_radius = radii.last().copied().unwrap();
-    
+
     // Remaining components
     for (_, birth) in component_births {
         if birth < final_radius {
@@ -342,13 +338,10 @@ mod tests {
 
         // Should have components merging but no persistent holes
         assert!(!barcode.is_empty());
-        
+
         let holes = barcode.filter_by_dimension(1);
         // A line should not have significant holes
-        let significant_holes: Vec<_> = holes
-            .iter()
-            .filter(|h| h.is_significant(0.5))
-            .collect();
+        let significant_holes: Vec<_> = holes.iter().filter(|h| h.is_significant(0.5)).collect();
         assert_eq!(significant_holes.len(), 0);
     }
 
@@ -392,7 +385,7 @@ mod tests {
             .iter()
             .filter(|c| c.is_significant(1.0))
             .collect();
-        
+
         // At least one component should have significant persistence
         assert!(!significant_components.is_empty());
     }

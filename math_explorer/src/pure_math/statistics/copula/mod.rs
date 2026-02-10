@@ -102,5 +102,7 @@ pub mod transforms;
 
 pub use core::{Correlation, CorrelationMatrix, Probability};
 pub use error::CopulaError;
-pub use gaussian::{sgp_joint_probability, GaussianCopula};
-pub use transforms::{inverse_standard_normal, standard_normal_cdf, NormalTransform, ProbabilityTransform};
+pub use gaussian::{GaussianCopula, sgp_joint_probability};
+pub use transforms::{
+    NormalTransform, ProbabilityTransform, inverse_standard_normal, standard_normal_cdf,
+};
