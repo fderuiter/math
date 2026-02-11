@@ -3,15 +3,15 @@
 //! To run this example:
 //! `cargo run --example transformer_simple`
 
-use math_explorer::ai::transformer::{Encoder, Decoder, Transformer};
+use math_explorer::ai::transformer::{Decoder, Encoder, Transformer};
 use nalgebra::DMatrix;
 
 fn main() {
     // 1. Configure Model Parameters
-    let d_model = 64;  // Embedding dimension
-    let heads = 4;     // Number of attention heads
-    let d_ff = 128;    // Feed-forward dimension
-    let layers = 2;    // Number of layers
+    let d_model = 64; // Embedding dimension
+    let heads = 4; // Number of attention heads
+    let d_ff = 128; // Feed-forward dimension
+    let layers = 2; // Number of layers
 
     // 2. Instantiate Components
     let encoder = Encoder::new(layers, d_model, heads, d_ff);
@@ -20,10 +20,7 @@ fn main() {
     // 3. Assemble Transformer
     // Note: The Transformer struct is a container. In a real application,
     // you would also need Embeddings and Positional Encoding.
-    let transformer = Transformer {
-        encoder,
-        decoder,
-    };
+    let transformer = Transformer { encoder, decoder };
 
     println!("Transformer model assembled successfully!");
 
@@ -46,8 +43,13 @@ fn main() {
     // B. Decoder Pass
     // Decoder::forward takes `mut x: DMatrix<f64>` and `enc_output: &DMatrix`.
     println!("Running Decoder...");
-    let dec_output = transformer.decoder.forward(input_tgt, &enc_output, None, None);
+    let dec_output = transformer
+        .decoder
+        .forward(input_tgt, &enc_output, None, None);
     assert_eq!(dec_output.shape(), (seq_len, d_model));
 
-    println!("Forward pass complete. Output shape: {:?}", dec_output.shape());
+    println!(
+        "Forward pass complete. Output shape: {:?}",
+        dec_output.shape()
+    );
 }
