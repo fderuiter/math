@@ -49,6 +49,21 @@ impl Predictor {
             ConvLayer::new(128, 128),
             ConvLayer::new(128, output_size), // No activation on the final layer
         ];
+        Self::new_from_layers(layers, input_size, output_size)
+    }
+
+    /// Creates a new predictor model with custom layers.
+    ///
+    /// # Arguments
+    ///
+    /// * `layers` - A vector of convolutional layers.
+    /// * `input_size` - The dimension of the input vector.
+    /// * `output_size` - The dimension of the output vector.
+    ///
+    /// # Returns
+    ///
+    /// A new `Predictor` instance.
+    pub fn new_from_layers(layers: Vec<ConvLayer>, input_size: usize, output_size: usize) -> Self {
         Self {
             layers,
             input_size,
