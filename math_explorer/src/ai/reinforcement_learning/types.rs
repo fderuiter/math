@@ -45,3 +45,18 @@ pub trait Policy<S: State, A: Action> {
     /// Samples an action from the policy distribution for the given state.
     fn sample(&self, state: &S) -> A;
 }
+
+/// A Q-Value Function $Q(s, a)$.
+/// Represents the expected return of taking action $a$ in state $s$.
+///
+/// This trait abstracts the storage mechanism, allowing for:
+/// - Tabular storage (HashMap)
+/// - Linear Approximators
+/// - Deep Neural Networks (DQN)
+pub trait QFunction<S: State, A: Action> {
+    /// Returns the Q-value for a given state-action pair.
+    fn value(&self, state: &S, action: &A) -> f64;
+
+    /// Updates the Q-value for a given state-action pair.
+    fn update(&mut self, state: &S, action: &A, value: f64);
+}
