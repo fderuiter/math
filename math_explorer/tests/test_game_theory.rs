@@ -3,7 +3,7 @@ use math_explorer::applied::game_theory::equilibrium::{
 };
 use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
 use math_explorer::applied::game_theory::mean_field::MeanFieldGame1D;
-use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
+use math_explorer::applied::game_theory::mechanism_design::auction::OptimalAuction;
 use nalgebra::{DMatrix, DVector};
 use statrs::distribution::Uniform;
 
@@ -41,6 +41,8 @@ fn test_evolutionary_integration() {
 #[test]
 fn test_mechanism_integration() {
     let dist = Uniform::new(0.0, 1.0).unwrap();
-    let r = MechanismDesign::optimal_reserve_price(&dist, 0.0, 1.0);
+    // Using new API: OptimalAuction
+    let auction = OptimalAuction::new(&dist, 0.0, 1.0);
+    let r = auction.reserve_price;
     assert!((r - 0.5).abs() < 1e-2);
 }
