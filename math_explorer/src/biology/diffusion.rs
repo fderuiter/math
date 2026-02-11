@@ -208,17 +208,13 @@ impl SpatialDiffusion for FiniteDifference1D {
         // 1. Handle i = 0
         {
             let i = 0;
-            // Safety:
-            // 1. `n > 0` checked above, so index 0 is valid for length `n`.
-            // 2. `get_unchecked` avoids bounds checks on the hot path.
-            let u_curr = unsafe { *u.get_unchecked(i) };
-            let v_curr = unsafe { *v.get_unchecked(i) };
+            let u_curr = u[i];
+            let v_curr = v[i];
 
             let u_prev = u_curr; // Neumann BC: u_{-1} = u_0
             let v_prev = v_curr;
             let (u_next, v_next) = if n > 1 {
-                // Safety: If `n > 1`, indices 0 and 1 are valid.
-                unsafe { (*u.get_unchecked(1), *v.get_unchecked(1)) }
+                (u[1], v[1])
             } else {
                 (u_curr, v_curr)
             };
@@ -228,74 +224,56 @@ impl SpatialDiffusion for FiniteDifference1D {
 
             let (reac_u, reac_v) = reaction(u_curr, v_curr);
 
-            // Safety: Output buffers are validated to be >= n. Index i=0 is valid.
-            unsafe {
-                *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
-                *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
-            }
+            out_u[i] = u_curr + dt * (d_u * lap_u + reac_u);
+            out_v[i] = v_curr + dt * (d_v * lap_v + reac_v);
         }
 
         // 2. Handle i = 1..n-1 (Hot Path)
         if n > 2 {
-            // Optimization: Sliding Window / Register Rotation
-            // Safety:
-            // 1. We iterate `i` from `1` to `n-2` (inclusive).
-            // 2. Max index accessed is `i+1` -> `(n-2)+1 = n-1`.
-            // 3. Since buffers are length `n`, `n-1` is the last valid index.
-            // 4. `u_prev` and `u_curr` are preloaded from indices 0 and 1 (valid since n > 2).
-            unsafe {
-                let mut u_prev = *u.get_unchecked(0);
-                let mut u_curr = *u.get_unchecked(1);
-                let mut v_prev = *v.get_unchecked(0);
-                let mut v_curr = *v.get_unchecked(1);
+            // Iterate over windows of 3 elements: [prev, curr, next]
+            // We write to out starting at index 1
+            for (((win_u, win_v), o_u), o_v) in u
+                .windows(3)
+                .zip(v.windows(3))
+                .zip(out_u.iter_mut().skip(1))
+                .zip(out_v.iter_mut().skip(1))
+            {
+                let u_prev = win_u[0];
+                let u_curr = win_u[1];
+                let u_next = win_u[2];
 
-                for i in 1..n - 1 {
-                    // Safety: `i+1` <= `n-1`, which is within bounds [0, n).
-                    let u_next = *u.get_unchecked(i + 1);
-                    let v_next = *v.get_unchecked(i + 1);
-
-                    let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                    let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-
-                    let (reac_u, reac_v) = reaction(u_curr, v_curr);
-
-                    // Safety: Output buffers are validated >= n. `i` <= `n-2` is valid.
-                    *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
-                    *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
-
-                    // Shift window
-                    u_prev = u_curr;
-                    u_curr = u_next;
-                    v_prev = v_curr;
-                    v_curr = v_next;
-                }
-            }
-        }
-
-        // 3. Handle i = n-1
-        if n > 1 {
-            let i = n - 1;
-            // Safety:
-            // 1. `n > 1` implies `n >= 2`.
-            // 2. `i` is `n-1` (last index). `i-1` is `n-2` (>= 0).
-            // 3. All indices are within [0, n).
-            unsafe {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-                let u_prev = *u.get_unchecked(i - 1);
-                let v_prev = *v.get_unchecked(i - 1);
-
-                let u_next = u_curr; // Neumann BC: u_{N} = u_{N-1}
-                let v_next = v_curr;
+                let v_prev = win_v[0];
+                let v_curr = win_v[1];
+                let v_next = win_v[2];
 
                 let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                 let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
                 let (reac_u, reac_v) = reaction(u_curr, v_curr);
 
-                *out_u.get_unchecked_mut(i) = u_curr + dt * (d_u * lap_u + reac_u);
-                *out_v.get_unchecked_mut(i) = v_curr + dt * (d_v * lap_v + reac_v);
+                *o_u = u_curr + dt * (d_u * lap_u + reac_u);
+                *o_v = v_curr + dt * (d_v * lap_v + reac_v);
             }
+        }
+
+        // 3. Handle i = n-1
+        if n > 1 {
+            let i = n - 1;
+            let u_curr = u[i];
+            let v_curr = v[i];
+            let u_prev = u[i - 1];
+            let v_prev = v[i - 1];
+
+            let u_next = u_curr; // Neumann BC: u_{N} = u_{N-1}
+            let v_next = v_curr;
+
+            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+
+            let (reac_u, reac_v) = reaction(u_curr, v_curr);
+
+            out_u[i] = u_curr + dt * (d_u * lap_u + reac_u);
+            out_v[i] = v_curr + dt * (d_v * lap_v + reac_v);
         }
     }
 }
