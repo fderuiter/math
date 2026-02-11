@@ -102,6 +102,19 @@ impl Encoder {
             ConvLayer::new(64, 64),
             ConvLayer::new(64, latent_channels), // No activation on the latent layer
         ];
+        Self::new_from_layers(layers)
+    }
+
+    /// Creates a new encoder with custom layers.
+    ///
+    /// # Arguments
+    ///
+    /// * `layers` - A vector of convolutional layers.
+    ///
+    /// # Returns
+    ///
+    /// A new `Encoder`.
+    pub fn new_from_layers(layers: Vec<ConvLayer>) -> Self {
         Self { layers }
     }
 
@@ -158,6 +171,19 @@ impl Decoder {
             ConvLayer::new(64, 64),
             ConvLayer::new(64, out_channels), // No activation on the output layer
         ];
+        Self::new_from_layers(layers)
+    }
+
+    /// Creates a new decoder with custom layers.
+    ///
+    /// # Arguments
+    ///
+    /// * `layers` - A vector of convolutional layers.
+    ///
+    /// # Returns
+    ///
+    /// A new `Decoder`.
+    pub fn new_from_layers(layers: Vec<ConvLayer>) -> Self {
         Self { layers }
     }
 
@@ -213,6 +239,20 @@ impl Autoencoder {
         // The decoder's input is the encoder's output, and vice versa.
         let encoder = Encoder::new(in_channels, latent_channels);
         let decoder = Decoder::new(latent_channels, in_channels);
+        Self::new_from_components(encoder, decoder)
+    }
+
+    /// Creates a new autoencoder from existing encoder and decoder components.
+    ///
+    /// # Arguments
+    ///
+    /// * `encoder` - The encoder component.
+    /// * `decoder` - The decoder component.
+    ///
+    /// # Returns
+    ///
+    /// A new `Autoencoder`.
+    pub fn new_from_components(encoder: Encoder, decoder: Decoder) -> Self {
         Self { encoder, decoder }
     }
 

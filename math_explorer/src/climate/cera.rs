@@ -27,27 +27,12 @@ impl Cera {
     ///
     /// A result containing the new `Cera` instance or an error message.
     pub fn new(config: CeraConfig) -> Result<Self, String> {
-        if config.aligned_channels > config.latent_channels {
-            return Err(format!(
-                "aligned_channels ({}) cannot be greater than latent_channels ({})",
-                config.aligned_channels, config.latent_channels
-            ));
-        }
-        if config.aligned_channels == 0 {
-            return Err("aligned_channels must be greater than 0".to_string());
-        }
-        if config.num_levels == 0 {
-            return Err("num_levels must be greater than 0".to_string());
-        }
-
+        // Validation logic delegated to new_with_models
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         let predictor_input_size = config.num_levels * config.aligned_channels;
         let predictor = Predictor::new(predictor_input_size, config.output_size);
-        Ok(Self {
-            autoencoder: Box::new(autoencoder),
-            predictor: Box::new(predictor),
-            config,
-        })
+
+        Self::new_with_models(config, Box::new(autoencoder), Box::new(predictor))
     }
 
     /// Creates a new CERA model with a custom predictor.
@@ -64,14 +49,32 @@ impl Cera {
         config: CeraConfig,
         predictor: Box<dyn PredictorModel>,
     ) -> Result<Self, String> {
+        let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
+        Self::new_with_models(config, Box::new(autoencoder), predictor)
+    }
+
+    /// Creates a new CERA model with injected dependencies.
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The configuration struct.
+    /// * `autoencoder` - The autoencoder model.
+    /// * `predictor` - The predictor model.
+    ///
+    /// # Returns
+    ///
+    /// A result containing the new `Cera` instance or an error message.
+    pub fn new_with_models(
+        config: CeraConfig,
+        autoencoder: Box<dyn AutoencoderModel>,
+        predictor: Box<dyn PredictorModel>,
+    ) -> Result<Self, String> {
         if config.aligned_channels > config.latent_channels {
             return Err(format!(
                 "aligned_channels ({}) cannot be greater than latent_channels ({})",
                 config.aligned_channels, config.latent_channels
             ));
         }
-        // ... (Other checks omitted for brevity in this variant, but ideally shared)
-        // For strict correctness, we should validate config here too.
         if config.aligned_channels == 0 {
             return Err("aligned_channels must be greater than 0".to_string());
         }
@@ -79,9 +82,8 @@ impl Cera {
             return Err("num_levels must be greater than 0".to_string());
         }
 
-        let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         Ok(Self {
-            autoencoder: Box::new(autoencoder),
+            autoencoder,
             predictor,
             config,
         })
@@ -205,5 +207,36 @@ mod tests {
             output_size: 10,
         };
         assert!(Cera::new(config).is_err());
+    }
+
+    #[test]
+    fn test_cera_with_custom_models() {
+        let config = CeraConfig {
+            learning_rate: 0.001,
+            lambda_pred: 0.1,
+            lambda_emd: 0.01,
+            epochs: 1,
+            batch_size: 4,
+            in_channels: 2,
+            latent_channels: 3,
+            aligned_channels: 2,
+            num_levels: 30,
+            output_size: 148,
+        };
+
+        // Create custom components (using default factory for simplicity, but could be manual)
+        let encoder_layers = vec![
+            crate::climate::autoencoder::ConvLayer::new(config.in_channels, 32),
+            crate::climate::autoencoder::ConvLayer::new(32, config.latent_channels),
+        ];
+        let encoder = crate::climate::autoencoder::Encoder::new_from_layers(encoder_layers);
+        let decoder = crate::climate::autoencoder::Decoder::new(config.latent_channels, config.in_channels);
+        let autoencoder = crate::climate::autoencoder::Autoencoder::new_from_components(encoder, decoder);
+
+        let predictor_input_size = config.num_levels * config.aligned_channels;
+        let predictor = Predictor::new(predictor_input_size, config.output_size);
+
+        let cera = Cera::new_with_models(config, Box::new(autoencoder), Box::new(predictor));
+        assert!(cera.is_ok());
     }
 }
