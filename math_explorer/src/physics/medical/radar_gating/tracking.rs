@@ -27,25 +27,30 @@ impl ConstantVelocityModel {
 }
 
 impl KalmanModel for ConstantVelocityModel {
-    fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
+    fn transition_matrix(&self, dt: f64, out: &mut DMatrix<f64>) {
         // [1, dt]
         // [0, 1 ]
-        DMatrix::from_row_slice(2, 2, &[1.0, dt, 0.0, 1.0])
+        // Safety: We assume out is 2x2. If not, this panics, which is acceptable for mismatched config.
+        out[(0, 0)] = 1.0;
+        out[(0, 1)] = dt;
+        out[(1, 0)] = 0.0;
+        out[(1, 1)] = 1.0;
     }
 
-    fn measurement_matrix(&self) -> DMatrix<f64> {
+    fn measurement_matrix(&self, out: &mut DMatrix<f64>) {
         // [1, 0] -> Measure position only
-        DMatrix::from_row_slice(1, 2, &[1.0, 0.0])
+        out[(0, 0)] = 1.0;
+        out[(0, 1)] = 0.0;
     }
 
-    fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
+    fn process_noise(&self, _dt: f64, out: &mut DMatrix<f64>) {
         // Simplified Q: I * var
-        DMatrix::identity(2, 2) * self.process_noise_var
+        out.fill_diagonal(self.process_noise_var);
     }
 
-    fn measurement_noise(&self) -> DMatrix<f64> {
+    fn measurement_noise(&self, out: &mut DMatrix<f64>) {
         // R is 1x1 matrix for scalar measurement
-        DMatrix::from_row_slice(1, 1, &[self.measurement_noise_var])
+        out[(0, 0)] = self.measurement_noise_var;
     }
 }
 
