@@ -1,10 +1,13 @@
+use super::auction::OptimalAuction;
+use super::traits::ValuationDistribution;
 use crate::pure_math::analysis::roots::{AnalysisError, RootFinder};
 use rand::Rng;
-use super::traits::ValuationDistribution;
-use super::auction::OptimalAuction;
 
 /// Mechanism Design utilities.
-#[deprecated(since = "0.2.0", note = "Use `OptimalAuction` or `AuctionMechanism` instead.")]
+#[deprecated(
+    since = "0.2.0",
+    note = "Use `OptimalAuction` or `AuctionMechanism` instead."
+)]
 pub struct MechanismDesign;
 
 #[allow(deprecated)]

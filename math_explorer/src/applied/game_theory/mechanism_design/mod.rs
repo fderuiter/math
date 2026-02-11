@@ -23,11 +23,11 @@
 //! println!("Expected Revenue: {:.2}", revenue);
 //! ```
 
-pub mod traits;
 pub mod auction;
 pub mod legacy;
+pub mod traits;
 
-pub use traits::*;
 pub use auction::*;
 #[allow(deprecated)]
 pub use legacy::MechanismDesign;
+pub use traits::*;
