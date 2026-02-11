@@ -230,8 +230,10 @@ mod tests {
             crate::climate::autoencoder::ConvLayer::new(32, config.latent_channels),
         ];
         let encoder = crate::climate::autoencoder::Encoder::new_from_layers(encoder_layers);
-        let decoder = crate::climate::autoencoder::Decoder::new(config.latent_channels, config.in_channels);
-        let autoencoder = crate::climate::autoencoder::Autoencoder::new_from_components(encoder, decoder);
+        let decoder =
+            crate::climate::autoencoder::Decoder::new(config.latent_channels, config.in_channels);
+        let autoencoder =
+            crate::climate::autoencoder::Autoencoder::new_from_components(encoder, decoder);
 
         let predictor_input_size = config.num_levels * config.aligned_channels;
         let predictor = Predictor::new(predictor_input_size, config.output_size);
