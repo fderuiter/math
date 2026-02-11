@@ -1,7 +1,7 @@
+use super::q_function::TabularQFunction;
 use super::strategies::{EpsilonGreedy, ExplorationStrategy};
-use super::types::{Action, State};
+use super::types::{Action, QFunction, State};
 use rand::RngCore;
-use std::collections::HashMap;
 use std::hash::Hash;
 
 /// Q-Learning Update Rule.
@@ -17,39 +17,43 @@ pub fn q_learning_update(
     current_q + alpha * (target - current_q)
 }
 
-/// Simple Tabular Q-Agent for discrete states and actions.
-pub struct TabularQAgent<S, A>
+/// A generic Q-Learning Agent using the Strategy Pattern for Q-Function storage.
+///
+/// This agent is decoupled from the storage mechanism, allowing for:
+/// - Tabular storage (via `TabularQFunction`)
+/// - Function Approximation (e.g., Linear, Neural Networks)
+pub struct QLearningAgent<S, A, Q>
 where
-    S: State + Hash + Eq,
-    A: Action + Hash + Eq,
+    S: State,
+    A: Action,
+    Q: QFunction<S, A>,
 {
-    q_table: HashMap<(S, A), f64>,
+    pub q_func: Q,
     learning_rate: f64,
     discount_factor: f64,
     strategy: Box<dyn ExplorationStrategy<S, A>>,
 }
 
-impl<S, A> TabularQAgent<S, A>
-where
-    S: State + Hash + Eq + Copy,
-    A: Action + Hash + Eq + Copy,
-{
-    pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
-        Self {
-            q_table: HashMap::new(),
-            learning_rate,
-            discount_factor,
-            strategy: Box::new(EpsilonGreedy::new(epsilon)),
-        }
-    }
+/// Legacy alias for the Tabular Q-Learning Agent.
+///
+/// This preserves backward compatibility for existing code using `TabularQAgent`.
+pub type TabularQAgent<S, A> = QLearningAgent<S, A, TabularQFunction<S, A>>;
 
-    pub fn new_with_strategy(
+impl<S, A, Q> QLearningAgent<S, A, Q>
+where
+    S: State,
+    A: Action,
+    Q: QFunction<S, A>,
+{
+    /// Creates a new generic Q-Learning agent.
+    pub fn new_generic(
+        q_func: Q,
         learning_rate: f64,
         discount_factor: f64,
         strategy: Box<dyn ExplorationStrategy<S, A>>,
     ) -> Self {
         Self {
-            q_table: HashMap::new(),
+            q_func,
             learning_rate,
             discount_factor,
             strategy,
@@ -57,7 +61,7 @@ where
     }
 
     pub fn get_q_value(&self, state: &S, action: &A) -> f64 {
-        *self.q_table.get(&(*state, *action)).unwrap_or(&0.0)
+        self.q_func.value(state, action)
     }
 
     pub fn update(
@@ -94,7 +98,7 @@ where
             self.discount_factor,
         );
 
-        self.q_table.insert((*state, *action), new_q);
+        self.q_func.update(state, action, new_q);
     }
 
     /// Selects an action using the injected strategy.
@@ -112,7 +116,6 @@ where
         available_actions: &[A],
         rng: &mut dyn RngCore,
     ) -> Option<A> {
-        // Pre-calculate Q-values
         let q_values: Vec<f64> = available_actions
             .iter()
             .map(|a| self.get_q_value(state, a))
@@ -120,6 +123,37 @@ where
 
         self.strategy
             .select_action(state, available_actions, &q_values, rng)
+    }
+}
+
+// Backward compatibility implementation for TabularQAgent
+impl<S, A> QLearningAgent<S, A, TabularQFunction<S, A>>
+where
+    S: State + Hash + Eq,
+    A: Action + Hash + Eq,
+{
+    /// Creates a new Tabular Q-Agent.
+    pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
+        Self {
+            q_func: TabularQFunction::new(),
+            learning_rate,
+            discount_factor,
+            strategy: Box::new(EpsilonGreedy::new(epsilon)),
+        }
+    }
+
+    /// Creates a new Tabular Q-Agent with a custom exploration strategy.
+    pub fn new_with_strategy(
+        learning_rate: f64,
+        discount_factor: f64,
+        strategy: Box<dyn ExplorationStrategy<S, A>>,
+    ) -> Self {
+        Self {
+            q_func: TabularQFunction::new(),
+            learning_rate,
+            discount_factor,
+            strategy,
+        }
     }
 }
 
