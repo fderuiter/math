@@ -50,7 +50,10 @@ where
         // It's easier to clone the key for lookup if S and A are cheap (Copy).
         // If not, we might incur overhead.
         // For TabularQFunction, we assume S and A are relatively small keys.
-        *self.table.get(&(state.clone(), action.clone())).unwrap_or(&0.0)
+        *self
+            .table
+            .get(&(state.clone(), action.clone()))
+            .unwrap_or(&0.0)
     }
 
     fn update(&mut self, state: &S, action: &A, value: f64) {
