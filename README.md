@@ -1,6 +1,6 @@
 # Math Explorer
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![License](https://img.shields.io/badge/license-AGPL-blue.svg)
 ![Language](https://img.shields.io/badge/language-Rust-orange.svg)
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![Maintenance](https://img.shields.io/badge/maintained%3F-yes-brightgreen.svg)
