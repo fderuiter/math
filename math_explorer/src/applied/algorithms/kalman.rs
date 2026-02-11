@@ -20,17 +20,17 @@ use nalgebra::{DMatrix, DVector};
 /// - $w_k \sim N(0, Q_k)$: Process Noise
 /// - $v_k \sim N(0, R_k)$: Measurement Noise
 pub trait KalmanModel {
-    /// Writes the State Transition Matrix ($F_k$) of size $(n \times n)$ into `out`.
-    fn transition_matrix(&self, dt: f64, out: &mut DMatrix<f64>);
+    /// Returns the State Transition Matrix ($F_k$) of size $(n \times n)$.
+    fn transition_matrix(&self, dt: f64) -> DMatrix<f64>;
 
-    /// Writes the Measurement Matrix ($H_k$) of size $(m \times n)$ into `out`.
-    fn measurement_matrix(&self, out: &mut DMatrix<f64>);
+    /// Returns the Measurement Matrix ($H_k$) of size $(m \times n)$.
+    fn measurement_matrix(&self) -> DMatrix<f64>;
 
-    /// Writes the Process Noise Covariance ($Q_k$) of size $(n \times n)$ into `out`.
-    fn process_noise(&self, dt: f64, out: &mut DMatrix<f64>);
+    /// Returns the Process Noise Covariance ($Q_k$) of size $(n \times n)$.
+    fn process_noise(&self, dt: f64) -> DMatrix<f64>;
 
-    /// Writes the Measurement Noise Covariance ($R_k$) of size $(m \times m)$ into `out`.
-    fn measurement_noise(&self, out: &mut DMatrix<f64>);
+    /// Returns the Measurement Noise Covariance ($R_k$) of size $(m \times m)$.
+    fn measurement_noise(&self) -> DMatrix<f64>;
 }
 
 /// Defines a generalized Kalman System (Linear or Non-Linear).
@@ -53,73 +53,47 @@ pub trait KalmanSystem {
     /// # Arguments
     /// * `state` - The current state estimate $\hat{x}_{k-1|k-1}$.
     /// * `dt` - The time step $\Delta t$.
-    /// * `out_state` - Buffer to write the predicted state $\hat{x}_{k|k-1}$.
-    /// * `out_jacobian` - Buffer to write the transition Jacobian $F_k$.
-    fn predict_state(&self, state: &DVector<f64>, out_state: &mut DVector<f64>, out_jacobian: &mut DMatrix<f64>, dt: f64);
+    ///
+    /// # Returns
+    /// A tuple `(predicted_state, transition_jacobian)`.
+    fn predict_state(&self, state: &DVector<f64>, dt: f64) -> (DVector<f64>, DMatrix<f64>);
 
     /// Predicts the measurement $z_k$ and returns the measurement Jacobian $H_k$.
     ///
     /// # Arguments
     /// * `state` - The predicted state estimate $\hat{x}_{k|k-1}$.
-    /// * `out_measurement` - Buffer to write the predicted measurement $z_k$.
-    /// * `out_jacobian` - Buffer to write the measurement Jacobian $H_k$.
-    fn predict_measurement(&self, state: &DVector<f64>, out_measurement: &mut DVector<f64>, out_jacobian: &mut DMatrix<f64>);
+    ///
+    /// # Returns
+    /// A tuple `(predicted_measurement, measurement_jacobian)`.
+    fn predict_measurement(&self, state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>);
 
-    /// Writes the Process Noise Covariance $Q_k$ into `out_noise`.
-    fn process_noise(&self, dt: f64, out_noise: &mut DMatrix<f64>);
+    /// Returns the Process Noise Covariance $Q_k$.
+    fn process_noise(&self, dt: f64) -> DMatrix<f64>;
 
-    /// Writes the Measurement Noise Covariance $R_k$ into `out_noise`.
-    fn measurement_noise(&self, out_noise: &mut DMatrix<f64>);
+    /// Returns the Measurement Noise Covariance $R_k$.
+    fn measurement_noise(&self) -> DMatrix<f64>;
 }
 
 impl<T: KalmanModel> KalmanSystem for T {
-    fn predict_state(&self, state: &DVector<f64>, out_state: &mut DVector<f64>, out_jacobian: &mut DMatrix<f64>, dt: f64) {
-        // F = transition_matrix(dt)
-        self.transition_matrix(dt, out_jacobian);
-
-        // x_pred = F * state
-        // Optimize: use mul_to to avoid allocation
-        out_jacobian.mul_to(state, out_state);
+    fn predict_state(&self, state: &DVector<f64>, dt: f64) -> (DVector<f64>, DMatrix<f64>) {
+        let f = self.transition_matrix(dt);
+        let x_pred = &f * state;
+        (x_pred, f)
     }
 
-    fn predict_measurement(&self, state: &DVector<f64>, out_measurement: &mut DVector<f64>, out_jacobian: &mut DMatrix<f64>) {
-        // H = measurement_matrix()
-        self.measurement_matrix(out_jacobian);
-
-        // z_pred = H * state
-        out_jacobian.mul_to(state, out_measurement);
+    fn predict_measurement(&self, state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
+        let h = self.measurement_matrix();
+        let z_pred = &h * state;
+        (z_pred, h)
     }
 
-    fn process_noise(&self, dt: f64, out_noise: &mut DMatrix<f64>) {
-        KalmanModel::process_noise(self, dt, out_noise);
+    fn process_noise(&self, dt: f64) -> DMatrix<f64> {
+        KalmanModel::process_noise(self, dt)
     }
 
-    fn measurement_noise(&self, out_noise: &mut DMatrix<f64>) {
-        KalmanModel::measurement_noise(self, out_noise);
+    fn measurement_noise(&self) -> DMatrix<f64> {
+        KalmanModel::measurement_noise(self)
     }
-}
-
-/// Internal buffers for State Prediction (size n).
-#[derive(Debug, Clone)]
-struct KalmanStateBuffers {
-    x_pred: DVector<f64>,
-    f: DMatrix<f64>,
-    q: DMatrix<f64>,
-    temp_nn_1: DMatrix<f64>, // For F*P, I-KH
-    temp_nn_2: DMatrix<f64>, // For F*P*F^T, (I-KH)*P
-}
-
-/// Internal buffers for Measurement Update (size m).
-#[derive(Debug, Clone)]
-struct KalmanMeasurementBuffers {
-    z_pred: DVector<f64>,
-    h: DMatrix<f64>,
-    r: DMatrix<f64>,
-    y: DVector<f64>,
-    s: DMatrix<f64>,
-    k: DMatrix<f64>,
-    temp_mn: DMatrix<f64>, // For H*P
-    temp_nm: DMatrix<f64>, // For P*H^T
 }
 
 /// A generic Discrete Kalman Filter.
@@ -136,10 +110,6 @@ pub struct KalmanFilter<M: KalmanSystem> {
     pub model: M,
     /// Time step for the filter (if fixed).
     pub dt: f64,
-
-    // Internal Buffers
-    buffers: KalmanStateBuffers,
-    meas_buffers: Option<KalmanMeasurementBuffers>,
 }
 
 impl<M: KalmanSystem> KalmanFilter<M> {
@@ -157,22 +127,11 @@ impl<M: KalmanSystem> KalmanFilter<M> {
         model: M,
         dt: f64,
     ) -> Self {
-        let n = initial_state.len();
-        let buffers = KalmanStateBuffers {
-            x_pred: DVector::zeros(n),
-            f: DMatrix::zeros(n, n),
-            q: DMatrix::zeros(n, n),
-            temp_nn_1: DMatrix::zeros(n, n),
-            temp_nn_2: DMatrix::zeros(n, n),
-        };
-
         Self {
             state: initial_state,
             covariance: initial_covariance,
             model,
             dt,
-            buffers,
-            meas_buffers: None,
         }
     }
 
@@ -183,32 +142,12 @@ impl<M: KalmanSystem> KalmanFilter<M> {
     /// $$ \hat{x}_{k|k-1} = f(\hat{x}_{k-1|k-1}) $$
     /// $$ P_{k|k-1} = F_k P_{k-1|k-1} F_k^T + Q_k $$
     pub fn predict(&mut self) {
-        let b = &mut self.buffers;
+        // Generalized Prediction
+        let (x_pred, f) = self.model.predict_state(&self.state, self.dt);
+        let q = self.model.process_noise(self.dt);
 
-        // 1. Predict State x_{k|k-1} and Jacobian F_k
-        // Writes to b.x_pred and b.f
-        self.model.predict_state(&self.state, &mut b.x_pred, &mut b.f, self.dt);
-
-        // 2. Get Process Noise Q_k
-        // Writes to b.q
-        self.model.process_noise(self.dt, &mut b.q);
-
-        // 3. Update State Estimate
-        // x = x_pred
-        self.state.copy_from(&b.x_pred);
-
-        // 4. Update Covariance P = F P F^T + Q
-
-        // temp1 = F * P
-        b.f.mul_to(&self.covariance, &mut b.temp_nn_1);
-
-        // temp2 = temp1 * F^T = (F * P) * F^T
-        b.temp_nn_1.mul_to(&b.f.transpose(), &mut b.temp_nn_2);
-
-        // P = temp2 + Q
-        // We can do this by copying temp2 to P and adding Q
-        self.covariance.copy_from(&b.temp_nn_2);
-        self.covariance += &b.q;
+        self.state = x_pred;
+        self.covariance = &f * &self.covariance * f.transpose() + q;
     }
 
     /// Performs the **Update Step** with a new measurement.
@@ -225,81 +164,32 @@ impl<M: KalmanSystem> KalmanFilter<M> {
     ///
     /// * `measurement` - The measurement vector $z_k$.
     pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), String> {
-        let m = measurement.len();
-        let n = self.state.len();
+        // Generalized Update
+        let (z_pred, h) = self.model.predict_measurement(&self.state);
+        let r = self.model.measurement_noise();
 
-        // Ensure measurement buffers are initialized and correct size
-        if self.meas_buffers.is_none() || self.meas_buffers.as_ref().unwrap().z_pred.len() != m {
-             self.meas_buffers = Some(KalmanMeasurementBuffers {
-                z_pred: DVector::zeros(m),
-                h: DMatrix::zeros(m, n),
-                r: DMatrix::zeros(m, m),
-                y: DVector::zeros(m),
-                s: DMatrix::zeros(m, m),
-                k: DMatrix::zeros(n, m),
-                temp_mn: DMatrix::zeros(m, n),
-                temp_nm: DMatrix::zeros(n, m),
-            });
-        }
+        // Innovation
+        let y = measurement - z_pred;
 
-        // Unwrap is safe because we just set it
-        let mb = self.meas_buffers.as_mut().unwrap();
-        let sb = &mut self.buffers;
+        // Innovation Covariance S = H P H^T + R
+        let s = &h * &self.covariance * h.transpose() + r;
 
-        // 1. Predict Measurement z_pred and Jacobian H
-        self.model.predict_measurement(&self.state, &mut mb.z_pred, &mut mb.h);
+        // Invert S.
+        // For 1D measurements, this is trivial. For nD, we need matrix inversion.
+        // Kalman Filter requires S to be invertible (positive definite).
+        let s_inv = s
+            .try_inverse()
+            .ok_or("Failed to invert innovation covariance matrix (singular)")?;
 
-        // 2. Get Measurement Noise R
-        self.model.measurement_noise(&mut mb.r);
+        // Kalman Gain K = P H^T S^-1
+        let k = &self.covariance * h.transpose() * s_inv;
 
-        // 3. Innovation y = z - z_pred
-        // y = measurement - z_pred
-        measurement.sub_to(&mb.z_pred, &mut mb.y);
+        // Update State
+        self.state = &self.state + &k * y;
 
-        // 4. Innovation Covariance S = H P H^T + R
-
-        // temp_mn = H * P
-        mb.h.mul_to(&self.covariance, &mut mb.temp_mn);
-
-        // S = temp_mn * H^T = (H * P) * H^T
-        mb.temp_mn.mul_to(&mb.h.transpose(), &mut mb.s);
-
-        // S += R
-        mb.s += &mb.r;
-
-        // 5. Invert S
-        // In-place inversion to avoid allocation
-        if !mb.s.try_inverse_mut() {
-             return Err("Failed to invert innovation covariance matrix (singular)".to_string());
-        }
-        // Now mb.s contains S^-1
-
-        // 6. Kalman Gain K = P H^T S^-1
-
-        // temp_nm = P * H^T = (H * P)^T = temp_mn^T
-        // We already computed temp_mn = H * P.
-        mb.temp_mn.transpose_to(&mut mb.temp_nm);
-
-        // K = temp_nm * s_inv (where s_inv is now stored in mb.s)
-        mb.temp_nm.mul_to(&mb.s, &mut mb.k);
-
-        // 7. Update State x = x + K * y
-        // reuse sb.x_pred as temporary buffer for K * y (size n)
-        mb.k.mul_to(&mb.y, &mut sb.x_pred);
-        self.state += &sb.x_pred;
-
-        // 8. Update Covariance P = (I - K H) P
-        // P = P - K H P
-        // We have K. We have H. We have P.
-        // K * H is (n x n).
-        // (K * H) * P is (n x n).
-
-        // Let's calculate K * (H * P). We have H * P in temp_mn.
-        // temp_nn_1 = K * temp_mn
-        mb.k.mul_to(&mb.temp_mn, &mut sb.temp_nn_1);
-
-        // P = P - temp_nn_1
-        self.covariance -= &sb.temp_nn_1;
+        // Update Covariance P = (I - K H) P
+        let identity = DMatrix::identity(self.state.len(), self.state.len());
+        self.covariance = (identity - &k * &h) * &self.covariance;
 
         Ok(())
     }
@@ -316,24 +206,20 @@ mod tests {
     }
 
     impl KalmanModel for MockCvModel {
-        fn transition_matrix(&self, dt: f64, out: &mut DMatrix<f64>) {
+        fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
             // [1, dt]
             // [0, 1]
-            out[(0, 0)] = 1.0;
-            out[(0, 1)] = dt;
-            out[(1, 0)] = 0.0;
-            out[(1, 1)] = 1.0;
+            DMatrix::from_row_slice(2, 2, &[1.0, dt, 0.0, 1.0])
         }
-        fn measurement_matrix(&self, out: &mut DMatrix<f64>) {
+        fn measurement_matrix(&self) -> DMatrix<f64> {
             // [1, 0]
-            out[(0, 0)] = 1.0;
-            out[(0, 1)] = 0.0;
+            DMatrix::from_row_slice(1, 2, &[1.0, 0.0])
         }
-        fn process_noise(&self, _dt: f64, out: &mut DMatrix<f64>) {
-            out.fill_diagonal(self.process_noise);
+        fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
+            DMatrix::identity(2, 2) * self.process_noise
         }
-        fn measurement_noise(&self, out: &mut DMatrix<f64>) {
-            out[(0, 0)] = self.measurement_noise;
+        fn measurement_noise(&self) -> DMatrix<f64> {
+            DMatrix::from_element(1, 1, self.measurement_noise)
         }
     }
 
@@ -366,35 +252,37 @@ mod tests {
             fn predict_state(
                 &self,
                 state: &DVector<f64>,
-                out_state: &mut DVector<f64>,
-                out_jacobian: &mut DMatrix<f64>,
                 _dt: f64,
-            ) {
+            ) -> (DVector<f64>, DMatrix<f64>) {
                 let x = state[0];
                 let x_pred = x.sqrt();
                 // Derivative of sqrt(x) is 1 / (2 * sqrt(x))
                 let f_jacobian = 0.5 / x.sqrt();
 
-                out_state[0] = x_pred;
-                out_jacobian[(0, 0)] = f_jacobian;
+                (
+                    DVector::from_element(1, x_pred),
+                    DMatrix::from_element(1, 1, f_jacobian),
+                )
             }
 
-            fn predict_measurement(&self, state: &DVector<f64>, out_measurement: &mut DVector<f64>, out_jacobian: &mut DMatrix<f64>) {
+            fn predict_measurement(&self, state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
                 let x = state[0];
                 let z_pred = x.powi(2);
                 // Derivative of x^2 is 2x
                 let h_jacobian = 2.0 * x;
 
-                out_measurement[0] = z_pred;
-                out_jacobian[(0, 0)] = h_jacobian;
+                (
+                    DVector::from_element(1, z_pred),
+                    DMatrix::from_element(1, 1, h_jacobian),
+                )
             }
 
-            fn process_noise(&self, _dt: f64, out_noise: &mut DMatrix<f64>) {
-                out_noise[(0, 0)] = 0.1;
+            fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
+                DMatrix::from_element(1, 1, 0.1)
             }
 
-            fn measurement_noise(&self, out_noise: &mut DMatrix<f64>) {
-                out_noise[(0, 0)] = 0.1;
+            fn measurement_noise(&self) -> DMatrix<f64> {
+                DMatrix::from_element(1, 1, 0.1)
             }
         }
 

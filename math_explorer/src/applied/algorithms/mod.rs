@@ -41,28 +41,24 @@
 //! }
 //!
 //! impl KalmanModel for ConstantVelocityModel {
-//!     fn transition_matrix(&self, dt: f64, out: &mut DMatrix<f64>) {
+//!     fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
 //!         // State = [pos, vel]
 //!         // pos_k = pos_{k-1} + vel_{k-1} * dt
 //!         // vel_k = vel_{k-1}
-//!         out[(0, 0)] = 1.0;
-//!         out[(0, 1)] = dt;
-//!         out[(1, 0)] = 0.0;
-//!         out[(1, 1)] = 1.0;
+//!         DMatrix::from_row_slice(2, 2, &[1.0, dt, 0.0, 1.0])
 //!     }
 //!
-//!     fn measurement_matrix(&self, out: &mut DMatrix<f64>) {
+//!     fn measurement_matrix(&self) -> DMatrix<f64> {
 //!         // We only measure position: z_k = [1, 0] * state_k
-//!         out[(0, 0)] = 1.0;
-//!         out[(0, 1)] = 0.0;
+//!         DMatrix::from_row_slice(1, 2, &[1.0, 0.0])
 //!     }
 //!
-//!     fn process_noise(&self, _dt: f64, out: &mut DMatrix<f64>) {
-//!         out.fill_diagonal(self.process_noise);
+//!     fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
+//!         DMatrix::identity(2, 2) * self.process_noise
 //!     }
 //!
-//!     fn measurement_noise(&self, out: &mut DMatrix<f64>) {
-//!         out[(0, 0)] = self.measurement_noise;
+//!     fn measurement_noise(&self) -> DMatrix<f64> {
+//!         DMatrix::from_element(1, 1, self.measurement_noise)
 //!     }
 //! }
 //!
