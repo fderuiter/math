@@ -26,8 +26,16 @@ fn test_diffusion_apply_step_safe() {
     // out_u[1] = 2 + 0.01 * (0.1*0 + 0.2) = 2.002.
     // out_v[1] = 9 + 0.01 * (0.2*0 - 0.9) = 8.991.
 
-    assert!((out_u[1] - 2.002).abs() < 1e-6, "out_u[1] mismatch: {}", out_u[1]);
-    assert!((out_v[1] - 8.991).abs() < 1e-6, "out_v[1] mismatch: {}", out_v[1]);
+    assert!(
+        (out_u[1] - 2.002).abs() < 1e-6,
+        "out_u[1] mismatch: {}",
+        out_u[1]
+    );
+    assert!(
+        (out_v[1] - 8.991).abs() < 1e-6,
+        "out_v[1] mismatch: {}",
+        out_v[1]
+    );
 
     // Check boundary i=0
     // u[-1]=u[0]=1. u[1]=2. Lap = (2 - 2*1 + 1) = 1.
@@ -36,6 +44,14 @@ fn test_diffusion_apply_step_safe() {
     // out_u[0] = 1 + 0.01 * (0.1*1 + 0.1) = 1 + 0.01*0.2 = 1.002.
     // out_v[0] = 10 + 0.01 * (0.2*(-1) - 1.0) = 10 + 0.01*(-1.2) = 9.988.
 
-    assert!((out_u[0] - 1.002).abs() < 1e-6, "out_u[0] mismatch: {}", out_u[0]);
-    assert!((out_v[0] - 9.988).abs() < 1e-6, "out_v[0] mismatch: {}", out_v[0]);
+    assert!(
+        (out_u[0] - 1.002).abs() < 1e-6,
+        "out_u[0] mismatch: {}",
+        out_u[0]
+    );
+    assert!(
+        (out_v[0] - 9.988).abs() < 1e-6,
+        "out_v[0] mismatch: {}",
+        out_v[0]
+    );
 }
