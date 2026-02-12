@@ -26,6 +26,7 @@
 //! - **Cellular**: [`neuroscience`] - Hodgkin-Huxley model for action potentials.
 //! - **Tissue**: [`morphogenesis`] - Turing reaction-diffusion systems for pattern formation.
 //! - **Population**: [`evolution`] - Evolutionary game theory (Hawk-Dove).
+//! - **Generic**: [`reaction_diffusion`] - Generic N-species reaction-diffusion framework.
 
 /// Michaelis-Menten enzyme kinetics.
 pub mod kinetics;
@@ -41,3 +42,6 @@ pub mod diffusion;
 
 /// Evolutionary game theory models.
 pub mod evolution;
+
+/// Generic reaction-diffusion framework.
+pub mod reaction_diffusion;
