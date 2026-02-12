@@ -56,7 +56,11 @@ impl Add for ChemicalState {
     type Output = Self;
 
     fn add(mut self, rhs: Self) -> Self {
-        for (s, r) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+        for (s, r) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
             for (val, r_val) in s.iter_mut().zip(r.iter()) {
                 *val += r_val;
             }
@@ -67,7 +71,11 @@ impl Add for ChemicalState {
 
 impl AddAssign for ChemicalState {
     fn add_assign(&mut self, rhs: Self) {
-        for (s, r) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+        for (s, r) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
             for (val, r_val) in s.iter_mut().zip(r.iter()) {
                 *val += r_val;
             }
@@ -100,7 +108,11 @@ impl MulAssign<f64> for ChemicalState {
 
 impl VectorOperations for ChemicalState {
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (s, r) in self.concentrations.iter_mut().zip(other.concentrations.iter()) {
+        for (s, r) in self
+            .concentrations
+            .iter_mut()
+            .zip(other.concentrations.iter())
+        {
             for (val, r_val) in s.iter_mut().zip(r.iter()) {
                 *val += r_val * scale;
             }
@@ -113,7 +125,11 @@ impl VectorOperations for ChemicalState {
             self.concentrations = other.concentrations.clone();
             return;
         }
-        for (s, r) in self.concentrations.iter_mut().zip(other.concentrations.iter()) {
+        for (s, r) in self
+            .concentrations
+            .iter_mut()
+            .zip(other.concentrations.iter())
+        {
             s.copy_from_slice(r);
         }
     }
@@ -173,7 +189,8 @@ pub trait DiffusionModel {
             for s in 0..n_species {
                 let diff_term = out.concentrations[s][i];
                 let reac_term = local_rates[s];
-                out.concentrations[s][i] = state.concentrations[s][i] + dt * (diff_term + reac_term);
+                out.concentrations[s][i] =
+                    state.concentrations[s][i] + dt * (diff_term + reac_term);
             }
         }
     }
@@ -219,7 +236,9 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
     }
 }
 
-impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState> for ReactionDiffusionSystem<R, D> {
+impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
+    for ReactionDiffusionSystem<R, D>
+{
     fn derivative(&self, _t: f64, state: &ChemicalState) -> ChemicalState {
         let mut out = ChemicalState::new(state.num_species(), state.grid_size());
         self.derivative_in_place(_t, state, &mut out);
