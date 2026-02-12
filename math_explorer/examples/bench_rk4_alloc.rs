@@ -1,6 +1,6 @@
 use math_explorer::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
-use std::time::Instant;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
+use std::time::Instant;
 
 #[derive(Clone, Debug)]
 struct SimpleState {
@@ -9,7 +9,9 @@ struct SimpleState {
 
 impl SimpleState {
     fn new(size: usize) -> Self {
-        Self { data: vec![0.0; size] }
+        Self {
+            data: vec![0.0; size],
+        }
     }
 }
 
@@ -92,7 +94,9 @@ impl TimeStepper<SimpleState> for BenchmarkSystem {
 fn main() {
     let size = 10000;
     let mut system = BenchmarkSystem {
-        state: SimpleState { data: vec![1.0; size] },
+        state: SimpleState {
+            data: vec![1.0; size],
+        },
     };
 
     // Warmup
