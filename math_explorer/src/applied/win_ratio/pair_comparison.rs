@@ -103,7 +103,11 @@ impl<T> WinRatioAnalysis<T> {
         // Zip the outcomes with the strategies.
         // If there are more outcomes than strategies, the extra outcomes are ignored (or we could panic/error).
         // If there are fewer outcomes, we stop early.
-        let limit = self.strategies.len().min(subject1.len()).min(subject2.len());
+        let limit = self
+            .strategies
+            .len()
+            .min(subject1.len())
+            .min(subject2.len());
 
         for i in 0..limit {
             let res = self.strategies[i].compare(&subject1[i], &subject2[i]);
