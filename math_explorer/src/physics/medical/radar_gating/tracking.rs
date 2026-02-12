@@ -83,9 +83,13 @@ impl TrackingFilter {
         // Optimization: Use from_column_slice to avoid extra allocation if vector was larger,
         // though here we just need a 1-element vector. from_element is cleaner.
         let measurement = DVector::from_element(1, measured_amplitude);
-        // Unwrap logic: In this controlled domain (scalar update), inversion should rarely fail given R > 0.
-        // If it fails, we simply skip the update (robustness).
-        let _ = self.inner.update(&measurement);
+        // Error handling: In this controlled domain (scalar update), inversion should rarely fail given R > 0.
+        // If it fails (KalmanError::MatrixInversionError), we simply skip the update to maintain robustness
+        // rather than crashing the real-time tracking loop.
+        if let Err(e) = self.inner.update(&measurement) {
+            // In a real system, we might log this: warn!("Kalman update failed: {:?}", e);
+            let _ = e;
+        }
     }
 
     /// Returns the current estimated amplitude (position).

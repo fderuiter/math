@@ -4,6 +4,13 @@
 //! This module allows for state estimation of linear systems with arbitrary state and measurement dimensions.
 
 use nalgebra::{DMatrix, DVector};
+use thiserror::Error;
+
+#[derive(Error, Debug, PartialEq)]
+pub enum KalmanError {
+    #[error("Failed to invert innovation covariance matrix (singular)")]
+    MatrixInversionError,
+}
 
 /// Defines the physics/dynamics model for the Kalman Filter.
 ///
@@ -163,7 +170,7 @@ impl<M: KalmanSystem> KalmanFilter<M> {
     /// # Arguments
     ///
     /// * `measurement` - The measurement vector $z_k$.
-    pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), String> {
+    pub fn update(&mut self, measurement: &DVector<f64>) -> Result<(), KalmanError> {
         // Generalized Update
         let (z_pred, h) = self.model.predict_measurement(&self.state);
         let r = self.model.measurement_noise();
@@ -179,7 +186,7 @@ impl<M: KalmanSystem> KalmanFilter<M> {
         // Kalman Filter requires S to be invertible (positive definite).
         let s_inv = s
             .try_inverse()
-            .ok_or("Failed to invert innovation covariance matrix (singular)")?;
+            .ok_or(KalmanError::MatrixInversionError)?;
 
         // Kalman Gain K = P H^T S^-1
         let k = &self.covariance * h.transpose() * s_inv;
@@ -308,5 +315,36 @@ mod tests {
             "Update step diverged: {}",
             kf.state[0]
         );
+    }
+
+    #[test]
+    fn test_singular_covariance_error() {
+        // Create a model where measurement noise R is zero and H is zero, leading to singular S.
+        // S = HPH' + R. If H=0 and R=0, S=0, which is singular.
+        struct SingularModel;
+        impl KalmanSystem for SingularModel {
+            fn predict_state(&self, state: &DVector<f64>, _dt: f64) -> (DVector<f64>, DMatrix<f64>) {
+                (state.clone(), DMatrix::identity(1, 1))
+            }
+            fn predict_measurement(&self, _state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
+                (DVector::from_element(1, 0.0), DMatrix::zeros(1, 1)) // H = 0
+            }
+            fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
+                 DMatrix::zeros(1, 1)
+            }
+            fn measurement_noise(&self) -> DMatrix<f64> {
+                 DMatrix::zeros(1, 1) // R = 0
+            }
+        }
+
+        let mut kf = KalmanFilter::new(
+            DVector::from_element(1, 0.0),
+            DMatrix::identity(1, 1),
+            SingularModel,
+            1.0
+        );
+        let measurement = DVector::from_element(1, 1.0);
+        let result = kf.update(&measurement);
+        assert_eq!(result, Err(KalmanError::MatrixInversionError));
     }
 }

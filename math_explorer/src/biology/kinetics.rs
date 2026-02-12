@@ -7,15 +7,26 @@
 //! * **Michaelis-Menten**: $v = \frac{V_{max}[S]}{K_m + [S]}$
 //! * **Hill Kinetics**: $v = \frac{V_{max}[S]^n}{K_m^n + [S]^n}$
 
+use thiserror::Error;
+
+#[derive(Error, Debug, PartialEq)]
+pub enum KineticsError {
+    #[error("Substrate concentration cannot be negative")]
+    NegativeSubstrateConcentration,
+    #[error("Parameters must be non-negative")]
+    InvalidParameters,
+}
+
 /// Defines the interface for kinetic models.
 pub trait KineticsModel {
     /// Calculates the reaction velocity for a given substrate concentration $[S]$.
-    fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, String>;
+    fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError>;
 }
 
 /// Represents an enzymatic reaction following Michaelis-Menten kinetics.
 ///
 /// $$ v = \frac{V_{max}[S]}{K_m + [S]} $$
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MichaelisMenten {
     /// Maximum reaction rate ($V_{max}$).
     pub v_max: f64,
@@ -25,9 +36,9 @@ pub struct MichaelisMenten {
 
 impl MichaelisMenten {
     /// Creates a new MichaelisMenten model with given parameters.
-    pub fn new(v_max: f64, k_m: f64) -> Result<Self, String> {
+    pub fn new(v_max: f64, k_m: f64) -> Result<Self, KineticsError> {
         if v_max < 0.0 || k_m < 0.0 {
-            return Err("Parameters V_max and K_m must be non-negative.".to_string());
+            return Err(KineticsError::InvalidParameters);
         }
         Ok(Self { v_max, k_m })
     }
@@ -35,15 +46,15 @@ impl MichaelisMenten {
     /// Calculates the reaction velocity (Legacy wrapper).
     ///
     /// Delegates to `KineticsModel` implementation.
-    pub fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, String> {
+    pub fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError> {
         <Self as KineticsModel>::reaction_velocity(self, substrate_conc)
     }
 }
 
 impl KineticsModel for MichaelisMenten {
-    fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, String> {
+    fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError> {
         if substrate_conc < 0.0 {
-            return Err("Substrate concentration cannot be negative.".to_string());
+            return Err(KineticsError::NegativeSubstrateConcentration);
         }
         let denominator = self.k_m + substrate_conc;
         if denominator == 0.0 {
@@ -56,6 +67,7 @@ impl KineticsModel for MichaelisMenten {
 /// Represents an enzymatic reaction following Hill kinetics (cooperative binding).
 ///
 /// $$ v = \frac{V_{max}[S]^n}{K_m^n + [S]^n} $$
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct HillKinetics {
     /// Maximum reaction rate ($V_{max}$).
     pub v_max: f64,
@@ -67,18 +79,18 @@ pub struct HillKinetics {
 
 impl HillKinetics {
     /// Creates a new HillKinetics model.
-    pub fn new(v_max: f64, k_m: f64, n: f64) -> Result<Self, String> {
+    pub fn new(v_max: f64, k_m: f64, n: f64) -> Result<Self, KineticsError> {
         if v_max < 0.0 || k_m < 0.0 || n < 0.0 {
-            return Err("Parameters V_max, K_m, and n must be non-negative.".to_string());
+            return Err(KineticsError::InvalidParameters);
         }
         Ok(Self { v_max, k_m, n })
     }
 }
 
 impl KineticsModel for HillKinetics {
-    fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, String> {
+    fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError> {
         if substrate_conc < 0.0 {
-            return Err("Substrate concentration cannot be negative.".to_string());
+            return Err(KineticsError::NegativeSubstrateConcentration);
         }
         let s_n = substrate_conc.powf(self.n);
         let k_n = self.k_m.powf(self.n);
@@ -141,5 +153,23 @@ mod tests {
 
         assert!(v_hill_high > v_mm_high);
         assert!((v_hill_high - 80.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_error_handling() {
+        assert_eq!(
+            MichaelisMenten::new(-1.0, 50.0).unwrap_err(),
+            KineticsError::InvalidParameters
+        );
+        assert_eq!(
+            HillKinetics::new(100.0, -50.0, 1.0).unwrap_err(),
+            KineticsError::InvalidParameters
+        );
+
+        let mm = MichaelisMenten::new(100.0, 50.0).unwrap();
+        assert_eq!(
+            mm.reaction_velocity(-10.0).unwrap_err(),
+            KineticsError::NegativeSubstrateConcentration
+        );
     }
 }
