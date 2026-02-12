@@ -18,9 +18,13 @@ pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
         // tracks time internally if needed, hence passing 0.0 as time.
         // For strictly time-dependent systems, `step` might need to track `t`.
         // However, existing models pass 0.0, so we preserve that behavior.
-        let current_state = self.get_state().clone();
-        // Use generic parameter State to call the static method on the generic struct
-        let new_state = RungeKutta4::<State>::step(self, 0.0, &current_state, dt);
+
+        // Optimization: Avoid cloning the state before passing it to the solver.
+        // We pass the immutable reference directly. The solver will clone internally as needed for buffers.
+        let new_state = {
+            let current_state = self.get_state();
+            RungeKutta4::<State>::step(self, 0.0, current_state, dt)
+        };
         *self.get_state_mut() = new_state;
     }
 
