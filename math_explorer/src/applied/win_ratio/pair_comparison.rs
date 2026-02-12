@@ -1,36 +1,172 @@
 use statrs::distribution::{ContinuousCDF, Normal};
+use std::marker::PhantomData;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ComparisonResult {
     Win,
     Loss,
     Tie,
 }
 
+/// Defines how to compare two outcomes of type T.
+pub trait OutcomeComparator<T: ?Sized> {
+    fn compare(&self, a: &T, b: &T) -> ComparisonResult;
+}
+
+/// Strategy: Higher value is better (e.g., survival time, quality of life score).
+///
+/// If `a > b`, outcome `a` is a Win.
+pub struct HigherIsBetter;
+
+impl<T: PartialOrd> OutcomeComparator<T> for HigherIsBetter {
+    fn compare(&self, a: &T, b: &T) -> ComparisonResult {
+        if a > b {
+            ComparisonResult::Win
+        } else if a < b {
+            ComparisonResult::Loss
+        } else {
+            ComparisonResult::Tie
+        }
+    }
+}
+
+/// Strategy: Lower value is better (e.g., number of hospitalizations, symptom severity).
+///
+/// If `a < b`, outcome `a` is a Win.
+pub struct LowerIsBetter;
+
+impl<T: PartialOrd> OutcomeComparator<T> for LowerIsBetter {
+    fn compare(&self, a: &T, b: &T) -> ComparisonResult {
+        if a < b {
+            ComparisonResult::Win
+        } else if a > b {
+            ComparisonResult::Loss
+        } else {
+            ComparisonResult::Tie
+        }
+    }
+}
+
+/// Strategy: Higher value is better, but only if the difference exceeds a threshold.
+///
+/// If `a - b > threshold`, outcome `a` is a Win.
+/// This is useful when small differences are considered clinically negligible (ties).
+///
+/// Note: This strategy requires `T` to be `f64` (or convertible).
+pub struct ThresholdComparator {
+    pub threshold: f64,
+}
+
+impl ThresholdComparator {
+    pub fn new(threshold: f64) -> Self {
+        Self { threshold }
+    }
+}
+
+impl OutcomeComparator<f64> for ThresholdComparator {
+    fn compare(&self, a: &f64, b: &f64) -> ComparisonResult {
+        if a - b > self.threshold {
+            ComparisonResult::Win
+        } else if b - a > self.threshold {
+            ComparisonResult::Loss
+        } else {
+            ComparisonResult::Tie
+        }
+    }
+}
+
+/// Analysis context for hierarchical Win Ratio comparisons.
+///
+/// Allows configuring a specific comparison strategy for each outcome level in the hierarchy.
+pub struct WinRatioAnalysis<T> {
+    strategies: Vec<Box<dyn OutcomeComparator<T>>>,
+    _marker: PhantomData<T>,
+}
+
+impl<T> WinRatioAnalysis<T> {
+    /// Creates a new analysis with no strategies.
+    pub fn new() -> Self {
+        Self {
+            strategies: Vec::new(),
+            _marker: PhantomData,
+        }
+    }
+
+    /// Adds a comparison strategy for the next outcome level.
+    pub fn add_strategy(mut self, strategy: Box<dyn OutcomeComparator<T>>) -> Self {
+        self.strategies.push(strategy);
+        self
+    }
+
+    /// Compares two subjects outcome-by-outcome using the configured strategies.
+    pub fn compare_subjects(&self, subject1: &[T], subject2: &[T]) -> ComparisonResult {
+        // Zip the outcomes with the strategies.
+        // If there are more outcomes than strategies, the extra outcomes are ignored (or we could panic/error).
+        // If there are fewer outcomes, we stop early.
+        let limit = self.strategies.len().min(subject1.len()).min(subject2.len());
+
+        for i in 0..limit {
+            let res = self.strategies[i].compare(&subject1[i], &subject2[i]);
+            if res != ComparisonResult::Tie {
+                return res;
+            }
+        }
+        ComparisonResult::Tie
+    }
+
+    /// Performs an Unmatched Pair comparison (All-Pairs).
+    pub fn unmatched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
+        let mut wins = 0;
+        let mut losses = 0;
+        for subj1 in group1 {
+            for subj2 in group2 {
+                match self.compare_subjects(subj1, subj2) {
+                    ComparisonResult::Win => wins += 1,
+                    ComparisonResult::Loss => losses += 1,
+                    ComparisonResult::Tie => (),
+                }
+            }
+        }
+        (wins, losses)
+    }
+
+    /// Performs a Matched Pair comparison.
+    pub fn matched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
+        assert_eq!(
+            group1.len(),
+            group2.len(),
+            "Groups must be of equal length for matched pairs."
+        );
+        let mut wins = 0;
+        let mut losses = 0;
+        for (subj1, subj2) in group1.iter().zip(group2.iter()) {
+            match self.compare_subjects(subj1, subj2) {
+                ComparisonResult::Win => wins += 1,
+                ComparisonResult::Loss => losses += 1,
+                ComparisonResult::Tie => (),
+            }
+        }
+        (wins, losses)
+    }
+}
+
+impl<T: PartialOrd + 'static> Default for WinRatioAnalysis<T> {
+    fn default() -> Self {
+        // Default behavior mimics the old `compare_outcomes`: HigherIsBetter for everything.
+        // However, since we don't know how many levels there are, we can't pre-populate.
+        // So the default behavior here is technically "No comparison".
+        // To truly mimic `compare_outcomes`, we need a strategy that applies to ALL levels dynamically,
+        // but our struct stores a `Vec` of strategies per level.
+        // So `Default` here is just an empty analysis.
+        Self::new()
+    }
+}
+
 /// Compares two subjects outcome-by-outcome based on a hierarchy of events.
 ///
-/// This function iterates through the outcomes provided for two subjects. The `outcomes`
-/// slices must be ordered by clinical priority (e.g., [Death, Heart Failure, QoL]).
-///
-/// # Logic
-///
-/// 1. Compare the first outcome (Highest Priority).
-/// 2. If `subject1 > subject2` (Outcome 1 is better for subject 1), return `Win`.
-/// 3. If `subject1 < subject2`, return `Loss`.
-/// 4. If they are equal (Tie), move to the next outcome.
-/// 5. If all outcomes are tied, return `Tie`.
-///
-/// # Arguments
-///
-/// * `subject1` - A slice of outcomes for the first subject (e.g., Treatment Group).
-/// * `subject2` - A slice of outcomes for the second subject (e.g., Control Group).
-///
-/// # Type Constraints
-///
-/// The outcomes `T` must implement `PartialOrd`.
-/// Note: Ensure that "Higher" means "Better" for the comparison to be intuitive.
-/// For example, "Days to Death" (Higher is Better) vs "Hospitalization Count" (Lower is Better).
-/// You should invert negative outcomes before passing them here so they align directionally.
+/// **DEPRECATED**: Use `WinRatioAnalysis` for more flexibility.
+/// This function assumes "Higher is Better" for all outcomes.
+#[deprecated(note = "Use WinRatioAnalysis to configure comparison strategies per outcome.")]
 pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> ComparisonResult {
     for (outcome1, outcome2) in subject1.iter().zip(subject2.iter()) {
         if outcome1 > outcome2 {
@@ -44,22 +180,15 @@ pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> Compar
 
 /// Performs an Unmatched Pair comparison (All-Pairs).
 ///
-/// Compares every subject in `group1` against every subject in `group2`.
-/// This is an $O(N \times M)$ operation.
-///
-/// # Arguments
-///
-/// * `group1` - A list of subjects (each subject is a list of outcomes) for the first group.
-/// * `group2` - A list of subjects for the second group.
-///
-/// # Returns
-///
-/// A tuple `(wins, losses)` representing the total number of wins and losses for `group1`.
+/// **DEPRECATED**: Use `WinRatioAnalysis::unmatched_pairs`.
+#[deprecated(note = "Use WinRatioAnalysis::unmatched_pairs.")]
 pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
     let mut wins = 0;
     let mut losses = 0;
     for subj1 in group1 {
         for subj2 in group2 {
+            // Suppress deprecation warning for internal use
+            #[allow(deprecated)]
             match compare_outcomes(subj1, subj2) {
                 ComparisonResult::Win => wins += 1,
                 ComparisonResult::Loss => losses += 1,
@@ -72,12 +201,8 @@ pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (
 
 /// Performs a Matched Pair comparison.
 ///
-/// Compares `group1[i]` against `group2[i]`. Useful for studies with matched cohorts
-/// (e.g., twin studies or propensity score matching).
-///
-/// # Panics
-///
-/// Panics if the groups have different lengths.
+/// **DEPRECATED**: Use `WinRatioAnalysis::matched_pairs`.
+#[deprecated(note = "Use WinRatioAnalysis::matched_pairs.")]
 pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
     assert_eq!(
         group1.len(),
@@ -87,6 +212,7 @@ pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i3
     let mut wins = 0;
     let mut losses = 0;
     for (subj1, subj2) in group1.iter().zip(group2.iter()) {
+        #[allow(deprecated)]
         match compare_outcomes(subj1, subj2) {
             ComparisonResult::Win => wins += 1,
             ComparisonResult::Loss => losses += 1,
@@ -145,10 +271,6 @@ pub fn calculate_statistics(wins: i32, losses: i32) -> Option<WinRatioStats> {
     let se = (p_win * (1.0 - p_win) / total_pairs as f64).sqrt();
 
     if se == 0.0 {
-        // This can happen if all pairs are wins or all are losses.
-        // In this case, the confidence interval is not well-defined in this formulation.
-        // The p-value would be very small, but the z-score is infinite.
-        // We can return a result indicating this edge case.
         let win_ratio = calculate_win_ratio(wins, losses);
         return Some(WinRatioStats {
             win_ratio,
@@ -158,14 +280,11 @@ pub fn calculate_statistics(wins: i32, losses: i32) -> Option<WinRatioStats> {
             } else {
                 win_ratio
             },
-            p_value: 0.0, // Or a very small number, depending on interpretation.
+            p_value: 0.0,
         });
     }
 
     let ci_low_p = (p_win - 1.96 * se).max(0.0);
-    // Clamp the upper bound to slightly less than 1.0 to avoid division by zero
-    // or negative results when converting to ratio.
-    // If the upper bound of p is 1, the ratio upper bound is infinity.
     let ci_high_p = (p_win + 1.96 * se).min(1.0);
 
     let ci_low = if ci_low_p == 1.0 {
