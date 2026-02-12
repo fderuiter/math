@@ -90,8 +90,48 @@ impl<State> RungeKutta4<State> {
         State: VectorOperations,
         S: OdeSystem<State> + ?Sized,
     {
-        let mut solver = Self::default();
-        solver.solve(system, t, state, dt)
+        // Optimization: Avoid constructing a full `RungeKutta4` struct and delegating to `solve`.
+        // Instead, implement the RK4 logic directly here using minimal allocations.
+        // We only need 3 buffers: y_new (accumulator), k (derivative), tmp (argument).
+        // We avoid allocating `initial_state` by using the immutable `state` argument directly.
+
+        // 1. Allocate output state (y_new) initialized with y_n
+        let mut y_new = state.clone();
+
+        // 2. Allocate k and tmp buffers
+        let mut k = state.clone();
+        let mut tmp = state.clone();
+
+        // k1 = f(t, y)
+        system.derivative_in_place(t, state, &mut k);
+        // y_new += k1 * dt/6
+        y_new.scale_add(&k, dt / 6.0);
+
+        // k2 = f(t + dt/2, y + k1 * dt/2)
+        // tmp = y + k1 * dt/2
+        tmp.copy_from(state);
+        tmp.scale_add(&k, dt / 2.0);
+        system.derivative_in_place(t + dt / 2.0, &tmp, &mut k);
+        // y_new += k2 * dt/3
+        y_new.scale_add(&k, dt / 3.0);
+
+        // k3 = f(t + dt/2, y + k2 * dt/2)
+        // tmp = y + k2 * dt/2
+        tmp.copy_from(state);
+        tmp.scale_add(&k, dt / 2.0);
+        system.derivative_in_place(t + dt / 2.0, &tmp, &mut k);
+        // y_new += k3 * dt/3
+        y_new.scale_add(&k, dt / 3.0);
+
+        // k4 = f(t + dt, y + k3 * dt)
+        // tmp = y + k3 * dt
+        tmp.copy_from(state);
+        tmp.scale_add(&k, dt);
+        system.derivative_in_place(t + dt, &tmp, &mut k);
+        // y_new += k4 * dt/6
+        y_new.scale_add(&k, dt / 6.0);
+
+        y_new
     }
 }
 
