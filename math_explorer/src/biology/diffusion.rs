@@ -3,6 +3,8 @@
 //! This module provides strategies for computing the spatial diffusion term $D \nabla^2 u$
 //! in reaction-diffusion systems.
 
+use crate::biology::reaction_diffusion::{ChemicalState, DiffusionModel};
+
 /// Defines a strategy for computing spatial diffusion.
 pub trait SpatialDiffusion {
     /// Applies the diffusion operator to the state vectors.
@@ -97,6 +99,53 @@ impl FiniteDifference1D {
     /// Creates a new 1D finite difference strategy.
     pub fn new(dx: f64) -> Self {
         Self { dx }
+    }
+}
+
+impl DiffusionModel for FiniteDifference1D {
+    fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]) {
+        let n_species = state.num_species();
+        let n_grid = state.grid_size();
+
+        if n_grid == 0 {
+            return;
+        }
+
+        let dx_sq = self.dx * self.dx;
+        let inv_dx_sq = 1.0 / dx_sq;
+
+        for s in 0..n_species {
+            let u = &state.concentrations[s];
+            let out_u = &mut out.concentrations[s];
+            let d = coeffs[s];
+
+            // 1. Left Boundary (i=0)
+            {
+                let u_curr = u[0];
+                let u_prev = u_curr;
+                let u_next = if n_grid > 1 { u[1] } else { u_curr };
+                out_u[0] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            }
+
+            // 2. Interior
+            if n_grid > 2 {
+                for i in 1..n_grid - 1 {
+                    let u_prev = u[i - 1];
+                    let u_curr = u[i];
+                    let u_next = u[i + 1];
+                    out_u[i] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                }
+            }
+
+            // 3. Right Boundary (i=n-1)
+            if n_grid > 1 {
+                let i = n_grid - 1;
+                let u_curr = u[i];
+                let u_prev = u[i - 1];
+                let u_next = u_curr;
+                out_u[i] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            }
+        }
     }
 }
 

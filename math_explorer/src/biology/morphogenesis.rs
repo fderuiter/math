@@ -62,6 +62,7 @@
 //! ```
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
+use crate::biology::reaction_diffusion::ReactionModel;
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
@@ -118,6 +119,19 @@ impl ReactionKinetics for SchnakenbergKinetics {
         let reaction_u = self.a - u + uv_sq;
         let reaction_v = self.b - uv_sq;
         (reaction_u, reaction_v)
+    }
+}
+
+impl ReactionModel for SchnakenbergKinetics {
+    fn reaction(&self, concentrations: &[f64], rates: &mut [f64]) {
+        if concentrations.len() < 2 || rates.len() < 2 {
+            return;
+        }
+        let u = concentrations[0];
+        let v = concentrations[1];
+        let (du, dv) = <Self as ReactionKinetics>::reaction(self, u, v);
+        rates[0] = du;
+        rates[1] = dv;
     }
 }
 
