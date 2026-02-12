@@ -177,8 +177,8 @@ pub trait DiffusionModel {
 
         for i in 0..n_grid {
             // Gather local state
-            for s in 0..n_species {
-                local_concs[s] = state.concentrations[s][i];
+            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
+                *conc = state.concentrations[s][i];
             }
 
             // Compute reaction
@@ -186,11 +186,10 @@ pub trait DiffusionModel {
 
             // Update state: out[s][i] currently holds diffusion term.
             // New state = old_state + dt * (diffusion + reaction)
-            for s in 0..n_species {
+            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
                 let diff_term = out.concentrations[s][i];
-                let reac_term = local_rates[s];
-                out.concentrations[s][i] =
-                    state.concentrations[s][i] + dt * (diff_term + reac_term);
+                let reac_term = *rate;
+                out.concentrations[s][i] = state.concentrations[s][i] + dt * (diff_term + reac_term);
             }
         }
     }
@@ -256,14 +255,14 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
         let mut local_rates = vec![0.0; n_species];
 
         for i in 0..n_grid {
-            for s in 0..n_species {
-                local_concs[s] = state.concentrations[s][i];
+            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
+                *conc = state.concentrations[s][i];
             }
 
             self.reaction.reaction(&local_concs, &mut local_rates);
 
-            for s in 0..n_species {
-                out.concentrations[s][i] += local_rates[s];
+            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
+                out.concentrations[s][i] += *rate;
             }
         }
     }

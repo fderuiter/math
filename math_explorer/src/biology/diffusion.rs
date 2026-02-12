@@ -3,8 +3,6 @@
 //! This module provides strategies for computing the spatial diffusion term $D \nabla^2 u$
 //! in reaction-diffusion systems.
 
-use crate::biology::reaction_diffusion::{ChemicalState, DiffusionModel};
-
 /// Defines a strategy for computing spatial diffusion.
 pub trait SpatialDiffusion {
     /// Applies the diffusion operator to the state vectors.
@@ -102,8 +100,13 @@ impl FiniteDifference1D {
     }
 }
 
-impl DiffusionModel for FiniteDifference1D {
-    fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]) {
+impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
+    fn apply(
+        &self,
+        state: &crate::biology::reaction_diffusion::ChemicalState,
+        out: &mut crate::biology::reaction_diffusion::ChemicalState,
+        coeffs: &[f64],
+    ) {
         let n_species = state.num_species();
         let n_grid = state.grid_size();
 
@@ -114,10 +117,10 @@ impl DiffusionModel for FiniteDifference1D {
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
-        for s in 0..n_species {
+        for (s, d) in coeffs.iter().enumerate().take(n_species) {
             let u = &state.concentrations[s];
             let out_u = &mut out.concentrations[s];
-            let d = coeffs[s];
+            let d = *d;
 
             // 1. Left Boundary (i=0)
             {
