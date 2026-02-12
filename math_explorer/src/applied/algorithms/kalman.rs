@@ -184,9 +184,7 @@ impl<M: KalmanSystem> KalmanFilter<M> {
         // Invert S.
         // For 1D measurements, this is trivial. For nD, we need matrix inversion.
         // Kalman Filter requires S to be invertible (positive definite).
-        let s_inv = s
-            .try_inverse()
-            .ok_or(KalmanError::MatrixInversionError)?;
+        let s_inv = s.try_inverse().ok_or(KalmanError::MatrixInversionError)?;
 
         // Kalman Gain K = P H^T S^-1
         let k = &self.covariance * h.transpose() * s_inv;
@@ -323,17 +321,21 @@ mod tests {
         // S = HPH' + R. If H=0 and R=0, S=0, which is singular.
         struct SingularModel;
         impl KalmanSystem for SingularModel {
-            fn predict_state(&self, state: &DVector<f64>, _dt: f64) -> (DVector<f64>, DMatrix<f64>) {
+            fn predict_state(
+                &self,
+                state: &DVector<f64>,
+                _dt: f64,
+            ) -> (DVector<f64>, DMatrix<f64>) {
                 (state.clone(), DMatrix::identity(1, 1))
             }
             fn predict_measurement(&self, _state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
                 (DVector::from_element(1, 0.0), DMatrix::zeros(1, 1)) // H = 0
             }
             fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
-                 DMatrix::zeros(1, 1)
+                DMatrix::zeros(1, 1)
             }
             fn measurement_noise(&self) -> DMatrix<f64> {
-                 DMatrix::zeros(1, 1) // R = 0
+                DMatrix::zeros(1, 1) // R = 0
             }
         }
 
@@ -341,7 +343,7 @@ mod tests {
             DVector::from_element(1, 0.0),
             DMatrix::identity(1, 1),
             SingularModel,
-            1.0
+            1.0,
         );
         let measurement = DVector::from_element(1, 1.0);
         let result = kf.update(&measurement);
