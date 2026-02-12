@@ -189,7 +189,8 @@ pub trait DiffusionModel {
             for (s, rate) in local_rates.iter().enumerate().take(n_species) {
                 let diff_term = out.concentrations[s][i];
                 let reac_term = *rate;
-                out.concentrations[s][i] = state.concentrations[s][i] + dt * (diff_term + reac_term);
+                out.concentrations[s][i] =
+                    state.concentrations[s][i] + dt * (diff_term + reac_term);
             }
         }
     }
