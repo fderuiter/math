@@ -70,12 +70,9 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
         time_horizon: f64,
         dt: f64,
     ) -> Vec<(f64, DVector<f64>)> {
-        self.simulate_with_strategy(
-            initial_population,
-            time_horizon,
-            dt,
-            &mut RungeKutta4::default(),
-        )
+        // Create a solver initialized with the structure of the population vector
+        let mut solver = RungeKutta4::new(&initial_population);
+        self.simulate_with_strategy(initial_population, time_horizon, dt, &mut solver)
     }
 
     /// Simulates the dynamics over time using a provided **Solver** strategy.
