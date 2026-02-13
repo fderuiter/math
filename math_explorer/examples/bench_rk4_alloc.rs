@@ -34,7 +34,12 @@ impl VectorOperations for SimpleState {
         if self.data.len() != source.data.len() {
             self.data.resize(source.data.len(), 0.0);
         }
-        for ((dst, src), oth) in self.data.iter_mut().zip(source.data.iter()).zip(other.data.iter()) {
+        for ((dst, src), oth) in self
+            .data
+            .iter_mut()
+            .zip(source.data.iter())
+            .zip(other.data.iter())
+        {
             *dst = *src + *oth * scale;
         }
     }
