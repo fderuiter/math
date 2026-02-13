@@ -10,7 +10,9 @@ use thiserror::Error;
 pub enum KalmanError {
     #[error("Failed to invert innovation covariance matrix (singular)")]
     MatrixInversionError,
-    #[error("Dimension mismatch: state size {state_size} does not match covariance dimensions {cov_rows}x{cov_cols}")]
+    #[error(
+        "Dimension mismatch: state size {state_size} does not match covariance dimensions {cov_rows}x{cov_cols}"
+    )]
     DimensionMismatch {
         state_size: usize,
         cov_rows: usize,
