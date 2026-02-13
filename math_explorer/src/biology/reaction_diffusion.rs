@@ -154,7 +154,6 @@ pub trait DiffusionModel {
     /// * `out`: Output buffer for the diffusion term (D * Laplacian).
     /// * `coeffs`: Diffusion coefficients for each species.
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
-
 }
 
 /// Defines a strategy for time integration of the Reaction-Diffusion system.
