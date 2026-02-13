@@ -154,45 +154,69 @@ pub trait DiffusionModel {
     /// * `out`: Output buffer for the diffusion term (D * Laplacian).
     /// * `coeffs`: Diffusion coefficients for each species.
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
+}
 
-    /// Applies a full time step (Diffusion + Reaction).
-    ///
-    /// Can be overridden for fused-loop optimizations.
-    fn apply_step<R: ReactionModel>(
-        &self,
-        state: &ChemicalState,
-        out: &mut ChemicalState,
-        coeffs: &[f64],
-        reaction: &R,
+/// Defines a strategy for time integration of the Reaction-Diffusion system.
+pub trait ReactionDiffusionSolver {
+    /// Advances the system by a time step `dt`.
+    fn step<R: ReactionModel, D: DiffusionModel>(
+        &mut self,
+        system: &mut ReactionDiffusionSystem<R, D>,
+        dt: f64,
+    );
+}
+
+/// A standard Forward Euler solver.
+///
+/// This solver separates the diffusion and reaction steps, prioritizing
+/// architectural cleanliness (SRP) over fused-loop optimizations.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct ForwardEuler;
+
+impl ReactionDiffusionSolver for ForwardEuler {
+    fn step<R: ReactionModel, D: DiffusionModel>(
+        &mut self,
+        system: &mut ReactionDiffusionSystem<R, D>,
         dt: f64,
     ) {
-        // Default implementation: calculate diffusion, then add reaction
-        self.apply(state, out, coeffs);
+        let state = &system.state;
+        let next_state = &mut system.next_state;
+        let coeffs = &system.diffusion_coeffs;
+
+        // 1. Compute Diffusion (writes D * Laplacian to next_state)
+        system.diffusion.apply(state, next_state, coeffs);
+
+        // 2. Compute Reaction and Update
+        // next_state = state + dt * (diffusion_term + reaction_term)
+        // Currently next_state holds `diffusion_term`.
 
         let n_species = state.num_species();
         let n_grid = state.grid_size();
-
         let mut local_concs = vec![0.0; n_species];
         let mut local_rates = vec![0.0; n_species];
 
         for i in 0..n_grid {
-            // Gather local state
+            // Read local concentrations
             for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
                 *conc = state.concentrations[s][i];
             }
 
-            // Compute reaction
-            reaction.reaction(&local_concs, &mut local_rates);
+            // Compute reaction rates
+            system.reaction.reaction(&local_concs, &mut local_rates);
 
-            // Update state: out[s][i] currently holds diffusion term.
-            // New state = old_state + dt * (diffusion + reaction)
+            // Update state
             for (s, rate) in local_rates.iter().enumerate().take(n_species) {
-                let diff_term = out.concentrations[s][i];
+                let diff_term = next_state.concentrations[s][i];
                 let reac_term = *rate;
-                out.concentrations[s][i] =
+
+                // Euler step: u_{n+1} = u_n + dt * (diff + reac)
+                next_state.concentrations[s][i] =
                     state.concentrations[s][i] + dt * (diff_term + reac_term);
             }
         }
+
+        // Swap buffers
+        std::mem::swap(&mut system.state, &mut system.next_state);
     }
 }
 
@@ -224,15 +248,10 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
     }
 
     pub fn step(&mut self, dt: f64) {
-        // Delegate to diffusion model which might have fused optimization
-        self.diffusion.apply_step(
-            &self.state,
-            &mut self.next_state,
-            &self.diffusion_coeffs,
-            &self.reaction,
-            dt,
-        );
-        std::mem::swap(&mut self.state, &mut self.next_state);
+        // Use the default Forward Euler solver which adheres to SRP.
+        // This decouples the system step from the diffusion model implementation.
+        let mut solver = ForwardEuler;
+        solver.step(self, dt);
     }
 }
 

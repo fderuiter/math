@@ -7,16 +7,16 @@ use nalgebra::DMatrix;
 pub use crate::climate::config::CeraConfig;
 
 /// The main CERA model.
-pub struct Cera {
+pub struct Cera<A: AutoencoderModel, P: PredictorModel> {
     /// The autoencoder component.
-    pub autoencoder: Box<dyn AutoencoderModel>,
+    pub autoencoder: A,
     /// The predictor component.
-    pub predictor: Box<dyn PredictorModel>,
+    pub predictor: P,
     /// The model configuration.
     pub config: CeraConfig,
 }
 
-impl Cera {
+impl Cera<Autoencoder, Predictor> {
     /// Creates a new CERA model with the given configuration.
     ///
     /// # Arguments
@@ -32,9 +32,11 @@ impl Cera {
         let predictor_input_size = config.num_levels * config.aligned_channels;
         let predictor = Predictor::new(predictor_input_size, config.output_size);
 
-        Self::new_with_models(config, Box::new(autoencoder), Box::new(predictor))
+        Self::new_with_models(config, autoencoder, predictor)
     }
+}
 
+impl<P: PredictorModel> Cera<Autoencoder, P> {
     /// Creates a new CERA model with a custom predictor.
     ///
     /// # Arguments
@@ -45,14 +47,13 @@ impl Cera {
     /// # Returns
     ///
     /// A result containing the new `Cera` instance or an error message.
-    pub fn new_with_predictor(
-        config: CeraConfig,
-        predictor: Box<dyn PredictorModel>,
-    ) -> Result<Self, String> {
+    pub fn new_with_predictor(config: CeraConfig, predictor: P) -> Result<Self, String> {
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
-        Self::new_with_models(config, Box::new(autoencoder), predictor)
+        Self::new_with_models(config, autoencoder, predictor)
     }
+}
 
+impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     /// Creates a new CERA model with injected dependencies.
     ///
     /// # Arguments
@@ -66,8 +67,8 @@ impl Cera {
     /// A result containing the new `Cera` instance or an error message.
     pub fn new_with_models(
         config: CeraConfig,
-        autoencoder: Box<dyn AutoencoderModel>,
-        predictor: Box<dyn PredictorModel>,
+        autoencoder: A,
+        predictor: P,
     ) -> Result<Self, String> {
         if config.aligned_channels > config.latent_channels {
             return Err(format!(
@@ -100,7 +101,7 @@ impl Cera {
     /// # Returns
     ///
     /// The reshaped matrix ready for the predictor.
-    fn reshape_for_predictor(
+    pub fn reshape_for_predictor(
         &self,
         latent_matrix: &DMatrix<f32>,
         batch_size: usize,
@@ -238,7 +239,8 @@ mod tests {
         let predictor_input_size = config.num_levels * config.aligned_channels;
         let predictor = Predictor::new(predictor_input_size, config.output_size);
 
-        let cera = Cera::new_with_models(config, Box::new(autoencoder), Box::new(predictor));
+        // Here we use generic inference
+        let cera = Cera::new_with_models(config, autoencoder, predictor);
         assert!(cera.is_ok());
     }
 }
