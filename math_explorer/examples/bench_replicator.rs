@@ -47,7 +47,7 @@ fn main() {
 
     // Benchmarking simulation
     println!("Running long simulation with RK4...");
-    let mut solver = RungeKutta4::default();
+    let mut solver = RungeKutta4::new(&initial_state);
     // Simulate 10000 steps
     let steps = 10_000;
     let dt = 0.01;

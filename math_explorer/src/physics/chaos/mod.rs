@@ -150,9 +150,10 @@ mod tests {
         let system = lorenz::LorenzSystem::default_chaotic(state);
 
         // Test with RK4
+        let dummy_state = na::Vector3::zeros();
         let lambda_rk4 = metrics::lorenz_lyapunov(
             &system,
-            &mut RungeKutta4::default(),
+            &mut RungeKutta4::new(&dummy_state),
             na::Vector3::new(10.0, 10.0, 10.0),
             0.01,
             100,
@@ -169,7 +170,7 @@ mod tests {
         // Test with Euler (less accurate, but should run)
         let lambda_euler = metrics::lorenz_lyapunov(
             &system,
-            &mut Euler::default(),
+            &mut Euler::new(&dummy_state),
             na::Vector3::new(10.0, 10.0, 10.0),
             0.0001, // Euler needs smaller step for stability
             100,

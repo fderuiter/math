@@ -61,7 +61,7 @@ impl HawkDovePopulation {
 
         let current_state = DVector::from_vec(vec![p_h, p_d]);
         let system = self.to_replicator_dynamics()?;
-        let mut solver = Euler::default();
+        let mut solver = Euler::new(&current_state);
 
         // Use the generic solver strategy instead of manual Euler
         let next_state = solver.solve(&system, 0.0, &current_state, dt);

@@ -1,24 +1,82 @@
 use super::traits::{OdeSystem, Solver, VectorOperations};
 
+/// Shared kernel for Runge-Kutta 4th Order logic.
+///
+/// This function encapsulates the core RK4 arithmetic to ensure consistency
+/// between the static (allocating) method and the struct-based (buffered) method.
+///
+/// # Arguments
+/// * `system`: The ODE system.
+/// * `t`: Current time.
+/// * `dt`: Time step.
+/// * `y_n`: The state at the beginning of the step ($y_n$).
+/// * `y_acc`: The accumulator for the new state ($y_{n+1}$).
+/// * `k`: Scratch buffer for derivatives.
+/// * `tmp`: Scratch buffer for intermediate states.
+fn rk4_kernel<State, S>(
+    system: &S,
+    t: f64,
+    dt: f64,
+    y_n: &State,
+    y_acc: &mut State,
+    k: &mut State,
+    tmp: &mut State,
+) where
+    State: VectorOperations,
+    S: OdeSystem<State> + ?Sized,
+{
+    // k1 = f(t, y_n)
+    system.derivative_in_place(t, y_n, k);
+    // y_acc += k1 * dt/6
+    y_acc.scale_add(k, dt / 6.0);
+
+    // k2 = f(t + dt/2, y_n + k1 * dt/2)
+    // tmp = y_n + k1 * dt/2
+    tmp.copy_from(y_n);
+    tmp.scale_add(k, dt / 2.0);
+    system.derivative_in_place(t + dt / 2.0, tmp, k);
+    // y_acc += k2 * dt/3
+    y_acc.scale_add(k, dt / 3.0);
+
+    // k3 = f(t + dt/2, y_n + k2 * dt/2)
+    // tmp = y_n + k2 * dt/2
+    tmp.copy_from(y_n);
+    tmp.scale_add(k, dt / 2.0);
+    system.derivative_in_place(t + dt / 2.0, tmp, k);
+    // y_acc += k3 * dt/3
+    y_acc.scale_add(k, dt / 3.0);
+
+    // k4 = f(t + dt, y_n + k3 * dt)
+    // tmp = y_n + k3 * dt
+    tmp.copy_from(y_n);
+    tmp.scale_add(k, dt);
+    system.derivative_in_place(t + dt, tmp, k);
+    // y_acc += k4 * dt/6
+    y_acc.scale_add(k, dt / 6.0);
+}
+
 /// Euler's Method Solver.
 ///
 /// A simple first-order numerical integrator.
 /// Maintains an internal buffer to avoid allocations during steps.
+///
+/// # Parse, Don't Validate
+/// This solver requires an example state at construction to pre-allocate buffers,
+/// ensuring that invalid (uninitialized) states are unrepresentable during simulation.
 #[derive(Debug, Clone)]
 pub struct Euler<State> {
-    buffer: Option<State>,
+    buffer: State,
 }
 
-impl<State> Default for Euler<State> {
-    fn default() -> Self {
-        Self { buffer: None }
-    }
-}
-
-impl<State> Euler<State> {
+impl<State: Clone> Euler<State> {
     /// Creates a new Euler solver.
-    pub fn new() -> Self {
-        Self::default()
+    ///
+    /// # Arguments
+    /// * `example_state` - A reference to a state vector used to determine buffer size/type.
+    pub fn new(example_state: &State) -> Self {
+        Self {
+            buffer: example_state.clone(),
+        }
     }
 }
 
@@ -37,20 +95,11 @@ impl<State: VectorOperations> Solver<State> for Euler<State> {
     where
         S: OdeSystem<State> + ?Sized,
     {
-        // Initialize buffer if needed or if size changed (though VectorOperations doesn't imply resizing capability easily,
-        // we assume same type has compatible size. Ideally we'd check size, but trait doesn't expose len().)
-        // For now, lazy init.
-        if self.buffer.is_none() {
-            self.buffer = Some(state.clone());
-        }
-
-        let derivative = self.buffer.as_mut().unwrap();
-
         // derivative = f(t, y)
-        system.derivative_in_place(t, state, derivative);
+        system.derivative_in_place(t, state, &mut self.buffer);
 
         // y += derivative * dt
-        state.scale_add(derivative, dt);
+        state.scale_add(&self.buffer, dt);
     }
 }
 
@@ -58,27 +107,28 @@ impl<State: VectorOperations> Solver<State> for Euler<State> {
 ///
 /// A classic fixed-step integrator for ODEs.
 /// Maintains internal buffers to avoid allocations.
+///
+/// # Parse, Don't Validate
+/// This solver requires an example state at construction to pre-allocate buffers,
+/// ensuring that invalid (uninitialized) states are unrepresentable during simulation.
 #[derive(Debug, Clone)]
 pub struct RungeKutta4<State> {
-    k: Option<State>,
-    tmp: Option<State>,
-    initial_state: Option<State>,
+    k: State,
+    tmp: State,
+    initial_state: State,
 }
 
-impl<State> Default for RungeKutta4<State> {
-    fn default() -> Self {
-        Self {
-            k: None,
-            tmp: None,
-            initial_state: None,
-        }
-    }
-}
-
-impl<State> RungeKutta4<State> {
+impl<State: Clone> RungeKutta4<State> {
     /// Creates a new Runge-Kutta 4 solver.
-    pub fn new() -> Self {
-        Self::default()
+    ///
+    /// # Arguments
+    /// * `example_state` - A reference to a state vector used to determine buffer size/type.
+    pub fn new(example_state: &State) -> Self {
+        Self {
+            k: example_state.clone(),
+            tmp: example_state.clone(),
+            initial_state: example_state.clone(),
+        }
     }
 
     /// Performs a single integration step using a temporary solver.
@@ -95,43 +145,17 @@ impl<State> RungeKutta4<State> {
         // We only need 3 buffers: y_new (accumulator), k (derivative), tmp (argument).
         // We avoid allocating `initial_state` by using the immutable `state` argument directly.
 
-        // 1. Allocate output state (y_new) initialized with y_n
-        let mut y_new = state.clone();
+        // 1. Allocate output state (y_acc) initialized with y_n
+        let mut y_acc = state.clone();
 
         // 2. Allocate k and tmp buffers
         let mut k = state.clone();
         let mut tmp = state.clone();
 
-        // k1 = f(t, y)
-        system.derivative_in_place(t, state, &mut k);
-        // y_new += k1 * dt/6
-        y_new.scale_add(&k, dt / 6.0);
+        // Use shared kernel
+        rk4_kernel(system, t, dt, state, &mut y_acc, &mut k, &mut tmp);
 
-        // k2 = f(t + dt/2, y + k1 * dt/2)
-        // tmp = y + k1 * dt/2
-        tmp.copy_from(state);
-        tmp.scale_add(&k, dt / 2.0);
-        system.derivative_in_place(t + dt / 2.0, &tmp, &mut k);
-        // y_new += k2 * dt/3
-        y_new.scale_add(&k, dt / 3.0);
-
-        // k3 = f(t + dt/2, y + k2 * dt/2)
-        // tmp = y + k2 * dt/2
-        tmp.copy_from(state);
-        tmp.scale_add(&k, dt / 2.0);
-        system.derivative_in_place(t + dt / 2.0, &tmp, &mut k);
-        // y_new += k3 * dt/3
-        y_new.scale_add(&k, dt / 3.0);
-
-        // k4 = f(t + dt, y + k3 * dt)
-        // tmp = y + k3 * dt
-        tmp.copy_from(state);
-        tmp.scale_add(&k, dt);
-        system.derivative_in_place(t + dt, &tmp, &mut k);
-        // y_new += k4 * dt/6
-        y_new.scale_add(&k, dt / 6.0);
-
-        y_new
+        y_acc
     }
 }
 
@@ -149,48 +173,18 @@ impl<State: VectorOperations> Solver<State> for RungeKutta4<State> {
     where
         S: OdeSystem<State> + ?Sized,
     {
-        // Lazy initialization of buffers
-        if self.k.is_none() {
-            self.k = Some(state.clone());
-            self.tmp = Some(state.clone());
-            self.initial_state = Some(state.clone());
-        }
+        // Copy current state to initial_state buffer to preserve y_n
+        self.initial_state.copy_from(state);
 
-        // Unsafe unwrap? We just set them.
-        let k = self.k.as_mut().unwrap();
-        let tmp = self.tmp.as_mut().unwrap();
-        let initial_state = self.initial_state.as_mut().unwrap();
-
-        // Copy current state to initial_state buffer to preserve it
-        initial_state.copy_from(state);
-
-        // k1 = f(t, y)
-        system.derivative_in_place(t, initial_state, k);
-        // y += k1 * dt/6
-        state.scale_add(k, dt / 6.0);
-
-        // k2 = f(t + dt/2, y + k1 * dt/2)
-        // tmp = y + k1 * dt/2
-        tmp.copy_from(initial_state);
-        tmp.scale_add(k, dt / 2.0);
-        system.derivative_in_place(t + dt / 2.0, tmp, k);
-        // y += k2 * dt/3
-        state.scale_add(k, dt / 3.0);
-
-        // k3 = f(t + dt/2, y + k2 * dt/2)
-        // tmp = y + k2 * dt/2
-        tmp.copy_from(initial_state);
-        tmp.scale_add(k, dt / 2.0);
-        system.derivative_in_place(t + dt / 2.0, tmp, k);
-        // y += k3 * dt/3
-        state.scale_add(k, dt / 3.0);
-
-        // k4 = f(t + dt, y + k3 * dt)
-        // tmp = y + k3 * dt
-        tmp.copy_from(initial_state);
-        tmp.scale_add(k, dt);
-        system.derivative_in_place(t + dt, tmp, k);
-        // y += k4 * dt/6
-        state.scale_add(k, dt / 6.0);
+        // state acts as y_acc (accumulator)
+        rk4_kernel(
+            system,
+            t,
+            dt,
+            &self.initial_state,
+            state,
+            &mut self.k,
+            &mut self.tmp,
+        );
     }
 }

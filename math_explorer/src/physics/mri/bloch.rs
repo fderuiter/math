@@ -89,6 +89,8 @@ impl BlochSimulator {
     /// * `t1` - Longitudinal relaxation time in seconds.
     /// * `t2` - Transverse relaxation time in seconds.
     pub fn step(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64) {
-        self.step_with(dt, b_field, t1, t2, &mut Euler::default())
+        // Create a solver with the current magnetization structure
+        let mut solver = Euler::new(&self.magnetization);
+        self.step_with(dt, b_field, t1, t2, &mut solver)
     }
 }

@@ -111,7 +111,8 @@ mod tests {
 
         let dt = 0.1;
         model_std.step(dt);
-        model_with.step_with(&mut RungeKutta4::default(), dt);
+        let state = model_with.state;
+        model_with.step_with(&mut RungeKutta4::new(&state), dt);
 
         assert_eq!(
             model_std.state, model_with.state,

@@ -114,7 +114,8 @@ mod tests {
 
         let dt = 0.1;
         model_std.step(dt);
-        model_with.step_with(&mut RungeKutta4::default(), dt);
+        let state = model_with.state;
+        model_with.step_with(&mut RungeKutta4::new(&state), dt);
 
         assert_eq!(
             model_std.state, model_with.state,
@@ -129,7 +130,8 @@ mod tests {
         let mut model = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
 
         // Euler is less accurate but should still run without panic
-        model.step_with(&mut Euler::default(), 0.1);
+        let state = model.state;
+        model.step_with(&mut Euler::new(&state), 0.1);
 
         assert!(model.state.s <= n);
         assert!(model.state.i >= 0.0);
