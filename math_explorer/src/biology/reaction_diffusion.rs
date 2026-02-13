@@ -133,6 +133,26 @@ impl VectorOperations for ChemicalState {
             s.copy_from_slice(r);
         }
     }
+
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        if self.num_species() != source.num_species() || self.grid_size() != source.grid_size() {
+            // Reallocate if dimensions mismatch.
+            // Efficient reallocation: initialize with zeros, then loop will fill it.
+            self.concentrations = vec![vec![0.0; source.grid_size()]; source.num_species()];
+        }
+
+        // Fused loop: self = source + other * scale
+        for ((s_self, s_src), s_oth) in self
+            .concentrations
+            .iter_mut()
+            .zip(source.concentrations.iter())
+            .zip(other.concentrations.iter())
+        {
+            for ((dst, src), oth) in s_self.iter_mut().zip(s_src.iter()).zip(s_oth.iter()) {
+                *dst = *src + *oth * scale;
+            }
+        }
+    }
 }
 
 /// Defines the local reaction kinetics for N species.

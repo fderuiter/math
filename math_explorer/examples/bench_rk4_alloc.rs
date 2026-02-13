@@ -29,6 +29,15 @@ impl VectorOperations for SimpleState {
         }
         self.data.copy_from_slice(&other.data);
     }
+
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        if self.data.len() != source.data.len() {
+            self.data.resize(source.data.len(), 0.0);
+        }
+        for ((dst, src), oth) in self.data.iter_mut().zip(source.data.iter()).zip(other.data.iter()) {
+            *dst = *src + *oth * scale;
+        }
+    }
 }
 
 impl Add for SimpleState {
@@ -92,7 +101,7 @@ impl TimeStepper<SimpleState> for BenchmarkSystem {
 }
 
 fn main() {
-    let size = 10000;
+    let size = 1_000_000;
     let mut system = BenchmarkSystem {
         state: SimpleState {
             data: vec![1.0; size],
@@ -100,12 +109,12 @@ fn main() {
     };
 
     // Warmup
-    for _ in 0..10 {
+    for _ in 0..2 {
         system.step(0.01);
     }
 
     let start = Instant::now();
-    let steps = 1000;
+    let steps = 100;
     let dt = 0.01;
 
     for _ in 0..steps {
