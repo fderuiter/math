@@ -1,17 +1,19 @@
 //! This module handles the training process for the CERA model.
 
+use crate::climate::autoencoder::AutoencoderModel;
 use crate::climate::cera::Cera;
 use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
+use crate::climate::predictor::PredictorModel;
 use nalgebra::DMatrix;
 
 /// A trainer for the CERA model.
-pub struct CeraTrainer<'a> {
-    pub model: &'a mut Cera,
+pub struct CeraTrainer<'a, A: AutoencoderModel, P: PredictorModel> {
+    pub model: &'a mut Cera<A, P>,
 }
 
-impl<'a> CeraTrainer<'a> {
+impl<'a, A: AutoencoderModel, P: PredictorModel> CeraTrainer<'a, A, P> {
     /// Creates a new CeraTrainer.
-    pub fn new(model: &'a mut Cera) -> Self {
+    pub fn new(model: &'a mut Cera<A, P>) -> Self {
         Self { model }
     }
 
@@ -29,28 +31,6 @@ impl<'a> CeraTrainer<'a> {
         self.model.autoencoder.update_weights(lr);
         // Use the predictor's interface for updates
         self.model.predictor.update_weights(lr);
-    }
-
-    /// Reshapes a batch of latent vectors for the predictor.
-    /// From (batch_size * num_levels, channels) to (batch_size, num_levels * channels).
-    fn reshape_for_predictor(
-        &self,
-        latent_matrix: &DMatrix<f32>,
-        batch_size: usize,
-    ) -> DMatrix<f32> {
-        let num_levels = self.model.config.num_levels;
-        let aligned_channels = self.model.config.aligned_channels;
-        let mut reshaped_data = Vec::with_capacity(batch_size * num_levels * aligned_channels);
-        for i in 0..batch_size {
-            let start_row = i * num_levels;
-            let sample_latent = latent_matrix.rows(start_row, num_levels);
-            for r in sample_latent.row_iter() {
-                for element in r.iter() {
-                    reshaped_data.push(*element);
-                }
-            }
-        }
-        DMatrix::from_row_slice(batch_size, num_levels * aligned_channels, &reshaped_data)
     }
 
     /// Trains the CERA model on synthetic data.
@@ -100,8 +80,10 @@ impl<'a> CeraTrainer<'a> {
                 // --- Reshape and predict ---
                 let control_aligned_latent =
                     control_latent.columns(0, aligned_channels).clone_owned();
-                let predictor_input =
-                    self.reshape_for_predictor(&control_aligned_latent, batch_size);
+                // Reuse the method from Cera
+                let predictor_input = self
+                    .model
+                    .reshape_for_predictor(&control_aligned_latent, batch_size);
                 let prediction = self.model.predictor.forward(&predictor_input);
 
                 // --- Calculate losses ---

@@ -47,35 +47,33 @@
 //! enum Move { Left, Right }
 //! impl Action for Move {}
 //!
-//! fn main() {
-//!     // 2. Initialize Agent
-//!     // Learning Rate = 0.1, Discount Factor = 0.9, Epsilon = 0.1
-//!     let mut agent = QLearningAgent::<GridState, Move, TabularQFunction<GridState, Move>>::new(0.1, 0.9, 0.1);
+//! // 2. Initialize Agent
+//! // Learning Rate = 0.1, Discount Factor = 0.9, Epsilon = 0.1
+//! let mut agent = QLearningAgent::<GridState, Move, TabularQFunction<GridState, Move>>::new(0.1, 0.9, 0.1);
 //!
-//!     // 3. Training Loop (Simplified)
-//!     let state = GridState(0);
-//!     let target = GridState(3);
+//! // 3. Training Loop (Simplified)
+//! let state = GridState(0);
+//! let target = GridState(3);
 //!
-//!     // Agent chooses an action (e.g., Right)
-//!     let action = Move::Right;
+//! // Agent chooses an action (e.g., Right)
+//! let action = Move::Right;
 //!
-//!     // Environment responds
-//!     let next_state = GridState(1);
-//!     let reward = if next_state == target { 10.0 } else { -0.1 };
+//! // Environment responds
+//! let next_state = GridState(1);
+//! let reward = if next_state == target { 10.0 } else { -0.1 };
 //!
-//!     // Agent learns from the experience
-//!     agent.update(
-//!         &state,
-//!         &action,
-//!         reward,
-//!         &next_state,
-//!         &[Move::Left, Move::Right] // Possible next actions
-//!     );
+//! // Agent learns from the experience
+//! agent.update(
+//!     &state,
+//!     &action,
+//!     reward,
+//!     &next_state,
+//!     &[Move::Left, Move::Right] // Possible next actions
+//! );
 //!
-//!     // Verify learning: Q-value for (State(0), Right) should increase
-//!     let q_value = agent.get_q_value(&state, &action);
-//!     assert!(q_value != 0.0);
-//! }
+//! // Verify learning: Q-value for (State(0), Right) should increase
+//! let q_value = agent.get_q_value(&state, &action);
+//! assert!(q_value != 0.0);
 //! ```
 
 pub mod algorithms;
