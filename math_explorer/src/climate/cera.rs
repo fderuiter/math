@@ -47,10 +47,7 @@ impl<P: PredictorModel> Cera<Autoencoder, P> {
     /// # Returns
     ///
     /// A result containing the new `Cera` instance or an error message.
-    pub fn new_with_predictor(
-        config: CeraConfig,
-        predictor: P,
-    ) -> Result<Self, String> {
+    pub fn new_with_predictor(config: CeraConfig, predictor: P) -> Result<Self, String> {
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         Self::new_with_models(config, autoencoder, predictor)
     }
