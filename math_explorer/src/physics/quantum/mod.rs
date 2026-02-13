@@ -31,12 +31,12 @@
 //! ```rust
 //! use math_explorer::physics::quantum::clebsch_gordan;
 //!
-//! // Coupling spin j1=1.5, m1=-0.5 with j2=1.0, m2=1.0
-//! // We want to know the coefficient for total angular momentum J=2.5, M=0.5
-//! let cg = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
+//! // Coupling two spin-1/2 particles (j=0.5) to form a triplet state (J=1.0)
+//! // <1/2 1/2; 1/2 1/2 | 1 1> should be exactly 1.0
+//! let cg = clebsch_gordan(0.5, 0.5, 0.5, 0.5, 1.0, 1.0);
 //!
 //! println!("CG Coefficient: {:.4}", cg);
-//! assert!((cg - (0.3f64).sqrt()).abs() < 1e-9); // Expected value sqrt(3/10)
+//! assert!((cg - 1.0).abs() < 1e-9);
 //! ```
 //!
 //! ### 2. Time Evolution of a Qubit

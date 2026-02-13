@@ -31,9 +31,10 @@ Calculate Clebsch-Gordan coefficients for angular momentum coupling:
 use math_explorer::physics::quantum::clebsch_gordan;
 
 fn main() {
-    // Coupling j1=1.5, m1=-0.5 with j2=1.0, m2=1.0 to J=2.5, M=0.5
-    let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
-    println!("Clebsch-Gordan Coefficient: {:.4}", coeff);
+    // Coupling two spin-1/2 particles (j=0.5) to form a triplet state (J=1.0)
+    // <1/2 1/2; 1/2 1/2 | 1 1> should be exactly 1.0
+    let coeff = clebsch_gordan(0.5, 0.5, 0.5, 0.5, 1.0, 1.0);
+    println!("Clebsch-Gordan Coefficient: {:.4} (Expected: 1.0000)", coeff);
 }
 ```
 

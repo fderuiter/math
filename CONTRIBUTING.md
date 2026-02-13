@@ -56,6 +56,7 @@ We follow the **Curator's Philosophy**:
 
 *   **Public API**: Every public struct, enum, and function must have a docstring (`///`).
 *   **Examples**: Include runnable examples in your docstrings using generic code blocks or doctests.
+*   **Verifiable Examples**: Examples must be runnable and include assertions or clear expected outputs. Avoid ambiguous examples where the result depends on hidden conventions.
 *   **Clarity**: Avoid fluff words ("simple", "easy"). Be precise.
 
 Example:

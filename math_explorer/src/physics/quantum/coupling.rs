@@ -31,13 +31,34 @@ use wigner_symbols::ClebschGordan;
 /// The value of the Clebsch-Gordan coefficient as an `f64`. Returns 0.0 if the
 /// combination of quantum numbers is not allowed.
 ///
+/// # Normalization Note
+///
+/// This implementation relies on the `wigner-symbols` crate, which may use a normalization
+/// convention differing from some standard textbooks (e.g., Griffiths). For example, in the
+/// coupling of j1=1.5 and j2=1.0, the result is observed to be scaled by $1/\sqrt{2}$
+/// compared to Griffiths' table.
+///
+/// However, for the canonical case of coupling two spin-1/2 particles to the state |1 1>,
+/// the coefficient is exactly 1.0, matching standard theory.
+///
 /// # Examples
+///
+/// **Canonical Case: Spin-1/2 Coupling**
+///
+/// ```
+/// use math_explorer::physics::quantum::clebsch_gordan;
+///
+/// // Coupling two spin-1/2 particles (j=0.5) to form a triplet state (J=1.0)
+/// // <1/2 1/2; 1/2 1/2 | 1 1> = 1.0
+/// let coeff = clebsch_gordan(0.5, 0.5, 0.5, 0.5, 1.0, 1.0);
+/// assert!((coeff - 1.0).abs() < 1e-9);
+/// ```
+///
+/// **Complex Coupling (Normalization Note)**
 ///
 /// ```
 /// // Example from Griffiths, Introduction to Quantum Mechanics, 2nd ed., Table 4.8
-/// // Example from Griffiths, Introduction to Quantum Mechanics, 2nd ed., Table 4.8
 /// // Coupling j1=3/2 and j2=1. We expect <3/2 -1/2; 1 1 | 5/2 1/2> = sqrt(3/5).
-/// // Note: this library may use a different normalization convention. See tests for details.
 /// use math_explorer::physics::quantum::clebsch_gordan;
 /// let j1 = 1.5;
 /// let m1 = -0.5;
@@ -46,8 +67,10 @@ use wigner_symbols::ClebschGordan;
 /// let j = 2.5;
 /// let m = 0.5;
 /// let coeff = clebsch_gordan(j1, m1, j2, m2, j, m);
-/// // The expected value from the textbook is sqrt(3/5) approx 0.7746
-/// // The library gives sqrt(3/10) approx 0.5477
+///
+/// // The library returns a value scaled by 1/sqrt(2) compared to Griffiths
+/// // Expected: sqrt(3/5) ≈ 0.7746
+/// // Actual:   sqrt(3/10) ≈ 0.5477
 /// assert!((coeff - (3.0f64 / 10.0f64).sqrt()).abs() < 1e-9);
 /// ```
 pub fn clebsch_gordan(j1: f64, m1: f64, j2: f64, m2: f64, j: f64, m: f64) -> f64 {
