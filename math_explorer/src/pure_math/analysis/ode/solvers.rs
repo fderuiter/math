@@ -32,24 +32,21 @@ fn rk4_kernel<State, S>(
 
     // k2 = f(t + dt/2, y_n + k1 * dt/2)
     // tmp = y_n + k1 * dt/2
-    tmp.copy_from(y_n);
-    tmp.scale_add(k, dt / 2.0);
+    tmp.copy_from_scaled(y_n, k, dt / 2.0);
     system.derivative_in_place(t + dt / 2.0, tmp, k);
     // y_acc += k2 * dt/3
     y_acc.scale_add(k, dt / 3.0);
 
     // k3 = f(t + dt/2, y_n + k2 * dt/2)
     // tmp = y_n + k2 * dt/2
-    tmp.copy_from(y_n);
-    tmp.scale_add(k, dt / 2.0);
+    tmp.copy_from_scaled(y_n, k, dt / 2.0);
     system.derivative_in_place(t + dt / 2.0, tmp, k);
     // y_acc += k3 * dt/3
     y_acc.scale_add(k, dt / 3.0);
 
     // k4 = f(t + dt, y_n + k3 * dt)
     // tmp = y_n + k3 * dt
-    tmp.copy_from(y_n);
-    tmp.scale_add(k, dt);
+    tmp.copy_from_scaled(y_n, k, dt);
     system.derivative_in_place(t + dt, tmp, k);
     // y_acc += k4 * dt/6
     y_acc.scale_add(k, dt / 6.0);

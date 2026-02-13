@@ -14,6 +14,18 @@ pub trait VectorOperations:
     /// Copies the content of `other` into `self`.
     /// This allows reusing allocated buffers.
     fn copy_from(&mut self, other: &Self);
+
+    /// Fused operation: `self = source + other * scale`.
+    ///
+    /// Copies `source` into `self` while adding `other` scaled by `scale`.
+    /// This avoids intermediate writes and reads, reducing memory traffic.
+    ///
+    /// # Default Implementation
+    /// Calls `copy_from` then `scale_add`. Override for better performance.
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        self.copy_from(source);
+        self.scale_add(other, scale);
+    }
 }
 
 /// A trait defining a system of Ordinary Differential Equations.

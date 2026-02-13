@@ -64,6 +64,15 @@ impl VectorOperations for VecState {
         }
         self.0.copy_from_slice(&other.0);
     }
+
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        if self.0.len() != source.0.len() {
+            self.0.resize(source.0.len(), 0.0);
+        }
+        for ((dst, src), oth) in self.0.iter_mut().zip(source.0.iter()).zip(other.0.iter()) {
+            *dst = *src + *oth * scale;
+        }
+    }
 }
 
 /// A zero-overhead wrapper for fixed-size arrays implementing `VectorOperations`.
@@ -120,6 +129,12 @@ impl<const N: usize> VectorOperations for ArrayState<N> {
     fn copy_from(&mut self, other: &Self) {
         self.0 = other.0;
     }
+
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        for ((dst, src), oth) in self.0.iter_mut().zip(source.0.iter()).zip(other.0.iter()) {
+            *dst = *src + *oth * scale;
+        }
+    }
 }
 
 // Implementations for nalgebra types
@@ -132,6 +147,10 @@ impl VectorOperations for Vector2<f64> {
     fn copy_from(&mut self, other: &Self) {
         *self = *other;
     }
+
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        *self = *source + *other * scale;
+    }
 }
 
 impl VectorOperations for Vector3<f64> {
@@ -141,6 +160,10 @@ impl VectorOperations for Vector3<f64> {
 
     fn copy_from(&mut self, other: &Self) {
         *self = *other;
+    }
+
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        *self = *source + *other * scale;
     }
 }
 
@@ -155,5 +178,21 @@ impl VectorOperations for DVector<f64> {
 
     fn copy_from(&mut self, other: &Self) {
         self.copy_from(other);
+    }
+
+    fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
+        if self.len() != source.len() {
+            self.copy_from(source);
+            self.scale_add(other, scale);
+            return;
+        }
+        for ((dst, src), oth) in self
+            .as_mut_slice()
+            .iter_mut()
+            .zip(source.as_slice().iter())
+            .zip(other.as_slice().iter())
+        {
+            *dst = *src + *oth * scale;
+        }
     }
 }
