@@ -10,6 +10,14 @@ use thiserror::Error;
 pub enum KalmanError {
     #[error("Failed to invert innovation covariance matrix (singular)")]
     MatrixInversionError,
+    #[error("Dimension mismatch: state size {state_size} does not match covariance dimensions {cov_rows}x{cov_cols}")]
+    DimensionMismatch {
+        state_size: usize,
+        cov_rows: usize,
+        cov_cols: usize,
+    },
+    #[error("Missing required initialization field: {0}")]
+    InitializationError(String),
 }
 
 /// Defines the physics/dynamics model for the Kalman Filter.
@@ -119,8 +127,78 @@ pub struct KalmanFilter<M: KalmanSystem> {
     pub dt: f64,
 }
 
+/// Builder for `KalmanFilter`.
+///
+/// Ensures valid initialization by enforcing dimension checks between state and covariance.
+pub struct KalmanFilterBuilder<M: KalmanSystem> {
+    state: Option<DVector<f64>>,
+    covariance: Option<DMatrix<f64>>,
+    model: M,
+    dt: f64,
+}
+
+impl<M: KalmanSystem> KalmanFilterBuilder<M> {
+    fn new(model: M, dt: f64) -> Self {
+        Self {
+            state: None,
+            covariance: None,
+            model,
+            dt,
+        }
+    }
+
+    /// Sets the initial state vector.
+    pub fn initial_state(mut self, state: DVector<f64>) -> Self {
+        self.state = Some(state);
+        self
+    }
+
+    /// Sets the initial covariance matrix.
+    pub fn initial_covariance(mut self, covariance: DMatrix<f64>) -> Self {
+        self.covariance = Some(covariance);
+        self
+    }
+
+    /// Builds the `KalmanFilter`, validating dimensions.
+    ///
+    /// # Errors
+    /// Returns `KalmanError::DimensionMismatch` if state and covariance dimensions do not align.
+    /// Returns `KalmanError::InitializationError` if state or covariance are missing.
+    pub fn build(self) -> Result<KalmanFilter<M>, KalmanError> {
+        let state = self
+            .state
+            .ok_or_else(|| KalmanError::InitializationError("initial_state".to_string()))?;
+        let covariance = self
+            .covariance
+            .ok_or_else(|| KalmanError::InitializationError("initial_covariance".to_string()))?;
+
+        if state.len() != covariance.nrows() || covariance.nrows() != covariance.ncols() {
+            return Err(KalmanError::DimensionMismatch {
+                state_size: state.len(),
+                cov_rows: covariance.nrows(),
+                cov_cols: covariance.ncols(),
+            });
+        }
+
+        Ok(KalmanFilter {
+            state,
+            covariance,
+            model: self.model,
+            dt: self.dt,
+        })
+    }
+}
+
 impl<M: KalmanSystem> KalmanFilter<M> {
+    /// Returns a new builder for constructing a `KalmanFilter`.
+    pub fn builder(model: M, dt: f64) -> KalmanFilterBuilder<M> {
+        KalmanFilterBuilder::new(model, dt)
+    }
+
     /// Creates a new Kalman Filter.
+    ///
+    /// # Deprecated
+    /// Use `KalmanFilter::builder()` instead to ensure safe construction.
     ///
     /// # Arguments
     ///
@@ -128,18 +206,24 @@ impl<M: KalmanSystem> KalmanFilter<M> {
     /// * `initial_covariance` - Initial uncertainty covariance matrix.
     /// * `model` - The system model implementation.
     /// * `dt` - Default time step.
+    ///
+    /// # Panics
+    /// Panics if dimensions mismatch.
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use KalmanFilter::builder() for safe construction"
+    )]
     pub fn new(
         initial_state: DVector<f64>,
         initial_covariance: DMatrix<f64>,
         model: M,
         dt: f64,
     ) -> Self {
-        Self {
-            state: initial_state,
-            covariance: initial_covariance,
-            model,
-            dt,
-        }
+        Self::builder(model, dt)
+            .initial_state(initial_state)
+            .initial_covariance(initial_covariance)
+            .build()
+            .expect("KalmanFilter::new encountered invalid dimensions")
     }
 
     /// Performs the **Prediction Step**.
@@ -205,6 +289,7 @@ mod tests {
     use super::*;
 
     // Mock Model for testing 1D constant velocity
+    #[derive(Debug)]
     struct MockCvModel {
         process_noise: f64,
         measurement_noise: f64,
@@ -238,7 +323,12 @@ mod tests {
         let x_init = DVector::from_vec(vec![0.0, 10.0]); // Pos=0, Vel=10
         let p_init = DMatrix::identity(2, 2);
 
-        let mut kf = KalmanFilter::new(x_init, p_init, model, dt);
+        let mut kf = KalmanFilter::builder(model, dt)
+            .initial_state(x_init)
+            .initial_covariance(p_init)
+            .build()
+            .unwrap();
+
         kf.predict();
 
         // New Pos = 0 + 10*1 = 10
@@ -298,7 +388,11 @@ mod tests {
         let initial_state = DVector::from_element(1, 100.0);
         let initial_covariance = DMatrix::from_element(1, 1, 1.0);
 
-        let mut kf = KalmanFilter::new(initial_state, initial_covariance, model, 1.0);
+        let mut kf = KalmanFilter::builder(model, 1.0)
+            .initial_state(initial_state)
+            .initial_covariance(initial_covariance)
+            .build()
+            .unwrap();
 
         kf.predict();
         assert!((kf.state[0] - 10.0).abs() < 1e-6, "Prediction step failed");
@@ -339,14 +433,58 @@ mod tests {
             }
         }
 
-        let mut kf = KalmanFilter::new(
-            DVector::from_element(1, 0.0),
-            DMatrix::identity(1, 1),
-            SingularModel,
-            1.0,
-        );
+        let mut kf = KalmanFilter::builder(SingularModel, 1.0)
+            .initial_state(DVector::from_element(1, 0.0))
+            .initial_covariance(DMatrix::identity(1, 1))
+            .build()
+            .unwrap();
+
         let measurement = DVector::from_element(1, 1.0);
         let result = kf.update(&measurement);
         assert_eq!(result, Err(KalmanError::MatrixInversionError));
+    }
+
+    #[test]
+    fn test_dimension_mismatch() {
+        let model = MockCvModel {
+            process_noise: 0.0,
+            measurement_noise: 1.0,
+        };
+        let state = DVector::from_element(2, 0.0); // 2x1
+        let cov = DMatrix::from_element(3, 3, 1.0); // 3x3 - Mismatch with state
+
+        let result = KalmanFilter::builder(model, 1.0)
+            .initial_state(state)
+            .initial_covariance(cov)
+            .build();
+
+        match result {
+            Err(KalmanError::DimensionMismatch {
+                state_size,
+                cov_rows,
+                cov_cols,
+            }) => {
+                assert_eq!(state_size, 2);
+                assert_eq!(cov_rows, 3);
+                assert_eq!(cov_cols, 3);
+            }
+            _ => panic!("Expected DimensionMismatch error, got {:?}", result),
+        }
+    }
+
+    #[test]
+    fn test_builder_missing_fields() {
+        let model = MockCvModel {
+            process_noise: 0.0,
+            measurement_noise: 1.0,
+        };
+        let result = KalmanFilter::builder(model, 1.0).build();
+
+        match result {
+            Err(KalmanError::InitializationError(field)) => {
+                assert_eq!(field, "initial_state");
+            }
+            _ => panic!("Expected InitializationError, got {:?}", result),
+        }
     }
 }

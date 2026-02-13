@@ -69,7 +69,11 @@ impl TrackingFilter {
         let initial_covariance = DMatrix::identity(2, 2);
 
         Self {
-            inner: KalmanFilter::new(initial_state, initial_covariance, model, dt),
+            inner: KalmanFilter::builder(model, dt)
+                .initial_state(initial_state)
+                .initial_covariance(initial_covariance)
+                .build()
+                .expect("TrackingFilter encountered invalid dimensions"),
         }
     }
 
