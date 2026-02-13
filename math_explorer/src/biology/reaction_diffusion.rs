@@ -177,6 +177,7 @@ pub trait DiffusionModel {
 }
 
 /// Defines a strategy for time integration of the Reaction-Diffusion system.
+#[deprecated(note = "Use pure_math::analysis::ode::traits::Solver instead.")]
 pub trait ReactionDiffusionSolver {
     /// Advances the system by a time step `dt`.
     fn step<R: ReactionModel, D: DiffusionModel>(
@@ -190,60 +191,29 @@ pub trait ReactionDiffusionSolver {
 ///
 /// This solver separates the diffusion and reaction steps, prioritizing
 /// architectural cleanliness (SRP) over fused-loop optimizations.
+#[deprecated(note = "Use standard OdeSystem solvers or ReactionDiffusionSystem::step instead.")]
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ForwardEuler;
 
+#[allow(deprecated)]
 impl ReactionDiffusionSolver for ForwardEuler {
     fn step<R: ReactionModel, D: DiffusionModel>(
         &mut self,
         system: &mut ReactionDiffusionSystem<R, D>,
         dt: f64,
     ) {
-        let state = &system.state;
-        let next_state = &mut system.next_state;
-        let coeffs = &system.diffusion_coeffs;
-
-        // 1. Compute Diffusion (writes D * Laplacian to next_state)
-        system.diffusion.apply(state, next_state, coeffs);
-
-        // 2. Compute Reaction and Update
-        // next_state = state + dt * (diffusion_term + reaction_term)
-        // Currently next_state holds `diffusion_term`.
-
-        let n_species = state.num_species();
-        let n_grid = state.grid_size();
-        let mut local_concs = vec![0.0; n_species];
-        let mut local_rates = vec![0.0; n_species];
-
-        for i in 0..n_grid {
-            // Read local concentrations
-            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
-                *conc = state.concentrations[s][i];
-            }
-
-            // Compute reaction rates
-            system.reaction.reaction(&local_concs, &mut local_rates);
-
-            // Update state
-            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
-                let diff_term = next_state.concentrations[s][i];
-                let reac_term = *rate;
-
-                // Euler step: u_{n+1} = u_n + dt * (diff + reac)
-                next_state.concentrations[s][i] =
-                    state.concentrations[s][i] + dt * (diff_term + reac_term);
-            }
-        }
-
-        // Swap buffers
-        std::mem::swap(&mut system.state, &mut system.next_state);
+        // Delegate to the system's own step method which now handles Euler integration
+        // and manages borrow checking correctly.
+        system.step(dt);
     }
 }
 
 /// A generic Reaction-Diffusion system for N species.
 pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
     pub state: ChemicalState,
-    pub next_state: ChemicalState,
+    /// Internal buffer for storing the time derivative ($dC/dt$).
+    /// Previously named `next_state`.
+    pub derivative_buffer: ChemicalState,
     pub reaction: R,
     pub diffusion: D,
     pub diffusion_coeffs: Vec<f64>,
@@ -260,18 +230,53 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
         assert_eq!(diffusion_coeffs.len(), num_species);
         Self {
             state: ChemicalState::new(num_species, grid_size),
-            next_state: ChemicalState::new(num_species, grid_size),
+            derivative_buffer: ChemicalState::new(num_species, grid_size),
             reaction,
             diffusion,
             diffusion_coeffs,
         }
     }
 
+    /// Internal helper to compute derivative without `&self` borrow conflicts.
+    fn compute_derivative_internal(
+        reaction: &R,
+        diffusion: &D,
+        diffusion_coeffs: &[f64],
+        state: &ChemicalState,
+        out: &mut ChemicalState,
+    ) {
+        // Compute Diffusion
+        diffusion.apply(state, out, diffusion_coeffs);
+
+        // Add Reaction
+        let n_species = state.num_species();
+        let n_grid = state.grid_size();
+        let mut local_concs = vec![0.0; n_species];
+        let mut local_rates = vec![0.0; n_species];
+
+        for i in 0..n_grid {
+            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
+                *conc = state.concentrations[s][i];
+            }
+
+            reaction.reaction(&local_concs, &mut local_rates);
+
+            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
+                out.concentrations[s][i] += *rate;
+            }
+        }
+    }
+
     pub fn step(&mut self, dt: f64) {
-        // Use the default Forward Euler solver which adheres to SRP.
-        // This decouples the system step from the diffusion model implementation.
-        let mut solver = ForwardEuler;
-        solver.step(self, dt);
+        // Use internal helper to avoid splitting borrows of `self`.
+        Self::compute_derivative_internal(
+            &self.reaction,
+            &self.diffusion,
+            &self.diffusion_coeffs,
+            &self.state,
+            &mut self.derivative_buffer,
+        );
+        self.state.scale_add(&self.derivative_buffer, dt);
     }
 }
 
@@ -285,26 +290,13 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
     }
 
     fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
-        // Compute Diffusion
-        self.diffusion.apply(state, out, &self.diffusion_coeffs);
-
-        // Add Reaction
-        let n_species = state.num_species();
-        let n_grid = state.grid_size();
-        let mut local_concs = vec![0.0; n_species];
-        let mut local_rates = vec![0.0; n_species];
-
-        for i in 0..n_grid {
-            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
-                *conc = state.concentrations[s][i];
-            }
-
-            self.reaction.reaction(&local_concs, &mut local_rates);
-
-            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
-                out.concentrations[s][i] += *rate;
-            }
-        }
+        Self::compute_derivative_internal(
+            &self.reaction,
+            &self.diffusion,
+            &self.diffusion_coeffs,
+            state,
+            out,
+        );
     }
 }
 
