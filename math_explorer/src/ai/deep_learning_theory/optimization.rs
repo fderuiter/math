@@ -93,6 +93,15 @@ impl Optimizer for SGD {
     }
 }
 
+/// Hyperparameters for Adam optimizer to avoid too many arguments.
+#[derive(Clone, Copy)]
+struct AdamHyperparameters {
+    lr: f64,
+    beta1: f64,
+    beta2: f64,
+    epsilon: f64,
+}
+
 /// Internal state for Adam optimizer for a single layer.
 struct AdamLayerState {
     m_w: Matrix,
@@ -119,59 +128,55 @@ impl AdamLayerState {
         bias: &mut Vector,
         grad_w: &Matrix,
         grad_b: &Vector,
-        lr: f64,
-        beta1: f64,
-        beta2: f64,
-        epsilon: f64,
+        hparams: AdamHyperparameters,
     ) {
         self.t += 1;
         let t = self.t as f64;
 
         // Update biased first moment estimate
-        self.m_w = beta1 * &self.m_w + (1.0 - beta1) * grad_w;
-        self.m_b = beta1 * &self.m_b + (1.0 - beta1) * grad_b;
+        self.m_w = hparams.beta1 * &self.m_w + (1.0 - hparams.beta1) * grad_w;
+        self.m_b = hparams.beta1 * &self.m_b + (1.0 - hparams.beta1) * grad_b;
 
         // Update biased second raw moment estimate
         let grad_w_sq = grad_w.map(|g| g * g);
         let grad_b_sq = grad_b.map(|g| g * g);
 
-        self.v_w = beta2 * &self.v_w + (1.0 - beta2) * grad_w_sq;
-        self.v_b = beta2 * &self.v_b + (1.0 - beta2) * grad_b_sq;
+        self.v_w = hparams.beta2 * &self.v_w + (1.0 - hparams.beta2) * grad_w_sq;
+        self.v_b = hparams.beta2 * &self.v_b + (1.0 - hparams.beta2) * grad_b_sq;
 
         // Compute bias-corrected first moment estimate
-        let m_hat_w = &self.m_w / (1.0 - beta1.powf(t));
-        let m_hat_b = &self.m_b / (1.0 - beta1.powf(t));
+        let m_hat_w = &self.m_w / (1.0 - hparams.beta1.powf(t));
+        let m_hat_b = &self.m_b / (1.0 - hparams.beta1.powf(t));
 
         // Compute bias-corrected second raw moment estimate
-        let v_hat_w = &self.v_w / (1.0 - beta2.powf(t));
-        let v_hat_b = &self.v_b / (1.0 - beta2.powf(t));
+        let v_hat_w = &self.v_w / (1.0 - hparams.beta2.powf(t));
+        let v_hat_b = &self.v_b / (1.0 - hparams.beta2.powf(t));
 
         // Update parameters
-        let update_w = m_hat_w.component_div(&v_hat_w.map(|v| v.sqrt() + epsilon));
-        let update_b = m_hat_b.component_div(&v_hat_b.map(|v| v.sqrt() + epsilon));
+        let update_w = m_hat_w.component_div(&v_hat_w.map(|v| v.sqrt() + hparams.epsilon));
+        let update_b = m_hat_b.component_div(&v_hat_b.map(|v| v.sqrt() + hparams.epsilon));
 
-        *weights -= update_w * lr;
-        *bias -= update_b * lr;
+        *weights -= update_w * hparams.lr;
+        *bias -= update_b * hparams.lr;
     }
 }
 
 /// Adam Optimizer.
 /// Adaptive Moment Estimation.
 pub struct Adam {
-    learning_rate: f64,
-    beta1: f64,
-    beta2: f64,
-    epsilon: f64,
+    hparams: AdamHyperparameters,
     states: HashMap<usize, AdamLayerState>,
 }
 
 impl Adam {
     pub fn new(lr: f64) -> Self {
         Self {
-            learning_rate: lr,
-            beta1: 0.9,
-            beta2: 0.999,
-            epsilon: 1e-8,
+            hparams: AdamHyperparameters {
+                lr,
+                beta1: 0.9,
+                beta2: 0.999,
+                epsilon: 1e-8,
+            },
             states: HashMap::new(),
         }
     }
@@ -192,15 +197,6 @@ impl Optimizer for Adam {
             AdamLayerState::new(shape_w, shape_b)
         });
 
-        state.step(
-            weights,
-            bias,
-            grad_w,
-            grad_b,
-            self.learning_rate,
-            self.beta1,
-            self.beta2,
-            self.epsilon,
-        );
+        state.step(weights, bias, grad_w, grad_b, self.hparams);
     }
 }
