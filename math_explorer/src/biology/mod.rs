@@ -45,3 +45,9 @@ pub mod evolution;
 
 /// Generic reaction-diffusion framework.
 pub mod reaction_diffusion;
+
+/// Chemical state representation.
+pub mod state;
+
+/// Core biological simulation traits.
+pub mod traits;

@@ -62,7 +62,7 @@
 //! ```
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-use crate::biology::reaction_diffusion::ReactionModel;
+use crate::biology::traits::ReactionModel;
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
