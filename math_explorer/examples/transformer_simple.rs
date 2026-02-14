@@ -3,7 +3,7 @@
 //! To run this example:
 //! `cargo run --example transformer_simple`
 
-use math_explorer::ai::transformer::{Decoder, Encoder, Transformer};
+use math_explorer::ai::transformer::TransformerBuilder;
 use nalgebra::DMatrix;
 
 fn main() {
@@ -13,14 +13,15 @@ fn main() {
     let d_ff = 128; // Feed-forward dimension
     let layers = 2; // Number of layers
 
-    // 2. Instantiate Components
-    let encoder = Encoder::new(layers, d_model, heads, d_ff);
-    let decoder = Decoder::new(layers, d_model, heads, d_ff);
-
-    // 3. Assemble Transformer
-    // Note: The Transformer struct is a container. In a real application,
-    // you would also need Embeddings and Positional Encoding.
-    let transformer = Transformer { encoder, decoder };
+    // 2. Instantiate Components & Assemble Transformer
+    // We use the new Builder pattern for safe construction.
+    let transformer = TransformerBuilder::new()
+        .d_model(d_model)
+        .heads(heads)
+        .d_ff(d_ff)
+        .layers(layers)
+        .build()
+        .expect("Failed to build Transformer configuration");
 
     println!("Transformer model assembled successfully!");
 

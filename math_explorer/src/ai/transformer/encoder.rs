@@ -1,6 +1,7 @@
 use super::attention::MultiHeadAttention;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use crate::ai::error::AIError;
 use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
 use nalgebra::DMatrix;
 
@@ -33,13 +34,13 @@ impl EncoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `EncoderLayer` instance initialized with the given parameters.
-    pub fn new(d_model: usize, h: usize, d_ff: usize) -> Self {
-        Self {
-            self_attn: MultiHeadAttention::new(d_model, h),
+    pub fn new(d_model: usize, h: usize, d_ff: usize) -> Result<Self, AIError> {
+        Ok(Self {
+            self_attn: MultiHeadAttention::new(d_model, h)?,
             feed_forward: FeedForward::new(d_model, d_ff),
             norm1: LayerNorm::new(d_model),
             norm2: LayerNorm::new(d_model),
-        }
+        })
     }
 }
 
@@ -98,12 +99,16 @@ impl Encoder<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `Encoder` instance.
-    pub fn new(num_layers: usize, d_model: usize, h: usize, d_ff: usize) -> Self {
-        Self {
-            layers: (0..num_layers)
-                .map(|_| EncoderLayer::new(d_model, h, d_ff))
-                .collect(),
-        }
+    pub fn new(
+        num_layers: usize,
+        d_model: usize,
+        h: usize,
+        d_ff: usize,
+    ) -> Result<Self, AIError> {
+        let layers: Result<Vec<_>, AIError> = (0..num_layers)
+            .map(|_| EncoderLayer::new(d_model, h, d_ff))
+            .collect();
+        Ok(Self { layers: layers? })
     }
 }
 
@@ -143,7 +148,7 @@ mod tests {
         let d_ff = 2048;
 
         let x = DMatrix::zeros(seq_len, d_model);
-        let encoder_layer = EncoderLayer::new(d_model, h, d_ff);
+        let encoder_layer = EncoderLayer::new(d_model, h, d_ff).unwrap();
         let output = encoder_layer.forward(&x, None);
 
         assert_eq!(output.nrows(), seq_len);

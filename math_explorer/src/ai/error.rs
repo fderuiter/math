@@ -7,6 +7,8 @@ pub enum AIError {
     DimensionMismatch { expected: String, got: String },
     /// Invalid parameter value (e.g. negative learning rate).
     InvalidParameter { name: String, value: f64 },
+    /// Missing required parameter for model construction.
+    MissingParameter { name: String },
     /// Optimization failed or diverged.
     OptimizationDivergence,
 }
@@ -19,6 +21,9 @@ impl fmt::Display for AIError {
             }
             Self::InvalidParameter { name, value } => {
                 write!(f, "Invalid parameter {}: {}", name, value)
+            }
+            Self::MissingParameter { name } => {
+                write!(f, "Missing required parameter: {}", name)
             }
             Self::OptimizationDivergence => write!(f, "Optimization diverged"),
         }

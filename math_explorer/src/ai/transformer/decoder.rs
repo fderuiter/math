@@ -1,6 +1,7 @@
 use super::attention::MultiHeadAttention;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use crate::ai::error::AIError;
 use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
 use nalgebra::DMatrix;
 
@@ -36,15 +37,15 @@ impl DecoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `DecoderLayer` instance.
-    pub fn new(d_model: usize, h: usize, d_ff: usize) -> Self {
-        Self {
-            self_attn: MultiHeadAttention::new(d_model, h),
-            cross_attn: MultiHeadAttention::new(d_model, h),
+    pub fn new(d_model: usize, h: usize, d_ff: usize) -> Result<Self, AIError> {
+        Ok(Self {
+            self_attn: MultiHeadAttention::new(d_model, h)?,
+            cross_attn: MultiHeadAttention::new(d_model, h)?,
             feed_forward: FeedForward::new(d_model, d_ff),
             norm1: LayerNorm::new(d_model),
             norm2: LayerNorm::new(d_model),
             norm3: LayerNorm::new(d_model),
-        }
+        })
     }
 }
 
@@ -129,12 +130,16 @@ impl Decoder<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `Decoder` instance.
-    pub fn new(num_layers: usize, d_model: usize, h: usize, d_ff: usize) -> Self {
-        Self {
-            layers: (0..num_layers)
-                .map(|_| DecoderLayer::new(d_model, h, d_ff))
-                .collect(),
-        }
+    pub fn new(
+        num_layers: usize,
+        d_model: usize,
+        h: usize,
+        d_ff: usize,
+    ) -> Result<Self, AIError> {
+        let layers: Result<Vec<_>, AIError> = (0..num_layers)
+            .map(|_| DecoderLayer::new(d_model, h, d_ff))
+            .collect();
+        Ok(Self { layers: layers? })
     }
 }
 
@@ -183,7 +188,7 @@ mod tests {
 
         let x = DMatrix::zeros(seq_len, d_model);
         let enc_output = DMatrix::zeros(seq_len, d_model);
-        let decoder_layer = DecoderLayer::new(d_model, h, d_ff);
+        let decoder_layer = DecoderLayer::new(d_model, h, d_ff).unwrap();
         let output = decoder_layer.forward(&x, &enc_output, None, None);
 
         assert_eq!(output.nrows(), seq_len);

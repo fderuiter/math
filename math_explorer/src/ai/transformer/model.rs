@@ -31,8 +31,8 @@ use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, Nor
 /// use math_explorer::ai::transformer::{Transformer, Encoder, Decoder};
 ///
 /// // 1. Configure Layers
-/// let encoder = Encoder::new(6, 512, 8, 2048);
-/// let decoder = Decoder::new(6, 512, 8, 2048);
+/// let encoder = Encoder::new(6, 512, 8, 2048).unwrap();
+/// let decoder = Decoder::new(6, 512, 8, 2048).unwrap();
 ///
 /// // 2. Assemble Model
 /// let model = Transformer {

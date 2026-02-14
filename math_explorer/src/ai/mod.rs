@@ -58,7 +58,7 @@
 //! let num_heads = 8;      // Attention heads
 //! let d_ff = 2048;        // Feed-forward hidden dimension
 //!
-//! let encoder = Encoder::new(num_layers, d_model, num_heads, d_ff);
+//! let encoder = Encoder::new(num_layers, d_model, num_heads, d_ff).unwrap();
 //!
 //! // 2. Prepare Input (Batch Size x Sequence Length x Embedding Dim)
 //! // Note: This implementation currently handles 2D matrices (SeqLen x Dim)

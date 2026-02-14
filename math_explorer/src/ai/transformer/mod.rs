@@ -48,14 +48,25 @@
 //! let layers = 2;    // Number of layers
 //!
 //! // 2. Instantiate Components
-//! let encoder = Encoder::new(layers, d_model, heads, d_ff);
-//! let decoder = Decoder::new(layers, d_model, heads, d_ff);
+//! // Note: Construction returns a Result
+//! let encoder = Encoder::new(layers, d_model, heads, d_ff).unwrap();
+//! let decoder = Decoder::new(layers, d_model, heads, d_ff).unwrap();
 //!
 //! // 3. Assemble Transformer
 //! let transformer = Transformer {
 //!     encoder,
 //!     decoder,
 //! };
+//!
+//! // OR use the Builder (Recommended)
+//! use math_explorer::ai::transformer::TransformerBuilder;
+//! let transformer_v2 = TransformerBuilder::new()
+//!     .d_model(d_model)
+//!     .heads(heads)
+//!     .d_ff(d_ff)
+//!     .layers(layers)
+//!     .build()
+//!     .unwrap();
 //!
 //! // 4. Create Dummy Input (Sequence Length = 10)
 //! let seq_len = 10;
@@ -75,6 +86,7 @@
 //! ```
 
 pub mod attention;
+pub mod builder;
 pub mod decoder;
 pub mod encoder;
 pub mod feed_forward;
@@ -84,6 +96,7 @@ pub mod positional_encoding;
 pub mod traits;
 
 pub use attention::MultiHeadAttention;
+pub use builder::TransformerBuilder;
 pub use decoder::{Decoder, DecoderLayer};
 pub use encoder::{Encoder, EncoderLayer};
 pub use feed_forward::FeedForward;

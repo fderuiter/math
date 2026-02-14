@@ -18,7 +18,7 @@ fn test_transformer_dependency_injection() {
     let d_ff = 256;
 
     // Create standard components
-    let attn = MultiHeadAttention::new(d_model, h);
+    let attn = MultiHeadAttention::new(d_model, h).unwrap();
     let ff = FeedForward::new(d_model, d_ff);
 
     // Create our custom component
@@ -42,4 +42,41 @@ fn test_transformer_dependency_injection() {
 
     // Since we used IdentityNorm, the values will be different than standard LayerNorm,
     // but the fact that it compiled and ran proves the architectural flexibility.
+}
+
+#[test]
+fn test_transformer_builder() {
+    use math_explorer::ai::transformer::TransformerBuilder;
+
+    let builder = TransformerBuilder::new()
+        .d_model(64)
+        .heads(4)
+        .d_ff(128)
+        .layers(2);
+
+    let transformer = builder.build().expect("Should build successfully");
+
+    assert_eq!(transformer.encoder.layers.len(), 2);
+    assert_eq!(transformer.decoder.layers.len(), 2);
+}
+
+#[test]
+fn test_transformer_builder_invalid() {
+    use math_explorer::ai::transformer::TransformerBuilder;
+
+    // d_model (65) is not divisible by heads (4)
+    let builder = TransformerBuilder::new()
+        .d_model(65)
+        .heads(4)
+        .d_ff(128)
+        .layers(2);
+
+    let result = builder.build();
+    assert!(result.is_err());
+
+    // Check error type
+    match result {
+        Err(math_explorer::ai::error::AIError::DimensionMismatch { .. }) => (),
+        _ => panic!("Expected DimensionMismatch error"),
+    }
 }

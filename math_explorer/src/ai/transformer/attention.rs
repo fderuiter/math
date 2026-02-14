@@ -1,6 +1,7 @@
 // Implementation of Scaled Dot-Product Attention and Multi-Head Attention.
 
 use crate::ai::activations::softmax_row_wise;
+use crate::ai::error::AIError;
 use crate::ai::transformer::traits::AttentionMechanism;
 use nalgebra::DMatrix;
 
@@ -75,14 +76,26 @@ impl MultiHeadAttention {
     ///
     /// In a real model, the weight matrices would be initialized randomly.
     /// Here, they are initialized as zeros for simplicity.
-    pub fn new(d_model: usize, h: usize) -> Self {
-        assert!(
-            d_model.is_multiple_of(h),
-            "d_model must be divisible by the number of heads h"
-        );
+    ///
+    /// # Errors
+    /// Returns `AIError` if `d_model` is not divisible by `h` or if `h` is 0.
+    pub fn new(d_model: usize, h: usize) -> Result<Self, AIError> {
+        if h == 0 {
+            return Err(AIError::InvalidParameter {
+                name: "h".to_string(),
+                value: 0.0,
+            });
+        }
+        #[allow(clippy::manual_is_multiple_of)]
+        if d_model % h != 0 {
+            return Err(AIError::DimensionMismatch {
+                expected: format!("multiple of {}", h),
+                got: d_model.to_string(),
+            });
+        }
         let d_k = d_model / h;
 
-        Self {
+        Ok(Self {
             d_model,
             h,
             d_k,
@@ -90,7 +103,7 @@ impl MultiHeadAttention {
             w_k: (0..h).map(|_| DMatrix::zeros(d_model, d_k)).collect(),
             w_v: (0..h).map(|_| DMatrix::zeros(d_model, d_k)).collect(),
             w_o: DMatrix::zeros(d_model, d_model),
-        }
+        })
     }
 
     /// Performs the forward pass for the Multi-Head Attention layer.
@@ -183,7 +196,7 @@ mod tests {
         let k = DMatrix::zeros(seq_len, d_model);
         let v = DMatrix::zeros(seq_len, d_model);
 
-        let mha = MultiHeadAttention::new(d_model, h);
+        let mha = MultiHeadAttention::new(d_model, h).unwrap();
         let output = mha.forward(&q, &k, &v, None);
 
         assert_eq!(output.nrows(), seq_len);
