@@ -1,7 +1,10 @@
 //! Root finding algorithms.
 //!
 //! This module implements the **Strategy Pattern** for root finding, allowing
-//! different algorithms (Bisection, Newton-Raphson, Brent's) to be used interchangeably.
+//! different algorithms (Bisection, Newton-Raphson, Secant) to be used interchangeably.
+//!
+//! It also adheres to the **Open/Closed Principle** by encapsulating iteration logic
+//! in `IterativeParams`, making it easy to add new solvers.
 
 use std::fmt;
 
@@ -28,6 +31,40 @@ impl fmt::Display for AnalysisError {
 
 impl std::error::Error for AnalysisError {}
 
+/// Minimum absolute value for a derivative or slope to be considered non-zero.
+/// Used to prevent division by zero in Newton-Raphson and Secant methods.
+const MIN_SLOPE: f64 = 1e-14;
+
+/// Common parameters for iterative root-finding algorithms.
+///
+/// Encapsulates the configuration for convergence checks, promoting code reuse across solvers.
+#[derive(Debug, Clone, Copy)]
+pub struct IterativeParams {
+    /// Maximum number of iterations before giving up.
+    pub max_iterations: usize,
+    /// Absolute tolerance for the root value (convergence criteria).
+    pub tolerance: f64,
+}
+
+impl IterativeParams {
+    /// Creates a new set of iterative parameters.
+    pub fn new(max_iterations: usize, tolerance: f64) -> Self {
+        Self {
+            max_iterations,
+            tolerance,
+        }
+    }
+}
+
+impl Default for IterativeParams {
+    fn default() -> Self {
+        Self {
+            max_iterations: 100,
+            tolerance: 1e-6,
+        }
+    }
+}
+
 /// Strategy for finding roots of a function $f(x) = 0$.
 pub trait RootFinder {
     /// Finds a root of the function `f` within the interval `[min, max]`.
@@ -49,29 +86,16 @@ pub trait RootFinder {
 ///
 /// A robust but slow method that iteratively halves the interval.
 /// Guaranteed to converge if the function is continuous and changes sign over the interval.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Bisection {
-    /// Maximum number of iterations before giving up.
-    pub max_iterations: usize,
-    /// Absolute tolerance for the root value (convergence criteria).
-    pub tolerance: f64,
+    pub params: IterativeParams,
 }
 
 impl Bisection {
     /// Creates a new Bisection solver.
     pub fn new(max_iterations: usize, tolerance: f64) -> Self {
         Self {
-            max_iterations,
-            tolerance,
-        }
-    }
-}
-
-impl Default for Bisection {
-    fn default() -> Self {
-        Self {
-            max_iterations: 100,
-            tolerance: 1e-6,
+            params: IterativeParams::new(max_iterations, tolerance),
         }
     }
 }
@@ -85,12 +109,12 @@ impl RootFinder for Bisection {
         let mut high = max;
 
         let mut f_low = f(low);
-        if f_low.abs() < self.tolerance {
+        if f_low.abs() < self.params.tolerance {
             return Ok(low);
         }
 
         let f_high = f(high);
-        if f_high.abs() < self.tolerance {
+        if f_high.abs() < self.params.tolerance {
             return Ok(high);
         }
 
@@ -104,18 +128,18 @@ impl RootFinder for Bisection {
 
         let mut mid = low;
 
-        for _ in 0..self.max_iterations {
+        for _ in 0..self.params.max_iterations {
             mid = (low + high) / 2.0;
 
             // Check convergence on domain (interval size)
-            if (high - low).abs() < self.tolerance {
+            if (high - low).abs() < self.params.tolerance {
                 return Ok(mid);
             }
 
             let f_mid = f(mid);
 
             // Check convergence on range (function value)
-            if f_mid.abs() < self.tolerance {
+            if f_mid.abs() < self.params.tolerance {
                 return Ok(mid);
             }
 
@@ -141,18 +165,25 @@ impl RootFinder for Bisection {
 /// If the derivative is not provided (via `RootFinder` trait), a numerical approximation is used.
 #[derive(Debug, Clone, Copy)]
 pub struct NewtonRaphson {
-    /// Maximum number of iterations.
-    pub max_iterations: usize,
-    /// Absolute tolerance for the root value.
-    pub tolerance: f64,
+    pub params: IterativeParams,
+    /// Step size for numerical differentiation.
+    pub finite_difference_step: f64,
 }
 
 impl NewtonRaphson {
     /// Creates a new Newton-Raphson solver.
     pub fn new(max_iterations: usize, tolerance: f64) -> Self {
         Self {
-            max_iterations,
-            tolerance,
+            params: IterativeParams::new(max_iterations, tolerance),
+            finite_difference_step: 1e-7,
+        }
+    }
+
+    /// Creates a new Newton-Raphson solver with custom finite difference step.
+    pub fn new_with_step(max_iterations: usize, tolerance: f64, step_size: f64) -> Self {
+        Self {
+            params: IterativeParams::new(max_iterations, tolerance),
+            finite_difference_step: step_size,
         }
     }
 
@@ -174,14 +205,14 @@ impl NewtonRaphson {
     {
         let mut x = guess;
 
-        for _ in 0..self.max_iterations {
+        for _ in 0..self.params.max_iterations {
             let y = f(x);
-            if y.abs() < self.tolerance {
+            if y.abs() < self.params.tolerance {
                 return Ok(x);
             }
 
             let dy = f_prime(x);
-            if dy.abs() < 1e-14 {
+            if dy.abs() < MIN_SLOPE {
                 return Err(AnalysisError::InvalidParameters(format!(
                     "Derivative too small at x={}: {}",
                     x, dy
@@ -191,7 +222,7 @@ impl NewtonRaphson {
             let next_x = x - y / dy;
 
             // Check convergence on domain step
-            if (next_x - x).abs() < self.tolerance {
+            if (next_x - x).abs() < self.params.tolerance {
                 return Ok(next_x);
             }
 
@@ -205,8 +236,8 @@ impl NewtonRaphson {
 impl Default for NewtonRaphson {
     fn default() -> Self {
         Self {
-            max_iterations: 100,
-            tolerance: 1e-6,
+            params: IterativeParams::default(),
+            finite_difference_step: 1e-7,
         }
     }
 }
@@ -219,13 +250,83 @@ impl RootFinder for NewtonRaphson {
         // Use midpoint as initial guess
         let guess = (min + max) / 2.0;
 
-        // Numerical derivative step size
-        let h = 1e-7;
+        // Numerical derivative step size from configuration
+        let h = self.finite_difference_step;
 
         let derivative = |x: f64| (f(x + h) - f(x - h)) / (2.0 * h);
 
         // We use the specialized method with our numerical derivative
         self.find_root_with_derivative(&f, derivative, guess)
+    }
+}
+
+/// Secant method implementation.
+///
+/// A root-finding algorithm that uses a succession of roots of secant lines to better approximate a root of a function f.
+/// It can be thought of as a finite-difference approximation of Newton's method.
+/// However, the Secant method requires two initial values.
+///
+/// # Note
+/// This implementation adapts the `RootFinder` trait (which provides a bracket `[min, max]`)
+/// by using `min` and `max` as the two initial guesses $x_0$ and $x_1$.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Secant {
+    pub params: IterativeParams,
+}
+
+impl Secant {
+    pub fn new(max_iterations: usize, tolerance: f64) -> Self {
+        Self {
+            params: IterativeParams::new(max_iterations, tolerance),
+        }
+    }
+}
+
+impl RootFinder for Secant {
+    fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+    {
+        let mut x0 = min;
+        let mut x1 = max;
+        let mut f0 = f(x0);
+        let mut f1 = f(x1);
+
+        if f0.abs() < self.params.tolerance {
+            return Ok(x0);
+        }
+        if f1.abs() < self.params.tolerance {
+            return Ok(x1);
+        }
+
+        for _ in 0..self.params.max_iterations {
+            if (f1 - f0).abs() < MIN_SLOPE {
+                return Err(AnalysisError::InvalidParameters(format!(
+                    "Function values too close (flat slope) at x0={}, x1={}",
+                    x0, x1
+                )));
+            }
+
+            // Secant update: x2 = x1 - f(x1) * (x1 - x0) / (f(x1) - f(x0))
+            let x2 = x1 - f1 * (x1 - x0) / (f1 - f0);
+
+            if (x2 - x1).abs() < self.params.tolerance {
+                return Ok(x2);
+            }
+
+            let f2 = f(x2);
+            if f2.abs() < self.params.tolerance {
+                return Ok(x2);
+            }
+
+            // Shift points
+            x0 = x1;
+            f0 = f1;
+            x1 = x2;
+            f1 = f2;
+        }
+
+        Err(AnalysisError::ConvergenceError(x1))
     }
 }
 
@@ -273,5 +374,13 @@ mod tests {
         // x^2 + 1 = 0 has no real roots. And signs are always positive.
         let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
         assert!(matches!(result, Err(AnalysisError::InvalidParameters(_))));
+    }
+
+    #[test]
+    fn test_secant_square_root() {
+        let solver = Secant::default();
+        // x^2 - 2 = 0
+        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+        assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
     }
 }
