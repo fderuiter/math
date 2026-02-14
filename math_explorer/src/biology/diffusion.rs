@@ -104,12 +104,7 @@ impl FiniteDifference1D {
 }
 
 impl DiffusionModel for FiniteDifference1D {
-    fn apply(
-        &self,
-        state: &ChemicalState,
-        out: &mut ChemicalState,
-        coeffs: &[f64],
-    ) {
+    fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]) {
         let n_species = state.num_species();
         let n_grid = state.grid_size();
 
