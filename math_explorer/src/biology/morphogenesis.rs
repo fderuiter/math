@@ -133,6 +133,33 @@ impl ReactionModel for SchnakenbergKinetics {
         rates[0] = du;
         rates[1] = dv;
     }
+
+    fn apply_batch(&self, concentrations: &[Vec<f64>], out_rates: &mut [Vec<f64>]) {
+        if concentrations.len() < 2 || out_rates.len() < 2 {
+            return;
+        }
+        let u_vec = &concentrations[0];
+        let v_vec = &concentrations[1];
+
+        let (out_u_slice, out_rest) = out_rates.split_at_mut(1);
+        let out_u = &mut out_u_slice[0];
+        let out_v = &mut out_rest[0];
+
+        // Use zip to eliminate bounds checks and enable auto-vectorization
+        for (((&u, &v), du), dv) in u_vec
+            .iter()
+            .zip(v_vec.iter())
+            .zip(out_u.iter_mut())
+            .zip(out_v.iter_mut())
+        {
+            let uv_sq = u * u * v;
+            let reaction_u = self.a - u + uv_sq;
+            let reaction_v = self.b - uv_sq;
+
+            *du += reaction_u;
+            *dv += reaction_v;
+        }
+    }
 }
 
 /// Represents the state of a Turing system at a point in time.
