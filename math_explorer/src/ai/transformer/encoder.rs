@@ -99,12 +99,7 @@ impl Encoder<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `Encoder` instance.
-    pub fn new(
-        num_layers: usize,
-        d_model: usize,
-        h: usize,
-        d_ff: usize,
-    ) -> Result<Self, AIError> {
+    pub fn new(num_layers: usize, d_model: usize, h: usize, d_ff: usize) -> Result<Self, AIError> {
         let layers: Result<Vec<_>, AIError> = (0..num_layers)
             .map(|_| EncoderLayer::new(d_model, h, d_ff))
             .collect();

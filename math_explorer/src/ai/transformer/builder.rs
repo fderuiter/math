@@ -1,10 +1,10 @@
-use crate::ai::error::AIError;
-use super::model::Transformer;
-use super::encoder::Encoder;
-use super::decoder::Decoder;
 use super::attention::MultiHeadAttention;
+use super::decoder::Decoder;
+use super::encoder::Encoder;
 use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
+use super::model::Transformer;
+use crate::ai::error::AIError;
 
 /// Builder for constructing a standard Transformer model.
 ///
@@ -95,7 +95,7 @@ impl TransformerBuilder {
         }
         #[allow(clippy::manual_is_multiple_of)]
         if d_model % heads != 0 {
-             return Err(AIError::DimensionMismatch {
+            return Err(AIError::DimensionMismatch {
                 expected: format!("multiple of {}", heads),
                 got: d_model.to_string(),
             });
@@ -105,9 +105,6 @@ impl TransformerBuilder {
         let encoder = Encoder::new(layers, d_model, heads, d_ff)?;
         let decoder = Decoder::new(layers, d_model, heads, d_ff)?;
 
-        Ok(Transformer {
-            encoder,
-            decoder,
-        })
+        Ok(Transformer { encoder, decoder })
     }
 }
