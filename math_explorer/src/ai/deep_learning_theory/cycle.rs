@@ -1,6 +1,6 @@
 use super::calculus::{linear_backward, relu, relu_prime};
 use super::linear_algebra::{DenseLayer, Vector};
-use super::optimization::{SGD, cross_entropy_softmax_prime};
+use super::optimization::{Optimizer, SGD, cross_entropy_softmax_prime};
 use super::probability::softmax;
 
 /// The Deep Learning Cycle: Forward -> Loss -> Backward -> Update
@@ -10,7 +10,7 @@ use super::probability::softmax;
 pub struct TrainingLoop {
     pub layer1: DenseLayer,
     pub layer2: DenseLayer,
-    pub optimizer: SGD,
+    pub optimizer: Box<dyn Optimizer>,
 }
 
 impl TrainingLoop {
@@ -18,7 +18,22 @@ impl TrainingLoop {
         Self {
             layer1: DenseLayer::new(input_dim, hidden_dim),
             layer2: DenseLayer::new(hidden_dim, output_dim),
-            optimizer: SGD::new(lr),
+            optimizer: Box::new(SGD::new(lr)),
+        }
+    }
+
+    /// Creates a new TrainingLoop with a custom optimizer.
+    /// This allows injecting advanced optimizers like Adam.
+    pub fn with_optimizer(
+        input_dim: usize,
+        hidden_dim: usize,
+        output_dim: usize,
+        optimizer: Box<dyn Optimizer>,
+    ) -> Self {
+        Self {
+            layer1: DenseLayer::new(input_dim, hidden_dim),
+            layer2: DenseLayer::new(hidden_dim, output_dim),
+            optimizer,
         }
     }
 
@@ -65,13 +80,23 @@ impl TrainingLoop {
         let (_, d_w1, d_b1) = linear_backward(&d_z1, x, &self.layer1.weights);
 
         // --- 4. Update (Optimization) ---
-        self.optimizer
-            .update_matrix(&mut self.layer2.weights, &d_w2);
-        self.optimizer.update_vector(&mut self.layer2.bias, &d_b2);
+        // Layer 2
+        self.optimizer.update(
+            1,
+            &mut self.layer2.weights,
+            &mut self.layer2.bias,
+            &d_w2,
+            &d_b2,
+        );
 
-        self.optimizer
-            .update_matrix(&mut self.layer1.weights, &d_w1);
-        self.optimizer.update_vector(&mut self.layer1.bias, &d_b1);
+        // Layer 1
+        self.optimizer.update(
+            0,
+            &mut self.layer1.weights,
+            &mut self.layer1.bias,
+            &d_w1,
+            &d_b1,
+        );
 
         loss
     }

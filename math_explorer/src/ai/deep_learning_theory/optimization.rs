@@ -1,5 +1,6 @@
 use super::linear_algebra::{Matrix, Scalar, Vector};
 use super::probability::softmax;
+use std::collections::HashMap;
 
 /// Mean Squared Error (MSE) Loss function.
 /// Used primarily for Regression.
@@ -43,6 +44,19 @@ pub fn cross_entropy_softmax_prime(z_logits: &Vector, y_true: &Vector) -> Vector
     y_pred - y_true
 }
 
+/// Common interface for optimization algorithms.
+pub trait Optimizer {
+    /// Updates the weights and bias for a specific layer.
+    fn update(
+        &mut self,
+        layer_id: usize,
+        weights: &mut Matrix,
+        bias: &mut Vector,
+        grad_w: &Matrix,
+        grad_b: &Vector,
+    );
+}
+
 /// Gradient Descent Update Rule.
 /// \theta = \theta - \alpha \nabla_{\theta} J
 ///
@@ -65,13 +79,22 @@ impl SGD {
     }
 }
 
-/// Adam Optimizer (simplified).
-/// Adaptive Moment Estimation.
-pub struct Adam {
-    learning_rate: f64,
-    beta1: f64,
-    beta2: f64,
-    epsilon: f64,
+impl Optimizer for SGD {
+    fn update(
+        &mut self,
+        _layer_id: usize,
+        weights: &mut Matrix,
+        bias: &mut Vector,
+        grad_w: &Matrix,
+        grad_b: &Vector,
+    ) {
+        self.update_matrix(weights, grad_w);
+        self.update_vector(bias, grad_b);
+    }
+}
+
+/// Internal state for Adam optimizer for a single layer.
+struct AdamLayerState {
     m_w: Matrix,
     v_w: Matrix,
     m_b: Vector,
@@ -79,13 +102,9 @@ pub struct Adam {
     t: i32,
 }
 
-impl Adam {
-    pub fn new(lr: f64, shape_w: (usize, usize), shape_b: usize) -> Self {
+impl AdamLayerState {
+    fn new(shape_w: (usize, usize), shape_b: usize) -> Self {
         Self {
-            learning_rate: lr,
-            beta1: 0.9,
-            beta2: 0.999,
-            epsilon: 1e-8,
             m_w: Matrix::zeros(shape_w.0, shape_w.1),
             v_w: Matrix::zeros(shape_w.0, shape_w.1),
             m_b: Vector::zeros(shape_b),
@@ -94,43 +113,94 @@ impl Adam {
         }
     }
 
-    /// Updates parameters (weights and bias) using Adam logic.
-    pub fn step(
+    fn step(
         &mut self,
         weights: &mut Matrix,
         bias: &mut Vector,
         grad_w: &Matrix,
         grad_b: &Vector,
+        lr: f64,
+        beta1: f64,
+        beta2: f64,
+        epsilon: f64,
     ) {
         self.t += 1;
         let t = self.t as f64;
 
         // Update biased first moment estimate
-        self.m_w = self.beta1 * &self.m_w + (1.0 - self.beta1) * grad_w;
-        self.m_b = self.beta1 * &self.m_b + (1.0 - self.beta1) * grad_b;
+        self.m_w = beta1 * &self.m_w + (1.0 - beta1) * grad_w;
+        self.m_b = beta1 * &self.m_b + (1.0 - beta1) * grad_b;
 
         // Update biased second raw moment estimate
-        // Element-wise square for gradients
         let grad_w_sq = grad_w.map(|g| g * g);
         let grad_b_sq = grad_b.map(|g| g * g);
 
-        self.v_w = self.beta2 * &self.v_w + (1.0 - self.beta2) * grad_w_sq;
-        self.v_b = self.beta2 * &self.v_b + (1.0 - self.beta2) * grad_b_sq;
+        self.v_w = beta2 * &self.v_w + (1.0 - beta2) * grad_w_sq;
+        self.v_b = beta2 * &self.v_b + (1.0 - beta2) * grad_b_sq;
 
         // Compute bias-corrected first moment estimate
-        let m_hat_w = &self.m_w / (1.0 - self.beta1.powf(t));
-        let m_hat_b = &self.m_b / (1.0 - self.beta1.powf(t));
+        let m_hat_w = &self.m_w / (1.0 - beta1.powf(t));
+        let m_hat_b = &self.m_b / (1.0 - beta1.powf(t));
 
         // Compute bias-corrected second raw moment estimate
-        let v_hat_w = &self.v_w / (1.0 - self.beta2.powf(t));
-        let v_hat_b = &self.v_b / (1.0 - self.beta2.powf(t));
+        let v_hat_w = &self.v_w / (1.0 - beta2.powf(t));
+        let v_hat_b = &self.v_b / (1.0 - beta2.powf(t));
 
         // Update parameters
-        // theta = theta - lr * m_hat / (sqrt(v_hat) + epsilon)
-        let update_w = m_hat_w.component_div(&v_hat_w.map(|v| v.sqrt() + self.epsilon));
-        let update_b = m_hat_b.component_div(&v_hat_b.map(|v| v.sqrt() + self.epsilon));
+        let update_w = m_hat_w.component_div(&v_hat_w.map(|v| v.sqrt() + epsilon));
+        let update_b = m_hat_b.component_div(&v_hat_b.map(|v| v.sqrt() + epsilon));
 
-        *weights -= update_w * self.learning_rate;
-        *bias -= update_b * self.learning_rate;
+        *weights -= update_w * lr;
+        *bias -= update_b * lr;
+    }
+}
+
+/// Adam Optimizer.
+/// Adaptive Moment Estimation.
+pub struct Adam {
+    learning_rate: f64,
+    beta1: f64,
+    beta2: f64,
+    epsilon: f64,
+    states: HashMap<usize, AdamLayerState>,
+}
+
+impl Adam {
+    pub fn new(lr: f64) -> Self {
+        Self {
+            learning_rate: lr,
+            beta1: 0.9,
+            beta2: 0.999,
+            epsilon: 1e-8,
+            states: HashMap::new(),
+        }
+    }
+}
+
+impl Optimizer for Adam {
+    fn update(
+        &mut self,
+        layer_id: usize,
+        weights: &mut Matrix,
+        bias: &mut Vector,
+        grad_w: &Matrix,
+        grad_b: &Vector,
+    ) {
+        let state = self.states.entry(layer_id).or_insert_with(|| {
+            let shape_w = weights.shape();
+            let shape_b = bias.len();
+            AdamLayerState::new(shape_w, shape_b)
+        });
+
+        state.step(
+            weights,
+            bias,
+            grad_w,
+            grad_b,
+            self.learning_rate,
+            self.beta1,
+            self.beta2,
+            self.epsilon,
+        );
     }
 }
