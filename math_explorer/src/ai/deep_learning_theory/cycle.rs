@@ -73,12 +73,16 @@ impl TrainingLoop {
         // Using layer indices to allow stateful optimizers (like Adam) to track momentum correctly.
 
         // Layer 2 update
-        self.optimizer.update_matrix(1, ParamType::Weight, &mut self.layer2.weights, &d_w2);
-        self.optimizer.update_vector(1, ParamType::Bias, &mut self.layer2.bias, &d_b2);
+        self.optimizer
+            .update_matrix(1, ParamType::Weight, &mut self.layer2.weights, &d_w2);
+        self.optimizer
+            .update_vector(1, ParamType::Bias, &mut self.layer2.bias, &d_b2);
 
         // Layer 1 update
-        self.optimizer.update_matrix(0, ParamType::Weight, &mut self.layer1.weights, &d_w1);
-        self.optimizer.update_vector(0, ParamType::Bias, &mut self.layer1.bias, &d_b1);
+        self.optimizer
+            .update_matrix(0, ParamType::Weight, &mut self.layer1.weights, &d_w1);
+        self.optimizer
+            .update_vector(0, ParamType::Bias, &mut self.layer1.bias, &d_b1);
 
         loss
     }

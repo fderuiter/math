@@ -109,8 +109,8 @@ impl Optimizer for SGD {
 
 /// Internal state for Adam optimizer per parameter.
 struct AdamState<T> {
-    m: T, // First moment
-    v: T, // Second moment
+    m: T,   // First moment
+    v: T,   // Second moment
     t: i32, // Time step for this parameter
 }
 
@@ -149,12 +149,10 @@ impl Optimizer for Adam {
         grad: &Vector,
     ) {
         let key = (layer_idx, param_type);
-        let state = self.vector_states.entry(key).or_insert_with(|| {
-             AdamState {
-                 m: Vector::zeros(param.len()),
-                 v: Vector::zeros(param.len()),
-                 t: 0,
-             }
+        let state = self.vector_states.entry(key).or_insert_with(|| AdamState {
+            m: Vector::zeros(param.len()),
+            v: Vector::zeros(param.len()),
+            t: 0,
         });
 
         state.t += 1;
@@ -186,12 +184,10 @@ impl Optimizer for Adam {
         grad: &Matrix,
     ) {
         let key = (layer_idx, param_type);
-        let state = self.matrix_states.entry(key).or_insert_with(|| {
-             AdamState {
-                 m: Matrix::zeros(param.nrows(), param.ncols()),
-                 v: Matrix::zeros(param.nrows(), param.ncols()),
-                 t: 0,
-             }
+        let state = self.matrix_states.entry(key).or_insert_with(|| AdamState {
+            m: Matrix::zeros(param.nrows(), param.ncols()),
+            v: Matrix::zeros(param.nrows(), param.ncols()),
+            t: 0,
         });
 
         state.t += 1;
