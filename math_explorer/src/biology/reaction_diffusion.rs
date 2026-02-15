@@ -297,6 +297,7 @@ mod tests {
     use crate::biology::diffusion::FiniteDifference1D;
     use crate::biology::morphogenesis::SchnakenbergKinetics;
     use crate::pure_math::analysis::ode::solvers::Euler;
+    use crate::pure_math::analysis::ode::traits::Solver;
 
     #[test]
     fn test_reaction_diffusion_system_equivalence() {
