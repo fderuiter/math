@@ -62,7 +62,7 @@
 //! ```
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-use crate::biology::reaction_diffusion::ReactionModel;
+use crate::biology::reaction_diffusion::{ChemicalState, ReactionModel};
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
@@ -132,6 +132,46 @@ impl ReactionModel for SchnakenbergKinetics {
         let (du, dv) = <Self as ReactionKinetics>::reaction(self, u, v);
         rates[0] = du;
         rates[1] = dv;
+    }
+
+    fn add_reaction_batch(&self, state: &ChemicalState, rates: &mut ChemicalState) {
+        if state.num_species() < 2 || rates.num_species() < 2 {
+            return;
+        }
+
+        // Direct access to slices for compiler auto-vectorization
+        let u_vec = &state.concentrations[0];
+        let v_vec = &state.concentrations[1];
+
+        // Use iterator to safely borrow multiple mutable slices
+        let mut rate_iter = rates.concentrations.iter_mut();
+        let du_vec = rate_iter
+            .next()
+            .expect("rates must have at least 2 species");
+        let dv_vec = rate_iter
+            .next()
+            .expect("rates must have at least 2 species");
+
+        // Ensure all lengths match to allow safe indexing or zip optimization
+        let len = std::cmp::min(
+            u_vec.len(),
+            std::cmp::min(v_vec.len(), std::cmp::min(du_vec.len(), dv_vec.len())),
+        );
+
+        for i in 0..len {
+            let u = u_vec[i];
+            let v = v_vec[i];
+
+            // Inlined reaction logic for maximum speed
+            // du/dt = a - u + u^2 v
+            // dv/dt = b - u^2 v
+            let uv_sq = u * u * v;
+            let reaction_u = self.a - u + uv_sq;
+            let reaction_v = self.b - uv_sq;
+
+            du_vec[i] += reaction_u;
+            dv_vec[i] += reaction_v;
+        }
     }
 }
 

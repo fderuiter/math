@@ -163,6 +163,33 @@ pub trait ReactionModel {
     /// * `concentrations`: The current concentrations of all species at this point.
     /// * `rates`: Output buffer for the computed reaction rates (dC/dt).
     fn reaction(&self, concentrations: &[f64], rates: &mut [f64]);
+
+    /// Computes the reaction rates for the entire grid in a batch.
+    ///
+    /// This default implementation iterates over the grid and calls `reaction` for each point.
+    /// Override this method to provide optimized, vectorized implementations.
+    ///
+    /// # Arguments
+    /// * `state`: The full chemical state.
+    /// * `rates`: Output buffer where reaction rates (dC/dt) will be *added*.
+    fn add_reaction_batch(&self, state: &ChemicalState, rates: &mut ChemicalState) {
+        let n_species = state.num_species();
+        let n_grid = state.grid_size();
+        let mut local_concs = vec![0.0; n_species];
+        let mut local_rates = vec![0.0; n_species];
+
+        for i in 0..n_grid {
+            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
+                *conc = state.concentrations[s][i];
+            }
+
+            self.reaction(&local_concs, &mut local_rates);
+
+            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
+                rates.concentrations[s][i] += *rate;
+            }
+        }
+    }
 }
 
 /// Defines the spatial diffusion strategy for N species.
@@ -249,22 +276,7 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
         diffusion.apply(state, out, diffusion_coeffs);
 
         // Add Reaction
-        let n_species = state.num_species();
-        let n_grid = state.grid_size();
-        let mut local_concs = vec![0.0; n_species];
-        let mut local_rates = vec![0.0; n_species];
-
-        for i in 0..n_grid {
-            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
-                *conc = state.concentrations[s][i];
-            }
-
-            reaction.reaction(&local_concs, &mut local_rates);
-
-            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
-                out.concentrations[s][i] += *rate;
-            }
-        }
+        reaction.add_reaction_batch(state, out);
     }
 
     pub fn step(&mut self, dt: f64) {
