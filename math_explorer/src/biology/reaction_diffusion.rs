@@ -207,8 +207,7 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
 
     fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
         // Compute Diffusion
-        self.diffusion
-            .apply(state, out, &self.diffusion_coeffs);
+        self.diffusion.apply(state, out, &self.diffusion_coeffs);
 
         // Add Reaction
         let n_species = state.num_species();
