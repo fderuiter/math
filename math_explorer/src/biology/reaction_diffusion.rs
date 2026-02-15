@@ -5,6 +5,7 @@
 //! and spatial diffusion (`DiffusionModel`).
 
 use crate::pure_math::analysis::ode::traits::{OdeSystem, VectorOperations};
+use crate::pure_math::analysis::ode::TimeStepper;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state of a multi-species chemical system.
@@ -176,44 +177,10 @@ pub trait DiffusionModel {
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
 }
 
-/// Defines a strategy for time integration of the Reaction-Diffusion system.
-#[deprecated(note = "Use pure_math::analysis::ode::traits::Solver instead.")]
-pub trait ReactionDiffusionSolver {
-    /// Advances the system by a time step `dt`.
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    );
-}
-
-/// A standard Forward Euler solver.
-///
-/// This solver separates the diffusion and reaction steps, prioritizing
-/// architectural cleanliness (SRP) over fused-loop optimizations.
-#[deprecated(note = "Use standard OdeSystem solvers or ReactionDiffusionSystem::step instead.")]
-#[derive(Debug, Default, Clone, Copy)]
-pub struct ForwardEuler;
-
-#[allow(deprecated)]
-impl ReactionDiffusionSolver for ForwardEuler {
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    ) {
-        // Delegate to the system's own step method which now handles Euler integration
-        // and manages borrow checking correctly.
-        system.step(dt);
-    }
-}
 
 /// A generic Reaction-Diffusion system for N species.
 pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
     pub state: ChemicalState,
-    /// Internal buffer for storing the time derivative ($dC/dt$).
-    /// Previously named `next_state`.
-    pub derivative_buffer: ChemicalState,
     pub reaction: R,
     pub diffusion: D,
     pub diffusion_coeffs: Vec<f64>,
@@ -230,7 +197,6 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
         assert_eq!(diffusion_coeffs.len(), num_species);
         Self {
             state: ChemicalState::new(num_species, grid_size),
-            derivative_buffer: ChemicalState::new(num_species, grid_size),
             reaction,
             diffusion,
             diffusion_coeffs,
@@ -267,16 +233,23 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
         }
     }
 
+    #[deprecated(note = "Use TimeStepper::step_with instead.")]
     pub fn step(&mut self, dt: f64) {
-        // Use internal helper to avoid splitting borrows of `self`.
-        Self::compute_derivative_internal(
-            &self.reaction,
-            &self.diffusion,
-            &self.diffusion_coeffs,
-            &self.state,
-            &mut self.derivative_buffer,
-        );
-        self.state.scale_add(&self.derivative_buffer, dt);
+        use crate::pure_math::analysis::ode::Euler;
+        let mut solver = Euler::new(&self.state);
+        self.step_with(&mut solver, dt);
+    }
+}
+
+impl<R: ReactionModel, D: DiffusionModel> TimeStepper<ChemicalState>
+    for ReactionDiffusionSystem<R, D>
+{
+    fn get_state(&self) -> &ChemicalState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut ChemicalState {
+        &mut self.state
     }
 }
 
@@ -308,6 +281,8 @@ mod tests {
 
     #[test]
     fn test_reaction_diffusion_system_equivalence() {
+        use crate::pure_math::analysis::ode::Euler;
+
         // Setup a small system
         let n = 10;
         let d_u = 1.0;
@@ -328,10 +303,13 @@ mod tests {
             system.state.species_mut(1)[i] = 0.5 - 0.05 * (i as f64);
         }
 
+        // Use standard Euler solver
+        let mut solver = Euler::new(&system.state);
+
         // Run for a few steps
         let dt = 0.01;
         for _ in 0..5 {
-            system.step(dt);
+            system.step_with(&mut solver, dt);
         }
 
         // Capture output
