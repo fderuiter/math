@@ -7,6 +7,8 @@ pub enum EpidemiologyError {
     SingularTransitionMatrix,
     /// Invalid Parameter (e.g., negative rate).
     InvalidParameter { name: String, value: f64 },
+    /// Missing Parameter required for construction.
+    MissingParameter { name: String },
     /// Matrix dimensions mismatch.
     DimensionMismatch {
         f_rows: usize,
@@ -25,6 +27,9 @@ impl fmt::Display for EpidemiologyError {
             ),
             Self::InvalidParameter { name, value } => {
                 write!(f, "Invalid parameter {}: {}", name, value)
+            }
+            Self::MissingParameter { name } => {
+                write!(f, "Missing parameter required for construction: {}", name)
             }
             Self::DimensionMismatch {
                 f_rows,
