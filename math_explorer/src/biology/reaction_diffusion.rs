@@ -4,8 +4,8 @@
 //! It abstracts over the state representation (`ChemicalState`), reaction kinetics (`ReactionModel`),
 //! and spatial diffusion (`DiffusionModel`).
 
-use crate::pure_math::analysis::ode::traits::{OdeSystem, VectorOperations};
 use crate::pure_math::analysis::ode::TimeStepper;
+use crate::pure_math::analysis::ode::traits::{OdeSystem, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state of a multi-species chemical system.
@@ -176,7 +176,6 @@ pub trait DiffusionModel {
     /// * `coeffs`: Diffusion coefficients for each species.
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
 }
-
 
 /// A generic Reaction-Diffusion system for N species.
 pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
