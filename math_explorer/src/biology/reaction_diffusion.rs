@@ -176,47 +176,71 @@ pub trait DiffusionModel {
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
 }
 
-/// Defines a strategy for time integration of the Reaction-Diffusion system.
-#[deprecated(note = "Use pure_math::analysis::ode::traits::Solver instead.")]
-pub trait ReactionDiffusionSolver {
-    /// Advances the system by a time step `dt`.
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    );
-}
-
-/// A standard Forward Euler solver.
+/// A generic Reaction-Diffusion Model for N species.
 ///
-/// This solver separates the diffusion and reaction steps, prioritizing
-/// architectural cleanliness (SRP) over fused-loop optimizations.
-#[deprecated(note = "Use standard OdeSystem solvers or ReactionDiffusionSystem::step instead.")]
-#[derive(Debug, Default, Clone, Copy)]
-pub struct ForwardEuler;
-
-#[allow(deprecated)]
-impl ReactionDiffusionSolver for ForwardEuler {
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    ) {
-        // Delegate to the system's own step method which now handles Euler integration
-        // and manages borrow checking correctly.
-        system.step(dt);
-    }
-}
-
-/// A generic Reaction-Diffusion system for N species.
-pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
-    pub state: ChemicalState,
-    /// Internal buffer for storing the time derivative ($dC/dt$).
-    /// Previously named `next_state`.
-    pub derivative_buffer: ChemicalState,
+/// This struct defines the physics (Reaction + Diffusion) without owning the state or solver logic.
+/// It implements `OdeSystem`, allowing it to be used with any standard ODE solver.
+pub struct ReactionDiffusionModel<R: ReactionModel, D: DiffusionModel> {
     pub reaction: R,
     pub diffusion: D,
     pub diffusion_coeffs: Vec<f64>,
+}
+
+impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionModel<R, D> {
+    pub fn new(reaction: R, diffusion: D, diffusion_coeffs: Vec<f64>) -> Self {
+        Self {
+            reaction,
+            diffusion,
+            diffusion_coeffs,
+        }
+    }
+}
+
+impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
+    for ReactionDiffusionModel<R, D>
+{
+    fn derivative(&self, _t: f64, state: &ChemicalState) -> ChemicalState {
+        let mut out = ChemicalState::new(state.num_species(), state.grid_size());
+        self.derivative_in_place(_t, state, &mut out);
+        out
+    }
+
+    fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
+        // Compute Diffusion
+        self.diffusion
+            .apply(state, out, &self.diffusion_coeffs);
+
+        // Add Reaction
+        let n_species = state.num_species();
+        let n_grid = state.grid_size();
+        let mut local_concs = vec![0.0; n_species];
+        let mut local_rates = vec![0.0; n_species];
+
+        for i in 0..n_grid {
+            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
+                *conc = state.concentrations[s][i];
+            }
+
+            self.reaction.reaction(&local_concs, &mut local_rates);
+
+            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
+                out.concentrations[s][i] += *rate;
+            }
+        }
+    }
+}
+
+/// A Reaction-Diffusion System holding both model and state.
+///
+/// This struct combines the physics model with the current state.
+/// It acts as a simulation container but delegates physics to `ReactionDiffusionModel`.
+///
+/// # Systems Core Analysis
+/// Refactored to separate State from Logic (SRP).
+/// Use `ReactionDiffusionModel` directly with a Solver for optimal performance (avoiding split borrows).
+pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
+    pub state: ChemicalState,
+    pub model: ReactionDiffusionModel<R, D>,
 }
 
 impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
@@ -230,74 +254,42 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
         assert_eq!(diffusion_coeffs.len(), num_species);
         Self {
             state: ChemicalState::new(num_species, grid_size),
-            derivative_buffer: ChemicalState::new(num_species, grid_size),
-            reaction,
-            diffusion,
-            diffusion_coeffs,
+            model: ReactionDiffusionModel::new(reaction, diffusion, diffusion_coeffs),
         }
-    }
-
-    /// Internal helper to compute derivative without `&self` borrow conflicts.
-    fn compute_derivative_internal(
-        reaction: &R,
-        diffusion: &D,
-        diffusion_coeffs: &[f64],
-        state: &ChemicalState,
-        out: &mut ChemicalState,
-    ) {
-        // Compute Diffusion
-        diffusion.apply(state, out, diffusion_coeffs);
-
-        // Add Reaction
-        let n_species = state.num_species();
-        let n_grid = state.grid_size();
-        let mut local_concs = vec![0.0; n_species];
-        let mut local_rates = vec![0.0; n_species];
-
-        for i in 0..n_grid {
-            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
-                *conc = state.concentrations[s][i];
-            }
-
-            reaction.reaction(&local_concs, &mut local_rates);
-
-            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
-                out.concentrations[s][i] += *rate;
-            }
-        }
-    }
-
-    pub fn step(&mut self, dt: f64) {
-        // Use internal helper to avoid splitting borrows of `self`.
-        Self::compute_derivative_internal(
-            &self.reaction,
-            &self.diffusion,
-            &self.diffusion_coeffs,
-            &self.state,
-            &mut self.derivative_buffer,
-        );
-        self.state.scale_add(&self.derivative_buffer, dt);
     }
 }
 
+// Implement OdeSystem by delegating to model.
+// This allows `ReactionDiffusionSystem` to be used where `OdeSystem` is expected,
+// although using `model` directly is preferred when using external solvers to avoid borrow conflicts.
 impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
     for ReactionDiffusionSystem<R, D>
 {
-    fn derivative(&self, _t: f64, state: &ChemicalState) -> ChemicalState {
-        let mut out = ChemicalState::new(state.num_species(), state.grid_size());
-        self.derivative_in_place(_t, state, &mut out);
-        out
+    fn derivative(&self, t: f64, state: &ChemicalState) -> ChemicalState {
+        self.model.derivative(t, state)
     }
 
-    fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
-        Self::compute_derivative_internal(
-            &self.reaction,
-            &self.diffusion,
-            &self.diffusion_coeffs,
-            state,
-            out,
-        );
+    fn derivative_in_place(&self, t: f64, state: &ChemicalState, out: &mut ChemicalState) {
+        self.model.derivative_in_place(t, state, out)
     }
+}
+
+// Implement TimeStepper for compatibility with generic time-stepping logic.
+use crate::pure_math::analysis::ode::TimeStepper;
+
+impl<R: ReactionModel, D: DiffusionModel> TimeStepper<ChemicalState>
+    for ReactionDiffusionSystem<R, D>
+{
+    fn get_state(&self) -> &ChemicalState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut ChemicalState {
+        &mut self.state
+    }
+
+    // Use default `step` (RK4) or override if specific behavior is needed.
+    // We stick to default to enable high-order integration by default.
 }
 
 #[cfg(test)]
@@ -305,6 +297,7 @@ mod tests {
     use super::*;
     use crate::biology::diffusion::FiniteDifference1D;
     use crate::biology::morphogenesis::SchnakenbergKinetics;
+    use crate::pure_math::analysis::ode::solvers::Euler;
 
     #[test]
     fn test_reaction_diffusion_system_equivalence() {
@@ -328,10 +321,18 @@ mod tests {
             system.state.species_mut(1)[i] = 0.5 - 0.05 * (i as f64);
         }
 
-        // Run for a few steps
+        // Run for a few steps using Euler Solver explicitly
+        // This demonstrates the correct "Systems Core" usage: Model + State + Solver separation.
         let dt = 0.01;
+
+        // Create a solver instance (allocates buffer once)
+        let mut solver = Euler::new(&system.state);
+
         for _ in 0..5 {
-            system.step(dt);
+            // Step the system using the model logic and explicit solver
+            // Note: We pass &system.model (Physics) and &mut system.state (Data) separately
+            // to avoid borrow checker conflicts.
+            solver.step(&system.model, 0.0, &mut system.state, dt);
         }
 
         // Capture output
