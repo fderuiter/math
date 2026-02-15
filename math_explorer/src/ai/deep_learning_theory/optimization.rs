@@ -1,5 +1,33 @@
 use super::linear_algebra::{Matrix, Scalar, Vector};
 use super::probability::softmax;
+use std::collections::HashMap;
+
+/// Identifies the type of parameter being updated.
+/// Necessary for stateful optimizers (like Adam) to track momentum for specific parameters.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ParamType {
+    Weight,
+    Bias,
+}
+
+/// A common interface for optimization algorithms.
+/// Allows swapping SGD, Adam, etc., without modifying the training loop.
+pub trait Optimizer {
+    fn update_vector(
+        &mut self,
+        layer_idx: usize,
+        param_type: ParamType,
+        param: &mut Vector,
+        grad: &Vector,
+    );
+    fn update_matrix(
+        &mut self,
+        layer_idx: usize,
+        param_type: ParamType,
+        param: &mut Matrix,
+        grad: &Matrix,
+    );
+}
 
 /// Mean Squared Error (MSE) Loss function.
 /// Used primarily for Regression.
@@ -55,82 +83,133 @@ impl SGD {
     pub fn new(learning_rate: f64) -> Self {
         Self { learning_rate }
     }
+}
 
-    pub fn update_vector(&self, param: &mut Vector, grad: &Vector) {
+impl Optimizer for SGD {
+    fn update_vector(
+        &mut self,
+        _layer_idx: usize,
+        _param_type: ParamType,
+        param: &mut Vector,
+        grad: &Vector,
+    ) {
         *param -= grad * self.learning_rate;
     }
 
-    pub fn update_matrix(&self, param: &mut Matrix, grad: &Matrix) {
+    fn update_matrix(
+        &mut self,
+        _layer_idx: usize,
+        _param_type: ParamType,
+        param: &mut Matrix,
+        grad: &Matrix,
+    ) {
         *param -= grad * self.learning_rate;
     }
 }
 
-/// Adam Optimizer (simplified).
+/// Internal state for Adam optimizer per parameter.
+struct AdamState<T> {
+    m: T, // First moment
+    v: T, // Second moment
+    t: i32, // Time step for this parameter
+}
+
+/// Adam Optimizer.
 /// Adaptive Moment Estimation.
 pub struct Adam {
     learning_rate: f64,
     beta1: f64,
     beta2: f64,
     epsilon: f64,
-    m_w: Matrix,
-    v_w: Matrix,
-    m_b: Vector,
-    v_b: Vector,
-    t: i32,
+    // We store state for Vectors (biases) and Matrices (weights) separately
+    // Key is (layer_idx, ParamType)
+    vector_states: HashMap<(usize, ParamType), AdamState<Vector>>,
+    matrix_states: HashMap<(usize, ParamType), AdamState<Matrix>>,
 }
 
 impl Adam {
-    pub fn new(lr: f64, shape_w: (usize, usize), shape_b: usize) -> Self {
+    pub fn new(lr: f64) -> Self {
         Self {
             learning_rate: lr,
             beta1: 0.9,
             beta2: 0.999,
             epsilon: 1e-8,
-            m_w: Matrix::zeros(shape_w.0, shape_w.1),
-            v_w: Matrix::zeros(shape_w.0, shape_w.1),
-            m_b: Vector::zeros(shape_b),
-            v_b: Vector::zeros(shape_b),
-            t: 0,
+            vector_states: HashMap::new(),
+            matrix_states: HashMap::new(),
         }
     }
+}
 
-    /// Updates parameters (weights and bias) using Adam logic.
-    pub fn step(
+impl Optimizer for Adam {
+    fn update_vector(
         &mut self,
-        weights: &mut Matrix,
-        bias: &mut Vector,
-        grad_w: &Matrix,
-        grad_b: &Vector,
+        layer_idx: usize,
+        param_type: ParamType,
+        param: &mut Vector,
+        grad: &Vector,
     ) {
-        self.t += 1;
-        let t = self.t as f64;
+        let key = (layer_idx, param_type);
+        let state = self.vector_states.entry(key).or_insert_with(|| {
+             AdamState {
+                 m: Vector::zeros(param.len()),
+                 v: Vector::zeros(param.len()),
+                 t: 0,
+             }
+        });
+
+        state.t += 1;
+        let t = state.t as f64;
 
         // Update biased first moment estimate
-        self.m_w = self.beta1 * &self.m_w + (1.0 - self.beta1) * grad_w;
-        self.m_b = self.beta1 * &self.m_b + (1.0 - self.beta1) * grad_b;
+        // m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
+        state.m = &state.m * self.beta1 + grad * (1.0 - self.beta1);
 
         // Update biased second raw moment estimate
-        // Element-wise square for gradients
-        let grad_w_sq = grad_w.map(|g| g * g);
-        let grad_b_sq = grad_b.map(|g| g * g);
+        // v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2
+        let grad_sq = grad.map(|g| g * g);
+        state.v = &state.v * self.beta2 + grad_sq * (1.0 - self.beta2);
 
-        self.v_w = self.beta2 * &self.v_w + (1.0 - self.beta2) * grad_w_sq;
-        self.v_b = self.beta2 * &self.v_b + (1.0 - self.beta2) * grad_b_sq;
-
-        // Compute bias-corrected first moment estimate
-        let m_hat_w = &self.m_w / (1.0 - self.beta1.powf(t));
-        let m_hat_b = &self.m_b / (1.0 - self.beta1.powf(t));
-
-        // Compute bias-corrected second raw moment estimate
-        let v_hat_w = &self.v_w / (1.0 - self.beta2.powf(t));
-        let v_hat_b = &self.v_b / (1.0 - self.beta2.powf(t));
+        // Compute bias-corrected estimates
+        let m_hat = &state.m / (1.0 - self.beta1.powf(t));
+        let v_hat = &state.v / (1.0 - self.beta2.powf(t));
 
         // Update parameters
-        // theta = theta - lr * m_hat / (sqrt(v_hat) + epsilon)
-        let update_w = m_hat_w.component_div(&v_hat_w.map(|v| v.sqrt() + self.epsilon));
-        let update_b = m_hat_b.component_div(&v_hat_b.map(|v| v.sqrt() + self.epsilon));
+        let update = m_hat.component_div(&v_hat.map(|v| v.sqrt() + self.epsilon));
+        *param -= update * self.learning_rate;
+    }
 
-        *weights -= update_w * self.learning_rate;
-        *bias -= update_b * self.learning_rate;
+    fn update_matrix(
+        &mut self,
+        layer_idx: usize,
+        param_type: ParamType,
+        param: &mut Matrix,
+        grad: &Matrix,
+    ) {
+        let key = (layer_idx, param_type);
+        let state = self.matrix_states.entry(key).or_insert_with(|| {
+             AdamState {
+                 m: Matrix::zeros(param.nrows(), param.ncols()),
+                 v: Matrix::zeros(param.nrows(), param.ncols()),
+                 t: 0,
+             }
+        });
+
+        state.t += 1;
+        let t = state.t as f64;
+
+        // Update biased first moment estimate
+        state.m = &state.m * self.beta1 + grad * (1.0 - self.beta1);
+
+        // Update biased second raw moment estimate
+        let grad_sq = grad.map(|g| g * g);
+        state.v = &state.v * self.beta2 + grad_sq * (1.0 - self.beta2);
+
+        // Compute bias-corrected estimates
+        let m_hat = &state.m / (1.0 - self.beta1.powf(t));
+        let v_hat = &state.v / (1.0 - self.beta2.powf(t));
+
+        // Update parameters
+        let update = m_hat.component_div(&v_hat.map(|v| v.sqrt() + self.epsilon));
+        *param -= update * self.learning_rate;
     }
 }
