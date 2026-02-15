@@ -133,6 +133,35 @@ impl ReactionModel for SchnakenbergKinetics {
         rates[0] = du;
         rates[1] = dv;
     }
+
+    fn add_reaction_batch(
+        &self,
+        state: &crate::biology::reaction_diffusion::ChemicalState,
+        rates: &mut crate::biology::reaction_diffusion::ChemicalState,
+    ) {
+        if state.num_species() < 2 || rates.num_species() < 2 {
+            return;
+        }
+        // Direct vector access for auto-vectorization
+        let u_vec = state.species(0);
+        let v_vec = state.species(1);
+
+        // Safe multiple mutable borrow via iterator
+        let mut rates_iter = rates.concentrations.iter_mut();
+        let rates_u = rates_iter.next().unwrap();
+        let rates_v = rates_iter.next().unwrap();
+
+        for (((u, v), r_u), r_v) in u_vec
+            .iter()
+            .zip(v_vec.iter())
+            .zip(rates_u.iter_mut())
+            .zip(rates_v.iter_mut())
+        {
+            let uv_sq = *u * *u * *v;
+            *r_u += self.a - *u + uv_sq;
+            *r_v += self.b - uv_sq;
+        }
+    }
 }
 
 /// Represents the state of a Turing system at a point in time.
