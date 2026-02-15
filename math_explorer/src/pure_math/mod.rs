@@ -6,6 +6,23 @@
 //! this module provides the rigorous mathematical building blocks. It covers fields from
 //! Number Theory to Differential Geometry.
 //!
+//! ## 🚀 Quick Start: Prime Check
+//!
+//! Check if a number is prime using optimized algorithms.
+//!
+//! ```rust
+//! use math_explorer::pure_math::number_theory;
+//!
+//! // Check a small prime
+//! assert!(number_theory::is_prime(17));
+//!
+//! // Check a composite number
+//! assert!(!number_theory::is_prime(20));
+//!
+//! // Check a larger prime
+//! assert!(number_theory::is_prime(1_000_000_007));
+//! ```
+//!
 //! ## Modules
 //!
 //! *   **[Algebra](algebra)**: Abstract algebraic structures (Groups, Rings, Fields).
