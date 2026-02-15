@@ -3,6 +3,34 @@
 //! This module applies mathematical modeling to biological systems, spanning from
 //! molecular interactions to population dynamics.
 //!
+//! ## 🚀 Quick Start: Neural Dynamics
+//!
+//! Simulate a single neuron firing an action potential using the Hodgkin-Huxley model.
+//!
+//! ```rust
+//! use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+//!
+//! // 1. Initialize neuron at resting potential (-65.0 mV)
+//! let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
+//!
+//! // 2. Apply a current injection to trigger a spike
+//! let dt = 0.01;            // 0.01 ms time step
+//! let current_inj = 20.0;   // strong current injection
+//!
+//! // 3. Run simulation
+//! let mut spiked = false;
+//! for _ in 0..500 {
+//!     neuron.update(dt, current_inj);
+//!     if neuron.v() > 0.0 {
+//!         spiked = true;
+//!         break;
+//!     }
+//! }
+//!
+//! assert!(spiked, "Neuron should have spiked given sufficient current");
+//! println!("Peak Voltage: {:.2} mV", neuron.v());
+//! ```
+//!
 //! ## Hierarchy of Scales
 //!
 //! The module is organized by biological scale, implementing classic models at each level.
