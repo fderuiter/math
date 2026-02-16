@@ -73,13 +73,13 @@ graph TD
 
 | Domain | Module | Description |
 | :--- | :--- | :--- |
-| **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), NeRF-Diffusion (SDS), and Self-Calibration loops. |
-| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), **Battery Degradation** (Li-ion), **LoraHub**, **Neuroimaging**, and **GRPO** (Policy Optimization). |
+| **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), **Reinforcement Learning** (Q-Learning), NeRF-Diffusion (SDS), and Self-Calibration loops. |
+| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), **Battery Degradation** (Li-ion), **Isosurface** (Marching Cubes), **LoraHub**, **Neuroimaging**, and **GRPO** (Policy Optimization). |
 | **🧬 Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Morphogenesis** (Turing Patterns), and **Evolutionary Dynamics**. |
 | **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
 | **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
-| **📐 Pure Math** | `math_explorer::pure_math` | **Statistics** (Glicko-2, Markov, TDA), Number Theory, Graph Theory, Differential Geometry, and **Abstract Algebra**. |
+| **📐 Pure Math** | `math_explorer::pure_math` | **Statistics** (Glicko-2, Markov, TDA), **Tensors** (Christoffel Symbols), Number Theory, Graph Theory, and **Abstract Algebra**. |
 
 ---
 
@@ -121,7 +121,7 @@ let dt = 0.01; // 0.01 ms time step
 // Simulate for 10ms with 10 uA/cm^2 current injection
 for _ in 0..1000 {
     neuron.update(dt, 10.0);
-    if neuron.v > 0.0 {
+    if neuron.v() > 0.0 {
         println!("Action Potential Generated!");
         break;
     }
@@ -144,6 +144,41 @@ let input = DMatrix::zeros(10, 512);
 let encoded = encoder.forward(input, None);
 ```
 
+### 🌍 Climate Modeling: CERA Framework
+Train a model to learn climate-invariant representations using the CERA architecture.
+
+```rust
+use math_explorer::climate::cera::Cera;
+use math_explorer::climate::config::CeraConfig;
+use math_explorer::climate::training::CeraTrainer;
+use nalgebra::DMatrix;
+
+// 1. Configure the architecture
+let config = CeraConfig {
+    in_channels: 2,         // e.g., Temp, Humidity
+    latent_channels: 4,     // Compressed state
+    aligned_channels: 2,    // Invariant state
+    num_levels: 10,         // Atmospheric levels
+    output_size: 5,         // Prediction target
+    epochs: 1,
+    batch_size: 2,
+    learning_rate: 0.01,
+    lambda_pred: 1.0,
+    lambda_emd: 0.1,
+};
+
+// 2. Initialize Model & Trainer
+let mut model = Cera::new(config).expect("Invalid config");
+let mut trainer = CeraTrainer::new(&mut model);
+
+// 3. Train on synthetic data (Batch Size * Num Levels, Channels)
+let inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
+let targets = DMatrix::<f32>::from_fn(2, 5, |_, _| rand::random());
+let warm_inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
+
+trainer.train(&inputs, &targets, &warm_inputs);
+```
+
 ### 🛠️ Applied Mathematics: Favoritism
 A "rigorous" mathematical model to determine who the favorite child is.
 
@@ -156,6 +191,28 @@ inputs.social.helped_during_crisis = true; // High social utility
 
 let score = calculate_favoritism_score(&inputs);
 println!("Favoritism Score: {}", score); // Higher is better
+```
+
+### 📐 Pure Math: Tensor Calculus
+Compute Christoffel symbols for a curved manifold (e.g., a sphere).
+
+```rust
+use math_explorer::pure_math::tensor::{christoffel_symbols, RiemannianMetric};
+use nalgebra::{DMatrix, DVector};
+
+// Metric for a 2D sphere (Radius = 1.0)
+let metric = RiemannianMetric::new(|p: &DVector<f64>| {
+    let theta = p[0];
+    let g11 = 1.0;
+    let g22 = theta.sin().powi(2);
+    DMatrix::from_vec(2, 2, vec![g11, 0.0, 0.0, g22])
+});
+
+// Compute symbols at theta = 45 degrees
+let point = DVector::from_vec(vec![std::f64::consts::FRAC_PI_4, 0.0]);
+let gammas = christoffel_symbols(&metric, &point).expect("Singular metric");
+
+println!("Gamma^theta_phi_phi: {:.4}", gammas[0][(1, 1)]); // -0.5000
 ```
 
 ### 🌌 Physics: Chaos Theory
