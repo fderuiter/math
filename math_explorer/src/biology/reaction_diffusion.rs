@@ -4,7 +4,8 @@
 //! It abstracts over the state representation (`ChemicalState`), reaction kinetics (`ReactionModel`),
 //! and spatial diffusion (`DiffusionModel`).
 
-use crate::pure_math::analysis::ode::traits::{OdeSystem, VectorOperations};
+use crate::pure_math::analysis::ode::traits::{OdeSystem, Solver, VectorOperations};
+use crate::pure_math::analysis::ode::Euler;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state of a multi-species chemical system.
@@ -208,45 +209,27 @@ impl ReactionDiffusionSolver for ForwardEuler {
     }
 }
 
-/// A generic Reaction-Diffusion system for N species.
-pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
-    pub state: ChemicalState,
-    /// Internal buffer for storing the time derivative ($dC/dt$).
-    /// Previously named `next_state`.
-    pub derivative_buffer: ChemicalState,
+/// A pure physics model for Reaction-Diffusion.
+///
+/// Separates the immutable laws (Reaction + Diffusion) from the mutable simulation state.
+pub struct ReactionDiffusionModel<R, D> {
     pub reaction: R,
     pub diffusion: D,
     pub diffusion_coeffs: Vec<f64>,
 }
 
-impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
-    pub fn new(
-        num_species: usize,
-        grid_size: usize,
-        reaction: R,
-        diffusion: D,
-        diffusion_coeffs: Vec<f64>,
-    ) -> Self {
-        assert_eq!(diffusion_coeffs.len(), num_species);
-        Self {
-            state: ChemicalState::new(num_species, grid_size),
-            derivative_buffer: ChemicalState::new(num_species, grid_size),
-            reaction,
-            diffusion,
-            diffusion_coeffs,
-        }
+impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
+    for ReactionDiffusionModel<R, D>
+{
+    fn derivative(&self, _t: f64, state: &ChemicalState) -> ChemicalState {
+        let mut out = ChemicalState::new(state.num_species(), state.grid_size());
+        self.derivative_in_place(_t, state, &mut out);
+        out
     }
 
-    /// Internal helper to compute derivative without `&self` borrow conflicts.
-    fn compute_derivative_internal(
-        reaction: &R,
-        diffusion: &D,
-        diffusion_coeffs: &[f64],
-        state: &ChemicalState,
-        out: &mut ChemicalState,
-    ) {
+    fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
         // Compute Diffusion
-        diffusion.apply(state, out, diffusion_coeffs);
+        self.diffusion.apply(state, out, &self.diffusion_coeffs);
 
         // Add Reaction
         let n_species = state.num_species();
@@ -259,44 +242,71 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
                 *conc = state.concentrations[s][i];
             }
 
-            reaction.reaction(&local_concs, &mut local_rates);
+            self.reaction.reaction(&local_concs, &mut local_rates);
 
             for (s, rate) in local_rates.iter().enumerate().take(n_species) {
                 out.concentrations[s][i] += *rate;
             }
         }
     }
+}
+
+/// A generic Reaction-Diffusion system for N species.
+pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
+    pub state: ChemicalState,
+    /// The immutable physics model.
+    pub model: ReactionDiffusionModel<R, D>,
+    /// Default solver used for `step()`.
+    default_solver: Euler<ChemicalState>,
+}
+
+impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
+    pub fn new(
+        num_species: usize,
+        grid_size: usize,
+        reaction: R,
+        diffusion: D,
+        diffusion_coeffs: Vec<f64>,
+    ) -> Self {
+        assert_eq!(diffusion_coeffs.len(), num_species);
+        let model = ReactionDiffusionModel {
+            reaction,
+            diffusion,
+            diffusion_coeffs,
+        };
+        let state = ChemicalState::new(num_species, grid_size);
+        // Create Euler solver. It requires an example state to allocate its internal buffer.
+        let default_solver = Euler::new(&state);
+
+        Self {
+            state,
+            model,
+            default_solver,
+        }
+    }
 
     pub fn step(&mut self, dt: f64) {
-        // Use internal helper to avoid splitting borrows of `self`.
-        Self::compute_derivative_internal(
-            &self.reaction,
-            &self.diffusion,
-            &self.diffusion_coeffs,
-            &self.state,
-            &mut self.derivative_buffer,
-        );
-        self.state.scale_add(&self.derivative_buffer, dt);
+        // Delegate to the solver, passing the immutable model (OdeSystem) and mutable state.
+        // This avoids borrow checker conflicts because `model` and `state` are disjoint fields.
+        self.default_solver
+            .step(&self.model, 0.0, &mut self.state, dt);
+    }
+
+    /// Advances the system using a custom solver.
+    pub fn step_with<S: Solver<ChemicalState>>(&mut self, solver: &mut S, dt: f64) {
+        solver.step(&self.model, 0.0, &mut self.state, dt);
     }
 }
 
 impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
     for ReactionDiffusionSystem<R, D>
 {
-    fn derivative(&self, _t: f64, state: &ChemicalState) -> ChemicalState {
-        let mut out = ChemicalState::new(state.num_species(), state.grid_size());
-        self.derivative_in_place(_t, state, &mut out);
-        out
+    fn derivative(&self, t: f64, state: &ChemicalState) -> ChemicalState {
+        self.model.derivative(t, state)
     }
 
-    fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
-        Self::compute_derivative_internal(
-            &self.reaction,
-            &self.diffusion,
-            &self.diffusion_coeffs,
-            state,
-            out,
-        );
+    fn derivative_in_place(&self, t: f64, state: &ChemicalState, out: &mut ChemicalState) {
+        self.model.derivative_in_place(t, state, out);
     }
 }
 
