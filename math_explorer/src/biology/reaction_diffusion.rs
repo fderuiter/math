@@ -5,6 +5,7 @@
 //! and spatial diffusion (`DiffusionModel`).
 
 use crate::pure_math::analysis::ode::traits::{OdeSystem, VectorOperations};
+use crate::pure_math::analysis::ode::{Solver, TimeStepper};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state of a multi-species chemical system.
@@ -209,38 +210,6 @@ pub trait DiffusionModel {
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
 }
 
-/// Defines a strategy for time integration of the Reaction-Diffusion system.
-#[deprecated(note = "Use pure_math::analysis::ode::traits::Solver instead.")]
-pub trait ReactionDiffusionSolver {
-    /// Advances the system by a time step `dt`.
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    );
-}
-
-/// A standard Forward Euler solver.
-///
-/// This solver separates the diffusion and reaction steps, prioritizing
-/// architectural cleanliness (SRP) over fused-loop optimizations.
-#[deprecated(note = "Use standard OdeSystem solvers or ReactionDiffusionSystem::step instead.")]
-#[derive(Debug, Default, Clone, Copy)]
-pub struct ForwardEuler;
-
-#[allow(deprecated)]
-impl ReactionDiffusionSolver for ForwardEuler {
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    ) {
-        // Delegate to the system's own step method which now handles Euler integration
-        // and manages borrow checking correctly.
-        system.step(dt);
-    }
-}
-
 /// A generic Reaction-Diffusion system for N species.
 pub struct ReactionDiffusionSystem<R: ReactionModel, D: DiffusionModel> {
     pub state: ChemicalState,
@@ -286,16 +255,12 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D> {
         reaction.add_reaction_batch(&state.concentrations, &mut out.concentrations);
     }
 
+    /// Advances the system state by `dt` using the optimized internal Euler method.
+    ///
+    /// This method is deprecated in favor of `TimeStepper::step`.
+    #[deprecated(note = "Use TimeStepper::step instead")]
     pub fn step(&mut self, dt: f64) {
-        // Use internal helper to avoid splitting borrows of `self`.
-        Self::compute_derivative_internal(
-            &self.reaction,
-            &self.diffusion,
-            &self.diffusion_coeffs,
-            &self.state,
-            &mut self.derivative_buffer,
-        );
-        self.state.scale_add(&self.derivative_buffer, dt);
+        <Self as TimeStepper<ChemicalState>>::step(self, dt);
     }
 }
 
@@ -316,6 +281,34 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
             state,
             out,
         );
+    }
+}
+
+impl<R: ReactionModel, D: DiffusionModel> TimeStepper<ChemicalState>
+    for ReactionDiffusionSystem<R, D>
+{
+    fn get_state(&self) -> &ChemicalState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut ChemicalState {
+        &mut self.state
+    }
+
+    /// Advances the system state by `dt`.
+    ///
+    /// Overrides default RK4 implementation with an optimized Euler step
+    /// using pre-allocated buffers to minimize memory churn.
+    fn step(&mut self, dt: f64) {
+        // Use internal helper to avoid splitting borrows of `self`.
+        Self::compute_derivative_internal(
+            &self.reaction,
+            &self.diffusion,
+            &self.diffusion_coeffs,
+            &self.state,
+            &mut self.derivative_buffer,
+        );
+        self.state.scale_add(&self.derivative_buffer, dt);
     }
 }
 
@@ -350,6 +343,8 @@ mod tests {
         // Run for a few steps
         let dt = 0.01;
         for _ in 0..5 {
+            // Using inherent step (now delegates to TimeStepper::step)
+            #[allow(deprecated)]
             system.step(dt);
         }
 
@@ -401,5 +396,32 @@ mod tests {
                 expected_v[i]
             );
         }
+    }
+
+    #[test]
+    fn test_step_with_rk4() {
+        use crate::pure_math::analysis::ode::RungeKutta4;
+
+        // Setup a small system
+        let n = 5;
+        let d_u = 1.0;
+        let d_v = 0.5;
+        let dx = 1.0;
+        let kinetics = SchnakenbergKinetics::default();
+        let diffusion = FiniteDifference1D::new(dx);
+        let diffusion_coeffs = vec![d_u, d_v];
+        let mut system = ReactionDiffusionSystem::new(2, n, kinetics, diffusion, diffusion_coeffs);
+
+        // Initialize
+        for i in 0..n {
+            system.state.species_mut(0)[i] = 1.0;
+            system.state.species_mut(1)[i] = 0.5;
+        }
+
+        let mut rk4 = RungeKutta4::new(&system.state);
+        system.step_with(&mut rk4, 0.01);
+
+        // Just ensure it ran and updated state
+        assert!(system.state.species(0)[0] > 0.0);
     }
 }
