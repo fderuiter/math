@@ -133,6 +133,33 @@ impl ReactionModel for SchnakenbergKinetics {
         rates[0] = du;
         rates[1] = dv;
     }
+
+    fn add_reaction_batch(&self, concentrations: &[Vec<f64>], rates: &mut [Vec<f64>]) {
+        if concentrations.len() < 2 || rates.len() < 2 {
+            return;
+        }
+
+        let u_vec = &concentrations[0];
+        let v_vec = &concentrations[1];
+
+        // Split mutable borrow to access both rate vectors simultaneously
+        let (left, right) = rates.split_at_mut(1);
+        let rates_u = &mut left[0];
+        let rates_v = &mut right[0];
+
+        let n = u_vec
+            .len()
+            .min(v_vec.len())
+            .min(rates_u.len())
+            .min(rates_v.len());
+
+        // Vectorized loop: Access memory linearly, enabling prefetch and SIMD
+        for i in 0..n {
+            let (du, dv) = <Self as ReactionKinetics>::reaction(self, u_vec[i], v_vec[i]);
+            rates_u[i] += du;
+            rates_v[i] += dv;
+        }
+    }
 }
 
 /// Represents the state of a Turing system at a point in time.
