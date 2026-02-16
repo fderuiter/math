@@ -130,7 +130,10 @@ impl Optimizer for Adam {
         let epsilon = self.epsilon;
         let lr = self.learning_rate;
 
-        let state = self.get_state((layer_idx, ParamType::Weight), (param.nrows(), param.ncols()));
+        let state = self.get_state(
+            (layer_idx, ParamType::Weight),
+            (param.nrows(), param.ncols()),
+        );
 
         state.t += 1;
         let t = state.t as f64;
