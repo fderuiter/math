@@ -14,7 +14,12 @@ pub struct TrainingLoop {
 }
 
 impl TrainingLoop {
-    pub fn new(input_dim: usize, hidden_dim: usize, output_dim: usize, optimizer: Box<dyn Optimizer>) -> Self {
+    pub fn new(
+        input_dim: usize,
+        hidden_dim: usize,
+        output_dim: usize,
+        optimizer: Box<dyn Optimizer>,
+    ) -> Self {
         Self {
             layer1: DenseLayer::new(input_dim, hidden_dim),
             layer2: DenseLayer::new(hidden_dim, output_dim),
@@ -69,12 +74,14 @@ impl TrainingLoop {
         // Layer 2
         self.optimizer
             .update_matrix(2, &mut self.layer2.weights, &d_w2);
-        self.optimizer.update_vector(2, &mut self.layer2.bias, &d_b2);
+        self.optimizer
+            .update_vector(2, &mut self.layer2.bias, &d_b2);
 
         // Layer 1
         self.optimizer
             .update_matrix(1, &mut self.layer1.weights, &d_w1);
-        self.optimizer.update_vector(1, &mut self.layer1.bias, &d_b1);
+        self.optimizer
+            .update_vector(1, &mut self.layer1.bias, &d_b1);
 
         loss
     }
