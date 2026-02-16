@@ -1,6 +1,6 @@
 use super::calculus::{linear_backward, relu, relu_prime};
 use super::linear_algebra::{DenseLayer, Vector};
-use super::optimization::{SGD, cross_entropy_softmax_prime};
+use super::optimization::{Optimizer, cross_entropy_softmax_prime};
 use super::probability::softmax;
 
 /// The Deep Learning Cycle: Forward -> Loss -> Backward -> Update
@@ -10,15 +10,15 @@ use super::probability::softmax;
 pub struct TrainingLoop {
     pub layer1: DenseLayer,
     pub layer2: DenseLayer,
-    pub optimizer: SGD,
+    pub optimizer: Box<dyn Optimizer>,
 }
 
 impl TrainingLoop {
-    pub fn new(input_dim: usize, hidden_dim: usize, output_dim: usize, lr: f64) -> Self {
+    pub fn new(input_dim: usize, hidden_dim: usize, output_dim: usize, optimizer: Box<dyn Optimizer>) -> Self {
         Self {
             layer1: DenseLayer::new(input_dim, hidden_dim),
             layer2: DenseLayer::new(hidden_dim, output_dim),
-            optimizer: SGD::new(lr),
+            optimizer,
         }
     }
 
@@ -65,13 +65,16 @@ impl TrainingLoop {
         let (_, d_w1, d_b1) = linear_backward(&d_z1, x, &self.layer1.weights);
 
         // --- 4. Update (Optimization) ---
+        // Using Strategy Pattern
+        // Layer 2
         self.optimizer
-            .update_matrix(&mut self.layer2.weights, &d_w2);
-        self.optimizer.update_vector(&mut self.layer2.bias, &d_b2);
+            .update_matrix(2, &mut self.layer2.weights, &d_w2);
+        self.optimizer.update_vector(2, &mut self.layer2.bias, &d_b2);
 
+        // Layer 1
         self.optimizer
-            .update_matrix(&mut self.layer1.weights, &d_w1);
-        self.optimizer.update_vector(&mut self.layer1.bias, &d_b1);
+            .update_matrix(1, &mut self.layer1.weights, &d_w1);
+        self.optimizer.update_vector(1, &mut self.layer1.bias, &d_b1);
 
         loss
     }

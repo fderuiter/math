@@ -1,11 +1,13 @@
 use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
+use math_explorer::ai::deep_learning_theory::optimization::SGD;
 use nalgebra::DVector;
 
 #[test]
 fn test_deep_learning_cycle() {
     // Xor problem-ish (non-linear)
     // 2 inputs, 2 hidden units, 2 output classes
-    let mut network = TrainingLoop::new(2, 4, 2, 0.1);
+    // Use the new Strategy Pattern with SGD
+    let mut network = TrainingLoop::new(2, 4, 2, Box::new(SGD::new(0.1)));
 
     // Dummy data: Input [1, 0] -> Class 0 ([1, 0])
     let x = DVector::from_vec(vec![1.0, 0.0]);
