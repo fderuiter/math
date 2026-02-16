@@ -29,13 +29,39 @@ impl fmt::Display for AnalysisError {
 impl std::error::Error for AnalysisError {}
 
 /// Strategy for finding roots of a function $f(x) = 0$.
+///
+/// # Examples
+///
+/// ```
+/// use math_explorer::pure_math::analysis::roots::{RootFinder, Bisection, NewtonRaphson};
+///
+/// // Define the function f(x) = x^2 - 4
+/// let f = |x: f64| x * x - 4.0;
+///
+/// // Use Bisection (bracketing method)
+/// let bisection = Bisection::default();
+/// let root = bisection.find_root(f, 0.0, 5.0).unwrap();
+/// assert!((root - 2.0).abs() < 1e-6);
+///
+/// // Use Newton-Raphson (open method)
+/// let newton = NewtonRaphson::default();
+/// // Note: For open methods, min/max are used to determine the initial guess.
+/// let root = newton.find_root(f, 0.0, 5.0).unwrap();
+/// assert!((root - 2.0).abs() < 1e-6);
+/// ```
 pub trait RootFinder {
-    /// Finds a root of the function `f` within the interval `[min, max]`.
+    /// Finds a root of the function `f`.
+    ///
+    /// The interpretation of `min` and `max` depends on the implementation:
+    /// * **Bracketing Methods** (e.g., [`Bisection`]): The root must lie within `[min, max]`.
+    /// * **Open Methods** (e.g., [`NewtonRaphson`]): `min` and `max` are used to compute
+    ///   the initial guess (typically `(min + max) / 2`), but the search is not constrained
+    ///   to this interval.
     ///
     /// # Arguments
     /// * `f` - The objective function.
-    /// * `min` - Lower bound of the search interval.
-    /// * `max` - Upper bound of the search interval.
+    /// * `min` - Lower bound (or parameter for initial guess).
+    /// * `max` - Upper bound (or parameter for initial guess).
     ///
     /// # Returns
     /// * `Ok(f64)` - The approximate root.
@@ -49,6 +75,22 @@ pub trait RootFinder {
 ///
 /// A robust but slow method that iteratively halves the interval.
 /// Guaranteed to converge if the function is continuous and changes sign over the interval.
+///
+/// # Examples
+///
+/// ```
+/// use math_explorer::pure_math::analysis::roots::{RootFinder, Bisection};
+///
+/// let solver = Bisection::default();
+///
+/// // Find root of x^2 - 2 = 0 in [1, 2]
+/// let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+/// assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+///
+/// // Error if root is not bracketed (signs at endpoints must differ)
+/// let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
+/// assert!(result.is_err());
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct Bisection {
     /// Maximum number of iterations before giving up.
@@ -139,6 +181,29 @@ impl RootFinder for Bisection {
 ///
 /// Uses the derivative of the function to converge quadratically to the root.
 /// If the derivative is not provided (via `RootFinder` trait), a numerical approximation is used.
+///
+/// **Note:** This is an [Open Method](https://en.wikipedia.org/wiki/Root-finding_algorithms#Open_methods).
+/// Unlike bracketing methods (like [`Bisection`]), it does not require the root to be bracketed
+/// and does not guarantee that the result lies within the initial interval provided to [`RootFinder::find_root`].
+/// The `min` and `max` arguments are only used to compute the initial guess: `(min + max) / 2`.
+///
+/// # Examples
+///
+/// ```
+/// use math_explorer::pure_math::analysis::roots::{RootFinder, NewtonRaphson};
+///
+/// let solver = NewtonRaphson::default();
+///
+/// // Find root of x^2 - 2 = 0
+/// // Initial guess will be (1.0 + 2.0) / 2.0 = 1.5
+/// let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+/// assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+///
+/// // Example where root is outside the initial "interval"
+/// // Root of x - 10 = 0 is 10. Initial guess is 2.5.
+/// let root = solver.find_root(|x| x - 10.0, 0.0, 5.0).unwrap();
+/// assert!((root - 10.0).abs() < 1e-6);
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct NewtonRaphson {
     /// Maximum number of iterations.
