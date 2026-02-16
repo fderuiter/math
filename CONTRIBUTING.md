@@ -61,23 +61,24 @@ We follow the **Curator's Philosophy**:
 Example:
 
 ```rust
-/// Calculates the area of a circle.
+/// Checks if a number is a prime number.
 ///
 /// # Arguments
 ///
-/// * `radius` - The radius of the circle in meters.
+/// * `n` - The number to check.
 ///
 /// # Returns
 ///
-/// The area in square meters.
+/// `true` if `n` is prime, `false` otherwise.
 ///
 /// # Example
 ///
 /// ```
-/// use math_explorer::geometry::area_circle;
-/// let area = area_circle(2.0);
+/// use math_explorer::pure_math::number_theory::is_prime;
+/// assert!(is_prime(5));
+/// assert!(!is_prime(4));
 /// ```
-pub fn area_circle(radius: f64) -> f64 { ... }
+pub fn is_prime(n: u64) -> bool { ... }
 ```
 
 ## 📦 Submission Process
