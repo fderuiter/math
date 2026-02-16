@@ -436,6 +436,9 @@ mod tests {
         let solver = Bisection::default();
         // x^2 + 1 = 0 has no real roots. And signs are always positive.
         let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
-        assert!(matches!(result, Err(AnalysisError::RootNotBracketed { .. })));
+        assert!(matches!(
+            result,
+            Err(AnalysisError::RootNotBracketed { .. })
+        ));
     }
 }
