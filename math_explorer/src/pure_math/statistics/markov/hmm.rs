@@ -7,7 +7,8 @@
 //! - Forward-Backward algorithm (smoothing)
 
 use crate::pure_math::statistics::markov::error::{MarkovError, Result};
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, RealField};
+use num_traits::ToPrimitive;
 
 /// A Hidden Markov Model.
 ///
@@ -59,20 +60,20 @@ use nalgebra::{DMatrix, DVector};
 /// println!("Most likely states: {:?}", states);
 /// ```
 #[derive(Debug, Clone)]
-pub struct HiddenMarkovModel {
+pub struct HiddenMarkovModel<T: RealField + Copy + ToPrimitive> {
     /// Initial state probabilities π.
-    initial: DVector<f64>,
+    initial: DVector<T>,
     /// State transition matrix A (num_states × num_states).
-    transitions: DMatrix<f64>,
+    transitions: DMatrix<T>,
     /// Emission matrix B (num_states × num_observations).
-    emissions: DMatrix<f64>,
+    emissions: DMatrix<T>,
     /// Number of hidden states.
     num_states: usize,
     /// Number of observable symbols.
     num_observations: usize,
 }
 
-impl HiddenMarkovModel {
+impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// Creates a new Hidden Markov Model.
     ///
     /// # Arguments
@@ -91,9 +92,9 @@ impl HiddenMarkovModel {
     /// - `InvalidProbability`: If probabilities are invalid
     /// - `NotStochastic`: If matrices are not stochastic
     pub fn new(
-        initial: DVector<f64>,
-        transitions: DMatrix<f64>,
-        emissions: DMatrix<f64>,
+        initial: DVector<T>,
+        transitions: DMatrix<T>,
+        emissions: DMatrix<T>,
     ) -> Result<Self> {
         let num_states = initial.len();
 
@@ -133,19 +134,26 @@ impl HiddenMarkovModel {
     }
 
     /// Validates that a vector is a probability distribution (sums to 1).
-    fn validate_probability_vector(vec: &DVector<f64>) -> Result<()> {
-        const TOLERANCE: f64 = 1e-10;
+    fn validate_probability_vector(vec: &DVector<T>) -> Result<()> {
+        let tolerance = T::from_f64(1e-10).unwrap();
+        let one = T::one();
+        let zero = T::zero();
 
-        let sum: f64 = vec.iter().sum();
-        if (sum - 1.0).abs() > TOLERANCE {
+        let sum: T = vec.iter().fold(zero, |acc, &x| acc + x);
+        if (sum - one).abs() > tolerance {
             return Err(MarkovError::NotStochastic {
-                reason: format!("Probability vector sums to {} instead of 1.0", sum),
+                reason: format!(
+                    "Probability vector sums to {:?} instead of 1.0",
+                    sum.to_f64().unwrap_or(f64::NAN)
+                ),
             });
         }
 
         for &p in vec.iter() {
-            if !p.is_finite() || !(0.0..=1.0).contains(&p) {
-                return Err(MarkovError::InvalidProbability { value: p });
+            if !p.is_finite() || p < zero || p > one {
+                return Err(MarkovError::InvalidProbability {
+                    value: p.to_f64().unwrap_or(f64::NAN),
+                });
             }
         }
 
@@ -153,21 +161,29 @@ impl HiddenMarkovModel {
     }
 
     /// Validates that a matrix is row-stochastic.
-    fn validate_stochastic_matrix(matrix: &DMatrix<f64>) -> Result<()> {
-        const TOLERANCE: f64 = 1e-10;
+    fn validate_stochastic_matrix(matrix: &DMatrix<T>) -> Result<()> {
+        let tolerance = T::from_f64(1e-10).unwrap();
+        let one = T::one();
+        let zero = T::zero();
 
         for i in 0..matrix.nrows() {
-            let row_sum: f64 = matrix.row(i).iter().sum();
-            if (row_sum - 1.0).abs() > TOLERANCE {
+            let row_sum: T = matrix.row(i).iter().fold(zero, |acc, &x| acc + x);
+            if (row_sum - one).abs() > tolerance {
                 return Err(MarkovError::NotStochastic {
-                    reason: format!("Row {} sums to {} instead of 1.0", i, row_sum),
+                    reason: format!(
+                        "Row {} sums to {:?} instead of 1.0",
+                        i,
+                        row_sum.to_f64().unwrap_or(f64::NAN)
+                    ),
                 });
             }
 
             for j in 0..matrix.ncols() {
                 let p = matrix[(i, j)];
-                if !p.is_finite() || !(0.0..=1.0).contains(&p) {
-                    return Err(MarkovError::InvalidProbability { value: p });
+                if !p.is_finite() || p < zero || p > one {
+                    return Err(MarkovError::InvalidProbability {
+                        value: p.to_f64().unwrap_or(f64::NAN),
+                    });
                 }
             }
         }
@@ -186,17 +202,17 @@ impl HiddenMarkovModel {
     }
 
     /// Returns the initial state probabilities.
-    pub fn initial(&self) -> &DVector<f64> {
+    pub fn initial(&self) -> &DVector<T> {
         &self.initial
     }
 
     /// Returns the transition matrix.
-    pub fn transitions(&self) -> &DMatrix<f64> {
+    pub fn transitions(&self) -> &DMatrix<T> {
         &self.transitions
     }
 
     /// Returns the emission matrix.
-    pub fn emissions(&self) -> &DMatrix<f64> {
+    pub fn emissions(&self) -> &DMatrix<T> {
         &self.emissions
     }
 
@@ -220,9 +236,10 @@ impl HiddenMarkovModel {
     /// # Returns
     ///
     /// The probability of the observation sequence.
-    pub fn forward(&self, observations: &[usize]) -> Result<f64> {
+    pub fn forward(&self, observations: &[usize]) -> Result<T> {
         let (alpha, _) = self.forward_probabilities(observations)?;
-        Ok(alpha.column(alpha.ncols() - 1).sum())
+        let zero = T::zero();
+        Ok(alpha.column(alpha.ncols() - 1).iter().fold(zero, |acc, &x| acc + x))
     }
 
     /// Computes forward probabilities α(t, i) for all t and i.
@@ -230,7 +247,7 @@ impl HiddenMarkovModel {
     /// # Returns
     ///
     /// A matrix where column t contains α(t, ·).
-    fn forward_probabilities(&self, observations: &[usize]) -> Result<(DMatrix<f64>, Vec<f64>)> {
+    fn forward_probabilities(&self, observations: &[usize]) -> Result<(DMatrix<T>, Vec<T>)> {
         if observations.is_empty() {
             return Err(MarkovError::InvalidObservation {
                 reason: "Observation sequence is empty".to_string(),
@@ -239,7 +256,8 @@ impl HiddenMarkovModel {
 
         let t_max = observations.len();
         let mut alpha = DMatrix::zeros(self.num_states, t_max);
-        let mut scaling_factors = vec![0.0; t_max];
+        let mut scaling_factors = vec![T::zero(); t_max];
+        let zero = T::zero();
 
         // Initialize: α(1, i) = πᵢ · Bᵢ,y₁
         let y0 = observations[0];
@@ -254,8 +272,8 @@ impl HiddenMarkovModel {
         }
 
         // Scale to prevent underflow
-        let scale0 = alpha.column(0).sum();
-        if scale0 > 0.0 {
+        let scale0: T = alpha.column(0).iter().fold(zero, |acc, &x| acc + x);
+        if scale0 > zero {
             for i in 0..self.num_states {
                 alpha[(i, 0)] /= scale0;
             }
@@ -272,7 +290,7 @@ impl HiddenMarkovModel {
             }
 
             for j in 0..self.num_states {
-                let mut sum = 0.0;
+                let mut sum = zero;
                 for i in 0..self.num_states {
                     sum += alpha[(i, t - 1)] * self.transitions[(i, j)];
                 }
@@ -280,8 +298,8 @@ impl HiddenMarkovModel {
             }
 
             // Scale
-            let scale_t = alpha.column(t).sum();
-            if scale_t > 0.0 {
+            let scale_t: T = alpha.column(t).iter().fold(zero, |acc, &x| acc + x);
+            if scale_t > zero {
                 for i in 0..self.num_states {
                     alpha[(i, t)] /= scale_t;
                 }
@@ -314,8 +332,8 @@ impl HiddenMarkovModel {
     fn backward_probabilities(
         &self,
         observations: &[usize],
-        scaling_factors: &[f64],
-    ) -> Result<DMatrix<f64>> {
+        scaling_factors: &[T],
+    ) -> Result<DMatrix<T>> {
         if observations.is_empty() {
             return Err(MarkovError::InvalidObservation {
                 reason: "Observation sequence is empty".to_string(),
@@ -324,10 +342,12 @@ impl HiddenMarkovModel {
 
         let t_max = observations.len();
         let mut beta = DMatrix::zeros(self.num_states, t_max);
+        let one = T::one();
+        let zero = T::zero();
 
         // Initialize: β(T, i) = 1
         for i in 0..self.num_states {
-            beta[(i, t_max - 1)] = 1.0 / scaling_factors[t_max - 1];
+            beta[(i, t_max - 1)] = one / scaling_factors[t_max - 1];
         }
 
         // Recursion (backward)
@@ -335,7 +355,7 @@ impl HiddenMarkovModel {
             let y_next = observations[t + 1];
 
             for i in 0..self.num_states {
-                let mut sum = 0.0;
+                let mut sum = zero;
                 for j in 0..self.num_states {
                     sum +=
                         self.transitions[(i, j)] * self.emissions[(j, y_next)] * beta[(j, t + 1)];
@@ -377,6 +397,7 @@ impl HiddenMarkovModel {
         let t_max = observations.len();
         let mut delta = DMatrix::zeros(self.num_states, t_max);
         let mut psi = DMatrix::zeros(self.num_states, t_max);
+        let zero = T::zero();
 
         // Initialize: δ(1, i) = πᵢ · Bᵢ,y₁
         let y0 = observations[0];
@@ -400,7 +421,7 @@ impl HiddenMarkovModel {
             }
 
             for j in 0..self.num_states {
-                let mut max_val = 0.0;
+                let mut max_val = zero;
                 let mut max_idx = 0;
 
                 for i in 0..self.num_states {
@@ -412,7 +433,7 @@ impl HiddenMarkovModel {
                 }
 
                 delta[(j, t)] = max_val * self.emissions[(j, y_t)];
-                psi[(j, t)] = max_idx as f64;
+                psi[(j, t)] = T::from_usize(max_idx).unwrap();
             }
         }
 
@@ -420,7 +441,7 @@ impl HiddenMarkovModel {
         let mut path = vec![0; t_max];
 
         // Find best final state
-        let mut max_val = 0.0;
+        let mut max_val = zero;
         let mut max_idx = 0;
         for i in 0..self.num_states {
             if delta[(i, t_max - 1)] > max_val {
@@ -432,7 +453,7 @@ impl HiddenMarkovModel {
 
         // Backtrack
         for t in (0..t_max - 1).rev() {
-            path[t] = psi[(path[t + 1], t + 1)] as usize;
+            path[t] = psi[(path[t + 1], t + 1)].to_usize().unwrap();
         }
 
         Ok(path)
@@ -452,12 +473,13 @@ impl HiddenMarkovModel {
     /// # Returns
     ///
     /// A matrix where column t contains γ(t, ·).
-    pub fn posterior_probabilities(&self, observations: &[usize]) -> Result<DMatrix<f64>> {
+    pub fn posterior_probabilities(&self, observations: &[usize]) -> Result<DMatrix<T>> {
         let (alpha, scaling_factors) = self.forward_probabilities(observations)?;
         let beta = self.backward_probabilities(observations, &scaling_factors)?;
 
         let t_max = observations.len();
         let mut gamma = DMatrix::zeros(self.num_states, t_max);
+        let zero = T::zero();
 
         for t in 0..t_max {
             for i in 0..self.num_states {
@@ -465,8 +487,8 @@ impl HiddenMarkovModel {
             }
 
             // Normalize
-            let sum = gamma.column(t).sum();
-            if sum > 0.0 {
+            let sum: T = gamma.column(t).iter().fold(zero, |acc, &x| acc + x);
+            if sum > zero {
                 for i in 0..self.num_states {
                     gamma[(i, t)] /= sum;
                 }
@@ -485,13 +507,14 @@ impl HiddenMarkovModel {
     /// # Returns
     ///
     /// The posterior probabilities P(Xₜ = i | Y₁, ..., Yₜ) at the final time T.
-    pub fn filter(&self, observations: &[usize]) -> Result<DVector<f64>> {
+    pub fn filter(&self, observations: &[usize]) -> Result<DVector<T>> {
         let (alpha, _) = self.forward_probabilities(observations)?;
         let t_max = observations.len();
 
         let mut posterior = alpha.column(t_max - 1).into_owned();
-        let sum = posterior.sum();
-        if sum > 0.0 {
+        let zero = T::zero();
+        let sum: T = posterior.iter().fold(zero, |acc, &x| acc + x);
+        if sum > zero {
             posterior /= sum;
         }
 
@@ -523,17 +546,25 @@ impl HiddenMarkovModel {
         let mut observations = Vec::with_capacity(length);
 
         // Sample initial state
-        let initial_dist = WeightedIndex::new(self.initial.as_slice()).map_err(|_| {
-            MarkovError::NumericalError {
-                reason: "Failed to create initial distribution".to_string(),
-            }
+        let initial_dist = WeightedIndex::new(
+            self.initial
+                .iter()
+                .map(|&x| x.to_f64().unwrap_or(0.0))
+                .collect::<Vec<_>>(),
+        )
+        .map_err(|_| MarkovError::NumericalError {
+            reason: "Failed to create initial distribution".to_string(),
         })?;
         let mut current_state = initial_dist.sample(rng);
         states.push(current_state);
 
         // Sample initial observation
-        let emission_weights: Vec<f64> =
-            self.emissions.row(current_state).iter().copied().collect();
+        let emission_weights: Vec<f64> = self
+            .emissions
+            .row(current_state)
+            .iter()
+            .map(|&x| x.to_f64().unwrap_or(0.0))
+            .collect();
         let emission_dist =
             WeightedIndex::new(&emission_weights).map_err(|_| MarkovError::NumericalError {
                 reason: "Failed to create emission distribution".to_string(),
@@ -547,7 +578,7 @@ impl HiddenMarkovModel {
                 .transitions
                 .row(current_state)
                 .iter()
-                .copied()
+                .map(|&x| x.to_f64().unwrap_or(0.0))
                 .collect();
             let transition_dist = WeightedIndex::new(&transition_weights).map_err(|_| {
                 MarkovError::NumericalError {
@@ -558,8 +589,12 @@ impl HiddenMarkovModel {
             states.push(current_state);
 
             // Sample observation
-            let emission_weights: Vec<f64> =
-                self.emissions.row(current_state).iter().copied().collect();
+            let emission_weights: Vec<f64> = self
+                .emissions
+                .row(current_state)
+                .iter()
+                .map(|&x| x.to_f64().unwrap_or(0.0))
+                .collect();
             let emission_dist =
                 WeightedIndex::new(&emission_weights).map_err(|_| MarkovError::NumericalError {
                     reason: "Failed to create emission distribution".to_string(),
@@ -583,6 +618,18 @@ mod tests {
         let initial = DVector::from_vec(vec![0.5, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
+
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+
+        assert_eq!(hmm.num_states(), 2);
+        assert_eq!(hmm.num_observations(), 2);
+    }
+
+    #[test]
+    fn test_hmm_creation_f32() {
+        let initial = DVector::from_vec(vec![0.5f32, 0.5]);
+        let transitions = DMatrix::from_row_slice(2, 2, &[0.7f32, 0.3, 0.4, 0.6]);
+        let emissions = DMatrix::from_row_slice(2, 2, &[0.8f32, 0.2, 0.3, 0.7]);
 
         let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
 

@@ -199,6 +199,7 @@ dependencies = [
  "approx",
  "nalgebra 0.34.1",
  "num-complex",
+ "num-traits",
  "petgraph",
  "quadrature",
  "rand",
