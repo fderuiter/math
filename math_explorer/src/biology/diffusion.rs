@@ -130,13 +130,15 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
                 out_u[0] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             }
 
-            // 2. Interior
+            // 2. Interior (Optimized with windows iterator)
             if n_grid > 2 {
-                for i in 1..n_grid - 1 {
-                    let u_prev = u[i - 1];
-                    let u_curr = u[i];
-                    let u_next = u[i + 1];
-                    out_u[i] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                for (win, out) in u.windows(3).zip(out_u.iter_mut().skip(1)) {
+                    // win[0] = u[i-1], win[1] = u[i], win[2] = u[i+1]
+                    // We can access directly without bounds checks inside the loop
+                    let u_prev = win[0];
+                    let u_curr = win[1];
+                    let u_next = win[2];
+                    *out = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                 }
             }
 
