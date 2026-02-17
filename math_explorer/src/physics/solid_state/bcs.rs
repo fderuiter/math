@@ -184,9 +184,8 @@ pub fn solve_gap_equation(
     debye_energy: f64,
     iterations: usize,
 ) -> Result<f64, String> {
-    let model =
-        IsotropicBCSModel::new(energies_xi.to_vec(), potential_v_magnitude, debye_energy)
-            .map_err(|e| e.to_string())?;
+    let model = IsotropicBCSModel::new(energies_xi.to_vec(), potential_v_magnitude, debye_energy)
+        .map_err(|e| e.to_string())?;
 
     let solver = BcsGapSolver::default()
         .with_max_iterations(iterations)

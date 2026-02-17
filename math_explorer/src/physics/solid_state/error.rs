@@ -1,5 +1,5 @@
-use thiserror::Error;
 use super::types::ElectronVolts;
+use thiserror::Error;
 
 /// Errors that can occur during Solid State Physics calculations.
 #[derive(Error, Debug, PartialEq)]
