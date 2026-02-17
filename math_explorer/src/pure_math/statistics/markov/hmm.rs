@@ -239,7 +239,10 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     pub fn forward(&self, observations: &[usize]) -> Result<T> {
         let (alpha, _) = self.forward_probabilities(observations)?;
         let zero = T::zero();
-        Ok(alpha.column(alpha.ncols() - 1).iter().fold(zero, |acc, &x| acc + x))
+        Ok(alpha
+            .column(alpha.ncols() - 1)
+            .iter()
+            .fold(zero, |acc, &x| acc + x))
     }
 
     /// Computes forward probabilities α(t, i) for all t and i.
