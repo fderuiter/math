@@ -254,7 +254,9 @@ pub struct ReactionDiffusionModel<R, D> {
     pub diffusion_coeffs: Vec<f64>,
 }
 
-impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState> for ReactionDiffusionModel<R, D> {
+impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
+    for ReactionDiffusionModel<R, D>
+{
     fn derivative(&self, _t: f64, state: &ChemicalState) -> ChemicalState {
         let mut out = ChemicalState::new(state.num_species(), state.grid_size());
         self.derivative_in_place(_t, state, &mut out);
@@ -263,8 +265,7 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState> for ReactionD
 
     fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
         // Compute Diffusion
-        self.diffusion
-            .apply(state, out, &self.diffusion_coeffs);
+        self.diffusion.apply(state, out, &self.diffusion_coeffs);
 
         // Add Reaction
         // Optimized: Use batch processing to allow vectorization and avoid gather/scatter
@@ -339,8 +340,7 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
     pub fn step(&mut self, dt: f64) {
         // The solver manages the integration logic.
         // We pass 0.0 as the current time since most RD systems are autonomous (time-invariant).
-        self.solver
-            .step(&self.model, 0.0, &mut self.state, dt);
+        self.solver.step(&self.model, 0.0, &mut self.state, dt);
     }
 
     /// Accessor for the reaction model.
@@ -383,7 +383,7 @@ mod tests {
             kinetics,
             diffusion,
             diffusion_coeffs,
-            solver
+            solver,
         );
 
         // Initialize with same pattern
