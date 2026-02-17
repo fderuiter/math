@@ -1,5 +1,5 @@
 use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
-use math_explorer::ai::deep_learning_theory::optimization::SGD;
+use math_explorer::ai::optimization::SGD;
 use nalgebra::DVector;
 
 #[test]

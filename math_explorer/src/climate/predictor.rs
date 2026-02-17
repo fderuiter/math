@@ -1,5 +1,6 @@
 //! This module defines the predictor model for the CERA framework.
 
+use crate::ai::optimization::Optimizer;
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
 use nalgebra::{DMatrix, DVector};
 
@@ -9,9 +10,9 @@ pub trait PredictorModel {
     /// Performs a forward pass through the predictor.
     fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32>;
 
-    /// Updates the weights of the predictor using a learning rate.
-    /// Note: This is a simplified update step for demonstration/simulation purposes.
-    fn update_weights(&mut self, learning_rate: f32);
+    /// Updates the weights of the predictor using the provided optimizer.
+    /// Note: This replaces the previous simplified learning rate update.
+    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>);
 }
 
 /// A multi-layer perceptron (MLP) used as the predictor in the CERA framework.
@@ -88,14 +89,18 @@ impl PredictorModel for Predictor {
         x
     }
 
-    fn update_weights(&mut self, learning_rate: f32) {
-        for layer in self.layers.iter_mut() {
+    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>) {
+        for (i, layer) in self.layers.iter_mut().enumerate() {
+            // Placeholder: Generate random gradients to simulate training dynamics
+            // In a real implementation, these would come from backpropagation.
             let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
                 rand::random::<f32>() - 0.5
             });
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
-            layer.kernel -= grad_k * learning_rate;
-            layer.bias -= grad_b * learning_rate;
+
+            // Use the optimizer strategy to update weights
+            optimizer.update_matrix(i, &mut layer.kernel, &grad_k);
+            optimizer.update_vector(i, &mut layer.bias, &grad_b);
         }
     }
 }
@@ -103,6 +108,7 @@ impl PredictorModel for Predictor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ai::optimization::SGD;
     use nalgebra::DMatrix;
 
     #[test]
@@ -119,5 +125,22 @@ mod tests {
 
         assert_eq!(output.nrows(), batch_size);
         assert_eq!(output.ncols(), output_size);
+    }
+
+    #[test]
+    fn test_predictor_update_weights_with_optimizer() {
+        let input_size = 10;
+        let output_size = 5;
+        let mut predictor = Predictor::new(input_size, output_size);
+        let mut optimizer = SGD::new(0.1f32);
+
+        let initial_kernel = predictor.layers[0].kernel.clone();
+
+        // Update weights
+        predictor.update_weights(&mut optimizer);
+
+        // Check that weights have changed
+        let new_kernel = &predictor.layers[0].kernel;
+        assert_ne!(initial_kernel, *new_kernel);
     }
 }
