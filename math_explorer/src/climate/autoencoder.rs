@@ -1,5 +1,6 @@
 //! This module defines the autoencoder architecture for the CERA framework.
 
+use crate::ai::optimization::Optimizer;
 use crate::climate::tensor_ops::conv1d;
 use nalgebra::{DMatrix, DVector};
 
@@ -11,8 +12,8 @@ pub trait AutoencoderModel {
     /// Performs a forward pass through the autoencoder.
     fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>);
 
-    /// Updates the weights of the model.
-    fn update_weights(&mut self, learning_rate: f32);
+    /// Updates the weights of the model using the provided optimizer.
+    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>);
 }
 
 /// A simple leaky ReLU activation function.
@@ -67,14 +68,17 @@ impl ConvLayer {
         }
     }
 
-    /// Updates the weights of the layer using a simple random gradient (placeholder).
-    pub fn update_weights(&mut self, lr: f32) {
+    /// Updates the weights of the layer using the provided optimizer.
+    ///
+    /// Note: This still uses random gradients as a placeholder for real backpropagation.
+    pub fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>, layer_idx: usize) {
         let grad_k = DMatrix::from_fn(self.kernel.nrows(), self.kernel.ncols(), |_, _| {
             rand::random::<f32>() - 0.5
         });
         let grad_b = DVector::from_fn(self.bias.len(), |_, _| rand::random::<f32>() - 0.5);
-        self.kernel -= grad_k * lr;
-        self.bias -= grad_b * lr;
+
+        optimizer.update_matrix(layer_idx, &mut self.kernel, &grad_k);
+        optimizer.update_vector(layer_idx, &mut self.bias, &grad_b);
     }
 }
 
@@ -139,10 +143,10 @@ impl Encoder {
         x
     }
 
-    /// Updates weights for all layers.
-    pub fn update_weights(&mut self, lr: f32) {
-        for layer in self.layers.iter_mut() {
-            layer.update_weights(lr);
+    /// Updates weights for all layers using the provided optimizer.
+    pub fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>, start_idx: usize) {
+        for (i, layer) in self.layers.iter_mut().enumerate() {
+            layer.update_weights(optimizer, start_idx + i);
         }
     }
 }
@@ -207,10 +211,10 @@ impl Decoder {
         x
     }
 
-    /// Updates weights for all layers.
-    pub fn update_weights(&mut self, lr: f32) {
-        for layer in self.layers.iter_mut() {
-            layer.update_weights(lr);
+    /// Updates weights for all layers using the provided optimizer.
+    pub fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>, start_idx: usize) {
+        for (i, layer) in self.layers.iter_mut().enumerate() {
+            layer.update_weights(optimizer, start_idx + i);
         }
     }
 }
@@ -283,9 +287,11 @@ impl AutoencoderModel for Autoencoder {
         (latent, reconstruction)
     }
 
-    fn update_weights(&mut self, learning_rate: f32) {
-        self.encoder.update_weights(learning_rate);
-        self.decoder.update_weights(learning_rate);
+    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>) {
+        let mut idx = 0;
+        self.encoder.update_weights(optimizer, idx);
+        idx += self.encoder.layers.len();
+        self.decoder.update_weights(optimizer, idx);
     }
 }
 

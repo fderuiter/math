@@ -1,7 +1,7 @@
 use super::calculus::{linear_backward, relu, relu_prime};
 use super::linear_algebra::{DenseLayer, Vector};
-use super::optimization::{Optimizer, cross_entropy_softmax_prime};
 use super::probability::softmax;
+use crate::ai::optimization::{Optimizer, cross_entropy_softmax_prime};
 
 /// The Deep Learning Cycle: Forward -> Loss -> Backward -> Update
 ///
@@ -10,7 +10,7 @@ use super::probability::softmax;
 pub struct TrainingLoop {
     pub layer1: DenseLayer,
     pub layer2: DenseLayer,
-    pub optimizer: Box<dyn Optimizer>,
+    pub optimizer: Box<dyn Optimizer<f64>>,
 }
 
 impl TrainingLoop {
@@ -18,7 +18,7 @@ impl TrainingLoop {
         input_dim: usize,
         hidden_dim: usize,
         output_dim: usize,
-        optimizer: Box<dyn Optimizer>,
+        optimizer: Box<dyn Optimizer<f64>>,
     ) -> Self {
         Self {
             layer1: DenseLayer::new(input_dim, hidden_dim),
