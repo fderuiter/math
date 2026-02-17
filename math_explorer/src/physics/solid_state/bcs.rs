@@ -1,6 +1,173 @@
 //! Superconductivity (BCS Theory)
 //!
 //! Describes the pairing of electrons into Cooper pairs via phonon mediation.
+//!
+//! # Refactoring Note
+//! This module has been refactored to use the **Strategy Pattern** for Gap Equation models
+//! and **Strong Types** for physical quantities. Legacy functions are preserved but deprecated.
+
+use super::error::SolidStateError;
+use super::types::ElectronVolts;
+
+// --- Traits ---
+
+/// Defines the Gap Equation to be solved.
+///
+/// This trait allows for different physical models of the superconducting gap,
+/// such as isotropic s-wave (standard BCS) or anisotropic d-wave (high-Tc).
+pub trait GapEquation {
+    /// Calculates the next iteration of the gap parameter $\Delta_{new}$
+    /// based on the current gap value $\Delta_{old}$.
+    fn calculate_next_gap(
+        &self,
+        current_gap: ElectronVolts,
+    ) -> Result<ElectronVolts, SolidStateError>;
+}
+
+// --- Solver ---
+
+/// A robust iterative solver for the BCS Gap Equation.
+///
+/// Uses fixed-point iteration with mixing (relaxation) to find the self-consistent gap.
+#[derive(Debug, Clone)]
+pub struct BcsGapSolver {
+    /// Maximum number of iterations.
+    pub max_iterations: usize,
+    /// Convergence tolerance (in eV).
+    pub tolerance: f64,
+    /// Mixing parameter for stability (0.0 = no update, 1.0 = full update).
+    /// Typically 0.2 - 0.5 for BCS.
+    pub mixing_param: f64,
+}
+
+impl Default for BcsGapSolver {
+    fn default() -> Self {
+        Self {
+            max_iterations: 1000,
+            tolerance: 1e-9,
+            mixing_param: 0.5,
+        }
+    }
+}
+
+impl BcsGapSolver {
+    /// Creates a new solver with default parameters.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the maximum number of iterations.
+    pub fn with_max_iterations(mut self, max: usize) -> Self {
+        self.max_iterations = max;
+        self
+    }
+
+    /// Sets the convergence tolerance.
+    pub fn with_tolerance(mut self, tol: f64) -> Self {
+        self.tolerance = tol;
+        self
+    }
+
+    /// Sets the mixing parameter.
+    pub fn with_mixing_param(mut self, param: f64) -> Self {
+        self.mixing_param = param;
+        self
+    }
+
+    /// Solves the gap equation for the given model.
+    ///
+    /// # Arguments
+    /// * `model` - The physical model implementing `GapEquation`.
+    /// * `initial_guess` - Initial value for the gap parameter.
+    pub fn solve<M: GapEquation>(
+        &self,
+        model: &M,
+        initial_guess: ElectronVolts,
+    ) -> Result<ElectronVolts, SolidStateError> {
+        let mut delta = initial_guess;
+
+        for _ in 0..self.max_iterations {
+            let next_delta = model.calculate_next_gap(delta)?;
+
+            // Check for convergence: |delta_new - delta_old| < tolerance
+            // Using raw f64 subtraction for absolute difference check
+            if (next_delta.0 - delta.0).abs() < self.tolerance {
+                return Ok(next_delta);
+            }
+
+            // Mixing: delta = (1-alpha)*delta + alpha*new_delta
+            delta = delta * (1.0 - self.mixing_param) + next_delta * self.mixing_param;
+        }
+
+        // Return the last calculated value even on failure, encapsulated in the error
+        Err(SolidStateError::ConvergenceFailure(
+            self.max_iterations,
+            delta,
+        ))
+    }
+}
+
+// --- Models ---
+
+/// Standard Isotropic s-wave BCS Model.
+///
+/// Assumes a constant attractive potential $V$ within a Debye energy window $\hbar\omega_D$.
+pub struct IsotropicBCSModel {
+    /// Electronic band energies relative to Fermi level ($\xi_k$).
+    pub energies: Vec<ElectronVolts>,
+    /// Magnitude of the attractive potential ($V$).
+    pub potential: ElectronVolts,
+    /// Debye energy cutoff ($\hbar\omega_D$).
+    pub debye_cutoff: ElectronVolts,
+}
+
+impl IsotropicBCSModel {
+    /// Creates a new Isotropic BCS Model.
+    ///
+    /// # Arguments
+    /// * `energies` - Band energies relative to Fermi level.
+    /// * `potential` - Magnitude of attractive potential.
+    /// * `debye_cutoff` - Debye energy window.
+    pub fn new(
+        energies: Vec<f64>,
+        potential: f64,
+        debye_cutoff: f64,
+    ) -> Result<Self, SolidStateError> {
+        // Legacy behavior allowed negative potentials/cutoffs (implicitly),
+        // so we do not enforce strict validation here to preserve compatibility.
+        Ok(Self {
+            energies: energies.into_iter().map(ElectronVolts).collect(),
+            potential: ElectronVolts(potential),
+            debye_cutoff: ElectronVolts(debye_cutoff),
+        })
+    }
+}
+
+impl GapEquation for IsotropicBCSModel {
+    fn calculate_next_gap(
+        &self,
+        current_gap: ElectronVolts,
+    ) -> Result<ElectronVolts, SolidStateError> {
+        let mut summation = 0.0;
+        let delta_sq = current_gap.0.powi(2);
+
+        for &xi in &self.energies {
+            // Interaction acts only within the Debye window
+            if xi.as_f64().abs() <= self.debye_cutoff.as_f64() {
+                let e_k = (xi.0.powi(2) + delta_sq).sqrt();
+                if e_k > 1e-12 {
+                    summation += 1.0 / (2.0 * e_k);
+                }
+            }
+        }
+
+        // Gap Equation Iteration Step
+        let factor = summation * self.potential.0;
+        Ok(current_gap * factor)
+    }
+}
+
+// --- Legacy API ---
 
 /// Solves the BCS Gap Equation iteratively.
 ///
@@ -8,38 +175,35 @@
 /// where E_k = \sqrt{\xi_k^2 + \Delta_k^2}
 ///
 /// Assumes an attractive potential -V exists for energies within the Debye cutoff.
+#[deprecated(
+    note = "Use BcsGapSolver and IsotropicBCSModel instead for better type safety and error handling"
+)]
 pub fn solve_gap_equation(
     energies_xi: &[f64],
     potential_v_magnitude: f64,
     debye_energy: f64,
     iterations: usize,
 ) -> Result<f64, String> {
-    // Initial guess for the gap parameter Delta
-    let mut delta = 0.01 * debye_energy;
+    let model =
+        IsotropicBCSModel::new(energies_xi.to_vec(), potential_v_magnitude, debye_energy)
+            .map_err(|e| e.to_string())?;
 
-    for _ in 0..iterations {
-        let mut summation = 0.0;
-        // Sum over all states k'
-        for &xi in energies_xi {
-            // Interaction acts only within the Debye window
-            if xi.abs() <= debye_energy {
-                let e_k = (xi.powi(2) + delta.powi(2)).sqrt();
-                if e_k > 1e-12 {
-                    summation += 1.0 / (2.0 * e_k);
-                }
-            }
+    let solver = BcsGapSolver::default()
+        .with_max_iterations(iterations)
+        .with_tolerance(1e-9) // Higher tolerance to ensure legacy behavior match if needed?
+        .with_mixing_param(0.5); // Legacy used 0.5
+
+    // Legacy initial guess: 0.01 * debye_energy
+    let initial_guess = ElectronVolts(0.01 * debye_energy);
+
+    match solver.solve(&model, initial_guess) {
+        Ok(delta) => Ok(delta.0),
+        Err(SolidStateError::ConvergenceFailure(_, last_val)) => {
+            // Legacy behavior: Return the last calculated value even if not converged.
+            Ok(last_val.0)
         }
-
-        // New Delta from Gap Equation:
-        // Delta = V * Delta * Sum(1/2E)
-        // (Assuming V is attractive constant -V_0, equation becomes positive)
-        let new_delta = potential_v_magnitude * delta * summation;
-
-        // Simple mixing to stabilize convergence
-        delta = 0.5 * delta + 0.5 * new_delta;
+        Err(e) => Err(e.to_string()),
     }
-
-    Ok(delta)
 }
 
 /// Calculates the Bogoliubov coherence factors (u_k, v_k).
@@ -47,8 +211,16 @@ pub fn solve_gap_equation(
 /// v_k^2 = 1/2 (1 - \xi_k / E_k) : Probability of pair occupation
 /// u_k^2 = 1 - v_k^2             : Probability of emptiness
 pub fn coherence_factors(xi_k: f64, delta: f64) -> (f64, f64) {
-    let e_k = (xi_k.powi(2) + delta.powi(2)).sqrt();
-    let v_sq = 0.5 * (1.0 - xi_k / e_k);
+    let xi = ElectronVolts(xi_k);
+    let d = ElectronVolts(delta);
+    let (u, v) = coherence_factors_strong(xi, d);
+    (u, v)
+}
+
+/// Strong-typed version of coherence factors.
+pub fn coherence_factors_strong(xi_k: ElectronVolts, delta: ElectronVolts) -> (f64, f64) {
+    let e_k = (xi_k.0.powi(2) + delta.0.powi(2)).sqrt();
+    let v_sq = 0.5 * (1.0 - xi_k.0 / e_k);
     // Ensure within [0, 1] for numerical safety
     let v_sq = v_sq.clamp(0.0, 1.0);
     let u_sq = 1.0 - v_sq;
@@ -67,5 +239,34 @@ mod tests {
         let (u, v) = coherence_factors(xi, delta);
         let prob = u * u + v * v;
         assert!((prob - 1.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_solver_convergence() {
+        // Mock data
+        let energies: Vec<f64> = (0..100).map(|i| (i as f64 - 50.0) * 0.1).collect();
+        let potential = 0.5;
+        let debye = 5.0;
+
+        let model = IsotropicBCSModel::new(energies.clone(), potential, debye).unwrap();
+        let solver = BcsGapSolver::default();
+        let initial = ElectronVolts(0.05);
+
+        let result = solver.solve(&model, initial);
+        assert!(result.is_ok());
+        let delta = result.unwrap();
+        assert!(delta.0 > 0.0);
+    }
+
+    #[test]
+    fn test_legacy_wrapper() {
+        let energies: Vec<f64> = (0..100).map(|i| (i as f64 - 50.0) * 0.1).collect();
+        let potential = 0.5;
+        let debye = 5.0;
+
+        // Legacy function should still work
+        let res = solve_gap_equation(&energies, potential, debye, 1000);
+        assert!(res.is_ok());
+        assert!(res.unwrap() > 0.0);
     }
 }
