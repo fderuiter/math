@@ -1,18 +1,19 @@
 use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
+use math_explorer::ai::deep_learning_theory::optimization::{Adam, SGD};
 use nalgebra::DVector;
 
 #[test]
 fn test_deep_learning_cycle() {
     // Xor problem-ish (non-linear)
     // 2 inputs, 2 hidden units, 2 output classes
-    let mut network = TrainingLoop::new(2, 4, 2, 0.1);
+    let mut network = TrainingLoop::new(2, 4, 2, Box::new(SGD::new(0.1)));
 
     // Dummy data: Input [1, 0] -> Class 0 ([1, 0])
     let x = DVector::from_vec(vec![1.0, 0.0]);
     let y_true = DVector::from_vec(vec![1.0, 0.0]);
 
     // Initial prediction should be close to uniform or random
-    let initial_pred = network.predict(&x);
+    let _initial_pred = network.predict(&x);
     let initial_loss = network.train_step(&x, &y_true);
 
     // Train for a few steps
@@ -32,6 +33,34 @@ fn test_deep_learning_cycle() {
         "Did not learn to predict class 0"
     );
     assert!(final_pred[0] > 0.8, "Prediction confidence too low");
+}
+
+#[test]
+fn test_deep_learning_cycle_adam() {
+    // Same test but with Adam to prove flexibility
+    let mut network = TrainingLoop::new(2, 4, 2, Box::new(Adam::new(0.01)));
+
+    let x = DVector::from_vec(vec![1.0, 0.0]);
+    let y_true = DVector::from_vec(vec![1.0, 0.0]);
+
+    let initial_loss = network.train_step(&x, &y_true);
+
+    let mut final_loss = 0.0;
+    for _ in 0..100 {
+        final_loss = network.train_step(&x, &y_true);
+    }
+
+    println!(
+        "(Adam) Initial Loss: {}, Final Loss: {}",
+        initial_loss, final_loss
+    );
+    assert!(final_loss < initial_loss, "Loss did not decrease with Adam!");
+
+    let final_pred = network.predict(&x);
+    assert!(
+        final_pred[0] > final_pred[1],
+        "Did not learn to predict class 0 with Adam"
+    );
 }
 
 #[test]
