@@ -1,5 +1,5 @@
 use std::fmt;
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Energy in Electron Volts (eV).
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
