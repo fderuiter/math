@@ -22,7 +22,7 @@ pub use bloch::BlochSimulator;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pure_math::analysis::ode::RungeKutta4;
+    use crate::pure_math::analysis::ode::{RungeKutta4, TimeStepper};
     use approx::assert_relative_eq;
     use nalgebra::Vector3;
     use std::f64::consts::PI;
@@ -44,8 +44,9 @@ mod tests {
     }
 
     #[test]
-    fn test_bloch_relaxation() {
-        // Test T2 relaxation
+    #[allow(deprecated)]
+    fn test_bloch_relaxation_legacy() {
+        // Test T2 relaxation using legacy API
         // Initialize M = [0, 1, 0], B = 0 (no precession), T1 = inf, T2 = 1.0
         let initial_m = Vector3::new(0.0, 1.0, 0.0);
         let m0 = 1.0;
@@ -74,8 +75,9 @@ mod tests {
     }
 
     #[test]
-    fn test_bloch_rk4_accuracy() {
-        // T2 relaxation with RK4 should be more accurate than Euler
+    #[allow(deprecated)]
+    fn test_bloch_rk4_accuracy_legacy() {
+        // T2 relaxation with RK4 using legacy API
         let initial_m = Vector3::new(0.0, 1.0, 0.0);
         let m0 = 1.0;
         let mut bloch = BlochSimulator::new(initial_m, m0);
@@ -95,6 +97,31 @@ mod tests {
         let expected_y = (-1.0_f64).exp();
 
         // With dt=0.1, Euler error is visible. RK4 should be very close.
+        assert_relative_eq!(bloch.magnetization.y, expected_y, epsilon = 1e-5);
+    }
+
+    #[test]
+    fn test_bloch_time_stepper_api() {
+        // Test new TimeStepper API
+        let initial_m = Vector3::new(0.0, 1.0, 0.0);
+        let m0 = 1.0;
+        let mut bloch = BlochSimulator::new(initial_m, m0);
+
+        // Setup parameters once
+        let t2 = 1.0;
+        let t1 = 1e9;
+        bloch.set_relaxation(t1, t2);
+        // B field defaults to 0, which is what we want
+
+        let dt = 0.1;
+
+        // Use TimeStepper::step which defaults to RK4
+        let steps = (1.0 / dt) as usize;
+        for _ in 0..steps {
+            <BlochSimulator as TimeStepper<Vector3<f64>>>::step(&mut bloch, dt);
+        }
+
+        let expected_y = (-1.0_f64).exp();
         assert_relative_eq!(bloch.magnetization.y, expected_y, epsilon = 1e-5);
     }
 }
