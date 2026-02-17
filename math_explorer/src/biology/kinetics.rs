@@ -6,6 +6,28 @@
 //!
 //! * **Michaelis-Menten**: $v = \frac{V_{max}[S]}{K_m + [S]}$
 //! * **Hill Kinetics**: $v = \frac{V_{max}[S]^n}{K_m^n + [S]^n}$
+//!
+//! ## 🚀 Quick Start
+//!
+//! Calculate the reaction rate of an enzyme at different substrate concentrations.
+//!
+//! ```rust
+//! use math_explorer::biology::kinetics::{MichaelisMenten, KineticsModel};
+//!
+//! // 1. Define Enzyme Properties
+//! // Vmax = 100.0 (Max rate), Km = 50.0 (Substrate conc at half max rate)
+//! let enzyme = MichaelisMenten::new(100.0, 50.0).expect("Invalid parameters");
+//!
+//! // 2. Calculate Velocity at [S] = 50.0 (should be Vmax/2)
+//! let velocity = enzyme.reaction_velocity(50.0).unwrap();
+//! println!("Reaction Velocity at Km: {:.2}", velocity);
+//! assert!((velocity - 50.0).abs() < 1e-6);
+//!
+//! // 3. Calculate Velocity at saturation ([S] = 1000.0)
+//! let v_sat = enzyme.reaction_velocity(1000.0).unwrap();
+//! println!("Reaction Velocity at Saturation: {:.2}", v_sat);
+//! assert!(v_sat > 90.0);
+//! ```
 
 use thiserror::Error;
 

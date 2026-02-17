@@ -1,10 +1,39 @@
-//! Mean Field Games (MFG)
+//! # Mean Field Games (MFG)
 //!
-//! MFGs model the limit of $N \to \infty$ players, using coupled PDE systems:
-//! - **HJB Equation**: Optimal control for a single agent (Backward).
-//! - **Fokker-Planck Equation**: Evolution of the population distribution (Forward).
+//! MFGs model the limit of $N \to \infty$ players, where individual interactions are replaced by
+//! an interaction with the "mean field" (the aggregate population). This leads to a system of two coupled PDEs:
 //!
-//! This module provides the configuration types and solver strategies for 1D MFGs.
+//! 1.  **Hamilton-Jacobi-Bellman (HJB)**: Backward equation. Determines the optimal value function $u(x,t)$ for a representative agent.
+//! 2.  **Fokker-Planck (FP)**: Forward equation. Describes the evolution of the population density $m(x,t)$ under the optimal control.
+//!
+//! ## 🚀 Quick Start
+//!
+//! Solve a standard 1D MFG where agents try to minimize travel cost while avoiding congestion.
+//!
+//! ```rust
+//! use math_explorer::applied::game_theory::mean_field::{MFGConfig, FixedPointSolver, MFGSolver};
+//!
+//! // 1. Configuration
+//! // Viscosity (noise) = 0.1, Time Horizon = 1.0
+//! // Grid: 50 spatial points, 100 time steps. Range: [-2.0, 2.0]
+//! let config = MFGConfig::new(0.1, 1.0, 50, 100, -2.0, 2.0);
+//!
+//! // 2. Define Costs and Initial Distribution
+//! // Running Cost: F(x, m) = m + x^2 (Agents dislike crowds + prefer origin)
+//! let cost_fn = |x: f64, m: f64| -> f64 { m + x * x };
+//!
+//! // Terminal Cost: G(x) = x^2 (Agents want to be at origin at T)
+//! let term_fn = |x: f64, _m: f64| -> f64 { x * x };
+//!
+//! // Initial Distribution: Gaussian centered at origin
+//! let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
+//!
+//! // 3. Solve using Fixed Point Iteration
+//! let solver = FixedPointSolver::new(5); // 5 Iterations
+//! let (u, m) = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
+//!
+//! println!("Value at origin at t=0: {:.4}", u[(25, 0)]);
+//! ```
 
 pub mod physics;
 pub mod solver;
