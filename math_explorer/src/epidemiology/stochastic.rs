@@ -8,11 +8,11 @@ impl StochasticSystem<SIRState> for SIRModel {
     fn propensities(&self, state: &SIRState, out: &mut Vec<f64>) {
         // Reaction 0: Infection (S + I -> 2I)
         // Rate: beta * S * I / N
-        let infection_rate = self.beta * state.s * state.i / self.n;
+        let infection_rate = self.beta() * state.s * state.i / self.n();
 
         // Reaction 1: Recovery (I -> R)
         // Rate: gamma * I
-        let recovery_rate = self.gamma * state.i;
+        let recovery_rate = self.gamma() * state.i;
 
         out.push(infection_rate);
         out.push(recovery_rate);
@@ -99,7 +99,7 @@ mod tests {
         // High beta, low gamma -> likely infection
         let model = SIRModel::new(n, i0, 2.0, 0.1).unwrap();
 
-        let mut state = model.state; // Working copy of state
+        let mut state = *model.state(); // Working copy of state
         let initial_s = state.s;
         let initial_i = state.i;
 
