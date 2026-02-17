@@ -1,3 +1,52 @@
+//! # Evolutionary Dynamics (Hawk-Dove)
+//!
+//! This module models population dynamics where individuals adopt strategies that compete for resources.
+//! The classic example implemented here is the **Hawk-Dove Game**.
+//!
+//! ## 🦅 The Hawk-Dove Game
+//!
+//! - **Hawk**: Aggressive strategy. Fights for the resource.
+//! - **Dove**: Passive strategy. Shares the resource or retreats.
+//!
+//! The payoff matrix is:
+//!
+//! | vs | Hawk | Dove |
+//! |---|---|---|
+//! | **Hawk** | $(V-C)/2$ | $V$ |
+//! | **Dove** | $0$ | $V/2$ |
+//!
+//! Where:
+//! - $V$: Value of the resource.
+//! - $C$: Cost of injury from fighting.
+//!
+//! ## 🚀 Quick Start
+//!
+//! Simulate a population where the cost of fighting is high ($C > V$).
+//! In this case, neither strategy is an Evolutionarily Stable Strategy (ESS),
+//! and the population should converge to a mixed equilibrium.
+//!
+//! ```rust
+//! use math_explorer::biology::evolution::HawkDovePopulation;
+//!
+//! // 1. Define the environment
+//! // Value = 2.0, Cost = 10.0 (High cost of fighting)
+//! let population = HawkDovePopulation::new(2.0, 10.0);
+//!
+//! // 2. Initial State: Mostly Hawks (90%)
+//! let mut hawk_freq = 0.9;
+//! let dt = 0.1;
+//!
+//! // 3. Evolve over time
+//! for _ in 0..100 {
+//!     hawk_freq = population.update_frequencies(hawk_freq, dt).unwrap();
+//! }
+//!
+//! // 4. Check convergence
+//! // Theoretical Equilibrium: p = V/C = 2/10 = 0.2
+//! println!("Final Hawk Frequency: {:.3}", hawk_freq);
+//! assert!((hawk_freq - 0.2).abs() < 0.05);
+//! ```
+
 use crate::applied::game_theory::error::GameTheoryError;
 use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
 use crate::pure_math::analysis::ode::{Euler, Solver};
