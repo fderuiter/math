@@ -54,7 +54,10 @@ fn test_deep_learning_cycle_adam() {
         "(Adam) Initial Loss: {}, Final Loss: {}",
         initial_loss, final_loss
     );
-    assert!(final_loss < initial_loss, "Loss did not decrease with Adam!");
+    assert!(
+        final_loss < initial_loss,
+        "Loss did not decrease with Adam!"
+    );
 
     let final_pred = network.predict(&x);
     assert!(

@@ -14,7 +14,12 @@ pub struct TrainingLoop {
 }
 
 impl TrainingLoop {
-    pub fn new(input_dim: usize, hidden_dim: usize, output_dim: usize, optimizer: Box<dyn Optimizer>) -> Self {
+    pub fn new(
+        input_dim: usize,
+        hidden_dim: usize,
+        output_dim: usize,
+        optimizer: Box<dyn Optimizer>,
+    ) -> Self {
         Self {
             layer1: DenseLayer::new(input_dim, hidden_dim),
             layer2: DenseLayer::new(hidden_dim, output_dim),
