@@ -16,7 +16,7 @@ fn main() {
     let n = 1_000_000.0;
     let i0 = 1000.0;
     let model = SIRModel::new(n, i0, 2.0, 0.1).unwrap();
-    let mut state = model.state;
+    let mut state = *model.state();
 
     // Warmup
     for _ in 0..100 {
@@ -24,7 +24,7 @@ fn main() {
     }
 
     // Reset state for actual bench
-    state = model.state;
+    state = *model.state();
     let rng = StdRng::seed_from_u64(42);
     solver = GillespieSolver::new(rng);
 
