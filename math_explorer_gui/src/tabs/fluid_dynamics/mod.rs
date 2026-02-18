@@ -3,20 +3,24 @@ use eframe::egui;
 
 pub mod potential_flow;
 pub mod turbulence;
+pub mod lattice_boltzmann;
 
 use potential_flow::PotentialFlowTool;
 use turbulence::TurbulenceTool;
+use lattice_boltzmann::LatticeBoltzmannTool;
 
 #[derive(PartialEq)]
 enum FluidMode {
     PotentialFlow,
     Turbulence,
+    LatticeBoltzmann,
 }
 
 pub struct FluidDynamicsTab {
     mode: FluidMode,
     potential_flow: PotentialFlowTool,
     turbulence: TurbulenceTool,
+    lattice_boltzmann: LatticeBoltzmannTool,
 }
 
 impl Default for FluidDynamicsTab {
@@ -25,6 +29,7 @@ impl Default for FluidDynamicsTab {
             mode: FluidMode::PotentialFlow,
             potential_flow: PotentialFlowTool::default(),
             turbulence: TurbulenceTool::default(),
+            lattice_boltzmann: LatticeBoltzmannTool::default(),
         }
     }
 }
@@ -40,12 +45,14 @@ impl ExplorerTab for FluidDynamicsTab {
                  ui.label("Mode:");
                  ui.selectable_value(&mut self.mode, FluidMode::PotentialFlow, "Potential Flow");
                  ui.selectable_value(&mut self.mode, FluidMode::Turbulence, "Turbulence / Reynolds Analysis");
+                 ui.selectable_value(&mut self.mode, FluidMode::LatticeBoltzmann, "Lattice Boltzmann (Demo)");
              });
         });
 
         match self.mode {
             FluidMode::PotentialFlow => self.potential_flow.show(ctx),
             FluidMode::Turbulence => self.turbulence.show(ctx),
+            FluidMode::LatticeBoltzmann => self.lattice_boltzmann.show(ctx),
         }
     }
 }
