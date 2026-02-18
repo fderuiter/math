@@ -61,10 +61,12 @@
 //! println!("Concentration of Activator at center: {:.4}", u_center);
 //! ```
 
-use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-use crate::biology::reaction_diffusion::ReactionModel;
-use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
-use std::ops::{Add, AddAssign, Mul, MulAssign};
+use crate::biology::diffusion::FiniteDifference1D;
+use crate::biology::reaction_diffusion::{
+    ChemicalState, DiffusionModel, ReactionDiffusionSystem, ReactionModel,
+};
+use crate::pure_math::analysis::ode::solvers::Euler;
+use crate::pure_math::analysis::ode::traits::Solver;
 
 /// Defines the reaction kinetics for a 2-component reaction-diffusion system.
 pub trait ReactionKinetics {
@@ -122,7 +124,9 @@ impl ReactionKinetics for SchnakenbergKinetics {
     }
 }
 
-impl ReactionModel for SchnakenbergKinetics {
+/// Blanket implementation of `ReactionModel` for any type that implements `ReactionKinetics`.
+/// This adapts the 2-variable `reaction` method to the N-variable `ReactionModel` trait.
+impl<T: ReactionKinetics> ReactionModel for T {
     fn reaction(&self, concentrations: &[f64], rates: &mut [f64]) {
         if concentrations.len() < 2 || rates.len() < 2 {
             return;
@@ -162,276 +166,111 @@ impl ReactionModel for SchnakenbergKinetics {
     }
 }
 
-/// Represents the state of a Turing system at a point in time.
+/// Represents a Reaction-Diffusion system specialized for Turing patterns.
 ///
-/// This struct encapsulates the concentration vectors for the activator and inhibitor,
-/// protecting them from invalid resizing while providing safe access.
-#[derive(Debug, Clone, PartialEq)]
-pub struct TuringState {
-    u: Vec<f64>,
-    v: Vec<f64>,
-}
-
-impl TuringState {
-    /// Creates a new zero-initialized state of a given size.
-    pub fn new(size: usize) -> Self {
-        Self {
-            u: vec![0.0; size],
-            v: vec![0.0; size],
-        }
-    }
-
-    /// Returns a slice of the activator concentrations.
-    pub fn u(&self) -> &[f64] {
-        &self.u
-    }
-
-    /// Returns a slice of the inhibitor concentrations.
-    pub fn v(&self) -> &[f64] {
-        &self.v
-    }
-
-    /// Returns a mutable slice of the activator concentrations.
-    pub fn u_mut(&mut self) -> &mut [f64] {
-        &mut self.u
-    }
-
-    /// Returns a mutable slice of the inhibitor concentrations.
-    pub fn v_mut(&mut self) -> &mut [f64] {
-        &mut self.v
-    }
-
-    /// Returns the length of the grid.
-    pub fn len(&self) -> usize {
-        self.u.len()
-    }
-
-    /// Returns true if the grid is empty.
-    pub fn is_empty(&self) -> bool {
-        self.u.is_empty()
-    }
-}
-
-impl Add for TuringState {
-    type Output = Self;
-
-    fn add(mut self, rhs: Self) -> Self {
-        for (u, r) in self.u.iter_mut().zip(rhs.u.iter()) {
-            *u += r;
-        }
-        for (v, r) in self.v.iter_mut().zip(rhs.v.iter()) {
-            *v += r;
-        }
-        self
-    }
-}
-
-impl AddAssign for TuringState {
-    fn add_assign(&mut self, rhs: Self) {
-        for (u, r) in self.u.iter_mut().zip(rhs.u.iter()) {
-            *u += r;
-        }
-        for (v, r) in self.v.iter_mut().zip(rhs.v.iter()) {
-            *v += r;
-        }
-    }
-}
-
-impl Mul<f64> for TuringState {
-    type Output = Self;
-
-    fn mul(mut self, scalar: f64) -> Self {
-        for u in self.u.iter_mut() {
-            *u *= scalar;
-        }
-        for v in self.v.iter_mut() {
-            *v *= scalar;
-        }
-        self
-    }
-}
-
-impl MulAssign<f64> for TuringState {
-    fn mul_assign(&mut self, scalar: f64) {
-        for u in self.u.iter_mut() {
-            *u *= scalar;
-        }
-        for v in self.v.iter_mut() {
-            *v *= scalar;
-        }
-    }
-}
-
-impl VectorOperations for TuringState {
-    fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (u, r) in self.u.iter_mut().zip(other.u.iter()) {
-            *u += r * scale;
-        }
-        for (v, r) in self.v.iter_mut().zip(other.v.iter()) {
-            *v += r * scale;
-        }
-    }
-
-    fn copy_from(&mut self, other: &Self) {
-        if self.u.len() != other.u.len() {
-            self.u.resize(other.u.len(), 0.0);
-            self.v.resize(other.v.len(), 0.0);
-        }
-        self.u.copy_from_slice(&other.u);
-        self.v.copy_from_slice(&other.v);
-    }
-}
-
-/// Represents a Reaction-Diffusion system.
+/// This is a wrapper around the generic `ReactionDiffusionSystem`, pre-configured for 2 species.
 pub struct TuringSystem<
-    K: ReactionKinetics = SchnakenbergKinetics,
-    D: SpatialDiffusion = FiniteDifference1D,
+    K: ReactionModel = SchnakenbergKinetics,
+    D: DiffusionModel = FiniteDifference1D,
+    S: Solver<ChemicalState> = Euler<ChemicalState>,
 > {
-    /// The current state of the system.
-    pub state: TuringState,
-
-    // Double buffer for the next state.
-    next_state: TuringState,
-
-    /// Diffusion coefficient for u
-    pub d_u: f64,
-    /// Diffusion coefficient for v
-    pub d_v: f64,
-    /// Reaction kinetics strategy
-    pub kinetics: K,
-    /// Spatial diffusion strategy
-    pub diffusion: D,
+    /// The underlying generic reaction-diffusion system.
+    pub inner: ReactionDiffusionSystem<K, D, S>,
 }
 
-impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D> {
+impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D, Euler<ChemicalState>> {
     /// Creates a new Turing System with default Schnakenberg kinetics and 1D Finite Difference.
     pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
-        Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            d_u,
-            d_v,
-            kinetics: SchnakenbergKinetics::default(),
-            diffusion: FiniteDifference1D::new(dx),
-        }
+        let kinetics = SchnakenbergKinetics::default();
+        let diffusion = FiniteDifference1D::new(dx);
+        let diffusion_coeffs = vec![d_u, d_v];
+
+        let inner = ReactionDiffusionSystem::new(2, size, kinetics, diffusion, diffusion_coeffs);
+
+        Self { inner }
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
-    /// Creates a new Turing System with custom kinetics and diffusion strategy.
-    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
-        Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            d_u,
-            d_v,
+impl<K: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>> TuringSystem<K, D, S> {
+    /// Creates a new Turing System with custom kinetics, diffusion strategy, and solver.
+    pub fn new_with_solver(
+        size: usize,
+        d_u: f64,
+        d_v: f64,
+        kinetics: K,
+        diffusion: D,
+        solver: S,
+    ) -> Self {
+        let diffusion_coeffs = vec![d_u, d_v];
+        let inner = ReactionDiffusionSystem::new_with_solver(
+            2,
+            size,
             kinetics,
             diffusion,
-        }
+            diffusion_coeffs,
+            solver,
+        );
+        Self { inner }
     }
+}
 
+impl<K: ReactionModel, D: DiffusionModel> TuringSystem<K, D, Euler<ChemicalState>> {
+    /// Creates a new Turing System with custom kinetics and diffusion strategy.
+    ///
+    /// Uses the default Euler solver.
+    pub fn new_with_kinetics(
+        size: usize,
+        d_u: f64,
+        d_v: f64,
+        kinetics: K,
+        diffusion: D
+    ) -> Self {
+        let diffusion_coeffs = vec![d_u, d_v];
+        let inner = ReactionDiffusionSystem::new(
+            2,
+            size,
+            kinetics,
+            diffusion,
+            diffusion_coeffs
+        );
+        Self { inner }
+    }
+}
+
+impl<K: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>> TuringSystem<K, D, S> {
     /// Accessor for the activator concentrations (backward compatibility/convenience).
     pub fn u(&self) -> &[f64] {
-        self.state.u()
+        self.inner.state.species(0)
     }
 
     /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
     pub fn v(&self) -> &[f64] {
-        self.state.v()
+        self.inner.state.species(1)
     }
 
     /// Mutable accessor for the activator concentrations.
     pub fn u_mut(&mut self) -> &mut [f64] {
-        self.state.u_mut()
+        self.inner.state.species_mut(0)
     }
 
     /// Mutable accessor for the inhibitor concentrations.
     pub fn v_mut(&mut self) -> &mut [f64] {
-        self.state.v_mut()
+        self.inner.state.species_mut(1)
     }
 
-    /// Updates the grid using the diffusion strategy and reaction kinetics.
+    /// Updates the grid using the configured solver.
     pub fn step(&mut self, dt: f64) {
-        let n = self.state.len();
-        if n == 0 {
-            return;
-        }
-
-        // Ensure buffers are the right size
-        if self.next_state.len() != n {
-            self.next_state = TuringState::new(n);
-        }
-
-        let u = &self.state.u;
-        let v = &self.state.v;
-        let next_u = &mut self.next_state.u;
-        let next_v = &mut self.next_state.v;
-
-        // Fused Diffusion-Reaction-Integration Step
-        // This is significantly faster than separate passes because it keeps data in registers/L1 cache.
-        self.diffusion
-            .apply_step(u, v, next_u, next_v, self.d_u, self.d_v, dt, |u, v| {
-                self.kinetics.reaction(u, v)
-            });
-
-        // Swap buffers (states)
-        std::mem::swap(&mut self.state, &mut self.next_state);
-    }
-}
-
-impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for TuringSystem<K, D> {
-    fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
-        let mut out = TuringState::new(state.len());
-        self.derivative_in_place(t, state, &mut out);
-        out
+        self.inner.step(dt);
     }
 
-    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
-        let n = state.len();
-        if n == 0 {
-            return;
-        }
-
-        // Ensure output buffer is the right size
-        if out.len() != n {
-            *out = TuringState::new(n);
-        }
-
-        let u = &state.u;
-        let v = &state.v;
-        let out_u = &mut out.u;
-        let out_v = &mut out.v;
-
-        // 1. Compute Diffusion
-        self.diffusion.apply(u, v, out_u, out_v, self.d_u, self.d_v);
-
-        // 2. Compute Reaction and Accumulate
-        unsafe {
-            for i in 0..n {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                *out_u.get_unchecked_mut(i) += reac_u;
-                *out_v.get_unchecked_mut(i) += reac_v;
-            }
-        }
-    }
-}
-
-impl<K: ReactionKinetics, D: SpatialDiffusion> TimeStepper<TuringState> for TuringSystem<K, D> {
-    fn get_state(&self) -> &TuringState {
-        &self.state
+    /// Returns the length of the grid.
+    pub fn len(&self) -> usize {
+        self.inner.state.grid_size()
     }
 
-    fn get_state_mut(&mut self) -> &mut TuringState {
-        &mut self.state
-    }
-
-    fn step(&mut self, dt: f64) {
-        // Delegate to the optimized inherent method
-        self.step(dt);
+    /// Returns true if the grid is empty.
+    pub fn is_empty(&self) -> bool {
+        self.inner.state.grid_size() == 0
     }
 }
 
@@ -450,8 +289,8 @@ mod tests {
 
         // Initialize with some pattern
         for i in 0..n {
-            system.state.u_mut()[i] = 1.0 + 0.1 * (i as f64);
-            system.state.v_mut()[i] = 0.5 - 0.05 * (i as f64);
+            system.u_mut()[i] = 1.0 + 0.1 * (i as f64);
+            system.v_mut()[i] = 0.5 - 0.05 * (i as f64);
         }
 
         // Run for a few steps
@@ -464,7 +303,7 @@ mod tests {
         let u_out = system.u().to_vec();
         let v_out = system.v().to_vec();
 
-        // Expected values captured from baseline run
+        // Expected values captured from baseline run (preserved from original test)
         let expected_u = vec![
             0.9798926377401955,
             1.0722504645444493,
