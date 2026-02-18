@@ -182,18 +182,18 @@ pub trait ReactionModel {
         // Optimizing this further requires specific knowledge of n_species (which concrete impls have).
         for i in 0..n_grid {
             // Gather
-            for s in 0..n_species {
+            for (s, conc) in local_concs.iter_mut().enumerate() {
                 // Access species s at grid point i
                 // Layout: [Species 0....][Species 1....]
                 // Index = s * grid_size + i
-                local_concs[s] = state.concentrations[s * n_grid + i];
+                *conc = state.concentrations[s * n_grid + i];
             }
 
             self.reaction(&local_concs, &mut local_rates);
 
             // Scatter (Accumulate)
-            for s in 0..n_species {
-                rates.concentrations[s * n_grid + i] += local_rates[s];
+            for (s, rate) in local_rates.iter().enumerate() {
+                rates.concentrations[s * n_grid + i] += *rate;
             }
         }
     }
