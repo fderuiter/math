@@ -1,0 +1,190 @@
+use crate::tabs::ExplorerTab;
+use eframe::egui;
+use egui_plot::{Arrows, Plot};
+use math_explorer::physics::fluid_dynamics::potential_flow::{
+    Doublet, FlowElement, PotentialFlowField, Source, UniformFlow, Vortex,
+};
+use std::f64::consts::PI;
+
+pub struct FluidDynamicsTab {
+    field: PotentialFlowField,
+    // UI State
+    grid_size: usize,
+    view_range: f64,
+
+    // Add Element State
+    selected_element_type: ElementType,
+    new_element_strength: f64,
+    new_element_x: f64,
+    new_element_y: f64,
+    new_element_angle: f64,
+}
+
+#[derive(PartialEq, Clone, Copy)]
+enum ElementType {
+    Uniform,
+    Source,
+    Sink,
+    Vortex,
+    Doublet,
+}
+
+impl Default for FluidDynamicsTab {
+    fn default() -> Self {
+        let mut field = PotentialFlowField::new();
+        // Default: Flow past a cylinder (Uniform + Doublet)
+        field.add(Box::new(UniformFlow::new(10.0, 0.0)));
+        // Radius R=2, U=10 => kappa = 2*pi*U*R^2 = 2*pi*10*4 = 80*pi approx 251.3
+        let kappa = 2.0 * PI * 10.0 * 2.0 * 2.0;
+        field.add(Box::new(Doublet::new(kappa, 0.0, 0.0)));
+
+        Self {
+            field,
+            grid_size: 20,
+            view_range: 10.0,
+            selected_element_type: ElementType::Source,
+            new_element_strength: 10.0,
+            new_element_x: 0.0,
+            new_element_y: 0.0,
+            new_element_angle: 0.0,
+        }
+    }
+}
+
+impl FluidDynamicsTab {
+    fn add_element(&mut self) {
+        let element: Box<dyn FlowElement> = match self.selected_element_type {
+            ElementType::Uniform => Box::new(UniformFlow::new(
+                self.new_element_strength,
+                self.new_element_angle,
+            )),
+            ElementType::Source => Box::new(Source::new(
+                self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+            ElementType::Sink => Box::new(Source::new(
+                -self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+            ElementType::Vortex => Box::new(Vortex::new(
+                self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+            ElementType::Doublet => Box::new(Doublet::new(
+                self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+        };
+        self.field.add(element);
+    }
+
+    fn clear(&mut self) {
+        self.field.clear();
+    }
+}
+
+impl ExplorerTab for FluidDynamicsTab {
+    fn name(&self) -> &'static str {
+        "Fluid Dynamics"
+    }
+
+    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui::SidePanel::left("fluid_controls").show(ctx, |ui| {
+            ui.heading("Potential Flow Controls");
+            ui.separator();
+
+            ui.collapsing("Add Element", |ui| {
+                ui.radio_value(
+                    &mut self.selected_element_type,
+                    ElementType::Uniform,
+                    "Uniform Flow",
+                );
+                ui.radio_value(&mut self.selected_element_type, ElementType::Source, "Source");
+                ui.radio_value(&mut self.selected_element_type, ElementType::Sink, "Sink");
+                ui.radio_value(&mut self.selected_element_type, ElementType::Vortex, "Vortex");
+                ui.radio_value(&mut self.selected_element_type, ElementType::Doublet, "Doublet");
+
+                ui.separator();
+
+                ui.label("Strength / Velocity");
+                ui.add(egui::DragValue::new(&mut self.new_element_strength).speed(0.1));
+
+                match self.selected_element_type {
+                    ElementType::Uniform => {
+                        ui.label("Angle (degrees)");
+                        ui.add(egui::Slider::new(&mut self.new_element_angle, -180.0..=180.0));
+                    }
+                    _ => {
+                        ui.label("Position X");
+                        ui.add(egui::DragValue::new(&mut self.new_element_x).speed(0.1));
+                        ui.label("Position Y");
+                        ui.add(egui::DragValue::new(&mut self.new_element_y).speed(0.1));
+                    }
+                }
+
+                if ui.button("Add Element").clicked() {
+                    self.add_element();
+                }
+            });
+
+            ui.separator();
+
+            if ui.button("Clear All").clicked() {
+                self.clear();
+            }
+
+            ui.separator();
+            ui.label("Visualization");
+            ui.add(egui::Slider::new(&mut self.grid_size, 10..=50).text("Grid Density"));
+            ui.add(egui::Slider::new(&mut self.view_range, 5.0..=50.0).text("View Range"));
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            Plot::new("fluid_plot")
+                .data_aspect(1.0)
+                .view_aspect(1.0)
+                .show(ui, |plot_ui| {
+                    // Generate vector field arrows
+                    let step = (2.0 * self.view_range) / (self.grid_size as f64);
+                    let min = -self.view_range;
+                    let max = self.view_range;
+
+                    let mut origins = Vec::new();
+                    let mut tips = Vec::new();
+
+                    let mut x = min;
+                    while x <= max {
+                        let mut y = min;
+                        while y <= max {
+                            let v = self.field.velocity(x, y);
+                            let magnitude = v.norm();
+
+                            // Scale arrow for visibility, but cap it to avoid huge arrows near singularities
+                            let arrow_len = (magnitude * 0.1).min(step * 0.8);
+                            if magnitude > 1e-6 {
+                                let direction = v.normalize();
+                                let start = [x, y];
+                                let end = [
+                                    x + direction.x * arrow_len,
+                                    y + direction.y * arrow_len,
+                                ];
+                                origins.push(start);
+                                tips.push(end);
+                            }
+
+                            y += step;
+                        }
+                        x += step;
+                    }
+
+                    plot_ui.arrows(
+                        Arrows::new("Vector Field", origins, tips).color(egui::Color32::LIGHT_BLUE),
+                    );
+                });
+        });
+    }
+}
