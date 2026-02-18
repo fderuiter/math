@@ -25,13 +25,19 @@ fn test_cylinder_flow() {
     let velocity = field.velocity(stagnation_point.x, stagnation_point.y);
 
     println!("Velocity at stagnation point (-R, 0): {:?}", velocity);
-    assert!(velocity.norm() < 1e-5, "Velocity at stagnation point should be zero");
+    assert!(
+        velocity.norm() < 1e-5,
+        "Velocity at stagnation point should be zero"
+    );
 
     let stagnation_point_2 = Vector2::new(radius, 0.0);
     let velocity_2 = field.velocity(stagnation_point_2.x, stagnation_point_2.y);
 
     println!("Velocity at stagnation point (R, 0): {:?}", velocity_2);
-    assert!(velocity_2.norm() < 1e-5, "Velocity at stagnation point should be zero");
+    assert!(
+        velocity_2.norm() < 1e-5,
+        "Velocity at stagnation point should be zero"
+    );
 
     // Check point on top of cylinder (0, R)
     // Velocity should be 2 * U_inf in X direction (tangential)
@@ -63,6 +69,9 @@ fn test_cylinder_flow() {
     let v_top = field.velocity(top_point.x, top_point.y);
     println!("Velocity at top point (0, R): {:?}", v_top);
 
-    assert!((v_top.x - 2.0 * u_inf).abs() < 1e-5, "Tangential velocity at top should be 2*U");
+    assert!(
+        (v_top.x - 2.0 * u_inf).abs() < 1e-5,
+        "Tangential velocity at top should be 2*U"
+    );
     assert!(v_top.y.abs() < 1e-5, "Radial velocity at top should be 0");
 }

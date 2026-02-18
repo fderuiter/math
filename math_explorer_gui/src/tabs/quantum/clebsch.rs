@@ -51,20 +51,56 @@ impl QuantumTool for ClebschGordanTool {
 
             ui.group(|ui| {
                 ui.label("Angular Momentum 1");
-                changed |= ui.add(egui::Slider::new(&mut self.j1, 0.0..=10.0).step_by(0.5).text("j1")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.m1, -10.0..=10.0).step_by(0.5).text("m1")).changed();
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut self.j1, 0.0..=10.0)
+                            .step_by(0.5)
+                            .text("j1"),
+                    )
+                    .changed();
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut self.m1, -10.0..=10.0)
+                            .step_by(0.5)
+                            .text("m1"),
+                    )
+                    .changed();
             });
 
             ui.group(|ui| {
                 ui.label("Angular Momentum 2");
-                changed |= ui.add(egui::Slider::new(&mut self.j2, 0.0..=10.0).step_by(0.5).text("j2")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.m2, -10.0..=10.0).step_by(0.5).text("m2")).changed();
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut self.j2, 0.0..=10.0)
+                            .step_by(0.5)
+                            .text("j2"),
+                    )
+                    .changed();
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut self.m2, -10.0..=10.0)
+                            .step_by(0.5)
+                            .text("m2"),
+                    )
+                    .changed();
             });
 
             ui.group(|ui| {
                 ui.label("Total Angular Momentum");
-                changed |= ui.add(egui::Slider::new(&mut self.j, 0.0..=20.0).step_by(1.0).text("J")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.m, -20.0..=20.0).step_by(1.0).text("M")).changed();
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut self.j, 0.0..=20.0)
+                            .step_by(1.0)
+                            .text("J"),
+                    )
+                    .changed();
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut self.m, -20.0..=20.0)
+                            .step_by(1.0)
+                            .text("M"),
+                    )
+                    .changed();
             });
 
             if changed {
@@ -77,16 +113,27 @@ impl QuantumTool for ClebschGordanTool {
             ui.separator();
 
             // Formula display
-            ui.label(egui::RichText::new(format!(
-                "⟨ j1, m1; j2, m2 | J, M ⟩ = ⟨ {:.1}, {:.1}; {:.1}, {:.1} | {:.1}, {:.1} ⟩",
-                self.j1, self.m1, self.j2, self.m2, self.j, self.m
-            )).size(20.0));
+            ui.label(
+                egui::RichText::new(format!(
+                    "⟨ j1, m1; j2, m2 | J, M ⟩ = ⟨ {:.1}, {:.1}; {:.1}, {:.1} | {:.1}, {:.1} ⟩",
+                    self.j1, self.m1, self.j2, self.m2, self.j, self.m
+                ))
+                .size(20.0),
+            );
 
             ui.add_space(20.0);
 
             ui.horizontal(|ui| {
-                ui.label(egui::RichText::new("Result (Amplitude): ").size(24.0).strong());
-                ui.label(egui::RichText::new(format!("{:.6}", self.result)).size(24.0).color(egui::Color32::LIGHT_GREEN));
+                ui.label(
+                    egui::RichText::new("Result (Amplitude): ")
+                        .size(24.0)
+                        .strong(),
+                );
+                ui.label(
+                    egui::RichText::new(format!("{:.6}", self.result))
+                        .size(24.0)
+                        .color(egui::Color32::LIGHT_GREEN),
+                );
             });
 
             ui.horizontal(|ui| {
@@ -98,8 +145,8 @@ impl QuantumTool for ClebschGordanTool {
 
             // Use Plot for visualization as requested
             let bar = Bar::new(0.0, self.result).width(0.5).name("Amplitude");
-            let chart = BarChart::new("Coefficient Value", vec![bar])
-                .color(egui::Color32::LIGHT_BLUE);
+            let chart =
+                BarChart::new("Coefficient Value", vec![bar]).color(egui::Color32::LIGHT_BLUE);
 
             Plot::new("clebsch_plot")
                 .view_aspect(2.0)
@@ -111,13 +158,22 @@ impl QuantumTool for ClebschGordanTool {
 
             // Warnings / Info
             if (self.m1 + self.m2 - self.m).abs() > 1e-9 {
-                 ui.colored_label(egui::Color32::RED, "Warning: M must equal m1 + m2 for non-zero result.");
+                ui.colored_label(
+                    egui::Color32::RED,
+                    "Warning: M must equal m1 + m2 for non-zero result.",
+                );
             }
 
             let j_min = (self.j1 - self.j2).abs();
             let j_max = self.j1 + self.j2;
             if self.j < j_min || self.j > j_max {
-                ui.colored_label(egui::Color32::RED, format!("Warning: J must be in range [{:.1}, {:.1}] (Triangle Inequality).", j_min, j_max));
+                ui.colored_label(
+                    egui::Color32::RED,
+                    format!(
+                        "Warning: J must be in range [{:.1}, {:.1}] (Triangle Inequality).",
+                        j_min, j_max
+                    ),
+                );
             }
         });
     }

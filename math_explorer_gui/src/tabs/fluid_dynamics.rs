@@ -103,10 +103,22 @@ impl ExplorerTab for FluidDynamicsTab {
                     ElementType::Uniform,
                     "Uniform Flow",
                 );
-                ui.radio_value(&mut self.selected_element_type, ElementType::Source, "Source");
+                ui.radio_value(
+                    &mut self.selected_element_type,
+                    ElementType::Source,
+                    "Source",
+                );
                 ui.radio_value(&mut self.selected_element_type, ElementType::Sink, "Sink");
-                ui.radio_value(&mut self.selected_element_type, ElementType::Vortex, "Vortex");
-                ui.radio_value(&mut self.selected_element_type, ElementType::Doublet, "Doublet");
+                ui.radio_value(
+                    &mut self.selected_element_type,
+                    ElementType::Vortex,
+                    "Vortex",
+                );
+                ui.radio_value(
+                    &mut self.selected_element_type,
+                    ElementType::Doublet,
+                    "Doublet",
+                );
 
                 ui.separator();
 
@@ -116,7 +128,10 @@ impl ExplorerTab for FluidDynamicsTab {
                 match self.selected_element_type {
                     ElementType::Uniform => {
                         ui.label("Angle (degrees)");
-                        ui.add(egui::Slider::new(&mut self.new_element_angle, -180.0..=180.0));
+                        ui.add(egui::Slider::new(
+                            &mut self.new_element_angle,
+                            -180.0..=180.0,
+                        ));
                     }
                     _ => {
                         ui.label("Position X");
@@ -168,10 +183,8 @@ impl ExplorerTab for FluidDynamicsTab {
                             if magnitude > 1e-6 {
                                 let direction = v.normalize();
                                 let start = [x, y];
-                                let end = [
-                                    x + direction.x * arrow_len,
-                                    y + direction.y * arrow_len,
-                                ];
+                                let end =
+                                    [x + direction.x * arrow_len, y + direction.y * arrow_len];
                                 origins.push(start);
                                 tips.push(end);
                             }

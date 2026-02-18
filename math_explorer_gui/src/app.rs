@@ -1,4 +1,6 @@
-use crate::tabs::{fluid_dynamics::FluidDynamicsTab, mri::MriTab, quantum::QuantumTab, ExplorerTab};
+use crate::tabs::{
+    fluid_dynamics::FluidDynamicsTab, mri::MriTab, quantum::QuantumTab, ExplorerTab,
+};
 use eframe::egui;
 
 pub struct MathExplorerApp {
