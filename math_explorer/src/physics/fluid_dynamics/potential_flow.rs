@@ -226,7 +226,9 @@ pub struct PotentialFlowField {
 
 impl PotentialFlowField {
     pub fn new() -> Self {
-        Self { elements: Vec::new() }
+        Self {
+            elements: Vec::new(),
+        }
     }
 
     pub fn add(&mut self, element: Box<dyn FlowElement>) {

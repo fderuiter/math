@@ -2,8 +2,8 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod clebsch;
-pub mod wave_sim;
 pub mod spin_viz;
+pub mod wave_sim;
 
 use clebsch::ClebschGordanTool;
 use wave_sim::WaveSimulator;
@@ -46,7 +46,10 @@ impl ExplorerTab for QuantumTab {
             ui.horizontal(|ui| {
                 ui.label("Tool:");
                 for (i, tool) in self.tools.iter().enumerate() {
-                    if ui.selectable_label(self.selected_tool_index == i, tool.name()).clicked() {
+                    if ui
+                        .selectable_label(self.selected_tool_index == i, tool.name())
+                        .clicked()
+                    {
                         self.selected_tool_index = i;
                     }
                 }

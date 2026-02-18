@@ -56,9 +56,9 @@ impl SpinVisualizer {
         // nalgebra usually implements mul for T: Scalar.
         // Let's rely on nalgebra's operator overloading.
 
-        let h_matrix = (sx * Complex::new(bx, 0.0) +
-                        sy * Complex::new(by, 0.0) +
-                        sz * Complex::new(bz, 0.0)) * Complex::new(0.5, 0.0);
+        let h_matrix =
+            (sx * Complex::new(bx, 0.0) + sy * Complex::new(by, 0.0) + sz * Complex::new(bz, 0.0))
+                * Complex::new(0.5, 0.0);
 
         let hamiltonian = QuantumOperator::new(h_matrix);
 
@@ -120,7 +120,10 @@ impl QuantumTool for SpinVisualizer {
 
             ui.separator();
             ui.horizontal(|ui| {
-                if ui.button(if self.paused { "▶ Play" } else { "⏸ Pause" }).clicked() {
+                if ui
+                    .button(if self.paused { "▶ Play" } else { "⏸ Pause" })
+                    .clicked()
+                {
                     self.paused = !self.paused;
                 }
                 if ui.button("↺ Reset").clicked() {
@@ -130,8 +133,13 @@ impl QuantumTool for SpinVisualizer {
 
             ui.separator();
             ui.heading("View");
-            ui.add(egui::Slider::new(&mut self.view_angle[0], 0.0..=std::f64::consts::TAU).text("Yaw"));
-            ui.add(egui::Slider::new(&mut self.view_angle[1], 0.0..=std::f64::consts::TAU).text("Pitch"));
+            ui.add(
+                egui::Slider::new(&mut self.view_angle[0], 0.0..=std::f64::consts::TAU).text("Yaw"),
+            );
+            ui.add(
+                egui::Slider::new(&mut self.view_angle[1], 0.0..=std::f64::consts::TAU)
+                    .text("Pitch"),
+            );
 
             ui.separator();
             // Calculate expectation values
@@ -202,14 +210,24 @@ impl QuantumTool for SpinVisualizer {
                     let z_axis = vec![origin, self.project([0.0, 0.0, 1.2])];
 
                     plot_ui.line(Line::new("X", PlotPoints::new(x_axis)).color(egui::Color32::RED));
-                    plot_ui.line(Line::new("Y", PlotPoints::new(y_axis)).color(egui::Color32::GREEN));
-                    plot_ui.line(Line::new("Z", PlotPoints::new(z_axis)).color(egui::Color32::BLUE));
+                    plot_ui
+                        .line(Line::new("Y", PlotPoints::new(y_axis)).color(egui::Color32::GREEN));
+                    plot_ui
+                        .line(Line::new("Z", PlotPoints::new(z_axis)).color(egui::Color32::BLUE));
 
                     // Draw state vector
-                    plot_ui.line(Line::new("State", PlotPoints::new(vec_line)).color(egui::Color32::YELLOW).width(3.0));
+                    plot_ui.line(
+                        Line::new("State", PlotPoints::new(vec_line))
+                            .color(egui::Color32::YELLOW)
+                            .width(3.0),
+                    );
 
                     // Draw point at tip
-                    plot_ui.points(Points::new("State Tip", PlotPoints::new(vec![end])).radius(5.0).color(egui::Color32::YELLOW));
+                    plot_ui.points(
+                        Points::new("State Tip", PlotPoints::new(vec![end]))
+                            .radius(5.0)
+                            .color(egui::Color32::YELLOW),
+                    );
                 });
         });
     }
