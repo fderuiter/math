@@ -15,7 +15,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Features:**
     *   [x] **Schrödinger Equation Solver:** 1D potential well visualizer (particle in a box, harmonic oscillator).
     *   [x] **Wavefunction Evolution:** Animation of $|\psi|^2$ over time.
-    *   [ ] **Clebsch-Gordan Coefficients:** Interactive calculator for coupling angular momenta.
+    *   [x] **Clebsch-Gordan Coefficients:** Interactive calculator for coupling angular momenta.
     *   [ ] **Spin Dynamics:** Bloch sphere visualization for qubits.
 
 ### 1.3 Fluid Dynamics

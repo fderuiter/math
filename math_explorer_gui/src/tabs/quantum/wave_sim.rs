@@ -1,4 +1,3 @@
-use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
 use math_explorer::physics::quantum::{
@@ -13,7 +12,7 @@ enum PotentialType {
     HarmonicOscillator,
 }
 
-pub struct QuantumTab {
+pub struct WaveSimulator {
     psi: QuantumState,
     hamiltonian: QuantumOperator,
     potential_type: PotentialType,
@@ -28,7 +27,7 @@ pub struct QuantumTab {
     x_max: f64,
 }
 
-impl Default for QuantumTab {
+impl Default for WaveSimulator {
     fn default() -> Self {
         let n_points = 200;
         let x_min = -5.0;
@@ -59,7 +58,7 @@ impl Default for QuantumTab {
     }
 }
 
-impl QuantumTab {
+impl WaveSimulator {
     fn init_system(&mut self) {
         let dx = (self.x_max - self.x_min) / (self.n_points as f64 - 1.0);
         self.x_axis = (0..self.n_points)
@@ -100,14 +99,8 @@ impl QuantumTab {
         // Re-normalize to prevent drift
         self.psi = self.psi.normalize();
     }
-}
 
-impl ExplorerTab for QuantumTab {
-    fn name(&self) -> &'static str {
-        "Quantum Mechanics"
-    }
-
-    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    pub fn show(&mut self, ctx: &egui::Context) {
         // --- Simulation Control ---
         if !self.paused {
             self.step(0.05); // Fixed time step per frame
