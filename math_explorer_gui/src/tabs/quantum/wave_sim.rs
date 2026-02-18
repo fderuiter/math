@@ -6,6 +6,8 @@ use math_explorer::physics::quantum::{
 use nalgebra::DVector;
 use num_complex::Complex;
 
+use super::QuantumTool;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PotentialType {
     InfiniteWell,
@@ -99,8 +101,14 @@ impl WaveSimulator {
         // Re-normalize to prevent drift
         self.psi = self.psi.normalize();
     }
+}
 
-    pub fn show(&mut self, ctx: &egui::Context) {
+impl QuantumTool for WaveSimulator {
+    fn name(&self) -> &'static str {
+        "Wave Simulator"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
         // --- Simulation Control ---
         if !self.paused {
             self.step(0.05); // Fixed time step per frame

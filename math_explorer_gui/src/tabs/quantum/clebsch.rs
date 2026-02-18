@@ -2,6 +2,8 @@ use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
 use math_explorer::physics::quantum::clebsch_gordan;
 
+use super::QuantumTool;
+
 pub struct ClebschGordanTool {
     j1: f64,
     m1: f64,
@@ -33,8 +35,14 @@ impl ClebschGordanTool {
     fn calculate(&mut self) {
         self.result = clebsch_gordan(self.j1, self.m1, self.j2, self.m2, self.j, self.m);
     }
+}
 
-    pub fn show(&mut self, ctx: &egui::Context) {
+impl QuantumTool for ClebschGordanTool {
+    fn name(&self) -> &'static str {
+        "Clebsch-Gordan"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("clebsch_controls").show(ctx, |ui| {
             ui.heading("Parameters");
             ui.separator();
