@@ -1,6 +1,41 @@
-//! Fractal Dimension (Correlation Dimension)
+//! Fractal Dimension (Correlation Dimension) and Generation
 
 use nalgebra::Vector3;
+use num_complex::Complex;
+
+/// Calculates the number of iterations before a point escapes the Mandelbrot set.
+///
+/// The Mandelbrot set is defined as the set of complex numbers $c$ for which the function
+/// $f_c(z) = z^2 + c$ does not diverge when iterated from $z=0$.
+///
+/// Returns the number of iterations until $|z| > 2$ (escape radius), or `max_iter` if it stays bounded.
+pub fn escape_time_mandelbrot(c: Complex<f64>, max_iter: u32) -> u32 {
+    let mut z = Complex::new(0.0, 0.0);
+    for i in 0..max_iter {
+        if z.norm_sqr() > 4.0 {
+            return i;
+        }
+        z = z * z + c;
+    }
+    max_iter
+}
+
+/// Calculates the number of iterations before a point escapes the Julia set for a given parameter $c$.
+///
+/// The Julia set is defined for a fixed complex parameter $c$ by iterating
+/// $f_c(z) = z^2 + c$ starting from a point $z$ in the complex plane.
+///
+/// Returns the number of iterations until $|z| > 2$, or `max_iter` if it stays bounded.
+pub fn escape_time_julia(z: Complex<f64>, c: Complex<f64>, max_iter: u32) -> u32 {
+    let mut z = z;
+    for i in 0..max_iter {
+        if z.norm_sqr() > 4.0 {
+            return i;
+        }
+        z = z * z + c;
+    }
+    max_iter
+}
 
 /// Calculates the Correlation Sum $C(\epsilon)$ for the Grassberger-Procaccia algorithm.
 ///
@@ -55,4 +90,35 @@ pub fn correlation_dimension(trajectory: &[Vector3<f64>], epsilon: f64) -> f64 {
     // C(eps) = (2 * count) / (N * (N - 1))
 
     (2.0 * count as f64) / ((n * (n - 1)) as f64)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mandelbrot_bounded() {
+        // Point inside Mandelbrot set (0,0) should not escape
+        let c = Complex::new(0.0, 0.0);
+        let iter = escape_time_mandelbrot(c, 100);
+        assert_eq!(iter, 100);
+    }
+
+    #[test]
+    fn test_mandelbrot_escape() {
+        // Point outside Mandelbrot set (2,2) should escape quickly
+        let c = Complex::new(2.0, 2.0);
+        let iter = escape_time_mandelbrot(c, 100);
+        assert!(iter < 100);
+    }
+
+    #[test]
+    fn test_julia_bounded() {
+        // Julia set for c = 0 is the unit circle.
+        // z=0 should stay at 0.
+        let c = Complex::new(0.0, 0.0);
+        let z = Complex::new(0.0, 0.0);
+        let iter = escape_time_julia(z, c, 100);
+        assert_eq!(iter, 100);
+    }
 }

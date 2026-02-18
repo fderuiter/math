@@ -42,13 +42,19 @@ impl ChaosTool for BifurcationDiagram {
 
             let mut changed = false;
             ui.label("Min r");
-            changed |= ui.add(egui::Slider::new(&mut self.r_min, 0.0..=4.0)).changed();
+            changed |= ui
+                .add(egui::Slider::new(&mut self.r_min, 0.0..=4.0))
+                .changed();
 
             ui.label("Max r");
-            changed |= ui.add(egui::Slider::new(&mut self.r_max, self.r_min..=4.0)).changed();
+            changed |= ui
+                .add(egui::Slider::new(&mut self.r_max, self.r_min..=4.0))
+                .changed();
 
             ui.label("Resolution (steps)");
-            changed |= ui.add(egui::Slider::new(&mut self.steps, 100..=2000)).changed();
+            changed |= ui
+                .add(egui::Slider::new(&mut self.steps, 100..=2000))
+                .changed();
 
             if ui.button("Recompute").clicked() || changed {
                 self.recompute();

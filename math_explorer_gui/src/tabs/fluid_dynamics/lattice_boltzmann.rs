@@ -80,10 +80,8 @@ impl LatticeBoltzmannTool {
                 if ui.button("Pause").clicked() {
                     self.running = false;
                 }
-            } else {
-                if ui.button("Run").clicked() {
-                    self.running = true;
-                }
+            } else if ui.button("Run").clicked() {
+                self.running = true;
             }
 
             if ui.button("Reset").clicked() {
@@ -194,11 +192,14 @@ impl LatticeBoltzmannTool {
 
         for y in (cy - r)..=(cy + r) {
             for x in (cx - r)..=(cx + r) {
-                if x >= 0 && x < width && y >= 0 && y < height {
-                    if (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r {
-                        self.solver
-                            .set_obstacle(x as usize, y as usize, is_obstacle);
-                    }
+                if x >= 0
+                    && x < width
+                    && y >= 0
+                    && y < height
+                    && (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r
+                {
+                    self.solver
+                        .set_obstacle(x as usize, y as usize, is_obstacle);
                 }
             }
         }

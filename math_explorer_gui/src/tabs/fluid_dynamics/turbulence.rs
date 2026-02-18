@@ -45,7 +45,6 @@ impl TurbulenceTool {
         self.update(dt);
 
         let mut reynolds_number = 0.0;
-        let regime;
 
         // Calculate Reynolds Number
         // Re = (rho * v * L) / mu
@@ -54,16 +53,16 @@ impl TurbulenceTool {
         }
 
         // Classify Regime
-        match self.geometry {
+        let regime = match self.geometry {
             Geometry::Pipe => {
-                let classifier = PipeFlowClassifier::default();
-                regime = classifier.classify(reynolds_number);
+                let classifier = PipeFlowClassifier;
+                classifier.classify(reynolds_number)
             }
             Geometry::FlatPlate => {
-                let classifier = FlatPlateClassifier::default();
-                regime = classifier.classify(reynolds_number);
+                let classifier = FlatPlateClassifier;
+                classifier.classify(reynolds_number)
             }
-        }
+        };
 
         egui::SidePanel::left("turbulence_controls").show(ctx, |ui| {
             ui.heading("Turbulence Analysis");
