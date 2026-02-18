@@ -166,6 +166,8 @@ impl VoxelGrid {
         if x >= self.width || y >= self.height || z >= self.depth {
             return 0.0; // Boundary condition
         }
-        self.data[z * self.width * self.height + y * self.width + x]
+        // Sentinel: Prevent panic if data buffer is malformed (smaller than dimensions imply)
+        let idx = z * self.width * self.height + y * self.width + x;
+        self.data.get(idx).copied().unwrap_or(0.0)
     }
 }
