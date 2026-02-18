@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
     use math_explorer::biology::diffusion::FiniteDifference1D;
+    use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
     use math_explorer::biology::reaction_diffusion::ChemicalState;
     use math_explorer::pure_math::analysis::ode::{RungeKutta4, Solver};
 

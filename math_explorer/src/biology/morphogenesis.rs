@@ -218,21 +218,9 @@ impl<K: ReactionModel, D: DiffusionModel> TuringSystem<K, D, Euler<ChemicalState
     /// Creates a new Turing System with custom kinetics and diffusion strategy.
     ///
     /// Uses the default Euler solver.
-    pub fn new_with_kinetics(
-        size: usize,
-        d_u: f64,
-        d_v: f64,
-        kinetics: K,
-        diffusion: D
-    ) -> Self {
+    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
         let diffusion_coeffs = vec![d_u, d_v];
-        let inner = ReactionDiffusionSystem::new(
-            2,
-            size,
-            kinetics,
-            diffusion,
-            diffusion_coeffs
-        );
+        let inner = ReactionDiffusionSystem::new(2, size, kinetics, diffusion, diffusion_coeffs);
         Self { inner }
     }
 }
