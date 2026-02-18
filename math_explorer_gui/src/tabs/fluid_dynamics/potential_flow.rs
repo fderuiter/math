@@ -1,4 +1,3 @@
-use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Arrows, Plot};
 use math_explorer::physics::fluid_dynamics::potential_flow::{
@@ -6,7 +5,7 @@ use math_explorer::physics::fluid_dynamics::potential_flow::{
 };
 use std::f64::consts::PI;
 
-pub struct FluidDynamicsTab {
+pub struct PotentialFlowTool {
     field: PotentialFlowField,
     // UI State
     grid_size: usize,
@@ -29,7 +28,7 @@ enum ElementType {
     Doublet,
 }
 
-impl Default for FluidDynamicsTab {
+impl Default for PotentialFlowTool {
     fn default() -> Self {
         let mut field = PotentialFlowField::new();
         // Default: Flow past a cylinder (Uniform + Doublet)
@@ -51,7 +50,7 @@ impl Default for FluidDynamicsTab {
     }
 }
 
-impl FluidDynamicsTab {
+impl PotentialFlowTool {
     fn add_element(&mut self) {
         let element: Box<dyn FlowElement> = match self.selected_element_type {
             ElementType::Uniform => Box::new(UniformFlow::new(
@@ -85,15 +84,9 @@ impl FluidDynamicsTab {
     fn clear(&mut self) {
         self.field.clear();
     }
-}
 
-impl ExplorerTab for FluidDynamicsTab {
-    fn name(&self) -> &'static str {
-        "Fluid Dynamics"
-    }
-
-    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::SidePanel::left("fluid_controls").show(ctx, |ui| {
+    pub fn show(&mut self, ctx: &egui::Context) {
+        egui::SidePanel::left("potential_flow_controls").show(ctx, |ui| {
             ui.heading("Potential Flow Controls");
             ui.separator();
 
@@ -159,7 +152,7 @@ impl ExplorerTab for FluidDynamicsTab {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            Plot::new("fluid_plot")
+            Plot::new("potential_flow_plot")
                 .data_aspect(1.0)
                 .view_aspect(1.0)
                 .show(ui, |plot_ui| {

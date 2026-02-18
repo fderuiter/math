@@ -22,7 +22,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `physics::fluid_dynamics`
 *   **Features:**
     *   [x] **Flow Visualization:** 2D heatmap or vector field plot of velocity/pressure.
-    *   [ ] **Turbulence Simulation:** Parameter controls for Reynolds number.
+    *   [x] **Turbulence Simulation:** Parameter controls for Reynolds number.
     *   [ ] **Lattice Boltzmann Demo:** Interactive obstacle placement in a flow stream.
 
 ### 1.4 Chaos Theory
