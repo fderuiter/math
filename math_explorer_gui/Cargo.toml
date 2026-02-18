@@ -1,0 +1,10 @@
+[package]
+name = "math_explorer_gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe = "0.33.3"
+egui_plot = "0.34.1"
+nalgebra = "0.34.0"
+math_explorer = { path = "../math_explorer" }
