@@ -20,9 +20,7 @@ pub struct SolidStateTab {
 impl Default for SolidStateTab {
     fn default() -> Self {
         Self {
-            tools: vec![
-                Box::new(crystal_viewer::CrystalViewer::default()),
-            ],
+            tools: vec![Box::new(crystal_viewer::CrystalViewer::default())],
             selected_tool_index: 0,
         }
     }
