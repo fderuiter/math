@@ -1,10 +1,11 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
-use math_explorer::physics::quantum::{evolve_state, QuantumOperator, QuantumState};
-use nalgebra::{DMatrix, DVector};
+use math_explorer::physics::quantum::{
+    construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
+};
+use nalgebra::DVector;
 use num_complex::Complex;
-use std::f64::consts::PI;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PotentialType {
@@ -32,12 +33,19 @@ impl Default for QuantumTab {
         let n_points = 200;
         let x_min = -5.0;
         let x_max = 5.0;
+        let dx = (x_max - x_min) / (n_points as f64 - 1.0);
+
+        // Initial dummies to satisfy struct initialization
+        // They will be overwritten by init_system immediately
+        let potential = DVector::zeros(n_points);
+        let hamiltonian = construct_1d_hamiltonian(&potential, dx, 1.0, 1.0);
+        let psi = QuantumState::new(DVector::from_element(n_points, Complex::new(0.0, 0.0)));
 
         let mut tab = Self {
-            psi: QuantumState::new(DVector::from_element(n_points, Complex::new(0.0, 0.0))),
-            hamiltonian: QuantumOperator::new(DMatrix::zeros(n_points, n_points)),
+            psi,
+            hamiltonian,
             potential_type: PotentialType::InfiniteWell,
-            potential: DVector::zeros(n_points),
+            potential,
             x_axis: Vec::new(),
             time: 0.0,
             paused: true,
@@ -72,47 +80,16 @@ impl QuantumTab {
         }
 
         // 2. Construct Hamiltonian H = T + V
-        // T = -h_bar^2 / 2m * d^2/dx^2
-        // Finite difference: d^2/dx^2 ~ (psi[i+1] - 2psi[i] + psi[i-1]) / dx^2
-        // With h_bar = 1, m = 1 -> coeff = -1 / (2 * dx^2)
-        // let coeff = -1.0 / (2.0 * dx * dx);
-
-        let kin_diag = 1.0 / (dx * dx);
-        let kin_off = -0.5 / (dx * dx);
-
-        let mut h_matrix = DMatrix::<Complex<f64>>::zeros(self.n_points, self.n_points);
-
-        for i in 0..self.n_points {
-            // Kinetic Energy
-            h_matrix[(i, i)] = Complex::new(kin_diag, 0.0);
-            if i > 0 {
-                h_matrix[(i, i - 1)] = Complex::new(kin_off, 0.0);
-            }
-            if i < self.n_points - 1 {
-                h_matrix[(i, i + 1)] = Complex::new(kin_off, 0.0);
-            }
-
-            // Potential Energy
-            h_matrix[(i, i)] += Complex::new(self.potential[i], 0.0);
-        }
-
-        self.hamiltonian = QuantumOperator::new(h_matrix);
+        // Using mass = 1.0, h_bar = 1.0
+        self.hamiltonian = construct_1d_hamiltonian(&self.potential, dx, 1.0, 1.0);
 
         // 3. Initialize Wavefunction (Gaussian Packet)
         // Start at x0 = -2.0, moving right with k0 = 5.0
         let x0 = -2.0;
         let k0 = 5.0;
         let sigma = 0.5;
-        let normalization = 1.0 / (sigma * (PI).sqrt()).sqrt(); // roughly
 
-        let mut psi_vec = DVector::<Complex<f64>>::zeros(self.n_points);
-        for (i, &x) in self.x_axis.iter().enumerate() {
-            let gauss = (-((x - x0).powi(2)) / (2.0 * sigma * sigma)).exp();
-            let plane_wave = Complex::new(0.0, k0 * x).exp();
-            psi_vec[i] = Complex::new(normalization * gauss, 0.0) * plane_wave;
-        }
-
-        self.psi = QuantumState::new(psi_vec).normalize();
+        self.psi = gaussian_wavepacket(&self.x_axis, x0, k0, sigma);
         self.time = 0.0;
     }
 
