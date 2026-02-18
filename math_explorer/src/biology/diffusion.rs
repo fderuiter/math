@@ -108,13 +108,19 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
         coeffs: &[f64],
     ) {
         let n_species = state.num_species();
+        let grid_size = state.grid_size();
+
+        if grid_size == 0 {
+            return;
+        }
+
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
-        for (s, d) in coeffs.iter().enumerate().take(n_species) {
-            let u = &state.concentrations[s];
-            let out_u = &mut out.concentrations[s];
-            let d = *d;
+        let in_chunks = state.concentrations.chunks_exact(grid_size);
+        let out_chunks = out.concentrations.chunks_exact_mut(grid_size);
+
+        for ((u, out_u), &d) in in_chunks.zip(out_chunks).zip(coeffs.iter()).take(n_species) {
             apply_1d_stencil(u, out_u, d, inv_dx_sq);
         }
     }
