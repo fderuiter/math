@@ -10,45 +10,52 @@ use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state of a multi-species chemical system.
 ///
-/// Stores concentrations in a "Structure of Arrays" format: `Vec<Vec<f64>>`
-/// where the outer vector indexes species, and the inner vector indexes spatial points.
+/// Stores concentrations in a flattened "Structure of Arrays" format: `Vec<f64>`
+/// to improve cache locality and reduce allocations.
+/// Data is stored as [Species 0 Grid][Species 1 Grid]...
 #[derive(Debug, Clone, PartialEq)]
 pub struct ChemicalState {
-    /// Concentrations of each species across the spatial grid.
-    /// Outer index: Species ID. Inner index: Spatial Grid Point ID.
-    pub concentrations: Vec<Vec<f64>>,
+    /// Flattened concentrations of all species.
+    /// Layout: Species 0 (all grid points), Species 1 (all grid points), ...
+    pub concentrations: Vec<f64>,
+    /// Number of species.
+    pub num_species: usize,
+    /// Size of the spatial grid.
+    pub grid_size: usize,
 }
 
 impl ChemicalState {
     /// Creates a new zero-initialized chemical state.
     pub fn new(num_species: usize, grid_size: usize) -> Self {
         Self {
-            concentrations: vec![vec![0.0; grid_size]; num_species],
+            concentrations: vec![0.0; num_species * grid_size],
+            num_species,
+            grid_size,
         }
     }
 
     /// Returns the number of chemical species.
     pub fn num_species(&self) -> usize {
-        self.concentrations.len()
+        self.num_species
     }
 
     /// Returns the size of the spatial grid.
     pub fn grid_size(&self) -> usize {
-        if self.concentrations.is_empty() {
-            0
-        } else {
-            self.concentrations[0].len()
-        }
+        self.grid_size
     }
 
     /// Returns a reference to the concentration slice for a specific species.
     pub fn species(&self, index: usize) -> &[f64] {
-        &self.concentrations[index]
+        let start = index * self.grid_size;
+        let end = start + self.grid_size;
+        &self.concentrations[start..end]
     }
 
     /// Returns a mutable reference to the concentration slice for a specific species.
     pub fn species_mut(&mut self, index: usize) -> &mut [f64] {
-        &mut self.concentrations[index]
+        let start = index * self.grid_size;
+        let end = start + self.grid_size;
+        &mut self.concentrations[start..end]
     }
 }
 
@@ -57,14 +64,8 @@ impl Add for ChemicalState {
     type Output = Self;
 
     fn add(mut self, rhs: Self) -> Self {
-        for (s, r) in self
-            .concentrations
-            .iter_mut()
-            .zip(rhs.concentrations.iter())
-        {
-            for (val, r_val) in s.iter_mut().zip(r.iter()) {
-                *val += r_val;
-            }
+        for (val, r_val) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+            *val += r_val;
         }
         self
     }
@@ -72,14 +73,8 @@ impl Add for ChemicalState {
 
 impl AddAssign for ChemicalState {
     fn add_assign(&mut self, rhs: Self) {
-        for (s, r) in self
-            .concentrations
-            .iter_mut()
-            .zip(rhs.concentrations.iter())
-        {
-            for (val, r_val) in s.iter_mut().zip(r.iter()) {
-                *val += r_val;
-            }
+        for (val, r_val) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+            *val += r_val;
         }
     }
 }
@@ -88,10 +83,8 @@ impl Mul<f64> for ChemicalState {
     type Output = Self;
 
     fn mul(mut self, scalar: f64) -> Self {
-        for s in self.concentrations.iter_mut() {
-            for val in s.iter_mut() {
-                *val *= scalar;
-            }
+        for val in self.concentrations.iter_mut() {
+            *val *= scalar;
         }
         self
     }
@@ -99,59 +92,47 @@ impl Mul<f64> for ChemicalState {
 
 impl MulAssign<f64> for ChemicalState {
     fn mul_assign(&mut self, scalar: f64) {
-        for s in self.concentrations.iter_mut() {
-            for val in s.iter_mut() {
-                *val *= scalar;
-            }
+        for val in self.concentrations.iter_mut() {
+            *val *= scalar;
         }
     }
 }
 
 impl VectorOperations for ChemicalState {
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (s, r) in self
-            .concentrations
-            .iter_mut()
-            .zip(other.concentrations.iter())
-        {
-            for (val, r_val) in s.iter_mut().zip(r.iter()) {
-                *val += r_val * scale;
-            }
+        for (val, r_val) in self.concentrations.iter_mut().zip(other.concentrations.iter()) {
+            *val += r_val * scale;
         }
     }
 
     fn copy_from(&mut self, other: &Self) {
-        if self.num_species() != other.num_species() || self.grid_size() != other.grid_size() {
+        if self.num_species != other.num_species || self.grid_size != other.grid_size {
             // Reallocate if dimensions mismatch
             self.concentrations = other.concentrations.clone();
+            self.num_species = other.num_species;
+            self.grid_size = other.grid_size;
             return;
         }
-        for (s, r) in self
-            .concentrations
-            .iter_mut()
-            .zip(other.concentrations.iter())
-        {
-            s.copy_from_slice(r);
-        }
+        self.concentrations.copy_from_slice(&other.concentrations);
     }
 
     fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
-        if self.num_species() != source.num_species() || self.grid_size() != source.grid_size() {
+        if self.num_species != source.num_species || self.grid_size != source.grid_size {
             // Reallocate if dimensions mismatch.
-            // Efficient reallocation: initialize with zeros, then loop will fill it.
-            self.concentrations = vec![vec![0.0; source.grid_size()]; source.num_species()];
+            self.concentrations = vec![0.0; source.concentrations.len()];
+            self.num_species = source.num_species;
+            self.grid_size = source.grid_size;
         }
 
         // Fused loop: self = source + other * scale
-        for ((s_self, s_src), s_oth) in self
+        // Accessing flat vectors allows for massive auto-vectorization.
+        for ((dst, src), oth) in self
             .concentrations
             .iter_mut()
             .zip(source.concentrations.iter())
             .zip(other.concentrations.iter())
         {
-            for ((dst, src), oth) in s_self.iter_mut().zip(s_src.iter()).zip(s_oth.iter()) {
-                *dst = *src + *oth * scale;
-            }
+            *dst = *src + *oth * scale;
         }
     }
 }
@@ -171,29 +152,36 @@ pub trait ReactionModel {
     /// efficiently. The default implementation iterates over grid points and calls `reaction`.
     ///
     /// # Arguments
-    /// * `concentrations`: Slice of concentration vectors (one vector per species).
-    /// * `rates`: Slice of rate vectors (one vector per species) to accumulate into.
-    fn add_reaction_batch(&self, concentrations: &[Vec<f64>], rates: &mut [Vec<f64>]) {
-        let n_species = concentrations.len();
+    /// * `state`: Current chemical state.
+    /// * `rates`: Rate accumulation buffer (add to this, do not overwrite).
+    fn add_reaction_batch(&self, state: &ChemicalState, rates: &mut ChemicalState) {
+        let n_species = state.num_species();
+        let n_grid = state.grid_size();
+
         if n_species == 0 {
             return;
         }
-        let n_grid = concentrations[0].len();
 
         let mut local_concs = vec![0.0; n_species];
         let mut local_rates = vec![0.0; n_species];
 
+        // This loop is still potentially slow due to gather/scatter logic,
+        // but now accesses a flat array.
+        // Optimizing this further requires specific knowledge of n_species (which concrete impls have).
         for i in 0..n_grid {
             // Gather
             for s in 0..n_species {
-                local_concs[s] = concentrations[s][i];
+                // Access species s at grid point i
+                // Layout: [Species 0....][Species 1....]
+                // Index = s * grid_size + i
+                local_concs[s] = state.concentrations[s * n_grid + i];
             }
 
             self.reaction(&local_concs, &mut local_rates);
 
             // Scatter (Accumulate)
             for s in 0..n_species {
-                rates[s][i] += local_rates[s];
+                rates.concentrations[s * n_grid + i] += local_rates[s];
             }
         }
     }
@@ -270,7 +258,7 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
         // Add Reaction
         // Optimized: Use batch processing to allow vectorization and avoid gather/scatter
         self.reaction
-            .add_reaction_batch(&state.concentrations, &mut out.concentrations);
+            .add_reaction_batch(state, out);
     }
 }
 
