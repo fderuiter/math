@@ -28,9 +28,7 @@ impl CrystalSystem {
         ];
 
         let atomic_positions = match self {
-            CrystalSystem::SimpleCubic => vec![
-                Vector3::new(0.0, 0.0, 0.0)
-            ],
+            CrystalSystem::SimpleCubic => vec![Vector3::new(0.0, 0.0, 0.0)],
             CrystalSystem::BodyCenteredCubic => vec![
                 Vector3::new(0.0, 0.0, 0.0),
                 Vector3::new(0.5 * a, 0.5 * a, 0.5 * a),

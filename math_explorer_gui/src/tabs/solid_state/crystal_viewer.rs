@@ -67,9 +67,18 @@ impl CrystalViewer {
         ];
 
         let edges = [
-            (0, 1), (1, 2), (2, 3), (3, 0), // Bottom face
-            (4, 5), (5, 6), (6, 7), (7, 4), // Top face
-            (0, 4), (1, 5), (2, 6), (3, 7), // Verticals
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 0), // Bottom face
+            (4, 5),
+            (5, 6),
+            (6, 7),
+            (7, 4), // Top face
+            (0, 4),
+            (1, 5),
+            (2, 6),
+            (3, 7), // Verticals
         ];
 
         for (start_idx, end_idx) in edges {
@@ -78,7 +87,7 @@ impl CrystalViewer {
             ui.line(
                 Line::new("Edge", PlotPoints::new(vec![start, end]))
                     .color(egui::Color32::GRAY)
-                    .width(1.0)
+                    .width(1.0),
             );
         }
     }
@@ -98,7 +107,11 @@ impl SolidStateTool for CrystalViewer {
             egui::ComboBox::from_label("System")
                 .selected_text(format!("{:?}", self.system))
                 .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut self.system, CrystalSystem::SimpleCubic, "Simple Cubic");
+                    ui.selectable_value(
+                        &mut self.system,
+                        CrystalSystem::SimpleCubic,
+                        "Simple Cubic",
+                    );
                     ui.selectable_value(&mut self.system, CrystalSystem::BodyCenteredCubic, "BCC");
                     ui.selectable_value(&mut self.system, CrystalSystem::FaceCenteredCubic, "FCC");
                 });
@@ -125,14 +138,16 @@ impl SolidStateTool for CrystalViewer {
 
                     // Draw Atoms
                     let unit_cell = self.system.generate(self.lattice_constant);
-                    let points: Vec<[f64; 2]> = unit_cell.atomic_positions.iter()
+                    let points: Vec<[f64; 2]> = unit_cell
+                        .atomic_positions
+                        .iter()
                         .map(|p| self.project(*p))
                         .collect();
 
                     plot_ui.points(
                         Points::new("Atoms", points)
                             .radius(5.0)
-                            .color(egui::Color32::RED)
+                            .color(egui::Color32::RED),
                     );
                 });
             ui.label("Drag 'Yaw' and 'Pitch' to rotate.");
