@@ -1,4 +1,4 @@
-use crate::pure_math::analysis::roots::{AnalysisError, Bisection, BracketingRootFinder};
+use crate::pure_math::analysis::roots::{AnalysisError, Bisection, RootFinder};
 use rand::Rng;
 use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
@@ -78,7 +78,7 @@ impl MechanismDesign {
         match Self::optimal_reserve_price_with_solver(dist, lower_bound, upper_bound, &solver) {
             Ok(root) => root,
             Err(AnalysisError::ConvergenceError(best_guess)) => best_guess,
-            Err(AnalysisError::RootNotBracketed { .. }) => {
+            Err(AnalysisError::InvalidParameters(_)) => {
                 // Fallback for unbracketed roots to match legacy behavior
                 let j_low = dist.virtual_valuation(lower_bound);
                 if j_low > 0.0 {
@@ -91,13 +91,11 @@ impl MechanismDesign {
 
                 (lower_bound + upper_bound) / 2.0
             }
-            // Handle other errors gracefully
-            Err(_) => (lower_bound + upper_bound) / 2.0,
         }
     }
 
     /// Calculates the **Optimal Reserve Price** for a single-item auction using a custom solver.
-    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: BracketingRootFinder>(
+    pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
         dist: &D,
         lower_bound: f64,
         upper_bound: f64,
