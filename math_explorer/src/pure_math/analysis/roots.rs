@@ -1,7 +1,8 @@
 //! Root finding algorithms.
 //!
-//! This module implements the **Strategy Pattern** for root finding, allowing
-//! different algorithms (Bisection, Newton-Raphson, Brent's) to be used interchangeably.
+//! This module implements the **Strategy Pattern** for root finding, distinguishing between
+//! **Bracketing Methods** (which require an interval containing the root) and
+//! **Open Methods** (which require an initial guess but not a bracket).
 
 use std::fmt;
 
@@ -11,7 +12,25 @@ pub enum AnalysisError {
     /// The algorithm failed to converge within the maximum number of iterations.
     /// Contains the best guess so far.
     ConvergenceError(f64),
-    /// Invalid parameters were provided (e.g., root not bracketed).
+    /// The root was not bracketed by the given interval (signs must differ).
+    RootNotBracketed {
+        min: f64,
+        max: f64,
+        f_min: f64,
+        f_max: f64,
+    },
+    /// The derivative was too small to continue (e.g., in Newton-Raphson).
+    DerivativeTooSmall {
+        x: f64,
+        derivative: f64,
+    },
+    /// The provided interval was invalid (e.g., min > max).
+    InvalidInterval {
+        min: f64,
+        max: f64,
+    },
+    /// Invalid parameters were provided (Legacy variant).
+    #[deprecated(note = "Use specific error variants instead.")]
     InvalidParameters(String),
 }
 
@@ -21,6 +40,22 @@ impl fmt::Display for AnalysisError {
             Self::ConvergenceError(guess) => {
                 write!(f, "Algorithm failed to converge. Best guess: {}", guess)
             }
+            Self::RootNotBracketed { min, max, f_min, f_max } => write!(
+                f,
+                "Root not bracketed in [{}, {}]: f({})={}, f({})={}. Signs must differ.",
+                min, max, min, f_min, max, f_max
+            ),
+            Self::DerivativeTooSmall { x, derivative } => write!(
+                f,
+                "Derivative too small at x={}: {}. Cannot continue.",
+                x, derivative
+            ),
+            Self::InvalidInterval { min, max } => write!(
+                f,
+                "Invalid interval: [{}, {}]. Min must be less than or equal to Max.",
+                min, max
+            ),
+            #[allow(deprecated)]
             Self::InvalidParameters(msg) => write!(f, "Invalid parameters: {}", msg),
         }
     }
@@ -28,44 +63,48 @@ impl fmt::Display for AnalysisError {
 
 impl std::error::Error for AnalysisError {}
 
-/// Strategy for finding roots of a function $f(x) = 0$.
+/// Strategy for finding roots when the root is known to be within an interval `[min, max]`.
 ///
-/// # Examples
+/// Implementations (like [`Bisection`]) guarantee that if a root exists and is bracketed,
+/// it will be found (within tolerance).
+pub trait BracketingRootFinder {
+    /// Finds a root of the function `f` within the interval `[min, max]`.
+    fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64;
+}
+
+/// Strategy for finding roots using an initial guess.
 ///
-/// ```
-/// use math_explorer::pure_math::analysis::roots::{RootFinder, Bisection, NewtonRaphson};
+/// Open methods (like [`NewtonRaphson`]) do not require the root to be bracketed,
+/// but convergence is not guaranteed and depends on the quality of the initial guess.
+pub trait OpenRootFinder {
+    /// Finds a root of the function `f` starting from `initial_guess`.
+    fn find_root<F>(&self, f: F, initial_guess: f64) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64;
+}
+
+/// Strategy for finding roots using the function's derivative.
+pub trait DifferentiableRootFinder {
+    /// Finds a root using the function `f` and its derivative `f_prime`.
+    fn find_root_with_derivative<F, D>(
+        &self,
+        f: F,
+        f_prime: D,
+        initial_guess: f64,
+    ) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+        D: Fn(f64) -> f64;
+}
+
+/// Legacy strategy trait.
 ///
-/// // Define the function f(x) = x^2 - 4
-/// let f = |x: f64| x * x - 4.0;
-///
-/// // Use Bisection (bracketing method)
-/// let bisection = Bisection::default();
-/// let root = bisection.find_root(f, 0.0, 5.0).unwrap();
-/// assert!((root - 2.0).abs() < 1e-6);
-///
-/// // Use Newton-Raphson (open method)
-/// let newton = NewtonRaphson::default();
-/// // Note: For open methods, min/max are used to determine the initial guess.
-/// let root = newton.find_root(f, 0.0, 5.0).unwrap();
-/// assert!((root - 2.0).abs() < 1e-6);
-/// ```
+/// # Deprecation
+/// Use [`BracketingRootFinder`] or [`OpenRootFinder`] instead to enforce correct usage semantics.
+#[deprecated(note = "Use BracketingRootFinder or OpenRootFinder instead.")]
 pub trait RootFinder {
-    /// Finds a root of the function `f`.
-    ///
-    /// The interpretation of `min` and `max` depends on the implementation:
-    /// * **Bracketing Methods** (e.g., [`Bisection`]): The root must lie within `[min, max]`.
-    /// * **Open Methods** (e.g., [`NewtonRaphson`]): `min` and `max` are used to compute
-    ///   the initial guess (typically `(min + max) / 2`), but the search is not constrained
-    ///   to this interval.
-    ///
-    /// # Arguments
-    /// * `f` - The objective function.
-    /// * `min` - Lower bound (or parameter for initial guess).
-    /// * `max` - Upper bound (or parameter for initial guess).
-    ///
-    /// # Returns
-    /// * `Ok(f64)` - The approximate root.
-    /// * `Err(AnalysisError)` - If the root cannot be found or parameters are invalid.
     fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
     where
         F: Fn(f64) -> f64;
@@ -75,22 +114,6 @@ pub trait RootFinder {
 ///
 /// A robust but slow method that iteratively halves the interval.
 /// Guaranteed to converge if the function is continuous and changes sign over the interval.
-///
-/// # Examples
-///
-/// ```
-/// use math_explorer::pure_math::analysis::roots::{RootFinder, Bisection};
-///
-/// let solver = Bisection::default();
-///
-/// // Find root of x^2 - 2 = 0 in [1, 2]
-/// let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
-/// assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
-///
-/// // Error if root is not bracketed (signs at endpoints must differ)
-/// let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
-/// assert!(result.is_err());
-/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct Bisection {
     /// Maximum number of iterations before giving up.
@@ -118,11 +141,15 @@ impl Default for Bisection {
     }
 }
 
-impl RootFinder for Bisection {
+impl BracketingRootFinder for Bisection {
     fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
     where
         F: Fn(f64) -> f64,
     {
+        if min > max {
+            return Err(AnalysisError::InvalidInterval { min, max });
+        }
+
         let mut low = min;
         let mut high = max;
 
@@ -138,10 +165,12 @@ impl RootFinder for Bisection {
 
         // Check if root is bracketed
         if f_low.signum() == f_high.signum() {
-            return Err(AnalysisError::InvalidParameters(format!(
-                "Root not bracketed: f({})={}, f({})={}. Signs must differ.",
-                low, f_low, high, f_high
-            )));
+            return Err(AnalysisError::RootNotBracketed {
+                min: low,
+                max: high,
+                f_min: f_low,
+                f_max: f_high,
+            });
         }
 
         let mut mid = low;
@@ -177,33 +206,20 @@ impl RootFinder for Bisection {
     }
 }
 
+#[allow(deprecated)]
+impl RootFinder for Bisection {
+    fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+    {
+        <Self as BracketingRootFinder>::find_root(self, f, min, max)
+    }
+}
+
 /// Newton-Raphson method implementation.
 ///
 /// Uses the derivative of the function to converge quadratically to the root.
-/// If the derivative is not provided (via `RootFinder` trait), a numerical approximation is used.
-///
-/// **Note:** This is an [Open Method](https://en.wikipedia.org/wiki/Root-finding_algorithms#Open_methods).
-/// Unlike bracketing methods (like [`Bisection`]), it does not require the root to be bracketed
-/// and does not guarantee that the result lies within the initial interval provided to [`RootFinder::find_root`].
-/// The `min` and `max` arguments are only used to compute the initial guess: `(min + max) / 2`.
-///
-/// # Examples
-///
-/// ```
-/// use math_explorer::pure_math::analysis::roots::{RootFinder, NewtonRaphson};
-///
-/// let solver = NewtonRaphson::default();
-///
-/// // Find root of x^2 - 2 = 0
-/// // Initial guess will be (1.0 + 2.0) / 2.0 = 1.5
-/// let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
-/// assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
-///
-/// // Example where root is outside the initial "interval"
-/// // Root of x - 10 = 0 is 10. Initial guess is 2.5.
-/// let root = solver.find_root(|x| x - 10.0, 0.0, 5.0).unwrap();
-/// assert!((root - 10.0).abs() < 1e-6);
-/// ```
+/// If the derivative is not provided (via [`DifferentiableRootFinder`]), a numerical approximation is used.
 #[derive(Debug, Clone, Copy)]
 pub struct NewtonRaphson {
     /// Maximum number of iterations.
@@ -223,21 +239,42 @@ impl NewtonRaphson {
 
     /// Finds a root using an analytical derivative $f'(x)$.
     ///
-    /// # Arguments
-    /// * `f` - The objective function.
-    /// * `f_prime` - The derivative of the objective function.
-    /// * `guess` - Initial guess for the root.
+    /// This method is a convenience wrapper for [`DifferentiableRootFinder::find_root_with_derivative`].
     pub fn find_root_with_derivative<F, D>(
         &self,
         f: F,
         f_prime: D,
-        guess: f64,
+        initial_guess: f64,
     ) -> Result<f64, AnalysisError>
     where
         F: Fn(f64) -> f64,
         D: Fn(f64) -> f64,
     {
-        let mut x = guess;
+        <Self as DifferentiableRootFinder>::find_root_with_derivative(self, f, f_prime, initial_guess)
+    }
+}
+
+impl Default for NewtonRaphson {
+    fn default() -> Self {
+        Self {
+            max_iterations: 100,
+            tolerance: 1e-6,
+        }
+    }
+}
+
+impl DifferentiableRootFinder for NewtonRaphson {
+    fn find_root_with_derivative<F, D>(
+        &self,
+        f: F,
+        f_prime: D,
+        initial_guess: f64,
+    ) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+        D: Fn(f64) -> f64,
+    {
+        let mut x = initial_guess;
 
         for _ in 0..self.max_iterations {
             let y = f(x);
@@ -247,10 +284,7 @@ impl NewtonRaphson {
 
             let dy = f_prime(x);
             if dy.abs() < 1e-14 {
-                return Err(AnalysisError::InvalidParameters(format!(
-                    "Derivative too small at x={}: {}",
-                    x, dy
-                )));
+                return Err(AnalysisError::DerivativeTooSmall { x, derivative: dy });
             }
 
             let next_x = x - y / dy;
@@ -267,15 +301,20 @@ impl NewtonRaphson {
     }
 }
 
-impl Default for NewtonRaphson {
-    fn default() -> Self {
-        Self {
-            max_iterations: 100,
-            tolerance: 1e-6,
-        }
+impl OpenRootFinder for NewtonRaphson {
+    fn find_root<F>(&self, f: F, initial_guess: f64) -> Result<f64, AnalysisError>
+    where
+        F: Fn(f64) -> f64,
+    {
+        // Numerical derivative step size
+        let h = 1e-7;
+        let derivative = |x: f64| (f(x + h) - f(x - h)) / (2.0 * h);
+
+        self.find_root_with_derivative(&f, derivative, initial_guess)
     }
 }
 
+#[allow(deprecated)]
 impl RootFinder for NewtonRaphson {
     fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
     where
@@ -283,14 +322,7 @@ impl RootFinder for NewtonRaphson {
     {
         // Use midpoint as initial guess
         let guess = (min + max) / 2.0;
-
-        // Numerical derivative step size
-        let h = 1e-7;
-
-        let derivative = |x: f64| (f(x + h) - f(x - h)) / (2.0 * h);
-
-        // We use the specialized method with our numerical derivative
-        self.find_root_with_derivative(&f, derivative, guess)
+        <Self as OpenRootFinder>::find_root(self, f, guess)
     }
 }
 
@@ -312,7 +344,7 @@ mod tests {
     fn test_newton_raphson_numerical() {
         let solver = NewtonRaphson::default();
         // x^2 - 2 = 0
-        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+        let root = <NewtonRaphson as OpenRootFinder>::find_root(&solver, |x| x * x - 2.0, 1.5).unwrap();
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-5);
     }
 
@@ -320,7 +352,7 @@ mod tests {
     fn test_bisection_square_root() {
         let solver = Bisection::default();
         // x^2 - 2 = 0  => x = sqrt(2) approx 1.41421356
-        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+        let root = <Bisection as BracketingRootFinder>::find_root(&solver, |x| x * x - 2.0, 1.0, 2.0).unwrap();
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
     }
 
@@ -328,7 +360,7 @@ mod tests {
     fn test_bisection_linear() {
         let solver = Bisection::default();
         // 2x - 4 = 0 => x = 2
-        let root = solver.find_root(|x| 2.0 * x - 4.0, 0.0, 5.0).unwrap();
+        let root = <Bisection as BracketingRootFinder>::find_root(&solver, |x| 2.0 * x - 4.0, 0.0, 5.0).unwrap();
         assert!((root - 2.0).abs() < 1e-6);
     }
 
@@ -336,7 +368,10 @@ mod tests {
     fn test_not_bracketed() {
         let solver = Bisection::default();
         // x^2 + 1 = 0 has no real roots. And signs are always positive.
-        let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
-        assert!(matches!(result, Err(AnalysisError::InvalidParameters(_))));
+        let result = <Bisection as BracketingRootFinder>::find_root(&solver, |x| x * x + 1.0, -2.0, 2.0);
+        match result {
+            Err(AnalysisError::RootNotBracketed { .. }) => (),
+            _ => panic!("Expected RootNotBracketed error"),
+        }
     }
 }
