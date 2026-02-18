@@ -1,5 +1,5 @@
-use math_explorer::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
 use approx::assert_relative_eq;
+use math_explorer::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
 
 #[test]
 fn test_lbm_initialization() {

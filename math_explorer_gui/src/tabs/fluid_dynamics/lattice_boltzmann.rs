@@ -41,7 +41,7 @@ impl Default for LatticeBoltzmannTool {
             for x in 0..width {
                 let dx = x as i32 - center_x;
                 let dy = y as i32 - center_y;
-                if dx*dx + dy*dy <= radius*radius {
+                if dx * dx + dy * dy <= radius * radius {
                     solver.set_obstacle(x, y, true);
                 }
             }
@@ -77,9 +77,13 @@ impl LatticeBoltzmannTool {
             ui.separator();
 
             if self.running {
-                if ui.button("Pause").clicked() { self.running = false; }
+                if ui.button("Pause").clicked() {
+                    self.running = false;
+                }
             } else {
-                if ui.button("Run").clicked() { self.running = true; }
+                if ui.button("Run").clicked() {
+                    self.running = true;
+                }
             }
 
             if ui.button("Reset").clicked() {
@@ -95,10 +99,15 @@ impl LatticeBoltzmannTool {
 
             ui.separator();
             ui.label("Simulation Parameters");
-            if ui.add(egui::Slider::new(&mut self.viscosity, 0.005..=0.2).text("Viscosity")).changed() {
-                 self.solver.tau = 3.0 * self.viscosity + 0.5;
+            if ui
+                .add(egui::Slider::new(&mut self.viscosity, 0.005..=0.2).text("Viscosity"))
+                .changed()
+            {
+                self.solver.tau = 3.0 * self.viscosity + 0.5;
             }
-            ui.add(egui::Slider::new(&mut self.steps_per_frame, 1..=20).text("Speed (Steps/Frame)"));
+            ui.add(
+                egui::Slider::new(&mut self.steps_per_frame, 1..=20).text("Speed (Steps/Frame)"),
+            );
 
             ui.separator();
             ui.label("Drawing");
@@ -122,7 +131,6 @@ impl LatticeBoltzmannTool {
 
             for y in 0..height {
                 for x in 0..width {
-
                     let pixel_idx = y * width + x;
 
                     if self.solver.is_obstacle(x, height - 1 - y) {
@@ -134,7 +142,11 @@ impl LatticeBoltzmannTool {
                         let intensity = (v * 1000.0).clamp(0.0, 255.0) as u8;
                         // Simple heatmap: Blue -> Red
                         // r: intensity, b: 255 - intensity
-                        image.pixels[pixel_idx] = Color32::from_rgb(intensity, (intensity as f32 * 0.5) as u8, 255 - intensity);
+                        image.pixels[pixel_idx] = Color32::from_rgb(
+                            intensity,
+                            (intensity as f32 * 0.5) as u8,
+                            255 - intensity,
+                        );
                     }
                 }
             }
@@ -158,17 +170,17 @@ impl LatticeBoltzmannTool {
                         "fluid_field",
                         texture.id(),
                         PlotPoint::new(width as f64 / 2.0, height as f64 / 2.0),
-                        [width as f32, height as f32]
+                        [width as f32, height as f32],
                     ));
 
                     // Interaction: Get pointer coordinates
                     if plot_ui.response().hovered() && ctx.input(|i| i.pointer.primary_down()) {
-                         if let Some(pos) = plot_ui.pointer_coordinate() {
-                             let grid_x = pos.x.round() as i32;
-                             let grid_y = pos.y.round() as i32;
+                        if let Some(pos) = plot_ui.pointer_coordinate() {
+                            let grid_x = pos.x.round() as i32;
+                            let grid_y = pos.y.round() as i32;
 
-                             self.apply_brush(grid_x, grid_y);
-                         }
+                            self.apply_brush(grid_x, grid_y);
+                        }
                     }
                 });
         });
@@ -183,9 +195,10 @@ impl LatticeBoltzmannTool {
         for y in (cy - r)..=(cy + r) {
             for x in (cx - r)..=(cx + r) {
                 if x >= 0 && x < width && y >= 0 && y < height {
-                     if (x - cx)*(x - cx) + (y - cy)*(y - cy) <= r*r {
-                         self.solver.set_obstacle(x as usize, y as usize, is_obstacle);
-                     }
+                    if (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r {
+                        self.solver
+                            .set_obstacle(x as usize, y as usize, is_obstacle);
+                    }
                 }
             }
         }

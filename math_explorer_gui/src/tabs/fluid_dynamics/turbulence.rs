@@ -12,10 +12,10 @@ enum Geometry {
 
 pub struct TurbulenceTool {
     // Physics Parameters
-    density: f64,          // kg/m^3
+    density: f64,           // kg/m^3
     dynamic_viscosity: f64, // Pa.s
-    velocity: f64,         // m/s
-    length: f64,           // m (Diameter or Length)
+    velocity: f64,          // m/s
+    length: f64,            // m (Diameter or Length)
     geometry: Geometry,
 
     // Visualization State
@@ -25,8 +25,8 @@ pub struct TurbulenceTool {
 impl Default for TurbulenceTool {
     fn default() -> Self {
         Self {
-            density: 1000.0,            // Water
-            dynamic_viscosity: 0.001,   // Water at 20C
+            density: 1000.0,          // Water
+            dynamic_viscosity: 0.001, // Water at 20C
             velocity: 1.0,
             length: 1.0,
             geometry: Geometry::Pipe,
@@ -78,21 +78,37 @@ impl TurbulenceTool {
             ui.separator();
             ui.heading("Fluid Properties");
             ui.label("Density (kg/m³)");
-            ui.add(egui::DragValue::new(&mut self.density).speed(10.0).range(0.0..=20000.0));
+            ui.add(
+                egui::DragValue::new(&mut self.density)
+                    .speed(10.0)
+                    .range(0.0..=20000.0),
+            );
 
             ui.label("Dynamic Viscosity (Pa·s)");
-            ui.add(egui::DragValue::new(&mut self.dynamic_viscosity).speed(0.0001).range(1e-6..=10.0));
+            ui.add(
+                egui::DragValue::new(&mut self.dynamic_viscosity)
+                    .speed(0.0001)
+                    .range(1e-6..=10.0),
+            );
 
             ui.separator();
             ui.heading("Flow Parameters");
             ui.label("Velocity (m/s)");
-            ui.add(egui::DragValue::new(&mut self.velocity).speed(0.1).range(0.0..=1000.0));
+            ui.add(
+                egui::DragValue::new(&mut self.velocity)
+                    .speed(0.1)
+                    .range(0.0..=1000.0),
+            );
 
             ui.label(match self.geometry {
                 Geometry::Pipe => "Diameter (m)",
                 Geometry::FlatPlate => "Length (m)",
             });
-            ui.add(egui::DragValue::new(&mut self.length).speed(0.01).range(0.0..=100.0));
+            ui.add(
+                egui::DragValue::new(&mut self.length)
+                    .speed(0.01)
+                    .range(0.0..=100.0),
+            );
 
             ui.separator();
             ui.heading("Results");
@@ -129,7 +145,7 @@ impl TurbulenceTool {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-             Plot::new("turbulence_plot")
+            Plot::new("turbulence_plot")
                 .data_aspect(1.0)
                 .view_aspect(0.5)
                 .show(ui, |plot_ui| {
@@ -140,32 +156,37 @@ impl TurbulenceTool {
                     for i in 0..n_lines {
                         let y_base = (i as f64 - n_lines as f64 / 2.0) * 1.0;
 
-                        let points: PlotPoints = (0..100).map(|j| {
-                            let x = (j as f64 / 100.0) * length;
+                        let points: PlotPoints = (0..100)
+                            .map(|j| {
+                                let x = (j as f64 / 100.0) * length;
 
-                            let noise = match regime {
-                                FlowRegime::Laminar => 0.0,
-                                FlowRegime::Transitional => {
-                                    if x > length * 0.3 {
-                                        0.2 * (3.0 * x + self.time * 5.0 + (i as f64)).sin()
-                                    } else {
-                                        0.0
+                                let noise = match regime {
+                                    FlowRegime::Laminar => 0.0,
+                                    FlowRegime::Transitional => {
+                                        if x > length * 0.3 {
+                                            0.2 * (3.0 * x + self.time * 5.0 + (i as f64)).sin()
+                                        } else {
+                                            0.0
+                                        }
                                     }
-                                },
-                                FlowRegime::Turbulent => {
-                                    // Simple pseudo-randomness based on position and time
-                                    let phase1 = x * 10.0 + self.time * 10.0 + (i as f64);
-                                    let phase2 = x * 23.0 - self.time * 15.0 + (i as f64 * 2.0);
-                                    let amp = (x / length).powf(0.5); // Turbulence increases downstream
-                                    amp * (0.2 * phase1.sin() + 0.1 * phase2.sin() + 0.1 * (phase1 * 3.0).cos())
-                                }
-                            };
+                                    FlowRegime::Turbulent => {
+                                        // Simple pseudo-randomness based on position and time
+                                        let phase1 = x * 10.0 + self.time * 10.0 + (i as f64);
+                                        let phase2 = x * 23.0 - self.time * 15.0 + (i as f64 * 2.0);
+                                        let amp = (x / length).powf(0.5); // Turbulence increases downstream
+                                        amp * (0.2 * phase1.sin()
+                                            + 0.1 * phase2.sin()
+                                            + 0.1 * (phase1 * 3.0).cos())
+                                    }
+                                };
 
-                            [x, y_base + noise]
-                        }).collect();
+                                [x, y_base + noise]
+                            })
+                            .collect();
 
                         // Line::new requires name as first argument in egui_plot 0.34
-                        plot_ui.line(Line::new("Streamline", points).color(egui::Color32::LIGHT_BLUE));
+                        plot_ui
+                            .line(Line::new("Streamline", points).color(egui::Color32::LIGHT_BLUE));
                     }
                 });
         });
