@@ -29,7 +29,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `physics::chaos`
 *   **Features:**
     *   [x] **Attractor Plotter:** 3D interactive plot for Lorenz, Rossler, and other strange attractors.
-    *   [ ] **Bifurcation Diagrams:** Logistic map explorer with zoom capabilities.
+    *   [x] **Bifurcation Diagrams:** Logistic map explorer with zoom capabilities.
     *   [ ] **Fractal Generator:** Mandelbrot/Julia set viewer with pan/zoom.
 
 ### 1.5 Solid State Physics
