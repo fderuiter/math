@@ -108,12 +108,6 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
         coeffs: &[f64],
     ) {
         let n_species = state.num_species();
-        let n_grid = state.grid_size();
-
-        if n_grid == 0 {
-            return;
-        }
-
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
@@ -121,35 +115,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
             let u = &state.concentrations[s];
             let out_u = &mut out.concentrations[s];
             let d = *d;
-
-            // 1. Left Boundary (i=0)
-            {
-                let u_curr = u[0];
-                let u_prev = u_curr;
-                let u_next = if n_grid > 1 { u[1] } else { u_curr };
-                out_u[0] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            }
-
-            // 2. Interior (Optimized with windows iterator)
-            if n_grid > 2 {
-                for (win, out) in u.windows(3).zip(out_u.iter_mut().skip(1)) {
-                    // win[0] = u[i-1], win[1] = u[i], win[2] = u[i+1]
-                    // We can access directly without bounds checks inside the loop
-                    let u_prev = win[0];
-                    let u_curr = win[1];
-                    let u_next = win[2];
-                    *out = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                }
-            }
-
-            // 3. Right Boundary (i=n-1)
-            if n_grid > 1 {
-                let i = n_grid - 1;
-                let u_curr = u[i];
-                let u_prev = u[i - 1];
-                let u_next = u_curr;
-                out_u[i] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            }
+            apply_1d_stencil(u, out_u, d, inv_dx_sq);
         }
     }
 }
@@ -177,60 +143,8 @@ impl SpatialDiffusion for FiniteDifference1D {
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
-        // 1. Handle i = 0 (Left Boundary)
-        {
-            let u_curr = u[0];
-            let v_curr = v[0];
-            // Neumann BC: u_{-1} = u_0
-            let u_prev = u_curr;
-            let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 {
-                (u[1], v[1])
-            } else {
-                (u_curr, v_curr)
-            };
-
-            out_u[0] = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            out_v[0] = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-        }
-
-        // 2. Interior (Safe Windows)
-        if n > 2 {
-            // Iterate over windows of 3 elements: [prev, curr, next]
-            // We write to out starting at index 1
-            for (((win_u, win_v), o_u), o_v) in u
-                .windows(3)
-                .zip(v.windows(3))
-                .zip(out_u.iter_mut().skip(1))
-                .zip(out_v.iter_mut().skip(1))
-            {
-                let u_prev = win_u[0];
-                let u_curr = win_u[1];
-                let u_next = win_u[2];
-
-                let v_prev = win_v[0];
-                let v_curr = win_v[1];
-                let v_next = win_v[2];
-
-                *o_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                *o_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-            }
-        }
-
-        // 3. Handle i = n-1 (Right Boundary)
-        if n > 1 {
-            let i = n - 1;
-            let u_curr = u[i];
-            let v_curr = v[i];
-            let u_prev = u[i - 1];
-            let v_prev = v[i - 1];
-            // Neumann BC: u_{N} = u_{N-1}
-            let u_next = u_curr;
-            let v_next = v_curr;
-
-            out_u[i] = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            out_v[i] = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
-        }
+        apply_1d_stencil(u, out_u, d_u, inv_dx_sq);
+        apply_1d_stencil(v, out_v, d_v, inv_dx_sq);
     }
 
     fn apply_step<F>(
@@ -328,5 +242,48 @@ impl SpatialDiffusion for FiniteDifference1D {
             out_u[i] = u_curr + dt * (d_u * lap_u + reac_u);
             out_v[i] = v_curr + dt * (d_v * lap_v + reac_v);
         }
+    }
+}
+
+/// Applies a 1D Finite Difference stencil (Neumann BC) to a single array.
+///
+/// This is a private helper to ensure DRY compliance between DiffusionModel and SpatialDiffusion implementations.
+///
+/// # Arguments
+/// * `src`: Input concentration slice.
+/// * `dst`: Output buffer for the Laplacian term (D * d2u/dx2).
+/// * `d`: Diffusion coefficient.
+/// * `inv_dx_sq`: Inverse square of grid spacing (1/dx^2).
+fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
+    let n = src.len();
+    if n == 0 {
+        return;
+    }
+
+    // 1. Left Boundary (i=0)
+    {
+        let u_curr = src[0];
+        let u_prev = u_curr; // Neumann: u_{-1} = u_0
+        let u_next = if n > 1 { src[1] } else { u_curr };
+        dst[0] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+    }
+
+    // 2. Interior (Optimized with windows iterator)
+    if n > 2 {
+        for (win, out) in src.windows(3).zip(dst.iter_mut().skip(1)) {
+            let u_prev = win[0];
+            let u_curr = win[1];
+            let u_next = win[2];
+            *out = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+        }
+    }
+
+    // 3. Right Boundary (i=n-1)
+    if n > 1 {
+        let i = n - 1;
+        let u_curr = src[i];
+        let u_prev = src[i - 1];
+        let u_next = u_curr; // Neumann: u_{N} = u_{N-1}
+        dst[i] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
     }
 }
