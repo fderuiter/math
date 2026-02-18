@@ -1,6 +1,6 @@
 use crate::tabs::{
     chaos::ChaosTab, fluid_dynamics::FluidDynamicsTab, mri::MriTab, quantum::QuantumTab,
-    ExplorerTab,
+    solid_state::SolidStateTab, ExplorerTab,
 };
 use eframe::egui;
 
@@ -17,6 +17,7 @@ impl Default for MathExplorerApp {
                 Box::new(QuantumTab::default()),
                 Box::new(FluidDynamicsTab::default()),
                 Box::new(ChaosTab::default()),
+                Box::new(SolidStateTab::default()),
             ],
             selected_tab: 0,
         }

@@ -6,15 +6,17 @@
 //! It covers:
 //! 1. Second Quantization (Operators and Fock States)
 //! 2. Screening (Thomas-Fermi and Yukawa)
-//! 3. Lattice Dynamics (Phonons)
-//! 4. Magnetism (Heisenberg Model)
-//! 5. Superconductivity (BCS)
-//! 6. Interactions (Electron-Phonon)
-//! 7. Types and Errors (Strong types and error handling)
+//! 3. Lattice Structures (SC, BCC, FCC)
+//! 4. Lattice Dynamics (Phonons)
+//! 5. Magnetism (Heisenberg Model)
+//! 6. Superconductivity (BCS)
+//! 7. Interactions (Electron-Phonon)
+//! 8. Types and Errors (Strong types and error handling)
 
 pub mod bcs;
 pub mod error;
 pub mod interactions;
+pub mod lattice;
 pub mod magnetism;
 pub mod phonons;
 pub mod screening;
