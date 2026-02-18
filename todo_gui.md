@@ -42,7 +42,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 1.6 Medical Physics
 *   **Module:** `physics::medical`
 *   **Features:**
-    *   [ ] **Dose Calculation:** 2D heatmap of radiation dose distribution.
+    *   [x] **Dose Calculation:** 2D heatmap of radiation dose distribution.
     *   [ ] **Beam Profiling:** Interactive depth-dose curves.
 
 ---
