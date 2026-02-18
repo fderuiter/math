@@ -1,5 +1,6 @@
 use eframe::egui;
 
+pub mod fluid_dynamics;
 pub mod mri;
 pub mod quantum;
 
