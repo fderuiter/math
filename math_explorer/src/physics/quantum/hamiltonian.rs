@@ -57,12 +57,7 @@ pub fn construct_1d_hamiltonian(
 /// * `x0` - The initial position of the packet center.
 /// * `k0` - The initial momentum (wave number).
 /// * `sigma` - The width of the packet.
-pub fn gaussian_wavepacket(
-    x_grid: &[f64],
-    x0: f64,
-    k0: f64,
-    sigma: f64,
-) -> QuantumState {
+pub fn gaussian_wavepacket(x_grid: &[f64], x0: f64, k0: f64, sigma: f64) -> QuantumState {
     let n_points = x_grid.len();
     let mut psi_vec = DVector::<Complex<f64>>::zeros(n_points);
 
