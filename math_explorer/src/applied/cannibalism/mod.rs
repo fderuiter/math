@@ -2,9 +2,10 @@
 //!
 //! Mathematical models of intraspecific predation, focusing on population dynamics.
 //!
-//! > **Note:** This module primarily contains **placeholder implementations** and theoretical
-//! > structures for solving the **McKendrick-von Foerster** partial differential equations.
-//! > It serves as a structural template for future numerical solvers.
+//! > **Warning**
+//! > This module is currently **EXPERIMENTAL**.
+//! > It contains **placeholder implementations** for solving the McKendrick-von Foerster equations
+//! > and serves primarily as a structural template. Do not use for production simulations.
 //!
 //! ## Theoretical Basis
 //!
