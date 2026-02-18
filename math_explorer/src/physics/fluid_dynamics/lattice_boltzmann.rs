@@ -252,8 +252,8 @@ impl LatticeBoltzmannD2Q9 {
             }
 
             let eq = self.equilibrium(self.rho[i], self.ux[i], self.uy[i]);
-            for k in 0..Q {
-                self.f[i][k] = (1.0 - omega) * self.f[i][k] + omega * eq[k];
+            for (k, val) in eq.iter().enumerate().take(Q) {
+                self.f[i][k] = (1.0 - omega) * self.f[i][k] + omega * val;
             }
         }
     }
