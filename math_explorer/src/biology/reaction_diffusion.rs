@@ -64,7 +64,11 @@ impl Add for ChemicalState {
     type Output = Self;
 
     fn add(mut self, rhs: Self) -> Self {
-        for (val, r_val) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+        for (val, r_val) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
             *val += r_val;
         }
         self
@@ -73,7 +77,11 @@ impl Add for ChemicalState {
 
 impl AddAssign for ChemicalState {
     fn add_assign(&mut self, rhs: Self) {
-        for (val, r_val) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+        for (val, r_val) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
             *val += r_val;
         }
     }
@@ -100,7 +108,11 @@ impl MulAssign<f64> for ChemicalState {
 
 impl VectorOperations for ChemicalState {
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (val, r_val) in self.concentrations.iter_mut().zip(other.concentrations.iter()) {
+        for (val, r_val) in self
+            .concentrations
+            .iter_mut()
+            .zip(other.concentrations.iter())
+        {
             *val += r_val * scale;
         }
     }
@@ -257,8 +269,7 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
 
         // Add Reaction
         // Optimized: Use batch processing to allow vectorization and avoid gather/scatter
-        self.reaction
-            .add_reaction_batch(state, out);
+        self.reaction.add_reaction_batch(state, out);
     }
 }
 

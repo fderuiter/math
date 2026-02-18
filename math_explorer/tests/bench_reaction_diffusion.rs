@@ -1,7 +1,7 @@
+use math_explorer::biology::diffusion::FiniteDifference1D;
 use math_explorer::biology::reaction_diffusion::{
     ChemicalState, ReactionDiffusionSystem, ReactionModel,
 };
-use math_explorer::biology::diffusion::FiniteDifference1D;
 use math_explorer::pure_math::analysis::ode::solvers::Euler;
 use std::time::Instant;
 
@@ -55,8 +55,5 @@ fn bench_reaction_diffusion_performance() {
         num_species, grid_size, steps
     );
     println!("Time: {:?}", duration);
-    println!(
-        "Time per step: {:?}",
-        duration / steps as u32
-    );
+    println!("Time per step: {:?}", duration / steps as u32);
 }
