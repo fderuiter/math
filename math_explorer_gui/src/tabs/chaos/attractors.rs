@@ -121,7 +121,10 @@ impl ChaosTool for AttractorPlotter {
 
             ui.collapsing("Simulation", |ui| {
                 ui.horizontal(|ui| {
-                    if ui.button(if self.paused { "▶ Play" } else { "⏸ Pause" }).clicked() {
+                    if ui
+                        .button(if self.paused { "▶ Play" } else { "⏸ Pause" })
+                        .clicked()
+                    {
                         self.paused = !self.paused;
                     }
                     if ui.button("↺ Reset").clicked() {
@@ -163,7 +166,10 @@ impl ChaosTool for AttractorPlotter {
             Plot::new("attractor_plot")
                 .data_aspect(1.0)
                 .show(ui, |plot_ui| {
-                    plot_ui.line(Line::new("Trajectory", PlotPoints::new(points)).color(egui::Color32::from_rgb(100, 200, 255)));
+                    plot_ui.line(
+                        Line::new("Trajectory", PlotPoints::new(points))
+                            .color(egui::Color32::from_rgb(100, 200, 255)),
+                    );
                 });
 
             ui.label("Drag 'Yaw' and 'Pitch' in the side panel to rotate the view.");

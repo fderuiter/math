@@ -3,6 +3,7 @@ use eframe::egui;
 
 pub mod attractors;
 pub mod bifurcation;
+pub mod fractals;
 
 /// A trait for sub-tools within the Chaos tab.
 pub trait ChaosTool {
@@ -24,6 +25,7 @@ impl Default for ChaosTab {
             tools: vec![
                 Box::new(attractors::AttractorPlotter::default()),
                 Box::new(bifurcation::BifurcationDiagram::default()),
+                Box::new(fractals::FractalViewer::default()),
             ],
             selected_tool_index: 0,
         }

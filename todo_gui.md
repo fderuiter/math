@@ -25,12 +25,12 @@ This document outlines the roadmap for integrating the various modules of the `m
     *   [x] **Turbulence Simulation:** Parameter controls for Reynolds number.
     *   [x] **Lattice Boltzmann Demo:** Interactive obstacle placement in a flow stream.
 
-### 1.4 Chaos Theory
+### 1.4 Chaos Theory - **[Implemented]**
 *   **Module:** `physics::chaos`
 *   **Features:**
     *   [x] **Attractor Plotter:** 3D interactive plot for Lorenz, Rossler, and other strange attractors.
     *   [x] **Bifurcation Diagrams:** Logistic map explorer with zoom capabilities.
-    *   [ ] **Fractal Generator:** Mandelbrot/Julia set viewer with pan/zoom.
+    *   [x] **Fractal Generator:** Mandelbrot/Julia set viewer with pan/zoom.
 
 ### 1.5 Solid State Physics
 *   **Module:** `physics::solid_state`
