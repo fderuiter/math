@@ -34,20 +34,21 @@ use wigner_symbols::ClebschGordan;
 /// # Examples
 ///
 /// ```
-/// // Example from Griffiths, Introduction to Quantum Mechanics, 2nd ed., Table 4.8
-/// // Example from Griffiths, Introduction to Quantum Mechanics, 2nd ed., Table 4.8
-/// // Coupling j1=3/2 and j2=1. We expect <3/2 -1/2; 1 1 | 5/2 1/2> = sqrt(3/5).
-/// // Note: this library may use a different normalization convention. See tests for details.
+/// // Example from Griffiths, Introduction to Quantum Mechanics, 2nd ed., Table 4.8.
+/// // Coupling j1=3/2 and j2=1 for the state |5/2 1/2>.
+/// // We calculate <3/2 -1/2; 1 1 | 5/2 1/2>.
 /// use math_explorer::physics::quantum::clebsch_gordan;
+///
 /// let j1 = 1.5;
 /// let m1 = -0.5;
 /// let j2 = 1.0;
 /// let m2 = 1.0;
 /// let j = 2.5;
 /// let m = 0.5;
+///
 /// let coeff = clebsch_gordan(j1, m1, j2, m2, j, m);
-/// // The expected value from the textbook is sqrt(3/5) approx 0.7746
-/// // The library gives sqrt(3/10) approx 0.5477
+///
+/// // Standard tables give <3/2 -1/2; 1 1 | 5/2 1/2> = sqrt(3/10) approx 0.5477.
 /// assert!((coeff - (3.0f64 / 10.0f64).sqrt()).abs() < 1e-9);
 /// ```
 pub fn clebsch_gordan(j1: f64, m1: f64, j2: f64, m2: f64, j: f64, m: f64) -> f64 {

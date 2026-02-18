@@ -1,15 +1,48 @@
-//! MRI Physics Simulation Module
+//! # MRI Physics Simulation
 //!
 //! This module provides a rigorous simulation of Magnetic Resonance Imaging (MRI) physics,
-//! covering Quantum Foundations, Classical Dynamics (Bloch Equations), Spatial Encoding,
-//! and Image Reconstruction.
+//! implementing the full signal chain from nuclear spin dynamics to image reconstruction.
 //!
-//! # Domains
+//! It bridges **Quantum Mechanics** (spin states) and **Classical Electromagnetism** (Bloch equations)
+//! to model how tissue properties ($T_1, T_2, \rho$) translate into medical images.
 //!
-//! 1. **Quantum Foundations**: Proton properties, Larmor frequency, and Boltzmann statistics.
-//! 2. **Classical Dynamics**: Bloch equation simulation for magnetization vectors.
-//! 3. **Spatial Encoding**: Gradient fields and k-space trajectory calculations.
-//! 4. **Image Reconstruction**: Signal generation and Inverse Fourier Transform.
+//! ## 🔄 Simulation Pipeline
+//!
+//! The MRI process is modeled as a sequence of transformations:
+//!
+//! ```mermaid
+//! graph TD
+//!     subgraph "1. Physics"
+//!     Protons[Proton Spins] -->|B0 Field| Align[Net Magnetization M]
+//!     RF[RF Pulse B1] -->|Excitation| Transverse[Transverse M_xy]
+//!     end
+//!
+//!     subgraph "2. Encoding"
+//!     Gradients[Gradient Fields Gx, Gy] -->|Phase/Freq Encoding| KSpace[k-Space Trajectory]
+//!     Transverse -->|Evolution| KSpace
+//!     end
+//!
+//!     subgraph "3. Acquisition"
+//!     KSpace -->|Signal Equation| Signal[Raw Signal S(t)]
+//!     Signal -->|ADC| Digital[Digitized k-Space Data]
+//!     end
+//!
+//!     subgraph "4. Reconstruction"
+//!     Digital -->|2D IFT| Image[Reconstructed Image]
+//!     end
+//!
+//!     style Protons fill:#e1f5fe,stroke:#01579b
+//!     style Signal fill:#fff3e0,stroke:#e65100
+//!     style Image fill:#e8f5e9,stroke:#1b5e20
+//! ```
+//!
+//! ## 🧩 Domains
+//!
+//! *   **Quantum Foundations** (`proton`): Constants and properties for Hydrogen nuclei (gyromagnetic ratio $\gamma$).
+//! *   **Classical Dynamics** (`bloch`): The **Bloch Equation** solver, tracking the magnetization vector $\mathbf{M}$ over time:
+//!     $$ \frac{d\mathbf{M}}{dt} = \mathbf{M} \times \gamma \mathbf{B} - \frac{M_x \hat{x} + M_y \hat{y}}{T_2} - \frac{(M_z - M_0) \hat{z}}{T_1} $$
+//! *   **Spatial Encoding** (`scanner`): Gradient coils simulation ($G_x, G_y, G_z$) to spatially resolve signals.
+//! *   **Image Reconstruction** (`reconstruction`): Fast Fourier Transform (FFT) algorithms to convert frequency-domain signals back to spatial images.
 
 pub mod bloch;
 pub mod proton;
