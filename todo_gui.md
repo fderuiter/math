@@ -36,8 +36,8 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `physics::solid_state`
 *   **Features:**
     *   [x] **Crystal Lattice Viewer:** 3D visualization of unit cells (FCC, BCC, SC).
-    *   [ ] **Band Structure:** Plot E-k diagrams for simple potentials.
-    *   [ ] **Ising Model:** 2D grid simulation of spin flips and phase transitions (temperature slider).
+    *   [ ] **Band Structure:** Plot E-k diagrams for simple potentials. (Skipped: Logic missing)
+    *   [ ] **Ising Model:** 2D grid simulation of spin flips and phase transitions (temperature slider). (Skipped: Logic missing in `physics::solid_state`)
 
 ### 1.6 Medical Physics
 *   **Module:** `physics::medical`
