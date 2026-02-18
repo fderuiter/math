@@ -1,8 +1,5 @@
 use math_explorer::biology::diffusion::FiniteDifference1D;
-use math_explorer::biology::reaction_diffusion::{
-    ChemicalState, ReactionDiffusionSystem, ReactionModel,
-};
-use math_explorer::pure_math::analysis::ode::solvers::Euler;
+use math_explorer::biology::reaction_diffusion::{ReactionDiffusionSystem, ReactionModel};
 use std::time::Instant;
 
 struct LinearDecay {
