@@ -28,7 +28,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 1.4 Chaos Theory
 *   **Module:** `physics::chaos`
 *   **Features:**
-    *   [ ] **Attractor Plotter:** 3D interactive plot for Lorenz, Rossler, and other strange attractors.
+    *   [x] **Attractor Plotter:** 3D interactive plot for Lorenz, Rossler, and other strange attractors.
     *   [ ] **Bifurcation Diagrams:** Logistic map explorer with zoom capabilities.
     *   [ ] **Fractal Generator:** Mandelbrot/Julia set viewer with pan/zoom.
 
