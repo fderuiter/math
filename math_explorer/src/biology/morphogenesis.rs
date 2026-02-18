@@ -62,7 +62,7 @@
 //! ```
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-use crate::biology::reaction_diffusion::{ChemicalState, ReactionModel};
+use crate::biology::reaction_diffusion::ReactionModel;
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
@@ -134,24 +134,18 @@ impl ReactionModel for SchnakenbergKinetics {
         rates[1] = dv;
     }
 
-    fn add_reaction_batch(&self, state: &ChemicalState, rates: &mut ChemicalState) {
-        if state.num_species() < 2 || rates.num_species() < 2 {
+    fn add_reaction_batch(&self, concentrations: &[Vec<f64>], rates: &mut [Vec<f64>]) {
+        if concentrations.len() < 2 || rates.len() < 2 {
             return;
         }
 
-        let n_grid = state.grid_size();
-        let u_vec = state.species(0);
-        let v_vec = state.species(1);
+        let u_vec = &concentrations[0];
+        let v_vec = &concentrations[1];
 
-        // Access underlying buffer to split it
-        let rates_slice = &mut rates.concentrations;
-        // Ensure we have enough space
-        if rates_slice.len() < 2 * n_grid {
-            return;
-        }
-
-        let (rates_u, rates_rest) = rates_slice.split_at_mut(n_grid);
-        let (rates_v, _) = rates_rest.split_at_mut(n_grid);
+        // Split mutable borrow to access both rate vectors simultaneously
+        let (left, right) = rates.split_at_mut(1);
+        let rates_u = &mut left[0];
+        let rates_v = &mut right[0];
 
         let n = u_vec
             .len()

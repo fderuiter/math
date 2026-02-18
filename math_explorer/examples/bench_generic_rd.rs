@@ -1,6 +1,7 @@
 use math_explorer::biology::diffusion::FiniteDifference1D;
 use math_explorer::biology::morphogenesis::SchnakenbergKinetics;
 use math_explorer::biology::reaction_diffusion::ReactionDiffusionSystem;
+use math_explorer::pure_math::analysis::ode::TimeStepper;
 use std::time::Instant;
 
 fn main() {
@@ -14,17 +15,9 @@ fn main() {
     let mut system = ReactionDiffusionSystem::new(2, size, kinetics, diffusion, diffusion_coeffs);
 
     // Initialize with noise
-    {
-        let u = system.state.species_mut(0);
-        for i in 0..size {
-            u[i] = 1.0 + (i as f64 * 0.01).sin();
-        }
-    }
-    {
-        let v = system.state.species_mut(1);
-        for i in 0..size {
-            v[i] = 0.5 + (i as f64 * 0.02).cos();
-        }
+    for i in 0..size {
+        system.state.concentrations[0][i] = 1.0 + (i as f64 * 0.01).sin();
+        system.state.concentrations[1][i] = 0.5 + (i as f64 * 0.02).cos();
     }
 
     // Warmup
