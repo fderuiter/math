@@ -35,7 +35,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 1.5 Solid State Physics
 *   **Module:** `physics::solid_state`
 *   **Features:**
-    *   [ ] **Crystal Lattice Viewer:** 3D visualization of unit cells (FCC, BCC, SC).
+    *   [x] **Crystal Lattice Viewer:** 3D visualization of unit cells (FCC, BCC, SC).
     *   [ ] **Band Structure:** Plot E-k diagrams for simple potentials.
     *   [ ] **Ising Model:** 2D grid simulation of spin flips and phase transitions (temperature slider).
 
