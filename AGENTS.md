@@ -33,6 +33,10 @@ Produce a detailed blueprint. We do not write code without a plan.
         * Use the **Builder Pattern** for complex model initialization to ensure validation.
         * Plan for **Dependency Injection**, specifically for Random Number Generators (RNG) to ensure test determinism.
 
+* **GUI Integration Strategy (`math_explorer_gui/`)**:
+    * **Roadmap Alignment**: Check `todo_gui.md` to see if the new module has a planned visualization. If not, propose one.
+    * **Separation of Logic**: Ensure the core logic resides in `math_explorer` and only visualization/control code is added to `math_explorer_gui`. The GUI should not contain simulation logic.
+
 * **Academic Paper Outline (`papers/`)**:
     * Define a section-by-section LaTeX structure.
     * Identify necessary citations and plan the `.bib` file entries to support the mathematical claims.
@@ -63,7 +67,8 @@ Your work is not complete until it is proven correct and robust.
 * **Testing Strategy**:
     * **Unit Tests**: Test core logic in isolation.
     * **Deterministic Integration Tests**: Write tests that inject a seeded RNG to verify reproducible behavior.
-    * **Regression Check**: Run the full `math_explorer` test suite to ensure no breaking changes to existing modules.
+    * **Regression Check**: Run the full `math_explorer` test suite (`cargo test -p math_explorer`) to ensure no breaking changes to existing modules.
+    * **GUI Verification**: If GUI components were added, verify compilation with `cargo check -p math_explorer_gui`.
 
 * **Quality Review**:
     * Verify that no "God Files" were created.
