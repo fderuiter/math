@@ -406,16 +406,16 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for Turing
         self.diffusion.apply(u, v, out_u, out_v, self.d_u, self.d_v);
 
         // 2. Compute Reaction and Accumulate
-        unsafe {
-            for i in 0..n {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                *out_u.get_unchecked_mut(i) += reac_u;
-                *out_v.get_unchecked_mut(i) += reac_v;
-            }
+        // Optimized: Use safe iterator combinators which the compiler can vectorize
+        for (((o_u, o_v), &u_curr), &v_curr) in out_u
+            .iter_mut()
+            .zip(out_v.iter_mut())
+            .zip(u.iter())
+            .zip(v.iter())
+        {
+            let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
+            *o_u += reac_u;
+            *o_v += reac_v;
         }
     }
 }
