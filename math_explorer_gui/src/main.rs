@@ -1,6 +1,7 @@
 mod app;
+mod tabs;
 
-use app::MriApp;
+use app::MathExplorerApp;
 use eframe::egui;
 
 fn main() -> eframe::Result {
@@ -15,6 +16,6 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Math Explorer: MRI Bloch Simulator",
         native_options,
-        Box::new(|cc| Ok(Box::new(MriApp::new(cc)))),
+        Box::new(|cc| Ok(Box::new(MathExplorerApp::new(cc)))),
     )
 }
