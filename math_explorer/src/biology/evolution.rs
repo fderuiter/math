@@ -98,6 +98,41 @@ impl HawkDovePopulation {
     /// # Returns
     /// The new frequency of Hawks.
     pub fn update_frequencies(&self, hawk_freq: f64, dt: f64) -> Result<f64, GameTheoryError> {
+        // Validation is done inside update_frequencies_with_solver, but we need
+        // a valid state to initialize the default Euler solver.
+        if !(0.0..=1.0).contains(&hawk_freq) {
+            return Err(GameTheoryError::InvalidParameter {
+                name: "hawk_freq".to_string(),
+                value: hawk_freq,
+            });
+        }
+
+        let p_h = hawk_freq;
+        let p_d = 1.0 - p_h;
+        let current_state = DVector::from_vec(vec![p_h, p_d]);
+
+        let mut solver = Euler::new(&current_state);
+        self.update_frequencies_with_solver(hawk_freq, dt, &mut solver)
+    }
+
+    /// Updates the frequency of the Hawk strategy using a provided solver strategy.
+    ///
+    /// This method allows for Dependency Injection of different numerical integrators
+    /// (e.g., Euler, Runge-Kutta 4), adhering to the Dependency Inversion Principle.
+    ///
+    /// # Arguments
+    /// * `hawk_freq` - Current frequency of Hawks.
+    /// * `dt` - Time step.
+    /// * `solver` - A mutable reference to a generic `Solver`.
+    pub fn update_frequencies_with_solver<S>(
+        &self,
+        hawk_freq: f64,
+        dt: f64,
+        solver: &mut S,
+    ) -> Result<f64, GameTheoryError>
+    where
+        S: Solver<DVector<f64>>,
+    {
         if !(0.0..=1.0).contains(&hawk_freq) {
             return Err(GameTheoryError::InvalidParameter {
                 name: "hawk_freq".to_string(),
@@ -110,9 +145,8 @@ impl HawkDovePopulation {
 
         let current_state = DVector::from_vec(vec![p_h, p_d]);
         let system = self.to_replicator_dynamics()?;
-        let mut solver = Euler::new(&current_state);
 
-        // Use the generic solver strategy instead of manual Euler
+        // Use the injected solver strategy
         let next_state = solver.solve(&system, 0.0, &current_state, dt);
         let mut new_p_h = next_state[0];
 
