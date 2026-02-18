@@ -101,7 +101,7 @@ cargo run --release --package math_explorer_gui
 
 ### Current Capabilities
 *   **Physics / MRI:** Bloch Simulator with real-time control over $T_1$, $T_2$, $\vec{B}$-field, and magnetization vectors.
-*   **Physics / Fluid Dynamics:** Potential Flow visualization and Turbulence/Reynolds Number analysis.
+*   **Physics / Fluid Dynamics:** Potential Flow visualization, Turbulence/Reynolds Number analysis, and interactive Lattice Boltzmann (LBM) flow simulation.
 
 *See [todo_gui.md](todo_gui.md) for the development roadmap.*
 

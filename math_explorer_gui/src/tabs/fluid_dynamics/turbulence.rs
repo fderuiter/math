@@ -45,7 +45,7 @@ impl TurbulenceTool {
         self.update(dt);
 
         let mut reynolds_number = 0.0;
-        let mut regime = FlowRegime::Laminar;
+        let regime;
 
         // Calculate Reynolds Number
         // Re = (rho * v * L) / mu

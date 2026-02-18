@@ -114,6 +114,7 @@
 pub mod analysis;
 pub mod conservation;
 pub mod error;
+pub mod lattice_boltzmann;
 pub mod potential_flow;
 pub mod regimes;
 pub mod solver;
