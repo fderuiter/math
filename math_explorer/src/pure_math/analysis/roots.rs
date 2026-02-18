@@ -20,15 +20,9 @@ pub enum AnalysisError {
         f_max: f64,
     },
     /// The derivative was too small to continue (e.g., in Newton-Raphson).
-    DerivativeTooSmall {
-        x: f64,
-        derivative: f64,
-    },
+    DerivativeTooSmall { x: f64, derivative: f64 },
     /// The provided interval was invalid (e.g., min > max).
-    InvalidInterval {
-        min: f64,
-        max: f64,
-    },
+    InvalidInterval { min: f64, max: f64 },
     /// Invalid parameters were provided (Legacy variant).
     #[deprecated(note = "Use specific error variants instead.")]
     InvalidParameters(String),
@@ -40,7 +34,12 @@ impl fmt::Display for AnalysisError {
             Self::ConvergenceError(guess) => {
                 write!(f, "Algorithm failed to converge. Best guess: {}", guess)
             }
-            Self::RootNotBracketed { min, max, f_min, f_max } => write!(
+            Self::RootNotBracketed {
+                min,
+                max,
+                f_min,
+                f_max,
+            } => write!(
                 f,
                 "Root not bracketed in [{}, {}]: f({})={}, f({})={}. Signs must differ.",
                 min, max, min, f_min, max, f_max
@@ -250,7 +249,12 @@ impl NewtonRaphson {
         F: Fn(f64) -> f64,
         D: Fn(f64) -> f64,
     {
-        <Self as DifferentiableRootFinder>::find_root_with_derivative(self, f, f_prime, initial_guess)
+        <Self as DifferentiableRootFinder>::find_root_with_derivative(
+            self,
+            f,
+            f_prime,
+            initial_guess,
+        )
     }
 }
 
@@ -344,7 +348,8 @@ mod tests {
     fn test_newton_raphson_numerical() {
         let solver = NewtonRaphson::default();
         // x^2 - 2 = 0
-        let root = <NewtonRaphson as OpenRootFinder>::find_root(&solver, |x| x * x - 2.0, 1.5).unwrap();
+        let root =
+            <NewtonRaphson as OpenRootFinder>::find_root(&solver, |x| x * x - 2.0, 1.5).unwrap();
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-5);
     }
 
@@ -352,7 +357,9 @@ mod tests {
     fn test_bisection_square_root() {
         let solver = Bisection::default();
         // x^2 - 2 = 0  => x = sqrt(2) approx 1.41421356
-        let root = <Bisection as BracketingRootFinder>::find_root(&solver, |x| x * x - 2.0, 1.0, 2.0).unwrap();
+        let root =
+            <Bisection as BracketingRootFinder>::find_root(&solver, |x| x * x - 2.0, 1.0, 2.0)
+                .unwrap();
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
     }
 
@@ -360,7 +367,9 @@ mod tests {
     fn test_bisection_linear() {
         let solver = Bisection::default();
         // 2x - 4 = 0 => x = 2
-        let root = <Bisection as BracketingRootFinder>::find_root(&solver, |x| 2.0 * x - 4.0, 0.0, 5.0).unwrap();
+        let root =
+            <Bisection as BracketingRootFinder>::find_root(&solver, |x| 2.0 * x - 4.0, 0.0, 5.0)
+                .unwrap();
         assert!((root - 2.0).abs() < 1e-6);
     }
 
@@ -368,7 +377,8 @@ mod tests {
     fn test_not_bracketed() {
         let solver = Bisection::default();
         // x^2 + 1 = 0 has no real roots. And signs are always positive.
-        let result = <Bisection as BracketingRootFinder>::find_root(&solver, |x| x * x + 1.0, -2.0, 2.0);
+        let result =
+            <Bisection as BracketingRootFinder>::find_root(&solver, |x| x * x + 1.0, -2.0, 2.0);
         match result {
             Err(AnalysisError::RootNotBracketed { .. }) => (),
             _ => panic!("Expected RootNotBracketed error"),
