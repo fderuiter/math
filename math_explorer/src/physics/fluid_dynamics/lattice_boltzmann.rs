@@ -4,8 +4,6 @@
 //! This is a mesoscopic method that simulates fluid dynamics by tracking
 //! distribution functions on a discrete lattice.
 
-
-
 /// D2Q9 Lattice Constants
 const Q: usize = 9;
 // Direction vectors: (x, y)
@@ -85,11 +83,11 @@ impl LatticeBoltzmannD2Q9 {
             for i in x..(x + w).min(self.width) {
                 let idx = j * self.width + i;
                 if !self.obstacles[idx] {
-                     self.ux[idx] = u_x;
-                     self.uy[idx] = u_y;
-                     // Reset distributions to equilibrium for the new velocity
-                     // keeping density roughly constant (1.0)
-                     self.f[idx] = self.equilibrium(1.0, u_x, u_y);
+                    self.ux[idx] = u_x;
+                    self.uy[idx] = u_y;
+                    // Reset distributions to equilibrium for the new velocity
+                    // keeping density roughly constant (1.0)
+                    self.f[idx] = self.equilibrium(1.0, u_x, u_y);
                 }
             }
         }
@@ -157,7 +155,9 @@ impl LatticeBoltzmannD2Q9 {
         for y in 0..self.height {
             for x in 0..self.width {
                 let idx = y * self.width + x;
-                if self.obstacles[idx] { continue; }
+                if self.obstacles[idx] {
+                    continue;
+                }
 
                 for k in 0..Q {
                     // We want to find who streams INTO direction k at (x, y).
@@ -165,7 +165,11 @@ impl LatticeBoltzmannD2Q9 {
                     let prev_x = x as i32 - C_X[k];
                     let prev_y = y as i32 - C_Y[k];
 
-                    if prev_x >= 0 && prev_x < self.width as i32 && prev_y >= 0 && prev_y < self.height as i32 {
+                    if prev_x >= 0
+                        && prev_x < self.width as i32
+                        && prev_y >= 0
+                        && prev_y < self.height as i32
+                    {
                         let prev_idx = (prev_y as usize) * self.width + (prev_x as usize);
 
                         if self.obstacles[prev_idx] {
@@ -188,20 +192,23 @@ impl LatticeBoltzmannD2Q9 {
                         let src_y = prev_y;
 
                         // Periodic X
-                        if src_x < 0 { src_x += self.width as i32; }
-                        else if src_x >= self.width as i32 { src_x -= self.width as i32; }
+                        if src_x < 0 {
+                            src_x += self.width as i32;
+                        } else if src_x >= self.width as i32 {
+                            src_x -= self.width as i32;
+                        }
 
                         // Bounce Y (Walls)
                         if src_y < 0 || src_y >= self.height as i32 {
-                             // Wall bounce: reflecting the particle that tried to leave
-                             self.f_new[idx][k] = self.f[idx][OPPOSITE[k]];
+                            // Wall bounce: reflecting the particle that tried to leave
+                            self.f_new[idx][k] = self.f[idx][OPPOSITE[k]];
                         } else {
-                             let src_idx = (src_y as usize) * self.width + (src_x as usize);
-                             if self.obstacles[src_idx] {
-                                 self.f_new[idx][k] = self.f[idx][OPPOSITE[k]];
-                             } else {
-                                 self.f_new[idx][k] = self.f[src_idx][k];
-                             }
+                            let src_idx = (src_y as usize) * self.width + (src_x as usize);
+                            if self.obstacles[src_idx] {
+                                self.f_new[idx][k] = self.f[idx][OPPOSITE[k]];
+                            } else {
+                                self.f_new[idx][k] = self.f[src_idx][k];
+                            }
                         }
                     }
                 }
@@ -240,7 +247,9 @@ impl LatticeBoltzmannD2Q9 {
     fn collision(&mut self) {
         let omega = 1.0 / self.tau;
         for i in 0..self.width * self.height {
-            if self.obstacles[i] { continue; }
+            if self.obstacles[i] {
+                continue;
+            }
 
             let eq = self.equilibrium(self.rho[i], self.ux[i], self.uy[i]);
             for k in 0..Q {
