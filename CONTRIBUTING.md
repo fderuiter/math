@@ -42,13 +42,26 @@ graph TD
 We take reliability seriously. Before submitting, ensure all tests pass.
 
 ```bash
-cd math_explorer
-cargo test
+# Run tests for the core library
+cargo test --package math_explorer
+
+# Run checks for the GUI (if applicable)
+cargo check --package math_explorer_gui
 ```
 
 If you add new functionality, **you must add tests**.
 - **Unit Tests**: Place them in the same file as the code, in a `mod tests` module.
 - **Integration Tests**: Place them in the `tests/` directory.
+
+## 🖥️ Contributing to the GUI
+
+The `math_explorer_gui` crate is built with **egui** and **eframe**.
+
+*   **Roadmap:** Please consult [todo_gui.md](todo_gui.md) before starting a new GUI feature to ensure alignment with the project goals.
+*   **Structure:**
+    *   UI code resides in `math_explorer_gui/src`.
+    *   The GUI should primarily visualize and control logic defined in the core `math_explorer` library. Avoid implementing heavy mathematical logic directly in the GUI crate.
+*   **Dependencies:** We maintain strict version compatibility between `egui`, `eframe`, and `egui_plot`. Check `Cargo.toml` before updating dependencies.
 
 ## 📝 Documentation Style Guide
 

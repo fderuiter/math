@@ -20,8 +20,11 @@ Add `math_explorer` to your project (or clone the repo):
 
 ```bash
 git clone https://github.com/fderuiter/math-explorer.git
-cd math-explorer/math_explorer
-cargo build --release
+cd math-explorer
+# Build the library
+cargo build --release --package math_explorer
+# Run the GUI
+cargo run --release --package math_explorer_gui
 ```
 
 ### 2. Run "Hello World" (Quantum Physics)
@@ -42,6 +45,7 @@ fn main() {
 ## 📚 Table of Contents
 
 - [Features](#-features)
+- [Graphical User Interface](#-graphical-user-interface)
 - [Deep Dive: Modules](#-deep-dive-modules)
 - [Testing](#-testing)
 - [Contributing](#-contributing)
@@ -60,6 +64,7 @@ graph TD
     Root --> Epi[🦠 Epidemiology]
     Root --> Phys[🌌 Physics]
     Root --> Pure[📐 Pure Math]
+    Root --> GUI[🖥️ GUI]
 
     AI --> Trans[Transformers] & NeRF[NeRF-Diffusion]
     Applied --> Fav[Favoritism] & Clinical[Clinical Trials] & Battery[Battery Degradation] & NeuroImg[Neuroimaging] & GRPO[GRPO]
@@ -67,6 +72,7 @@ graph TD
     Epi --> SIR[SIR/SEIR Models] & Net[Network Spread]
     Phys --> Quant[Quantum] & Chaos[Chaos Theory]
     Pure --> Num[Number Theory] & Geo[Diff Geometry] & Alg[Algebra]
+    GUI --> MRI[MRI Simulator]
 
     style Root fill:#f9f,stroke:#333,stroke-width:2px
 ```
@@ -80,6 +86,23 @@ graph TD
 | **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
 | **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
 | **📐 Pure Math** | `math_explorer::pure_math` | **Statistics** (Glicko-2, Markov, TDA), **Tensors** (Christoffel Symbols), Number Theory, Graph Theory, and **Abstract Algebra**. |
+| **🖥️ GUI** | `math_explorer_gui` | Interactive **eframe/egui** application for visualizing simulations (currently MRI Physics). |
+
+---
+
+## 🖥️ Graphical User Interface
+
+We provide a native GUI application to explore simulations interactively.
+
+### Launching the GUI
+```bash
+cargo run --release --package math_explorer_gui
+```
+
+### Current Capabilities
+*   **Physics / MRI:** Bloch Simulator with real-time control over $T_1$, $T_2$, $\vec{B}$-field, and magnetization vectors.
+
+*See [todo_gui.md](todo_gui.md) for the development roadmap.*
 
 ---
 
@@ -227,8 +250,8 @@ Explore the Lorenz System and Lyapunov exponents.
 We rely on standard Rust testing frameworks. To verify the integrity of all mathematical implementations:
 
 ```bash
-cd math_explorer
-cargo test
+# Test the core library
+cargo test --package math_explorer
 ```
 
 This runs unit tests for everything from Prime Number generation to NeRF rendering logic.
