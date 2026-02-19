@@ -1,6 +1,7 @@
 use eframe::egui;
 
 pub mod chaos;
+pub mod epidemiology;
 pub mod fluid_dynamics;
 pub mod medical;
 pub mod mri;
