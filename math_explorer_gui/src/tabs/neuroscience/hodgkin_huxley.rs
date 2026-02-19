@@ -49,26 +49,41 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
             ui.separator();
 
             ui.label("Conductances (mS/cm²)");
-            if ui.add(egui::Slider::new(&mut self.g_na, 0.0..=200.0).text("Na+ (Sodium)")).changed() {
+            if ui
+                .add(egui::Slider::new(&mut self.g_na, 0.0..=200.0).text("Na+ (Sodium)"))
+                .changed()
+            {
                 params_changed = true;
             }
-            if ui.add(egui::Slider::new(&mut self.g_k, 0.0..=100.0).text("K+ (Potassium)")).changed() {
+            if ui
+                .add(egui::Slider::new(&mut self.g_k, 0.0..=100.0).text("K+ (Potassium)"))
+                .changed()
+            {
                 params_changed = true;
             }
-            if ui.add(egui::Slider::new(&mut self.g_l, 0.0..=5.0).text("Leak")).changed() {
+            if ui
+                .add(egui::Slider::new(&mut self.g_l, 0.0..=5.0).text("Leak"))
+                .changed()
+            {
                 params_changed = true;
             }
 
             ui.separator();
             ui.label("Input");
-            if ui.add(egui::Slider::new(&mut self.i_ext, 0.0..=50.0).text("I_ext (Current)")).changed() {
+            if ui
+                .add(egui::Slider::new(&mut self.i_ext, 0.0..=50.0).text("I_ext (Current)"))
+                .changed()
+            {
                 // I_ext is passed to update(), so we don't need to rebuild neuron
             }
 
             ui.separator();
             ui.heading("Simulation");
             ui.horizontal(|ui| {
-                if ui.button(if self.is_running { "Pause" } else { "Start" }).clicked() {
+                if ui
+                    .button(if self.is_running { "Pause" } else { "Start" })
+                    .clicked()
+                {
                     self.is_running = !self.is_running;
                 }
                 if ui.button("Reset").clicked() {
@@ -110,12 +125,15 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                 // Request repaint to animate
                 ctx.request_repaint();
             } else if params_changed {
-                 self.update_params();
+                self.update_params();
             }
 
             // Plotting
-            let line = Line::new("Membrane Potential (V)", PlotPoints::new(self.history.clone()))
-                .color(egui::Color32::from_rgb(100, 200, 255));
+            let line = Line::new(
+                "Membrane Potential (V)",
+                PlotPoints::new(self.history.clone()),
+            )
+            .color(egui::Color32::from_rgb(100, 200, 255));
 
             Plot::new("hh_voltage_plot")
                 .x_axis_label("Time (ms)")
