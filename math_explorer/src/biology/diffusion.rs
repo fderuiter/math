@@ -287,3 +287,236 @@ fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
         dst[i] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
     }
 }
+
+/// A 2D Finite Difference implementation using a 5-point stencil.
+///
+/// Handles boundaries with Neumann conditions (zero flux).
+#[derive(Debug, Clone, Copy)]
+pub struct FiniteDifference2D {
+    pub width: usize,
+    pub height: usize,
+    pub dx: f64,
+    pub dy: f64,
+}
+
+impl FiniteDifference2D {
+    /// Creates a new 2D finite difference strategy.
+    pub fn new(width: usize, height: usize, dx: f64, dy: f64) -> Self {
+        Self {
+            width,
+            height,
+            dx,
+            dy,
+        }
+    }
+}
+
+impl SpatialDiffusion for FiniteDifference2D {
+    fn apply(
+        &self,
+        u: &[f64],
+        v: &[f64],
+        out_u: &mut [f64],
+        out_v: &mut [f64],
+        d_u: f64,
+        d_v: f64,
+    ) {
+        let n = self.width * self.height;
+        if u.len() != n || v.len() != n || out_u.len() != n || out_v.len() != n {
+            if n == 0 {
+                return;
+            }
+            panic!("Buffer size mismatch in FiniteDifference2D");
+        }
+
+        let inv_dx_sq = 1.0 / (self.dx * self.dx);
+        let inv_dy_sq = 1.0 / (self.dy * self.dy);
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let idx = y * self.width + x;
+
+                // Neighbor indices with Neumann BC clamping
+                let x_prev = if x > 0 { x - 1 } else { x };
+                let x_next = if x < self.width - 1 { x + 1 } else { x };
+                let y_prev = if y > 0 { y - 1 } else { y };
+                let y_next = if y < self.height - 1 { y + 1 } else { y };
+
+                let idx_l = y * self.width + x_prev;
+                let idx_r = y * self.width + x_next;
+                let idx_u = y_prev * self.width + x;
+                let idx_d = y_next * self.width + x;
+
+                // U Laplacian
+                let u_curr = u[idx];
+                let lap_u_x = (u[idx_r] - 2.0 * u_curr + u[idx_l]) * inv_dx_sq;
+                let lap_u_y = (u[idx_d] - 2.0 * u_curr + u[idx_u]) * inv_dy_sq;
+                out_u[idx] = d_u * (lap_u_x + lap_u_y);
+
+                // V Laplacian
+                let v_curr = v[idx];
+                let lap_v_x = (v[idx_r] - 2.0 * v_curr + v[idx_l]) * inv_dx_sq;
+                let lap_v_y = (v[idx_d] - 2.0 * v_curr + v[idx_u]) * inv_dy_sq;
+                out_v[idx] = d_v * (lap_v_x + lap_v_y);
+            }
+        }
+    }
+
+    fn apply_step<F>(
+        &self,
+        u: &[f64],
+        v: &[f64],
+        out_u: &mut [f64],
+        out_v: &mut [f64],
+        d_u: f64,
+        d_v: f64,
+        dt: f64,
+        reaction: F,
+    ) where
+        F: Fn(f64, f64) -> (f64, f64),
+    {
+        let n = self.width * self.height;
+        if u.len() != n || v.len() != n || out_u.len() != n || out_v.len() != n {
+            if n == 0 {
+                return;
+            }
+            panic!("Buffer size mismatch in FiniteDifference2D");
+        }
+
+        let inv_dx_sq = 1.0 / (self.dx * self.dx);
+        let inv_dy_sq = 1.0 / (self.dy * self.dy);
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let idx = y * self.width + x;
+
+                // Neighbor indices with Neumann BC clamping
+                let x_prev = if x > 0 { x - 1 } else { x };
+                let x_next = if x < self.width - 1 { x + 1 } else { x };
+                let y_prev = if y > 0 { y - 1 } else { y };
+                let y_next = if y < self.height - 1 { y + 1 } else { y };
+
+                let idx_l = y * self.width + x_prev;
+                let idx_r = y * self.width + x_next;
+                let idx_u = y_prev * self.width + x;
+                let idx_d = y_next * self.width + x;
+
+                let u_curr = u[idx];
+                let v_curr = v[idx];
+
+                let lap_u = (u[idx_r] - 2.0 * u_curr + u[idx_l]) * inv_dx_sq
+                    + (u[idx_d] - 2.0 * u_curr + u[idx_u]) * inv_dy_sq;
+
+                let lap_v = (v[idx_r] - 2.0 * v_curr + v[idx_l]) * inv_dx_sq
+                    + (v[idx_d] - 2.0 * v_curr + v[idx_u]) * inv_dy_sq;
+
+                let (reac_u, reac_v) = reaction(u_curr, v_curr);
+
+                out_u[idx] = u_curr + dt * (d_u * lap_u + reac_u);
+                out_v[idx] = v_curr + dt * (d_v * lap_v + reac_v);
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests_2d {
+    use super::*;
+
+    #[test]
+    fn test_laplacian_uniform() {
+        let width = 10;
+        let height = 10;
+        let diff = FiniteDifference2D::new(width, height, 1.0, 1.0);
+
+        let n = width * height;
+        let u = vec![1.0; n];
+        let v = vec![2.0; n];
+        let mut out_u = vec![0.0; n];
+        let mut out_v = vec![0.0; n];
+
+        diff.apply(&u, &v, &mut out_u, &mut out_v, 1.0, 1.0);
+
+        for val in out_u {
+            assert_eq!(val, 0.0);
+        }
+        for val in out_v {
+            assert_eq!(val, 0.0);
+        }
+    }
+
+    #[test]
+    fn test_laplacian_parabolic() {
+        let width = 5;
+        let height = 5;
+        let diff = FiniteDifference2D::new(width, height, 1.0, 1.0);
+
+        let n = width * height;
+        let mut u = vec![0.0; n];
+        let v = vec![0.0; n]; // unused
+        let mut out_u = vec![0.0; n];
+        let mut out_v = vec![0.0; n];
+
+        // u = x^2 + y^2
+        for y in 0..height {
+            for x in 0..width {
+                let idx = y * width + x;
+                u[idx] = (x as f64).powi(2) + (y as f64).powi(2);
+            }
+        }
+
+        diff.apply(&u, &v, &mut out_u, &mut out_v, 1.0, 1.0);
+
+        // Interior points should be exactly 4.0
+        // (1,1) is index 1*5 + 1 = 6.
+        // (3,3) is index 3*5 + 3 = 18.
+        // Interior range: x in 1..3, y in 1..3
+        for y in 1..height-1 {
+            for x in 1..width-1 {
+                let idx = y * width + x;
+                assert!((out_u[idx] - 4.0).abs() < 1e-10, "Failed at ({}, {}): {}", x, y, out_u[idx]);
+            }
+        }
+    }
+
+    #[test]
+    fn test_apply_step_equivalence() {
+        let width = 5;
+        let height = 5;
+        let diff = FiniteDifference2D::new(width, height, 1.0, 1.0);
+
+        let n = width * height;
+        let mut u = vec![0.0; n];
+        let mut v = vec![0.0; n];
+
+        // Randomish initialization
+        for i in 0..n {
+            u[i] = (i as f64) * 0.1;
+            v[i] = (n - i) as f64 * 0.1;
+        }
+
+        let mut out_u_1 = vec![0.0; n];
+        let mut out_v_1 = vec![0.0; n];
+        let mut out_u_2 = vec![0.0; n];
+        let mut out_v_2 = vec![0.0; n];
+
+        let dt = 0.01;
+        let d_u = 0.5;
+        let d_v = 0.1;
+
+        // Method 1: Manual step using apply
+        diff.apply(&u, &v, &mut out_u_1, &mut out_v_1, d_u, d_v);
+        for i in 0..n {
+            out_u_1[i] = u[i] + dt * (out_u_1[i] + 1.0); // Dummy reaction +1
+            out_v_1[i] = v[i] + dt * (out_v_1[i] + 2.0); // Dummy reaction +2
+        }
+
+        // Method 2: apply_step
+        diff.apply_step(&u, &v, &mut out_u_2, &mut out_v_2, d_u, d_v, dt, |_u, _v| (1.0, 2.0));
+
+        for i in 0..n {
+             assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
+             assert!((out_v_1[i] - out_v_2[i]).abs() < 1e-10);
+        }
+    }
+}
