@@ -290,7 +290,8 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
             if self.obstacles[i] {
                 continue;
             }
-            self.collision_model.apply(&mut self.f[i], self.rho[i], self.ux[i], self.uy[i]);
+            self.collision_model
+                .apply(&mut self.f[i], self.rho[i], self.ux[i], self.uy[i]);
         }
     }
 

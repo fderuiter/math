@@ -1,7 +1,9 @@
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};
-use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{BgkCollision, LatticeBoltzmannD2Q9};
+use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
+    BgkCollision, LatticeBoltzmannD2Q9,
+};
 
 #[derive(PartialEq, Clone, Copy)]
 enum DrawMode {
