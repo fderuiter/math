@@ -200,10 +200,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                     let prev_x = x as i32 - cx[k];
                     let prev_y = y as i32 - cy[k];
 
-                    if prev_x >= 0
-                        && prev_x < width as i32
-                        && prev_y >= 0
-                        && prev_y < height as i32
+                    if prev_x >= 0 && prev_x < width as i32 && prev_y >= 0 && prev_y < height as i32
                     {
                         let prev_idx = (prev_y as usize) * width + (prev_x as usize);
 
