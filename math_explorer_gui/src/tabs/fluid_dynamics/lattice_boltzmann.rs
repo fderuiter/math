@@ -67,7 +67,8 @@ impl LatticeBoltzmannTool {
         if self.running {
             for _ in 0..self.steps_per_frame {
                 // Constant inlet flow to drive the simulation
-                self.solver.set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
+                self.solver
+                    .set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
                 self.solver.step();
             }
             ctx.request_repaint();
