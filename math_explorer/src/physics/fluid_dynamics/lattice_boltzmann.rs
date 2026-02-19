@@ -4,62 +4,93 @@
 //! This is a mesoscopic method that simulates fluid dynamics by tracking
 //! distribution functions on a discrete lattice.
 
-/// D2Q9 Lattice Constants
-pub const Q: usize = 9;
-// Direction vectors: (x, y)
-pub const C_X: [i32; Q] = [0, 1, 0, -1, 0, 1, -1, -1, 1];
-pub const C_Y: [i32; Q] = [0, 0, 1, 0, -1, 1, 1, -1, -1];
-// Weights
-pub const W: [f64; Q] = [
-    4.0 / 9.0,
-    1.0 / 9.0,
-    1.0 / 9.0,
-    1.0 / 9.0,
-    1.0 / 9.0,
-    1.0 / 36.0,
-    1.0 / 36.0,
-    1.0 / 36.0,
-    1.0 / 36.0,
-];
-// Opposite direction indices for bounce-back
-pub const OPPOSITE: [usize; Q] = [0, 3, 4, 1, 2, 7, 8, 5, 6];
+use std::marker::PhantomData;
 
-/// Calculates equilibrium distribution for a given state.
-pub fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; Q] {
-    let mut eq = [0.0; Q];
-    let u2 = ux * ux + uy * uy;
+/// Trait defining the lattice geometry and weights.
+///
+/// This uses the **Strategy Pattern** to decouple the solver logic from the
+/// specific lattice arrangement (D2Q9, D2Q5, etc.).
+pub trait Lattice2D<const Q: usize>: Copy + Clone + Send + Sync + 'static {
+    fn weights() -> [f64; Q];
+    fn directions_x() -> [i32; Q];
+    fn directions_y() -> [i32; Q];
+    fn opposite_indices() -> [usize; Q];
+    fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; Q];
+}
 
-    for k in 0..Q {
-        let cu = (C_X[k] as f64 * ux) + (C_Y[k] as f64 * uy);
-        eq[k] = rho * W[k] * (1.0 + 3.0 * cu + 4.5 * cu * cu - 1.5 * u2);
+/// D2Q9 Lattice Model.
+///
+/// Standard 9-velocity lattice for 2D fluid simulation.
+#[derive(Debug, Clone, Copy)]
+pub struct D2Q9;
+
+impl Lattice2D<9> for D2Q9 {
+    fn weights() -> [f64; 9] {
+        [
+            4.0 / 9.0,
+            1.0 / 9.0,
+            1.0 / 9.0,
+            1.0 / 9.0,
+            1.0 / 9.0,
+            1.0 / 36.0,
+            1.0 / 36.0,
+            1.0 / 36.0,
+            1.0 / 36.0,
+        ]
     }
-    eq
+
+    fn directions_x() -> [i32; 9] {
+        [0, 1, 0, -1, 0, 1, -1, -1, 1]
+    }
+
+    fn directions_y() -> [i32; 9] {
+        [0, 0, 1, 0, -1, 1, 1, -1, -1]
+    }
+
+    fn opposite_indices() -> [usize; 9] {
+        [0, 3, 4, 1, 2, 7, 8, 5, 6]
+    }
+
+    fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; 9] {
+        let mut eq = [0.0; 9];
+        let u2 = ux * ux + uy * uy;
+        let cx = Self::directions_x();
+        let cy = Self::directions_y();
+        let w = Self::weights();
+
+        for k in 0..9 {
+            let cu = (cx[k] as f64 * ux) + (cy[k] as f64 * uy);
+            eq[k] = rho * w[k] * (1.0 + 3.0 * cu + 4.5 * cu * cu - 1.5 * u2);
+        }
+        eq
+    }
 }
 
 /// Trait defining the collision operator strategy.
-pub trait CollisionModel {
+pub trait CollisionModel<const Q: usize, L: Lattice2D<Q>> {
     /// Applies the collision operator to the distribution function `f`.
     fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64);
 }
 
 /// BGK Collision Model.
+#[derive(Debug, Clone, Copy)]
 pub struct BgkCollision {
     /// Relaxation time.
     pub tau: f64,
 }
 
-impl CollisionModel for BgkCollision {
+impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
     fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64) {
         let omega = 1.0 / self.tau;
-        let eq = equilibrium(rho, ux, uy);
+        let eq = L::equilibrium(rho, ux, uy);
         for k in 0..Q {
             f[k] = (1.0 - omega) * f[k] + omega * eq[k];
         }
     }
 }
 
-/// D2Q9 Lattice Boltzmann Solver.
-pub struct LatticeBoltzmannD2Q9<C: CollisionModel> {
+/// Generic Lattice Boltzmann Solver.
+pub struct LatticeBoltzmann<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> {
     pub width: usize,
     pub height: usize,
     /// Distribution functions (flattened: y * width + x). Each cell holds [f64; 9].
@@ -76,7 +107,11 @@ pub struct LatticeBoltzmannD2Q9<C: CollisionModel> {
     obstacles: Vec<bool>,
     /// Collision Strategy
     pub collision_model: C,
+    _marker: PhantomData<L>,
 }
+
+/// Type Alias for Backward Compatibility.
+pub type LatticeBoltzmannD2Q9<C> = LatticeBoltzmann<9, D2Q9, C>;
 
 impl LatticeBoltzmannD2Q9<BgkCollision> {
     /// Creates a new solver with the given dimensions and relaxation time.
@@ -87,7 +122,7 @@ impl LatticeBoltzmannD2Q9<BgkCollision> {
     }
 }
 
-impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
+impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<Q, L, C> {
     /// Creates a new solver with a specific collision model.
     pub fn new_with_model(width: usize, height: usize, collision_model: C) -> Self {
         let size = width * height;
@@ -101,6 +136,7 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
             uy: vec![0.0; size],
             obstacles: vec![false; size],
             collision_model,
+            _marker: PhantomData,
         };
         solver.init_equilibrium();
         solver
@@ -112,7 +148,7 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
             self.rho[i] = 1.0;
             self.ux[i] = 0.0;
             self.uy[i] = 0.0;
-            let eq = equilibrium(1.0, 0.0, 0.0);
+            let eq = L::equilibrium(1.0, 0.0, 0.0);
             self.f[i] = eq;
             self.f_new[i] = eq;
         }
@@ -128,7 +164,7 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
                     self.uy[idx] = u_y;
                     // Reset distributions to equilibrium for the new velocity
                     // keeping density roughly constant (1.0)
-                    self.f[idx] = equilibrium(1.0, u_x, u_y);
+                    self.f[idx] = L::equilibrium(1.0, u_x, u_y);
                 }
             }
         }
@@ -159,6 +195,10 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
 
     /// Streaming step: Move particles to neighboring cells.
     fn stream(&mut self) {
+        let cx = L::directions_x();
+        let cy = L::directions_y();
+        let opp = L::opposite_indices();
+
         for y in 0..self.height {
             for x in 0..self.width {
                 let idx = y * self.width + x;
@@ -168,43 +208,12 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
                     continue;
                 }
 
-                for k in 0..Q {
-                    let nx = x as i32 + C_X[k];
-                    let ny = y as i32 + C_Y[k];
-
-                    if nx >= 0 && nx < self.width as i32 && ny >= 0 && ny < self.height as i32 {
-                        let n_idx = (ny as usize) * self.width + (nx as usize);
-
-                        if self.obstacles[n_idx] {
-                            // Bounce-back: particle hits obstacle and reverses
-                            // In standard LBM, this happens during streaming to current cell
-                            // Current cell 'idx' receives from 'n_idx' (which is obstacle)
-                            // But since 'n_idx' is obstacle, we look at where WE would stream to.
-
-                            // Alternative Standard approach:
-                            // Stream FROM neighbors TO current cell.
-                            // If neighbor is obstacle, reflect back.
-                        } else {
-                            // Standard streaming
-                        }
-                    }
-                }
-            }
-        }
-
-        // Simplified streaming: Pull from neighbors
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let idx = y * self.width + x;
-                if self.obstacles[idx] {
-                    continue;
-                }
-
+                // Simplified streaming: Pull from neighbors
                 for k in 0..Q {
                     // We want to find who streams INTO direction k at (x, y).
                     // This particle came from (x - cx[k], y - cy[k]) moving in direction k.
-                    let prev_x = x as i32 - C_X[k];
-                    let prev_y = y as i32 - C_Y[k];
+                    let prev_x = x as i32 - cx[k];
+                    let prev_y = y as i32 - cy[k];
 
                     if prev_x >= 0
                         && prev_x < self.width as i32
@@ -218,7 +227,7 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
                             // If the source was an obstacle, it means a particle going in OPPOSITE[k]
                             // hit the obstacle and came back as k.
                             // So we take f[idx][OPPOSITE[k]] (the one that was leaving us towards the obstacle)
-                            self.f_new[idx][k] = self.f[idx][OPPOSITE[k]];
+                            self.f_new[idx][k] = self.f[idx][opp[k]];
                         } else {
                             self.f_new[idx][k] = self.f[prev_idx][k];
                         }
@@ -242,11 +251,11 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
                         // Bounce Y (Walls)
                         if src_y < 0 || src_y >= self.height as i32 {
                             // Wall bounce: reflecting the particle that tried to leave
-                            self.f_new[idx][k] = self.f[idx][OPPOSITE[k]];
+                            self.f_new[idx][k] = self.f[idx][opp[k]];
                         } else {
                             let src_idx = (src_y as usize) * self.width + (src_x as usize);
                             if self.obstacles[src_idx] {
-                                self.f_new[idx][k] = self.f[idx][OPPOSITE[k]];
+                                self.f_new[idx][k] = self.f[idx][opp[k]];
                             } else {
                                 self.f_new[idx][k] = self.f[src_idx][k];
                             }
@@ -259,6 +268,9 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
 
     /// Updates macroscopic variables (rho, u) from distribution functions.
     fn macroscopic(&mut self) {
+        let cx = L::directions_x();
+        let cy = L::directions_y();
+
         for i in 0..self.width * self.height {
             if self.obstacles[i] {
                 self.ux[i] = 0.0;
@@ -272,8 +284,8 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
 
             for k in 0..Q {
                 rho += self.f[i][k];
-                jx += self.f[i][k] * C_X[k] as f64;
-                jy += self.f[i][k] * C_Y[k] as f64;
+                jx += self.f[i][k] * cx[k] as f64;
+                jy += self.f[i][k] * cy[k] as f64;
             }
 
             self.rho[i] = rho;
@@ -346,6 +358,8 @@ impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
 mod tests {
     use super::*;
 
+    const Q: usize = 9;
+
     #[test]
     fn test_bgk_collision() {
         let tau = 1.0;
@@ -356,7 +370,7 @@ mod tests {
         let uy = 0.0;
 
         // Equilibrium for rho=1, u=0
-        let eq = equilibrium(rho, ux, uy);
+        let eq = D2Q9::equilibrium(rho, ux, uy);
 
         // Start far from equilibrium
         for k in 0..Q {
@@ -364,7 +378,7 @@ mod tests {
         }
 
         // Apply collision
-        strategy.apply(&mut f, rho, ux, uy);
+        <BgkCollision as CollisionModel<9, D2Q9>>::apply(&strategy, &mut f, rho, ux, uy);
 
         // For tau=1.0, omega=1.0. f should relax to equilibrium instantly.
         // f_new = (1-1)*f + 1*eq = eq
@@ -382,14 +396,14 @@ mod tests {
         let ux = 0.0;
         let uy = 0.0;
 
-        let eq = equilibrium(rho, ux, uy);
+        let eq = D2Q9::equilibrium(rho, ux, uy);
 
         // Start far from equilibrium
         for k in 0..Q {
             f[k] = eq[k] + 0.2;
         }
 
-        strategy.apply(&mut f, rho, ux, uy);
+        <BgkCollision as CollisionModel<9, D2Q9>>::apply(&strategy, &mut f, rho, ux, uy);
 
         // f_new = 0.5 * (eq + 0.2) + 0.5 * eq = eq + 0.1
         for k in 0..Q {
