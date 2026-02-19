@@ -1,7 +1,7 @@
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};
-use math_explorer::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
+use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{BgkCollision, LatticeBoltzmannD2Q9};
 
 #[derive(PartialEq, Clone, Copy)]
 enum DrawMode {
@@ -10,7 +10,7 @@ enum DrawMode {
 }
 
 pub struct LatticeBoltzmannTool {
-    solver: LatticeBoltzmannD2Q9,
+    solver: LatticeBoltzmannD2Q9<BgkCollision>,
     running: bool,
     steps_per_frame: usize,
 
@@ -101,7 +101,7 @@ impl LatticeBoltzmannTool {
                 .add(egui::Slider::new(&mut self.viscosity, 0.005..=0.2).text("Viscosity"))
                 .changed()
             {
-                self.solver.tau = 3.0 * self.viscosity + 0.5;
+                self.solver.collision_model.tau = 3.0 * self.viscosity + 0.5;
             }
             ui.add(
                 egui::Slider::new(&mut self.steps_per_frame, 1..=20).text("Speed (Steps/Frame)"),

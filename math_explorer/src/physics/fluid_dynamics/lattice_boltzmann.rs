@@ -5,12 +5,12 @@
 //! distribution functions on a discrete lattice.
 
 /// D2Q9 Lattice Constants
-const Q: usize = 9;
+pub const Q: usize = 9;
 // Direction vectors: (x, y)
-const C_X: [i32; Q] = [0, 1, 0, -1, 0, 1, -1, -1, 1];
-const C_Y: [i32; Q] = [0, 0, 1, 0, -1, 1, 1, -1, -1];
+pub const C_X: [i32; Q] = [0, 1, 0, -1, 0, 1, -1, -1, 1];
+pub const C_Y: [i32; Q] = [0, 0, 1, 0, -1, 1, 1, -1, -1];
 // Weights
-const W: [f64; Q] = [
+pub const W: [f64; Q] = [
     4.0 / 9.0,
     1.0 / 9.0,
     1.0 / 9.0,
@@ -22,10 +22,44 @@ const W: [f64; Q] = [
     1.0 / 36.0,
 ];
 // Opposite direction indices for bounce-back
-const OPPOSITE: [usize; Q] = [0, 3, 4, 1, 2, 7, 8, 5, 6];
+pub const OPPOSITE: [usize; Q] = [0, 3, 4, 1, 2, 7, 8, 5, 6];
 
-/// D2Q9 Lattice Boltzmann Solver using BGK collision operator.
-pub struct LatticeBoltzmannD2Q9 {
+/// Calculates equilibrium distribution for a given state.
+pub fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; Q] {
+    let mut eq = [0.0; Q];
+    let u2 = ux * ux + uy * uy;
+
+    for k in 0..Q {
+        let cu = (C_X[k] as f64 * ux) + (C_Y[k] as f64 * uy);
+        eq[k] = rho * W[k] * (1.0 + 3.0 * cu + 4.5 * cu * cu - 1.5 * u2);
+    }
+    eq
+}
+
+/// Trait defining the collision operator strategy.
+pub trait CollisionModel {
+    /// Applies the collision operator to the distribution function `f`.
+    fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64);
+}
+
+/// BGK Collision Model.
+pub struct BgkCollision {
+    /// Relaxation time.
+    pub tau: f64,
+}
+
+impl CollisionModel for BgkCollision {
+    fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64) {
+        let omega = 1.0 / self.tau;
+        let eq = equilibrium(rho, ux, uy);
+        for k in 0..Q {
+            f[k] = (1.0 - omega) * f[k] + omega * eq[k];
+        }
+    }
+}
+
+/// D2Q9 Lattice Boltzmann Solver.
+pub struct LatticeBoltzmannD2Q9<C: CollisionModel> {
     pub width: usize,
     pub height: usize,
     /// Distribution functions (flattened: y * width + x). Each cell holds [f64; 9].
@@ -40,15 +74,22 @@ pub struct LatticeBoltzmannD2Q9 {
     uy: Vec<f64>,
     /// Boolean grid for obstacles (true = solid).
     obstacles: Vec<bool>,
-    /// Relaxation time (tau). Related to viscosity: nu = (tau - 0.5) / 3.
-    pub tau: f64,
+    /// Collision Strategy
+    pub collision_model: C,
 }
 
-impl LatticeBoltzmannD2Q9 {
+impl LatticeBoltzmannD2Q9<BgkCollision> {
     /// Creates a new solver with the given dimensions and relaxation time.
     ///
     /// * `tau`: Relaxation time. Must be > 0.5 for stability.
     pub fn new(width: usize, height: usize, tau: f64) -> Self {
+        Self::new_with_model(width, height, BgkCollision { tau: tau.max(0.51) })
+    }
+}
+
+impl<C: CollisionModel> LatticeBoltzmannD2Q9<C> {
+    /// Creates a new solver with a specific collision model.
+    pub fn new_with_model(width: usize, height: usize, collision_model: C) -> Self {
         let size = width * height;
         let mut solver = Self {
             width,
@@ -59,7 +100,7 @@ impl LatticeBoltzmannD2Q9 {
             ux: vec![0.0; size],
             uy: vec![0.0; size],
             obstacles: vec![false; size],
-            tau: tau.max(0.51), // Ensure stability
+            collision_model,
         };
         solver.init_equilibrium();
         solver
@@ -71,7 +112,7 @@ impl LatticeBoltzmannD2Q9 {
             self.rho[i] = 1.0;
             self.ux[i] = 0.0;
             self.uy[i] = 0.0;
-            let eq = self.equilibrium(1.0, 0.0, 0.0);
+            let eq = equilibrium(1.0, 0.0, 0.0);
             self.f[i] = eq;
             self.f_new[i] = eq;
         }
@@ -87,7 +128,7 @@ impl LatticeBoltzmannD2Q9 {
                     self.uy[idx] = u_y;
                     // Reset distributions to equilibrium for the new velocity
                     // keeping density roughly constant (1.0)
-                    self.f[idx] = self.equilibrium(1.0, u_x, u_y);
+                    self.f[idx] = equilibrium(1.0, u_x, u_y);
                 }
             }
         }
@@ -243,31 +284,14 @@ impl LatticeBoltzmannD2Q9 {
         }
     }
 
-    /// BGK Collision step: Relax f towards equilibrium.
+    /// Collision step: Delegates to strategy.
     fn collision(&mut self) {
-        let omega = 1.0 / self.tau;
         for i in 0..self.width * self.height {
             if self.obstacles[i] {
                 continue;
             }
-
-            let eq = self.equilibrium(self.rho[i], self.ux[i], self.uy[i]);
-            for (k, val) in eq.iter().enumerate().take(Q) {
-                self.f[i][k] = (1.0 - omega) * self.f[i][k] + omega * val;
-            }
+            self.collision_model.apply(&mut self.f[i], self.rho[i], self.ux[i], self.uy[i]);
         }
-    }
-
-    /// Calculates equilibrium distribution for a given state.
-    fn equilibrium(&self, rho: f64, ux: f64, uy: f64) -> [f64; Q] {
-        let mut eq = [0.0; Q];
-        let u2 = ux * ux + uy * uy;
-
-        for k in 0..Q {
-            let cu = (C_X[k] as f64 * ux) + (C_Y[k] as f64 * uy);
-            eq[k] = rho * W[k] * (1.0 + 3.0 * cu + 4.5 * cu * cu - 1.5 * u2);
-        }
-        eq
     }
 
     /// Enforce specific boundary conditions (like driving velocity).
@@ -284,7 +308,7 @@ impl LatticeBoltzmannD2Q9 {
                  self.ux[idx] = u_inlet;
                  self.uy[idx] = 0.0;
                  self.rho[idx] = 1.0;
-                 self.f[idx] = self.equilibrium(1.0, u_inlet, 0.0);
+                 self.f[idx] = equilibrium(1.0, u_inlet, 0.0);
              }
         }
         */
@@ -313,6 +337,74 @@ impl LatticeBoltzmannD2Q9 {
     pub fn clear_obstacles(&mut self) {
         for b in &mut self.obstacles {
             *b = false;
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bgk_collision() {
+        let tau = 1.0;
+        let strategy = BgkCollision { tau };
+        let mut f = [0.0; Q];
+        let rho = 1.0;
+        let ux = 0.0;
+        let uy = 0.0;
+
+        // Equilibrium for rho=1, u=0
+        let eq = equilibrium(rho, ux, uy);
+
+        // Start far from equilibrium
+        for k in 0..Q {
+            f[k] = eq[k] + 0.1;
+        }
+
+        // Apply collision
+        strategy.apply(&mut f, rho, ux, uy);
+
+        // For tau=1.0, omega=1.0. f should relax to equilibrium instantly.
+        // f_new = (1-1)*f + 1*eq = eq
+        for k in 0..Q {
+            assert!((f[k] - eq[k]).abs() < 1e-9);
+        }
+    }
+
+    #[test]
+    fn test_bgk_relaxation() {
+        let tau = 2.0; // omega = 0.5
+        let strategy = BgkCollision { tau };
+        let mut f = [0.0; Q];
+        let rho = 1.0;
+        let ux = 0.0;
+        let uy = 0.0;
+
+        let eq = equilibrium(rho, ux, uy);
+
+        // Start far from equilibrium
+        for k in 0..Q {
+            f[k] = eq[k] + 0.2;
+        }
+
+        strategy.apply(&mut f, rho, ux, uy);
+
+        // f_new = 0.5 * (eq + 0.2) + 0.5 * eq = eq + 0.1
+        for k in 0..Q {
+            assert!((f[k] - (eq[k] + 0.1)).abs() < 1e-9);
+        }
+    }
+
+    #[test]
+    fn test_solver_initialization() {
+        let solver = LatticeBoltzmannD2Q9::new(10, 10, 1.0);
+        assert_eq!(solver.rho.len(), 100);
+        // Initial state should be equilibrium rho=1, u=0
+        for i in 0..100 {
+            assert!((solver.rho[i] - 1.0).abs() < 1e-9);
+            assert!(solver.ux[i].abs() < 1e-9);
+            assert!(solver.uy[i].abs() < 1e-9);
         }
     }
 }
