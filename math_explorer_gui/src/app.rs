@@ -1,7 +1,7 @@
 use crate::tabs::{
     chaos::ChaosTab, epidemiology::EpidemiologyTab, fluid_dynamics::FluidDynamicsTab,
-    medical::MedicalTab, morphogenesis::MorphogenesisTab, mri::MriTab, neuroscience::NeuroscienceTab,
-    quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
+    medical::MedicalTab, morphogenesis::MorphogenesisTab, mri::MriTab,
+    neuroscience::NeuroscienceTab, quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
 };
 use eframe::egui;
 

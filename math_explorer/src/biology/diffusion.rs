@@ -471,10 +471,16 @@ mod tests_2d {
         // (1,1) is index 1*5 + 1 = 6.
         // (3,3) is index 3*5 + 3 = 18.
         // Interior range: x in 1..3, y in 1..3
-        for y in 1..height-1 {
-            for x in 1..width-1 {
+        for y in 1..height - 1 {
+            for x in 1..width - 1 {
                 let idx = y * width + x;
-                assert!((out_u[idx] - 4.0).abs() < 1e-10, "Failed at ({}, {}): {}", x, y, out_u[idx]);
+                assert!(
+                    (out_u[idx] - 4.0).abs() < 1e-10,
+                    "Failed at ({}, {}): {}",
+                    x,
+                    y,
+                    out_u[idx]
+                );
             }
         }
     }
@@ -512,11 +518,20 @@ mod tests_2d {
         }
 
         // Method 2: apply_step
-        diff.apply_step(&u, &v, &mut out_u_2, &mut out_v_2, d_u, d_v, dt, |_u, _v| (1.0, 2.0));
+        diff.apply_step(
+            &u,
+            &v,
+            &mut out_u_2,
+            &mut out_v_2,
+            d_u,
+            d_v,
+            dt,
+            |_u, _v| (1.0, 2.0),
+        );
 
         for i in 0..n {
-             assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
-             assert!((out_v_1[i] - out_v_2[i]).abs() < 1e-10);
+            assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
+            assert!((out_v_1[i] - out_v_2[i]).abs() < 1e-10);
         }
     }
 }

@@ -4,11 +4,11 @@ pub mod chaos;
 pub mod epidemiology;
 pub mod fluid_dynamics;
 pub mod medical;
+pub mod morphogenesis;
 pub mod mri;
 pub mod neuroscience;
 pub mod quantum;
 pub mod solid_state;
-pub mod morphogenesis;
 
 /// A trait for defining a tab in the Math Explorer application.
 pub trait ExplorerTab {
