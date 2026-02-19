@@ -27,8 +27,16 @@ impl fmt::Display for Color {
 
 fn main() {
     println!();
-    println!("{}  🌌 LORENZ ATTRACTOR: THE BUTTERFLY EFFECT 🦋  {}", Color::Bold, Color::Reset);
-    println!("{}     (Deterministic Chaos Demonstration)      {}", Color::Cyan, Color::Reset);
+    println!(
+        "{}  🌌 LORENZ ATTRACTOR: THE BUTTERFLY EFFECT 🦋  {}",
+        Color::Bold,
+        Color::Reset
+    );
+    println!(
+        "{}     (Deterministic Chaos Demonstration)      {}",
+        Color::Cyan,
+        Color::Reset
+    );
     println!();
 
     println!("{}Description:{}", Color::Bold, Color::Reset);
@@ -50,7 +58,13 @@ fn main() {
 
     println!("{}Initial Conditions:{}", Color::Bold, Color::Reset);
     println!("System 1: ({:.4}, {:.4}, {:.4})", x0, y0, z0);
-    println!("System 2: ({:.4}, {:.4}, {:.4})  <-- +epsilon ({})", x0 + epsilon, y0, z0, epsilon);
+    println!(
+        "System 2: ({:.4}, {:.4}, {:.4})  <-- +epsilon ({})",
+        x0 + epsilon,
+        y0,
+        z0,
+        epsilon
+    );
     println!();
 
     let dt = 0.01;
@@ -79,7 +93,12 @@ fn main() {
 
             println!(
                 "   │ {:6.2} │ {:12.4} │ {:12.4} │ {}{:12.4}{} │",
-                t, x1, x2, divergence_color, diff, Color::Reset
+                t,
+                x1,
+                x2,
+                divergence_color,
+                diff,
+                Color::Reset
             );
         }
 
@@ -90,8 +109,20 @@ fn main() {
     println!("   └────────┴──────────────┴──────────────┴──────────────┘");
     println!();
     println!("{}Observation:{}", Color::Bold, Color::Reset);
-    println!("Initially, the systems track closely ({}Green{}).", Color::Green, Color::Reset);
-    println!("As time progresses, tiny differences amplify ({}Yellow{}).", Color::Yellow, Color::Reset);
-    println!("Eventually, they become completely uncorrelated ({}Red{}).", Color::Red, Color::Reset);
+    println!(
+        "Initially, the systems track closely ({}Green{}).",
+        Color::Green,
+        Color::Reset
+    );
+    println!(
+        "As time progresses, tiny differences amplify ({}Yellow{}).",
+        Color::Yellow,
+        Color::Reset
+    );
+    println!(
+        "Eventually, they become completely uncorrelated ({}Red{}).",
+        Color::Red,
+        Color::Reset
+    );
     println!();
 }
