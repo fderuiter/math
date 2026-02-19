@@ -65,11 +65,13 @@ The `math_explorer_gui` crate is built with **egui** and **eframe**.
 
 ## 📝 Documentation Style Guide
 
-We follow the **Curator's Philosophy**:
+We follow the **Curator's Philosophy**: "Code explains HOW; Docs explain WHY."
 
 *   **Public API**: Every public struct, enum, and function must have a docstring (`///`).
 *   **Examples**: Include runnable examples in your docstrings using generic code blocks or doctests.
 *   **Clarity**: Avoid fluff words ("simple", "easy"). Be precise.
+*   **Mental Compilation**: Ensure your examples are syntactically correct and import necessary dependencies.
+*   **Update the "Front Door"**: If you touch a core feature, update the `README.md` summary to reflect it.
 
 Example:
 
@@ -100,5 +102,15 @@ pub fn is_prime(n: u64) -> bool { ... }
 2.  **Push to your branch**.
 3.  **Open a Pull Request**.
 4.  **Wait for review**. We might ask for changes to code or documentation.
+
+### ✅ Documentation Checklist
+
+Before marking your PR as ready, ensure you have:
+
+- [ ] Added docstrings to all new public items.
+- [ ] Included a runnable example for complex logic.
+- [ ] Verified that `cargo test --doc` passes.
+- [ ] Updated `README.md` if you added a new module or feature.
+- [ ] Checked for broken links or typos.
 
 Thank you for helping us fight Knowledge Rot! 📜

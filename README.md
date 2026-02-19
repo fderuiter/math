@@ -246,7 +246,15 @@ println!("Gamma^theta_phi_phi: {:.4}", gammas[0][(1, 1)]); // -0.5000
 ### 🌌 Physics: Chaos Theory
 Explore the Lorenz System and Lyapunov exponents.
 
-*(See `math_explorer/src/physics/chaos/mod.rs` for implementation details)*
+**Example: The Butterfly Effect**
+Witness the exponential divergence of two nearby trajectories.
+
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example lorenz_chaos
+```
+
+*(See `math_explorer/src/physics/chaos/lorenz.rs` for implementation details)*
 
 ---
 

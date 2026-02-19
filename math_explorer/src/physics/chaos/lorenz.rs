@@ -74,11 +74,39 @@ impl LorenzBuilder {
 /// The Lorenz System simulator.
 ///
 /// The Lorenz equations are:
-/// $\dot{x} = \sigma(y - x)$
-/// $\dot{y} = x(\rho - z) - y$
-/// $\dot{z} = xy - \beta z$
+/// * $\dot{x} = \sigma(y - x)$
+/// * $\dot{y} = x(\rho - z) - y$
+/// * $\dot{z} = xy - \beta z$
 ///
 /// These equations originally modeled atmospheric convection but became the seminal example of deterministic chaos.
+///
+/// # Parameters
+/// * $\sigma$ (Prandtl number): Ratio of momentum diffusivity to thermal diffusivity.
+/// * $\rho$ (Rayleigh number): Temperature difference driving the convection.
+/// * $\beta$ (Geometric factor): Related to the aspect ratio of the convection rolls.
+///
+/// # Example
+///
+/// ```
+/// use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
+/// use math_explorer::pure_math::analysis::ode::TimeStepper;
+///
+/// // 1. Initialize the system state close to the attractor
+/// let state = LorenzState::new(10.0, 10.0, 10.0);
+///
+/// // 2. Build the system with standard chaotic parameters
+/// let mut lorenz = LorenzBuilder::new()
+///     .sigma(10.0)
+///     .rho(28.0)
+///     .beta(8.0 / 3.0)
+///     .build(state);
+///
+/// // 3. Step forward in time (dt = 0.01)
+/// lorenz.step(0.01);
+///
+/// let new_state = lorenz.state.vec;
+/// println!("New State: ({:.2}, {:.2}, {:.2})", new_state.x, new_state.y, new_state.z);
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct LorenzSystem {
     /// The Prandtl number $\sigma$, representing the ratio of momentum diffusivity to thermal diffusivity.
