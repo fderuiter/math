@@ -60,7 +60,53 @@ Execute the design using modern Rust idioms and the project's specific coding st
 
 ---
 
-### **4. Verification & Validation**
+### **4. Critical Safety & Quality Standards (The NASA Power of 10)**
+
+To ensure reliability and verifiability, we adopt an adaptation of NASA's "Power of 10" rules for this codebase. Adherence to these rules is mandatory for core logic.
+
+1.  **Simple Control Flow**:
+    *   **Rule**: Restrict code to very simple control flow constructs.
+    *   **Implementation**: Do not use recursion; use iterative solutions. Avoid complex `break`/`continue` logic where a simple iterator would suffice. No `goto` (obviously).
+
+2.  **Fixed Loop Bounds**:
+    *   **Rule**: All loops must have fixed upper bounds.
+    *   **Implementation**: Ensure iterators are finite. When using `while` loops, include a safety counter to prevent infinite execution (e.g., `let mut safety = 0; while condition && safety < MAX_ITER { ... safety += 1; }`).
+
+3.  **No Dynamic Memory Allocation (Post-Init)**:
+    *   **Rule**: Do not use dynamic memory allocation after initialization.
+    *   **Implementation**: Minimize dynamic allocation during the core simulation loop. Pre-allocate `Vec` capacities (`Vec::with_capacity`). Avoid creating new heap-allocated structures inside hot loops.
+
+4.  **Limit Function Length**:
+    *   **Rule**: No function should be longer than what can be printed on a single sheet of paper (approx. 60 lines).
+    *   **Implementation**: Decompose large functions into smaller, testable helper functions. If a function is too long, it likely violates the Single Responsibility Principle.
+
+5.  **Assertion Density**:
+    *   **Rule**: The assertion density of the code should average to a minimum of two assertions per function.
+    *   **Implementation**: Use `assert!` to enforce invariants (e.g., "mass must be positive") and `debug_assert!` for performance-critical checks. Validate function inputs and state consistency rigorously.
+
+6.  **Small Data Scope**:
+    *   **Rule**: Data objects must be declared at the smallest possible level of scope.
+    *   **Implementation**: Avoid `static` or global state. Variables should be local to their usage block. Pass data explicitly via arguments rather than relying on shared mutable state.
+
+7.  **Check Return Values**:
+    *   **Rule**: The return value of non-void functions must be checked by each calling function.
+    *   **Implementation**: **Never ignore `Result`**. Use `?` propagation or handle errors explicitly. Do not use `let _ = ...` to suppress errors. Compiler warnings about unused results must be resolved.
+
+8.  **Limited Preprocessor Use**:
+    *   **Rule**: The use of the preprocessor must be limited.
+    *   **Implementation**: Avoid complex macros and conditional compilation (`#[cfg]`) inside function bodies. Use generic traits and polymorphism instead of macros where possible.
+
+9.  **Restricted Pointer Use**:
+    *   **Rule**: The use of pointers should be restricted.
+    *   **Implementation**: Avoid `unsafe` blocks and raw pointers unless absolutely necessary for FFI or performance (with rigorous justification). Prefer safe references and smart pointers (`Box`, `Rc`, `Arc`).
+
+10. **Compile with All Warnings**:
+    *   **Rule**: All code must be compiled with all compiler warnings enabled.
+    *   **Implementation**: Treat warnings as errors. Run `cargo clippy -- -D warnings` regularly. Zero tolerance for compiler warnings.
+
+---
+
+### **5. Verification & Validation**
 
 Your work is not complete until it is proven correct and robust.
 
@@ -77,7 +123,7 @@ Your work is not complete until it is proven correct and robust.
 
 ---
 
-### **5. Journaling & Documentation**
+### **6. Journaling & Documentation**
 
 You must document your engineering decisions to maintain the project's historical continuity.
 
