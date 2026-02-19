@@ -52,7 +52,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 2.1 Neuroscience
 *   **Module:** `biology::neuroscience`
 *   **Features:**
-    *   [ ] **Hodgkin-Huxley Model:** Voltage trace plotter with controls for ion channel conductances ($g_{Na}, g_{K}, g_{L}$).
+    *   [x] **Hodgkin-Huxley Model:** Voltage trace plotter with controls for ion channel conductances ($g_{Na}, g_{K}, g_{L}$).
     *   [ ] **Spike Train Analysis:** Raster plots and ISI histograms.
     *   [ ] **Neural Network Viz:** Graph view of connected neurons and firing activity.
 
