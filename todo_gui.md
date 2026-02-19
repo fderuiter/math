@@ -72,7 +72,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 2.4 Morphogenesis
 *   **Module:** `biology::morphogenesis`
 *   **Features:**
-    *   [ ] **Turing Patterns:** 2D grid visualization of Reaction-Diffusion systems (e.g., Gray-Scott).
+    *   [x] **Turing Patterns:** 2D grid visualization of Reaction-Diffusion systems (e.g., Gray-Scott).
     *   [ ] **Pattern Gallery:** Presets for spots, stripes, and labyrinths.
 
 ---
