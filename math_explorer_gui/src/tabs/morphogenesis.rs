@@ -1,8 +1,8 @@
+use crate::tabs::ExplorerTab;
 use eframe::egui;
+use egui::ColorImage;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
-use crate::tabs::ExplorerTab;
-use egui::ColorImage;
 
 pub struct MorphogenesisTab {
     system: TuringSystem<SchnakenbergKinetics, FiniteDifference2D>,
@@ -28,7 +28,8 @@ impl Default for MorphogenesisTab {
         let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 }; // Classic spot/stripe params
         let diffusion = FiniteDifference2D::new(width, height, 1.0, 1.0);
 
-        let mut system = TuringSystem::new_with_kinetics(width * height, d_u, d_v, kinetics, diffusion);
+        let mut system =
+            TuringSystem::new_with_kinetics(width * height, d_u, d_v, kinetics, diffusion);
 
         // Initialize with noise
         initialize_system(&mut system, width, height);
@@ -49,7 +50,11 @@ impl Default for MorphogenesisTab {
     }
 }
 
-fn initialize_system(system: &mut TuringSystem<SchnakenbergKinetics, FiniteDifference2D>, width: usize, height: usize) {
+fn initialize_system(
+    system: &mut TuringSystem<SchnakenbergKinetics, FiniteDifference2D>,
+    width: usize,
+    height: usize,
+) {
     let n = width * height;
     let mut rng = SimpleRng::new(12345);
 
@@ -122,7 +127,8 @@ impl ExplorerTab for MorphogenesisTab {
             // Update texture
             let image = plot_concentration(self.system.u(), self.width, self.height);
             let texture = self.texture.get_or_insert_with(|| {
-                ui.ctx().load_texture("morphogenesis_plot", image.clone(), Default::default())
+                ui.ctx()
+                    .load_texture("morphogenesis_plot", image.clone(), Default::default())
             });
             texture.set(image, Default::default());
 
@@ -136,9 +142,11 @@ fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
     let mut pixels = Vec::with_capacity(width * height * 4);
 
     // Find range for auto-scaling
-    let (min, max) = data.iter().fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), &val| {
-        (min.min(val), max.max(val))
-    });
+    let (min, max) = data
+        .iter()
+        .fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), &val| {
+            (min.min(val), max.max(val))
+        });
 
     let range = max - min;
     let inv_range = if range > 1e-6 { 1.0 / range } else { 1.0 };

@@ -1,7 +1,7 @@
+use super::EpidemiologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::epidemiology::compartmental::SIRModel;
-use super::EpidemiologyTool;
 
 pub struct SirTool {
     n: f64,
@@ -72,11 +72,24 @@ impl EpidemiologyTool for SirTool {
             ui.heading("Parameters");
             let mut changed = false;
 
-            changed |= ui.add(egui::Slider::new(&mut self.n, 100.0..=100_000.0).text("Population (N)")).changed();
-            changed |= ui.add(egui::Slider::new(&mut self.i0, 1.0..=self.n/2.0).text("Initial Infected (I0)")).changed();
-            changed |= ui.add(egui::Slider::new(&mut self.beta, 0.0..=5.0).text("Transmission Rate (beta)")).changed();
-            changed |= ui.add(egui::Slider::new(&mut self.gamma, 0.0..=1.0).text("Recovery Rate (gamma)")).changed();
-            changed |= ui.add(egui::Slider::new(&mut self.duration, 10.0..=365.0).text("Duration (days)")).changed();
+            changed |= ui
+                .add(egui::Slider::new(&mut self.n, 100.0..=100_000.0).text("Population (N)"))
+                .changed();
+            changed |= ui
+                .add(
+                    egui::Slider::new(&mut self.i0, 1.0..=self.n / 2.0)
+                        .text("Initial Infected (I0)"),
+                )
+                .changed();
+            changed |= ui
+                .add(egui::Slider::new(&mut self.beta, 0.0..=5.0).text("Transmission Rate (beta)"))
+                .changed();
+            changed |= ui
+                .add(egui::Slider::new(&mut self.gamma, 0.0..=1.0).text("Recovery Rate (gamma)"))
+                .changed();
+            changed |= ui
+                .add(egui::Slider::new(&mut self.duration, 10.0..=365.0).text("Duration (days)"))
+                .changed();
 
             if changed {
                 self.recalculate();
@@ -90,9 +103,18 @@ impl EpidemiologyTool for SirTool {
                 .legend(egui_plot::Legend::default());
 
             plot.show(ui, |plot_ui| {
-                plot_ui.line(Line::new("Susceptible", PlotPoints::new(self.s_points.clone())).color(egui::Color32::BLUE));
-                plot_ui.line(Line::new("Infected", PlotPoints::new(self.i_points.clone())).color(egui::Color32::RED));
-                plot_ui.line(Line::new("Recovered", PlotPoints::new(self.r_points.clone())).color(egui::Color32::GREEN));
+                plot_ui.line(
+                    Line::new("Susceptible", PlotPoints::new(self.s_points.clone()))
+                        .color(egui::Color32::BLUE),
+                );
+                plot_ui.line(
+                    Line::new("Infected", PlotPoints::new(self.i_points.clone()))
+                        .color(egui::Color32::RED),
+                );
+                plot_ui.line(
+                    Line::new("Recovered", PlotPoints::new(self.r_points.clone()))
+                        .color(egui::Color32::GREEN),
+                );
             });
         });
     }
