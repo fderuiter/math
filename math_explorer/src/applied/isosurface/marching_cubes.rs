@@ -99,12 +99,9 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     // 4. Get Normals (with caching)
                     let (normals, right_face) = unsafe {
                         self.compute_gradients_unchecked(
-                            x,
-                            y,
-                            z,
+                            (x, y, z),
                             base_idx,
-                            stride_y,
-                            stride_z,
+                            (stride_y, stride_z),
                             row_is_interior,
                             cached_gradients,
                         )
@@ -212,15 +209,14 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     #[inline(always)]
     unsafe fn compute_gradients_unchecked(
         &self,
-        x: usize,
-        y: usize,
-        z: usize,
+        coords: (usize, usize, usize),
         base_idx: usize,
-        stride_y: usize,
-        stride_z: usize,
+        strides: (usize, usize),
         row_is_interior: bool,
         cached_left_face: Option<[Point3D; 4]>,
     ) -> ([Point3D; 8], [Point3D; 4]) {
+        let (x, y, z) = coords;
+        let (stride_y, stride_z) = strides;
         let mut normals = [Point3D::new(0.0, 0.0, 0.0); 8];
         let data = &self.grid.data;
 
