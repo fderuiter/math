@@ -422,4 +422,58 @@ mod tests {
             assert!(solver.uy[i].abs() < 1e-9);
         }
     }
+
+    #[test]
+    fn test_gui_compliance_dynamic_inputs() {
+        // This test mimics the LatticeBoltzmannTool usage pattern in the GUI
+        let width = 20;
+        let height = 10;
+        let tau = 1.0;
+
+        // 1. Initialize (mimics Default::default)
+        let mut solver: LatticeBoltzmannD2Q9<BgkCollision> = LatticeBoltzmannD2Q9::new(width, height, tau);
+
+        // 2. Set Inlet (dynamic input)
+        solver.set_inlet(0, 4, 1, 2, 0.1, 0.0);
+
+        // 3. Step Simulation
+        solver.step();
+
+        // Verify flow started
+        let inlet_u = solver.get_velocity_magnitude(0, 4);
+        assert!(inlet_u > 0.0);
+
+        // 4. Dynamically Change Viscosity (mimics Slider)
+        // Viscosity ~ (tau - 0.5)/3.
+        // Changing tau directly via public field access
+        solver.collision_model.tau = 2.0;
+
+        // 5. Step with new viscosity
+        solver.step();
+
+        // Verify stability (no NaN/Inf)
+        assert!(solver.rho[0].is_finite());
+
+        // 6. Dynamically Add Obstacle (mimics Brush)
+        let obs_x = 10;
+        let obs_y = 5;
+        solver.set_obstacle(obs_x, obs_y, true);
+
+        // 7. Step with obstacle
+        solver.step();
+
+        // Verify obstacle effect (velocity should be 0 inside)
+        assert!(solver.is_obstacle(obs_x, obs_y));
+        let (ux, uy) = solver.get_velocity(obs_x, obs_y);
+        assert_eq!(ux, 0.0);
+        assert_eq!(uy, 0.0);
+
+        // 8. Clear Obstacles (mimics Button)
+        solver.clear_obstacles();
+        assert!(!solver.is_obstacle(obs_x, obs_y));
+
+        // 9. Reset (mimics Button)
+        solver = LatticeBoltzmannD2Q9::new(width, height, 0.6);
+        assert!((solver.collision_model.tau - 0.6).abs() < 1e-9);
+    }
 }
