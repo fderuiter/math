@@ -28,6 +28,7 @@ pub trait Lattice2D<const Q: usize>: Copy + Clone + Send + Sync + 'static {
 pub struct D2Q9;
 
 impl Lattice2D<9> for D2Q9 {
+    #[inline(always)]
     fn weights() -> [f64; 9] {
         [
             4.0 / 9.0,
@@ -42,18 +43,22 @@ impl Lattice2D<9> for D2Q9 {
         ]
     }
 
+    #[inline(always)]
     fn directions_x() -> [i32; 9] {
         [0, 1, 0, -1, 0, 1, -1, -1, 1]
     }
 
+    #[inline(always)]
     fn directions_y() -> [i32; 9] {
         [0, 0, 1, 0, -1, 1, 1, -1, -1]
     }
 
+    #[inline(always)]
     fn opposite_indices() -> [usize; 9] {
         [0, 3, 4, 1, 2, 7, 8, 5, 6]
     }
 
+    #[inline(always)]
     fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; 9] {
         let mut eq = [0.0; 9];
         let u2 = ux * ux + uy * uy;
@@ -83,6 +88,7 @@ pub struct BgkCollision {
 }
 
 impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
+    #[inline(always)]
     fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64) {
         let omega = 1.0 / self.tau;
         let eq = L::equilibrium(rho, ux, uy);
@@ -184,66 +190,109 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         let width = self.state.width;
         let height = self.state.height;
 
-        for y in 0..height {
-            for x in 0..width {
-                let idx = y * width + x;
+        // 1. Interior (Hot Path) - Loop Splitting & Unsafe optimizations
+        // Avoid bounds checks for x, y, and array access in the bulk of the simulation.
+        if width > 2 && height > 2 {
+            for y in 1..height - 1 {
+                let idx_row = y * width;
+                for x in 1..width - 1 {
+                    let idx = idx_row + x;
 
-                if self.state.obstacles[idx] {
-                    // Obstacles don't stream out, handled by bounce-back in collision/macro
-                    continue;
-                }
+                    // SAFETY: We are within 1..W-1 and 1..H-1, so idx is valid.
+                    let is_obstacle = unsafe { *self.state.obstacles.get_unchecked(idx) };
+                    if is_obstacle {
+                        continue;
+                    }
 
-                // Simplified streaming: Pull from neighbors
-                for k in 0..Q {
-                    // We want to find who streams INTO direction k at (x, y).
-                    // This particle came from (x - cx[k], y - cy[k]) moving in direction k.
-                    let prev_x = x as i32 - cx[k];
-                    let prev_y = y as i32 - cy[k];
+                    for k in 0..Q {
+                        let dx = cx[k];
+                        let dy = cy[k];
 
-                    if prev_x >= 0 && prev_x < width as i32 && prev_y >= 0 && prev_y < height as i32
-                    {
+                        // Prev coordinates are guaranteed valid because dx, dy are in {-1, 0, 1}
+                        // and we are at least 1 unit from border.
+                        let prev_x = (x as i32) - dx;
+                        let prev_y = (y as i32) - dy;
                         let prev_idx = (prev_y as usize) * width + (prev_x as usize);
 
-                        if self.state.obstacles[prev_idx] {
-                            // Bounce-back scheme:
-                            // If the source was an obstacle, it means a particle going in OPPOSITE[k]
-                            // hit the obstacle and came back as k.
-                            // So we take f[idx][OPPOSITE[k]] (the one that was leaving us towards the obstacle)
-                            self.state.f_new[idx][k] = self.state.f[idx][opp[k]];
-                        } else {
-                            self.state.f_new[idx][k] = self.state.f[prev_idx][k];
-                        }
-                    } else {
-                        // Boundary handling (Periodic or Bounce)
-                        // Implementing simple periodic for now to keep flow continuous
-                        // Or equilibrium inlet/outlet. Let's do Bounce-back at domain walls for simplicity,
-                        // except maybe periodic X.
+                        // SAFETY: prev_idx is valid. k and opp[k] are < Q.
+                        unsafe {
+                            let source_is_obstacle = *self.state.obstacles.get_unchecked(prev_idx);
 
-                        // Let's implement Periodic X, Bounce Y (Channel Flow)
-                        let mut src_x = prev_x;
-                        let src_y = prev_y;
-
-                        // Periodic X
-                        if src_x < 0 {
-                            src_x += width as i32;
-                        } else if src_x >= width as i32 {
-                            src_x -= width as i32;
-                        }
-
-                        // Bounce Y (Walls)
-                        if src_y < 0 || src_y >= height as i32 {
-                            // Wall bounce: reflecting the particle that tried to leave
-                            self.state.f_new[idx][k] = self.state.f[idx][opp[k]];
-                        } else {
-                            let src_idx = (src_y as usize) * width + (src_x as usize);
-                            if self.state.obstacles[src_idx] {
-                                self.state.f_new[idx][k] = self.state.f[idx][opp[k]];
+                            if source_is_obstacle {
+                                // Bounce-back
+                                let bounce_val =
+                                    *self.state.f.get_unchecked(idx).get_unchecked(opp[k]);
+                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
+                                    bounce_val;
                             } else {
-                                self.state.f_new[idx][k] = self.state.f[src_idx][k];
+                                // Stream
+                                let stream_val =
+                                    *self.state.f.get_unchecked(prev_idx).get_unchecked(k);
+                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
+                                    stream_val;
                             }
                         }
                     }
                 }
+            }
+        }
+
+        // 2. Boundary Handling (Slow Path)
+        // Process top/bottom rows and left/right columns
+        let process_boundary_cell = |x: usize, y: usize, state: &mut LatticeState<Q>| {
+            let idx = y * width + x;
+            if state.obstacles[idx] {
+                return;
+            }
+
+            for k in 0..Q {
+                let prev_x = x as i32 - cx[k];
+                let prev_y = y as i32 - cy[k];
+
+                if prev_x >= 0 && prev_x < width as i32 && prev_y >= 0 && prev_y < height as i32 {
+                    let prev_idx = (prev_y as usize) * width + (prev_x as usize);
+                    if state.obstacles[prev_idx] {
+                        state.f_new[idx][k] = state.f[idx][opp[k]];
+                    } else {
+                        state.f_new[idx][k] = state.f[prev_idx][k];
+                    }
+                } else {
+                    // Boundary Logic (Periodic X, Bounce Y)
+                    let mut src_x = prev_x;
+                    let src_y = prev_y;
+
+                    // Periodic X
+                    if src_x < 0 {
+                        src_x += width as i32;
+                    } else if src_x >= width as i32 {
+                        src_x -= width as i32;
+                    }
+
+                    if src_y < 0 || src_y >= height as i32 {
+                        // Wall Bounce
+                        state.f_new[idx][k] = state.f[idx][opp[k]];
+                    } else {
+                        let src_idx = (src_y as usize) * width + (src_x as usize);
+                        if state.obstacles[src_idx] {
+                            state.f_new[idx][k] = state.f[idx][opp[k]];
+                        } else {
+                            state.f_new[idx][k] = state.f[src_idx][k];
+                        }
+                    }
+                }
+            }
+        };
+
+        // Top & Bottom
+        for y in [0, height - 1] {
+            for x in 0..width {
+                process_boundary_cell(x, y, &mut self.state);
+            }
+        }
+        // Left & Right (excluding corners)
+        for y in 1..height - 1 {
+            for x in [0, width - 1] {
+                process_boundary_cell(x, y, &mut self.state);
             }
         }
     }
