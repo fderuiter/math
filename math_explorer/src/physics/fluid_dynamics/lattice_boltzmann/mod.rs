@@ -220,12 +220,16 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
 
                             if source_is_obstacle {
                                 // Bounce-back
-                                let bounce_val = *self.state.f.get_unchecked(idx).get_unchecked(opp[k]);
-                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) = bounce_val;
+                                let bounce_val =
+                                    *self.state.f.get_unchecked(idx).get_unchecked(opp[k]);
+                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
+                                    bounce_val;
                             } else {
                                 // Stream
-                                let stream_val = *self.state.f.get_unchecked(prev_idx).get_unchecked(k);
-                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) = stream_val;
+                                let stream_val =
+                                    *self.state.f.get_unchecked(prev_idx).get_unchecked(k);
+                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
+                                    stream_val;
                             }
                         }
                     }
@@ -237,40 +241,45 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         // Process top/bottom rows and left/right columns
         let process_boundary_cell = |x: usize, y: usize, state: &mut LatticeState<Q>| {
             let idx = y * width + x;
-            if state.obstacles[idx] { return; }
+            if state.obstacles[idx] {
+                return;
+            }
 
             for k in 0..Q {
-                 let prev_x = x as i32 - cx[k];
-                 let prev_y = y as i32 - cy[k];
+                let prev_x = x as i32 - cx[k];
+                let prev_y = y as i32 - cy[k];
 
-                 if prev_x >= 0 && prev_x < width as i32 && prev_y >= 0 && prev_y < height as i32 {
-                     let prev_idx = (prev_y as usize) * width + (prev_x as usize);
-                     if state.obstacles[prev_idx] {
-                         state.f_new[idx][k] = state.f[idx][opp[k]];
-                     } else {
-                         state.f_new[idx][k] = state.f[prev_idx][k];
-                     }
-                 } else {
-                     // Boundary Logic (Periodic X, Bounce Y)
-                     let mut src_x = prev_x;
-                     let src_y = prev_y;
+                if prev_x >= 0 && prev_x < width as i32 && prev_y >= 0 && prev_y < height as i32 {
+                    let prev_idx = (prev_y as usize) * width + (prev_x as usize);
+                    if state.obstacles[prev_idx] {
+                        state.f_new[idx][k] = state.f[idx][opp[k]];
+                    } else {
+                        state.f_new[idx][k] = state.f[prev_idx][k];
+                    }
+                } else {
+                    // Boundary Logic (Periodic X, Bounce Y)
+                    let mut src_x = prev_x;
+                    let src_y = prev_y;
 
-                     // Periodic X
-                     if src_x < 0 { src_x += width as i32; }
-                     else if src_x >= width as i32 { src_x -= width as i32; }
+                    // Periodic X
+                    if src_x < 0 {
+                        src_x += width as i32;
+                    } else if src_x >= width as i32 {
+                        src_x -= width as i32;
+                    }
 
-                     if src_y < 0 || src_y >= height as i32 {
-                         // Wall Bounce
-                         state.f_new[idx][k] = state.f[idx][opp[k]];
-                     } else {
-                         let src_idx = (src_y as usize) * width + (src_x as usize);
-                         if state.obstacles[src_idx] {
-                             state.f_new[idx][k] = state.f[idx][opp[k]];
-                         } else {
-                             state.f_new[idx][k] = state.f[src_idx][k];
-                         }
-                     }
-                 }
+                    if src_y < 0 || src_y >= height as i32 {
+                        // Wall Bounce
+                        state.f_new[idx][k] = state.f[idx][opp[k]];
+                    } else {
+                        let src_idx = (src_y as usize) * width + (src_x as usize);
+                        if state.obstacles[src_idx] {
+                            state.f_new[idx][k] = state.f[idx][opp[k]];
+                        } else {
+                            state.f_new[idx][k] = state.f[src_idx][k];
+                        }
+                    }
+                }
             }
         };
 
