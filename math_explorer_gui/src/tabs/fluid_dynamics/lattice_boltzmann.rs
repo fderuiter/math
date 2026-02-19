@@ -67,7 +67,8 @@ impl LatticeBoltzmannTool {
         if self.running {
             for _ in 0..self.steps_per_frame {
                 // Constant inlet flow to drive the simulation
-                self.solver.set_inlet(0, 0, 2, self.solver.height, 0.1, 0.0);
+                self.solver
+                    .set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
                 self.solver.step();
             }
             ctx.request_repaint();
@@ -87,8 +88,8 @@ impl LatticeBoltzmannTool {
             }
 
             if ui.button("Reset").clicked() {
-                let width = self.solver.width;
-                let height = self.solver.height;
+                let width = self.solver.width();
+                let height = self.solver.height();
                 self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.viscosity + 0.5);
                 self.solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
             }
@@ -124,8 +125,8 @@ impl LatticeBoltzmannTool {
         // Visualization
         egui::CentralPanel::default().show(ctx, |ui| {
             // 1. Generate Image from Solver State
-            let width = self.solver.width;
-            let height = self.solver.height;
+            let width = self.solver.width();
+            let height = self.solver.height();
             // FIXED: Initialize with vector of black pixels
             let mut image = ColorImage::new([width, height], vec![Color32::BLACK; width * height]);
 
@@ -188,8 +189,8 @@ impl LatticeBoltzmannTool {
 
     fn apply_brush(&mut self, cx: i32, cy: i32) {
         let r = self.draw_radius as i32;
-        let width = self.solver.width as i32;
-        let height = self.solver.height as i32;
+        let width = self.solver.width() as i32;
+        let height = self.solver.height() as i32;
         let is_obstacle = self.draw_mode == DrawMode::Obstacle;
 
         for y in (cy - r)..=(cy + r) {
