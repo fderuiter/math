@@ -431,7 +431,8 @@ mod tests {
         let tau = 1.0;
 
         // 1. Initialize (mimics Default::default)
-        let mut solver: LatticeBoltzmannD2Q9<BgkCollision> = LatticeBoltzmannD2Q9::new(width, height, tau);
+        let mut solver: LatticeBoltzmannD2Q9<BgkCollision> =
+            LatticeBoltzmannD2Q9::new(width, height, tau);
 
         // 2. Set Inlet (dynamic input)
         solver.set_inlet(0, 4, 1, 2, 0.1, 0.0);
