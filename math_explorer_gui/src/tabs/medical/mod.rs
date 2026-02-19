@@ -2,8 +2,10 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod dose;
+pub mod beam_profiling;
 
 use dose::DoseCalculationTool;
+use beam_profiling::BeamProfilingTool;
 
 /// A trait for sub-tools within the Medical Physics tab.
 pub trait MedicalTool {
@@ -22,7 +24,10 @@ pub struct MedicalTab {
 impl Default for MedicalTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(DoseCalculationTool::default())],
+            tools: vec![
+                Box::new(DoseCalculationTool::default()),
+                Box::new(BeamProfilingTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
