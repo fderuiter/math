@@ -1,6 +1,6 @@
 use crate::tabs::{
     chaos::ChaosTab, epidemiology::EpidemiologyTab, fluid_dynamics::FluidDynamicsTab,
-    medical::MedicalTab, morphogenesis::MorphogenesisTab, mri::MriTab,
+    game_theory::GameTheoryTab, medical::MedicalTab, morphogenesis::MorphogenesisTab, mri::MriTab,
     neuroscience::NeuroscienceTab, quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
 };
 use eframe::egui;
@@ -22,6 +22,7 @@ impl Default for MathExplorerApp {
                 Box::new(MedicalTab::default()),
                 Box::new(NeuroscienceTab::default()),
                 Box::new(EpidemiologyTab::default()),
+                Box::new(GameTheoryTab::default()),
                 Box::new(MorphogenesisTab::default()),
             ],
             selected_tab: 0,
