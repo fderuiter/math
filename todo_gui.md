@@ -66,7 +66,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 2.3 Evolutionary Game Theory
 *   **Module:** `applied::game_theory::evolutionary`
 *   **Features:**
-    *   [ ] **Replicator Dynamics:** Phase plane plots for Hawk-Dove or Rock-Paper-Scissors games.
+    *   [x] **Replicator Dynamics:** Phase plane plots for Hawk-Dove or Rock-Paper-Scissors games.
     *   [ ] **Population Bar Charts:** Real-time updating of strategy proportions.
 
 ### 2.4 Morphogenesis
