@@ -8,7 +8,7 @@ The core library for the **Math Explorer** project. This crate provides a collec
 
 > **Note:** This is the inner library crate. For the full repository context, see the [Project Root README](../README.md).
 
-## 📦 Modules
+##  Modules
 
 The library is organized into high-level domains:
 
@@ -20,7 +20,7 @@ The library is organized into high-level domains:
 - **`physics`**: Simulations of physical systems, including **Quantum Mechanics**, **Fluid Dynamics**, **Chaos Theory** (Lorenz System), and **MRI Physics**.
 - **`pure_math`**: Foundational mathematics, covering **Algebra**, **Number Theory** (Partitions, Q-Series), **Graph Theory**, and **Differential Geometry**.
 
-## 🚀 Usage
+##  Usage
 
 Add this crate to your dependencies:
 
@@ -90,7 +90,7 @@ fn main() {
 }
 ```
 
-## 🧪 Testing
+##  Testing
 
 To run the comprehensive test suite for all modules:
 
@@ -98,6 +98,6 @@ To run the comprehensive test suite for all modules:
 cargo test
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 Please refer to [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root.

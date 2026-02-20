@@ -2,13 +2,13 @@
 
 First off, thank you for considering contributing to Math Explorer! It's people like you that make this tool such a great resource.
 
-## 🛠️ The "Golden Rule" of Contribution
+##  The "Golden Rule" of Contribution
 
 **"Code explains HOW; Docs explain WHY."**
 
 When you submit a PR, you aren't just merging code; you are merging knowledge. Ensure your contributions are accessible to others.
 
-## 🚀 Getting Started
+##  Getting Started
 
 1.  **Fork the repository** on GitHub.
 2.  **Clone your fork** locally:
@@ -21,7 +21,7 @@ When you submit a PR, you aren't just merging code; you are merging knowledge. E
     git checkout -b feature/amazing-new-math
     ```
 
-## 🔄 Workflow
+##  Workflow
 
 ```mermaid
 graph TD
@@ -37,7 +37,7 @@ graph TD
     H -->|Approved| I[Merge]
 ```
 
-## 🧪 Testing
+##  Testing
 
 We take reliability seriously. Before submitting, ensure all tests pass.
 
@@ -53,7 +53,7 @@ If you add new functionality, **you must add tests**.
 - **Unit Tests**: Place them in the same file as the code, in a `mod tests` module.
 - **Integration Tests**: Place them in the `tests/` directory.
 
-## 🖥️ Contributing to the GUI
+##  Contributing to the GUI
 
 The `math_explorer_gui` crate is built with **egui** and **eframe**.
 
@@ -63,7 +63,7 @@ The `math_explorer_gui` crate is built with **egui** and **eframe**.
     *   The GUI should primarily visualize and control logic defined in the core `math_explorer` library. Avoid implementing heavy mathematical logic directly in the GUI crate.
 *   **Dependencies:** We maintain strict version compatibility between `egui`, `eframe`, and `egui_plot`. Check `Cargo.toml` before updating dependencies.
 
-## 📝 Documentation Style Guide
+##  Documentation Style Guide
 
 We follow the **Curator's Philosophy**: "Code explains HOW; Docs explain WHY."
 
@@ -96,14 +96,14 @@ Example:
 pub fn is_prime(n: u64) -> bool { ... }
 ```
 
-## 📦 Submission Process
+##  Submission Process
 
 1.  **Commit your changes** with a descriptive message.
 2.  **Push to your branch**.
 3.  **Open a Pull Request**.
 4.  **Wait for review**. We might ask for changes to code or documentation.
 
-### ✅ Documentation Checklist
+###  Documentation Checklist
 
 Before marking your PR as ready, ensure you have:
 
@@ -113,4 +113,4 @@ Before marking your PR as ready, ensure you have:
 - [ ] Updated `README.md` if you added a new module or feature.
 - [ ] Checked for broken links or typos.
 
-Thank you for helping us fight Knowledge Rot! 📜
+Thank you for helping us fight Knowledge Rot!

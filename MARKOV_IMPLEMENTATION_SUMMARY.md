@@ -130,13 +130,13 @@ A comprehensive implementation of Markov processes for the `math_explorer` crate
 
 ## Design Patterns & Principles
 
-### 1. Strong Typing ✅
+### 1. Strong Typing
 ```rust
 pub struct TimeIndex { time: f64 }           // Not raw f64
 pub enum StateType { Transient, Absorbing }  // Not bool
 ```
 
-### 2. Dependency Injection ✅
+### 2. Dependency Injection
 ```rust
 pub fn simulate_trajectory<R: Rng>(
     &self, 
@@ -146,13 +146,13 @@ pub fn simulate_trajectory<R: Rng>(
 ) -> Result<Vec<(f64, usize)>>
 ```
 
-### 3. Comprehensive Validation ✅
+### 3. Comprehensive Validation
 - Stochastic matrices: rows sum to 1.0 (tolerance 1e-10)
 - Generator matrices: rows sum to 0.0, proper signs
 - Dimension compatibility checks
 - Probability bounds enforcement
 
-### 4. Error Handling ✅
+### 4. Error Handling
 ```rust
 pub enum MarkovError {
     InvalidProbability { value: f64 },
@@ -164,13 +164,13 @@ pub enum MarkovError {
 }
 ```
 
-### 5. Separation of Concerns ✅
+### 5. Separation of Concerns
 - Each file has single responsibility
 - No "God Files" (all < 750 lines including tests)
 - Clear module boundaries
 - Minimal coupling
 
-### 6. Academic Rigor ✅
+### 6. Academic Rigor
 - Mathematical formulations in docstrings
 - Citations to literature (Norris, Rabiner, Viterbi, Gillespie)
 - Known-result validation in tests
@@ -236,22 +236,22 @@ fn test_deterministic_simulation() {
     let mut rng2 = StdRng::seed_from_u64(12345);
     let traj2 = chain.simulate_trajectory(0, 5.0, &mut rng2).unwrap();
     
-    assert_eq!(traj1, traj2);  // ✅ Reproducible
+    assert_eq!(traj1, traj2);  //  Reproducible
 }
 ```
 
 ## Integration with math_explorer
 
 ### Follows All Architectural Principles
-- ✅ No God Files
-- ✅ Strong typing via newtypes
-- ✅ Dependency injection (RNG)
-- ✅ Manual error handling
-- ✅ Comprehensive documentation
-- ✅ Academic citations
-- ✅ Extensive tests
-- ✅ DRY principle (matrix operations reused)
-- ✅ SOLID principles
+-  No God Files
+-  Strong typing via newtypes
+-  Dependency injection (RNG)
+-  Manual error handling
+-  Comprehensive documentation
+-  Academic citations
+-  Extensive tests
+-  DRY principle (matrix operations reused)
+-  SOLID principles
 
 ### Module Location
 ```
@@ -269,23 +269,23 @@ Integrated into statistics module alongside:
 
 ## Use Cases Supported
 
-### Basketball Analytics ✅
+### Basketball Analytics
 1. Expected Possession Value (EPV)
 2. Shot clock urgency modeling
 3. Hot hand detection
 4. Lineup matchup transitions
 
-### Finance ✅
+### Finance
 1. Market regime detection (Bull/Bear/Sideways)
 2. Credit rating transitions
 3. Option pricing with regime switching
 
-### Queueing Theory ✅
+### Queueing Theory
 1. M/M/1 queue steady-state
 2. Birth-death processes
 3. Absorption time analysis
 
-### General Applications ✅
+### General Applications
 1. Gambler's ruin
 2. Random walks with barriers
 3. State-dependent strategy optimization
@@ -328,22 +328,22 @@ cargo doc --no-deps --lib --open
 ## Quality Metrics
 
 ### Code Quality
-- ✅ All clippy warnings resolved
-- ✅ Consistent formatting (cargo fmt)
-- ✅ No unsafe code
-- ✅ Minimal dependencies (nalgebra, rand, statrs)
+-  All clippy warnings resolved
+-  Consistent formatting (cargo fmt)
+-  No unsafe code
+-  Minimal dependencies (nalgebra, rand, statrs)
 
 ### Test Quality
-- ✅ 29 tests, 100% passing
-- ✅ Known-result validation (gambler's ruin, birth-death)
-- ✅ Edge case coverage (empty sequences, singular matrices)
-- ✅ Deterministic RNG tests
+-  29 tests, 100% passing
+-  Known-result validation (gambler's ruin, birth-death)
+-  Edge case coverage (empty sequences, singular matrices)
+-  Deterministic RNG tests
 
 ### Documentation Quality
-- ✅ Every public item documented
-- ✅ Mathematical formulations included
-- ✅ Usage examples in all docstrings
-- ✅ Academic references cited
+-  Every public item documented
+-  Mathematical formulations included
+-  Usage examples in all docstrings
+-  Academic references cited
 
 ## Conclusion
 

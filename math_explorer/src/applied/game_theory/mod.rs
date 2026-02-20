@@ -8,7 +8,7 @@
 //! 3. **Evolutionary Dynamics**: Population-scale interactions where strategies evolve over time based on fitness.
 //! 4. **Mean Field Games**: The limit of $N \to \infty$ players, modeled using coupled PDE systems.
 //!
-//! ## 🗺️ Taxonomy
+//! ##  Taxonomy
 //!
 //! ```mermaid
 //! graph TD
@@ -31,7 +31,7 @@
 //!     EQ --> Nash[Nash Equilibrium]
 //! ```
 //!
-//! ## ⚡ Quick Start: Optimal Auctions
+//! ##  Quick Start: Optimal Auctions
 //!
 //! Calculate the optimal reserve price for an auction where bidders' valuations are uniformly distributed.
 //! According to Myerson's Lemma, this is where the virtual valuation $J(v) = 0$.

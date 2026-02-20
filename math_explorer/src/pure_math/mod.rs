@@ -6,7 +6,7 @@
 //! this module provides the rigorous mathematical building blocks. It covers fields from
 //! Number Theory to Differential Geometry.
 //!
-//! ## 🚀 Quick Start: Prime Check
+//! ##  Quick Start: Prime Check
 //!
 //! Check if a number is prime using optimized algorithms.
 //!

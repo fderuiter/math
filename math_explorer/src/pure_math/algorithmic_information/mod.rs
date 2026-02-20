@@ -7,7 +7,7 @@
 //! Unlike Shannon Entropy, which measures the average information of a random variable,
 //! Kolmogorov Complexity looks at the *structure* of individual objects.
 //!
-//! ## 🧩 Core Concepts
+//! ##  Core Concepts
 //!
 //! 1.  **Complexity $K(x)$**: The length of the shortest binary program $p$ such that $U(p) = x$
 //!     (where $U$ is a universal Turing machine).
@@ -35,7 +35,7 @@
 //!     end
 //! ```
 //!
-//! ## ⚡ Quick Start: Approximating Complexity
+//! ##  Quick Start: Approximating Complexity
 //!
 //! We provide an upper bound approximation for the prefix Kolmogorov complexity of an integer $n$:
 //! $$ K(n) \le \log_2(n) + 2 \log_2(\log_2(n)) + O(1) $$

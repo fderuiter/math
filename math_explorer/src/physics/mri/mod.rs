@@ -6,7 +6,7 @@
 //! It bridges **Quantum Mechanics** (spin states) and **Classical Electromagnetism** (Bloch equations)
 //! to model how tissue properties ($T_1, T_2, \rho$) translate into medical images.
 //!
-//! ## 🔄 Simulation Pipeline
+//! ##  Simulation Pipeline
 //!
 //! The MRI process is modeled as a sequence of transformations:
 //!
@@ -36,7 +36,7 @@
 //!     style Image fill:#e8f5e9,stroke:#1b5e20
 //! ```
 //!
-//! ## 🧩 Domains
+//! ##  Domains
 //!
 //! *   **Quantum Foundations** (`proton`): Constants and properties for Hydrogen nuclei (gyromagnetic ratio $\gamma$).
 //! *   **Classical Dynamics** (`bloch`): The **Bloch Equation** solver, tracking the magnetization vector $\mathbf{M}$ over time:

@@ -17,34 +17,34 @@ markov/
 ## Features
 
 ### Discrete-Time Markov Chains (DTMC)
-- ✅ Transient and absorbing state classification
-- ✅ Canonical form decomposition (Q, R matrices)
-- ✅ Fundamental matrix N = (I - Q)⁻¹
-- ✅ Expected Possession Value (EPV) calculations
-- ✅ Stationary distributions for ergodic chains
-- ✅ Absorption probabilities and expected times
-- ✅ N-step transition matrices with efficient computation
+-  Transient and absorbing state classification
+-  Canonical form decomposition (Q, R matrices)
+-  Fundamental matrix N = (I - Q)⁻¹
+-  Expected Possession Value (EPV) calculations
+-  Stationary distributions for ergodic chains
+-  Absorption probabilities and expected times
+-  N-step transition matrices with efficient computation
 
 ### Time-Indexed Transitions
-- ✅ Non-stationary chains with time-varying transitions
-- ✅ Linear interpolation between time slices
-- ✅ Average transitions over time intervals
-- ✅ Shot clock urgency modeling for basketball
+-  Non-stationary chains with time-varying transitions
+-  Linear interpolation between time slices
+-  Average transitions over time intervals
+-  Shot clock urgency modeling for basketball
 
 ### Continuous-Time Markov Chains (CTMC)
-- ✅ Generator matrix validation
-- ✅ Matrix exponential P(t) = exp(Gt) via Padé approximation
-- ✅ Steady-state distribution computation
-- ✅ Gillespie algorithm for trajectory simulation
-- ✅ Expected absorption times
+-  Generator matrix validation
+-  Matrix exponential P(t) = exp(Gt) via Padé approximation
+-  Steady-state distribution computation
+-  Gillespie algorithm for trajectory simulation
+-  Expected absorption times
 
 ### Hidden Markov Models (HMM)
-- ✅ Forward algorithm (observation probability)
-- ✅ Backward algorithm
-- ✅ Viterbi algorithm (most likely state sequence)
-- ✅ Forward-Backward (posterior probabilities)
-- ✅ Sequence generation with deterministic RNG
-- ✅ Filtering (current state belief)
+-  Forward algorithm (observation probability)
+-  Backward algorithm
+-  Viterbi algorithm (most likely state sequence)
+-  Forward-Backward (posterior probabilities)
+-  Sequence generation with deterministic RNG
+-  Filtering (current state belief)
 
 ## Examples
 
@@ -355,13 +355,13 @@ All tests include:
 ## Integration with math_explorer
 
 This module follows all `math_explorer` architectural principles:
-- ✅ No God Files (each file < 500 lines, single responsibility)
-- ✅ Strong typing with newtypes
-- ✅ Dependency injection (RNG, not thread_rng())
-- ✅ Manual error handling (no thiserror)
-- ✅ Comprehensive documentation
-- ✅ Academic rigor with citations
-- ✅ Extensive test coverage
+-  No God Files (each file < 500 lines, single responsibility)
+-  Strong typing with newtypes
+-  Dependency injection (RNG, not thread_rng())
+-  Manual error handling (no thiserror)
+-  Comprehensive documentation
+-  Academic rigor with citations
+-  Extensive test coverage
 
 ## Future Extensions
 

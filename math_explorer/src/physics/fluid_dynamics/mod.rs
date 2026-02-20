@@ -8,7 +8,7 @@
 //! It uses a **Strategy Pattern** to switch between flow regimes (Viscous vs. Inviscid)
 //! and analyzing flow characteristics (Laminar vs. Turbulent).
 //!
-//! ## 🚀 Quick Start: Calculating Acceleration
+//! ##  Quick Start: Calculating Acceleration
 //!
 //! Simulate a fluid element (Water) moving through a pipe and calculate the local acceleration
 //! due to pressure gradients and viscosity.
@@ -50,7 +50,7 @@
 //! // damped by viscosity (drag)
 //! ```
 //!
-//! ## 🗺️ Module Architecture
+//! ##  Module Architecture
 //!
 //! The module is designed around the interaction between fluid properties, flow state, and
 //! conservation strategies.

@@ -3,7 +3,7 @@
 //! This module models population dynamics where individuals adopt strategies that compete for resources.
 //! The classic example implemented here is the **Hawk-Dove Game**.
 //!
-//! ## 🦅 The Hawk-Dove Game
+//! ##  The Hawk-Dove Game
 //!
 //! - **Hawk**: Aggressive strategy. Fights for the resource.
 //! - **Dove**: Passive strategy. Shares the resource or retreats.
@@ -19,7 +19,7 @@
 //! - $V$: Value of the resource.
 //! - $C$: Cost of injury from fighting.
 //!
-//! ## 🚀 Quick Start
+//! ##  Quick Start
 //!
 //! Simulate a population where the cost of fighting is high ($C > V$).
 //! In this case, neither strategy is an Evolutionarily Stable Strategy (ESS),

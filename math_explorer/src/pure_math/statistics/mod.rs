@@ -8,29 +8,29 @@
 //!
 //! ## Core Domains
 //!
-//! ### 🏆 Competitive Ranking
+//! ###  Competitive Ranking
 //! *   **[Glicko-2](glicko2)**: The gold standard for player rating systems (Chess, CS:GO).
 //!     Tracks rating volatility and deviation to handle inactive players correctly.
 //!
-//! ### 🎲 Stochastic Processes
+//! ###  Stochastic Processes
 //! *   **[Markov Chains](markov)**: Discrete-Time (DTMC), Continuous-Time (CTMC), and Hidden Markov Models (HMM).
 //!     Essential for modeling state transitions in sports (e.g., possession value) or finance.
 //! *   **[Ornstein-Uhlenbeck](ou_process)**: Mean-reverting processes for modeling "momentum" or "hot hands"
 //!     where performance fluctuates around a long-term average.
 //!
-//! ### 💰 Risk & Decision Theory
+//! ###  Risk & Decision Theory
 //! *   **[Kelly Criterion](kelly)**: Optimal capital allocation strategy to maximize logarithmic wealth growth.
 //! *   **[Copulas](copula)**: sophisticated dependency modeling (e.g., Gaussian Copula) for correlated events,
 //!     critical for pricing derivatives or "Same Game Parlays".
 //!
-//! ### 📊 Advanced Data Analysis
+//! ###  Advanced Data Analysis
 //! *   **[Topological Data Analysis (TDA)](tda)**: Uses persistent homology to find structural features (holes, voids)
 //!     in high-dimensional point clouds.
 //! *   **[ZIP Regression](zip_regression)**: Zero-Inflated Poisson models for count data with excess zeros
 //!     (e.g., goals scored by a defensive player).
 //! *   **[Regression](regression)**: Standard multivariate linear regression.
 //!
-//! ## 🚀 Quick Start: Optimal Betting with Kelly Criterion
+//! ##  Quick Start: Optimal Betting with Kelly Criterion
 //!
 //! Calculate the optimal fraction of your bankroll to wager given an edge.
 //!
@@ -56,7 +56,7 @@
 //! }
 //! ```
 //!
-//! ## 🔬 Deep Dive: Glicko-2 Rating Update
+//! ##  Deep Dive: Glicko-2 Rating Update
 //!
 //! ```rust
 //! use math_explorer::pure_math::statistics::glicko2::{

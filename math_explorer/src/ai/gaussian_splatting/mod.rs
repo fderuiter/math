@@ -6,7 +6,7 @@
 //! **Gaussian Splatting** represents the scene as a collection of explicitly stored 3D Gaussians.
 //! These Gaussians are projected onto the 2D image plane ("splatted") and blended to form the image.
 //!
-//! ## 🎨 The Rendering Pipeline
+//! ##  The Rendering Pipeline
 //!
 //! ```mermaid
 //! graph TD
@@ -41,7 +41,7 @@
 //!     style Action fill:#ffebee,stroke:#b71c1c
 //! ```
 //!
-//! ## 🚀 Quick Start: Blending Splats
+//! ##  Quick Start: Blending Splats
 //!
 //! Create a scene with two Gaussians (Red and Green) and simulate the blending process at a specific pixel.
 //!

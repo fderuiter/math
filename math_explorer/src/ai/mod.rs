@@ -5,7 +5,7 @@
 //! This module implements state-of-the-art Artificial Intelligence architectures **from scratch** using pure Rust and linear algebra.
 //! We avoid "black box" APIs to provide a transparent view of the mathematical machinery under the hood.
 //!
-//! ## 🧠 The Ecosystem
+//! ##  The Ecosystem
 //!
 //! The AI module is organized into four foundational pillars:
 //!
@@ -44,7 +44,7 @@
 //!     Theory --> Activations
 //! ```
 //!
-//! ## 🚀 Quick Start: Transformer Encoder
+//! ##  Quick Start: Transformer Encoder
 //!
 //! Create a standard Transformer Encoder stack to process sequential data.
 //!
@@ -72,7 +72,7 @@
 //! println!("Output shape: ({}, {})", output.nrows(), output.ncols());
 //! ```
 //!
-//! ## 🔍 Deep Dive
+//! ##  Deep Dive
 //!
 //! ### 1. [Transformers](transformer)
 //! The backbone of modern NLP. We implement:

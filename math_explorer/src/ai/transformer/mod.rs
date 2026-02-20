@@ -33,7 +33,7 @@
 //! - **Encoder**: Stack of `EncoderLayer`s.
 //! - **Decoder**: Stack of `DecoderLayer`s.
 //!
-//! ## 🚀 Quick Start: End-to-End Example
+//! ##  Quick Start: End-to-End Example
 //!
 //! Constructing and running a full Transformer model (Encoder + Decoder).
 //!
