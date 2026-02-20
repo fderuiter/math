@@ -1,5 +1,5 @@
-use math_explorer::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
 use math_explorer::biology::diffusion::FiniteDifference2D;
+use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use std::time::Instant;
 
 #[test]
@@ -13,7 +13,7 @@ fn bench_turing_2d_step() {
     let mut system = TuringSystem::new_with_kinetics(width * height, 1.0, 40.0, kinetics, diff);
 
     // Initialize with some values
-    for i in 0..width*height {
+    for i in 0..width * height {
         system.u_mut()[i] = 1.0 + (i as f64 * 0.01).sin();
         system.v_mut()[i] = 0.5 + (i as f64 * 0.02).cos();
     }
@@ -32,6 +32,12 @@ fn bench_turing_2d_step() {
     }
     let duration = start.elapsed();
 
-    println!("Turing 2D ({}x{}) - {} iterations: {:?}", width, height, iterations, duration);
-    println!("Average time per iteration: {:?}", duration / iterations as u32);
+    println!(
+        "Turing 2D ({}x{}) - {} iterations: {:?}",
+        width, height, iterations, duration
+    );
+    println!(
+        "Average time per iteration: {:?}",
+        duration / iterations as u32
+    );
 }

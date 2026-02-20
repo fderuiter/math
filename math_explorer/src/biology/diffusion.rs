@@ -287,13 +287,15 @@ impl SpatialDiffusion for FiniteDifference2D {
 
                 // U Diffusion
                 let u_curr = u[idx];
-                let diff_u =
-                    (u[idx_r] + u[idx_l]) * cx_u + (u[idx_d] + u[idx_u]) * cy_u + u_curr * c_center_u;
+                let diff_u = (u[idx_r] + u[idx_l]) * cx_u
+                    + (u[idx_d] + u[idx_u]) * cy_u
+                    + u_curr * c_center_u;
 
                 // V Diffusion
                 let v_curr = v[idx];
-                let diff_v =
-                    (v[idx_r] + v[idx_l]) * cx_v + (v[idx_d] + v[idx_u]) * cy_v + v_curr * c_center_v;
+                let diff_v = (v[idx_r] + v[idx_l]) * cx_v
+                    + (v[idx_d] + v[idx_u]) * cy_v
+                    + v_curr * c_center_v;
 
                 op(idx, u_curr, v_curr, diff_u, diff_v);
             }
