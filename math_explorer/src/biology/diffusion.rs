@@ -5,6 +5,23 @@
 
 /// Defines a strategy for computing spatial diffusion.
 pub trait SpatialDiffusion {
+    /// Computes diffusion terms for each point and calls the closure.
+    /// Internal iteration allows for optimization (loop fusion, SIMD).
+    ///
+    /// The closure `op` is called with `(index, diff_u, diff_v)` where:
+    /// * `index`: The linear index of the point.
+    /// * `diff_u`: The diffusion term for u ($D_u \nabla^2 u$).
+    /// * `diff_v`: The diffusion term for v ($D_v \nabla^2 v$).
+    fn map_diffusion<F>(
+        &self,
+        u: &[f64],
+        v: &[f64],
+        d_u: f64,
+        d_v: f64,
+        op: F,
+    ) where
+        F: FnMut(usize, f64, f64);
+
     /// Applies the diffusion operator to the state vectors.
     ///
     /// Computes $D_u \nabla^2 u$ and $D_v \nabla^2 v$ and stores the result in `out_u` and `out_v`.
@@ -16,45 +33,7 @@ pub trait SpatialDiffusion {
     /// * `out_v` - Output buffer for inhibitor diffusion term.
     /// * `d_u` - Diffusion coefficient for u.
     /// * `d_v` - Diffusion coefficient for v.
-    fn apply(&self, u: &[f64], v: &[f64], out_u: &mut [f64], out_v: &mut [f64], d_u: f64, d_v: f64);
-
-    /// Applies the diffusion operator and reaction kinetics in a fused loop.
-    ///
-    /// This method is intended for performance optimization, allowing the diffusion
-    /// and reaction terms to be computed in a single pass over the data.
-    ///
-    /// # Arguments
-    /// * `u` - Input activator concentration slice.
-    /// * `v` - Input inhibitor concentration slice.
-    /// * `out_u` - Output buffer for activator state (u + dt * du/dt).
-    /// * `out_v` - Output buffer for inhibitor state (v + dt * dv/dt).
-    /// * `d_u` - Diffusion coefficient for u.
-    /// * `d_v` - Diffusion coefficient for v.
-    /// * `dt` - Time step.
-    /// * `reaction` - Closure that computes the reaction rates (du/dt, dv/dt) given (u, v).
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use math_explorer::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-    ///
-    /// let diff = FiniteDifference1D::new(0.1);
-    /// let u = vec![1.0; 10];
-    /// let v = vec![0.5; 10];
-    /// let mut out_u = vec![0.0; 10];
-    /// let mut out_v = vec![0.0; 10];
-    ///
-    /// // Fused update: du/dt = D*lap(u) - u, dv/dt = D*lap(v)
-    /// diff.apply_step(
-    ///     &u, &v,
-    ///     &mut out_u, &mut out_v,
-    ///     0.1, 0.1,  // d_u, d_v
-    ///     0.01,      // dt
-    ///     |u, _v| (-u, 0.0) // reaction closure
-    /// );
-    /// ```
-    #[allow(clippy::too_many_arguments)]
-    fn apply_step<F>(
+    fn apply(
         &self,
         u: &[f64],
         v: &[f64],
@@ -62,25 +41,16 @@ pub trait SpatialDiffusion {
         out_v: &mut [f64],
         d_u: f64,
         d_v: f64,
-        dt: f64,
-        reaction: F,
-    ) where
-        F: Fn(f64, f64) -> (f64, f64),
-    {
-        // Default implementation: calculate diffusion then apply reaction
-        self.apply(u, v, out_u, out_v, d_u, d_v);
-
-        let n = u.len();
-        // Safety: we assume out buffers are sized correctly if apply succeeded,
-        // but let's be safe with bounds checks in default impl or use unsafe if we trust apply.
-        // Let's use safe indexing for default impl as it is the fallback.
-        for i in 0..n {
-            let diff_u = out_u[i];
-            let diff_v = out_v[i];
-            let (reac_u, reac_v) = reaction(u[i], v[i]);
-            out_u[i] = u[i] + dt * (diff_u + reac_u);
-            out_v[i] = v[i] + dt * (diff_v + reac_v);
-        }
+    ) {
+        // Default implementation: calculate diffusion and write to buffer
+        self.map_diffusion(u, v, d_u, d_v, |i, diff_u, diff_v| {
+            if i < out_u.len() {
+                out_u[i] = diff_u;
+            }
+            if i < out_v.len() {
+                out_v[i] = diff_v;
+            }
+        });
     }
 }
 
@@ -121,90 +91,44 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
 }
 
 impl SpatialDiffusion for FiniteDifference1D {
-    fn apply(
+    fn map_diffusion<F>(
         &self,
         u: &[f64],
         v: &[f64],
-        out_u: &mut [f64],
-        out_v: &mut [f64],
         d_u: f64,
         d_v: f64,
-    ) {
-        let n = u.len();
-        if n == 0 {
-            return;
-        }
-
-        // Validate slice lengths
-        assert!(v.len() >= n, "v buffer too small");
-        assert!(out_u.len() >= n, "out_u buffer too small");
-        assert!(out_v.len() >= n, "out_v buffer too small");
-
-        let dx_sq = self.dx * self.dx;
-        let inv_dx_sq = 1.0 / dx_sq;
-
-        apply_1d_stencil(u, out_u, d_u, inv_dx_sq);
-        apply_1d_stencil(v, out_v, d_v, inv_dx_sq);
-    }
-
-    fn apply_step<F>(
-        &self,
-        u: &[f64],
-        v: &[f64],
-        out_u: &mut [f64],
-        out_v: &mut [f64],
-        d_u: f64,
-        d_v: f64,
-        dt: f64,
-        reaction: F,
+        mut op: F,
     ) where
-        F: Fn(f64, f64) -> (f64, f64),
+        F: FnMut(usize, f64, f64),
     {
         let n = u.len();
         if n == 0 {
             return;
         }
 
-        // Validate slice lengths
-        assert!(v.len() >= n, "v buffer too small");
-        assert!(out_u.len() >= n, "out_u buffer too small");
-        assert!(out_v.len() >= n, "out_v buffer too small");
+        assert_eq!(v.len(), n, "v buffer size mismatch");
 
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
-        // 1. Handle i = 0 (Left Boundary)
+        // 1. Left Boundary (i=0)
         {
             let u_curr = u[0];
             let v_curr = v[0];
-            // Neumann BC: u_{-1} = u_0
-            let u_prev = u_curr;
+            let u_prev = u_curr; // Neumann: u_{-1} = u_0
             let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 {
-                (u[1], v[1])
-            } else {
-                (u_curr, v_curr)
-            };
+            let (u_next, v_next) = if n > 1 { (u[1], v[1]) } else { (u_curr, v_curr) };
 
-            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+            let lap_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-            let (reac_u, reac_v) = reaction(u_curr, v_curr);
-
-            out_u[0] = u_curr + dt * (d_u * lap_u + reac_u);
-            out_v[0] = v_curr + dt * (d_v * lap_v + reac_v);
+            op(0, lap_u, lap_v);
         }
 
         // 2. Interior (Safe Windows)
         if n > 2 {
             // Iterate over windows of 3 elements: [prev, curr, next]
-            // We write to out starting at index 1
-            for (((win_u, win_v), o_u), o_v) in u
-                .windows(3)
-                .zip(v.windows(3))
-                .zip(out_u.iter_mut().skip(1))
-                .zip(out_v.iter_mut().skip(1))
-            {
+            for (i, (win_u, win_v)) in u.windows(3).zip(v.windows(3)).enumerate() {
                 let u_prev = win_u[0];
                 let u_curr = win_u[1];
                 let u_next = win_u[2];
@@ -213,13 +137,11 @@ impl SpatialDiffusion for FiniteDifference1D {
                 let v_curr = win_v[1];
                 let v_next = win_v[2];
 
-                let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-                let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+                let lap_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                let lap_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-                let (reac_u, reac_v) = reaction(u_curr, v_curr);
-
-                *o_u = u_curr + dt * (d_u * lap_u + reac_u);
-                *o_v = v_curr + dt * (d_v * lap_v + reac_v);
+                // Enumerate starts at 0, but window corresponds to index 1
+                op(i + 1, lap_u, lap_v);
             }
         }
 
@@ -234,13 +156,10 @@ impl SpatialDiffusion for FiniteDifference1D {
             let u_next = u_curr;
             let v_next = v_curr;
 
-            let lap_u = (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-            let lap_v = (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
+            let lap_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-            let (reac_u, reac_v) = reaction(u_curr, v_curr);
-
-            out_u[i] = u_curr + dt * (d_u * lap_u + reac_u);
-            out_v[i] = v_curr + dt * (d_v * lap_v + reac_v);
+            op(i, lap_u, lap_v);
         }
     }
 }
@@ -255,6 +174,21 @@ impl SpatialDiffusion for FiniteDifference1D {
 /// * `d`: Diffusion coefficient.
 /// * `inv_dx_sq`: Inverse square of grid spacing (1/dx^2).
 fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
+    scan_1d_stencil(src, d, inv_dx_sq, |i, val| {
+        // Safety: We rely on the caller to ensure dst is sized correctly.
+        // scan_1d_stencil guarantees i < src.len(), which should match dst.len().
+        if i < dst.len() {
+            dst[i] = val;
+        }
+    });
+}
+
+/// Helper to apply 1D Finite Difference stencil.
+/// Calls `op` with (index, laplacian_value) for each point.
+fn scan_1d_stencil<F>(src: &[f64], d: f64, inv_dx_sq: f64, mut op: F)
+where
+    F: FnMut(usize, f64),
+{
     let n = src.len();
     if n == 0 {
         return;
@@ -265,16 +199,20 @@ fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
         let u_curr = src[0];
         let u_prev = u_curr; // Neumann: u_{-1} = u_0
         let u_next = if n > 1 { src[1] } else { u_curr };
-        dst[0] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+        let lap = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+        op(0, lap);
     }
 
     // 2. Interior (Optimized with windows iterator)
     if n > 2 {
-        for (win, out) in src.windows(3).zip(dst.iter_mut().skip(1)) {
+        // Iterate over windows of 3 elements: [prev, curr, next]
+        // Window index 0 corresponds to center index 1.
+        for (i, win) in src.windows(3).enumerate() {
             let u_prev = win[0];
             let u_curr = win[1];
             let u_next = win[2];
-            *out = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            let lap = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+            op(i + 1, lap);
         }
     }
 
@@ -284,7 +222,8 @@ fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
         let u_curr = src[i];
         let u_prev = src[i - 1];
         let u_next = u_curr; // Neumann: u_{N} = u_{N-1}
-        dst[i] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+        let lap = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+        op(i, lap);
     }
 }
 
@@ -312,17 +251,18 @@ impl FiniteDifference2D {
 }
 
 impl SpatialDiffusion for FiniteDifference2D {
-    fn apply(
+    fn map_diffusion<F>(
         &self,
         u: &[f64],
         v: &[f64],
-        out_u: &mut [f64],
-        out_v: &mut [f64],
         d_u: f64,
         d_v: f64,
-    ) {
+        mut op: F,
+    ) where
+        F: FnMut(usize, f64, f64),
+    {
         let n = self.width * self.height;
-        if u.len() != n || v.len() != n || out_u.len() != n || out_v.len() != n {
+        if u.len() != n || v.len() != n {
             if n == 0 {
                 return;
             }
@@ -351,69 +291,15 @@ impl SpatialDiffusion for FiniteDifference2D {
                 let u_curr = u[idx];
                 let lap_u_x = (u[idx_r] - 2.0 * u_curr + u[idx_l]) * inv_dx_sq;
                 let lap_u_y = (u[idx_d] - 2.0 * u_curr + u[idx_u]) * inv_dy_sq;
-                out_u[idx] = d_u * (lap_u_x + lap_u_y);
+                let diff_u = d_u * (lap_u_x + lap_u_y);
 
                 // V Laplacian
                 let v_curr = v[idx];
                 let lap_v_x = (v[idx_r] - 2.0 * v_curr + v[idx_l]) * inv_dx_sq;
                 let lap_v_y = (v[idx_d] - 2.0 * v_curr + v[idx_u]) * inv_dy_sq;
-                out_v[idx] = d_v * (lap_v_x + lap_v_y);
-            }
-        }
-    }
+                let diff_v = d_v * (lap_v_x + lap_v_y);
 
-    fn apply_step<F>(
-        &self,
-        u: &[f64],
-        v: &[f64],
-        out_u: &mut [f64],
-        out_v: &mut [f64],
-        d_u: f64,
-        d_v: f64,
-        dt: f64,
-        reaction: F,
-    ) where
-        F: Fn(f64, f64) -> (f64, f64),
-    {
-        let n = self.width * self.height;
-        if u.len() != n || v.len() != n || out_u.len() != n || out_v.len() != n {
-            if n == 0 {
-                return;
-            }
-            panic!("Buffer size mismatch in FiniteDifference2D");
-        }
-
-        let inv_dx_sq = 1.0 / (self.dx * self.dx);
-        let inv_dy_sq = 1.0 / (self.dy * self.dy);
-
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let idx = y * self.width + x;
-
-                // Neighbor indices with Neumann BC clamping
-                let x_prev = if x > 0 { x - 1 } else { x };
-                let x_next = if x < self.width - 1 { x + 1 } else { x };
-                let y_prev = if y > 0 { y - 1 } else { y };
-                let y_next = if y < self.height - 1 { y + 1 } else { y };
-
-                let idx_l = y * self.width + x_prev;
-                let idx_r = y * self.width + x_next;
-                let idx_u = y_prev * self.width + x;
-                let idx_d = y_next * self.width + x;
-
-                let u_curr = u[idx];
-                let v_curr = v[idx];
-
-                let lap_u = (u[idx_r] - 2.0 * u_curr + u[idx_l]) * inv_dx_sq
-                    + (u[idx_d] - 2.0 * u_curr + u[idx_u]) * inv_dy_sq;
-
-                let lap_v = (v[idx_r] - 2.0 * v_curr + v[idx_l]) * inv_dx_sq
-                    + (v[idx_d] - 2.0 * v_curr + v[idx_u]) * inv_dy_sq;
-
-                let (reac_u, reac_v) = reaction(u_curr, v_curr);
-
-                out_u[idx] = u_curr + dt * (d_u * lap_u + reac_u);
-                out_v[idx] = v_curr + dt * (d_v * lap_v + reac_v);
+                op(idx, diff_u, diff_v);
             }
         }
     }
@@ -486,7 +372,7 @@ mod tests_2d {
     }
 
     #[test]
-    fn test_apply_step_equivalence() {
+    fn test_map_diffusion_equivalence() {
         let width = 5;
         let height = 5;
         let diff = FiniteDifference2D::new(width, height, 1.0, 1.0);
@@ -517,17 +403,12 @@ mod tests_2d {
             out_v_1[i] = v[i] + dt * (out_v_1[i] + 2.0); // Dummy reaction +2
         }
 
-        // Method 2: apply_step
-        diff.apply_step(
-            &u,
-            &v,
-            &mut out_u_2,
-            &mut out_v_2,
-            d_u,
-            d_v,
-            dt,
-            |_u, _v| (1.0, 2.0),
-        );
+        // Method 2: map_diffusion fused step
+        diff.map_diffusion(&u, &v, d_u, d_v, |i, diff_u, diff_v| {
+            let (reac_u, reac_v) = (1.0, 2.0);
+            out_u_2[i] = u[i] + dt * (diff_u + reac_u);
+            out_v_2[i] = v[i] + dt * (diff_v + reac_v);
+        });
 
         for i in 0..n {
             assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
