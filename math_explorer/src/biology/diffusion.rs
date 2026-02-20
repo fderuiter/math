@@ -223,17 +223,52 @@ where
 
 /// A 2D Finite Difference implementation using a 5-point stencil.
 ///
-/// Handles boundaries with Neumann conditions (zero flux).
+/// This struct computes the discrete Laplacian operator $\nabla^2 u$ on a 2D rectangular grid.
+/// It uses a standard 5-point stencil (center, left, right, up, down).
+///
+/// # Boundary Conditions
+///
+/// This implementation enforces **Neumann Boundary Conditions** (zero-flux) at the edges:
+/// $\frac{\partial u}{\partial n} = 0$.
+/// Effectively, values at the boundary are mirrored from their immediate neighbors.
+///
+/// # Data Layout
+///
+/// The grid is flattened into a 1D array using **row-major order**:
+/// `index = y * width + x`.
+///
+/// # Example
+///
+/// ```rust
+/// use math_explorer::biology::diffusion::FiniteDifference2D;
+///
+/// // Create a 10x10 grid with unit spacing
+/// let diff_solver = FiniteDifference2D::new(10, 10, 1.0, 1.0);
+///
+/// assert_eq!(diff_solver.width, 10);
+/// assert_eq!(diff_solver.dx, 1.0);
+/// ```
 #[derive(Debug, Clone, Copy)]
 pub struct FiniteDifference2D {
+    /// The number of grid points in the horizontal (x) direction.
     pub width: usize,
+    /// The number of grid points in the vertical (y) direction.
     pub height: usize,
+    /// The grid spacing (step size) in the x-direction ($\Delta x$).
     pub dx: f64,
+    /// The grid spacing (step size) in the y-direction ($\Delta y$).
     pub dy: f64,
 }
 
 impl FiniteDifference2D {
     /// Creates a new 2D finite difference strategy.
+    ///
+    /// # Arguments
+    ///
+    /// * `width` - Number of columns in the grid.
+    /// * `height` - Number of rows in the grid.
+    /// * `dx` - Physical distance between horizontal grid points.
+    /// * `dy` - Physical distance between vertical grid points.
     pub fn new(width: usize, height: usize, dx: f64, dy: f64) -> Self {
         Self {
             width,
