@@ -3,6 +3,7 @@ use eframe::egui;
 pub mod chaos;
 pub mod epidemiology;
 pub mod fluid_dynamics;
+pub mod game_theory;
 pub mod medical;
 pub mod morphogenesis;
 pub mod mri;
