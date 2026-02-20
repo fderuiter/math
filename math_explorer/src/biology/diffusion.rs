@@ -12,14 +12,8 @@ pub trait SpatialDiffusion {
     /// * `index`: The linear index of the point.
     /// * `diff_u`: The diffusion term for u ($D_u \nabla^2 u$).
     /// * `diff_v`: The diffusion term for v ($D_v \nabla^2 v$).
-    fn map_diffusion<F>(
-        &self,
-        u: &[f64],
-        v: &[f64],
-        d_u: f64,
-        d_v: f64,
-        op: F,
-    ) where
+    fn map_diffusion<F>(&self, u: &[f64], v: &[f64], d_u: f64, d_v: f64, op: F)
+    where
         F: FnMut(usize, f64, f64);
 
     /// Applies the diffusion operator to the state vectors.
@@ -91,14 +85,8 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
 }
 
 impl SpatialDiffusion for FiniteDifference1D {
-    fn map_diffusion<F>(
-        &self,
-        u: &[f64],
-        v: &[f64],
-        d_u: f64,
-        d_v: f64,
-        mut op: F,
-    ) where
+    fn map_diffusion<F>(&self, u: &[f64], v: &[f64], d_u: f64, d_v: f64, mut op: F)
+    where
         F: FnMut(usize, f64, f64),
     {
         let n = u.len();
@@ -117,7 +105,11 @@ impl SpatialDiffusion for FiniteDifference1D {
             let v_curr = v[0];
             let u_prev = u_curr; // Neumann: u_{-1} = u_0
             let v_prev = v_curr;
-            let (u_next, v_next) = if n > 1 { (u[1], v[1]) } else { (u_curr, v_curr) };
+            let (u_next, v_next) = if n > 1 {
+                (u[1], v[1])
+            } else {
+                (u_curr, v_curr)
+            };
 
             let lap_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             let lap_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
@@ -251,14 +243,8 @@ impl FiniteDifference2D {
 }
 
 impl SpatialDiffusion for FiniteDifference2D {
-    fn map_diffusion<F>(
-        &self,
-        u: &[f64],
-        v: &[f64],
-        d_u: f64,
-        d_v: f64,
-        mut op: F,
-    ) where
+    fn map_diffusion<F>(&self, u: &[f64], v: &[f64], d_u: f64, d_v: f64, mut op: F)
+    where
         F: FnMut(usize, f64, f64),
     {
         let n = self.width * self.height;
