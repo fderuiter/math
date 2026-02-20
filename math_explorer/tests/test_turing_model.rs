@@ -1,5 +1,5 @@
-use math_explorer::biology::morphogenesis::{TuringModel, TuringState, SchnakenbergKinetics};
 use math_explorer::biology::diffusion::FiniteDifference1D;
+use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringModel, TuringState};
 use math_explorer::pure_math::analysis::ode::solvers::Euler;
 use math_explorer::pure_math::analysis::ode::traits::Solver;
 
@@ -42,5 +42,8 @@ fn test_turing_model_independent_simulation() {
 
     // Check that reaction/diffusion happened (values changed)
     let initial_u_0 = 1.0 + (0.0_f64).sin(); // 1.0
-    assert!((state.u()[0] - initial_u_0).abs() > 1e-6, "State should have evolved");
+    assert!(
+        (state.u()[0] - initial_u_0).abs() > 1e-6,
+        "State should have evolved"
+    );
 }

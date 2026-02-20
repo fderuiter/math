@@ -377,7 +377,8 @@ impl FusedTuringSolver {
         let next_v = &mut self.next_state.v;
 
         // Fused Diffusion-Reaction-Integration Step
-        model.diffusion
+        model
+            .diffusion
             .map_diffusion(u, v, model.d_u, model.d_v, |i, diff_u, diff_v| {
                 let (reac_u, reac_v) = model.kinetics.reaction(u[i], v[i]);
                 // Safety: map_diffusion guarantees i is within bounds of u/v.
