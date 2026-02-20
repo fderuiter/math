@@ -1,6 +1,6 @@
 use super::GameTheoryTool;
 use eframe::egui;
-use egui_plot::{Legend, Line, Plot, PlotPoints};
+use egui_plot::{Bar, BarChart, Legend, Line, Plot, PlotPoints, VLine};
 use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
 use nalgebra::{DMatrix, DVector};
 
@@ -11,6 +11,10 @@ pub struct ReplicatorDynamicsTool {
     time_horizon: f64,
     dt: f64,
     strategy_names: Vec<String>,
+    // New fields for playback and visualization
+    playback_time: f64,
+    is_playing: bool,
+    playback_speed: f64,
 }
 
 impl Default for ReplicatorDynamicsTool {
@@ -36,6 +40,9 @@ impl Default for ReplicatorDynamicsTool {
             time_horizon: 20.0,
             dt: 0.05,
             strategy_names: vec!["Hawk".to_string(), "Dove".to_string()],
+            playback_time: 0.0,
+            is_playing: false,
+            playback_speed: 1.0,
         };
         tool.run_simulation();
         tool
@@ -57,6 +64,10 @@ impl ReplicatorDynamicsTool {
         if let Ok(system) = ReplicatorDynamics::new(self.payoff_matrix.clone()) {
             self.trajectory =
                 system.simulate(self.initial_population.clone(), self.time_horizon, self.dt);
+
+            // Reset playback
+            self.playback_time = 0.0;
+            self.is_playing = false;
         }
     }
 
@@ -80,6 +91,172 @@ impl ReplicatorDynamicsTool {
         self.time_horizon = 50.0;
         self.run_simulation();
     }
+
+    fn show_settings_panel(&mut self, ui: &mut egui::Ui) {
+        ui.heading("Settings");
+        ui.separator();
+
+        ui.label("Presets:");
+        ui.horizontal(|ui| {
+            if ui.button("Hawk-Dove").clicked() {
+                self.load_preset_hawk_dove();
+            }
+            if ui.button("RPS").clicked() {
+                self.load_preset_rps();
+            }
+        });
+
+        ui.separator();
+        ui.heading("Payoff Matrix");
+        let rows = self.payoff_matrix.nrows();
+        let cols = self.payoff_matrix.ncols();
+
+        egui::Grid::new("payoff_grid").striped(true).show(ui, |ui| {
+            // Header
+            ui.label("");
+            for j in 0..cols {
+                ui.label(
+                    self.strategy_names
+                        .get(j)
+                        .map(|s| s.as_str())
+                        .unwrap_or("?"),
+                );
+            }
+            ui.end_row();
+
+            for i in 0..rows {
+                ui.label(
+                    self.strategy_names
+                        .get(i)
+                        .map(|s| s.as_str())
+                        .unwrap_or("?"),
+                );
+                for j in 0..cols {
+                    ui.add(egui::DragValue::new(&mut self.payoff_matrix[(i, j)]).speed(0.1));
+                }
+                ui.end_row();
+            }
+        });
+
+        ui.separator();
+        ui.heading("Initial Population");
+        let mut changed = false;
+        for i in 0..self.initial_population.len() {
+            ui.horizontal(|ui| {
+                ui.label(
+                    self.strategy_names
+                        .get(i)
+                        .map(|s| s.as_str())
+                        .unwrap_or("?"),
+                );
+                if ui
+                    .add(egui::Slider::new(
+                        &mut self.initial_population[i],
+                        0.0..=1.0,
+                    ))
+                    .changed()
+                {
+                    changed = true;
+                }
+            });
+        }
+
+        if changed {
+            // Optional: Normalize strictly?
+        }
+
+        ui.separator();
+        ui.heading("Simulation");
+        ui.add(egui::Slider::new(&mut self.time_horizon, 10.0..=200.0).text("Duration"));
+        ui.add(egui::Slider::new(&mut self.dt, 0.01..=0.5).text("Time Step"));
+
+        if ui.button("Run Simulation").clicked() {
+            self.run_simulation();
+        }
+    }
+
+    fn show_trajectory_plot(&self, ui: &mut egui::Ui) {
+        Plot::new("replicator_plot")
+            .legend(Legend::default())
+            .allow_drag(true)
+            .allow_zoom(true)
+            .show(ui, |plot_ui| {
+                if self.trajectory.is_empty() {
+                    return;
+                }
+
+                let n_strategies = self.trajectory[0].1.len();
+
+                for i in 0..n_strategies {
+                    let points: PlotPoints = self
+                        .trajectory
+                        .iter()
+                        .map(|(t, state)| [*t, state[i]])
+                        .collect();
+
+                    let name = self
+                        .strategy_names
+                        .get(i)
+                        .cloned()
+                        .unwrap_or(format!("Strategy {}", i));
+                    plot_ui.line(Line::new(name, points));
+                }
+
+                // Add vertical line for current playback time
+                plot_ui.vline(VLine::new("Current Time", self.playback_time).color(egui::Color32::WHITE));
+            });
+    }
+
+    fn show_population_bar_chart(&self, ui: &mut egui::Ui) {
+        if self.trajectory.is_empty() {
+            ui.label("No data available.");
+            return;
+        }
+
+        // Find state at current time
+        // Clamp index to valid range
+        let idx = ((self.playback_time / self.dt).round() as usize).min(self.trajectory.len().saturating_sub(1));
+
+        let (current_time, current_state) = &self.trajectory[idx];
+
+        // Create bars
+        let bars: Vec<Bar> = current_state
+            .iter()
+            .enumerate()
+            .map(|(i, &val)| {
+                Bar::new(i as f64, val)
+                    .name(
+                        self.strategy_names
+                            .get(i)
+                            .cloned()
+                            .unwrap_or(format!("Strategy {}", i)),
+                    )
+                    .width(0.5)
+            })
+            .collect();
+
+        Plot::new("population_bar_chart")
+            .show_axes([false, true]) // Show Y axis but hide X axis numbers
+            .show_x(false)
+            .legend(Legend::default())
+            .allow_zoom(false)
+            .allow_drag(false)
+            .include_y(0.0)
+            .include_y(1.0)
+            .show(ui, |plot_ui| {
+                plot_ui.bar_chart(BarChart::new("Distribution", bars));
+            });
+
+        // Numerical readout
+        ui.horizontal(|ui| {
+            ui.strong(format!("Time: {:.2}", current_time));
+            ui.separator();
+            for (i, val) in current_state.iter().enumerate() {
+                let name = self.strategy_names.get(i).map(|s| s.as_str()).unwrap_or("?");
+                ui.label(format!("{}: {:.2}", name, val));
+            }
+        });
+    }
 }
 
 impl GameTheoryTool for ReplicatorDynamicsTool {
@@ -88,117 +265,44 @@ impl GameTheoryTool for ReplicatorDynamicsTool {
     }
 
     fn show(&mut self, ctx: &egui::Context) {
+        // Animation Logic
+        if self.is_playing && !self.trajectory.is_empty() {
+            let dt = ctx.input(|i| i.stable_dt) as f64;
+            self.playback_time += dt * self.playback_speed;
+
+            if self.playback_time > self.time_horizon {
+                self.playback_time = 0.0; // Loop
+            }
+            ctx.request_repaint();
+        }
+
         egui::SidePanel::left("replicator_control_panel").show(ctx, |ui| {
-            ui.heading("Settings");
-            ui.separator();
-
-            ui.label("Presets:");
-            ui.horizontal(|ui| {
-                if ui.button("Hawk-Dove").clicked() {
-                    self.load_preset_hawk_dove();
-                }
-                if ui.button("RPS").clicked() {
-                    self.load_preset_rps();
-                }
-            });
-
-            ui.separator();
-            ui.heading("Payoff Matrix");
-            let rows = self.payoff_matrix.nrows();
-            let cols = self.payoff_matrix.ncols();
-
-            egui::Grid::new("payoff_grid").striped(true).show(ui, |ui| {
-                // Header
-                ui.label("");
-                for j in 0..cols {
-                    ui.label(
-                        self.strategy_names
-                            .get(j)
-                            .map(|s| s.as_str())
-                            .unwrap_or("?"),
-                    );
-                }
-                ui.end_row();
-
-                for i in 0..rows {
-                    ui.label(
-                        self.strategy_names
-                            .get(i)
-                            .map(|s| s.as_str())
-                            .unwrap_or("?"),
-                    );
-                    for j in 0..cols {
-                        ui.add(egui::DragValue::new(&mut self.payoff_matrix[(i, j)]).speed(0.1));
-                    }
-                    ui.end_row();
-                }
-            });
-
-            ui.separator();
-            ui.heading("Initial Population");
-            let mut changed = false;
-            for i in 0..self.initial_population.len() {
-                ui.horizontal(|ui| {
-                    ui.label(
-                        self.strategy_names
-                            .get(i)
-                            .map(|s| s.as_str())
-                            .unwrap_or("?"),
-                    );
-                    if ui
-                        .add(egui::Slider::new(
-                            &mut self.initial_population[i],
-                            0.0..=1.0,
-                        ))
-                        .changed()
-                    {
-                        changed = true;
-                    }
-                });
-            }
-
-            if changed {
-                // Optional: Auto-normalize or wait for Run?
-                // Waiting for Run is safer for UX to avoid sliders jumping around.
-            }
-
-            ui.separator();
-            ui.heading("Simulation");
-            ui.add(egui::Slider::new(&mut self.time_horizon, 10.0..=200.0).text("Duration"));
-            ui.add(egui::Slider::new(&mut self.dt, 0.01..=0.5).text("Time Step"));
-
-            if ui.button("Run Simulation").clicked() {
-                self.run_simulation();
-            }
+            self.show_settings_panel(ui);
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            Plot::new("replicator_plot")
-                .legend(Legend::default())
-                .allow_drag(true)
-                .allow_zoom(true)
-                .show(ui, |plot_ui| {
-                    if self.trajectory.is_empty() {
-                        return;
+        egui::TopBottomPanel::bottom("replicator_bottom_panel")
+            .resizable(true)
+            .min_height(200.0)
+            .show(ctx, |ui| {
+                ui.heading("Population Distribution");
+
+                // Playback Controls
+                ui.horizontal(|ui| {
+                    if ui.button(if self.is_playing { "⏸ Pause" } else { "▶ Play" }).clicked() {
+                        self.is_playing = !self.is_playing;
                     }
 
-                    let n_strategies = self.trajectory[0].1.len();
+                    ui.add(egui::Slider::new(&mut self.playback_time, 0.0..=self.time_horizon).text("Time"));
 
-                    for i in 0..n_strategies {
-                        let points: PlotPoints = self
-                            .trajectory
-                            .iter()
-                            .map(|(t, state)| [*t, state[i]])
-                            .collect();
-
-                        let name = self
-                            .strategy_names
-                            .get(i)
-                            .cloned()
-                            .unwrap_or(format!("Strategy {}", i));
-                        plot_ui.line(Line::new(name, points));
-                    }
+                    ui.label("Speed:");
+                    ui.add(egui::DragValue::new(&mut self.playback_speed).speed(0.1).range(0.1..=10.0));
                 });
+
+                self.show_population_bar_chart(ui);
+            });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            self.show_trajectory_plot(ui);
         });
     }
 }

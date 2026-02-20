@@ -67,7 +67,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `applied::game_theory::evolutionary`
 *   **Features:**
     *   [x] **Replicator Dynamics:** Phase plane plots for Hawk-Dove or Rock-Paper-Scissors games.
-    *   [ ] **Population Bar Charts:** Real-time updating of strategy proportions.
+    *   [x] **Population Bar Charts:** Real-time updating of strategy proportions.
 
 ### 2.4 Morphogenesis
 *   **Module:** `biology::morphogenesis`
