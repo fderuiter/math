@@ -38,11 +38,14 @@ impl MedicalTool for BeamProfilingTool {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            let points: PlotPoints = (0..300).map(|i| {
-                let depth = i as f64 * 0.1;
-                let dose = calculate_terma(self.incident_fluence, self.mu, depth).unwrap_or(0.0);
-                [depth, dose]
-            }).collect();
+            let points: PlotPoints = (0..300)
+                .map(|i| {
+                    let depth = i as f64 * 0.1;
+                    let dose =
+                        calculate_terma(self.incident_fluence, self.mu, depth).unwrap_or(0.0);
+                    [depth, dose]
+                })
+                .collect();
 
             let line = Line::new("Depth Dose", points);
             Plot::new("depth_dose_curve")

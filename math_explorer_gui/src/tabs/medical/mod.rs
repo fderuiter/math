@@ -1,11 +1,11 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
-pub mod dose;
 pub mod beam_profiling;
+pub mod dose;
 
-use dose::DoseCalculationTool;
 use beam_profiling::BeamProfilingTool;
+use dose::DoseCalculationTool;
 
 /// A trait for sub-tools within the Medical Physics tab.
 pub trait MedicalTool {

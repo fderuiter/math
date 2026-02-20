@@ -371,15 +371,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
             let u = &state.concentrations[s];
             let out_u = &mut out.concentrations[s];
             let d = *d;
-            apply_2d_stencil(
-                u,
-                out_u,
-                self.width,
-                self.height,
-                d,
-                inv_dx_sq,
-                inv_dy_sq,
-            );
+            apply_2d_stencil(u, out_u, self.width, self.height, d, inv_dx_sq, inv_dy_sq);
         }
     }
 }
@@ -405,24 +397,8 @@ impl SpatialDiffusion for FiniteDifference2D {
         let inv_dx_sq = 1.0 / (self.dx * self.dx);
         let inv_dy_sq = 1.0 / (self.dy * self.dy);
 
-        apply_2d_stencil(
-            u,
-            out_u,
-            self.width,
-            self.height,
-            d_u,
-            inv_dx_sq,
-            inv_dy_sq,
-        );
-        apply_2d_stencil(
-            v,
-            out_v,
-            self.width,
-            self.height,
-            d_v,
-            inv_dx_sq,
-            inv_dy_sq,
-        );
+        apply_2d_stencil(u, out_u, self.width, self.height, d_u, inv_dx_sq, inv_dy_sq);
+        apply_2d_stencil(v, out_v, self.width, self.height, d_v, inv_dx_sq, inv_dy_sq);
     }
 
     fn apply_step<F>(
