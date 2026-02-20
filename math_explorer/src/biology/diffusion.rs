@@ -288,6 +288,51 @@ fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
     }
 }
 
+/// Applies a 2D Finite Difference stencil (Neumann BC) to a single array.
+///
+/// This is a private helper to ensure DRY compliance between DiffusionModel and SpatialDiffusion implementations.
+fn apply_2d_stencil(
+    src: &[f64],
+    dst: &mut [f64],
+    width: usize,
+    height: usize,
+    d: f64,
+    inv_dx_sq: f64,
+    inv_dy_sq: f64,
+) {
+    let n = width * height;
+    // Basic bounds check
+    assert_eq!(src.len(), n, "src buffer size mismatch");
+    assert_eq!(dst.len(), n, "dst buffer size mismatch");
+
+    if n == 0 {
+        return;
+    }
+
+    for y in 0..height {
+        for x in 0..width {
+            let idx = y * width + x;
+
+            // Neighbor indices with Neumann BC clamping
+            let x_prev = if x > 0 { x - 1 } else { x };
+            let x_next = if x < width - 1 { x + 1 } else { x };
+            let y_prev = if y > 0 { y - 1 } else { y };
+            let y_next = if y < height - 1 { y + 1 } else { y };
+
+            let idx_l = y * width + x_prev;
+            let idx_r = y * width + x_next;
+            let idx_u = y_prev * width + x;
+            let idx_d = y_next * width + x;
+
+            let u_curr = src[idx];
+            let lap_x = (src[idx_r] - 2.0 * u_curr + src[idx_l]) * inv_dx_sq;
+            let lap_y = (src[idx_d] - 2.0 * u_curr + src[idx_u]) * inv_dy_sq;
+
+            dst[idx] = d * (lap_x + lap_y);
+        }
+    }
+}
+
 /// A 2D Finite Difference implementation using a 5-point stencil.
 ///
 /// Handles boundaries with Neumann conditions (zero flux).
@@ -307,6 +352,34 @@ impl FiniteDifference2D {
             height,
             dx,
             dy,
+        }
+    }
+}
+
+impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
+    fn apply(
+        &self,
+        state: &crate::biology::reaction_diffusion::ChemicalState,
+        out: &mut crate::biology::reaction_diffusion::ChemicalState,
+        coeffs: &[f64],
+    ) {
+        let n_species = state.num_species();
+        let inv_dx_sq = 1.0 / (self.dx * self.dx);
+        let inv_dy_sq = 1.0 / (self.dy * self.dy);
+
+        for (s, d) in coeffs.iter().enumerate().take(n_species) {
+            let u = &state.concentrations[s];
+            let out_u = &mut out.concentrations[s];
+            let d = *d;
+            apply_2d_stencil(
+                u,
+                out_u,
+                self.width,
+                self.height,
+                d,
+                inv_dx_sq,
+                inv_dy_sq,
+            );
         }
     }
 }
@@ -332,34 +405,24 @@ impl SpatialDiffusion for FiniteDifference2D {
         let inv_dx_sq = 1.0 / (self.dx * self.dx);
         let inv_dy_sq = 1.0 / (self.dy * self.dy);
 
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let idx = y * self.width + x;
-
-                // Neighbor indices with Neumann BC clamping
-                let x_prev = if x > 0 { x - 1 } else { x };
-                let x_next = if x < self.width - 1 { x + 1 } else { x };
-                let y_prev = if y > 0 { y - 1 } else { y };
-                let y_next = if y < self.height - 1 { y + 1 } else { y };
-
-                let idx_l = y * self.width + x_prev;
-                let idx_r = y * self.width + x_next;
-                let idx_u = y_prev * self.width + x;
-                let idx_d = y_next * self.width + x;
-
-                // U Laplacian
-                let u_curr = u[idx];
-                let lap_u_x = (u[idx_r] - 2.0 * u_curr + u[idx_l]) * inv_dx_sq;
-                let lap_u_y = (u[idx_d] - 2.0 * u_curr + u[idx_u]) * inv_dy_sq;
-                out_u[idx] = d_u * (lap_u_x + lap_u_y);
-
-                // V Laplacian
-                let v_curr = v[idx];
-                let lap_v_x = (v[idx_r] - 2.0 * v_curr + v[idx_l]) * inv_dx_sq;
-                let lap_v_y = (v[idx_d] - 2.0 * v_curr + v[idx_u]) * inv_dy_sq;
-                out_v[idx] = d_v * (lap_v_x + lap_v_y);
-            }
-        }
+        apply_2d_stencil(
+            u,
+            out_u,
+            self.width,
+            self.height,
+            d_u,
+            inv_dx_sq,
+            inv_dy_sq,
+        );
+        apply_2d_stencil(
+            v,
+            out_v,
+            self.width,
+            self.height,
+            d_v,
+            inv_dx_sq,
+            inv_dy_sq,
+        );
     }
 
     fn apply_step<F>(

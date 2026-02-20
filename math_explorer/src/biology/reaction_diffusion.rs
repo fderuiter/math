@@ -481,4 +481,80 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_reaction_diffusion_system_2d_consistency() {
+        use crate::biology::diffusion::FiniteDifference2D;
+        use crate::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
+
+        let width = 10;
+        let height = 10;
+        let n = width * height;
+        let d_u = 1.0;
+        let d_v = 0.5;
+        let dx = 1.0;
+        let dy = 1.0;
+
+        // 1. Setup TuringSystem (Reference)
+        let diffusion_turing = FiniteDifference2D::new(width, height, dx, dy);
+        let kinetics_turing = SchnakenbergKinetics::default();
+        let mut turing =
+            TuringSystem::new_with_kinetics(n, d_u, d_v, kinetics_turing, diffusion_turing);
+
+        // 2. Setup ReactionDiffusionSystem (Generic)
+        let diffusion_generic = FiniteDifference2D::new(width, height, dx, dy);
+        let kinetics_generic = SchnakenbergKinetics::default();
+        let diffusion_coeffs = vec![d_u, d_v];
+        let mut generic = ReactionDiffusionSystem::new(
+            2,
+            n,
+            kinetics_generic,
+            diffusion_generic,
+            diffusion_coeffs,
+        );
+
+        // Initialize both with same data
+        for i in 0..n {
+            let u_val = 1.0 + 0.1 * (i as f64);
+            let v_val = 0.5 - 0.05 * (i as f64);
+
+            turing.state.u_mut()[i] = u_val;
+            turing.state.v_mut()[i] = v_val;
+
+            generic.state.species_mut(0)[i] = u_val;
+            generic.state.species_mut(1)[i] = v_val;
+        }
+
+        // Step
+        let dt = 0.01;
+        let steps = 5;
+        for _ in 0..steps {
+            turing.step(dt);
+            generic.step(dt);
+        }
+
+        // Compare
+        let turing_u = turing.u();
+        let turing_v = turing.v();
+        let generic_u = generic.state.species(0);
+        let generic_v = generic.state.species(1);
+
+        let tolerance = 1e-10;
+        for i in 0..n {
+            assert!(
+                (turing_u[i] - generic_u[i]).abs() < tolerance,
+                "U mismatch at {}: {} vs {}",
+                i,
+                turing_u[i],
+                generic_u[i]
+            );
+            assert!(
+                (turing_v[i] - generic_v[i]).abs() < tolerance,
+                "V mismatch at {}: {} vs {}",
+                i,
+                turing_v[i],
+                generic_v[i]
+            );
+        }
+    }
 }
