@@ -6,7 +6,7 @@
 //! 3. **Stochastic Dynamics**: Gillespie algorithms for small populations.
 //! 4. **Network Epidemiology**: Disease spread on graph structures.
 //!
-//! ## 🚀 Quick Start: Simulating an Outbreak
+//! ##  Quick Start: Simulating an Outbreak
 //!
 //! ```rust
 //! use math_explorer::epidemiology::{SIRModel, SIRState};

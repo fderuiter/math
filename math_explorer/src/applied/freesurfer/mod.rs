@@ -29,7 +29,7 @@
 //!     style Thickness fill:#dfd,stroke:#333
 //! ```
 //!
-//! ## ⚡ Quick Start: Cortical Thickness
+//! ##  Quick Start: Cortical Thickness
 //!
 //! Calculate the thickness between the white matter surface (inner) and pial surface (outer).
 //!

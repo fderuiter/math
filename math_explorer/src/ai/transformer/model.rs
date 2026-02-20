@@ -7,13 +7,13 @@ use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, Nor
 
 /// The full Transformer model container.
 ///
-/// # 🏗️ Architecture
+/// #  Architecture
 ///
 /// This struct acts as a **high-level container** for the `Encoder` and `Decoder` stacks.
 /// It provides the structural skeleton of a Transformer but leaves specific pipeline details
 /// (like embedding generation) to the user or wrapping frameworks.
 ///
-/// ## ⚠️ Scope & Limitations
+/// ##  Scope & Limitations
 ///
 /// In a production-ready implementation (like BERT or GPT), this struct would typically also manage:
 /// *   **Embeddings**: Converting token IDs to vectors (`Input Embeddings`).
@@ -22,7 +22,7 @@ use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, Nor
 ///
 /// This implementation focuses strictly on the **Attention & Feed-Forward** backbone.
 ///
-/// # 🚀 Usage
+/// #  Usage
 ///
 /// Since this struct does not currently coordinate a unified `forward` pass (as that depends on
 /// whether you are doing Seq2Seq, Causal LM, or Masked LM), you should instantiate components manually:

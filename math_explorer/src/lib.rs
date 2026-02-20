@@ -9,7 +9,7 @@
 //! This library serves as a verifiable playground for complex algorithms, ensuring that "Knowledge Rot" is fought
 //! with runnable examples and rigorous testing.
 //!
-//! ## 🚀 Quick Start
+//! ##  Quick Start
 //!
 //! **Calculate Clebsch-Gordan Coefficients (Quantum Physics):**
 //!
@@ -21,7 +21,7 @@
 //! assert!((coeff - 0.5477).abs() < 1e-3);
 //! ```
 //!
-//! ## 📚 Core Domains
+//! ##  Core Domains
 //!
 //! *   **[AI](crate::ai)**: Implementations of Transformers, Neural Rendering (NeRF), and Self-Calibration loops.
 //! *   **[Applied](crate::applied)**: Real-world modeling including Clinical Trials and the satirical [Favoritism](crate::applied::favoritism) theory.
@@ -29,7 +29,7 @@
 //! *   **[Biology](crate::biology)**: Computational biology models from Molecular to Population scales.
 //! *   **[Pure Math](crate::pure_math)**: Foundational algorithms in Number Theory, Algebra, and Analysis.
 //!
-//! ## 🔧 Usage
+//! ##  Usage
 //!
 //! Add this to your `Cargo.toml`:
 //!

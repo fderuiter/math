@@ -5,7 +5,7 @@
 //! This module provides robust implementations of classic algorithms, designed with the **Strategy Pattern**
 //! to allow for flexible behavior and comprehensive analysis.
 //!
-//! ## 🗺️ Algorithm Taxonomy
+//! ##  Algorithm Taxonomy
 //!
 //! ```mermaid
 //! graph TD
@@ -26,7 +26,7 @@
 //!     style Sort fill:#bfb,stroke:#333
 //! ```
 //!
-//! ## ⚡ Quick Start: Kalman Tracking
+//! ##  Quick Start: Kalman Tracking
 //!
 //! Track a moving object in 1D space using a Constant Velocity model.
 //!

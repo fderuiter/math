@@ -14,7 +14,7 @@
 //!
 //! These identities relate to Ramanujan's theta functions and have properties modulo primes (e.g., congruences).
 //!
-//! ## 🚀 Quick Start
+//! ##  Quick Start
 //!
 //! Compute the first few coefficients of the partition function $P^*(n)$.
 //!

@@ -1,6 +1,6 @@
 //! High Energy Physics module.
 //!
-//! # 🌌 High Energy Astrophysics
+//! #  High Energy Astrophysics
 //!
 //! This module provides the mathematical tools to simulate and analyze the most extreme
 //! environments in the universe: Black Holes, Relativistic Jets, and High-Energy Radiation.
@@ -29,7 +29,7 @@
 //! ```
 //! </div>
 //!
-//! ## ⚡ Quick Start: The Relativistic Observer
+//! ##  Quick Start: The Relativistic Observer
 //!
 //! Calculate the total time dilation experienced by an observer orbiting a supermassive
 //! black hole. This combines **Gravitational Time Dilation** (General Relativity) with

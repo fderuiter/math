@@ -23,7 +23,7 @@
 //!     end
 //! ```
 //!
-//! ## 🚀 Quick Start: Angular Momentum & Time Evolution
+//! ##  Quick Start: Angular Momentum & Time Evolution
 //!
 //! ### 1. Clebsch-Gordan Coefficients
 //! Calculate the probability amplitude of coupled angular momentum states.

@@ -43,7 +43,7 @@
 //!     ObjectiveStrategy <|.. L1RegularizationStrategy
 //! ```
 //!
-//! ## 🚀 Quick Start: Merging LoRAs
+//! ##  Quick Start: Merging LoRAs
 //!
 //! ```rust
 //! use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};

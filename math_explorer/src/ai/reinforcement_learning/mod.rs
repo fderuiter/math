@@ -18,7 +18,7 @@
 //!
 //! ```mermaid
 //! graph LR
-//!     Agent[🤖 Agent] -- Action $A_t$ --> Env[🌍 Environment]
+//!     Agent[ Agent] -- Action $A_t$ --> Env[ Environment]
 //!     Env -- State $S_{t+1}$ --> Agent
 //!     Env -- Reward $R_{t+1}$ --> Agent
 //!
@@ -31,7 +31,7 @@
 //! 3. The **Environment** transitions to a new state $S_{t+1}$ and emits a reward $R_{t+1}$.
 //! 4. The **Agent** updates its internal knowledge (e.g., Q-values) based on the transition.
 //!
-//! ## 🚀 Quick Start: GridWorld Q-Learning
+//! ##  Quick Start: GridWorld Q-Learning
 //!
 //! Train an agent to navigate a simple 1D grid to reach a target.
 //!

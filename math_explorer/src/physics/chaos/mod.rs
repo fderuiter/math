@@ -33,7 +33,7 @@
 //! *   **[Lorenz System](lorenz)**: Continuous-time atmospheric convection model (The "Butterfly" attractor).
 //! *   **[Metrics](metrics)**: Tools to quantify chaos (Lyapunov Exponents, Correlation Dimension).
 //!
-//! ## 🚀 Deep Dive: The Lorenz Attractor
+//! ##  Deep Dive: The Lorenz Attractor
 //!
 //! The Lorenz system is defined by three coupled differential equations:
 //!

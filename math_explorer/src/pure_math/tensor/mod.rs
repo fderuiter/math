@@ -4,7 +4,7 @@
 //! It supports the computation of fundamental geometric objects such as Christoffel symbols,
 //! which are essential for General Relativity and Differential Geometry.
 //!
-//! ## 🚀 Quick Start: Christoffel Symbols
+//! ##  Quick Start: Christoffel Symbols
 //!
 //! Compute the Christoffel symbols for a 2D sphere.
 //!

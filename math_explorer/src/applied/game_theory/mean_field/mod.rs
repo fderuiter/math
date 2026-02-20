@@ -6,7 +6,7 @@
 //! 1.  **Hamilton-Jacobi-Bellman (HJB)**: Backward equation. Determines the optimal value function $u(x,t)$ for a representative agent.
 //! 2.  **Fokker-Planck (FP)**: Forward equation. Describes the evolution of the population density $m(x,t)$ under the optimal control.
 //!
-//! ## 🚀 Quick Start
+//! ##  Quick Start
 //!
 //! Solve a standard 1D MFG where agents try to minimize travel cost while avoiding congestion.
 //!

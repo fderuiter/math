@@ -1,6 +1,6 @@
 # Generative Turbulence (Ghost Module)
 
-> **Status:** 👻 Excluded from compilation.
+> **Status:**  Excluded from compilation.
 
 ## Why is this hidden?
 

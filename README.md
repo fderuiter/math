@@ -11,7 +11,7 @@
 
 ---
 
-## ⚡ Quickstart (30 Seconds)
+##  Quickstart (30 Seconds)
 
 Get up and running immediately.
 
@@ -42,7 +42,7 @@ fn main() {
 
 ---
 
-## 📚 Table of Contents
+##  Table of Contents
 
 - [Features](#-features)
 - [Graphical User Interface](#-graphical-user-interface)
@@ -51,20 +51,20 @@ fn main() {
 - [Contributing](#-contributing)
 - [License](#-license)
 
-## 🚀 Features
+##  Features
 
 Math Explorer is organized into high-level domains, each solving specific problems:
 
 ```mermaid
 graph TD
-    Root[Math Explorer] --> AI[🤖 AI]
-    Root --> Applied[🛠️ Applied]
-    Root --> Bio[🧬 Biology]
-    Root --> Climate[🌍 Climate]
-    Root --> Epi[🦠 Epidemiology]
-    Root --> Phys[🌌 Physics]
-    Root --> Pure[📐 Pure Math]
-    Root --> GUI[🖥️ GUI]
+    Root[Math Explorer] --> AI[ AI]
+    Root --> Applied[ Applied]
+    Root --> Bio[ Biology]
+    Root --> Climate[ Climate]
+    Root --> Epi[ Epidemiology]
+    Root --> Phys[ Physics]
+    Root --> Pure[ Pure Math]
+    Root --> GUI[ GUI]
 
     AI --> Trans[Transformers] & NeRF[NeRF-Diffusion]
     Applied --> Fav[Favoritism] & Clinical[Clinical Trials] & Battery[Battery Degradation] & NeuroImg[Neuroimaging] & GRPO[GRPO]
@@ -79,18 +79,18 @@ graph TD
 
 | Domain | Module | Description |
 | :--- | :--- | :--- |
-| **🤖 AI** | `math_explorer::ai` | Transformers (Attention, Encoders), **Reinforcement Learning** (Q-Learning), NeRF-Diffusion (SDS), and Self-Calibration loops. |
-| **🛠️ Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), **Battery Degradation** (Li-ion), **Isosurface** (Marching Cubes), **LoraHub**, **Neuroimaging**, and **GRPO** (Policy Optimization). |
-| **🧬 Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Morphogenesis** (Turing Patterns), and **Evolutionary Dynamics**. |
-| **🌍 Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
-| **🦠 Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
-| **🌌 Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
-| **📐 Pure Math** | `math_explorer::pure_math` | **Statistics** (Glicko-2, Markov, TDA), **Tensors** (Christoffel Symbols), Number Theory, Graph Theory, and **Abstract Algebra**. |
-| **🖥️ GUI** | `math_explorer_gui` | Interactive **eframe/egui** application for visualizing simulations (currently MRI Physics). |
+| ** AI** | `math_explorer::ai` | Transformers (Attention, Encoders), **Reinforcement Learning** (Q-Learning), NeRF-Diffusion (SDS), and Self-Calibration loops. |
+| ** Applied** | `math_explorer::applied` | **Favoritism** (Satirical modeling), **Clinical Trials** (Win Ratio), **Battery Degradation** (Li-ion), **Isosurface** (Marching Cubes), **LoraHub**, **Neuroimaging**, and **GRPO** (Policy Optimization). |
+| ** Biology** | `math_explorer::biology` | **Neuroscience** (Hodgkin-Huxley), **Morphogenesis** (Turing Patterns), and **Evolutionary Dynamics**. |
+| ** Climate** | `math_explorer::climate` | **CERA Framework** (Climate-invariant Encoding through Representation Alignment). |
+| ** Epidemiology** | `math_explorer::epidemiology` | **Compartmental Models** (SIR/SEIR), **Network Spread**, and **Stochastic Dynamics**. |
+| ** Physics** | `math_explorer::physics` | Quantum Mechanics (Clebsch-Gordan), Astrophysics, Chaos Theory (Lorenz System), and Fluid Dynamics. |
+| ** Pure Math** | `math_explorer::pure_math` | **Statistics** (Glicko-2, Markov, TDA), **Tensors** (Christoffel Symbols), Number Theory, Graph Theory, and **Abstract Algebra**. |
+| ** GUI** | `math_explorer_gui` | Interactive **eframe/egui** application for visualizing simulations (currently MRI Physics). |
 
 ---
 
-## 🖥️ Graphical User Interface
+##  Graphical User Interface
 
 We provide a native GUI application to explore simulations interactively.
 
@@ -111,9 +111,9 @@ cargo run --release --package math_explorer_gui
 
 ---
 
-## 🔍 Deep Dive: Modules
+##  Deep Dive: Modules
 
-### 🏆 Competitive Statistics: Glicko-2
+###  Competitive Statistics: Glicko-2
 Implement the same rating system used by professional esports leagues.
 
 ```rust
@@ -136,7 +136,7 @@ let new_player = update_rating(&player, &[result], &tau).unwrap();
 println!("New Rating: {:.0}", new_player.rating.value());
 ```
 
-### 🧬 Biology & Neuroscience
+###  Biology & Neuroscience
 Simulate the electrical characteristics of excitable cells using the Hodgkin-Huxley model.
 
 ```rust
@@ -156,7 +156,7 @@ for _ in 0..1000 {
 }
 ```
 
-### 🤖 Artificial Intelligence
+###  Artificial Intelligence
 Implement state-of-the-art architectures from scratch.
 
 **Example: Transformer Encoder**
@@ -172,7 +172,7 @@ let input = DMatrix::zeros(10, 512);
 let encoded = encoder.forward(input, None);
 ```
 
-### 🌍 Climate Modeling: CERA Framework
+###  Climate Modeling: CERA Framework
 Train a model to learn climate-invariant representations using the CERA architecture.
 
 ```rust
@@ -207,7 +207,7 @@ let warm_inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
 trainer.train(&inputs, &targets, &warm_inputs);
 ```
 
-### 🛠️ Applied Mathematics: Favoritism
+###  Applied Mathematics: Favoritism
 A "rigorous" mathematical model to determine who the favorite child is.
 
 ```rust
@@ -221,7 +221,7 @@ let score = calculate_favoritism_score(&inputs);
 println!("Favoritism Score: {}", score); // Higher is better
 ```
 
-### 📐 Pure Math: Tensor Calculus
+###  Pure Math: Tensor Calculus
 Compute Christoffel symbols for a curved manifold (e.g., a sphere).
 
 ```rust
@@ -243,7 +243,7 @@ let gammas = christoffel_symbols(&metric, &point).expect("Singular metric");
 println!("Gamma^theta_phi_phi: {:.4}", gammas[0][(1, 1)]); // -0.5000
 ```
 
-### 🌌 Physics: Chaos Theory
+###  Physics: Chaos Theory
 Explore the Lorenz System and Lyapunov exponents.
 
 **Example: The Butterfly Effect**
@@ -258,7 +258,7 @@ cargo run --release --package math_explorer --example lorenz_chaos
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 We rely on standard Rust testing frameworks. To verify the integrity of all mathematical implementations:
 
@@ -269,12 +269,12 @@ cargo test --package math_explorer
 
 This runs unit tests for everything from Prime Number generation to NeRF rendering logic.
 
-## 🤝 Contributing
+##  Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our style guide and process.
 
 **The Golden Rule:** If you add code, you must add documentation and tests.
 
-## 📄 License
+##  License
 
 This project is open-source. See the [LICENSE](LICENSE) file for details.

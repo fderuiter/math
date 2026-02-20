@@ -7,7 +7,7 @@
 //! reward of other responses in the same group. This reduces gradient variance without
 //! needing a separate Value Network (Critic).
 //!
-//! ## 🔄 The Optimization Loop
+//! ##  The Optimization Loop
 //!
 //! ```mermaid
 //! flowchart LR
@@ -18,7 +18,7 @@
 //!     Obj --> Policy
 //! ```
 //!
-//! ## 🚀 Quick Start: Calculating the Objective
+//! ##  Quick Start: Calculating the Objective
 //!
 //! Calculate the GRPO loss (clipped surrogate objective) for a hypothetical training step.
 //!

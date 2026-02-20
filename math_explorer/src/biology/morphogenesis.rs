@@ -6,7 +6,7 @@
 //! Turing patterns arise when a stable uniform state becomes unstable due to diffusion (Diffusion-driven instability),
 //! typically when the inhibitor diffuses much faster than the activator ($D_v \gg D_u$).
 //!
-//! ## 🔄 The Mechanism
+//! ##  The Mechanism
 //!
 //! ```mermaid
 //! graph TD
@@ -31,7 +31,7 @@
 //!     style B fill:#ef9a9a,stroke:#c62828
 //! ```
 //!
-//! ## 🚀 Quick Start
+//! ##  Quick Start
 //!
 //! Simulate the emergence of a pattern from random noise.
 //!

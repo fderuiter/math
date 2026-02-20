@@ -7,7 +7,7 @@
 //! * **Michaelis-Menten**: $v = \frac{V_{max}[S]}{K_m + [S]}$
 //! * **Hill Kinetics**: $v = \frac{V_{max}[S]^n}{K_m^n + [S]^n}$
 //!
-//! ## 🚀 Quick Start
+//! ##  Quick Start
 //!
 //! Calculate the reaction rate of an enzyme at different substrate concentrations.
 //!

@@ -3,7 +3,7 @@
 //! This module provides a rigorous type hierarchy for algebraic structures,
 //! ranging from basic Semigroups to Fields and Polynomial Rings.
 //!
-//! ## 🗺️ Type Hierarchy
+//! ##  Type Hierarchy
 //!
 //! The module is built around a set of traits defining algebraic properties:
 //!
@@ -41,7 +41,7 @@
 //!     Ring <|-- Field
 //! ```
 //!
-//! ## 🚀 Quick Start: Finite Fields & Polynomials
+//! ##  Quick Start: Finite Fields & Polynomials
 //!
 //! Construct the Finite Field $\mathbb{F}_7$ and perform polynomial arithmetic over it.
 //!

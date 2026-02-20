@@ -4,7 +4,7 @@
 //! in neurons are initiated and propagated. It is a set of nonlinear differential equations that approximates
 //! the electrical characteristics of excitable cells such as neurons and cardiac myocytes.
 //!
-//! ## 🧠 The Model
+//! ##  The Model
 //!
 //! The model treats the cell membrane as an electrical circuit with a capacitor (lipid bilayer) and
 //! resistors (ion channels) in parallel.
@@ -18,7 +18,7 @@
 //! - $I_{K} = \bar{g}_{K} n^4 (V - E_{K})$: Potassium current (Repolarization).
 //! - $I_{L} = \bar{g}_{L} (V - E_{L})$: Leak current (Resting potential).
 //!
-//! ## ⚡ Dynamics Flowchart
+//! ##  Dynamics Flowchart
 //!
 //! The gating variables ($m, h, n$) control the conductance of the channels, creating a feedback loop.
 //!
@@ -44,7 +44,7 @@
 //!     style V fill:#f9f,stroke:#333,stroke-width:2px
 //! ```
 //!
-//! ## 🚀 Quick Start
+//! ##  Quick Start
 //!
 //! Simulate a single neuron firing an action potential.
 //!

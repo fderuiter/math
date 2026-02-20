@@ -3,7 +3,7 @@
 //! This module applies mathematical modeling to biological systems, spanning from
 //! molecular interactions to population dynamics.
 //!
-//! ## 🚀 Quick Start: Neural Dynamics
+//! ##  Quick Start: Neural Dynamics
 //!
 //! Simulate a single neuron firing an action potential using the Hodgkin-Huxley model.
 //!
