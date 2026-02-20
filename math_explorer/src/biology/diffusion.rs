@@ -8,13 +8,15 @@ pub trait SpatialDiffusion {
     /// Computes diffusion terms for each point and calls the closure.
     /// Internal iteration allows for optimization (loop fusion, SIMD).
     ///
-    /// The closure `op` is called with `(index, diff_u, diff_v)` where:
+    /// The closure `op` is called with `(index, u_curr, v_curr, diff_u, diff_v)` where:
     /// * `index`: The linear index of the point.
+    /// * `u_curr`: Current value of u at index.
+    /// * `v_curr`: Current value of v at index.
     /// * `diff_u`: The diffusion term for u ($D_u \nabla^2 u$).
     /// * `diff_v`: The diffusion term for v ($D_v \nabla^2 v$).
     fn map_diffusion<F>(&self, u: &[f64], v: &[f64], d_u: f64, d_v: f64, op: F)
     where
-        F: FnMut(usize, f64, f64);
+        F: FnMut(usize, f64, f64, f64, f64);
 
     /// Applies the diffusion operator to the state vectors.
     ///
@@ -37,7 +39,7 @@ pub trait SpatialDiffusion {
         d_v: f64,
     ) {
         // Default implementation: calculate diffusion and write to buffer
-        self.map_diffusion(u, v, d_u, d_v, |i, diff_u, diff_v| {
+        self.map_diffusion(u, v, d_u, d_v, |i, _u_curr, _v_curr, diff_u, diff_v| {
             if i < out_u.len() {
                 out_u[i] = diff_u;
             }
@@ -87,7 +89,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
 impl SpatialDiffusion for FiniteDifference1D {
     fn map_diffusion<F>(&self, u: &[f64], v: &[f64], d_u: f64, d_v: f64, mut op: F)
     where
-        F: FnMut(usize, f64, f64),
+        F: FnMut(usize, f64, f64, f64, f64),
     {
         let n = u.len();
         if n == 0 {
@@ -114,7 +116,7 @@ impl SpatialDiffusion for FiniteDifference1D {
             let lap_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             let lap_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-            op(0, lap_u, lap_v);
+            op(0, u_curr, v_curr, lap_u, lap_v);
         }
 
         // 2. Interior (Safe Windows)
@@ -133,7 +135,7 @@ impl SpatialDiffusion for FiniteDifference1D {
                 let lap_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
                 // Enumerate starts at 0, but window corresponds to index 1
-                op(i + 1, lap_u, lap_v);
+                op(i + 1, u_curr, v_curr, lap_u, lap_v);
             }
         }
 
@@ -151,7 +153,7 @@ impl SpatialDiffusion for FiniteDifference1D {
             let lap_u = d_u * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             let lap_v = d_v * (v_next - 2.0 * v_curr + v_prev) * inv_dx_sq;
 
-            op(i, lap_u, lap_v);
+            op(i, u_curr, v_curr, lap_u, lap_v);
         }
     }
 }
@@ -245,7 +247,7 @@ impl FiniteDifference2D {
 impl SpatialDiffusion for FiniteDifference2D {
     fn map_diffusion<F>(&self, u: &[f64], v: &[f64], d_u: f64, d_v: f64, mut op: F)
     where
-        F: FnMut(usize, f64, f64),
+        F: FnMut(usize, f64, f64, f64, f64),
     {
         let n = self.width * self.height;
         if u.len() != n || v.len() != n {
@@ -257,6 +259,16 @@ impl SpatialDiffusion for FiniteDifference2D {
 
         let inv_dx_sq = 1.0 / (self.dx * self.dx);
         let inv_dy_sq = 1.0 / (self.dy * self.dy);
+
+        // Precompute weights for U
+        let cx_u = d_u * inv_dx_sq;
+        let cy_u = d_u * inv_dy_sq;
+        let c_center_u = -2.0 * (cx_u + cy_u);
+
+        // Precompute weights for V
+        let cx_v = d_v * inv_dx_sq;
+        let cy_v = d_v * inv_dy_sq;
+        let c_center_v = -2.0 * (cx_v + cy_v);
 
         for y in 0..self.height {
             for x in 0..self.width {
@@ -273,19 +285,17 @@ impl SpatialDiffusion for FiniteDifference2D {
                 let idx_u = y_prev * self.width + x;
                 let idx_d = y_next * self.width + x;
 
-                // U Laplacian
+                // U Diffusion
                 let u_curr = u[idx];
-                let lap_u_x = (u[idx_r] - 2.0 * u_curr + u[idx_l]) * inv_dx_sq;
-                let lap_u_y = (u[idx_d] - 2.0 * u_curr + u[idx_u]) * inv_dy_sq;
-                let diff_u = d_u * (lap_u_x + lap_u_y);
+                let diff_u =
+                    (u[idx_r] + u[idx_l]) * cx_u + (u[idx_d] + u[idx_u]) * cy_u + u_curr * c_center_u;
 
-                // V Laplacian
+                // V Diffusion
                 let v_curr = v[idx];
-                let lap_v_x = (v[idx_r] - 2.0 * v_curr + v[idx_l]) * inv_dx_sq;
-                let lap_v_y = (v[idx_d] - 2.0 * v_curr + v[idx_u]) * inv_dy_sq;
-                let diff_v = d_v * (lap_v_x + lap_v_y);
+                let diff_v =
+                    (v[idx_r] + v[idx_l]) * cx_v + (v[idx_d] + v[idx_u]) * cy_v + v_curr * c_center_v;
 
-                op(idx, diff_u, diff_v);
+                op(idx, u_curr, v_curr, diff_u, diff_v);
             }
         }
     }
@@ -390,10 +400,10 @@ mod tests_2d {
         }
 
         // Method 2: map_diffusion fused step
-        diff.map_diffusion(&u, &v, d_u, d_v, |i, diff_u, diff_v| {
+        diff.map_diffusion(&u, &v, d_u, d_v, |i, u_curr, v_curr, diff_u, diff_v| {
             let (reac_u, reac_v) = (1.0, 2.0);
-            out_u_2[i] = u[i] + dt * (diff_u + reac_u);
-            out_v_2[i] = v[i] + dt * (diff_v + reac_v);
+            out_u_2[i] = u_curr + dt * (diff_u + reac_u);
+            out_v_2[i] = v_curr + dt * (diff_v + reac_v);
         });
 
         for i in 0..n {
