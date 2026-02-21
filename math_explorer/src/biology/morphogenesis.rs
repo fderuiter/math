@@ -421,7 +421,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> OdeSystem<TuringState> for Tur
         self.diffusion.apply(
             [u.as_slice(), v.as_slice()],
             [out_u.as_mut_slice(), out_v.as_mut_slice()],
-            [self.d_u, self.d_v]
+            [self.d_u, self.d_v],
         );
 
         // 2. Compute Reaction and Accumulate

@@ -24,12 +24,7 @@ pub trait SpatialDiffusion<const N: usize> {
     /// * `state` - Input concentration slices for each species.
     /// * `out` - Output buffers for diffusion terms.
     /// * `coeffs` - Diffusion coefficients for each species.
-    fn apply(
-        &self,
-        state: [&[f64]; N],
-        out: [&mut [f64]; N],
-        coeffs: [f64; N],
-    ) {
+    fn apply(&self, state: [&[f64]; N], out: [&mut [f64]; N], coeffs: [f64; N]) {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(state, coeffs, |i, _curr, diffs| {
             for s in 0..N {
@@ -258,7 +253,10 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
 
         for s in 0..N {
             if state[s].len() != n {
-                panic!("Buffer size mismatch for species {} in FiniteDifference2D", s);
+                panic!(
+                    "Buffer size mismatch for species {} in FiniteDifference2D",
+                    s
+                );
             }
         }
 
@@ -297,9 +295,8 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
                     let (cx, cy, c_center) = weights[s];
 
                     let u_curr = u[idx];
-                    let diff = (u[idx_r] + u[idx_l]) * cx
-                        + (u[idx_d] + u[idx_u]) * cy
-                        + u_curr * c_center;
+                    let diff =
+                        (u[idx_r] + u[idx_l]) * cx + (u[idx_d] + u[idx_u]) * cy + u_curr * c_center;
 
                     curr_vals[s] = u_curr;
                     diff_vals[s] = diff;
@@ -327,11 +324,7 @@ mod tests_2d {
         let mut out_u = vec![0.0; n];
         let mut out_v = vec![0.0; n];
 
-        diff.apply(
-            [&u, &v],
-            [&mut out_u, &mut out_v],
-            [1.0, 1.0],
-        );
+        diff.apply([&u, &v], [&mut out_u, &mut out_v], [1.0, 1.0]);
 
         for val in out_u {
             assert_eq!(val, 0.0);
@@ -361,11 +354,7 @@ mod tests_2d {
             }
         }
 
-        diff.apply(
-            [&u, &v],
-            [&mut out_u, &mut out_v],
-            [1.0, 1.0],
-        );
+        diff.apply([&u, &v], [&mut out_u, &mut out_v], [1.0, 1.0]);
 
         // Interior points should be exactly 4.0
         // (1,1) is index 1*5 + 1 = 6.
@@ -411,11 +400,7 @@ mod tests_2d {
         let d_v = 0.1;
 
         // Method 1: Manual step using apply
-        diff.apply(
-            [&u, &v],
-            [&mut out_u_1, &mut out_v_1],
-            [d_u, d_v],
-        );
+        diff.apply([&u, &v], [&mut out_u_1, &mut out_v_1], [d_u, d_v]);
         for i in 0..n {
             out_u_1[i] = u[i] + dt * (out_u_1[i] + 1.0); // Dummy reaction +1
             out_v_1[i] = v[i] + dt * (out_v_1[i] + 2.0); // Dummy reaction +2
@@ -429,7 +414,7 @@ mod tests_2d {
                 let (reac_u, reac_v) = (1.0, 2.0);
                 out_u_2[i] = u_curr + dt * (diff_u + reac_u);
                 out_v_2[i] = v_curr + dt * (diff_v + reac_v);
-            }
+            },
         );
 
         for i in 0..n {
