@@ -10,7 +10,13 @@ fn bench_turing_2d_step() {
     let kinetics = SchnakenbergKinetics::default();
 
     // Create system with 90k elements
-    let mut system = TuringSystem::new_with_kinetics(width * height, 1.0, 40.0, kinetics, diff);
+    let mut system = TuringSystem::builder()
+        .size(width * height)
+        .diffusion_rates(1.0, 40.0)
+        .kinetics(kinetics)
+        .diffusion(diff)
+        .build()
+        .expect("Failed to build TuringSystem");
 
     // Initialize with some values
     for i in 0..width * height {

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use math_explorer::biology::morphogenesis::{TuringState, TuringSystem};
+    use math_explorer::biology::morphogenesis::TuringSystem;
     use math_explorer::pure_math::analysis::ode::{RungeKutta4, Solver, TimeStepper};
 
     #[test]
@@ -9,7 +9,14 @@ mod tests {
         let d_u = 1.0;
         let d_v = 10.0;
         let dx = 1.0;
-        let mut system = TuringSystem::new(size, d_u, d_v, dx);
+
+        // Use builder instead of deprecated new()
+        let mut system = TuringSystem::builder()
+            .size(size)
+            .diffusion_rates(d_u, d_v)
+            .with_1d_diffusion(dx)
+            .build()
+            .expect("Failed to build TuringSystem");
 
         system.state.u_mut()[50] = 1.0;
 

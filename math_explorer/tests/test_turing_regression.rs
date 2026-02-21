@@ -23,7 +23,12 @@ fn test_turing_regression() {
     let size = 100;
     let iterations = 100;
     // Default uses Schnakenberg kinetics (backward compatible)
-    let mut system = TuringSystem::new(size, 0.1, 0.05, 1.0);
+    let mut system = TuringSystem::builder()
+        .size(size)
+        .diffusion_rates(0.1, 0.05)
+        .with_1d_diffusion(1.0)
+        .build()
+        .expect("Failed to build TuringSystem");
 
     // Seed it deterministically
     for i in 0..size {
@@ -47,9 +52,19 @@ fn test_custom_kinetics_strategy() {
     let iterations = 10;
 
     // Use Gray-Scott kinetics via the Strategy Pattern
-    let kinetics = GrayScottKinetics { f: 0.055, k: 0.062 };
+    let kinetics = GrayScottKinetics {
+        f: 0.055,
+        k: 0.062,
+    };
     let diffusion = FiniteDifference1D::new(1.0);
-    let mut system = TuringSystem::new_with_kinetics(size, 0.2, 0.1, kinetics, diffusion);
+
+    let mut system = TuringSystem::builder()
+        .size(size)
+        .diffusion_rates(0.2, 0.1)
+        .kinetics(kinetics)
+        .diffusion(diffusion)
+        .build()
+        .expect("Failed to build TuringSystem");
 
     // Seed
     system.u_mut()[25] = 0.5;

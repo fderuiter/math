@@ -38,25 +38,24 @@
 //! ```rust
 //! use math_explorer::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
 //!
-//! // 1. System Configuration
+//! // 1. System Configuration via Builder
 //! // Activator diffuses slowly (1.0), Inhibitor diffuses fast (40.0)
 //! let n = 100;
-//! let mut system = TuringSystem::new(n, 1.0, 40.0, 1.0);
+//! let mut system = TuringSystem::builder()
+//!     .size(n)
+//!     .diffusion_rates(1.0, 40.0)
+//!     .with_1d_diffusion(1.0)
+//!     .with_random_initialization(42)
+//!     .build()
+//!     .expect("Failed to build TuringSystem");
 //!
-//! // 2. Initialize with Random Noise
-//! // A uniform state would be stable without noise
-//! for i in 0..n {
-//!     system.u_mut()[i] = 1.0 + (i as f64 * 0.01).sin(); // Add some perturbation
-//!     system.v_mut()[i] = 0.5 + (i as f64 * 0.02).cos();
-//! }
-//!
-//! // 3. Run Simulation
+//! // 2. Run Simulation
 //! let dt = 0.01;
 //! for _ in 0..100 {
 //!     system.step(dt);
 //! }
 //!
-//! // 4. Analyze Results
+//! // 3. Analyze Results
 //! let u_center = system.u()[50];
 //! println!("Concentration of Activator at center: {:.4}", u_center);
 //! ```
@@ -64,7 +63,40 @@
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
 use crate::biology::reaction_diffusion::ReactionModel;
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
+use std::fmt;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
+
+/// Errors that can occur when building a Turing System.
+#[derive(Debug, Clone)]
+pub enum TuringError {
+    /// A required parameter was missing.
+    MissingParameter(&'static str),
+    /// The specified state size does not match the diffusion strategy's requirements.
+    DimensionMismatch {
+        /// The requested state size.
+        system: usize,
+        /// The size expected by the diffusion strategy.
+        diffusion: usize,
+    },
+    /// Invalid parameter value (e.g. negative diffusion rate).
+    InvalidParameter(&'static str),
+}
+
+impl fmt::Display for TuringError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TuringError::MissingParameter(p) => write!(f, "Missing parameter: {}", p),
+            TuringError::DimensionMismatch { system, diffusion } => write!(
+                f,
+                "Dimension mismatch: system size {} != diffusion expected size {}",
+                system, diffusion
+            ),
+            TuringError::InvalidParameter(msg) => write!(f, "Invalid parameter: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for TuringError {}
 
 /// Defines the reaction kinetics for a 2-component reaction-diffusion system.
 pub trait ReactionKinetics {
@@ -282,6 +314,153 @@ impl VectorOperations for TuringState {
     }
 }
 
+/// A builder for constructing a `TuringSystem`.
+pub struct TuringSystemBuilder<K, D> {
+    size: Option<usize>,
+    d_u: Option<f64>,
+    d_v: Option<f64>,
+    kinetics: K,
+    diffusion: Option<D>,
+    initial_conditions: Option<Box<dyn Fn(&mut TuringState) + Send + Sync>>,
+}
+
+impl Default for TuringSystemBuilder<SchnakenbergKinetics, FiniteDifference1D> {
+    fn default() -> Self {
+        Self {
+            size: None,
+            d_u: None,
+            d_v: None,
+            kinetics: SchnakenbergKinetics::default(),
+            diffusion: None,
+            initial_conditions: None,
+        }
+    }
+}
+
+impl TuringSystemBuilder<SchnakenbergKinetics, FiniteDifference1D> {
+    /// Creates a new builder with default kinetics and 1D diffusion types.
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystemBuilder<K, D> {
+    /// Sets the size of the simulation (total number of grid points).
+    pub fn size(mut self, size: usize) -> Self {
+        self.size = Some(size);
+        self
+    }
+
+    /// Sets the diffusion rates for the activator ($D_u$) and inhibitor ($D_v$).
+    pub fn diffusion_rates(mut self, d_u: f64, d_v: f64) -> Self {
+        self.d_u = Some(d_u);
+        self.d_v = Some(d_v);
+        self
+    }
+
+    /// Sets the reaction kinetics strategy.
+    pub fn kinetics<NewK: ReactionKinetics>(self, kinetics: NewK) -> TuringSystemBuilder<NewK, D> {
+        TuringSystemBuilder {
+            size: self.size,
+            d_u: self.d_u,
+            d_v: self.d_v,
+            kinetics,
+            diffusion: self.diffusion,
+            initial_conditions: self.initial_conditions,
+        }
+    }
+
+    /// Sets the spatial diffusion strategy.
+    pub fn diffusion<NewD: SpatialDiffusion>(self, diffusion: NewD) -> TuringSystemBuilder<K, NewD> {
+        TuringSystemBuilder {
+            size: self.size,
+            d_u: self.d_u,
+            d_v: self.d_v,
+            kinetics: self.kinetics,
+            diffusion: Some(diffusion),
+            initial_conditions: self.initial_conditions,
+        }
+    }
+
+    /// Configures the builder to use 1D Finite Difference diffusion with the given spacing.
+    pub fn with_1d_diffusion(self, dx: f64) -> TuringSystemBuilder<K, FiniteDifference1D> {
+        self.diffusion(FiniteDifference1D::new(dx))
+    }
+
+    /// Configures a custom initialization function.
+    pub fn with_initialization<F>(mut self, init: F) -> Self
+    where
+        F: Fn(&mut TuringState) + Send + Sync + 'static,
+    {
+        self.initial_conditions = Some(Box::new(init));
+        self
+    }
+
+    /// Configures random initialization with a given seed.
+    /// Note: This is a placeholder for reproducibility; actual randomness implementation details may vary.
+    pub fn with_random_initialization(mut self, seed: u64) -> Self {
+        self.initial_conditions = Some(Box::new(move |state: &mut TuringState| {
+             // Simple LCG for deterministic noise without external deps in this closure
+            let mut rng_state = seed;
+            let mut next_f64 = || {
+                rng_state = rng_state.wrapping_mul(6364136223846793005).wrapping_add(1);
+                let x = rng_state;
+                let x = x ^ x >> 18;
+                let rot = (x >> 27) as u32;
+                let val = (x as u32).rotate_right(rot);
+                (val as f64) / (u32::MAX as f64)
+            };
+
+            for u in state.u_mut() {
+                *u = 1.0 + (next_f64() - 0.5) * 0.2;
+            }
+            for v in state.v_mut() {
+                *v = 0.5 + (next_f64() - 0.5) * 0.2;
+            }
+        }));
+        self
+    }
+
+    /// Builds the `TuringSystem` if all configuration is valid.
+    pub fn build(self) -> Result<TuringSystem<K, D>, TuringError> {
+        let size = self.size.ok_or(TuringError::MissingParameter("size"))?;
+        let d_u = self.d_u.ok_or(TuringError::MissingParameter("d_u"))?;
+        let d_v = self.d_v.ok_or(TuringError::MissingParameter("d_v"))?;
+        let diffusion = self.diffusion.ok_or(TuringError::MissingParameter("diffusion"))?;
+
+        if d_u < 0.0 || d_v < 0.0 {
+            return Err(TuringError::InvalidParameter("Diffusion rates must be non-negative"));
+        }
+
+        // Validate dimensions
+        if let Some(expected_size) = diffusion.expected_size() {
+            if size != expected_size {
+                return Err(TuringError::DimensionMismatch {
+                    system: size,
+                    diffusion: expected_size,
+                });
+            }
+        }
+
+        let mut state = TuringState::new(size);
+        let next_state = TuringState::new(size);
+
+        // Apply initialization if provided
+        if let Some(init) = self.initial_conditions {
+            init(&mut state);
+        }
+
+        Ok(TuringSystem {
+            state,
+            next_state,
+            d_u,
+            d_v,
+            kinetics: self.kinetics,
+            diffusion,
+        })
+    }
+}
+
 /// Represents a Reaction-Diffusion system.
 pub struct TuringSystem<
     K: ReactionKinetics = SchnakenbergKinetics,
@@ -304,30 +483,39 @@ pub struct TuringSystem<
 }
 
 impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D> {
+    /// Returns a new builder for a TuringSystem.
+    pub fn builder() -> TuringSystemBuilder<SchnakenbergKinetics, FiniteDifference1D> {
+        TuringSystemBuilder::new()
+    }
+
     /// Creates a new Turing System with default Schnakenberg kinetics and 1D Finite Difference.
+    #[deprecated(since = "0.2.0", note = "Use TuringSystem::builder() instead")]
     pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
-        Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            d_u,
-            d_v,
-            kinetics: SchnakenbergKinetics::default(),
-            diffusion: FiniteDifference1D::new(dx),
-        }
+        Self::builder()
+            .size(size)
+            .diffusion_rates(d_u, d_v)
+            .with_1d_diffusion(dx)
+            .build()
+            .expect("Invalid default construction")
     }
 }
 
 impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
     /// Creates a new Turing System with custom kinetics and diffusion strategy.
+    #[deprecated(since = "0.2.0", note = "Use TuringSystem::builder() instead")]
     pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
-        Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            d_u,
-            d_v,
+        // We can't use the standard builder easily because K and D are generic.
+        // We construct a builder manually with the correct types.
+        TuringSystemBuilder {
+            size: Some(size),
+            d_u: Some(d_u),
+            d_v: Some(d_v),
             kinetics,
-            diffusion,
+            diffusion: Some(diffusion),
+            initial_conditions: None,
         }
+        .build()
+        .expect("Invalid default construction")
     }
 
     /// Accessor for the activator concentrations (backward compatibility/convenience).
@@ -454,12 +642,38 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_builder_basic() {
+        let system = TuringSystem::builder()
+            .size(100)
+            .diffusion_rates(1.0, 0.5)
+            .with_1d_diffusion(1.0)
+            .build();
+
+        assert!(system.is_ok());
+        let system = system.unwrap();
+        assert_eq!(system.state.len(), 100);
+        assert_eq!(system.d_u, 1.0);
+    }
+
+    #[test]
+    fn test_builder_missing_params() {
+        let res = TuringSystem::builder()
+            .size(100)
+            // Missing diffusion rates and strategy
+            .build();
+        assert!(matches!(res, Err(TuringError::MissingParameter(_))));
+    }
+
+    #[test]
     fn test_turing_system_logic_preservation() {
         // Setup a small system
         let n = 10;
         let d_u = 1.0;
         let d_v = 0.5;
         let dx = 1.0;
+
+        // Suppress deprecation for test of legacy method
+        #[allow(deprecated)]
         let mut system = TuringSystem::new(n, d_u, d_v, dx);
 
         // Initialize with some pattern

@@ -18,6 +18,14 @@ pub trait SpatialDiffusion {
     where
         F: FnMut(usize, f64, f64, f64, f64);
 
+    /// Returns the expected size of the state vectors, if constrained by the diffusion topology.
+    ///
+    /// Returns `Some(size)` if the strategy requires a specific buffer size (e.g., 2D grid).
+    /// Returns `None` if the strategy is agnostic to size (e.g., 1D finite difference).
+    fn expected_size(&self) -> Option<usize> {
+        None
+    }
+
     /// Applies the diffusion operator to the state vectors.
     ///
     /// Computes $D_u \nabla^2 u$ and $D_v \nabla^2 v$ and stores the result in `out_u` and `out_v`.
@@ -245,6 +253,10 @@ impl FiniteDifference2D {
 }
 
 impl SpatialDiffusion for FiniteDifference2D {
+    fn expected_size(&self) -> Option<usize> {
+        Some(self.width * self.height)
+    }
+
     fn map_diffusion<F>(&self, u: &[f64], v: &[f64], d_u: f64, d_v: f64, mut op: F)
     where
         F: FnMut(usize, f64, f64, f64, f64),

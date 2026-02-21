@@ -28,8 +28,13 @@ impl Default for MorphogenesisTab {
         let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 }; // Classic spot/stripe params
         let diffusion = FiniteDifference2D::new(width, height, 1.0, 1.0);
 
-        let mut system =
-            TuringSystem::new_with_kinetics(width * height, d_u, d_v, kinetics, diffusion);
+        let mut system = TuringSystem::builder()
+            .size(width * height)
+            .diffusion_rates(d_u, d_v)
+            .kinetics(kinetics)
+            .diffusion(diffusion)
+            .build()
+            .expect("Failed to build TuringSystem");
 
         // Initialize with noise
         initialize_system(&mut system, width, height);

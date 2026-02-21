@@ -4,7 +4,14 @@ use std::time::Instant;
 fn main() {
     let size = 100_000;
     let iterations = 1000;
-    let mut system = TuringSystem::new(size, 0.1, 0.05, 1.0);
+
+    // Use builder
+    let mut system = TuringSystem::builder()
+        .size(size)
+        .diffusion_rates(0.1, 0.05)
+        .with_1d_diffusion(1.0)
+        .build()
+        .expect("Failed to build TuringSystem");
 
     // Warmup
     for _ in 0..100 {
