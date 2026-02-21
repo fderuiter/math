@@ -371,7 +371,10 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystemBuilder<K, D> {
     }
 
     /// Sets the spatial diffusion strategy.
-    pub fn diffusion<NewD: SpatialDiffusion>(self, diffusion: NewD) -> TuringSystemBuilder<K, NewD> {
+    pub fn diffusion<NewD: SpatialDiffusion>(
+        self,
+        diffusion: NewD,
+    ) -> TuringSystemBuilder<K, NewD> {
         TuringSystemBuilder {
             size: self.size,
             d_u: self.d_u,
@@ -400,7 +403,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystemBuilder<K, D> {
     /// Note: This is a placeholder for reproducibility; actual randomness implementation details may vary.
     pub fn with_random_initialization(mut self, seed: u64) -> Self {
         self.initial_conditions = Some(Box::new(move |state: &mut TuringState| {
-             // Simple LCG for deterministic noise without external deps in this closure
+            // Simple LCG for deterministic noise without external deps in this closure
             let mut rng_state = seed;
             let mut next_f64 = || {
                 rng_state = rng_state.wrapping_mul(6364136223846793005).wrapping_add(1);
@@ -426,10 +429,14 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystemBuilder<K, D> {
         let size = self.size.ok_or(TuringError::MissingParameter("size"))?;
         let d_u = self.d_u.ok_or(TuringError::MissingParameter("d_u"))?;
         let d_v = self.d_v.ok_or(TuringError::MissingParameter("d_v"))?;
-        let diffusion = self.diffusion.ok_or(TuringError::MissingParameter("diffusion"))?;
+        let diffusion = self
+            .diffusion
+            .ok_or(TuringError::MissingParameter("diffusion"))?;
 
         if d_u < 0.0 || d_v < 0.0 {
-            return Err(TuringError::InvalidParameter("Diffusion rates must be non-negative"));
+            return Err(TuringError::InvalidParameter(
+                "Diffusion rates must be non-negative",
+            ));
         }
 
         // Validate dimensions

@@ -52,10 +52,7 @@ fn test_custom_kinetics_strategy() {
     let iterations = 10;
 
     // Use Gray-Scott kinetics via the Strategy Pattern
-    let kinetics = GrayScottKinetics {
-        f: 0.055,
-        k: 0.062,
-    };
+    let kinetics = GrayScottKinetics { f: 0.055, k: 0.062 };
     let diffusion = FiniteDifference1D::new(1.0);
 
     let mut system = TuringSystem::builder()
