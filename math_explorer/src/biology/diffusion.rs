@@ -420,16 +420,20 @@ mod tests_2d {
         }
 
         // Method 2: map_diffusion fused step
-        diff.map_diffusion([u.as_slice(), v.as_slice()], [d_u, d_v], |i, vals, diffs| {
-            let u_curr = vals[0];
-            let v_curr = vals[1];
-            let diff_u = diffs[0];
-            let diff_v = diffs[1];
+        diff.map_diffusion(
+            [u.as_slice(), v.as_slice()],
+            [d_u, d_v],
+            |i, vals, diffs| {
+                let u_curr = vals[0];
+                let v_curr = vals[1];
+                let diff_u = diffs[0];
+                let diff_v = diffs[1];
 
-            let (reac_u, reac_v) = (1.0, 2.0);
-            out_u_2[i] = u_curr + dt * (diff_u + reac_u);
-            out_v_2[i] = v_curr + dt * (diff_v + reac_v);
-        });
+                let (reac_u, reac_v) = (1.0, 2.0);
+                out_u_2[i] = u_curr + dt * (diff_u + reac_u);
+                out_v_2[i] = v_curr + dt * (diff_v + reac_v);
+            },
+        );
 
         for i in 0..n {
             assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
