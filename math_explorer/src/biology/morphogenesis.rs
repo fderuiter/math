@@ -24,6 +24,9 @@
 //!     A --- DiffA
 //!     B --- DiffB
 //!
+//!     A --- DiffA
+//!     B --- DiffB
+//!
 //!     DiffA -->|Short Range| Patterns
 //!     DiffB -->|Long Range| Patterns
 //!
@@ -285,7 +288,7 @@ impl VectorOperations for TuringState {
 /// Represents a Reaction-Diffusion system.
 pub struct TuringSystem<
     K: ReactionKinetics = SchnakenbergKinetics,
-    D: SpatialDiffusion = FiniteDifference1D,
+    D: SpatialDiffusion<2> = FiniteDifference1D,
 > {
     /// The current state of the system.
     pub state: TuringState,
@@ -317,7 +320,7 @@ impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D> {
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D> {
     /// Creates a new Turing System with custom kinetics and diffusion strategy.
     pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
         Self {
@@ -370,11 +373,9 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
         // Fused Diffusion-Reaction-Integration Step
         // This is significantly faster than separate passes because it keeps data in registers/L1 cache.
         self.diffusion.map_diffusion(
-            u,
-            v,
-            self.d_u,
-            self.d_v,
-            |i, u_curr, v_curr, diff_u, diff_v| {
+            [u.as_slice(), v.as_slice()],
+            [self.d_u, self.d_v],
+            |i, [u_curr, v_curr], [diff_u, diff_v]| {
                 let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
                 // Safety: map_diffusion guarantees i is within bounds of u/v.
                 // We must ensure next_u/next_v are large enough.
@@ -393,7 +394,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for TuringSystem<K, D> {
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>> OdeSystem<TuringState> for TuringSystem<K, D> {
     fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
         let mut out = TuringState::new(state.len());
         self.derivative_in_place(t, state, &mut out);
@@ -417,7 +418,11 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for Turing
         let out_v = &mut out.v;
 
         // 1. Compute Diffusion
-        self.diffusion.apply(u, v, out_u, out_v, self.d_u, self.d_v);
+        self.diffusion.apply(
+            [u.as_slice(), v.as_slice()],
+            [out_u.as_mut_slice(), out_v.as_mut_slice()],
+            [self.d_u, self.d_v]
+        );
 
         // 2. Compute Reaction and Accumulate
         unsafe {
@@ -434,7 +439,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for Turing
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion> TimeStepper<TuringState> for TuringSystem<K, D> {
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TimeStepper<TuringState> for TuringSystem<K, D> {
     fn get_state(&self) -> &TuringState {
         &self.state
     }
