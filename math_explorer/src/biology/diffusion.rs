@@ -102,6 +102,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
         };
 
         // We iterate point by point to enable passing the slice to op
+        #[allow(clippy::needless_range_loop)]
         for i in 0..n {
             let mut current_vals = [0.0; N];
             let mut diff_vals = [0.0; N];
