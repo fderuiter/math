@@ -36,12 +36,12 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use math_explorer::applied::win_ratio::pair_comparison::{unmatched_pairs, calculate_statistics};
+//! use math_explorer::applied::win_ratio::pair_comparison::{
+//!     WinRatioAnalysis, HigherIsBetter, calculate_statistics
+//! };
 //!
 //! // Define outcomes for two groups.
-//! // Hierarchy: [Days to Death (Lower is worse), Days to Hospitalization (Lower is worse)]
-//! // Note: In this simple example, we use "Time to Event".
-//! // If a patient didn't have an event, use a max duration (e.g., 999).
+//! // Hierarchy: [Survival Time (Higher is Better), Hospitalization Free Time (Higher is Better)]
 //!
 //! // Group A (Treatment): Lived longer, fewer hospitalizations
 //! let group_treatment = vec![
@@ -57,10 +57,15 @@
 //!     vec![999.0, 300.0], // Survived, Hosp at day 300
 //! ];
 //!
+//! // Configure Analysis:
+//! // 1. Comparison of Survival Time
+//! // 2. Comparison of Hospitalization Free Time
+//! let analysis = WinRatioAnalysis::new()
+//!     .add_strategy(Box::new(HigherIsBetter))
+//!     .add_strategy(Box::new(HigherIsBetter));
+//!
 //! // 1. Compare every patient in Treatment vs every patient in Control
-//! // Note: Comparison logic depends on direction.
-//! // Here we assume Higher value = Better Outcome (Longer survival).
-//! let (wins, losses) = unmatched_pairs(&group_treatment, &group_control);
+//! let (wins, losses) = analysis.unmatched_pairs(&group_treatment, &group_control);
 //!
 //! // 2. Calculate Statistics
 //! if let Some(stats) = calculate_statistics(wins, losses) {
