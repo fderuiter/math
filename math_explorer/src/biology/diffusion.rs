@@ -19,12 +19,7 @@ pub trait SpatialDiffusion<const N: usize> {
     /// Applies the diffusion operator to the state vectors.
     ///
     /// Computes $D \nabla^2 u$ and stores the result in `out`.
-    fn apply(
-        &self,
-        components: [&[f64]; N],
-        out: [&mut [f64]; N],
-        coeffs: [f64; N],
-    ) {
+    fn apply(&self, components: [&[f64]; N], out: [&mut [f64]; N], coeffs: [f64; N]) {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(components, coeffs, |i, _vals, diffs| {
             for s in 0..N {
@@ -98,11 +93,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
                 let u_curr = components[s][0];
                 vals[s] = u_curr;
                 let u_prev = u_curr; // Neumann: u_{-1} = u_0
-                let u_next = if n > 1 {
-                    components[s][1]
-                } else {
-                    u_curr
-                };
+                let u_next = if n > 1 { components[s][1] } else { u_curr };
                 diffs[s] = coeffs[s] * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             }
             op(0, vals, diffs);
@@ -314,11 +305,7 @@ mod tests_2d {
         let mut out_u = vec![0.0; n];
         let mut out_v = vec![0.0; n];
 
-        diff.apply(
-            [&u, &v],
-            [&mut out_u, &mut out_v],
-            [1.0, 1.0]
-        );
+        diff.apply([&u, &v], [&mut out_u, &mut out_v], [1.0, 1.0]);
 
         for val in out_u {
             assert_eq!(val, 0.0);
@@ -348,11 +335,7 @@ mod tests_2d {
             }
         }
 
-        diff.apply(
-            [&u, &v],
-            [&mut out_u, &mut out_v],
-            [1.0, 1.0]
-        );
+        diff.apply([&u, &v], [&mut out_u, &mut out_v], [1.0, 1.0]);
 
         // Interior points should be exactly 4.0
         // (1,1) is index 1*5 + 1 = 6.
@@ -398,21 +381,14 @@ mod tests_2d {
         let d_v = 0.1;
 
         // Method 1: Manual step using apply
-        diff.apply(
-            [&u, &v],
-            [&mut out_u_1, &mut out_v_1],
-            [d_u, d_v]
-        );
+        diff.apply([&u, &v], [&mut out_u_1, &mut out_v_1], [d_u, d_v]);
         for i in 0..n {
             out_u_1[i] = u[i] + dt * (out_u_1[i] + 1.0); // Dummy reaction +1
             out_v_1[i] = v[i] + dt * (out_v_1[i] + 2.0); // Dummy reaction +2
         }
 
         // Method 2: map_diffusion fused step
-        diff.map_diffusion(
-            [&u, &v],
-            [d_u, d_v],
-            |i, vals, diffs| {
+        diff.map_diffusion([&u, &v], [d_u, d_v], |i, vals, diffs| {
             let u_curr = vals[0];
             let v_curr = vals[1];
             let diff_u = diffs[0];

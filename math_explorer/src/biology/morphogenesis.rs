@@ -369,10 +369,8 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D> {
 
         // Fused Diffusion-Reaction-Integration Step
         // This is significantly faster than separate passes because it keeps data in registers/L1 cache.
-        self.diffusion.map_diffusion(
-            [u, v],
-            [self.d_u, self.d_v],
-            |i, vals, diffs| {
+        self.diffusion
+            .map_diffusion([u, v], [self.d_u, self.d_v], |i, vals, diffs| {
                 let u_curr = vals[0];
                 let v_curr = vals[1];
                 let diff_u = diffs[0];
@@ -388,8 +386,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D> {
                 if i < next_v.len() {
                     next_v[i] = v_curr + dt * (diff_v + reac_v);
                 }
-            },
-        );
+            });
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
@@ -420,11 +417,8 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> OdeSystem<TuringState> for Tur
         let out_v = &mut out.v;
 
         // 1. Compute Diffusion
-        self.diffusion.apply(
-            [u, v],
-            [out_u, out_v],
-            [self.d_u, self.d_v]
-        );
+        self.diffusion
+            .apply([u, v], [out_u, out_v], [self.d_u, self.d_v]);
 
         // 2. Compute Reaction and Accumulate
         unsafe {
