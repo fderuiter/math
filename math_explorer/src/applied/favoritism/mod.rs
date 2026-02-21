@@ -58,17 +58,23 @@
 //! ## Example
 //!
 //! ```rust
-//! use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
+//! use math_explorer::applied::favoritism::{
+//!     FavoritismInputs, GiftParams, ContactParams, calculate_favoritism_score
+//! };
 //!
-//! // 1. Configure the child's strategy
-//! let mut inputs = FavoritismInputs::default();
-//!
-//! // The "Buying Love" strategy
-//! inputs.gifts.g_practical = 10.0; // High value gifts
-//! inputs.gifts.g_emotional = 2.0;  // Low sentimental value
-//!
-//! // The "Guilt Trip" mitigation
-//! inputs.contact.time_since_last_contact = 1.0; // Called yesterday
+//! // 1. Configure the child's strategy explicitly
+//! // We prefer struct initialization over mutation to clearly show the hierarchy
+//! let inputs = FavoritismInputs {
+//!     gifts: GiftParams {
+//!         g_practical: 10.0, // High value gifts ("Buying Love")
+//!         g_emotional: 2.0,  // Low sentimental value
+//!     },
+//!     contact: ContactParams {
+//!         time_since_last_contact: 1.0, // Called yesterday ("Guilt Trip" mitigation)
+//!         ..Default::default()
+//!     },
+//!     ..Default::default()
+//! };
 //!
 //! // 2. Calculate the score
 //! let score = calculate_favoritism_score(&inputs);
