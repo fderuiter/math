@@ -13,6 +13,35 @@ pub struct SIRState {
 
 impl_compartmental_ops!(SIRState, s, i, r);
 
+/// Pure dynamics of the SIR Model.
+///
+/// This struct holds the parameters and defines the differential equations,
+/// but does not hold the simulation state. This allows it to be used
+/// as a stateless Strategy or Flyweight.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SIRDynamics {
+    pub n: f64,
+    pub beta: f64,
+    pub gamma: f64,
+}
+
+impl OdeSystem<SIRState> for SIRDynamics {
+    fn derivative(&self, _t: f64, state: &SIRState) -> SIRState {
+        let s = state.s;
+        let i = state.i;
+
+        let ds = -self.beta * s * i / self.n;
+        let di = self.beta * s * i / self.n - self.gamma * i;
+        let dr = self.gamma * i;
+
+        SIRState {
+            s: ds,
+            i: di,
+            r: dr,
+        }
+    }
+}
+
 /// SIR Model: Susceptible, Infectious, Recovered.
 ///
 /// Equations:
@@ -24,9 +53,8 @@ impl_compartmental_ops!(SIRState, s, i, r);
 #[derive(Debug, Clone)]
 pub struct SIRModel {
     state: SIRState,
-    n: f64,
-    beta: f64,
-    gamma: f64,
+    /// The underlying dynamics model (parameters + equations).
+    pub dynamics: SIRDynamics,
 }
 
 impl TimeStepper<SIRState> for SIRModel {
@@ -99,9 +127,7 @@ impl SIRModelBuilder {
                 i: i0,
                 r: 0.0,
             },
-            n,
-            beta,
-            gamma,
+            dynamics: SIRDynamics { n, beta, gamma },
         })
     }
 }
@@ -129,17 +155,17 @@ impl SIRModel {
 
     /// Returns the transmission rate beta.
     pub fn beta(&self) -> f64 {
-        self.beta
+        self.dynamics.beta
     }
 
     /// Returns the recovery rate gamma.
     pub fn gamma(&self) -> f64 {
-        self.gamma
+        self.dynamics.gamma
     }
 
     /// Returns the total population size N.
     pub fn n(&self) -> f64 {
-        self.n
+        self.dynamics.n
     }
 
     /// Returns the current state.
@@ -149,19 +175,9 @@ impl SIRModel {
 }
 
 impl OdeSystem<SIRState> for SIRModel {
-    fn derivative(&self, _t: f64, state: &SIRState) -> SIRState {
-        let s = state.s;
-        let i = state.i;
-
-        let ds = -self.beta * s * i / self.n;
-        let di = self.beta * s * i / self.n - self.gamma * i;
-        let dr = self.gamma * i;
-
-        SIRState {
-            s: ds,
-            i: di,
-            r: dr,
-        }
+    fn derivative(&self, t: f64, state: &SIRState) -> SIRState {
+        // Delegate to the pure dynamics component
+        self.dynamics.derivative(t, state)
     }
 }
 
@@ -240,5 +256,41 @@ mod tests {
 
         assert!(model.state().s <= n);
         assert!(model.state().i >= 0.0);
+    }
+
+    #[test]
+    fn test_independent_dynamics() {
+        // Demonstrate usage of SIRDynamics without SIRModel (pure strategy pattern)
+        let dynamics = SIRDynamics {
+            n: 1000.0,
+            beta: 0.5,
+            gamma: 0.1,
+        };
+
+        // Initial State
+        let mut state = SIRState {
+            s: 990.0,
+            i: 10.0,
+            r: 0.0,
+        };
+
+        // Use a generic solver directly with the dynamics and the state
+        let mut solver = RungeKutta4::new(&state);
+        let dt = 0.1;
+
+        // Step forward
+        solver.step(&dynamics, 0.0, &mut state, dt);
+
+        // Verify state changed appropriately
+        // S should decrease (infection spreads)
+        assert!(state.s < 990.0);
+        // I should increase (R0 = 5 > 1)
+        assert!(state.i > 10.0);
+        // R should increase (recovery)
+        assert!(state.r > 0.0);
+
+        // Ensure conservation of mass (population size constant)
+        let total = state.s + state.i + state.r;
+        assert!((total - 1000.0).abs() < 1e-9);
     }
 }
