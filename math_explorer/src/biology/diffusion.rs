@@ -270,34 +270,165 @@ impl SpatialDiffusion for FiniteDifference2D {
         let cy_v = d_v * inv_dy_sq;
         let c_center_v = -2.0 * (cx_v + cy_v);
 
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let idx = y * self.width + x;
+        let width = self.width;
+        let height = self.height;
 
-                // Neighbor indices with Neumann BC clamping
-                let x_prev = if x > 0 { x - 1 } else { x };
-                let x_next = if x < self.width - 1 { x + 1 } else { x };
-                let y_prev = if y > 0 { y - 1 } else { y };
-                let y_next = if y < self.height - 1 { y + 1 } else { y };
+        // Fallback for small grids to avoid boundary logic complexity
+        if width < 3 || height < 3 {
+            for y in 0..height {
+                for x in 0..width {
+                    let idx = y * width + x;
 
-                let idx_l = y * self.width + x_prev;
-                let idx_r = y * self.width + x_next;
-                let idx_u = y_prev * self.width + x;
-                let idx_d = y_next * self.width + x;
+                    // Neighbor indices with Neumann BC clamping
+                    let x_prev = if x > 0 { x - 1 } else { x };
+                    let x_next = if x < width - 1 { x + 1 } else { x };
+                    let y_prev = if y > 0 { y - 1 } else { y };
+                    let y_next = if y < height - 1 { y + 1 } else { y };
 
-                // U Diffusion
-                let u_curr = u[idx];
-                let diff_u = (u[idx_r] + u[idx_l]) * cx_u
-                    + (u[idx_d] + u[idx_u]) * cy_u
-                    + u_curr * c_center_u;
+                    let idx_l = y * width + x_prev;
+                    let idx_r = y * width + x_next;
+                    let idx_u = y_prev * width + x;
+                    let idx_d = y_next * width + x;
 
-                // V Diffusion
-                let v_curr = v[idx];
-                let diff_v = (v[idx_r] + v[idx_l]) * cx_v
-                    + (v[idx_d] + v[idx_u]) * cy_v
-                    + v_curr * c_center_v;
+                    // U Diffusion
+                    let u_curr = u[idx];
+                    let diff_u = (u[idx_r] + u[idx_l]) * cx_u
+                        + (u[idx_d] + u[idx_u]) * cy_u
+                        + u_curr * c_center_u;
 
-                op(idx, u_curr, v_curr, diff_u, diff_v);
+                    // V Diffusion
+                    let v_curr = v[idx];
+                    let diff_v = (v[idx_r] + v[idx_l]) * cx_v
+                        + (v[idx_d] + v[idx_u]) * cy_v
+                        + v_curr * c_center_v;
+
+                    op(idx, u_curr, v_curr, diff_u, diff_v);
+                }
+            }
+            return;
+        }
+
+        // Optimized Loop Splitting: Separate Boundary and Interior
+        for y in 0..height {
+            let row_start = y * width;
+            let is_y_boundary = y == 0 || y == height - 1;
+
+            if is_y_boundary {
+                // Slow path for boundary rows (Top/Bottom)
+                for x in 0..width {
+                    let idx = row_start + x;
+
+                    let x_prev = if x > 0 { x - 1 } else { x };
+                    let x_next = if x < width - 1 { x + 1 } else { x };
+                    let y_prev = if y > 0 { y - 1 } else { y };
+                    let y_next = if y < height - 1 { y + 1 } else { y };
+
+                    let idx_l = y * width + x_prev;
+                    let idx_r = y * width + x_next;
+                    let idx_u = y_prev * width + x;
+                    let idx_d = y_next * width + x;
+
+                    let u_curr = u[idx];
+                    let diff_u = (u[idx_r] + u[idx_l]) * cx_u
+                        + (u[idx_d] + u[idx_u]) * cy_u
+                        + u_curr * c_center_u;
+
+                    let v_curr = v[idx];
+                    let diff_v = (v[idx_r] + v[idx_l]) * cx_v
+                        + (v[idx_d] + v[idx_u]) * cy_v
+                        + v_curr * c_center_v;
+
+                    op(idx, u_curr, v_curr, diff_u, diff_v);
+                }
+            } else {
+                // Interior Rows
+
+                // 1. Left Boundary (x=0)
+                {
+                    let idx = row_start;
+                    // x=0, x_prev=0 (clamped), x_next=1
+                    // y is interior, so y_prev = y-1, y_next = y+1
+                    let idx_l = idx;
+                    let idx_r = idx + 1;
+                    let idx_u = idx - width;
+                    let idx_d = idx + width;
+
+                    let u_curr = u[idx];
+                    let diff_u = (u[idx_r] + u[idx_l]) * cx_u
+                        + (u[idx_d] + u[idx_u]) * cy_u
+                        + u_curr * c_center_u;
+
+                    let v_curr = v[idx];
+                    let diff_v = (v[idx_r] + v[idx_l]) * cx_v
+                        + (v[idx_d] + v[idx_u]) * cy_v
+                        + v_curr * c_center_v;
+
+                    op(idx, u_curr, v_curr, diff_u, diff_v);
+                }
+
+                // 2. Interior (Hot Path)
+                // Iterate x from 1 to width-2
+                // Indices are guaranteed valid. No conditionals.
+                // We use unsafe access to skip bounds checks for neighbors,
+                // which provides a significant speedup in this tight loop.
+                let start_idx = row_start + 1;
+                let end_idx = row_start + width - 1;
+
+                // Safety:
+                // 1. y is in 1..height-1 (Interior Rows).
+                // 2. x is in 1..width-1 (Interior Cols).
+                // 3. idx = y*width + x.
+                // 4. Neighbors (±1, ±width) are strictly within the grid bounds [0, width*height).
+                //    - min_idx = (1*width + 1) - width = 1. >= 0.
+                //    - max_idx = ((height-2)*width + width-2) + width = (height-1)*width - 2. < width*height.
+                unsafe {
+                    for idx in start_idx..end_idx {
+                        let idx_l = idx - 1;
+                        let idx_r = idx + 1;
+                        let idx_u = idx - width;
+                        let idx_d = idx + width;
+
+                        let u_curr = *u.get_unchecked(idx);
+                        let u_l = *u.get_unchecked(idx_l);
+                        let u_r = *u.get_unchecked(idx_r);
+                        let u_u = *u.get_unchecked(idx_u);
+                        let u_d = *u.get_unchecked(idx_d);
+
+                        let diff_u = (u_r + u_l) * cx_u + (u_d + u_u) * cy_u + u_curr * c_center_u;
+
+                        let v_curr = *v.get_unchecked(idx);
+                        let v_l = *v.get_unchecked(idx_l);
+                        let v_r = *v.get_unchecked(idx_r);
+                        let v_u = *v.get_unchecked(idx_u);
+                        let v_d = *v.get_unchecked(idx_d);
+
+                        let diff_v = (v_r + v_l) * cx_v + (v_d + v_u) * cy_v + v_curr * c_center_v;
+
+                        op(idx, u_curr, v_curr, diff_u, diff_v);
+                    }
+                }
+
+                // 3. Right Boundary (x=width-1)
+                {
+                    let idx = row_start + width - 1;
+                    // x=width-1, x_prev=width-2, x_next=width-1 (clamped)
+                    let idx_l = idx - 1;
+                    let idx_r = idx;
+                    let idx_u = idx - width;
+                    let idx_d = idx + width;
+
+                    let u_curr = u[idx];
+                    let diff_u = (u[idx_r] + u[idx_l]) * cx_u
+                        + (u[idx_d] + u[idx_u]) * cy_u
+                        + u_curr * c_center_u;
+
+                    let v_curr = v[idx];
+                    let diff_v = (v[idx_r] + v[idx_l]) * cx_v
+                        + (v[idx_d] + v[idx_u]) * cy_v
+                        + v_curr * c_center_v;
+
+                    op(idx, u_curr, v_curr, diff_u, diff_v);
+                }
             }
         }
     }
