@@ -314,6 +314,9 @@ impl VectorOperations for TuringState {
     }
 }
 
+/// A type alias for the initialization closure.
+pub type TuringInitialization = Box<dyn Fn(&mut TuringState) + Send + Sync>;
+
 /// A builder for constructing a `TuringSystem`.
 pub struct TuringSystemBuilder<K, D> {
     size: Option<usize>,
@@ -321,7 +324,7 @@ pub struct TuringSystemBuilder<K, D> {
     d_v: Option<f64>,
     kinetics: K,
     diffusion: Option<D>,
-    initial_conditions: Option<Box<dyn Fn(&mut TuringState) + Send + Sync>>,
+    initial_conditions: Option<TuringInitialization>,
 }
 
 impl Default for TuringSystemBuilder<SchnakenbergKinetics, FiniteDifference1D> {
