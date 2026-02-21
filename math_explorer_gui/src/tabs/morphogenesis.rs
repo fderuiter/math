@@ -4,14 +4,85 @@ use egui::ColorImage;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 
+/// Configuration parameters for the Turing system simulation.
+#[derive(Debug, Clone, Copy)]
+pub struct MorphogenesisConfig {
+    pub a: f64,
+    pub b: f64,
+    pub d_u: f64,
+    pub d_v: f64,
+}
+
+impl Default for MorphogenesisConfig {
+    fn default() -> Self {
+        Self {
+            a: 0.1,
+            b: 0.9,
+            d_u: 1.0,
+            d_v: 100.0,
+        }
+    }
+}
+
+/// Presets for generating specific Turing patterns.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PatternPreset {
+    Spots,
+    Stripes,
+    Labyrinths,
+    Chaos,
+}
+
+impl PatternPreset {
+    /// Applies the preset values to the configuration.
+    pub fn apply(&self, config: &mut MorphogenesisConfig) {
+        match self {
+            // High inhibition diffusion ratio leads to spots
+            Self::Spots => {
+                config.a = 0.1;
+                config.b = 0.9;
+                config.d_u = 1.0;
+                config.d_v = 100.0;
+            }
+            // Lower ratio favors stripes
+            Self::Stripes => {
+                config.a = 0.1;
+                config.b = 0.9;
+                config.d_u = 1.0;
+                config.d_v = 20.0;
+            }
+            // Intermediate/Transition
+            Self::Labyrinths => {
+                config.a = 0.1;
+                config.b = 0.9;
+                config.d_u = 1.0;
+                config.d_v = 40.0;
+            }
+            // Unstable regime
+            Self::Chaos => {
+                config.a = 0.05;
+                config.b = 1.2;
+                config.d_u = 1.0;
+                config.d_v = 50.0;
+            }
+        }
+    }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::Spots => "Spots",
+            Self::Stripes => "Stripes",
+            Self::Labyrinths => "Labyrinths",
+            Self::Chaos => "Chaos",
+        }
+    }
+}
+
 pub struct MorphogenesisTab {
     system: TuringSystem<SchnakenbergKinetics, FiniteDifference2D>,
     texture: Option<egui::TextureHandle>,
-    // Simulation parameters
-    a: f64,
-    b: f64,
-    d_u: f64,
-    d_v: f64,
+    // Encapsulated simulation parameters
+    config: MorphogenesisConfig,
     dt: f64,
     paused: bool,
     width: usize,
@@ -23,13 +94,13 @@ impl Default for MorphogenesisTab {
     fn default() -> Self {
         let width = 100;
         let height = 100;
-        let d_u = 1.0;
-        let d_v = 100.0; // Needs significant difference for Turing patterns
-        let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 }; // Classic spot/stripe params
+        let config = MorphogenesisConfig::default();
+
+        let kinetics = SchnakenbergKinetics { a: config.a, b: config.b };
         let diffusion = FiniteDifference2D::new(width, height, 1.0, 1.0);
 
         let mut system =
-            TuringSystem::new_with_kinetics(width * height, d_u, d_v, kinetics, diffusion);
+            TuringSystem::new_with_kinetics(width * height, config.d_u, config.d_v, kinetics, diffusion);
 
         // Initialize with noise
         initialize_system(&mut system, width, height);
@@ -37,10 +108,7 @@ impl Default for MorphogenesisTab {
         Self {
             system,
             texture: None,
-            a: 0.1,
-            b: 0.9,
-            d_u,
-            d_v,
+            config,
             dt: 0.05,
             paused: false,
             width,
@@ -82,20 +150,38 @@ impl ExplorerTab for MorphogenesisTab {
             ui.label("Schnakenberg Kinetics");
             ui.separator();
 
+            ui.heading("Pattern Gallery");
+            ui.horizontal_wrapped(|ui| {
+                for preset in [PatternPreset::Spots, PatternPreset::Stripes, PatternPreset::Labyrinths, PatternPreset::Chaos] {
+                    if ui.button(preset.name()).clicked() {
+                        preset.apply(&mut self.config);
+                        // Apply to system
+                        self.system.kinetics.a = self.config.a;
+                        self.system.kinetics.b = self.config.b;
+                        self.system.d_u = self.config.d_u;
+                        self.system.d_v = self.config.d_v;
+
+                        // Re-initialize to see the new pattern emerge from noise
+                        initialize_system(&mut self.system, self.width, self.height);
+                    }
+                }
+            });
+            ui.separator();
+
             ui.collapsing("Parameters", |ui| {
                 let mut changed = false;
-                changed |= ui.add(egui::Slider::new(&mut self.a, 0.0..=1.0).text("a (Feed)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.b, 0.0..=2.0).text("b (Kill)")).changed();
+                changed |= ui.add(egui::Slider::new(&mut self.config.a, 0.0..=1.0).text("a (Feed)")).changed();
+                changed |= ui.add(egui::Slider::new(&mut self.config.b, 0.0..=2.0).text("b (Kill)")).changed();
 
                 ui.separator();
-                changed |= ui.add(egui::Slider::new(&mut self.d_u, 0.1..=5.0).text("D_u (Activator)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.d_v, 10.0..=200.0).text("D_v (Inhibitor)")).changed();
+                changed |= ui.add(egui::Slider::new(&mut self.config.d_u, 0.1..=5.0).text("D_u (Activator)")).changed();
+                changed |= ui.add(egui::Slider::new(&mut self.config.d_v, 1.0..=200.0).text("D_v (Inhibitor)")).changed();
 
                 if changed {
-                    self.system.kinetics.a = self.a;
-                    self.system.kinetics.b = self.b;
-                    self.system.d_u = self.d_u;
-                    self.system.d_v = self.d_v;
+                    self.system.kinetics.a = self.config.a;
+                    self.system.kinetics.b = self.config.b;
+                    self.system.d_u = self.config.d_u;
+                    self.system.d_v = self.config.d_v;
                 }
             });
 
