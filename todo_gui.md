@@ -112,9 +112,9 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 4.2 Clinical Trials
 *   **Module:** `applied::clinical_trials`
 *   **Features:**
-    *   [ ] **Survival Curves:** Kaplan-Meier plot generator.
-    *   [ ] **Sample Size Calculator:** Form inputs for $\alpha$, $\beta$, and effect size.
-    *   [ ] **Randomization:** Interactive subject allocation tool.
+    *   [x] **Survival Curves:** Kaplan-Meier plot generator.
+    *   [x] **Sample Size Calculator:** Form inputs for $\alpha$, $\beta$, and effect size.
+    *   [x] **Randomization:** Interactive subject allocation tool.
 
 ### 4.3 Favoritism (Satirical)
 *   **Module:** `applied::favoritism`
