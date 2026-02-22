@@ -103,6 +103,17 @@ impl GroupData {
                 actual: data.len(),
             });
         }
+
+        // Sentinel: Ensure data is valid (finite).
+        for (i, &x) in data.iter().enumerate() {
+            if !x.is_finite() {
+                return Err(ClinicalTrialError::InvalidData(format!(
+                    "Data contains non-finite value (NaN or Infinity) at index {}: {}",
+                    i, x
+                )));
+            }
+        }
+
         Ok(Self { data })
     }
 
