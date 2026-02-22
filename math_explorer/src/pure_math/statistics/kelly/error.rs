@@ -1,50 +1,23 @@
 //! Error types for Kelly Criterion calculations.
 
-use std::fmt;
+use thiserror::Error;
 
 /// Errors that can occur in Kelly Criterion calculations.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Error)]
 pub enum KellyError {
     /// Invalid probability (must be between 0 and 1).
+    #[error("Invalid probability: {value} (must be between 0 and 1)")]
     InvalidProbability { value: f64 },
     /// Invalid odds (must be greater than 1.0 for decimal odds).
+    #[error("Invalid odds: {value} (must be > 1.0)")]
     InvalidOdds { value: f64 },
     /// Invalid fraction (must be between 0 and 1).
+    #[error("Invalid fraction: {value} (must be between 0 and 1)")]
     InvalidFraction { value: f64 },
     /// No edge (negative expected value - should not bet).
+    #[error("No edge: p={probability}, odds={odds} results in negative expectation")]
     NoEdge { probability: f64, odds: f64 },
     /// Invalid bankroll amount (must be positive).
+    #[error("Invalid bankroll: {value} (must be positive)")]
     InvalidBankroll { value: f64 },
 }
-
-impl fmt::Display for KellyError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::InvalidProbability { value } => {
-                write!(
-                    f,
-                    "Invalid probability: {} (must be between 0 and 1)",
-                    value
-                )
-            }
-            Self::InvalidOdds { value } => {
-                write!(f, "Invalid odds: {} (must be > 1.0)", value)
-            }
-            Self::InvalidFraction { value } => {
-                write!(f, "Invalid fraction: {} (must be between 0 and 1)", value)
-            }
-            Self::NoEdge { probability, odds } => {
-                write!(
-                    f,
-                    "No edge: p={}, odds={} results in negative expectation",
-                    probability, odds
-                )
-            }
-            Self::InvalidBankroll { value } => {
-                write!(f, "Invalid bankroll: {} (must be positive)", value)
-            }
-        }
-    }
-}
-
-impl std::error::Error for KellyError {}
