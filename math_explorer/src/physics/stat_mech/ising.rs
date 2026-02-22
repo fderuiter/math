@@ -25,8 +25,8 @@ use rand::Rng;
 /// use math_explorer::physics::stat_mech::KB;
 ///
 /// // 1. Setup system parameters
-/// let width = 20;
-/// let height = 20;
+/// let width = 10;
+/// let height = 10;
 /// let j_coupling = 1.0; // Interaction energy (J > 0 for Ferromagnetism)
 /// let h_field = 0.0;    // No external magnetic field
 ///
