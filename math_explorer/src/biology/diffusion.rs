@@ -19,12 +19,7 @@ pub trait SpatialDiffusion<const N: usize> {
     /// Applies the diffusion operator to the state vectors.
     ///
     /// Computes $D \nabla^2 u$ for all species and stores the result in `out`.
-    fn apply(
-        &self,
-        state: [&[f64]; N],
-        mut out: [&mut [f64]; N],
-        coeffs: [f64; N],
-    ) {
+    fn apply(&self, state: [&[f64]; N], mut out: [&mut [f64]; N], coeffs: [f64; N]) {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(state, coeffs, |i, _vals, diffs| {
             for s in 0..N {
