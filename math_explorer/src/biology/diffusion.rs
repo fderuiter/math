@@ -88,8 +88,8 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
         }
 
         // Validate all lengths match
-        for s in 1..N {
-            assert_eq!(state[s].len(), n, "buffer size mismatch");
+        for u in state.iter().skip(1) {
+            assert_eq!(u.len(), n, "buffer size mismatch");
         }
 
         let dx_sq = self.dx * self.dx;
@@ -100,15 +100,13 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
             let mut current_vals = [0.0; N];
             let mut diff_terms = [0.0; N];
 
-            for j in 0..N {
-                let u = state[j];
-                let d = coeffs[j];
+            for (j, (u, d)) in state.iter().zip(coeffs.iter()).enumerate() {
                 let u_curr = u[0];
                 let u_prev = u_curr; // Neumann: u_{-1} = u_0
                 let u_next = if n > 1 { u[1] } else { u_curr };
 
                 current_vals[j] = u_curr;
-                diff_terms[j] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                diff_terms[j] = *d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             }
             op(0, current_vals, diff_terms);
         }
@@ -122,15 +120,13 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
                 let mut current_vals = [0.0; N];
                 let mut diff_terms = [0.0; N];
 
-                for j in 0..N {
-                    let u = state[j];
-                    let d = coeffs[j];
+                for (j, (u, d)) in state.iter().zip(coeffs.iter()).enumerate() {
                     let u_prev = u[i - 1];
                     let u_curr = u[i];
                     let u_next = u[i + 1];
 
                     current_vals[j] = u_curr;
-                    diff_terms[j] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                    diff_terms[j] = *d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                 }
                 op(i, current_vals, diff_terms);
             }
@@ -142,15 +138,13 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
             let mut current_vals = [0.0; N];
             let mut diff_terms = [0.0; N];
 
-            for j in 0..N {
-                let u = state[j];
-                let d = coeffs[j];
+            for (j, (u, d)) in state.iter().zip(coeffs.iter()).enumerate() {
                 let u_curr = u[i];
                 let u_prev = u[i - 1];
                 let u_next = u_curr; // Neumann: u_{N} = u_{N-1}
 
                 current_vals[j] = u_curr;
-                diff_terms[j] = d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                diff_terms[j] = *d * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
             }
             op(i, current_vals, diff_terms);
         }
@@ -256,8 +250,8 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
             return;
         }
         // Check buffer sizes
-        for s in 0..N {
-            if state[s].len() != n {
+        for s in state.iter() {
+            if s.len() != n {
                 panic!("Buffer size mismatch in FiniteDifference2D");
             }
         }
@@ -270,9 +264,9 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
         let mut cy = [0.0; N];
         let mut c_center = [0.0; N];
 
-        for j in 0..N {
-            cx[j] = coeffs[j] * inv_dx_sq;
-            cy[j] = coeffs[j] * inv_dy_sq;
+        for (j, coeff) in coeffs.iter().enumerate() {
+            cx[j] = *coeff * inv_dx_sq;
+            cy[j] = *coeff * inv_dy_sq;
             c_center[j] = -2.0 * (cx[j] + cy[j]);
         }
 
