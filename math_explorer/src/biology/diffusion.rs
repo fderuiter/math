@@ -250,11 +250,12 @@ impl SpatialDiffusion for FiniteDifference2D {
         F: FnMut(usize, f64, f64, f64, f64),
     {
         let n = self.width * self.height;
-        if u.len() != n || v.len() != n {
-            if n == 0 {
-                return;
-            }
-            panic!("Buffer size mismatch in FiniteDifference2D");
+        // Reviewer feedback: Ensure buffer is at least n to guarantee safety of unchecked access.
+        assert!(u.len() >= n, "u buffer too small");
+        assert!(v.len() >= n, "v buffer too small");
+
+        if n == 0 {
+            return;
         }
 
         let inv_dx_sq = 1.0 / (self.dx * self.dx);
@@ -270,34 +271,92 @@ impl SpatialDiffusion for FiniteDifference2D {
         let cy_v = d_v * inv_dy_sq;
         let c_center_v = -2.0 * (cx_v + cy_v);
 
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let idx = y * self.width + x;
-
-                // Neighbor indices with Neumann BC clamping
-                let x_prev = if x > 0 { x - 1 } else { x };
-                let x_next = if x < self.width - 1 { x + 1 } else { x };
-                let y_prev = if y > 0 { y - 1 } else { y };
-                let y_next = if y < self.height - 1 { y + 1 } else { y };
-
-                let idx_l = y * self.width + x_prev;
-                let idx_r = y * self.width + x_next;
-                let idx_u = y_prev * self.width + x;
-                let idx_d = y_next * self.width + x;
-
-                // U Diffusion
-                let u_curr = u[idx];
-                let diff_u = (u[idx_r] + u[idx_l]) * cx_u
-                    + (u[idx_d] + u[idx_u]) * cy_u
+        // Helper closure for stencil calculation to avoid code duplication
+        let calc_stencil = |idx: usize, idx_l: usize, idx_r: usize, idx_u: usize, idx_d: usize| -> (f64, f64, f64, f64) {
+            // Safety: Caller must ensure indices are valid.
+            // Indices are guaranteed to be < n by the logic in process_safe (clamping) and the interior loop (range bounds).
+            unsafe {
+                let u_curr = *u.get_unchecked(idx);
+                let diff_u = (*u.get_unchecked(idx_r) + *u.get_unchecked(idx_l)) * cx_u
+                    + (*u.get_unchecked(idx_d) + *u.get_unchecked(idx_u)) * cy_u
                     + u_curr * c_center_u;
 
-                // V Diffusion
-                let v_curr = v[idx];
-                let diff_v = (v[idx_r] + v[idx_l]) * cx_v
-                    + (v[idx_d] + v[idx_u]) * cy_v
+                let v_curr = *v.get_unchecked(idx);
+                let diff_v = (*v.get_unchecked(idx_r) + *v.get_unchecked(idx_l)) * cx_v
+                    + (*v.get_unchecked(idx_d) + *v.get_unchecked(idx_u)) * cy_v
                     + v_curr * c_center_v;
+                (u_curr, v_curr, diff_u, diff_v)
+            }
+        };
 
-                op(idx, u_curr, v_curr, diff_u, diff_v);
+        // Helper closure to process a single point safely (with boundary checks)
+        // We define this to avoid code duplication for the fallback and boundary processing.
+        let process_safe = |x: usize, y: usize, op: &mut F| {
+            let idx = y * self.width + x;
+
+            // Neighbor indices with Neumann BC clamping
+            let x_prev = if x > 0 { x - 1 } else { x };
+            let x_next = if x < self.width - 1 { x + 1 } else { x };
+            let y_prev = if y > 0 { y - 1 } else { y };
+            let y_next = if y < self.height - 1 { y + 1 } else { y };
+
+            let idx_l = y * self.width + x_prev;
+            let idx_r = y * self.width + x_next;
+            let idx_u = y_prev * self.width + x;
+            let idx_d = y_next * self.width + x;
+
+            let (u_curr, v_curr, diff_u, diff_v) = calc_stencil(idx, idx_l, idx_r, idx_u, idx_d);
+            op(idx, u_curr, v_curr, diff_u, diff_v);
+        };
+
+        // Fallback for small grids where interior optimization isn't possible
+        if self.width < 3 || self.height < 3 {
+            for y in 0..self.height {
+                for x in 0..self.width {
+                    process_safe(x, y, &mut op);
+                }
+            }
+            return;
+        }
+
+        // Optimized Loop Splitting Strategy
+        // We iterate y from 0 to height-1.
+        // For interior rows (1..height-1), we process the interior (1..width-1) using unsafe unchecked access,
+        // which avoids the boundary checks and branches in the hot path.
+
+        for y in 0..self.height {
+            let is_boundary_row = y == 0 || y == self.height - 1;
+
+            if is_boundary_row {
+                // Process the entire row safely
+                for x in 0..self.width {
+                    process_safe(x, y, &mut op);
+                }
+            } else {
+                // 1. Left Boundary (x=0)
+                process_safe(0, y, &mut op);
+
+                // 2. Interior (Hot Path)
+                // x ranges from 1 to width-2 (inclusive)
+                let row_offset = y * self.width;
+                for x in 1..self.width - 1 {
+                    let idx = row_offset + x;
+
+                    // Indices for calc_stencil
+                    let idx_l = idx - 1;
+                    let idx_r = idx + 1;
+                    let idx_u = idx - self.width;
+                    let idx_d = idx + self.width;
+
+                    // Safety:
+                    // x is in [1, width-2], y is in [1, height-2].
+                    // All indices are strictly within bounds [0, n-1].
+                    let (u_curr, v_curr, diff_u, diff_v) = calc_stencil(idx, idx_l, idx_r, idx_u, idx_d);
+                    op(idx, u_curr, v_curr, diff_u, diff_v);
+                }
+
+                // 3. Right Boundary (x=width-1)
+                process_safe(self.width - 1, y, &mut op);
             }
         }
     }
