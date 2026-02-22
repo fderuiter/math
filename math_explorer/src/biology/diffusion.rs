@@ -24,12 +24,7 @@ pub trait SpatialDiffusion<const N: usize> {
     /// * `state` - Input concentration slices.
     /// * `out` - Output buffers for diffusion terms.
     /// * `coeffs` - Diffusion coefficients.
-    fn apply(
-        &self,
-        state: [&[f64]; N],
-        out: [&mut [f64]; N],
-        coeffs: [f64; N],
-    ) {
+    fn apply(&self, state: [&[f64]; N], out: [&mut [f64]; N], coeffs: [f64; N]) {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(state, coeffs, |i, _vals, diffs| {
             for s in 0..N {
@@ -452,11 +447,11 @@ mod tests_2d {
             &diff,
             [&s1, &s2, &s3],
             [&mut out_1, &mut out_2, &mut out_3],
-            [1.0, 1.0, 1.0]
+            [1.0, 1.0, 1.0],
         );
 
         // Check s1 (should be 4.0 in interior)
-         for y in 1..height - 1 {
+        for y in 1..height - 1 {
             for x in 1..width - 1 {
                 let idx = y * width + x;
                 assert!((out_1[idx] - 4.0).abs() < 1e-10);
