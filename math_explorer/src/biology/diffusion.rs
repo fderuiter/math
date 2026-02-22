@@ -53,6 +53,17 @@ pub trait SpatialDiffusion {
 /// A 1D Finite Difference implementation using a 3-point stencil.
 ///
 /// Handles boundaries with Neumann conditions (zero flux).
+///
+/// # The Stencil
+///
+/// ```mermaid
+/// graph LR
+///     L[u_{i-1}] --> C[u_i]
+///     R[u_{i+1}] --> C
+///     style C fill:#f9f,stroke:#333,stroke-width:2px
+/// ```
+///
+/// $$ \nabla^2 u \approx \frac{u_{i+1} - 2u_i + u_{i-1}}{dx^2} $$
 #[derive(Debug, Clone, Copy)]
 pub struct FiniteDifference1D {
     /// Grid spacing.
@@ -224,6 +235,21 @@ where
 /// A 2D Finite Difference implementation using a 5-point stencil.
 ///
 /// Handles boundaries with Neumann conditions (zero flux).
+///
+/// # The Stencil
+///
+/// ```mermaid
+/// graph TD
+///     U[u_{x, y-1}] --> C[u_{x,y}]
+///     D[u_{x, y+1}] --> C
+///     L[u_{x-1, y}] --> C
+///     R[u_{x+1, y}] --> C
+///     style C fill:#f9f,stroke:#333,stroke-width:2px
+/// ```
+///
+/// $$ \nabla^2 u \approx \frac{u_{x+1,y} + u_{x-1,y} + u_{x,y+1} + u_{x,y-1} - 4u_{x,y}}{dx^2} $$
+///
+/// (Assuming $dx = dy$)
 #[derive(Debug, Clone, Copy)]
 pub struct FiniteDifference2D {
     pub width: usize,
