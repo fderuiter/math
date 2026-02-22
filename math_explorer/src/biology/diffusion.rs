@@ -85,8 +85,8 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
             return;
         }
 
-        for s in 1..N {
-            assert_eq!(state[s].len(), n, "buffer size mismatch");
+        for u in state.iter().skip(1) {
+            assert_eq!(u.len(), n, "buffer size mismatch");
         }
 
         let dx_sq = self.dx * self.dx;
@@ -248,8 +248,8 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
         if n == 0 {
             return;
         }
-        for s in 0..N {
-            if state[s].len() != n {
+        for u in state {
+            if u.len() != n {
                 panic!("Buffer size mismatch in FiniteDifference2D");
             }
         }
