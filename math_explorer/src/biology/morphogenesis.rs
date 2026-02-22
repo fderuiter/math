@@ -107,6 +107,60 @@ impl SchnakenbergKinetics {
     }
 }
 
+/// A solver strategy that uses a fused reaction-diffusion-integration loop.
+///
+/// This solver is optimized for CPU cache locality by performing diffusion, reaction,
+/// and time integration in a single pass over the data.
+pub struct FusedTuringSolver;
+
+impl FusedTuringSolver {
+    /// Advances the state by one time step `dt`.
+    pub fn step<K, D>(
+        &self,
+        model: &TuringModel<K, D>,
+        state: &TuringState,
+        next_state: &mut TuringState,
+        dt: f64,
+    ) where
+        K: ReactionKinetics,
+        D: SpatialDiffusion,
+    {
+        let n = state.len();
+        if n == 0 {
+            return;
+        }
+
+        // Ensure buffers are the right size
+        if next_state.len() != n {
+            *next_state = TuringState::new(n);
+        }
+
+        let u = &state.u;
+        let v = &state.v;
+        let next_u = &mut next_state.u;
+        let next_v = &mut next_state.v;
+
+        // Fused Diffusion-Reaction-Integration Step
+        model.diffusion.map_diffusion(
+            u,
+            v,
+            model.d_u,
+            model.d_v,
+            |i, u_curr, v_curr, diff_u, diff_v| {
+                let (reac_u, reac_v) = model.kinetics.reaction(u_curr, v_curr);
+                // Safety: map_diffusion guarantees i is within bounds of u/v.
+                // We must ensure next_u/next_v are large enough.
+                if i < next_u.len() {
+                    next_u[i] = u_curr + dt * (diff_u + reac_u);
+                }
+                if i < next_v.len() {
+                    next_v[i] = v_curr + dt * (diff_v + reac_v);
+                }
+            },
+        );
+    }
+}
+
 impl Default for SchnakenbergKinetics {
     fn default() -> Self {
         Self { a: 0.01, b: 0.05 }
@@ -282,17 +336,11 @@ impl VectorOperations for TuringState {
     }
 }
 
-/// Represents a Reaction-Diffusion system.
-pub struct TuringSystem<
-    K: ReactionKinetics = SchnakenbergKinetics,
-    D: SpatialDiffusion = FiniteDifference1D,
-> {
-    /// The current state of the system.
-    pub state: TuringState,
-
-    // Double buffer for the next state.
-    next_state: TuringState,
-
+/// Represents the physics model of a Turing system.
+///
+/// This struct holds the parameters and kinetics strategy, separating the physics definition
+/// from the simulation state and solver strategy.
+pub struct TuringModel<K, D> {
     /// Diffusion coefficient for u
     pub d_u: f64,
     /// Diffusion coefficient for v
@@ -303,97 +351,7 @@ pub struct TuringSystem<
     pub diffusion: D,
 }
 
-impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D> {
-    /// Creates a new Turing System with default Schnakenberg kinetics and 1D Finite Difference.
-    pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
-        Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            d_u,
-            d_v,
-            kinetics: SchnakenbergKinetics::default(),
-            diffusion: FiniteDifference1D::new(dx),
-        }
-    }
-}
-
-impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
-    /// Creates a new Turing System with custom kinetics and diffusion strategy.
-    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
-        Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            d_u,
-            d_v,
-            kinetics,
-            diffusion,
-        }
-    }
-
-    /// Accessor for the activator concentrations (backward compatibility/convenience).
-    pub fn u(&self) -> &[f64] {
-        self.state.u()
-    }
-
-    /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
-    pub fn v(&self) -> &[f64] {
-        self.state.v()
-    }
-
-    /// Mutable accessor for the activator concentrations.
-    pub fn u_mut(&mut self) -> &mut [f64] {
-        self.state.u_mut()
-    }
-
-    /// Mutable accessor for the inhibitor concentrations.
-    pub fn v_mut(&mut self) -> &mut [f64] {
-        self.state.v_mut()
-    }
-
-    /// Updates the grid using the diffusion strategy and reaction kinetics.
-    pub fn step(&mut self, dt: f64) {
-        let n = self.state.len();
-        if n == 0 {
-            return;
-        }
-
-        // Ensure buffers are the right size
-        if self.next_state.len() != n {
-            self.next_state = TuringState::new(n);
-        }
-
-        let u = &self.state.u;
-        let v = &self.state.v;
-        let next_u = &mut self.next_state.u;
-        let next_v = &mut self.next_state.v;
-
-        // Fused Diffusion-Reaction-Integration Step
-        // This is significantly faster than separate passes because it keeps data in registers/L1 cache.
-        self.diffusion.map_diffusion(
-            u,
-            v,
-            self.d_u,
-            self.d_v,
-            |i, u_curr, v_curr, diff_u, diff_v| {
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
-                // Safety: map_diffusion guarantees i is within bounds of u/v.
-                // We must ensure next_u/next_v are large enough.
-                // step() ensures next_state is same size as state at the beginning.
-                if i < next_u.len() {
-                    next_u[i] = u_curr + dt * (diff_u + reac_u);
-                }
-                if i < next_v.len() {
-                    next_v[i] = v_curr + dt * (diff_v + reac_v);
-                }
-            },
-        );
-
-        // Swap buffers (states)
-        std::mem::swap(&mut self.state, &mut self.next_state);
-    }
-}
-
-impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for TuringSystem<K, D> {
+impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for TuringModel<K, D> {
     fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
         let mut out = TuringState::new(state.len());
         self.derivative_in_place(t, state, &mut out);
@@ -434,7 +392,145 @@ impl<K: ReactionKinetics, D: SpatialDiffusion> OdeSystem<TuringState> for Turing
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion> TimeStepper<TuringState> for TuringSystem<K, D> {
+/// Defines a strategy for solving the Turing system equations.
+pub trait TuringSolverStrategy {
+    fn step<K: ReactionKinetics, D: SpatialDiffusion>(
+        &self,
+        model: &TuringModel<K, D>,
+        state: &TuringState,
+        next_state: &mut TuringState,
+        dt: f64,
+    );
+}
+
+impl TuringSolverStrategy for FusedTuringSolver {
+    fn step<K: ReactionKinetics, D: SpatialDiffusion>(
+        &self,
+        model: &TuringModel<K, D>,
+        state: &TuringState,
+        next_state: &mut TuringState,
+        dt: f64,
+    ) {
+        self.step(model, state, next_state, dt);
+    }
+}
+
+/// Represents a Reaction-Diffusion system.
+pub struct TuringSystem<
+    K: ReactionKinetics = SchnakenbergKinetics,
+    D: SpatialDiffusion = FiniteDifference1D,
+    S = FusedTuringSolver,
+> {
+    /// The physics model (parameters + equations).
+    pub model: TuringModel<K, D>,
+
+    /// The current state of the system.
+    pub state: TuringState,
+
+    // Double buffer for the next state.
+    next_state: TuringState,
+
+    /// The solver strategy.
+    pub solver: S,
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion, S> std::ops::Deref for TuringSystem<K, D, S> {
+    type Target = TuringModel<K, D>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.model
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion, S> std::ops::DerefMut for TuringSystem<K, D, S> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.model
+    }
+}
+
+impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D> {
+    /// Creates a new Turing System with default Schnakenberg kinetics and 1D Finite Difference.
+    pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
+        Self {
+            model: TuringModel {
+                d_u,
+                d_v,
+                kinetics: SchnakenbergKinetics::default(),
+                diffusion: FiniteDifference1D::new(dx),
+            },
+            state: TuringState::new(size),
+            next_state: TuringState::new(size),
+            solver: FusedTuringSolver,
+        }
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion> TuringSystem<K, D> {
+    /// Creates a new Turing System with custom kinetics and diffusion strategy.
+    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
+        Self {
+            model: TuringModel {
+                d_u,
+                d_v,
+                kinetics,
+                diffusion,
+            },
+            state: TuringState::new(size),
+            next_state: TuringState::new(size),
+            solver: FusedTuringSolver,
+        }
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion, S> TuringSystem<K, D, S> {
+    /// Accessor for the activator concentrations (backward compatibility/convenience).
+    pub fn u(&self) -> &[f64] {
+        self.state.u()
+    }
+
+    /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
+    pub fn v(&self) -> &[f64] {
+        self.state.v()
+    }
+
+    /// Mutable accessor for the activator concentrations.
+    pub fn u_mut(&mut self) -> &mut [f64] {
+        self.state.u_mut()
+    }
+
+    /// Mutable accessor for the inhibitor concentrations.
+    pub fn v_mut(&mut self) -> &mut [f64] {
+        self.state.v_mut()
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion, S: TuringSolverStrategy> TuringSystem<K, D, S> {
+    /// Updates the grid using the diffusion strategy and reaction kinetics.
+    pub fn step(&mut self, dt: f64) {
+        self.solver
+            .step(&self.model, &self.state, &mut self.next_state, dt);
+
+        // Swap buffers (states)
+        std::mem::swap(&mut self.state, &mut self.next_state);
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion, S> OdeSystem<TuringState> for TuringSystem<K, D, S>
+where
+    TuringModel<K, D>: OdeSystem<TuringState>,
+{
+    fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
+        self.model.derivative(t, state)
+    }
+
+    fn derivative_in_place(&self, t: f64, state: &TuringState, out: &mut TuringState) {
+        self.model.derivative_in_place(t, state, out)
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion, S: TuringSolverStrategy> TimeStepper<TuringState>
+    for TuringSystem<K, D, S>
+{
     fn get_state(&self) -> &TuringState {
         &self.state
     }
