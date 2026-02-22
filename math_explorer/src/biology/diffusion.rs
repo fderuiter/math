@@ -272,7 +272,12 @@ impl SpatialDiffusion for FiniteDifference2D {
         let c_center_v = -2.0 * (cx_v + cy_v);
 
         // Helper closure for stencil calculation to avoid code duplication
-        let calc_stencil = |idx: usize, idx_l: usize, idx_r: usize, idx_u: usize, idx_d: usize| -> (f64, f64, f64, f64) {
+        let calc_stencil = |idx: usize,
+                            idx_l: usize,
+                            idx_r: usize,
+                            idx_u: usize,
+                            idx_d: usize|
+         -> (f64, f64, f64, f64) {
             // Safety: Caller must ensure indices are valid.
             // Indices are guaranteed to be < n by the logic in process_safe (clamping) and the interior loop (range bounds).
             unsafe {
@@ -351,7 +356,8 @@ impl SpatialDiffusion for FiniteDifference2D {
                     // Safety:
                     // x is in [1, width-2], y is in [1, height-2].
                     // All indices are strictly within bounds [0, n-1].
-                    let (u_curr, v_curr, diff_u, diff_v) = calc_stencil(idx, idx_l, idx_r, idx_u, idx_d);
+                    let (u_curr, v_curr, diff_u, diff_v) =
+                        calc_stencil(idx, idx_l, idx_r, idx_u, idx_d);
                     op(idx, u_curr, v_curr, diff_u, diff_v);
                 }
 
