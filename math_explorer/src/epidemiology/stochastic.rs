@@ -2,7 +2,6 @@ use crate::epidemiology::compartmental::{SIRModel, SIRState};
 pub use crate::pure_math::analysis::stochastic::{
     GillespieSolver, StochasticError, StochasticSystem,
 };
-use rand::Rng;
 
 impl StochasticSystem<SIRState> for SIRModel {
     fn propensities(&self, state: &SIRState, out: &mut Vec<f64>) {
@@ -48,33 +47,12 @@ pub fn probability_of_extinction(r0: f64, initial_cases: f64) -> f64 {
     }
 }
 
-/// Calculates time to next event for SIR system (Gillespie).
-///
-/// $\tau = - \ln(U) / (\text{rate}_{infect} + \text{rate}_{recover})$
-#[deprecated(
-    since = "0.1.0",
-    note = "Use GillespieSolver instead for full simulation"
-)]
-pub fn gillespie_step_time(rate_infect: f64, rate_recover: f64) -> f64 {
-    let mut rng = rand::thread_rng();
-    let u: f64 = rng.r#gen(); // Uniform (0, 1)
-
-    // Avoid log(0)
-    let u = if u == 0.0 { 1e-10 } else { u };
-
-    let total_rate = rate_infect + rate_recover;
-    if total_rate == 0.0 {
-        return f64::INFINITY;
-    }
-
-    -u.ln() / total_rate
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use rand::SeedableRng;
     use rand::rngs::StdRng;
+    use std::error::Error;
 
     #[test]
     fn test_extinction_probability() {
@@ -89,7 +67,7 @@ mod tests {
     }
 
     #[test]
-    fn test_gillespie_solver_deterministic() {
+    fn test_gillespie_solver_deterministic() -> Result<(), Box<dyn Error>> {
         // Seeded RNG for deterministic test
         let rng = StdRng::seed_from_u64(42);
         let mut solver = GillespieSolver::new(rng);
@@ -97,14 +75,14 @@ mod tests {
         let n = 100.0;
         let i0 = 10.0;
         // High beta, low gamma -> likely infection
-        let model = SIRModel::new(n, i0, 2.0, 0.1).unwrap();
+        let model = SIRModel::new(n, i0, 2.0, 0.1)?;
 
         let mut state = *model.state(); // Working copy of state
         let initial_s = state.s;
         let initial_i = state.i;
 
         // Take one step
-        let dt = solver.step(&model, &mut state).unwrap();
+        let dt = solver.step(&model, &mut state)?;
 
         assert!(dt > 0.0, "Time step should be positive");
         assert!(dt.is_finite());
@@ -118,5 +96,7 @@ mod tests {
 
         assert!(s_diff <= 1.0);
         assert!(i_diff >= 1.0); // I changes in both infection and recovery
+
+        Ok(())
     }
 }

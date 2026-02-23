@@ -63,12 +63,14 @@
 //! // 1. Configure the child's strategy
 //! let mut inputs = FavoritismInputs::default();
 //!
+//! // Explicitly set strategy parameters
+//! inputs.personality.wealth = 9.5;            // High financial success
+//! inputs.social.helped_during_crisis = true;  // Was there when needed
+//! inputs.contact.time_since_last_contact = 2.0; // Called 2 days ago
+//!
 //! // The "Buying Love" strategy
 //! inputs.gifts.g_practical = 10.0; // High value gifts
 //! inputs.gifts.g_emotional = 2.0;  // Low sentimental value
-//!
-//! // The "Guilt Trip" mitigation
-//! inputs.contact.time_since_last_contact = 1.0; // Called yesterday
 //!
 //! // 2. Calculate the score
 //! let score = calculate_favoritism_score(&inputs);

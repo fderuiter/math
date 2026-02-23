@@ -73,7 +73,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `biology::morphogenesis`
 *   **Features:**
     *   [x] **Turing Patterns:** 2D grid visualization of Reaction-Diffusion systems (e.g., Gray-Scott).
-    *   [ ] **Pattern Gallery:** Presets for spots, stripes, and labyrinths.
+    *   [x] **Pattern Gallery:** Presets for spots, stripes, and labyrinths.
 
 ---
 
@@ -112,7 +112,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 4.2 Clinical Trials
 *   **Module:** `applied::clinical_trials`
 *   **Features:**
-    *   [ ] **Survival Curves:** Kaplan-Meier plot generator.
+    *   [x] **Survival Curves:** Kaplan-Meier plot generator.
     *   [ ] **Sample Size Calculator:** Form inputs for $\alpha$, $\beta$, and effect size.
     *   [ ] **Randomization:** Interactive subject allocation tool.
 

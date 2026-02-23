@@ -27,7 +27,9 @@ impl<const Q: usize> LatticeState<Q> {
     /// - Velocity = 0.0
     /// - f = 0.0 (Caller must initialize equilibrium)
     pub fn new(width: usize, height: usize) -> Self {
-        let size = width * height;
+        let size = width
+            .checked_mul(height)
+            .expect("Grid dimensions too large");
         Self {
             width,
             height,

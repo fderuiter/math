@@ -4,6 +4,36 @@ use egui::ColorImage;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum PatternPreset {
+    Spots,
+    Stripes,
+    Labyrinths,
+    Chaos,
+}
+
+impl PatternPreset {
+    fn label(&self) -> &'static str {
+        match self {
+            Self::Spots => "Spots (Leopard)",
+            Self::Stripes => "Stripes (Zebra)",
+            Self::Labyrinths => "Labyrinths",
+            Self::Chaos => "Unstable / Chaos",
+        }
+    }
+
+    fn params(&self) -> (f64, f64, f64, f64) {
+        // Returns (a, b, d_u, d_v)
+        // Values tuned for typical Schnakenberg patterns
+        match self {
+            Self::Spots => (0.12, 0.88, 1.0, 100.0),
+            Self::Stripes => (0.1, 0.9, 1.0, 100.0),
+            Self::Labyrinths => (0.14, 0.86, 1.0, 100.0),
+            Self::Chaos => (0.02, 0.98, 1.0, 100.0),
+        }
+    }
+}
+
 pub struct MorphogenesisTab {
     system: TuringSystem<SchnakenbergKinetics, FiniteDifference2D>,
     texture: Option<egui::TextureHandle>,
@@ -17,6 +47,7 @@ pub struct MorphogenesisTab {
     width: usize,
     height: usize,
     simulation_speed: usize,
+    selected_preset: Option<PatternPreset>,
 }
 
 impl Default for MorphogenesisTab {
@@ -46,6 +77,7 @@ impl Default for MorphogenesisTab {
             width,
             height,
             simulation_speed: 10,
+            selected_preset: None,
         }
     }
 }
@@ -82,6 +114,34 @@ impl ExplorerTab for MorphogenesisTab {
             ui.label("Schnakenberg Kinetics");
             ui.separator();
 
+            ui.heading("Pattern Gallery");
+            ui.horizontal_wrapped(|ui| {
+                for preset in [
+                    PatternPreset::Spots,
+                    PatternPreset::Stripes,
+                    PatternPreset::Labyrinths,
+                    PatternPreset::Chaos,
+                ] {
+                    let selected = self.selected_preset == Some(preset);
+                    if ui.selectable_label(selected, preset.label()).clicked() {
+                        let (a, b, d_u, d_v) = preset.params();
+                        self.a = a;
+                        self.b = b;
+                        self.d_u = d_u;
+                        self.d_v = d_v;
+
+                        self.system.kinetics.a = a;
+                        self.system.kinetics.b = b;
+                        self.system.d_u = d_u;
+                        self.system.d_v = d_v;
+
+                        initialize_system(&mut self.system, self.width, self.height);
+                        self.selected_preset = Some(preset);
+                    }
+                }
+            });
+            ui.separator();
+
             ui.collapsing("Parameters", |ui| {
                 let mut changed = false;
                 changed |= ui.add(egui::Slider::new(&mut self.a, 0.0..=1.0).text("a (Feed)")).changed();
@@ -96,6 +156,7 @@ impl ExplorerTab for MorphogenesisTab {
                     self.system.kinetics.b = self.b;
                     self.system.d_u = self.d_u;
                     self.system.d_v = self.d_v;
+                    self.selected_preset = None;
                 }
             });
 
@@ -186,6 +247,12 @@ fn heatmap_color(t: f64) -> (u8, u8, u8) {
     }
 }
 
+/// A lightweight, deterministic pseudo-random number generator.
+///
+/// **Architectural Decision:**
+/// We implement this simple Linear Congruential Generator (LCG) / PCG variant locally to avoid
+/// pulling in the heavy `rand` crate tree for the GUI. The GUI only needs noise for visualization
+/// initialization, not cryptographic security or statistical rigor (which should be handled in `math_explorer`).
 struct SimpleRng {
     state: u64,
 }
