@@ -283,10 +283,10 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
             "Diffusion coefficients count mismatch"
         );
 
-        for s in 0..n_species {
+        for (s, coeff) in coeffs.iter().enumerate().take(n_species) {
             let src = &state.concentrations[s];
             let dst = &mut out.concentrations[s];
-            let coeff = coeffs[s];
+            let coeff = *coeff;
 
             apply_2d_stencil_optimized(self.width, self.height, self.dx, self.dy, src, dst, coeff);
         }
@@ -317,16 +317,16 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
         let mut cy = [0.0; N];
         let mut c_center = [0.0; N];
 
-        for s in 0..N {
-            cx[s] = coeffs[s] * inv_dx_sq;
-            cy[s] = coeffs[s] * inv_dy_sq;
+        for (s, coeff) in coeffs.iter().enumerate().take(N) {
+            cx[s] = coeff * inv_dx_sq;
+            cy[s] = coeff * inv_dy_sq;
             c_center[s] = -2.0 * (cx[s] + cy[s]);
         }
 
         // Verify all buffers are large enough to avoid UB in unsafe block
-        for s in 0..N {
+        for (s, buffer) in state.iter().enumerate().take(N) {
             assert!(
-                state[s].len() >= n,
+                buffer.len() >= n,
                 "Buffer too small for diffusion (species {})",
                 s
             );
