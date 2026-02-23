@@ -27,9 +27,9 @@ pub trait SpatialDiffusion<const N: usize> {
     fn apply(&self, state: [&[f64]; N], out: &mut [&mut [f64]; N], coeffs: [f64; N]) {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(state, coeffs, |i, _vals, diffs| {
-            for s in 0..N {
-                if i < out[s].len() {
-                    out[s][i] = diffs[s];
+            for (out_slice, &diff) in out.iter_mut().zip(diffs.iter()) {
+                if i < out_slice.len() {
+                    out_slice[i] = diff;
                 }
             }
         });
@@ -97,11 +97,11 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
         {
             let mut vals = [0.0; N];
             let mut diffs = [0.0; N];
-            for s in 0..N {
-                let u_curr = state[s][0];
+            for (s, (u_slice, &coeff)) in state.iter().zip(coeffs.iter()).enumerate() {
+                let u_curr = u_slice[0];
                 let u_prev = u_curr; // Neumann: u_{-1} = u_0
-                let u_next = if len > 1 { state[s][1] } else { u_curr };
-                let lap = coeffs[s] * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                let u_next = if len > 1 { u_slice[1] } else { u_curr };
+                let lap = coeff * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                 vals[s] = u_curr;
                 diffs[s] = lap;
             }
@@ -113,11 +113,11 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
             for i in 1..len - 1 {
                 let mut vals = [0.0; N];
                 let mut diffs = [0.0; N];
-                for s in 0..N {
-                    let u_prev = state[s][i - 1];
-                    let u_curr = state[s][i];
-                    let u_next = state[s][i + 1];
-                    let lap = coeffs[s] * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                for (s, (u_slice, &coeff)) in state.iter().zip(coeffs.iter()).enumerate() {
+                    let u_prev = u_slice[i - 1];
+                    let u_curr = u_slice[i];
+                    let u_next = u_slice[i + 1];
+                    let lap = coeff * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                     vals[s] = u_curr;
                     diffs[s] = lap;
                 }
@@ -130,11 +130,11 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
             let i = len - 1;
             let mut vals = [0.0; N];
             let mut diffs = [0.0; N];
-            for s in 0..N {
-                let u_curr = state[s][i];
-                let u_prev = state[s][i - 1];
+            for (s, (u_slice, &coeff)) in state.iter().zip(coeffs.iter()).enumerate() {
+                let u_curr = u_slice[i];
+                let u_prev = u_slice[i - 1];
                 let u_next = u_curr; // Neumann: u_{N} = u_{N-1}
-                let lap = coeffs[s] * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
+                let lap = coeff * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
                 vals[s] = u_curr;
                 diffs[s] = lap;
             }
@@ -252,9 +252,9 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
         let mut cx = [0.0; N];
         let mut cy = [0.0; N];
         let mut c_center = [0.0; N];
-        for s in 0..N {
-            cx[s] = coeffs[s] * inv_dx_sq;
-            cy[s] = coeffs[s] * inv_dy_sq;
+        for (s, &coeff) in coeffs.iter().enumerate() {
+            cx[s] = coeff * inv_dx_sq;
+            cy[s] = coeff * inv_dy_sq;
             c_center[s] = -2.0 * (cx[s] + cy[s]);
         }
 
@@ -276,11 +276,10 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
                 let mut vals = [0.0; N];
                 let mut diffs = [0.0; N];
 
-                for s in 0..N {
-                    let u = state[s];
-                    let u_curr = u[idx];
-                    let diff = (u[idx_r] + u[idx_l]) * cx[s]
-                        + (u[idx_d] + u[idx_u]) * cy[s]
+                for (s, u_slice) in state.iter().enumerate() {
+                    let u_curr = u_slice[idx];
+                    let diff = (u_slice[idx_r] + u_slice[idx_l]) * cx[s]
+                        + (u_slice[idx_d] + u_slice[idx_u]) * cy[s]
                         + u_curr * c_center[s];
 
                     vals[s] = u_curr;
