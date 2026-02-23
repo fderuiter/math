@@ -24,12 +24,7 @@ pub trait SpatialDiffusion<const N: usize> {
     /// * `state` - Input concentration slices.
     /// * `out` - Output buffers for diffusion terms.
     /// * `coeffs` - Diffusion coefficients.
-    fn apply(
-        &self,
-        state: [&[f64]; N],
-        out: &mut [&mut [f64]; N],
-        coeffs: [f64; N],
-    ) {
+    fn apply(&self, state: [&[f64]; N], out: &mut [&mut [f64]; N], coeffs: [f64; N]) {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(state, coeffs, |i, _vals, diffs| {
             for s in 0..N {
@@ -244,7 +239,10 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
             return;
         }
         for s in 0..N {
-            assert!(state[s].len() >= n, "Buffer size too small in FiniteDifference2D");
+            assert!(
+                state[s].len() >= n,
+                "Buffer size too small in FiniteDifference2D"
+            );
         }
 
         let inv_dx_sq = 1.0 / (self.dx * self.dx);

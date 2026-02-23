@@ -373,10 +373,8 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D> {
         let state = [u.as_slice(), v.as_slice()];
         let coeffs = [self.d_u, self.d_v];
 
-        self.diffusion.map_diffusion(
-            state,
-            coeffs,
-            |i, vals, diffs| {
+        self.diffusion
+            .map_diffusion(state, coeffs, |i, vals, diffs| {
                 let u_curr = vals[0];
                 let v_curr = vals[1];
                 let diff_u = diffs[0];
@@ -392,8 +390,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D> {
                 if i < next_v.len() {
                     next_v[i] = v_curr + dt * (diff_v + reac_v);
                 }
-            },
-        );
+            });
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
