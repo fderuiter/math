@@ -31,24 +31,25 @@ use rand::Rng;
 /// let h_field = 0.0;    // No external magnetic field
 ///
 /// // 2. Set Temperature below Critical Point (Tc ~ 2.269 * J / KB)
-/// // We choose T such that kB * T = 1.5 * J (Well within ordered phase)
-/// let temp = 1.5 * j_coupling / KB;
+/// // We choose T such that kB * T = 1.0 * J (Deep within ordered phase)
+/// let temp = 1.0 * j_coupling / KB;
 ///
 /// // 3. Initialize Lattice
 /// let mut lattice = SpinLattice::new(width, height);
 ///
 /// // 4. Run Metropolis Simulation to reach equilibrium
-/// // Note: This is a probabilistic process.
-/// lattice.evolve(300_000, temp, j_coupling, h_field);
+/// // Note: This is a probabilistic process. We use enough steps to overcome
+/// // initial disorder and potential metastable states.
+/// lattice.evolve(500_000, temp, j_coupling, h_field);
 ///
 /// // 5. Check Magnetization
+/// // At low temp, spins align. M should be close to max_m or -max_m.
 /// let m = lattice.magnetization();
 /// let max_m = (width * height) as i64;
 ///
-/// // At low temp, spins align. M should be close to max_m or -max_m.
-/// // We check that the absolute magnetization is significant (> 50% order).
+/// // We check that the absolute magnetization is significant (> 80% order).
 /// let magnetization_ratio = (m as f64).abs() / (max_m as f64);
-/// assert!(magnetization_ratio > 0.5, "System did not magnetize! Ratio: {}", magnetization_ratio);
+/// assert!(magnetization_ratio > 0.8, "System did not magnetize! Ratio: {}", magnetization_ratio);
 /// ```
 pub struct SpinLattice {
     pub width: usize,
