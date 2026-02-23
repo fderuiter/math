@@ -288,15 +288,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
             let dst = &mut out.concentrations[s];
             let coeff = coeffs[s];
 
-            apply_2d_stencil_optimized(
-                self.width,
-                self.height,
-                self.dx,
-                self.dy,
-                src,
-                dst,
-                coeff,
-            );
+            apply_2d_stencil_optimized(self.width, self.height, self.dx, self.dy, src, dst, coeff);
         }
     }
 }
