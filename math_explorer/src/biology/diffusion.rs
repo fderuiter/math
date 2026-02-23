@@ -399,9 +399,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
                         let u_u = *u_ptr.add(idx - width);
                         let u_d = *u_ptr.add(idx + width);
 
-                        let diff = (u_r + u_l) * cx[s]
-                            + (u_d + u_u) * cy[s]
-                            + u_curr * c_center[s];
+                        let diff = (u_r + u_l) * cx[s] + (u_d + u_u) * cy[s] + u_curr * c_center[s];
 
                         current_vals[s] = u_curr;
                         diff_vals[s] = diff;

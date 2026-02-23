@@ -19,7 +19,7 @@ fn main() {
             [0.1, 0.05],
             |_i, _vals, _diffs| {
                 dummy += 1.0;
-            }
+            },
         );
     }
 
@@ -38,12 +38,15 @@ fn main() {
                 unsafe {
                     std::ptr::write_volatile(&mut dummy, vals[0] + diffs[0]);
                 }
-            }
+            },
         );
     }
 
     let duration = start.elapsed();
-    println!("Time for {} iterations on {}x{} grid: {:?}", iterations, width, height, duration);
+    println!(
+        "Time for {} iterations on {}x{} grid: {:?}",
+        iterations, width, height, duration
+    );
     let avg_ms = duration.as_millis() as f64 / iterations as f64;
     println!("Average per step: {:.2} ms", avg_ms);
 }
