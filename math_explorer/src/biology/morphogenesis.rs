@@ -452,6 +452,12 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> OdeSystem<TuringState> for Tur
         );
 
         // 2. Compute Reaction and Accumulate
+        // SAFETY:
+        // 1. `n` is defined as `state.len()` at the start of the function.
+        // 2. We resized `out` to `n` (if needed) at the start, ensuring `out.len() == n`.
+        // 3. `u` and `v` are slices from `state` (length `n`).
+        // 4. `out_u` and `out_v` are slices from `out` (length `n`).
+        // Therefore, the index `i` (ranging `0..n`) is strictly within bounds for all accessed slices.
         unsafe {
             for i in 0..n {
                 let u_curr = *u.get_unchecked(i);
