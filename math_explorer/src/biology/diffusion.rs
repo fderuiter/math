@@ -255,6 +255,52 @@ impl FiniteDifference2D {
     }
 }
 
+impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
+    fn apply(
+        &self,
+        state: &crate::biology::reaction_diffusion::ChemicalState,
+        out: &mut crate::biology::reaction_diffusion::ChemicalState,
+        coeffs: &[f64],
+    ) {
+        let n_species = state.num_species();
+        if n_species == 0 {
+            return;
+        }
+
+        // Ensure grid size matches
+        let n_grid = self.width * self.height;
+        // In release mode, these checks are cheap. In debug, they catch errors.
+        // We use assert! because dimension mismatch is a critical bug.
+        assert_eq!(
+            state.grid_size(),
+            n_grid,
+            "ChemicalState grid size mismatch with FiniteDifference2D"
+        );
+        assert_eq!(out.grid_size(), n_grid, "Output state grid size mismatch");
+        assert_eq!(
+            coeffs.len(),
+            n_species,
+            "Diffusion coefficients count mismatch"
+        );
+
+        for s in 0..n_species {
+            let src = &state.concentrations[s];
+            let dst = &mut out.concentrations[s];
+            let coeff = coeffs[s];
+
+            apply_2d_stencil_optimized(
+                self.width,
+                self.height,
+                self.dx,
+                self.dy,
+                src,
+                dst,
+                coeff,
+            );
+        }
+    }
+}
+
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)
     where
@@ -285,38 +331,42 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
             c_center[s] = -2.0 * (cx[s] + cy[s]);
         }
 
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let idx = y * self.width + x;
+        // Verify all buffers are large enough to avoid UB in unsafe block
+        for s in 0..N {
+            assert!(
+                state[s].len() >= n,
+                "Buffer too small for diffusion (species {})",
+                s
+            );
+        }
 
-                // Neighbor indices with Neumann BC clamping
-                let x_prev = if x > 0 { x - 1 } else { x };
-                let x_next = if x < self.width - 1 { x + 1 } else { x };
-                let y_prev = if y > 0 { y - 1 } else { y };
-                let y_next = if y < self.height - 1 { y + 1 } else { y };
-
-                let idx_l = y * self.width + x_prev;
-                let idx_r = y * self.width + x_next;
-                let idx_u = y_prev * self.width + x;
-                let idx_d = y_next * self.width + x;
-
+        iter_stencil_2d(
+            self.width,
+            self.height,
+            |idx, idx_l, idx_r, idx_u, idx_d| {
                 let mut current_vals = [0.0; N];
                 let mut diff_vals = [0.0; N];
 
                 for s in 0..N {
                     let u = state[s];
-                    let u_curr = u[idx];
-                    let diff = (u[idx_r] + u[idx_l]) * cx[s]
-                        + (u[idx_d] + u[idx_u]) * cy[s]
-                        + u_curr * c_center[s];
+                    // SAFETY: All indices are guaranteed valid by iter_stencil_2d logic
+                    // and we explicitly asserted lengths above.
+                    unsafe {
+                        let u_curr = *u.get_unchecked(idx);
+                        let u_l = *u.get_unchecked(idx_l);
+                        let u_r = *u.get_unchecked(idx_r);
+                        let u_u = *u.get_unchecked(idx_u);
+                        let u_d = *u.get_unchecked(idx_d);
 
-                    current_vals[s] = u_curr;
-                    diff_vals[s] = diff;
+                        let diff = (u_r + u_l) * cx[s] + (u_d + u_u) * cy[s] + u_curr * c_center[s];
+
+                        current_vals[s] = u_curr;
+                        diff_vals[s] = diff;
+                    }
                 }
-
                 op(idx, current_vals, diff_vals);
-            }
-        }
+            },
+        );
     }
 }
 
@@ -450,6 +500,221 @@ mod tests_2d {
         for i in 0..n {
             assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
             assert!((out_v_1[i] - out_v_2[i]).abs() < 1e-10);
+        }
+    }
+
+    #[test]
+    fn test_diffusion_model_2d() {
+        use crate::biology::reaction_diffusion::{ChemicalState, DiffusionModel};
+
+        let width = 5;
+        let height = 5;
+        let dx = 1.0;
+        let dy = 1.0;
+        let diff = FiniteDifference2D::new(width, height, dx, dy);
+
+        let n = width * height;
+        let mut state = ChemicalState::new(2, n);
+        let mut out = ChemicalState::new(2, n);
+
+        // Initialize with a simple pattern: center point high
+        let center_idx = 2 * width + 2; // (2, 2)
+        state.species_mut(0)[center_idx] = 1.0;
+
+        // Apply diffusion
+        let coeffs = [0.1, 0.2];
+        DiffusionModel::apply(&diff, &state, &mut out, &coeffs);
+
+        // Check center point diffusion
+        // Laplacian at center: (0+0+0+0 - 4*1) = -4
+        // D*Lap = 0.1 * -4 = -0.4
+        let expected_center = -4.0 * coeffs[0];
+        let val = out.species(0)[center_idx];
+        assert!(
+            (val - expected_center).abs() < 1e-10,
+            "Expected {}, got {}",
+            expected_center,
+            val
+        );
+
+        // Check neighbor points (should receive flux)
+        // Neighbor Laplacian: (1+0+0+0 - 4*0) = 1
+        // D*Lap = 0.1 * 1 = 0.1
+        let neighbor_idx = 2 * width + 3; // (3, 2)
+        let expected_neighbor = 1.0 * coeffs[0];
+        let val_neighbor = out.species(0)[neighbor_idx];
+        assert!(
+            (val_neighbor - expected_neighbor).abs() < 1e-10,
+            "Expected {}, got {}",
+            expected_neighbor,
+            val_neighbor
+        );
+
+        // Verify 2nd species works independently
+        assert_eq!(out.species(1)[center_idx], 0.0);
+    }
+}
+
+/// Applies a 2D Finite Difference stencil to a single array.
+///
+/// This helper implements a loop-splitting optimization to separate the hot interior path
+/// from the boundary handling, eliminating conditional checks for the majority of grid points.
+///
+/// # Arguments
+/// * `width` - Grid width.
+/// * `height` - Grid height.
+/// * `dx` - Grid spacing x.
+/// * `dy` - Grid spacing y.
+/// * `src` - Input concentration slice.
+/// * `dst` - Output buffer for Laplacian.
+/// * `coeff` - Diffusion coefficient.
+fn apply_2d_stencil_optimized(
+    width: usize,
+    height: usize,
+    dx: f64,
+    dy: f64,
+    src: &[f64],
+    dst: &mut [f64],
+    coeff: f64,
+) {
+    let n = width * height;
+    if src.len() < n || dst.len() < n {
+        // In a real system this might panic, but for a helper we just return
+        return;
+    }
+
+    let inv_dx_sq = 1.0 / (dx * dx);
+    let inv_dy_sq = 1.0 / (dy * dy);
+    let cx = coeff * inv_dx_sq;
+    let cy = coeff * inv_dy_sq;
+    let c_center = -2.0 * (cx + cy);
+
+    iter_stencil_2d(width, height, |idx, idx_l, idx_r, idx_u, idx_d| {
+        // SAFETY: iter_stencil_2d guarantees indices are within 0..width*height
+        // and we checked src/dst lengths >= n.
+        unsafe {
+            let u_curr = *src.get_unchecked(idx);
+            let u_l = *src.get_unchecked(idx_l);
+            let u_r = *src.get_unchecked(idx_r);
+            let u_u = *src.get_unchecked(idx_u);
+            let u_d = *src.get_unchecked(idx_d);
+
+            let diff = (u_r + u_l) * cx + (u_d + u_u) * cy + u_curr * c_center;
+            *dst.get_unchecked_mut(idx) = diff;
+        }
+    });
+}
+
+/// Iterates over a 2D grid, providing indices for the center and its 4 neighbors (Neumann BC).
+///
+/// This helper implements loop splitting to optimize interior access.
+///
+/// # Arguments
+/// * `width` - Grid width.
+/// * `height` - Grid height.
+/// * `op` - Closure called with (center_idx, left_idx, right_idx, up_idx, down_idx).
+#[inline(always)]
+fn iter_stencil_2d<F>(width: usize, height: usize, mut op: F)
+where
+    F: FnMut(usize, usize, usize, usize, usize),
+{
+    // Fallback for small grids
+    if width < 3 || height < 3 {
+        for y in 0..height {
+            for x in 0..width {
+                let idx = y * width + x;
+                let x_prev = if x > 0 { x - 1 } else { x };
+                let x_next = if x < width - 1 { x + 1 } else { x };
+                let y_prev = if y > 0 { y - 1 } else { y };
+                let y_next = if y < height - 1 { y + 1 } else { y };
+
+                let idx_l = y * width + x_prev;
+                let idx_r = y * width + x_next;
+                let idx_u = y_prev * width + x;
+                let idx_d = y_next * width + x;
+
+                op(idx, idx_l, idx_r, idx_u, idx_d);
+            }
+        }
+        return;
+    }
+
+    // 1. Top Row (y=0)
+    {
+        let y = 0;
+        let y_prev = 0;
+        let y_next = 1;
+        for x in 0..width {
+            let idx = x;
+            let x_prev = if x > 0 { x - 1 } else { x };
+            let x_next = if x < width - 1 { x + 1 } else { x };
+
+            let idx_l = y * width + x_prev;
+            let idx_r = y * width + x_next;
+            let idx_u = y_prev * width + x;
+            let idx_d = y_next * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+    }
+
+    // 2. Interior Rows
+    for y in 1..height - 1 {
+        let row_offset = y * width;
+
+        // Left Col
+        {
+            let x = 0;
+            let idx = row_offset;
+            let x_prev = 0;
+            let x_next = 1;
+
+            let idx_l = row_offset + x_prev;
+            let idx_r = row_offset + x_next;
+            let idx_u = (y - 1) * width + x;
+            let idx_d = (y + 1) * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+
+        // Interior
+        for x in 1..width - 1 {
+            let idx = row_offset + x;
+            let idx_l = idx - 1;
+            let idx_r = idx + 1;
+            let idx_u = idx - width;
+            let idx_d = idx + width;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+
+        // Right Col
+        {
+            let x = width - 1;
+            let idx = row_offset + x;
+            let x_prev = x - 1;
+            let x_next = x;
+
+            let idx_l = row_offset + x_prev;
+            let idx_r = row_offset + x_next;
+            let idx_u = (y - 1) * width + x;
+            let idx_d = (y + 1) * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+    }
+
+    // 3. Bottom Row
+    {
+        let y = height - 1;
+        let y_prev = y - 1;
+        let y_next = y;
+        for x in 0..width {
+            let idx = y * width + x;
+            let x_prev = if x > 0 { x - 1 } else { x };
+            let x_next = if x < width - 1 { x + 1 } else { x };
+
+            let idx_l = y * width + x_prev;
+            let idx_r = y * width + x_next;
+            let idx_u = y_prev * width + x;
+            let idx_d = y_next * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
         }
     }
 }
