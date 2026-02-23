@@ -203,7 +203,9 @@ impl ReplicatorDynamicsTool {
                 }
 
                 // Add vertical line for current playback time
-                plot_ui.vline(VLine::new("Current Time", self.playback_time).color(egui::Color32::WHITE));
+                plot_ui.vline(
+                    VLine::new("Current Time", self.playback_time).color(egui::Color32::WHITE),
+                );
             });
     }
 
@@ -215,7 +217,8 @@ impl ReplicatorDynamicsTool {
 
         // Find state at current time
         // Clamp index to valid range
-        let idx = ((self.playback_time / self.dt).round() as usize).min(self.trajectory.len().saturating_sub(1));
+        let idx = ((self.playback_time / self.dt).round() as usize)
+            .min(self.trajectory.len().saturating_sub(1));
 
         let (current_time, current_state) = &self.trajectory[idx];
 
@@ -252,7 +255,11 @@ impl ReplicatorDynamicsTool {
             ui.strong(format!("Time: {:.2}", current_time));
             ui.separator();
             for (i, val) in current_state.iter().enumerate() {
-                let name = self.strategy_names.get(i).map(|s| s.as_str()).unwrap_or("?");
+                let name = self
+                    .strategy_names
+                    .get(i)
+                    .map(|s| s.as_str())
+                    .unwrap_or("?");
                 ui.label(format!("{}: {:.2}", name, val));
             }
         });
@@ -288,14 +295,28 @@ impl GameTheoryTool for ReplicatorDynamicsTool {
 
                 // Playback Controls
                 ui.horizontal(|ui| {
-                    if ui.button(if self.is_playing { "⏸ Pause" } else { "▶ Play" }).clicked() {
+                    if ui
+                        .button(if self.is_playing {
+                            "⏸ Pause"
+                        } else {
+                            "▶ Play"
+                        })
+                        .clicked()
+                    {
                         self.is_playing = !self.is_playing;
                     }
 
-                    ui.add(egui::Slider::new(&mut self.playback_time, 0.0..=self.time_horizon).text("Time"));
+                    ui.add(
+                        egui::Slider::new(&mut self.playback_time, 0.0..=self.time_horizon)
+                            .text("Time"),
+                    );
 
                     ui.label("Speed:");
-                    ui.add(egui::DragValue::new(&mut self.playback_speed).speed(0.1).range(0.1..=10.0));
+                    ui.add(
+                        egui::DragValue::new(&mut self.playback_speed)
+                            .speed(0.1)
+                            .range(0.1..=10.0),
+                    );
                 });
 
                 self.show_population_bar_chart(ui);
