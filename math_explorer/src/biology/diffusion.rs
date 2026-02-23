@@ -268,8 +268,8 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
             return;
         }
         // Ensure all buffers are large enough to prevent out-of-bounds access
-        for s in 0..N {
-            if state[s].len() != n {
+        for u in state.iter().take(N) {
+            if u.len() != n {
                 panic!("Buffer size mismatch in FiniteDifference2D");
             }
         }
