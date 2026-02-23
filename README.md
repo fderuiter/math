@@ -94,6 +94,8 @@ graph TD
 
 We provide a native GUI application to explore simulations interactively.
 
+> **See the [Math Explorer GUI Documentation](math_explorer_gui/README.md) for architecture details and contribution guides.**
+
 ### Launching the GUI
 ```bash
 cargo run --release --package math_explorer_gui

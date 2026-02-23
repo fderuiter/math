@@ -186,6 +186,12 @@ fn heatmap_color(t: f64) -> (u8, u8, u8) {
     }
 }
 
+/// A lightweight, deterministic pseudo-random number generator.
+///
+/// **Architectural Decision:**
+/// We implement this simple Linear Congruential Generator (LCG) / PCG variant locally to avoid
+/// pulling in the heavy `rand` crate tree for the GUI. The GUI only needs noise for visualization
+/// initialization, not cryptographic security or statistical rigor (which should be handled in `math_explorer`).
 struct SimpleRng {
     state: u64,
 }
