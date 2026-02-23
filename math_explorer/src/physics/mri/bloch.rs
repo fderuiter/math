@@ -53,6 +53,12 @@ impl TimeStepper<Vector3<f64>> for BlochSimulator {
     fn get_state_mut(&mut self) -> &mut Vector3<f64> {
         &mut self.magnetization
     }
+
+    fn step(&mut self, dt: f64) {
+        use crate::pure_math::analysis::ode::RungeKutta4;
+        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
+        *self.get_state_mut() = new_state;
+    }
 }
 
 impl BlochSimulator {

@@ -65,6 +65,12 @@ impl TimeStepper<SIRState> for SIRModel {
     fn get_state_mut(&mut self) -> &mut SIRState {
         &mut self.state
     }
+
+    fn step(&mut self, dt: f64) {
+        use crate::pure_math::analysis::ode::RungeKutta4;
+        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
+        *self.get_state_mut() = new_state;
+    }
 }
 
 /// Builder for SIRModel to ensure valid parameter configuration.
