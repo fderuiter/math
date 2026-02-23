@@ -283,6 +283,10 @@ impl VectorOperations for TuringState {
 }
 
 /// Represents a Reaction-Diffusion system.
+///
+/// # Generics
+/// * `K`: The reaction kinetics strategy (defaults to `SchnakenbergKinetics`).
+/// * `D`: The spatial diffusion strategy (defaults to `FiniteDifference1D`).
 pub struct TuringSystem<
     K: ReactionKinetics = SchnakenbergKinetics,
     D: SpatialDiffusion<2> = FiniteDifference1D,
@@ -351,6 +355,27 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D> {
     }
 
     /// Updates the grid using the diffusion strategy and reaction kinetics.
+    ///
+    /// # The Fused Step Optimization
+    ///
+    /// This method utilizes a "Fused Diffusion-Reaction-Integration" loop to maximize data locality.
+    /// Instead of iterating over the grid multiple times (once for diffusion, once for reaction, etc.),
+    /// we perform all operations for a single grid point (or small block) while the data is hot in the CPU registers/L1 cache.
+    ///
+    /// ```mermaid
+    /// graph TD
+    ///     subgraph "Traditional Approach (Memory Bound)"
+    ///     Diff[Compute Diffusion] -->|Write to DRAM| Buf1[Buffer 1]
+    ///     Buf1 -->|Read from DRAM| React[Compute Reaction]
+    ///     React -->|Write to DRAM| Buf2[Buffer 2]
+    ///     Buf2 -->|Read from DRAM| Integ[Integrate Time]
+    ///     end
+    ///
+    ///     subgraph "Fused Approach (Compute Bound)"
+    ///     Load[Load State (Registers)] --> Ops[Diffusion + Reaction + Integration]
+    ///     Ops --> Store[Store Next State]
+    ///     end
+    /// ```
     pub fn step(&mut self, dt: f64) {
         let n = self.state.len();
         if n == 0 {

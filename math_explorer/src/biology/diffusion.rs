@@ -39,6 +39,17 @@ pub trait SpatialDiffusion<const N: usize> {
 /// A 1D Finite Difference implementation using a 3-point stencil.
 ///
 /// Handles boundaries with Neumann conditions (zero flux).
+///
+/// # The Stencil
+///
+/// ```mermaid
+/// graph LR
+///     L[u_{i-1}] --> C[u_i]
+///     R[u_{i+1}] --> C
+///     style C fill:#f9f,stroke:#333,stroke-width:2px
+/// ```
+///
+/// $$ \nabla^2 u \approx \frac{u_{i+1} - 2u_i + u_{i-1}}{dx^2} $$
 #[derive(Debug, Clone, Copy)]
 pub struct FiniteDifference1D {
     /// Grid spacing.
