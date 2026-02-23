@@ -267,9 +267,11 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
         if n == 0 {
             return;
         }
-        // Basic check for one buffer length to ensure safety
-        if state[0].len() != n {
-            panic!("Buffer size mismatch in FiniteDifference2D");
+        // Ensure all buffers are large enough to prevent out-of-bounds access
+        for s in 0..N {
+            if state[s].len() != n {
+                panic!("Buffer size mismatch in FiniteDifference2D");
+            }
         }
 
         let inv_dx_sq = 1.0 / (self.dx * self.dx);
@@ -285,35 +287,173 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
             c_center[s] = -2.0 * (cx[s] + cy[s]);
         }
 
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let idx = y * self.width + x;
+        let width = self.width;
+        let height = self.height;
 
-                // Neighbor indices with Neumann BC clamping
-                let x_prev = if x > 0 { x - 1 } else { x };
-                let x_next = if x < self.width - 1 { x + 1 } else { x };
-                let y_prev = if y > 0 { y - 1 } else { y };
-                let y_next = if y < self.height - 1 { y + 1 } else { y };
+        // Fallback for small grids where loop splitting is not applicable
+        if width < 3 || height < 3 {
+            for y in 0..height {
+                for x in 0..width {
+                    let idx = y * width + x;
 
-                let idx_l = y * self.width + x_prev;
-                let idx_r = y * self.width + x_next;
-                let idx_u = y_prev * self.width + x;
-                let idx_d = y_next * self.width + x;
+                    // Neighbor indices with Neumann BC clamping
+                    let x_prev = if x > 0 { x - 1 } else { x };
+                    let x_next = if x < width - 1 { x + 1 } else { x };
+                    let y_prev = if y > 0 { y - 1 } else { y };
+                    let y_next = if y < height - 1 { y + 1 } else { y };
+
+                    let idx_l = y * width + x_prev;
+                    let idx_r = y * width + x_next;
+                    let idx_u = y_prev * width + x;
+                    let idx_d = y_next * width + x;
+
+                    let mut current_vals = [0.0; N];
+                    let mut diff_vals = [0.0; N];
+
+                    for s in 0..N {
+                        let u = state[s];
+                        let u_curr = u[idx];
+                        let diff = (u[idx_r] + u[idx_l]) * cx[s]
+                            + (u[idx_d] + u[idx_u]) * cy[s]
+                            + u_curr * c_center[s];
+
+                        current_vals[s] = u_curr;
+                        diff_vals[s] = diff;
+                    }
+
+                    op(idx, current_vals, diff_vals);
+                }
+            }
+            return;
+        }
+
+        // Loop Splitting Optimization:
+        // We separate the boundary conditions (safe, checked) from the interior (unsafe, unchecked).
+        // This removes branch prediction penalties from the hot inner loop.
+
+        // 1. Top Row (y=0)
+        {
+            for x in 0..width {
+                let idx = x; // y*width + x
+                let idx_l = if x > 0 { x - 1 } else { x };
+                let idx_r = if x < width - 1 { x + 1 } else { x };
+                let idx_u = idx; // y_prev = y = 0
+                let idx_d = idx + width;
 
                 let mut current_vals = [0.0; N];
                 let mut diff_vals = [0.0; N];
-
                 for s in 0..N {
                     let u = state[s];
                     let u_curr = u[idx];
                     let diff = (u[idx_r] + u[idx_l]) * cx[s]
                         + (u[idx_d] + u[idx_u]) * cy[s]
                         + u_curr * c_center[s];
-
                     current_vals[s] = u_curr;
                     diff_vals[s] = diff;
                 }
+                op(idx, current_vals, diff_vals);
+            }
+        }
 
+        // 2. Interior Rows (y=1..height-1)
+        for y in 1..height - 1 {
+            let row_offset = y * width;
+
+            // Left Boundary (x=0)
+            {
+                let idx = row_offset;
+                let idx_l = idx; // x_prev = x = 0
+                let idx_r = idx + 1;
+                let idx_u = idx - width;
+                let idx_d = idx + width;
+
+                let mut current_vals = [0.0; N];
+                let mut diff_vals = [0.0; N];
+                for s in 0..N {
+                    let u = state[s];
+                    let u_curr = u[idx];
+                    let diff = (u[idx_r] + u[idx_l]) * cx[s]
+                        + (u[idx_d] + u[idx_u]) * cy[s]
+                        + u_curr * c_center[s];
+                    current_vals[s] = u_curr;
+                    diff_vals[s] = diff;
+                }
+                op(idx, current_vals, diff_vals);
+            }
+
+            // Interior (x=1..width-1) - HOT PATH
+            // Safety: We have verified that buffer sizes match width*height.
+            // Indices (idx, idx+/-1, idx+/-width) are guaranteed to be within bounds
+            // because x is 1..width-1 and y is 1..height-1.
+            unsafe {
+                for x in 1..width - 1 {
+                    let idx = row_offset + x;
+                    let mut current_vals = [0.0; N];
+                    let mut diff_vals = [0.0; N];
+
+                    for s in 0..N {
+                        let u_ptr = state[s].as_ptr();
+                        let u_curr = *u_ptr.add(idx);
+                        let u_l = *u_ptr.add(idx - 1);
+                        let u_r = *u_ptr.add(idx + 1);
+                        let u_u = *u_ptr.add(idx - width);
+                        let u_d = *u_ptr.add(idx + width);
+
+                        let diff = (u_r + u_l) * cx[s]
+                            + (u_d + u_u) * cy[s]
+                            + u_curr * c_center[s];
+
+                        current_vals[s] = u_curr;
+                        diff_vals[s] = diff;
+                    }
+                    op(idx, current_vals, diff_vals);
+                }
+            }
+
+            // Right Boundary (x=width-1)
+            {
+                let idx = row_offset + width - 1;
+                let idx_l = idx - 1;
+                let idx_r = idx; // x_next = x
+                let idx_u = idx - width;
+                let idx_d = idx + width;
+
+                let mut current_vals = [0.0; N];
+                let mut diff_vals = [0.0; N];
+                for s in 0..N {
+                    let u = state[s];
+                    let u_curr = u[idx];
+                    let diff = (u[idx_r] + u[idx_l]) * cx[s]
+                        + (u[idx_d] + u[idx_u]) * cy[s]
+                        + u_curr * c_center[s];
+                    current_vals[s] = u_curr;
+                    diff_vals[s] = diff;
+                }
+                op(idx, current_vals, diff_vals);
+            }
+        }
+
+        // 3. Bottom Row (y=height-1)
+        {
+            let row_offset = (height - 1) * width;
+            for x in 0..width {
+                let idx = row_offset + x;
+                let idx_l = if x > 0 { x - 1 } else { x };
+                let idx_r = if x < width - 1 { x + 1 } else { x };
+                let idx_u = idx - width;
+                let idx_d = idx; // y_next = y
+
+                let mut current_vals = [0.0; N];
+                let mut diff_vals = [0.0; N];
+                for s in 0..N {
+                    let u = state[s];
+                    let u_curr = u[idx];
+                    let diff = (u[idx_r] + u[idx_l]) * cx[s]
+                        + (u[idx_d] + u[idx_u]) * cy[s]
+                        + u_curr * c_center[s];
+                    current_vals[s] = u_curr;
+                    diff_vals[s] = diff;
+                }
                 op(idx, current_vals, diff_vals);
             }
         }
