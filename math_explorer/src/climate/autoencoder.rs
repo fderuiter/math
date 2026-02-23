@@ -13,7 +13,7 @@ pub trait AutoencoderModel {
     fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>);
 
     /// Updates the weights of the model using the provided optimizer.
-    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>);
+    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O);
 }
 
 /// A simple leaky ReLU activation function.
@@ -71,7 +71,7 @@ impl ConvLayer {
     /// Updates the weights of the layer using the provided optimizer.
     ///
     /// Note: This still uses random gradients as a placeholder for real backpropagation.
-    pub fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>, layer_idx: usize) {
+    pub fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O, layer_idx: usize) {
         let grad_k = DMatrix::from_fn(self.kernel.nrows(), self.kernel.ncols(), |_, _| {
             rand::random::<f32>() - 0.5
         });
@@ -144,7 +144,7 @@ impl Encoder {
     }
 
     /// Updates weights for all layers using the provided optimizer.
-    pub fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>, start_idx: usize) {
+    pub fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O, start_idx: usize) {
         for (i, layer) in self.layers.iter_mut().enumerate() {
             layer.update_weights(optimizer, start_idx + i);
         }
@@ -212,7 +212,7 @@ impl Decoder {
     }
 
     /// Updates weights for all layers using the provided optimizer.
-    pub fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>, start_idx: usize) {
+    pub fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O, start_idx: usize) {
         for (i, layer) in self.layers.iter_mut().enumerate() {
             layer.update_weights(optimizer, start_idx + i);
         }
@@ -287,7 +287,7 @@ impl AutoencoderModel for Autoencoder {
         (latent, reconstruction)
     }
 
-    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>) {
+    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O) {
         let mut idx = 0;
         self.encoder.update_weights(optimizer, idx);
         idx += self.encoder.layers.len();

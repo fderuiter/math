@@ -8,19 +8,25 @@ use crate::climate::predictor::PredictorModel;
 use nalgebra::DMatrix;
 
 /// A trainer for the CERA model.
-pub struct CeraTrainer<'a, A: AutoencoderModel, P: PredictorModel> {
+pub struct CeraTrainer<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> {
     pub model: &'a mut Cera<A, P>,
     /// The optimizer strategy (e.g., SGD, Adam).
-    pub optimizer: Box<dyn Optimizer<f32>>,
+    pub optimizer: O,
 }
 
-impl<'a, A: AutoencoderModel, P: PredictorModel> CeraTrainer<'a, A, P> {
-    /// Creates a new CeraTrainer.
+impl<'a, A: AutoencoderModel, P: PredictorModel> CeraTrainer<'a, A, P, SGD<f32>> {
+    /// Creates a new CeraTrainer with default SGD optimizer.
     pub fn new(model: &'a mut Cera<A, P>) -> Self {
         // Initialize optimizer from config.
-        // Currently defaulting to SGD, but could be configurable.
         let lr = model.config.learning_rate;
-        let optimizer = Box::new(SGD::new(lr));
+        let optimizer = SGD::new(lr);
+        Self { model, optimizer }
+    }
+}
+
+impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<'a, A, P, O> {
+    /// Creates a new CeraTrainer with a custom optimizer.
+    pub fn new_with_optimizer(model: &'a mut Cera<A, P>, optimizer: O) -> Self {
         Self { model, optimizer }
     }
 
@@ -34,10 +40,10 @@ impl<'a, A: AutoencoderModel, P: PredictorModel> CeraTrainer<'a, A, P> {
     /// gradients and an optimizer (e.g., Adam) to update the weights.
     fn optimizer_step(&mut self) {
         // Use the autoencoder's interface for updates
-        self.model.autoencoder.update_weights(&mut *self.optimizer);
+        self.model.autoencoder.update_weights(&mut self.optimizer);
 
         // Use the predictor's interface for updates
-        self.model.predictor.update_weights(&mut *self.optimizer);
+        self.model.predictor.update_weights(&mut self.optimizer);
     }
 
     /// Trains the CERA model on synthetic data.
