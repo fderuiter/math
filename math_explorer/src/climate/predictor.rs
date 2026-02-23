@@ -12,7 +12,7 @@ pub trait PredictorModel {
 
     /// Updates the weights of the predictor using the provided optimizer.
     /// Note: This replaces the previous simplified learning rate update.
-    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>);
+    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O);
 }
 
 /// A multi-layer perceptron (MLP) used as the predictor in the CERA framework.
@@ -89,7 +89,7 @@ impl PredictorModel for Predictor {
         x
     }
 
-    fn update_weights(&mut self, optimizer: &mut dyn Optimizer<f32>) {
+    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O) {
         for (i, layer) in self.layers.iter_mut().enumerate() {
             // Placeholder: Generate random gradients to simulate training dynamics
             // In a real implementation, these would come from backpropagation.
