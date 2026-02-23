@@ -122,6 +122,14 @@ impl LatticeBoltzmannD2Q9<BgkCollision> {
 impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<Q, L, C> {
     /// Creates a new solver with a specific collision model.
     pub fn new_with_model(width: usize, height: usize, collision_model: C) -> Self {
+        // Validation: Ensure lattice directions are within [-1, 1] range supported by stream()
+        for &dx in &L::directions_x() {
+            assert!(dx.abs() <= 1, "Lattice directions must be within [-1, 1]");
+        }
+        for &dy in &L::directions_y() {
+            assert!(dy.abs() <= 1, "Lattice directions must be within [-1, 1]");
+        }
+
         let mut solver = Self {
             state: LatticeState::new(width, height),
             collision_model,
