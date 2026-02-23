@@ -16,6 +16,7 @@ pub trait TuringSolverStrategy<K: ReactionKinetics, D: SpatialDiffusion<2>> {
     /// * `d_u` - Diffusion coefficient for u.
     /// * `d_v` - Diffusion coefficient for v.
     /// * `dt` - Time step size.
+    #[allow(clippy::too_many_arguments)]
     fn step(
         &mut self,
         state: &TuringState,

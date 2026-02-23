@@ -111,7 +111,7 @@ impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver> {
             d_v,
             kinetics: SchnakenbergKinetics::default(),
             diffusion: FiniteDifference1D::new(dx),
-            solver: FusedEulerSolver::default(),
+            solver: FusedEulerSolver,
         }
     }
 }
@@ -127,7 +127,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D, FusedEulerS
             d_v,
             kinetics,
             diffusion,
-            solver: FusedEulerSolver::default(),
+            solver: FusedEulerSolver,
         }
     }
 }
