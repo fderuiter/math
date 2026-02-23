@@ -3,30 +3,19 @@
 //! This module implements the **Strategy Pattern** for root finding, allowing
 //! different algorithms (Bisection, Newton-Raphson, Brent's) to be used interchangeably.
 
-use std::fmt;
+use thiserror::Error;
 
 /// Errors that can occur during numerical analysis.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Error)]
 pub enum AnalysisError {
     /// The algorithm failed to converge within the maximum number of iterations.
     /// Contains the best guess so far.
+    #[error("Algorithm failed to converge. Best guess: {0}")]
     ConvergenceError(f64),
     /// Invalid parameters were provided (e.g., root not bracketed).
+    #[error("Invalid parameters: {0}")]
     InvalidParameters(String),
 }
-
-impl fmt::Display for AnalysisError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ConvergenceError(guess) => {
-                write!(f, "Algorithm failed to converge. Best guess: {}", guess)
-            }
-            Self::InvalidParameters(msg) => write!(f, "Invalid parameters: {}", msg),
-        }
-    }
-}
-
-impl std::error::Error for AnalysisError {}
 
 /// Strategy for finding roots of a function $f(x) = 0$.
 ///

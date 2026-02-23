@@ -4,30 +4,21 @@
 //! commonly used in engineering and physics problems.
 
 use nalgebra::{DMatrix, DVector};
-use std::fmt;
+use thiserror::Error;
 
 /// Errors related to Linear Algebra operations.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Error)]
 pub enum LinearAlgebraError {
     /// The matrix is singular and cannot be inverted or decomposed.
+    #[error("Matrix is singular")]
     SingularMatrix,
     /// Dimensions of operands are incompatible.
+    #[error("Matrix/Vector dimensions are incompatible")]
     DimensionMismatch,
     /// Solution could not be found.
+    #[error("Solution could not be found")]
     SolutionNotFound,
 }
-
-impl fmt::Display for LinearAlgebraError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::SingularMatrix => write!(f, "Matrix is singular"),
-            Self::DimensionMismatch => write!(f, "Matrix/Vector dimensions are incompatible"),
-            Self::SolutionNotFound => write!(f, "Solution could not be found"),
-        }
-    }
-}
-
-impl std::error::Error for LinearAlgebraError {}
 
 /// Solves a linear system $Ax = b$ using LU decomposition (or best available method).
 ///
