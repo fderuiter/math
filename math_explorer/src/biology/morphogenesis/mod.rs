@@ -215,8 +215,11 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSy
             return;
         }
 
+        // Ensure state vectors are consistent
+        assert_eq!(state.v.len(), n, "State vector v length mismatch");
+
         // Ensure output buffer is the right size
-        if out.len() != n {
+        if out.len() != n || out.v.len() != n {
             *out = TuringState::new(n);
         }
 
@@ -273,6 +276,21 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TimeS
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    #[should_panic(expected = "State vector v length mismatch")]
+    fn test_derivative_in_place_safety_check() {
+        let n = 10;
+        let system = TuringSystem::new(n, 1.0, 1.0, 1.0);
+        let mut state = TuringState::new(n);
+
+        // Corrupt the state (simulate internal bug or misuse)
+        state.v.pop(); // Make v shorter than u
+
+        let mut out = TuringState::new(n);
+
+        system.derivative_in_place(0.0, &state, &mut out);
+    }
 
     #[test]
     fn test_turing_system_logic_preservation() {
