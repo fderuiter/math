@@ -139,7 +139,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> Turin
         d_v: f64,
         kinetics: K,
         diffusion: D,
-        solver: S
+        solver: S,
     ) -> Self {
         Self {
             state: TuringState::new(size),
@@ -187,7 +187,9 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> Turin
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSystem<TuringState> for TuringSystem<K, D, S> {
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSystem<TuringState>
+    for TuringSystem<K, D, S>
+{
     fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
         let mut out = TuringState::new(state.len());
         self.derivative_in_place(t, state, &mut out);
@@ -238,7 +240,9 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSy
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TimeStepper<TuringState> for TuringSystem<K, D, S> {
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TimeStepper<TuringState>
+    for TuringSystem<K, D, S>
+{
     fn get_state(&self) -> &TuringState {
         &self.state
     }
