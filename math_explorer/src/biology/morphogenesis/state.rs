@@ -1,5 +1,5 @@
-use std::ops::{Add, AddAssign, Mul, MulAssign};
 use crate::pure_math::analysis::ode::VectorOperations;
+use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state of a Turing system at a point in time.
 ///

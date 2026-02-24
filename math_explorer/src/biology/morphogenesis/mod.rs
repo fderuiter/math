@@ -61,13 +61,13 @@
 //! println!("Concentration of Activator at center: {:.4}", u_center);
 //! ```
 
-pub mod state;
 pub mod reaction;
 pub mod solvers;
+pub mod state;
 
-pub use state::TuringState;
 pub use reaction::{ReactionKinetics, SchnakenbergKinetics};
-pub use solvers::{TuringSolverStrategy, FusedEulerSolver};
+pub use solvers::{FusedEulerSolver, TuringSolverStrategy};
+pub use state::TuringState;
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper};
