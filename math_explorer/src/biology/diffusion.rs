@@ -99,36 +99,82 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
-        // Helper to get value or duplicate boundary
-        let get_val = |s_idx: usize, i: isize| -> f64 {
-            let buf = state[s_idx];
-            let idx = if i < 0 {
-                0
-            } else if i >= n as isize {
-                n - 1
-            } else {
-                i as usize
-            };
-            buf[idx]
-        };
+        // Precompute coefficients
+        let mut d_inv_dx_sq = [0.0; N];
+        for s in 0..N {
+            d_inv_dx_sq[s] = coeffs[s] * inv_dx_sq;
+        }
 
-        // We iterate point by point to enable passing the slice to op
-        #[allow(clippy::needless_range_loop)]
-        for i in 0..n {
+        // Verify all buffers are large enough
+        for (s, buffer) in state.iter().enumerate().take(N) {
+            assert!(
+                buffer.len() >= n,
+                "Buffer too small for diffusion (species {})",
+                s
+            );
+        }
+
+        // 1. Left Boundary (i=0)
+        {
+            let i = 0;
             let mut current_vals = [0.0; N];
             let mut diff_vals = [0.0; N];
 
             for s in 0..N {
-                let u_curr = state[s][i];
-                let u_prev = get_val(s, i as isize - 1);
-                let u_next = get_val(s, i as isize + 1);
+                let u = state[s];
+                // Safety: checked n > 0 at start of function
+                let u_curr = u[0];
+                let u_prev = u_curr; // Neumann: u_{-1} = u_0
+                let u_next = if n > 1 { u[1] } else { u_curr };
 
-                let lap = coeffs[s] * (u_next - 2.0 * u_curr + u_prev) * inv_dx_sq;
-
+                let lap = (u_next - 2.0 * u_curr + u_prev) * d_inv_dx_sq[s];
                 current_vals[s] = u_curr;
                 diff_vals[s] = lap;
             }
+            op(i, current_vals, diff_vals);
+        }
 
+        // 2. Interior (Optimized loop)
+        if n > 2 {
+            for i in 1..n - 1 {
+                let mut current_vals = [0.0; N];
+                let mut diff_vals = [0.0; N];
+
+                for s in 0..N {
+                    let u = state[s];
+                    // SAFETY: i is in 1..n-1, so i-1, i, i+1 are in 0..n.
+                    // We asserted buffer.len() >= n above.
+                    unsafe {
+                        let u_curr = *u.get_unchecked(i);
+                        let u_prev = *u.get_unchecked(i - 1);
+                        let u_next = *u.get_unchecked(i + 1);
+
+                        let lap = (u_next - 2.0 * u_curr + u_prev) * d_inv_dx_sq[s];
+                        current_vals[s] = u_curr;
+                        diff_vals[s] = lap;
+                    }
+                }
+                op(i, current_vals, diff_vals);
+            }
+        }
+
+        // 3. Right Boundary (i=n-1)
+        if n > 1 {
+            let i = n - 1;
+            let mut current_vals = [0.0; N];
+            let mut diff_vals = [0.0; N];
+
+            for s in 0..N {
+                let u = state[s];
+                // Safety: i = n-1, checked n > 1
+                let u_curr = u[i];
+                let u_prev = u[i - 1];
+                let u_next = u_curr; // Neumann: u_{N} = u_{N-1}
+
+                let lap = (u_next - 2.0 * u_curr + u_prev) * d_inv_dx_sq[s];
+                current_vals[s] = u_curr;
+                diff_vals[s] = lap;
+            }
             op(i, current_vals, diff_vals);
         }
     }
