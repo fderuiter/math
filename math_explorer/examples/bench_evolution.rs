@@ -15,7 +15,10 @@ fn main() {
     let mut hawk_freq = 0.9;
     let dt = 0.0001; // Small dt for stability
 
-    println!("Benchmarking HawkDovePopulation::update_frequencies for {} iterations...", iterations);
+    println!(
+        "Benchmarking HawkDovePopulation::update_frequencies for {} iterations...",
+        iterations
+    );
 
     let start = Instant::now();
 
