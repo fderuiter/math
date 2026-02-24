@@ -1,25 +1,88 @@
 use super::types::{ClinicalTrialError, SurvivalTime};
 use std::cmp::Ordering;
 
+/// Represents a single subject's outcome in a survival analysis study.
 #[derive(Debug, Clone, Copy)]
 pub struct Observation {
+    /// The time at which the event occurred or the subject was censored.
     pub time: SurvivalTime,
-    pub event_occurred: bool, // true if event (e.g., death), false if censored
+    /// Indicates whether the event of interest (e.g., death, relapse) occurred.
+    /// * `true`: Event occurred.
+    /// * `false`: Censored (e.g., lost to follow-up, study ended).
+    pub event_occurred: bool,
 }
 
+/// A point on the Kaplan-Meier survival curve.
+///
+/// Represents the state of the cohort at a specific time $t$.
 #[derive(Debug, Clone)]
 pub struct TimePoint {
+    /// The time $t$ at which events occurred.
     pub time: f64,
+    /// The estimated survival probability $S(t)$.
     pub survival_probability: f64,
+    /// Number of subjects at risk just before time $t$.
     pub n_at_risk: usize,
+    /// Number of events that occurred at time $t$.
     pub n_events: usize,
+    /// Number of subjects censored at time $t$.
     pub n_censored: usize,
 }
 
-/// Computes the Kaplan-Meier survival curve.
+/// Computes the Kaplan-Meier survival curve (Product-Limit Estimator).
+///
+/// The Kaplan-Meier estimator is a non-parametric statistic used to estimate the survival function
+/// from lifetime data. It accounts for "censored" data (subjects who withdraw or survive beyond
+/// the end of the study).
+///
+/// $$ \hat{S}(t) = \prod_{t_i \le t} \left(1 - \frac{d_i}{n_i}\right) $$
+///
+/// Where:
+/// * $d_i$ is the number of events (deaths) at time $t_i$.
+/// * $n_i$ is the number of subjects at risk just prior to time $t_i$.
 ///
 /// # Arguments
-/// * `observations` - A list of observations (time, event status).
+/// * `observations` - A slice of [`Observation`] structs containing time and event status.
+///
+/// # Returns
+/// A vector of [`TimePoint`] structs representing the survival curve steps.
+///
+/// # Examples
+///
+/// ```
+/// use math_explorer::applied::clinical_trials::survival_analysis::{kaplan_meier, Observation, TimePoint};
+/// use math_explorer::applied::clinical_trials::types::SurvivalTime;
+///
+/// // Create a small dataset:
+/// // 1. Event at t=2.0
+/// // 2. Event at t=2.0
+/// // 3. Censored at t=3.0
+/// // 4. Event at t=4.0
+/// let obs = vec![
+///     Observation { time: SurvivalTime::new(2.0).unwrap(), event_occurred: true },
+///     Observation { time: SurvivalTime::new(2.0).unwrap(), event_occurred: true },
+///     Observation { time: SurvivalTime::new(3.0).unwrap(), event_occurred: false },
+///     Observation { time: SurvivalTime::new(4.0).unwrap(), event_occurred: true },
+/// ];
+///
+/// let curve = kaplan_meier(&obs);
+///
+/// assert_eq!(curve.len(), 3); // t=2.0, t=3.0, t=4.0
+///
+/// // t=2.0: 4 at risk, 2 events. S(2) = 1 * (1 - 2/4) = 0.5
+/// assert_eq!(curve[0].time, 2.0);
+/// assert_eq!(curve[0].survival_probability, 0.5);
+/// assert_eq!(curve[0].n_at_risk, 4);
+///
+/// // t=3.0: 2 at risk (4-2), 0 events, 1 censored. S(3) = 0.5 * (1 - 0) = 0.5
+/// assert_eq!(curve[1].time, 3.0);
+/// assert_eq!(curve[1].survival_probability, 0.5);
+/// assert_eq!(curve[1].n_censored, 1);
+///
+/// // t=4.0: 1 at risk (2-1), 1 event. S(4) = 0.5 * (1 - 1/1) = 0.0
+/// assert_eq!(curve[2].time, 4.0);
+/// assert_eq!(curve[2].survival_probability, 0.0);
+/// ```
 pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     let mut obs = observations.to_vec();
     // Sort by time. If times are equal, put events before censored (conservative).
