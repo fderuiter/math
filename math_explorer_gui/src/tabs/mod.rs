@@ -9,6 +9,7 @@ pub mod medical;
 pub mod morphogenesis;
 pub mod mri;
 pub mod neuroscience;
+pub mod number_theory;
 pub mod quantum;
 pub mod solid_state;
 

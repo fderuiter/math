@@ -142,7 +142,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 5.2 Number Theory
 *   **Module:** `pure_math::number_theory`
 *   **Features:**
-    *   [ ] **Prime Spiral:** Ulam spiral visualization.
+    *   [x] **Prime Spiral:** Ulam spiral visualization.
     *   [ ] **Factorization Tool:** Large number factorization and primality testing.
     *   [ ] **Partition Function:** Calculator and visualization of integer partitions (Ferrers diagrams).
 
