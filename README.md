@@ -11,6 +11,15 @@
 
 ---
 
+##  Why Math Explorer?
+
+Mathematical notation is often abstract and disconnected from implementation. **Math Explorer** exists to:
+1.  **Demystify Complex Math:** Translate Greek letters into runnable Rust code.
+2.  **Fight Knowledge Rot:** Ensure algorithms are preserved with working examples and tests.
+3.  **Provide a Playground:** Allow users to experiment with parameters in real-time via the [GUI](math_explorer_gui).
+
+---
+
 ##  Quickstart (30 Seconds)
 
 Get up and running immediately.
@@ -38,6 +47,28 @@ fn main() {
     let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
     println!("Clebsch-Gordan Coefficient: {:.4}", coeff);
 }
+```
+
+---
+
+##  Project Structure
+
+This workspace consists of two main crates:
+
+```bash
+.
+├── math_explorer/          # The Core Library (Logic)
+│   ├── src/ai/             # Transformers, NeRF, RL
+│   ├── src/applied/        # Favoritism, Clinical Trials, Battery Degradation
+│   ├── src/biology/        # Neuroscience, Morphogenesis
+│   ├── src/climate/        # CERA Framework
+│   ├── src/epidemiology/   # SIR/SEIR Models
+│   ├── src/physics/        # Quantum, Chaos, Fluid Dynamics
+│   └── src/pure_math/      # Statistics, Number Theory
+│
+└── math_explorer_gui/      # The Visualization App (UI)
+    ├── src/tabs/           # Plugin-style tabs for each domain
+    └── src/main.rs         # Entry point for the eframe app
 ```
 
 ---
