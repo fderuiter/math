@@ -1,0 +1,336 @@
+//! # Morphogenesis (Turing Patterns)
+//!
+//! This module implements a Reaction-Diffusion system capable of generating Turing patterns.
+//! It uses a 1D grid to simulate the interaction between an activator ($u$) and an inhibitor ($v$).
+//!
+//! Turing patterns arise when a stable uniform state becomes unstable due to diffusion (Diffusion-driven instability),
+//! typically when the inhibitor diffuses much faster than the activator ($D_v \gg D_u$).
+//!
+//! ##  The Mechanism
+//!
+//! ```mermaid
+//! graph TD
+//!     subgraph "Local Reaction"
+//!     A[Activator U] -->|Self-Catalysis| A
+//!     A -->|Activates| B[Inhibitor V]
+//!     B -->|Inhibits| A
+//!     end
+//!
+//!     subgraph "Spatial Diffusion"
+//!     DiffA[Diffusion of U]
+//!     DiffB[Diffusion of V]
+//!     end
+//!
+//!     A --- DiffA
+//!     B --- DiffB
+//!
+//!     DiffA -->|Short Range| Patterns
+//!     DiffB -->|Long Range| Patterns
+//!
+//!     style A fill:#a5d6a7,stroke:#2e7d32
+//!     style B fill:#ef9a9a,stroke:#c62828
+//! ```
+//!
+//! ##  Quick Start
+//!
+//! Simulate the emergence of a pattern from random noise.
+//!
+//! ```rust
+//! use math_explorer::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
+//!
+//! // 1. System Configuration
+//! // Activator diffuses slowly (1.0), Inhibitor diffuses fast (40.0)
+//! let n = 100;
+//! let mut system = TuringSystem::new(n, 1.0, 40.0, 1.0);
+//!
+//! // 2. Initialize with Random Noise
+//! // A uniform state would be stable without noise
+//! for i in 0..n {
+//!     system.u_mut()[i] = 1.0 + (i as f64 * 0.01).sin(); // Add some perturbation
+//!     system.v_mut()[i] = 0.5 + (i as f64 * 0.02).cos();
+//! }
+//!
+//! // 3. Run Simulation
+//! let dt = 0.01;
+//! for _ in 0..100 {
+//!     system.step(dt);
+//! }
+//!
+//! // 4. Analyze Results
+//! let u_center = system.u()[50];
+//! println!("Concentration of Activator at center: {:.4}", u_center);
+//! ```
+
+pub mod reaction;
+pub mod solvers;
+pub mod state;
+
+use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
+use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
+
+pub use reaction::{ReactionKinetics, SchnakenbergKinetics};
+pub use solvers::{FusedEulerSolver, TuringSolverStrategy};
+pub use state::TuringState;
+
+/// Represents a Reaction-Diffusion system.
+///
+/// # Generics
+/// * `K`: The reaction kinetics strategy (defaults to `SchnakenbergKinetics`).
+/// * `D`: The spatial diffusion strategy (defaults to `FiniteDifference1D`).
+/// * `S`: The numerical solver strategy (defaults to `FusedEulerSolver`).
+pub struct TuringSystem<
+    K: ReactionKinetics = SchnakenbergKinetics,
+    D: SpatialDiffusion<2> = FiniteDifference1D,
+    S: TuringSolverStrategy = FusedEulerSolver,
+> {
+    /// The current state of the system.
+    pub state: TuringState,
+
+    // Double buffer for the next state.
+    next_state: TuringState,
+
+    /// Diffusion coefficient for u
+    pub d_u: f64,
+    /// Diffusion coefficient for v
+    pub d_v: f64,
+    /// Reaction kinetics strategy
+    pub kinetics: K,
+    /// Spatial diffusion strategy
+    pub diffusion: D,
+    /// Numerical solver strategy
+    pub solver: S,
+}
+
+impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver> {
+    /// Creates a new Turing System with default Schnakenberg kinetics, 1D Finite Difference, and Fused Euler Solver.
+    pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
+        Self {
+            state: TuringState::new(size),
+            next_state: TuringState::new(size),
+            d_u,
+            d_v,
+            kinetics: SchnakenbergKinetics::default(),
+            diffusion: FiniteDifference1D::new(dx),
+            solver: FusedEulerSolver::new(),
+        }
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D, FusedEulerSolver> {
+    /// Creates a new Turing System with custom kinetics and diffusion strategy, using the default Fused Euler solver.
+    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
+        Self {
+            state: TuringState::new(size),
+            next_state: TuringState::new(size),
+            d_u,
+            d_v,
+            kinetics,
+            diffusion,
+            solver: FusedEulerSolver::new(),
+        }
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TuringSystem<K, D, S> {
+    /// Creates a new Turing System with custom kinetics, diffusion strategy, and solver.
+    pub fn new_with_solver(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D, solver: S) -> Self {
+        Self {
+            state: TuringState::new(size),
+            next_state: TuringState::new(size),
+            d_u,
+            d_v,
+            kinetics,
+            diffusion,
+            solver,
+        }
+    }
+
+    /// Accessor for the activator concentrations (backward compatibility/convenience).
+    pub fn u(&self) -> &[f64] {
+        self.state.u()
+    }
+
+    /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
+    pub fn v(&self) -> &[f64] {
+        self.state.v()
+    }
+
+    /// Mutable accessor for the activator concentrations.
+    pub fn u_mut(&mut self) -> &mut [f64] {
+        self.state.u_mut()
+    }
+
+    /// Mutable accessor for the inhibitor concentrations.
+    pub fn v_mut(&mut self) -> &mut [f64] {
+        self.state.v_mut()
+    }
+
+    /// Updates the grid using the solver strategy.
+    pub fn step(&mut self, dt: f64) {
+        let n = self.state.len();
+        if n == 0 {
+            return;
+        }
+
+        // Ensure buffers are the right size
+        if self.next_state.len() != n {
+            self.next_state = TuringState::new(n);
+        }
+
+        // Delegate time-stepping to the strategy
+        self.solver.step(
+            &self.state,
+            &mut self.next_state,
+            &self.kinetics,
+            &self.diffusion,
+            self.d_u,
+            self.d_v,
+            dt,
+        );
+
+        // Swap buffers (states)
+        std::mem::swap(&mut self.state, &mut self.next_state);
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSystem<TuringState> for TuringSystem<K, D, S> {
+    fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
+        let mut out = TuringState::new(state.len());
+        self.derivative_in_place(t, state, &mut out);
+        out
+    }
+
+    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
+        let n = state.len();
+        if n == 0 {
+            return;
+        }
+
+        // Ensure output buffer is the right size
+        if out.len() != n {
+            *out = TuringState::new(n);
+        }
+
+        let u = &state.u;
+        let v = &state.v;
+        let out_u = &mut out.u;
+        let out_v = &mut out.v;
+
+        // 1. Compute Diffusion
+        self.diffusion.apply(
+            [u.as_slice(), v.as_slice()],
+            [out_u.as_mut_slice(), out_v.as_mut_slice()],
+            [self.d_u, self.d_v],
+        );
+
+        // 2. Compute Reaction and Accumulate
+        // SAFETY:
+        // 1. `n` is defined as `state.len()` at the start of the function.
+        // 2. We resized `out` to `n` (if needed) at the start, ensuring `out.len() == n`.
+        // 3. `u` and `v` are slices from `state` (length `n`).
+        // 4. `out_u` and `out_v` are slices from `out` (length `n`).
+        // Therefore, the index `i` (ranging `0..n`) is strictly within bounds for all accessed slices.
+        unsafe {
+            for i in 0..n {
+                let u_curr = *u.get_unchecked(i);
+                let v_curr = *v.get_unchecked(i);
+
+                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                *out_u.get_unchecked_mut(i) += reac_u;
+                *out_v.get_unchecked_mut(i) += reac_v;
+            }
+        }
+    }
+}
+
+impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TimeStepper<TuringState> for TuringSystem<K, D, S> {
+    fn get_state(&self) -> &TuringState {
+        &self.state
+    }
+
+    fn get_state_mut(&mut self) -> &mut TuringState {
+        &mut self.state
+    }
+
+    fn step(&mut self, dt: f64) {
+        // Delegate to the optimized inherent method
+        self.step(dt);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_turing_system_logic_preservation() {
+        // Setup a small system
+        let n = 10;
+        let d_u = 1.0;
+        let d_v = 0.5;
+        let dx = 1.0;
+        let mut system = TuringSystem::new(n, d_u, d_v, dx);
+
+        // Initialize with some pattern
+        for i in 0..n {
+            system.state.u_mut()[i] = 1.0 + 0.1 * (i as f64);
+            system.state.v_mut()[i] = 0.5 - 0.05 * (i as f64);
+        }
+
+        // Run for a few steps
+        let dt = 0.01;
+        for _ in 0..5 {
+            system.step(dt);
+        }
+
+        // Capture output
+        let u_out = system.u().to_vec();
+        let v_out = system.v().to_vec();
+
+        // Expected values captured from baseline run (from original morphogenesis.rs)
+        let expected_u = vec![
+            0.9798926377401955,
+            1.0722504645444493,
+            1.1685990805783317,
+            1.2642647090938448,
+            1.359028327357602,
+            1.4527705800845148,
+            1.5453811790730032,
+            1.6367576303434268,
+            1.7267186541725483,
+            1.8109737170223916,
+        ];
+        let expected_v = vec![
+            0.47709091921002866,
+            0.4263770084483741,
+            0.3750152156844884,
+            0.32443296992262166,
+            0.2747722006954079,
+            0.22615405798594523,
+            0.1786914141249832,
+            0.1324883911255509,
+            0.08765106523936222,
+            0.04531981611374585,
+        ];
+
+        // Assert with tolerance
+        let tolerance = 1e-10;
+        for i in 0..n {
+            assert!(
+                (u_out[i] - expected_u[i]).abs() < tolerance,
+                "U mismatch at {}: {} vs {}",
+                i,
+                u_out[i],
+                expected_u[i]
+            );
+            assert!(
+                (v_out[i] - expected_v[i]).abs() < tolerance,
+                "V mismatch at {}: {} vs {}",
+                i,
+                v_out[i],
+                expected_v[i]
+            );
+        }
+    }
+}
