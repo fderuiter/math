@@ -1,7 +1,7 @@
 use super::common::{validate_initial_infected, validate_population, validate_rate};
 use crate::epidemiology::error::EpidemiologyError;
 use crate::impl_compartmental_ops;
-use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, TimeStepper};
 
 /// State for the SEIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -14,6 +14,39 @@ pub struct SEIRState {
 
 impl_compartmental_ops!(SEIRState, s, e, i, r);
 
+/// Pure dynamics of the SEIR Model.
+///
+/// This struct holds the parameters and defines the differential equations,
+/// but does not hold the simulation state.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SEIRDynamics {
+    pub n: f64,
+    pub beta: f64,
+    pub sigma: f64,
+    pub gamma: f64,
+}
+
+impl OdeSystem<SEIRState> for SEIRDynamics {
+    fn derivative(&self, _t: f64, state: &SEIRState) -> SEIRState {
+        let s = state.s;
+        let e = state.e;
+        let i = state.i;
+
+        let new_exposed = self.beta * s * i / self.n;
+        let ds = -new_exposed;
+        let de = new_exposed - self.sigma * e;
+        let di = self.sigma * e - self.gamma * i;
+        let dr = self.gamma * i;
+
+        SEIRState {
+            s: ds,
+            e: de,
+            i: di,
+            r: dr,
+        }
+    }
+}
+
 /// SEIR Model: Susceptible, Exposed, Infectious, Recovered.
 ///
 /// Equations:
@@ -22,15 +55,15 @@ impl_compartmental_ops!(SEIRState, s, e, i, r);
 ///
 /// Use `SEIRModel::builder()` or `SEIRModel::new()` to construct.
 #[derive(Debug, Clone)]
-pub struct SEIRModel {
+pub struct SEIRModel<S: Solver<SEIRState> = RungeKutta4<SEIRState>> {
     state: SEIRState,
-    n: f64,
-    beta: f64,
-    sigma: f64,
-    gamma: f64,
+    /// The underlying dynamics model (parameters + equations).
+    pub dynamics: SEIRDynamics,
+    /// The numerical solver strategy.
+    solver: S,
 }
 
-impl TimeStepper<SEIRState> for SEIRModel {
+impl<S: Solver<SEIRState>> TimeStepper<SEIRState> for SEIRModel<S> {
     fn get_state(&self) -> &SEIRState {
         &self.state
     }
@@ -40,9 +73,9 @@ impl TimeStepper<SEIRState> for SEIRModel {
     }
 
     fn step(&mut self, dt: f64) {
-        use crate::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
-        *self.get_state_mut() = new_state;
+        // Delegate stepping to the injected solver strategy.
+        // pass &self.dynamics to avoid partial borrow of self.
+        self.solver.step(&self.dynamics, 0.0, &mut self.state, dt);
     }
 }
 
@@ -88,7 +121,7 @@ impl SEIRModelBuilder {
     }
 
     /// Builds the SEIRModel, validating all parameters.
-    pub fn build(self) -> Result<SEIRModel, EpidemiologyError> {
+    pub fn build(self) -> Result<SEIRModel<RungeKutta4<SEIRState>>, EpidemiologyError> {
         let n = self.n.ok_or(EpidemiologyError::MissingParameter {
             name: "n (population)".to_string(),
         })?;
@@ -111,35 +144,40 @@ impl SEIRModelBuilder {
         validate_rate("sigma (incubation rate)", sigma)?;
         validate_rate("gamma (recovery rate)", gamma)?;
 
+        let state = SEIRState {
+            s: n - i0,
+            e: 0.0,
+            i: i0,
+            r: 0.0,
+        };
+
         Ok(SEIRModel {
-            state: SEIRState {
-                s: n - i0,
-                e: 0.0,
-                i: i0,
-                r: 0.0,
+            state,
+            dynamics: SEIRDynamics {
+                n,
+                beta,
+                sigma,
+                gamma,
             },
-            n,
-            beta,
-            sigma,
-            gamma,
+            solver: RungeKutta4::new(&state),
         })
     }
 }
 
-impl SEIRModel {
+impl SEIRModel<RungeKutta4<SEIRState>> {
     /// Returns a new builder for the SEIRModel.
     pub fn builder() -> SEIRModelBuilder {
         SEIRModelBuilder::default()
     }
 
-    /// Constructs a new SEIRModel with the given parameters.
+    /// Constructs a new SEIRModel with the given parameters using RungeKutta4.
     pub fn new(
         n: f64,
         i0: f64,
         beta: f64,
         sigma: f64,
         gamma: f64,
-    ) -> Result<Self, EpidemiologyError> {
+    ) -> Result<SEIRModel<RungeKutta4<SEIRState>>, EpidemiologyError> {
         Self::builder()
             .n(n)
             .i0(i0)
@@ -148,35 +186,46 @@ impl SEIRModel {
             .gamma(gamma)
             .build()
     }
+}
 
-    /// Advances the state by dt using Runge-Kutta 4.
+impl<S: Solver<SEIRState>> SEIRModel<S> {
+    /// Advances the state by dt using the configured solver.
     pub fn step(&mut self, dt: f64) {
         <Self as TimeStepper<SEIRState>>::step(self, dt);
     }
 
     /// Advances the state by dt using a provided solver strategy.
-    pub fn step_with<S: Solver<SEIRState>>(&mut self, solver: &mut S, dt: f64) {
+    pub fn step_with<OtherS: Solver<SEIRState>>(&mut self, solver: &mut OtherS, dt: f64) {
         <Self as TimeStepper<SEIRState>>::step_with(self, solver, dt);
+    }
+
+    /// Replaces the current solver with a new one.
+    pub fn with_solver<NewS: Solver<SEIRState>>(self, new_solver: NewS) -> SEIRModel<NewS> {
+        SEIRModel {
+            state: self.state,
+            dynamics: self.dynamics,
+            solver: new_solver,
+        }
     }
 
     /// Returns the transmission rate beta.
     pub fn beta(&self) -> f64 {
-        self.beta
+        self.dynamics.beta
     }
 
     /// Returns the incubation rate sigma.
     pub fn sigma(&self) -> f64 {
-        self.sigma
+        self.dynamics.sigma
     }
 
     /// Returns the recovery rate gamma.
     pub fn gamma(&self) -> f64 {
-        self.gamma
+        self.dynamics.gamma
     }
 
     /// Returns the total population size N.
     pub fn n(&self) -> f64 {
-        self.n
+        self.dynamics.n
     }
 
     /// Returns the current state.
@@ -185,31 +234,17 @@ impl SEIRModel {
     }
 }
 
-impl OdeSystem<SEIRState> for SEIRModel {
-    fn derivative(&self, _t: f64, state: &SEIRState) -> SEIRState {
-        let s = state.s;
-        let e = state.e;
-        let i = state.i;
-
-        let new_exposed = self.beta * s * i / self.n;
-        let ds = -new_exposed;
-        let de = new_exposed - self.sigma * e;
-        let di = self.sigma * e - self.gamma * i;
-        let dr = self.gamma * i;
-
-        SEIRState {
-            s: ds,
-            e: de,
-            i: di,
-            r: dr,
-        }
+impl<S: Solver<SEIRState>> OdeSystem<SEIRState> for SEIRModel<S> {
+    fn derivative(&self, t: f64, state: &SEIRState) -> SEIRState {
+        // Delegate to the pure dynamics component
+        self.dynamics.derivative(t, state)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pure_math::analysis::ode::RungeKutta4;
+    use crate::pure_math::analysis::ode::{Euler, RungeKutta4};
 
     #[test]
     fn test_builder() {
@@ -252,5 +287,21 @@ mod tests {
             model_with.state(),
             "step and step_with(RK4) should yield identical results"
         );
+    }
+
+    #[test]
+    fn test_swapping_solver() {
+        let n = 1000.0;
+        let i0 = 10.0;
+        let model = SEIRModel::new(n, i0, 0.5, 0.2, 0.1).unwrap();
+
+        // Swap from RK4 (default) to Euler
+        let state = *model.state();
+        let mut model_euler = model.with_solver(Euler::new(&state));
+
+        model_euler.step(0.1);
+
+        // Just check it ran
+        assert!(model_euler.state().s <= n);
     }
 }

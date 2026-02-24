@@ -1,7 +1,7 @@
 use super::common::{validate_initial_infected, validate_population, validate_rate};
 use crate::epidemiology::error::EpidemiologyError;
 use crate::impl_compartmental_ops;
-use crate::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, TimeStepper};
 
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -51,13 +51,15 @@ impl OdeSystem<SIRState> for SIRDynamics {
 ///
 /// Use `SIRModel::builder()` or `SIRModel::new()` to construct.
 #[derive(Debug, Clone)]
-pub struct SIRModel {
+pub struct SIRModel<S: Solver<SIRState> = RungeKutta4<SIRState>> {
     state: SIRState,
     /// The underlying dynamics model (parameters + equations).
     pub dynamics: SIRDynamics,
+    /// The numerical solver strategy.
+    solver: S,
 }
 
-impl TimeStepper<SIRState> for SIRModel {
+impl<S: Solver<SIRState>> TimeStepper<SIRState> for SIRModel<S> {
     fn get_state(&self) -> &SIRState {
         &self.state
     }
@@ -67,9 +69,9 @@ impl TimeStepper<SIRState> for SIRModel {
     }
 
     fn step(&mut self, dt: f64) {
-        use crate::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
-        *self.get_state_mut() = new_state;
+        // Delegate stepping to the injected solver strategy.
+        // pass &self.dynamics to avoid partial borrow of self.
+        self.solver.step(&self.dynamics, 0.0, &mut self.state, dt);
     }
 }
 
@@ -108,7 +110,7 @@ impl SIRModelBuilder {
     }
 
     /// Builds the SIRModel, validating all parameters.
-    pub fn build(self) -> Result<SIRModel, EpidemiologyError> {
+    pub fn build(self) -> Result<SIRModel<RungeKutta4<SIRState>>, EpidemiologyError> {
         let n = self.n.ok_or(EpidemiologyError::MissingParameter {
             name: "n (population)".to_string(),
         })?;
@@ -127,36 +129,55 @@ impl SIRModelBuilder {
         validate_rate("beta (transmission rate)", beta)?;
         validate_rate("gamma (recovery rate)", gamma)?;
 
+        let state = SIRState {
+            s: n - i0,
+            i: i0,
+            r: 0.0,
+        };
+
         Ok(SIRModel {
-            state: SIRState {
-                s: n - i0,
-                i: i0,
-                r: 0.0,
-            },
+            state,
             dynamics: SIRDynamics { n, beta, gamma },
+            solver: RungeKutta4::new(&state),
         })
     }
 }
 
-impl SIRModel {
+impl SIRModel<RungeKutta4<SIRState>> {
     /// Returns a new builder for the SIRModel.
     pub fn builder() -> SIRModelBuilder {
         SIRModelBuilder::default()
     }
 
-    /// Constructs a new SIRModel with the given parameters.
-    pub fn new(n: f64, i0: f64, beta: f64, gamma: f64) -> Result<Self, EpidemiologyError> {
+    /// Constructs a new SIRModel with the given parameters using RungeKutta4.
+    pub fn new(
+        n: f64,
+        i0: f64,
+        beta: f64,
+        gamma: f64,
+    ) -> Result<SIRModel<RungeKutta4<SIRState>>, EpidemiologyError> {
         Self::builder().n(n).i0(i0).beta(beta).gamma(gamma).build()
     }
+}
 
-    /// Advances the state by dt using Runge-Kutta 4.
+impl<S: Solver<SIRState>> SIRModel<S> {
+    /// Advances the state by dt using the configured solver.
     pub fn step(&mut self, dt: f64) {
         <Self as TimeStepper<SIRState>>::step(self, dt);
     }
 
-    /// Advances the state by dt using a provided solver strategy.
-    pub fn step_with<S: Solver<SIRState>>(&mut self, solver: &mut S, dt: f64) {
+    /// Advances the state by dt using a provided solver strategy (temporarily ignoring the internal solver).
+    pub fn step_with<OtherS: Solver<SIRState>>(&mut self, solver: &mut OtherS, dt: f64) {
         <Self as TimeStepper<SIRState>>::step_with(self, solver, dt);
+    }
+
+    /// Replaces the current solver with a new one.
+    pub fn with_solver<NewS: Solver<SIRState>>(self, new_solver: NewS) -> SIRModel<NewS> {
+        SIRModel {
+            state: self.state,
+            dynamics: self.dynamics,
+            solver: new_solver,
+        }
     }
 
     /// Returns the transmission rate beta.
@@ -180,7 +201,7 @@ impl SIRModel {
     }
 }
 
-impl OdeSystem<SIRState> for SIRModel {
+impl<S: Solver<SIRState>> OdeSystem<SIRState> for SIRModel<S> {
     fn derivative(&self, t: f64, state: &SIRState) -> SIRState {
         // Delegate to the pure dynamics component
         self.dynamics.derivative(t, state)
@@ -241,6 +262,8 @@ mod tests {
         let dt = 0.1;
         model_std.step(dt);
         let state = *model_with.state();
+
+        // Use external solver
         model_with.step_with(&mut RungeKutta4::new(&state), dt);
 
         assert_eq!(
@@ -298,5 +321,21 @@ mod tests {
         // Ensure conservation of mass (population size constant)
         let total = state.s + state.i + state.r;
         assert!((total - 1000.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_swapping_solver() {
+        let n = 1000.0;
+        let i0 = 10.0;
+        let model = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
+
+        // Swap from RK4 (default) to Euler
+        let state = *model.state();
+        let mut model_euler = model.with_solver(Euler::new(&state));
+
+        model_euler.step(0.1);
+
+        // Just check it ran
+        assert!(model_euler.state().s <= n);
     }
 }
