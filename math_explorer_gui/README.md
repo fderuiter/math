@@ -57,7 +57,9 @@ classDiagram
 Follow these steps to add a new visualization module (e.g., for `fluid_dynamics`).
 
 ### 1. Create the Module
-Create a new file `src/tabs/fluid_dynamics.rs`:
+You can create a single file `src/tabs/fluid_dynamics.rs` or a directory `src/tabs/fluid_dynamics/mod.rs` for complex modules.
+
+**Example `src/tabs/fluid_dynamics.rs`:**
 
 ```rust
 use crate::tabs::ExplorerTab;
@@ -96,7 +98,7 @@ pub mod fluid_dynamics;
 ```
 
 ### 3. Add to App
-In `src/app.rs`, add your tab to the `MathExplorerApp::default()` list:
+In `src/app.rs` (or wherever the tabs are initialized, likely in `MathExplorerApp::default`), add your tab to the list:
 
 ```rust
 Box::new(FluidDynamicsTab::default()),
