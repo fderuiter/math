@@ -107,15 +107,15 @@ impl SolidStateTool for IsingModelTool {
             // So T_phys = T_dim * |J| / KB.
             // Let's implement that logic to keep the slider meaning consistent relative to J.
             // If J=0, use 1.0 as scale fallback to avoid div by zero or weirdness.
-            let j_scale = if self.j_coupling.abs() < 1e-6 { 1.0 } else { self.j_coupling.abs() };
+            let j_scale = if self.j_coupling.abs() < 1e-6 {
+                1.0
+            } else {
+                self.j_coupling.abs()
+            };
             let t_phys = self.temperature * j_scale / KB;
 
-            self.lattice.evolve(
-                self.steps_per_frame,
-                t_phys,
-                self.j_coupling,
-                self.h_field,
-            );
+            self.lattice
+                .evolve(self.steps_per_frame, t_phys, self.j_coupling, self.h_field);
             ctx.request_repaint();
         }
 
