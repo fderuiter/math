@@ -1,8 +1,10 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod sample_size;
 pub mod survival;
 
+use sample_size::SampleSizeCalculatorTool;
 use survival::SurvivalAnalysisTool;
 
 /// A trait for sub-tools within the Clinical Trials tab.
@@ -22,7 +24,10 @@ pub struct ClinicalTrialsTab {
 impl Default for ClinicalTrialsTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(SurvivalAnalysisTool::default())],
+            tools: vec![
+                Box::new(SurvivalAnalysisTool::default()),
+                Box::new(SampleSizeCalculatorTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
