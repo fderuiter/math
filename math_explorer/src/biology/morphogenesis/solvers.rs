@@ -1,6 +1,6 @@
-use crate::biology::diffusion::SpatialDiffusion;
 use super::reaction::ReactionKinetics;
 use super::state::TuringState;
+use crate::biology::diffusion::SpatialDiffusion;
 
 /// Strategy for time-stepping the Turing System.
 ///
