@@ -2,6 +2,7 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod crystal_viewer;
+pub mod ising;
 
 /// A trait for sub-tools within the Solid State tab.
 pub trait SolidStateTool {
@@ -20,7 +21,10 @@ pub struct SolidStateTab {
 impl Default for SolidStateTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(crystal_viewer::CrystalViewer::default())],
+            tools: vec![
+                Box::new(crystal_viewer::CrystalViewer::default()),
+                Box::new(ising::IsingModelTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
