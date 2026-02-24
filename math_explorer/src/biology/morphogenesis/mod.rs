@@ -66,7 +66,7 @@ pub mod solvers;
 pub mod state;
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
+use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 
 pub use reaction::{ReactionKinetics, SchnakenbergKinetics};
 pub use solvers::{FusedEulerSolver, TuringSolverStrategy};
