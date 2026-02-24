@@ -1,9 +1,10 @@
 use crate::epidemiology::compartmental::{SIRModel, SIRState};
+use crate::pure_math::analysis::ode::Solver;
 pub use crate::pure_math::analysis::stochastic::{
     GillespieSolver, StochasticError, StochasticSystem,
 };
 
-impl StochasticSystem<SIRState> for SIRModel {
+impl<S: Solver<SIRState>> StochasticSystem<SIRState> for SIRModel<S> {
     fn propensities(&self, state: &SIRState, out: &mut Vec<f64>) {
         // Reaction 0: Infection (S + I -> 2I)
         // Rate: beta * S * I / N
