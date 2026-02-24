@@ -38,7 +38,7 @@
 //!
 //! // 3. Evolve over time
 //! for _ in 0..100 {
-//!     hawk_freq = population.update_frequencies(hawk_freq, dt).unwrap();
+//!     hawk_freq = population.update_frequencies(hawk_freq, dt).expect("Invalid probability");
 //! }
 //!
 //! // 4. Check convergence
@@ -49,7 +49,7 @@
 
 use crate::applied::game_theory::error::GameTheoryError;
 use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
-use crate::pure_math::analysis::ode::{Euler, Solver};
+use crate::pure_math::analysis::ode::{ArrayState, Euler, OdeSystem, Solver};
 use nalgebra::{DMatrix, DVector};
 
 /// Represents a population playing the Hawk-Dove game.
@@ -98,8 +98,6 @@ impl HawkDovePopulation {
     /// # Returns
     /// The new frequency of Hawks.
     pub fn update_frequencies(&self, hawk_freq: f64, dt: f64) -> Result<f64, GameTheoryError> {
-        // Validation is done inside update_frequencies_with_solver, but we need
-        // a valid state to initialize the default Euler solver.
         if !(0.0..=1.0).contains(&hawk_freq) {
             return Err(GameTheoryError::InvalidParameter {
                 name: "hawk_freq".to_string(),
@@ -107,12 +105,19 @@ impl HawkDovePopulation {
             });
         }
 
-        let p_h = hawk_freq;
-        let p_d = 1.0 - p_h;
-        let current_state = DVector::from_vec(vec![p_h, p_d]);
-
+        // Use ArrayState (stack allocated) for zero-overhead simulation
+        let current_state = ArrayState([hawk_freq]);
         let mut solver = Euler::new(&current_state);
-        self.update_frequencies_with_solver(hawk_freq, dt, &mut solver)
+
+        // Solve using the efficient OdeSystem<ArrayState<1>> implementation
+        let next_state = solver.solve(self, 0.0, &current_state, dt);
+
+        let mut new_p_h = next_state.0[0];
+
+        // Clamp to [0, 1] to handle numerical drift
+        new_p_h = new_p_h.clamp(0.0, 1.0);
+
+        Ok(new_p_h)
     }
 
     /// Updates the frequency of the Hawk strategy using a provided solver strategy.
@@ -154,5 +159,26 @@ impl HawkDovePopulation {
         new_p_h = new_p_h.clamp(0.0, 1.0);
 
         Ok(new_p_h)
+    }
+}
+
+/// Implement OdeSystem for ArrayState<1> to allow zero-allocation simulation.
+///
+/// The state vector contains `[hawk_freq]`.
+///
+/// Equation: $\dot{p}_H = p_H (1 - p_H) \frac{(V - p_H C)}{2}$
+impl OdeSystem<ArrayState<1>> for HawkDovePopulation {
+    fn derivative(&self, _t: f64, state: &ArrayState<1>) -> ArrayState<1> {
+        let p_h = state.0[0];
+
+        // Analytical derivative derived from the replicator equation
+        // f_H = p_H * (V-C)/2 + (1-p_H) * V
+        // f_D = p_H * 0 + (1-p_H) * V/2
+        // \dot{p}_H = p_H * (1 - p_H) * (f_H - f_D)
+        // Simplifies to: p_H * (1 - p_H) * (V - p_H * C) / 2
+
+        let dp_dt = p_h * (1.0 - p_h) * (self.v - p_h * self.c) / 2.0;
+
+        ArrayState([dp_dt])
     }
 }

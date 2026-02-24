@@ -316,7 +316,7 @@ mod tests {
     }
 
     #[test]
-    fn test_kalman_predict_logic() {
+    fn test_kalman_predict_logic() -> Result<(), KalmanError> {
         let dt = 1.0;
         let model = MockCvModel {
             process_noise: 0.0,
@@ -328,8 +328,7 @@ mod tests {
         let mut kf = KalmanFilter::builder(model, dt)
             .initial_state(x_init)
             .initial_covariance(p_init)
-            .build()
-            .unwrap();
+            .build()?;
 
         kf.predict();
 
@@ -337,10 +336,11 @@ mod tests {
         // New Vel = 10
         assert!((kf.state[0] - 10.0).abs() < 1e-6);
         assert!((kf.state[1] - 10.0).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
-    fn test_extended_kalman_filter() {
+    fn test_extended_kalman_filter() -> Result<(), KalmanError> {
         // Define a non-linear model: x_{k} = sqrt(x_{k-1})
         // Measurement: z_k = x_k^2
         struct NonLinearModel;
@@ -393,15 +393,14 @@ mod tests {
         let mut kf = KalmanFilter::builder(model, 1.0)
             .initial_state(initial_state)
             .initial_covariance(initial_covariance)
-            .build()
-            .unwrap();
+            .build()?;
 
         kf.predict();
         assert!((kf.state[0] - 10.0).abs() < 1e-6, "Prediction step failed");
 
         // Measurement z=100 (perfect measurement for x=10)
         let measurement = DVector::from_element(1, 100.0);
-        kf.update(&measurement).unwrap();
+        kf.update(&measurement)?;
 
         // Should stay close to 10
         assert!(
@@ -409,10 +408,11 @@ mod tests {
             "Update step diverged: {}",
             kf.state[0]
         );
+        Ok(())
     }
 
     #[test]
-    fn test_singular_covariance_error() {
+    fn test_singular_covariance_error() -> Result<(), KalmanError> {
         // Create a model where measurement noise R is zero and H is zero, leading to singular S.
         // S = HPH' + R. If H=0 and R=0, S=0, which is singular.
         struct SingularModel;
@@ -438,12 +438,12 @@ mod tests {
         let mut kf = KalmanFilter::builder(SingularModel, 1.0)
             .initial_state(DVector::from_element(1, 0.0))
             .initial_covariance(DMatrix::identity(1, 1))
-            .build()
-            .unwrap();
+            .build()?;
 
         let measurement = DVector::from_element(1, 1.0);
         let result = kf.update(&measurement);
         assert_eq!(result, Err(KalmanError::MatrixInversionError));
+        Ok(())
     }
 
     #[test]

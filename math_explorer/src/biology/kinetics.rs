@@ -19,12 +19,12 @@
 //! let enzyme = MichaelisMenten::new(100.0, 50.0).expect("Invalid parameters");
 //!
 //! // 2. Calculate Velocity at [S] = 50.0 (should be Vmax/2)
-//! let velocity = enzyme.reaction_velocity(50.0).unwrap();
+//! let velocity = enzyme.reaction_velocity(50.0).expect("Substrate must be non-negative");
 //! println!("Reaction Velocity at Km: {:.2}", velocity);
 //! assert!((velocity - 50.0).abs() < 1e-6);
 //!
 //! // 3. Calculate Velocity at saturation ([S] = 1000.0)
-//! let v_sat = enzyme.reaction_velocity(1000.0).unwrap();
+//! let v_sat = enzyme.reaction_velocity(1000.0).expect("Substrate must be non-negative");
 //! println!("Reaction Velocity at Saturation: {:.2}", v_sat);
 //! assert!(v_sat > 90.0);
 //! ```

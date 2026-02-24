@@ -68,10 +68,8 @@ impl SolidStateTool for IsingModelTool {
                         if ui.button("Pause").clicked() {
                             self.running = false;
                         }
-                    } else {
-                        if ui.button("Play").clicked() {
-                            self.running = true;
-                        }
+                    } else if ui.button("Play").clicked() {
+                        self.running = true;
                     }
 
                     if ui.button("Reset").clicked() {
