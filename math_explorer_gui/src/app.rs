@@ -1,5 +1,6 @@
 use crate::tabs::{
-    chaos::ChaosTab, clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab,
+    battery_degradation::BatteryDegradationTab, chaos::ChaosTab,
+    clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab,
     fluid_dynamics::FluidDynamicsTab, game_theory::GameTheoryTab, medical::MedicalTab,
     morphogenesis::MorphogenesisTab, mri::MriTab, neuroscience::NeuroscienceTab,
     number_theory::NumberTheoryTab, quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
@@ -27,6 +28,7 @@ impl Default for MathExplorerApp {
                 Box::new(GameTheoryTab::default()),
                 Box::new(MorphogenesisTab::default()),
                 Box::new(ClinicalTrialsTab::default()),
+                Box::new(BatteryDegradationTab::default()),
             ],
             selected_tab: 0,
         }

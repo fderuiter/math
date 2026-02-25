@@ -106,7 +106,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 4.1 Battery Degradation
 *   **Module:** `applied::battery_degradation`
 *   **Features:**
-    *   [ ] **Capacity Fade:** Plot capacity vs. cycle number based on depth of discharge (DoD) and temperature.
+    *   [x] **Capacity Fade:** Plot capacity vs. cycle number based on depth of discharge (DoD) and temperature.
     *   [ ] **Lifetime Estimator:** Calculator for expected battery life under specific usage profiles.
 
 ### 4.2 Clinical Trials
