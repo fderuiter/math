@@ -1,11 +1,12 @@
 use super::reaction::ReactionKinetics;
 use super::state::TuringState;
 use crate::biology::diffusion::SpatialDiffusion;
+use crate::pure_math::analysis::ode::{OdeSystem, Solver, VectorOperations};
 
 /// Strategy for time-stepping the Turing System.
 ///
 /// This trait allows decoupling the numerical integration method from the system definition.
-pub trait TuringSolverStrategy {
+pub trait TuringSolverStrategy<const N: usize = 2> {
     /// Performs a single time step of the simulation.
     ///
     /// # Arguments
@@ -13,20 +14,90 @@ pub trait TuringSolverStrategy {
     /// * `next_state` - Buffer for the next system state.
     /// * `kinetics` - Reaction kinetics model.
     /// * `diffusion` - Spatial diffusion model.
-    /// * `d_u` - Diffusion coefficient for u.
-    /// * `d_v` - Diffusion coefficient for v.
+    /// * `diffusion_coeffs` - Diffusion coefficients for each species.
     /// * `dt` - Time step size.
     #[allow(clippy::too_many_arguments)]
-    fn step<K: ReactionKinetics, D: SpatialDiffusion<2>>(
+    fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
-        state: &TuringState,
-        next_state: &mut TuringState,
+        state: &TuringState<N>,
+        next_state: &mut TuringState<N>,
         kinetics: &K,
         diffusion: &D,
-        d_u: f64,
-        d_v: f64,
+        diffusion_coeffs: [f64; N],
         dt: f64,
     );
+}
+
+/// A descriptor for the Turing system's physics (OdeSystem).
+///
+/// This struct implements `OdeSystem` to allow standard solvers to integrate
+/// the reaction-diffusion equations.
+pub struct TuringDynamics<'a, const N: usize, K, D> {
+    pub kinetics: &'a K,
+    pub diffusion: &'a D,
+    pub diffusion_coeffs: [f64; N],
+}
+
+impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSystem<TuringState<N>>
+    for TuringDynamics<'a, N, K, D>
+{
+    fn derivative(&self, t: f64, state: &TuringState<N>) -> TuringState<N> {
+        let mut out = TuringState::new(state.len());
+        self.derivative_in_place(t, state, &mut out);
+        out
+    }
+
+    fn derivative_in_place(&self, _t: f64, state: &TuringState<N>, out: &mut TuringState<N>) {
+        let n = state.len();
+        if n == 0 {
+            return;
+        }
+
+        // SAFETY: Check vector lengths to avoid UB in unsafe block
+        for (i, vec) in state.concentrations.iter().enumerate() {
+            assert_eq!(vec.len(), n, "State vector {} length mismatch", i);
+        }
+
+        // Ensure output buffer is the right size
+        if out.len() != n {
+            *out = TuringState::new(n);
+        } else {
+            for (i, vec) in out.concentrations.iter().enumerate() {
+                assert_eq!(vec.len(), n, "Output vector {} length mismatch", i);
+            }
+        }
+
+        // Prepare slices for diffusion application
+        let state_slices: [&[f64]; N] =
+            std::array::from_fn(|i| state.concentrations[i].as_slice());
+
+        let mut out_iter = out.concentrations.iter_mut();
+        let out_slices: [&mut [f64]; N] =
+            std::array::from_fn(|_| out_iter.next().unwrap().as_mut_slice());
+
+        // 1. Compute Diffusion
+        self.diffusion
+            .apply(state_slices, out_slices, self.diffusion_coeffs);
+
+        // 2. Compute Reaction and Accumulate
+        let state_ptrs: [*const f64; N] = std::array::from_fn(|i| state.concentrations[i].as_ptr());
+        let out_ptrs: [*mut f64; N] = std::array::from_fn(|i| out.concentrations[i].as_mut_ptr());
+
+        unsafe {
+            for i in 0..n {
+                // Gather inputs
+                let inputs: [f64; N] = std::array::from_fn(|s| *state_ptrs[s].add(i));
+
+                // Compute Reaction
+                let rates = self.kinetics.reaction(inputs);
+
+                // Accumulate results
+                for s in 0..N {
+                    *out_ptrs[s].add(i) += rates[s];
+                }
+            }
+        }
+    }
 }
 
 /// A fused Euler integration solver.
@@ -43,15 +114,14 @@ impl FusedEulerSolver {
     }
 }
 
-impl TuringSolverStrategy for FusedEulerSolver {
-    fn step<K: ReactionKinetics, D: SpatialDiffusion<2>>(
+impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
+    fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
-        state: &TuringState,
-        next_state: &mut TuringState,
+        state: &TuringState<N>,
+        next_state: &mut TuringState<N>,
         kinetics: &K,
         diffusion: &D,
-        d_u: f64,
-        d_v: f64,
+        diffusion_coeffs: [f64; N],
         dt: f64,
     ) {
         let n = state.len();
@@ -59,37 +129,71 @@ impl TuringSolverStrategy for FusedEulerSolver {
             return;
         }
 
-        // Ensure buffers are the right size (safety check, though caller should handle)
         if next_state.len() != n {
             return;
         }
 
-        let u = &state.u;
-        let v = &state.v;
-        let next_u = &mut next_state.u;
-        let next_v = &mut next_state.v;
+        let concentrations_slices: [&[f64]; N] =
+            std::array::from_fn(|i| state.concentrations[i].as_slice());
 
-        // Fused Diffusion-Reaction-Integration Step
+        let mut next_slices: Vec<&mut [f64]> = next_state
+            .concentrations
+            .iter_mut()
+            .map(|v| v.as_mut_slice())
+            .collect();
+
         diffusion.map_diffusion(
-            [u.as_slice(), v.as_slice()],
-            [d_u, d_v],
+            concentrations_slices,
+            diffusion_coeffs,
             |i, vals, diffs| {
-                let u_curr = vals[0];
-                let v_curr = vals[1];
-                let diff_u = diffs[0];
-                let diff_v = diffs[1];
+                let rates = kinetics.reaction(vals);
 
-                let (reac_u, reac_v) = kinetics.reaction(u_curr, v_curr);
+                for s in 0..N {
+                    let curr = vals[s];
+                    let diff = diffs[s];
+                    let reac = rates[s];
 
-                // Safety: map_diffusion guarantees i is within bounds of u/v.
-                // We trust next_u/next_v are large enough.
-                if i < next_u.len() {
-                    next_u[i] = u_curr + dt * (diff_u + reac_u);
-                }
-                if i < next_v.len() {
-                    next_v[i] = v_curr + dt * (diff_v + reac_v);
+                    if let Some(slice) = next_slices.get_mut(s) {
+                        if i < slice.len() {
+                            slice[i] = curr + dt * (diff + reac);
+                        }
+                    }
                 }
             },
         );
+    }
+}
+
+/// Adapts a standard ODE Solver to the TuringSolverStrategy trait.
+///
+/// This adapter allows using any generic `Solver` (like RungeKutta4) within the TuringSystem.
+pub struct StandardSolverAdapter<S> {
+    pub solver: S,
+}
+
+impl<S> StandardSolverAdapter<S> {
+    pub fn new(solver: S) -> Self {
+        Self { solver }
+    }
+}
+
+impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N> for StandardSolverAdapter<S> {
+    fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
+        &mut self,
+        state: &TuringState<N>,
+        next_state: &mut TuringState<N>,
+        kinetics: &K,
+        diffusion: &D,
+        diffusion_coeffs: [f64; N],
+        dt: f64,
+    ) {
+        let dynamics = TuringDynamics {
+            kinetics,
+            diffusion,
+            diffusion_coeffs,
+        };
+
+        next_state.copy_from(state);
+        self.solver.step(&dynamics, 0.0, next_state, dt);
     }
 }

@@ -3,120 +3,141 @@ use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Represents the state of a Turing system at a point in time.
 ///
-/// This struct encapsulates the concentration vectors for the activator and inhibitor,
+/// This struct encapsulates the concentration vectors for N species,
 /// protecting them from invalid resizing while providing safe access.
 #[derive(Debug, Clone, PartialEq)]
-pub struct TuringState {
-    pub(crate) u: Vec<f64>,
-    pub(crate) v: Vec<f64>,
+pub struct TuringState<const N: usize = 2> {
+    pub(crate) concentrations: [Vec<f64>; N],
 }
 
-impl TuringState {
+impl<const N: usize> TuringState<N> {
     /// Creates a new zero-initialized state of a given size.
     pub fn new(size: usize) -> Self {
-        Self {
-            u: vec![0.0; size],
-            v: vec![0.0; size],
-        }
+        // specific initialization for N=0 case handled by array::from_fn gracefully
+        // (produces empty array)
+        let concentrations = std::array::from_fn(|_| vec![0.0; size]);
+        Self { concentrations }
     }
 
-    /// Returns a slice of the activator concentrations.
-    pub fn u(&self) -> &[f64] {
-        &self.u
-    }
-
-    /// Returns a slice of the inhibitor concentrations.
-    pub fn v(&self) -> &[f64] {
-        &self.v
-    }
-
-    /// Returns a mutable slice of the activator concentrations.
-    pub fn u_mut(&mut self) -> &mut [f64] {
-        &mut self.u
-    }
-
-    /// Returns a mutable slice of the inhibitor concentrations.
-    pub fn v_mut(&mut self) -> &mut [f64] {
-        &mut self.v
-    }
-
-    /// Returns the length of the grid.
+    /// Returns the length of the grid (number of spatial points).
     pub fn len(&self) -> usize {
-        self.u.len()
+        if N > 0 {
+            self.concentrations[0].len()
+        } else {
+            0
+        }
     }
 
     /// Returns true if the grid is empty.
     pub fn is_empty(&self) -> bool {
-        self.u.is_empty()
+        if N > 0 {
+            self.concentrations[0].is_empty()
+        } else {
+            true
+        }
     }
 }
 
-impl Add for TuringState {
+// Backward compatibility for N=2
+impl TuringState<2> {
+    /// Returns a slice of the activator concentrations.
+    pub fn u(&self) -> &[f64] {
+        &self.concentrations[0]
+    }
+
+    /// Returns a slice of the inhibitor concentrations.
+    pub fn v(&self) -> &[f64] {
+        &self.concentrations[1]
+    }
+
+    /// Returns a mutable slice of the activator concentrations.
+    pub fn u_mut(&mut self) -> &mut [f64] {
+        &mut self.concentrations[0]
+    }
+
+    /// Returns a mutable slice of the inhibitor concentrations.
+    pub fn v_mut(&mut self) -> &mut [f64] {
+        &mut self.concentrations[1]
+    }
+}
+
+impl<const N: usize> Add for TuringState<N> {
     type Output = Self;
 
     fn add(mut self, rhs: Self) -> Self {
-        for (u, r) in self.u.iter_mut().zip(rhs.u.iter()) {
-            *u += r;
-        }
-        for (v, r) in self.v.iter_mut().zip(rhs.v.iter()) {
-            *v += r;
+        for (s, r_vec) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
+            for (val, r_val) in s.iter_mut().zip(r_vec.iter()) {
+                *val += r_val;
+            }
         }
         self
     }
 }
 
-impl AddAssign for TuringState {
+impl<const N: usize> AddAssign for TuringState<N> {
     fn add_assign(&mut self, rhs: Self) {
-        for (u, r) in self.u.iter_mut().zip(rhs.u.iter()) {
-            *u += r;
-        }
-        for (v, r) in self.v.iter_mut().zip(rhs.v.iter()) {
-            *v += r;
+        for (s, r_vec) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
+            for (val, r_val) in s.iter_mut().zip(r_vec.iter()) {
+                *val += r_val;
+            }
         }
     }
 }
 
-impl Mul<f64> for TuringState {
+impl<const N: usize> Mul<f64> for TuringState<N> {
     type Output = Self;
 
     fn mul(mut self, scalar: f64) -> Self {
-        for u in self.u.iter_mut() {
-            *u *= scalar;
-        }
-        for v in self.v.iter_mut() {
-            *v *= scalar;
+        for s in self.concentrations.iter_mut() {
+            for val in s.iter_mut() {
+                *val *= scalar;
+            }
         }
         self
     }
 }
 
-impl MulAssign<f64> for TuringState {
+impl<const N: usize> MulAssign<f64> for TuringState<N> {
     fn mul_assign(&mut self, scalar: f64) {
-        for u in self.u.iter_mut() {
-            *u *= scalar;
-        }
-        for v in self.v.iter_mut() {
-            *v *= scalar;
+        for s in self.concentrations.iter_mut() {
+            for val in s.iter_mut() {
+                *val *= scalar;
+            }
         }
     }
 }
 
-impl VectorOperations for TuringState {
+impl<const N: usize> VectorOperations for TuringState<N> {
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (u, r) in self.u.iter_mut().zip(other.u.iter()) {
-            *u += r * scale;
-        }
-        for (v, r) in self.v.iter_mut().zip(other.v.iter()) {
-            *v += r * scale;
+        for (s, r_vec) in self
+            .concentrations
+            .iter_mut()
+            .zip(other.concentrations.iter())
+        {
+            for (val, r_val) in s.iter_mut().zip(r_vec.iter()) {
+                *val += r_val * scale;
+            }
         }
     }
 
     fn copy_from(&mut self, other: &Self) {
-        if self.u.len() != other.u.len() {
-            self.u.resize(other.u.len(), 0.0);
-            self.v.resize(other.v.len(), 0.0);
+        for (s, r_vec) in self
+            .concentrations
+            .iter_mut()
+            .zip(other.concentrations.iter())
+        {
+            if s.len() != r_vec.len() {
+                s.resize(r_vec.len(), 0.0);
+            }
+            s.copy_from_slice(r_vec);
         }
-        self.u.copy_from_slice(&other.u);
-        self.v.copy_from_slice(&other.v);
     }
 }

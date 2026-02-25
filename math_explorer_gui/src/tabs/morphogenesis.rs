@@ -35,7 +35,7 @@ impl PatternPreset {
 }
 
 pub struct MorphogenesisTab {
-    system: TuringSystem<SchnakenbergKinetics, FiniteDifference2D>,
+    system: TuringSystem<2, SchnakenbergKinetics, FiniteDifference2D>,
     texture: Option<egui::TextureHandle>,
     // Simulation parameters
     a: f64,
@@ -83,7 +83,7 @@ impl Default for MorphogenesisTab {
 }
 
 fn initialize_system(
-    system: &mut TuringSystem<SchnakenbergKinetics, FiniteDifference2D>,
+    system: &mut TuringSystem<2, SchnakenbergKinetics, FiniteDifference2D>,
     width: usize,
     height: usize,
 ) {
@@ -132,8 +132,8 @@ impl ExplorerTab for MorphogenesisTab {
 
                         self.system.kinetics.a = a;
                         self.system.kinetics.b = b;
-                        self.system.d_u = d_u;
-                        self.system.d_v = d_v;
+                        self.system.diffusion_coeffs[0] = d_u;
+                        self.system.diffusion_coeffs[1] = d_v;
 
                         initialize_system(&mut self.system, self.width, self.height);
                         self.selected_preset = Some(preset);
@@ -154,8 +154,8 @@ impl ExplorerTab for MorphogenesisTab {
                 if changed {
                     self.system.kinetics.a = self.a;
                     self.system.kinetics.b = self.b;
-                    self.system.d_u = self.d_u;
-                    self.system.d_v = self.d_v;
+                    self.system.diffusion_coeffs[0] = self.d_u;
+                    self.system.diffusion_coeffs[1] = self.d_v;
                     self.selected_preset = None;
                 }
             });

@@ -1,21 +1,35 @@
 #[cfg(test)]
 mod tests {
-    use math_explorer::biology::morphogenesis::{TuringState, TuringSystem};
-    use math_explorer::pure_math::analysis::ode::{RungeKutta4, Solver, TimeStepper};
+    use math_explorer::biology::morphogenesis::{
+        SchnakenbergKinetics, StandardSolverAdapter, TuringState, TuringSystem,
+    };
+    use math_explorer::pure_math::analysis::ode::RungeKutta4;
 
     #[test]
-    fn test_turing_system_generic_step() {
+    fn test_turing_system_generic_step_with_rk4() {
         let size = 100;
         let d_u = 1.0;
         let d_v = 10.0;
         let dx = 1.0;
-        let mut system = TuringSystem::new(size, d_u, d_v, dx);
+
+        // Use generic constructor to inject RK4 solver via Adapter
+        // This validates that the system can interoperate with standard solvers
+        let dummy_state = TuringState::new(size);
+        let rk4 = RungeKutta4::new(&dummy_state);
+        let adapter = StandardSolverAdapter::new(rk4);
+
+        let mut system = TuringSystem::new_with_solver(
+            size,
+            [d_u, d_v],
+            SchnakenbergKinetics::default(),
+            math_explorer::biology::diffusion::FiniteDifference1D::new(dx),
+            adapter,
+        );
 
         system.state.u_mut()[50] = 1.0;
 
-        // Verify we can call step_with (requires TimeStepper trait)
-        let mut solver = RungeKutta4::new(&system.state);
-        system.step_with(&mut solver, 0.1);
+        // Verify step works with external solver logic wrapped in adapter
+        system.step(0.1);
 
         // Verify state changed
         let val_after = system.state.u()[50];
