@@ -1,16 +1,15 @@
 use crate::biology::reaction_diffusion::ReactionModel;
 
-/// Defines the reaction kinetics for a 2-component reaction-diffusion system.
-pub trait ReactionKinetics {
-    /// Calculates the reaction rates for activator u and inhibitor v.
+/// Defines the reaction kinetics for an N-component reaction-diffusion system.
+pub trait ReactionKinetics<const N: usize = 2> {
+    /// Calculates the reaction rates for the given species concentrations.
     ///
     /// # Arguments
-    /// * `u` - Concentration of activator.
-    /// * `v` - Concentration of inhibitor.
+    /// * `concentrations` - Array of concentrations for each species.
     ///
     /// # Returns
-    /// A tuple `(du/dt, dv/dt)` representing the reaction terms.
-    fn reaction(&self, u: f64, v: f64) -> (f64, f64);
+    /// An array `[dC_1/dt, ..., dC_N/dt]` representing the reaction terms.
+    fn reaction(&self, concentrations: [f64; N]) -> [f64; N];
 }
 
 /// Schnakenberg kinetics (often used for Turing patterns).
@@ -47,12 +46,14 @@ impl Default for SchnakenbergKinetics {
     }
 }
 
-impl ReactionKinetics for SchnakenbergKinetics {
-    fn reaction(&self, u: f64, v: f64) -> (f64, f64) {
+impl ReactionKinetics<2> for SchnakenbergKinetics {
+    fn reaction(&self, concentrations: [f64; 2]) -> [f64; 2] {
+        let u = concentrations[0];
+        let v = concentrations[1];
         let uv_sq = u * u * v;
         let reaction_u = self.a - u + uv_sq;
         let reaction_v = self.b - uv_sq;
-        (reaction_u, reaction_v)
+        [reaction_u, reaction_v]
     }
 }
 
@@ -61,11 +62,11 @@ impl ReactionModel for SchnakenbergKinetics {
         if concentrations.len() < 2 || rates.len() < 2 {
             return;
         }
-        let u = concentrations[0];
-        let v = concentrations[1];
-        let (du, dv) = <Self as ReactionKinetics>::reaction(self, u, v);
-        rates[0] = du;
-        rates[1] = dv;
+        // We can safely assume Schnakenberg is 2D
+        let inp = [concentrations[0], concentrations[1]];
+        let out = <Self as ReactionKinetics<2>>::reaction(self, inp);
+        rates[0] = out[0];
+        rates[1] = out[1];
     }
 
     fn add_reaction_batch(&self, concentrations: &[Vec<f64>], rates: &mut [Vec<f64>]) {
@@ -89,9 +90,10 @@ impl ReactionModel for SchnakenbergKinetics {
 
         // Vectorized loop: Access memory linearly, enabling prefetch and SIMD
         for i in 0..n {
-            let (du, dv) = <Self as ReactionKinetics>::reaction(self, u_vec[i], v_vec[i]);
-            rates_u[i] += du;
-            rates_v[i] += dv;
+            let inp = [u_vec[i], v_vec[i]];
+            let out = <Self as ReactionKinetics<2>>::reaction(self, inp);
+            rates_u[i] += out[0];
+            rates_v[i] += out[1];
         }
     }
 }

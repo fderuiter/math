@@ -69,30 +69,30 @@ use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 
 pub use reaction::{ReactionKinetics, SchnakenbergKinetics};
-pub use solvers::{FusedEulerSolver, TuringSolverStrategy};
+pub use solvers::{FusedEulerSolver, StandardSolverAdapter, TuringDynamics, TuringSolverStrategy};
 pub use state::TuringState;
 
 /// Represents a Reaction-Diffusion system.
 ///
 /// # Generics
-/// * `K`: The reaction kinetics strategy (defaults to `SchnakenbergKinetics`).
-/// * `D`: The spatial diffusion strategy (defaults to `FiniteDifference1D`).
-/// * `S`: The numerical solver strategy (defaults to `FusedEulerSolver`).
+/// * `N`: Number of species (default 2).
+/// * `K`: The reaction kinetics strategy.
+/// * `D`: The spatial diffusion strategy.
+/// * `S`: The numerical solver strategy.
 pub struct TuringSystem<
-    K: ReactionKinetics = SchnakenbergKinetics,
-    D: SpatialDiffusion<2> = FiniteDifference1D,
-    S: TuringSolverStrategy = FusedEulerSolver,
+    const N: usize = 2,
+    K: ReactionKinetics<N> = SchnakenbergKinetics,
+    D: SpatialDiffusion<N> = FiniteDifference1D,
+    S: TuringSolverStrategy<N> = FusedEulerSolver,
 > {
     /// The current state of the system.
-    pub state: TuringState,
+    pub state: TuringState<N>,
 
     // Double buffer for the next state.
-    next_state: TuringState,
+    next_state: TuringState<N>,
 
-    /// Diffusion coefficient for u
-    pub d_u: f64,
-    /// Diffusion coefficient for v
-    pub d_v: f64,
+    /// Diffusion coefficients for each species
+    pub diffusion_coeffs: [f64; N],
     /// Reaction kinetics strategy
     pub kinetics: K,
     /// Spatial diffusion strategy
@@ -101,14 +101,14 @@ pub struct TuringSystem<
     pub solver: S,
 }
 
-impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver> {
+// Convenience implementation for the standard 2-species case
+impl TuringSystem<2, SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver> {
     /// Creates a new Turing System with default Schnakenberg kinetics, 1D Finite Difference, and Fused Euler Solver.
     pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
         Self {
             state: TuringState::new(size),
             next_state: TuringState::new(size),
-            d_u,
-            d_v,
+            diffusion_coeffs: [d_u, d_v],
             kinetics: SchnakenbergKinetics::default(),
             diffusion: FiniteDifference1D::new(dx),
             solver: FusedEulerSolver::new(),
@@ -116,14 +116,16 @@ impl TuringSystem<SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver> {
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D, FusedEulerSolver> {
+// Convenience implementation for custom kinetics/diffusion in 2-species case
+impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>>
+    TuringSystem<2, K, D, FusedEulerSolver>
+{
     /// Creates a new Turing System with custom kinetics and diffusion strategy, using the default Fused Euler solver.
     pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
         Self {
             state: TuringState::new(size),
             next_state: TuringState::new(size),
-            d_u,
-            d_v,
+            diffusion_coeffs: [d_u, d_v],
             kinetics,
             diffusion,
             solver: FusedEulerSolver::new(),
@@ -131,12 +133,14 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>> TuringSystem<K, D, FusedEulerS
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TuringSystem<K, D, S> {
+// Generic implementation
+impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
+    TuringSystem<N, K, D, S>
+{
     /// Creates a new Turing System with custom kinetics, diffusion strategy, and solver.
     pub fn new_with_solver(
         size: usize,
-        d_u: f64,
-        d_v: f64,
+        diffusion_coeffs: [f64; N],
         kinetics: K,
         diffusion: D,
         solver: S,
@@ -144,32 +148,11 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> Turin
         Self {
             state: TuringState::new(size),
             next_state: TuringState::new(size),
-            d_u,
-            d_v,
+            diffusion_coeffs,
             kinetics,
             diffusion,
             solver,
         }
-    }
-
-    /// Accessor for the activator concentrations (backward compatibility/convenience).
-    pub fn u(&self) -> &[f64] {
-        self.state.u()
-    }
-
-    /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
-    pub fn v(&self) -> &[f64] {
-        self.state.v()
-    }
-
-    /// Mutable accessor for the activator concentrations.
-    pub fn u_mut(&mut self) -> &mut [f64] {
-        self.state.u_mut()
-    }
-
-    /// Mutable accessor for the inhibitor concentrations.
-    pub fn v_mut(&mut self) -> &mut [f64] {
-        self.state.v_mut()
     }
 
     /// Updates the grid using the solver strategy.
@@ -190,8 +173,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> Turin
             &mut self.next_state,
             &self.kinetics,
             &self.diffusion,
-            self.d_u,
-            self.d_v,
+            self.diffusion_coeffs,
             dt,
         );
 
@@ -200,70 +182,58 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> Turin
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSystem<TuringState>
-    for TuringSystem<K, D, S>
+// Convenience accessors for N=2
+impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>, S: TuringSolverStrategy<2>>
+    TuringSystem<2, K, D, S>
 {
-    fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
+    /// Accessor for the activator concentrations (backward compatibility/convenience).
+    pub fn u(&self) -> &[f64] {
+        self.state.u()
+    }
+
+    /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
+    pub fn v(&self) -> &[f64] {
+        self.state.v()
+    }
+
+    /// Mutable accessor for the activator concentrations.
+    pub fn u_mut(&mut self) -> &mut [f64] {
+        self.state.u_mut()
+    }
+
+    /// Mutable accessor for the inhibitor concentrations.
+    pub fn v_mut(&mut self) -> &mut [f64] {
+        self.state.v_mut()
+    }
+}
+
+impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
+    OdeSystem<TuringState<N>> for TuringSystem<N, K, D, S>
+{
+    fn derivative(&self, t: f64, state: &TuringState<N>) -> TuringState<N> {
         let mut out = TuringState::new(state.len());
         self.derivative_in_place(t, state, &mut out);
         out
     }
 
-    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
-        let n = state.len();
-        if n == 0 {
-            return;
-        }
-
-        // Ensure state vectors are consistent
-        assert_eq!(state.v.len(), n, "State vector v length mismatch");
-
-        // Ensure output buffer is the right size
-        if out.len() != n || out.v.len() != n {
-            *out = TuringState::new(n);
-        }
-
-        let u = &state.u;
-        let v = &state.v;
-        let out_u = &mut out.u;
-        let out_v = &mut out.v;
-
-        // 1. Compute Diffusion
-        self.diffusion.apply(
-            [u.as_slice(), v.as_slice()],
-            [out_u.as_mut_slice(), out_v.as_mut_slice()],
-            [self.d_u, self.d_v],
-        );
-
-        // 2. Compute Reaction and Accumulate
-        // SAFETY:
-        // 1. `n` is defined as `state.len()` at the start of the function.
-        // 2. We resized `out` to `n` (if needed) at the start, ensuring `out.len() == n`.
-        // 3. `u` and `v` are slices from `state` (length `n`).
-        // 4. `out_u` and `out_v` are slices from `out` (length `n`).
-        // Therefore, the index `i` (ranging `0..n`) is strictly within bounds for all accessed slices.
-        unsafe {
-            for i in 0..n {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                *out_u.get_unchecked_mut(i) += reac_u;
-                *out_v.get_unchecked_mut(i) += reac_v;
-            }
-        }
+    fn derivative_in_place(&self, t: f64, state: &TuringState<N>, out: &mut TuringState<N>) {
+        let dynamics = TuringDynamics {
+            kinetics: &self.kinetics,
+            diffusion: &self.diffusion,
+            diffusion_coeffs: self.diffusion_coeffs,
+        };
+        dynamics.derivative_in_place(t, state, out);
     }
 }
 
-impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TimeStepper<TuringState>
-    for TuringSystem<K, D, S>
+impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
+    TimeStepper<TuringState<N>> for TuringSystem<N, K, D, S>
 {
-    fn get_state(&self) -> &TuringState {
+    fn get_state(&self) -> &TuringState<N> {
         &self.state
     }
 
-    fn get_state_mut(&mut self) -> &mut TuringState {
+    fn get_state_mut(&mut self) -> &mut TuringState<N> {
         &mut self.state
     }
 
@@ -278,14 +248,15 @@ mod tests {
     use super::*;
 
     #[test]
-    #[should_panic(expected = "State vector v length mismatch")]
+    #[should_panic(expected = "State vector 1 length mismatch")]
     fn test_derivative_in_place_safety_check() {
         let n = 10;
         let system = TuringSystem::new(n, 1.0, 1.0, 1.0);
         let mut state = TuringState::new(n);
 
         // Corrupt the state (simulate internal bug or misuse)
-        state.v.pop(); // Make v shorter than u
+        // Access concentrations directly via pub(crate)
+        state.concentrations[1].pop(); // Make v shorter than u
 
         let mut out = TuringState::new(n);
 

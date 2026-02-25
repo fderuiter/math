@@ -6,15 +6,17 @@ struct GrayScottKinetics {
     k: f64,
 }
 
-impl ReactionKinetics for GrayScottKinetics {
-    fn reaction(&self, u: f64, v: f64) -> (f64, f64) {
+impl ReactionKinetics<2> for GrayScottKinetics {
+    fn reaction(&self, concentrations: [f64; 2]) -> [f64; 2] {
+        let u = concentrations[0];
+        let v = concentrations[1];
         // Gray-Scott model:
         // u_t = -uv^2 + f(1-u)
         // v_t = uv^2 - (f+k)v
         let uv_sq = u * v.powi(2);
         let reaction_u = -uv_sq + self.f * (1.0 - u);
         let reaction_v = uv_sq - (self.f + self.k) * v;
-        (reaction_u, reaction_v)
+        [reaction_u, reaction_v]
     }
 }
 
