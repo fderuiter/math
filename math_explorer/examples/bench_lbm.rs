@@ -1,4 +1,6 @@
-use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{LatticeBoltzmannD2Q9, BgkCollision};
+use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
+    BgkCollision, LatticeBoltzmannD2Q9,
+};
 use std::time::Instant;
 
 fn main() {
@@ -6,7 +8,10 @@ fn main() {
     let height = 256;
     let steps = 500;
 
-    println!("Benchmarking LBM D2Q9 on {}x{} grid for {} steps...", width, height, steps);
+    println!(
+        "Benchmarking LBM D2Q9 on {}x{} grid for {} steps...",
+        width, height, steps
+    );
 
     // Initialize Solver
     // tau = 0.6 is a common value for low viscosity fluids (Re ~ high)
@@ -15,7 +20,7 @@ fn main() {
     // Set up a standard benchmark case: Lid Driven Cavity (sort of)
     // Moving top wall is often used, but here we just set an inlet to create motion.
     // Let's set a velocity on the top row to drive flow.
-    for x in 1..width-1 {
+    for x in 1..width - 1 {
         solver.set_inlet(x, 1, 1, 1, 0.1, 0.0);
     }
 
@@ -41,8 +46,13 @@ fn main() {
     }
 
     println!("Done in {:.4}s", duration.as_secs_f64());
-    println!("Average time per step: {:.4}ms", duration.as_secs_f64() * 1000.0 / steps as f64);
-    println!("Throughput: {:.2} MLUPS (Million Lattice Updates Per Second)",
-             (width * height * steps) as f64 / duration.as_secs_f64() / 1_000_000.0);
+    println!(
+        "Average time per step: {:.4}ms",
+        duration.as_secs_f64() * 1000.0 / steps as f64
+    );
+    println!(
+        "Throughput: {:.2} MLUPS (Million Lattice Updates Per Second)",
+        (width * height * steps) as f64 / duration.as_secs_f64() / 1_000_000.0
+    );
     println!("Checksum (Total Rho): {:.4}", total_rho);
 }

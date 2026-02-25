@@ -220,7 +220,9 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                     let idx = idx_row + x;
 
                     unsafe {
-                        if *self.state.obstacles.get_unchecked(idx) { continue; }
+                        if *self.state.obstacles.get_unchecked(idx) {
+                            continue;
+                        }
 
                         let f_dest = self.state.f_new.get_unchecked_mut(idx);
 
@@ -245,7 +247,9 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         // Boundary Stream (Safe Path)
         let process_boundary_stream = |x: usize, y: usize, state: &mut LatticeState<Q>| {
             let idx = y * width + x;
-            if state.obstacles[idx] { return; }
+            if state.obstacles[idx] {
+                return;
+            }
 
             for k in 0..Q {
                 let prev_x = x as i32 - cx[k];
@@ -263,28 +267,35 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                     let mut src_x = prev_x;
                     let src_y = prev_y;
 
-                    if src_x < 0 { src_x += width as i32; }
-                    else if src_x >= width as i32 { src_x -= width as i32; }
+                    if src_x < 0 {
+                        src_x += width as i32;
+                    } else if src_x >= width as i32 {
+                        src_x -= width as i32;
+                    }
 
                     if src_y < 0 || src_y >= height as i32 {
-                         state.f_new[idx][k] = state.f[idx][opp[k]];
+                        state.f_new[idx][k] = state.f[idx][opp[k]];
                     } else {
-                         let src_idx = (src_y as usize) * width + (src_x as usize);
-                         if state.obstacles[src_idx] {
-                             state.f_new[idx][k] = state.f[idx][opp[k]];
-                         } else {
-                             state.f_new[idx][k] = state.f[src_idx][k];
-                         }
+                        let src_idx = (src_y as usize) * width + (src_x as usize);
+                        if state.obstacles[src_idx] {
+                            state.f_new[idx][k] = state.f[idx][opp[k]];
+                        } else {
+                            state.f_new[idx][k] = state.f[src_idx][k];
+                        }
                     }
                 }
             }
         };
 
         for y in [0, height - 1] {
-            for x in 0..width { process_boundary_stream(x, y, &mut self.state); }
+            for x in 0..width {
+                process_boundary_stream(x, y, &mut self.state);
+            }
         }
         for y in 1..height - 1 {
-            for x in [0, width - 1] { process_boundary_stream(x, y, &mut self.state); }
+            for x in [0, width - 1] {
+                process_boundary_stream(x, y, &mut self.state);
+            }
         }
 
         self.state.swap_buffers();
@@ -341,17 +352,19 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         let uy_ptr_ro = self.state.uy.as_ptr();
 
         for i in 0..size {
-             unsafe {
-                if *obstacles_ptr.add(i) { continue; }
+            unsafe {
+                if *obstacles_ptr.add(i) {
+                    continue;
+                }
 
                 // We use the optimized apply which avoids array allocation
                 self.collision_model.apply(
                     &mut *f_mut_ptr.add(i),
                     *rho_ptr_ro.add(i),
                     *ux_ptr_ro.add(i),
-                    *uy_ptr_ro.add(i)
+                    *uy_ptr_ro.add(i),
                 );
-             }
+            }
         }
     }
 
