@@ -33,11 +33,54 @@ pub trait TuringSolverStrategy {
 ///
 /// This solver combines diffusion, reaction, and time integration into a single pass
 /// using `SpatialDiffusion::map_diffusion` to maximize data locality.
+///
+/// # Optimization
+///
+/// Traditional solvers often compute the derivative into a temporary buffer and then add it to the state:
+/// `state_next = state + dt * (diffusion + reaction)`.
+/// This requires writing the derivative to memory and reading it back.
+///
+/// The "Fused" solver uses a closure passed to the diffusion engine to compute the reaction
+/// and the time update *immediately* after the Laplacian is computed for a grid point (or block).
+/// This keeps the data in L1/L2 cache, significantly improving memory bandwidth efficiency.
+///
+/// # Stability Warning
+///
+/// This solver implements the **Forward Euler** method, which is an explicit first-order method.
+/// It is conditionally stable. If the time step `dt` is too large relative to the diffusion coefficients
+/// and grid spacing, the simulation will explode (values go to infinity).
+///
+/// The stability condition for 1D diffusion is approximately:
+/// $$ \Delta t \le \frac{\Delta x^2}{2 D} $$
+///
+/// # Examples
+///
+/// Manually stepping a system:
+///
+/// ```rust
+/// use math_explorer::biology::morphogenesis::{FusedEulerSolver, TuringSolverStrategy, TuringState, SchnakenbergKinetics};
+/// use math_explorer::biology::diffusion::FiniteDifference1D;
+///
+/// // 1. Setup System Components
+/// let mut solver = FusedEulerSolver::new();
+/// let n = 100;
+/// let state = TuringState::new(n);
+/// let mut next_state = TuringState::new(n);
+/// let kinetics = SchnakenbergKinetics::default();
+/// let diffusion = FiniteDifference1D::new(1.0);
+///
+/// // 2. Perform a single time step
+/// // D_u = 1.0, D_v = 40.0, dt = 0.01
+/// solver.step(&state, &mut next_state, &kinetics, &diffusion, 1.0, 40.0, 0.01);
+/// ```
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FusedEulerSolver;
 
 impl FusedEulerSolver {
     /// Creates a new FusedEulerSolver.
+    ///
+    /// Since the solver holds no state (it is a pure strategy), this is effectively a no-op
+    /// provided for API consistency.
     pub fn new() -> Self {
         Self
     }
