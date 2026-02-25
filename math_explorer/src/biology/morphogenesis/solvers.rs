@@ -192,10 +192,10 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
                 let diff = diffs[s];
                 let reac = rates[s];
 
-                if let Some(slice) = next_slices.get_mut(s) {
-                    if i < slice.len() {
-                        slice[i] = curr + dt * (diff + reac);
-                    }
+                if let Some(slice) = next_slices.get_mut(s)
+                    && i < slice.len()
+                {
+                    slice[i] = curr + dt * (diff + reac);
                 }
             }
         });
