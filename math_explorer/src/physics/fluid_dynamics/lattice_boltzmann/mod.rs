@@ -66,8 +66,8 @@ impl Lattice2D<9> for D2Q9 {
     fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; 9] {
         let mut eq = [0.0; 9];
         let u2 = ux * ux + uy * uy;
-        for k in 0..9 {
-            eq[k] = Self::equilibrium_component(rho, ux, uy, u2, k);
+        for (k, item) in eq.iter_mut().enumerate() {
+            *item = Self::equilibrium_component(rho, ux, uy, u2, k);
         }
         eq
     }
@@ -102,9 +102,9 @@ impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
         let omega = 1.0 / self.tau;
         let u2 = ux * ux + uy * uy;
         // Compute equilibrium on the fly to avoid stack array allocation
-        for k in 0..Q {
+        for (k, item) in f.iter_mut().enumerate().take(Q) {
             let eq_k = L::equilibrium_component(rho, ux, uy, u2, k);
-            f[k] = (1.0 - omega) * f[k] + omega * eq_k;
+            *item = (1.0 - omega) * *item + omega * eq_k;
         }
     }
 }
