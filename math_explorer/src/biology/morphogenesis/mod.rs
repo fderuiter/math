@@ -69,8 +69,76 @@ use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 
 pub use reaction::{ReactionKinetics, SchnakenbergKinetics};
-pub use solvers::{FusedEulerSolver, TuringSolverStrategy};
+pub use solvers::{FusedEulerSolver, StandardSolverAdapter, TuringSolverStrategy};
 pub use state::TuringState;
+
+/// Represents the dynamics of a Turing system (Reactions + Diffusion).
+///
+/// This struct implements `OdeSystem`, allowing standard ODE solvers to compute derivatives.
+pub struct TuringDynamics<'a, K, D> {
+    pub kinetics: &'a K,
+    pub diffusion: &'a D,
+    pub d_u: f64,
+    pub d_v: f64,
+}
+
+impl<'a, K, D> OdeSystem<TuringState> for TuringDynamics<'a, K, D>
+where
+    K: ReactionKinetics,
+    D: SpatialDiffusion<2>,
+{
+    fn derivative(&self, t: f64, state: &TuringState) -> TuringState {
+        let mut out = TuringState::new(state.len());
+        self.derivative_in_place(t, state, &mut out);
+        out
+    }
+
+    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
+        let n = state.len();
+        if n == 0 {
+            return;
+        }
+
+        // Ensure state vectors are consistent
+        assert_eq!(state.v.len(), n, "State vector v length mismatch");
+
+        // Ensure output buffer is the right size
+        if out.len() != n || out.v.len() != n {
+            *out = TuringState::new(n);
+        }
+
+        let u = &state.u;
+        let v = &state.v;
+        let out_u = &mut out.u;
+        let out_v = &mut out.v;
+
+        // 1. Compute Diffusion
+        self.diffusion.apply(
+            [u.as_slice(), v.as_slice()],
+            [out_u.as_mut_slice(), out_v.as_mut_slice()],
+            [self.d_u, self.d_v],
+        );
+
+        // 2. Compute Reaction and Accumulate
+        // SAFETY:
+        // 1. `n` is defined as `state.len()` at the start of the function.
+        // 2. We resized `out` to `n` (if needed) at the start, ensuring `out.len() == n`.
+        // 3. `u` and `v` are slices from `state` (length `n`).
+        // 4. `out_u` and `out_v` are slices from `out` (length `n`).
+        // Therefore, the index `i` (ranging `0..n`) is strictly within bounds for all accessed slices.
+        unsafe {
+            for i in 0..n {
+                let u_curr = *u.get_unchecked(i);
+                let v_curr = *v.get_unchecked(i);
+
+                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
+
+                *out_u.get_unchecked_mut(i) += reac_u;
+                *out_v.get_unchecked_mut(i) += reac_v;
+            }
+        }
+    }
+}
 
 /// Represents a Reaction-Diffusion system.
 ///
@@ -209,50 +277,14 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSy
         out
     }
 
-    fn derivative_in_place(&self, _t: f64, state: &TuringState, out: &mut TuringState) {
-        let n = state.len();
-        if n == 0 {
-            return;
-        }
-
-        // Ensure state vectors are consistent
-        assert_eq!(state.v.len(), n, "State vector v length mismatch");
-
-        // Ensure output buffer is the right size
-        if out.len() != n || out.v.len() != n {
-            *out = TuringState::new(n);
-        }
-
-        let u = &state.u;
-        let v = &state.v;
-        let out_u = &mut out.u;
-        let out_v = &mut out.v;
-
-        // 1. Compute Diffusion
-        self.diffusion.apply(
-            [u.as_slice(), v.as_slice()],
-            [out_u.as_mut_slice(), out_v.as_mut_slice()],
-            [self.d_u, self.d_v],
-        );
-
-        // 2. Compute Reaction and Accumulate
-        // SAFETY:
-        // 1. `n` is defined as `state.len()` at the start of the function.
-        // 2. We resized `out` to `n` (if needed) at the start, ensuring `out.len() == n`.
-        // 3. `u` and `v` are slices from `state` (length `n`).
-        // 4. `out_u` and `out_v` are slices from `out` (length `n`).
-        // Therefore, the index `i` (ranging `0..n`) is strictly within bounds for all accessed slices.
-        unsafe {
-            for i in 0..n {
-                let u_curr = *u.get_unchecked(i);
-                let v_curr = *v.get_unchecked(i);
-
-                let (reac_u, reac_v) = self.kinetics.reaction(u_curr, v_curr);
-
-                *out_u.get_unchecked_mut(i) += reac_u;
-                *out_v.get_unchecked_mut(i) += reac_v;
-            }
-        }
+    fn derivative_in_place(&self, t: f64, state: &TuringState, out: &mut TuringState) {
+        let dynamics = TuringDynamics {
+            kinetics: &self.kinetics,
+            diffusion: &self.diffusion,
+            d_u: self.d_u,
+            d_v: self.d_v,
+        };
+        dynamics.derivative_in_place(t, state, out);
     }
 }
 

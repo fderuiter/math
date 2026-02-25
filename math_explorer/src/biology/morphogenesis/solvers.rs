@@ -1,6 +1,8 @@
 use super::reaction::ReactionKinetics;
 use super::state::TuringState;
+use super::TuringDynamics;
 use crate::biology::diffusion::SpatialDiffusion;
+use crate::pure_math::analysis::ode::{Solver, VectorOperations};
 
 /// Strategy for time-stepping the Turing System.
 ///
@@ -91,5 +93,45 @@ impl TuringSolverStrategy for FusedEulerSolver {
                 }
             },
         );
+    }
+}
+
+/// Adapter allowing standard ODE solvers to be used with TuringSystem.
+///
+/// This adapter bridges the gap between the `TuringSolverStrategy` (component-based)
+/// and the `Solver` trait (system-based), enabling the use of generic solvers like RK4.
+pub struct StandardSolverAdapter<S>(pub S);
+
+impl<S> TuringSolverStrategy for StandardSolverAdapter<S>
+where
+    S: Solver<TuringState>,
+{
+    fn step<K: ReactionKinetics, D: SpatialDiffusion<2>>(
+        &mut self,
+        state: &TuringState,
+        next_state: &mut TuringState,
+        kinetics: &K,
+        diffusion: &D,
+        d_u: f64,
+        d_v: f64,
+        dt: f64,
+    ) {
+        // Construct a temporary system view that implements OdeSystem
+        let dynamics = TuringDynamics {
+            kinetics,
+            diffusion,
+            d_u,
+            d_v,
+        };
+
+        // Prepare the next_state buffer by copying the current state.
+        // Solvers typically expect the output buffer to contain the initial value (for step)
+        // or they might overwrite it completely.
+        // Solver::step expects `state` as `&mut State` and updates it in place.
+        // Here `state` is immutable, so we copy it to `next_state` (mutable) and step `next_state`.
+        next_state.copy_from(state);
+
+        // Delegate to the standard solver
+        self.0.step(&dynamics, 0.0, next_state, dt);
     }
 }
