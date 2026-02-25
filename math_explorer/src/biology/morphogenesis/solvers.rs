@@ -141,7 +141,7 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
 ///
 /// // 2. Perform a single time step
 /// // D_u = 1.0, D_v = 40.0, dt = 0.01
-/// solver.step(&state, &mut next_state, &kinetics, &diffusion, 1.0, 40.0, 0.01);
+/// solver.step(&state, &mut next_state, &kinetics, &diffusion, [1.0, 40.0], 0.01);
 /// ```
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FusedEulerSolver;
