@@ -68,8 +68,7 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
         }
 
         // Prepare slices for diffusion application
-        let state_slices: [&[f64]; N] =
-            std::array::from_fn(|i| state.concentrations[i].as_slice());
+        let state_slices: [&[f64]; N] = std::array::from_fn(|i| state.concentrations[i].as_slice());
 
         let mut out_iter = out.concentrations.iter_mut();
         let out_slices: [&mut [f64]; N] =
@@ -142,25 +141,21 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
             .map(|v| v.as_mut_slice())
             .collect();
 
-        diffusion.map_diffusion(
-            concentrations_slices,
-            diffusion_coeffs,
-            |i, vals, diffs| {
-                let rates = kinetics.reaction(vals);
+        diffusion.map_diffusion(concentrations_slices, diffusion_coeffs, |i, vals, diffs| {
+            let rates = kinetics.reaction(vals);
 
-                for s in 0..N {
-                    let curr = vals[s];
-                    let diff = diffs[s];
-                    let reac = rates[s];
+            for s in 0..N {
+                let curr = vals[s];
+                let diff = diffs[s];
+                let reac = rates[s];
 
-                    if let Some(slice) = next_slices.get_mut(s) {
-                        if i < slice.len() {
-                            slice[i] = curr + dt * (diff + reac);
-                        }
+                if let Some(slice) = next_slices.get_mut(s) {
+                    if i < slice.len() {
+                        slice[i] = curr + dt * (diff + reac);
                     }
                 }
-            },
-        );
+            }
+        });
     }
 }
 
@@ -177,7 +172,9 @@ impl<S> StandardSolverAdapter<S> {
     }
 }
 
-impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N> for StandardSolverAdapter<S> {
+impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N>
+    for StandardSolverAdapter<S>
+{
     fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
         state: &TuringState<N>,

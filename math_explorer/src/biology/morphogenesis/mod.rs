@@ -117,9 +117,7 @@ impl TuringSystem<2, SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver>
 }
 
 // Convenience implementation for custom kinetics/diffusion in 2-species case
-impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>>
-    TuringSystem<2, K, D, FusedEulerSolver>
-{
+impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>> TuringSystem<2, K, D, FusedEulerSolver> {
     /// Creates a new Turing System with custom kinetics and diffusion strategy, using the default Fused Euler solver.
     pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
         Self {

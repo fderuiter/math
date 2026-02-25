@@ -2,8 +2,7 @@ use crate::tabs::{
     chaos::ChaosTab, clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab,
     fluid_dynamics::FluidDynamicsTab, game_theory::GameTheoryTab, medical::MedicalTab,
     morphogenesis::MorphogenesisTab, mri::MriTab, neuroscience::NeuroscienceTab,
-    number_theory::NumberTheoryTab, quantum::QuantumTab, solid_state::SolidStateTab,
-    ExplorerTab,
+    number_theory::NumberTheoryTab, quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
 };
 use eframe::egui;
 
