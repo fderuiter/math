@@ -2,8 +2,10 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod hodgkin_huxley;
+pub mod spike_analysis;
 
 use hodgkin_huxley::HodgkinHuxleyTool;
+use spike_analysis::SpikeAnalysisTool;
 
 /// A trait for sub-tools within the Neuroscience tab.
 pub trait NeuroscienceTool {
@@ -22,7 +24,10 @@ pub struct NeuroscienceTab {
 impl Default for NeuroscienceTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(HodgkinHuxleyTool::default())],
+            tools: vec![
+                Box::new(HodgkinHuxleyTool::default()),
+                Box::new(SpikeAnalysisTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
