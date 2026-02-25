@@ -21,6 +21,9 @@ impl Lattice2D<1> for BadLattice {
     fn equilibrium(_rho: f64, _ux: f64, _uy: f64) -> [f64; 1] {
         [0.0]
     }
+    fn equilibrium_component(_rho: f64, _ux: f64, _uy: f64, _u2: f64, _k: usize) -> f64 {
+        0.0
+    }
 }
 
 #[derive(Clone, Copy)]

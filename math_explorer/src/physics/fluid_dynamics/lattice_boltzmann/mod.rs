@@ -19,6 +19,10 @@ pub trait Lattice2D<const Q: usize>: Copy + Clone + Send + Sync + 'static {
     fn directions_y() -> [i32; Q];
     fn opposite_indices() -> [usize; Q];
     fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; Q];
+
+    /// Computes equilibrium for a single component.
+    /// u2 = ux*ux + uy*uy (passed to avoid recomputing)
+    fn equilibrium_component(rho: f64, ux: f64, uy: f64, u2: f64, k: usize) -> f64;
 }
 
 /// D2Q9 Lattice Model.
@@ -62,15 +66,20 @@ impl Lattice2D<9> for D2Q9 {
     fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; 9] {
         let mut eq = [0.0; 9];
         let u2 = ux * ux + uy * uy;
+        for k in 0..9 {
+            eq[k] = Self::equilibrium_component(rho, ux, uy, u2, k);
+        }
+        eq
+    }
+
+    #[inline(always)]
+    fn equilibrium_component(rho: f64, ux: f64, uy: f64, u2: f64, k: usize) -> f64 {
         let cx = Self::directions_x();
         let cy = Self::directions_y();
         let w = Self::weights();
 
-        for k in 0..9 {
-            let cu = (cx[k] as f64 * ux) + (cy[k] as f64 * uy);
-            eq[k] = rho * w[k] * (1.0 + 3.0 * cu + 4.5 * cu * cu - 1.5 * u2);
-        }
-        eq
+        let cu = (cx[k] as f64 * ux) + (cy[k] as f64 * uy);
+        rho * w[k] * (1.0 + 3.0 * cu + 4.5 * cu * cu - 1.5 * u2)
     }
 }
 
@@ -91,9 +100,11 @@ impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
     #[inline(always)]
     fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64) {
         let omega = 1.0 / self.tau;
-        let eq = L::equilibrium(rho, ux, uy);
+        let u2 = ux * ux + uy * uy;
+        // Compute equilibrium on the fly to avoid stack array allocation
         for k in 0..Q {
-            f[k] = (1.0 - omega) * f[k] + omega * eq[k];
+            let eq_k = L::equilibrium_component(rho, ux, uy, u2, k);
+            f[k] = (1.0 - omega) * f[k] + omega * eq_k;
         }
     }
 }
@@ -180,78 +191,61 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         }
     }
 
-    /// Performs one simulation step (Stream -> Collision).
+    /// Performs one simulation step using the optimized 3-pass strategy.
+    /// 1. Stream: Gather neighbors -> f_new (Bandwidth intensive, Offset Optimized)
+    /// 2. Macroscopic: f -> rho, u (Vectorizable, Compute intensive)
+    /// 3. Collision: f, rho, u -> f (Vectorizable, Compute intensive)
+    ///
+    /// This structure allows the compiler to vectorize Pass 2 and 3, which often beats
+    /// a single scalar fused pass on modern CPUs with L3 cache.
     pub fn step(&mut self) {
-        self.stream();
-        self.state.swap_buffers();
-        self.boundary_conditions(); // Apply macroscopic BCs if any
-        self.macroscopic();
-        self.collision();
-    }
-
-    /// Streaming step: Move particles to neighboring cells.
-    fn stream(&mut self) {
+        let width = self.state.width;
+        let height = self.state.height;
         let cx = L::directions_x();
         let cy = L::directions_y();
         let opp = L::opposite_indices();
 
-        let width = self.state.width;
-        let height = self.state.height;
+        // --- PASS 1: STREAM ---
+        // Precompute offsets for fast stencil access
+        let mut offsets = [0isize; Q];
+        for k in 0..Q {
+            offsets[k] = -((cx[k] as isize) + (cy[k] as isize) * (width as isize));
+        }
 
-        // 1. Interior (Hot Path) - Loop Splitting & Unsafe optimizations
-        // Avoid bounds checks for x, y, and array access in the bulk of the simulation.
+        // Interior (Hot Path)
         if width > 2 && height > 2 {
             for y in 1..height - 1 {
                 let idx_row = y * width;
                 for x in 1..width - 1 {
                     let idx = idx_row + x;
 
-                    // SAFETY: We are within 1..W-1 and 1..H-1, so idx is valid.
-                    let is_obstacle = unsafe { *self.state.obstacles.get_unchecked(idx) };
-                    if is_obstacle {
-                        continue;
-                    }
+                    unsafe {
+                        if *self.state.obstacles.get_unchecked(idx) { continue; }
 
-                    for k in 0..Q {
-                        let dx = cx[k];
-                        let dy = cy[k];
+                        let f_dest = self.state.f_new.get_unchecked_mut(idx);
 
-                        // Prev coordinates are guaranteed valid because dx, dy are in {-1, 0, 1}
-                        // and we are at least 1 unit from border.
-                        let prev_x = (x as i32) - dx;
-                        let prev_y = (y as i32) - dy;
-                        let prev_idx = (prev_y as usize) * width + (prev_x as usize);
-
-                        // SAFETY: prev_idx is valid. k and opp[k] are < Q.
-                        unsafe {
+                        for k in 0..Q {
+                            let prev_idx = (idx as isize + offsets[k]) as usize;
                             let source_is_obstacle = *self.state.obstacles.get_unchecked(prev_idx);
 
-                            if source_is_obstacle {
+                            let val = if source_is_obstacle {
                                 // Bounce-back
-                                let bounce_val =
-                                    *self.state.f.get_unchecked(idx).get_unchecked(opp[k]);
-                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
-                                    bounce_val;
+                                *self.state.f.get_unchecked(idx).get_unchecked(opp[k])
                             } else {
                                 // Stream
-                                let stream_val =
-                                    *self.state.f.get_unchecked(prev_idx).get_unchecked(k);
-                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
-                                    stream_val;
-                            }
+                                *self.state.f.get_unchecked(prev_idx).get_unchecked(k)
+                            };
+                            *f_dest.get_unchecked_mut(k) = val;
                         }
                     }
                 }
             }
         }
 
-        // 2. Boundary Handling (Slow Path)
-        // Process top/bottom rows and left/right columns
-        let process_boundary_cell = |x: usize, y: usize, state: &mut LatticeState<Q>| {
+        // Boundary Stream (Safe Path)
+        let process_boundary_stream = |x: usize, y: usize, state: &mut LatticeState<Q>| {
             let idx = y * width + x;
-            if state.obstacles[idx] {
-                return;
-            }
+            if state.obstacles[idx] { return; }
 
             for k in 0..Q {
                 let prev_x = x as i32 - cx[k];
@@ -265,94 +259,100 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                         state.f_new[idx][k] = state.f[prev_idx][k];
                     }
                 } else {
-                    // Boundary Logic (Periodic X, Bounce Y)
+                    // Periodic / Bounce
                     let mut src_x = prev_x;
                     let src_y = prev_y;
 
-                    // Periodic X
-                    if src_x < 0 {
-                        src_x += width as i32;
-                    } else if src_x >= width as i32 {
-                        src_x -= width as i32;
-                    }
+                    if src_x < 0 { src_x += width as i32; }
+                    else if src_x >= width as i32 { src_x -= width as i32; }
 
                     if src_y < 0 || src_y >= height as i32 {
-                        // Wall Bounce
-                        state.f_new[idx][k] = state.f[idx][opp[k]];
+                         state.f_new[idx][k] = state.f[idx][opp[k]];
                     } else {
-                        let src_idx = (src_y as usize) * width + (src_x as usize);
-                        if state.obstacles[src_idx] {
-                            state.f_new[idx][k] = state.f[idx][opp[k]];
-                        } else {
-                            state.f_new[idx][k] = state.f[src_idx][k];
-                        }
+                         let src_idx = (src_y as usize) * width + (src_x as usize);
+                         if state.obstacles[src_idx] {
+                             state.f_new[idx][k] = state.f[idx][opp[k]];
+                         } else {
+                             state.f_new[idx][k] = state.f[src_idx][k];
+                         }
                     }
                 }
             }
         };
 
-        // Top & Bottom
         for y in [0, height - 1] {
-            for x in 0..width {
-                process_boundary_cell(x, y, &mut self.state);
-            }
+            for x in 0..width { process_boundary_stream(x, y, &mut self.state); }
         }
-        // Left & Right (excluding corners)
         for y in 1..height - 1 {
-            for x in [0, width - 1] {
-                process_boundary_cell(x, y, &mut self.state);
+            for x in [0, width - 1] { process_boundary_stream(x, y, &mut self.state); }
+        }
+
+        self.state.swap_buffers();
+        // Now self.state.f has the streamed values.
+
+        // --- PASS 2: MACROSCOPIC ---
+        let size = width * height;
+        let f_ptr = self.state.f.as_ptr();
+        let rho_ptr = self.state.rho.as_mut_ptr();
+        let ux_ptr = self.state.ux.as_mut_ptr();
+        let uy_ptr = self.state.uy.as_mut_ptr();
+        let obstacles_ptr = self.state.obstacles.as_ptr();
+
+        // This loop is purely linear and highly vectorizable.
+        // We iterate 0..size.
+        for i in 0..size {
+            unsafe {
+                if *obstacles_ptr.add(i) {
+                    *rho_ptr.add(i) = 0.0;
+                    *ux_ptr.add(i) = 0.0;
+                    *uy_ptr.add(i) = 0.0;
+                    continue;
+                }
+
+                let f_cell = &*f_ptr.add(i);
+
+                let mut rho = 0.0;
+                let mut jx = 0.0;
+                let mut jy = 0.0;
+
+                // Compiler can verify Q=9 and unroll/vectorize horizontal reduction
+                for k in 0..Q {
+                    let val = *f_cell.get_unchecked(k);
+                    rho += val;
+                    jx += val * (cx[k] as f64);
+                    jy += val * (cy[k] as f64);
+                }
+
+                *rho_ptr.add(i) = rho;
+                if rho > 1e-9 {
+                    *ux_ptr.add(i) = jx / rho;
+                    *uy_ptr.add(i) = jy / rho;
+                } else {
+                    *ux_ptr.add(i) = 0.0;
+                    *uy_ptr.add(i) = 0.0;
+                }
             }
         }
-    }
 
-    /// Updates macroscopic variables (rho, u) from distribution functions.
-    fn macroscopic(&mut self) {
-        let cx = L::directions_x();
-        let cy = L::directions_y();
+        // --- PASS 3: COLLISION ---
+        let f_mut_ptr = self.state.f.as_mut_ptr();
+        let rho_ptr_ro = self.state.rho.as_ptr();
+        let ux_ptr_ro = self.state.ux.as_ptr();
+        let uy_ptr_ro = self.state.uy.as_ptr();
 
-        for i in 0..self.state.width * self.state.height {
-            if self.state.obstacles[i] {
-                self.state.ux[i] = 0.0;
-                self.state.uy[i] = 0.0;
-                continue;
-            }
+        for i in 0..size {
+             unsafe {
+                if *obstacles_ptr.add(i) { continue; }
 
-            let mut rho = 0.0;
-            let mut jx = 0.0;
-            let mut jy = 0.0;
-
-            for k in 0..Q {
-                rho += self.state.f[i][k];
-                jx += self.state.f[i][k] * cx[k] as f64;
-                jy += self.state.f[i][k] * cy[k] as f64;
-            }
-
-            self.state.rho[i] = rho;
-            if rho > 0.0 {
-                self.state.ux[i] = jx / rho;
-                self.state.uy[i] = jy / rho;
-            }
+                // We use the optimized apply which avoids array allocation
+                self.collision_model.apply(
+                    &mut *f_mut_ptr.add(i),
+                    *rho_ptr_ro.add(i),
+                    *ux_ptr_ro.add(i),
+                    *uy_ptr_ro.add(i)
+                );
+             }
         }
-    }
-
-    /// Collision step: Delegates to strategy.
-    fn collision(&mut self) {
-        for i in 0..self.state.width * self.state.height {
-            if self.state.obstacles[i] {
-                continue;
-            }
-            self.collision_model.apply(
-                &mut self.state.f[i],
-                self.state.rho[i],
-                self.state.ux[i],
-                self.state.uy[i],
-            );
-        }
-    }
-
-    /// Enforce specific boundary conditions (like driving velocity).
-    fn boundary_conditions(&mut self) {
-        // ... (Existing code is commented out, preserving it as is)
     }
 
     // --- Accessors ---
