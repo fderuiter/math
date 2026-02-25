@@ -1,0 +1,95 @@
+use crate::tabs::ExplorerTab;
+use eframe::egui;
+use egui_plot::{HLine, Line, Plot, PlotPoints};
+use math_explorer::applied::battery_degradation::{Cycles, DepthOfDischarge, PowerLawModel};
+
+pub struct BatteryDegradationTab {
+    dod: f64,
+    temperature: f64,
+    cycles_to_simulate: f64,
+}
+
+impl Default for BatteryDegradationTab {
+    fn default() -> Self {
+        Self {
+            dod: 80.0,
+            temperature: 25.0,
+            cycles_to_simulate: 2000.0,
+        }
+    }
+}
+
+impl ExplorerTab for BatteryDegradationTab {
+    fn name(&self) -> &'static str {
+        "Battery Degradation"
+    }
+
+    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Enforce valid ranges for internal state before using it
+        self.dod = self.dod.clamp(0.0, 100.0);
+        self.cycles_to_simulate = self.cycles_to_simulate.max(100.0);
+
+        egui::SidePanel::left("battery_controls").show(ctx, |ui| {
+            ui.heading("Parameters");
+            ui.add_space(5.0);
+
+            ui.label("Depth of Discharge (DoD)");
+            ui.add(egui::Slider::new(&mut self.dod, 0.0..=100.0).text("%"));
+            ui.small("Percentage of battery capacity used per cycle.");
+
+            ui.add_space(10.0);
+
+            ui.label("Temperature");
+            ui.add_enabled_ui(false, |ui| {
+                ui.add(egui::Slider::new(&mut self.temperature, -20.0..=60.0).text("°C"));
+            })
+            .response.on_disabled_hover_text("Temperature dependency is not yet implemented in the core model.");
+
+            ui.add_space(10.0);
+
+            ui.label("Simulation Range");
+            ui.add(egui::Slider::new(&mut self.cycles_to_simulate, 100.0..=10000.0).text("Cycles"));
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Capacity Fade Projection");
+            ui.label("Estimation based on Power Law Model for Li-ion batteries.");
+
+            let model = PowerLawModel::standard();
+            let dod_val = DepthOfDischarge::new(self.dod);
+
+            // Generate plot points
+            let points: Vec<[f64; 2]> = (0..=100)
+                .map(|i| {
+                    let cycle = (self.cycles_to_simulate / 100.0) * (i as f64);
+                    let capacity = model.capacity(Cycles::new(cycle), dod_val);
+                    [cycle, capacity.as_f64()]
+                })
+                .collect();
+
+            let line = Line::new("Capacity", PlotPoints::new(points));
+
+            Plot::new("capacity_fade_plot")
+                .view_aspect(2.0)
+                .x_axis_label("Cycles")
+                .y_axis_label("State of Health (Capacity)")
+                .include_y(0.0)
+                .include_y(1.0)
+                .show(ui, |plot_ui| {
+                    plot_ui.line(line);
+                    // Add a horizontal line at 70% (End of Life)
+                    plot_ui.hline(HLine::new("End of Life (70%)", 0.7).color(egui::Color32::RED).style(egui_plot::LineStyle::Dashed { length: 10.0 }));
+                    // Add a horizontal line at 80% (First Life)
+                    plot_ui.hline(HLine::new("First Life (80%)", 0.8).color(egui::Color32::YELLOW).style(egui_plot::LineStyle::Dashed { length: 10.0 }));
+                });
+
+            ui.add_space(10.0);
+
+            // Calculate N70 for current DoD
+            let n70 = model.n70(dod_val).as_f64();
+            ui.horizontal(|ui| {
+                ui.label(format!("Projected Cycle Life (to 70%): {:.0} cycles", n70));
+            });
+        });
+    }
+}
