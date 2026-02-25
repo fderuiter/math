@@ -63,7 +63,10 @@ impl NeuroscienceTool for SpikeAnalysisTool {
 
             ui.separator();
             ui.horizontal(|ui| {
-                if ui.button(if self.is_running { "Pause" } else { "Run" }).clicked() {
+                if ui
+                    .button(if self.is_running { "Pause" } else { "Run" })
+                    .clicked()
+                {
                     self.is_running = !self.is_running;
                 }
                 if ui.button("Reset").clicked() {
@@ -104,13 +107,24 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                         plot_ui.line(Line::new("Voltage", PlotPoints::new(self.history.clone())));
 
                         // Threshold Line
-                        plot_ui.hline(egui_plot::HLine::new("Threshold", self.spike_threshold).color(egui::Color32::RED));
+                        plot_ui.hline(
+                            egui_plot::HLine::new("Threshold", self.spike_threshold)
+                                .color(egui::Color32::RED),
+                        );
 
                         // Spike Markers (Raster)
                         // Using VLine might be too much if there are many spikes, maybe Points?
                         // Let's use Points at (time, threshold)
-                        let spike_points: Vec<[f64; 2]> = self.spike_times.iter().map(|&t| [t, self.spike_threshold]).collect();
-                        plot_ui.points(egui_plot::Points::new("Spikes", PlotPoints::new(spike_points)).radius(3.0).color(egui::Color32::GREEN));
+                        let spike_points: Vec<[f64; 2]> = self
+                            .spike_times
+                            .iter()
+                            .map(|&t| [t, self.spike_threshold])
+                            .collect();
+                        plot_ui.points(
+                            egui_plot::Points::new("Spikes", PlotPoints::new(spike_points))
+                                .radius(3.0)
+                                .color(egui::Color32::GREEN),
+                        );
                     });
             });
 
@@ -124,7 +138,9 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                     .show(ui, |plot_ui| {
                         if !self.isis.is_empty() {
                             let bars = self.compute_histogram(20); // 20 bins
-                            plot_ui.bar_chart(BarChart::new("ISI Distribution", bars).color(egui::Color32::GOLD));
+                            plot_ui.bar_chart(
+                                BarChart::new("ISI Distribution", bars).color(egui::Color32::GOLD),
+                            );
                         }
                     });
             });
@@ -151,7 +167,7 @@ impl SpikeAnalysisTool {
             // Recording every 10th step = 0.1ms resolution
             // Or just check time % 0.1 < dt
             if (self.time * 10.0).round() % 1.0 == 0.0 {
-                 self.history.push([self.time, v]);
+                self.history.push([self.time, v]);
             }
 
             // Manage History Size (keep last 5000 points = 500ms window approx if subsampled)

@@ -1,6 +1,6 @@
+use super::TuringDynamics;
 use super::reaction::ReactionKinetics;
 use super::state::TuringState;
-use super::TuringDynamics;
 use crate::biology::diffusion::SpatialDiffusion;
 use crate::pure_math::analysis::ode::{Solver, VectorOperations};
 

@@ -1,8 +1,8 @@
+use math_explorer::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
+use math_explorer::biology::morphogenesis::ReactionKinetics;
 use math_explorer::biology::morphogenesis::{
     SchnakenbergKinetics, StandardSolverAdapter, TuringSolverStrategy, TuringState, TuringSystem,
 };
-use math_explorer::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
-use math_explorer::biology::morphogenesis::ReactionKinetics;
 use math_explorer::pure_math::analysis::ode::{Euler, RungeKutta4};
 
 #[test]
@@ -21,7 +21,7 @@ fn test_turing_adapter() {
     for _ in 0..steps {
         fused_system.step(dt);
     }
-    let fused_u = fused_system.u()[n/2];
+    let fused_u = fused_system.u()[n / 2];
 
     // 2. Adapter with Euler
     // Euler should be mathematically identical to FusedEulerSolver
@@ -38,9 +38,12 @@ fn test_turing_adapter() {
     for _ in 0..steps {
         euler_system.step(dt);
     }
-    let euler_u = euler_system.u()[n/2];
+    let euler_u = euler_system.u()[n / 2];
 
-    assert!((fused_u - euler_u).abs() < 1e-10, "Euler result differs from Fused result!");
+    assert!(
+        (fused_u - euler_u).abs() < 1e-10,
+        "Euler result differs from Fused result!"
+    );
 
     // 3. Adapter with RK4
     let rk4 = RungeKutta4::new(&example_state);
@@ -49,23 +52,27 @@ fn test_turing_adapter() {
     let kinetics = SchnakenbergKinetics::default();
     let diffusion = FiniteDifference1D::new(dx);
 
-    let mut rk4_system = TuringSystem::new_with_solver(n, d_u, d_v, kinetics, diffusion, adapter_rk4);
+    let mut rk4_system =
+        TuringSystem::new_with_solver(n, d_u, d_v, kinetics, diffusion, adapter_rk4);
     initialize_state(&mut rk4_system);
 
     for _ in 0..steps {
         rk4_system.step(dt);
     }
-    let rk4_u = rk4_system.u()[n/2];
+    let rk4_u = rk4_system.u()[n / 2];
 
     // RK4 is more accurate, so it might differ slightly, but should be close for small dt
-    assert!((rk4_u - fused_u).abs() < 1e-1, "RK4 result diverges wildly!");
+    assert!(
+        (rk4_u - fused_u).abs() < 1e-1,
+        "RK4 result diverges wildly!"
+    );
 }
 
 fn initialize_state<K, D, S>(system: &mut TuringSystem<K, D, S>)
 where
     K: ReactionKinetics,
     D: SpatialDiffusion<2>,
-    S: TuringSolverStrategy
+    S: TuringSolverStrategy,
 {
     let n = system.state.len();
     for i in 0..n {
