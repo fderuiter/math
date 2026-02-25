@@ -89,8 +89,8 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
             let rates = self.kinetics.reaction(inputs);
 
             // Accumulate results
-            for s in 0..N {
-                out.concentrations[s][i] += rates[s];
+            for (s, rate) in rates.iter().enumerate().take(N) {
+                out.concentrations[s][i] += rate;
             }
         }
     }
