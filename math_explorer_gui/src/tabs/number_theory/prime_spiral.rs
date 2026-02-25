@@ -76,9 +76,9 @@ impl PrimeSpiralWidget {
                     if is_prime_lookup[i] {
                         pixels[py * size + px] = Color32::WHITE;
                     }
-                     if i == 1 {
-                         pixels[py * size + px] = Color32::RED;
-                     }
+                    if i == 1 {
+                        pixels[py * size + px] = Color32::RED;
+                    }
                 }
             }
 

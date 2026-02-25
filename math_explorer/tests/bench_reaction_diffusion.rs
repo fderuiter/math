@@ -23,12 +23,12 @@ fn bench_turing_2d_step() {
 
     // Warmup
     for _ in 0..10 {
-        system.step(dt);
+        system.step(dt).unwrap();
     }
 
     let start = Instant::now();
     for _ in 0..iterations {
-        system.step(dt);
+        system.step(dt).unwrap();
     }
     let duration = start.elapsed();
 

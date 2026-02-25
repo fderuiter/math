@@ -3,6 +3,21 @@
 //! This module provides strategies for computing the spatial diffusion term $D \nabla^2 u$
 //! in reaction-diffusion systems.
 
+use thiserror::Error;
+
+/// Errors that can occur during spatial diffusion operations.
+#[derive(Debug, Clone, PartialEq, Error)]
+pub enum SpatialDiffusionError {
+    #[error("Buffer size mismatch for species {species}: expected >= {expected}, got {actual}")]
+    BufferSizeMismatch {
+        species: usize,
+        expected: usize,
+        actual: usize,
+    },
+    #[error("Grid dimensions invalid: {0}")]
+    InvalidDimensions(String),
+}
+
 /// Defines a strategy for computing spatial diffusion.
 pub trait SpatialDiffusion<const N: usize> {
     /// Computes diffusion terms for each point and calls the closure.
@@ -12,7 +27,12 @@ pub trait SpatialDiffusion<const N: usize> {
     /// * `index`: The linear index of the point.
     /// * `current_vals`: Current values of species at index.
     /// * `diff_vals`: The diffusion terms ($D \nabla^2 u$).
-    fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], op: F)
+    fn map_diffusion<F>(
+        &self,
+        state: [&[f64]; N],
+        coeffs: [f64; N],
+        op: F,
+    ) -> Result<(), SpatialDiffusionError>
     where
         F: FnMut(usize, [f64; N], [f64; N]);
 
@@ -24,7 +44,12 @@ pub trait SpatialDiffusion<const N: usize> {
     /// * `state` - Input concentration slices.
     /// * `out` - Output buffers for diffusion terms.
     /// * `coeffs` - Diffusion coefficients.
-    fn apply(&self, state: [&[f64]; N], out: [&mut [f64]; N], coeffs: [f64; N]) {
+    fn apply(
+        &self,
+        state: [&[f64]; N],
+        out: [&mut [f64]; N],
+        coeffs: [f64; N],
+    ) -> Result<(), SpatialDiffusionError> {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(state, coeffs, |i, _, diffs| {
             for s in 0..N {
@@ -32,7 +57,7 @@ pub trait SpatialDiffusion<const N: usize> {
                     out[s][i] = diffs[s];
                 }
             }
-        });
+        })
     }
 }
 
@@ -69,31 +94,54 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
         state: &crate::biology::reaction_diffusion::ChemicalState,
         out: &mut crate::biology::reaction_diffusion::ChemicalState,
         coeffs: &[f64],
-    ) {
+    ) -> Result<(), crate::biology::reaction_diffusion::DiffusionError> {
+        use crate::biology::reaction_diffusion::DiffusionError;
+
         let n_species = state.num_species();
+        if coeffs.len() != n_species {
+            return Err(DiffusionError::SpeciesCountMismatch {
+                expected: n_species,
+                actual: coeffs.len(),
+            });
+        }
+
         let dx_sq = self.dx * self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
         for (s, d) in coeffs.iter().enumerate().take(n_species) {
             let u = &state.concentrations[s];
             let out_u = &mut out.concentrations[s];
+
+            if u.len() != out_u.len() {
+                return Err(DiffusionError::GridSizeMismatch {
+                    state_grid: u.len(),
+                    model_grid: out_u.len(),
+                });
+            }
+
             let d = *d;
             apply_1d_stencil(u, out_u, d, inv_dx_sq);
         }
+        Ok(())
     }
 }
 
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
-    fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)
+    fn map_diffusion<F>(
+        &self,
+        state: [&[f64]; N],
+        coeffs: [f64; N],
+        mut op: F,
+    ) -> Result<(), SpatialDiffusionError>
     where
         F: FnMut(usize, [f64; N], [f64; N]),
     {
         if N == 0 {
-            return;
+            return Ok(());
         }
         let n = state[0].len();
         if n == 0 {
-            return;
+            return Ok(());
         }
 
         let dx_sq = self.dx * self.dx;
@@ -107,11 +155,13 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
 
         // Verify all buffers are large enough
         for (s, buffer) in state.iter().enumerate().take(N) {
-            assert!(
-                buffer.len() >= n,
-                "Buffer too small for diffusion (species {})",
-                s
-            );
+            if buffer.len() < n {
+                return Err(SpatialDiffusionError::BufferSizeMismatch {
+                    species: s,
+                    expected: n,
+                    actual: buffer.len(),
+                });
+            }
         }
 
         // 1. Left Boundary (i=0)
@@ -177,6 +227,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
             }
             op(i, current_vals, diff_vals);
         }
+        Ok(())
     }
 }
 
@@ -307,27 +358,35 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
         state: &crate::biology::reaction_diffusion::ChemicalState,
         out: &mut crate::biology::reaction_diffusion::ChemicalState,
         coeffs: &[f64],
-    ) {
+    ) -> Result<(), crate::biology::reaction_diffusion::DiffusionError> {
+        use crate::biology::reaction_diffusion::DiffusionError;
+
         let n_species = state.num_species();
         if n_species == 0 {
-            return;
+            return Ok(());
         }
 
         // Ensure grid size matches
         let n_grid = self.width * self.height;
-        // In release mode, these checks are cheap. In debug, they catch errors.
-        // We use assert! because dimension mismatch is a critical bug.
-        assert_eq!(
-            state.grid_size(),
-            n_grid,
-            "ChemicalState grid size mismatch with FiniteDifference2D"
-        );
-        assert_eq!(out.grid_size(), n_grid, "Output state grid size mismatch");
-        assert_eq!(
-            coeffs.len(),
-            n_species,
-            "Diffusion coefficients count mismatch"
-        );
+
+        if state.grid_size() != n_grid {
+            return Err(DiffusionError::GridSizeMismatch {
+                state_grid: state.grid_size(),
+                model_grid: n_grid,
+            });
+        }
+        if out.grid_size() != n_grid {
+            return Err(DiffusionError::GridSizeMismatch {
+                state_grid: out.grid_size(),
+                model_grid: n_grid,
+            });
+        }
+        if coeffs.len() != n_species {
+            return Err(DiffusionError::SpeciesCountMismatch {
+                expected: n_species,
+                actual: coeffs.len(),
+            });
+        }
 
         for (s, coeff) in coeffs.iter().enumerate().take(n_species) {
             let src = &state.concentrations[s];
@@ -336,24 +395,34 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
 
             apply_2d_stencil_optimized(self.width, self.height, self.dx, self.dy, src, dst, coeff);
         }
+        Ok(())
     }
 }
 
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
-    fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)
+    fn map_diffusion<F>(
+        &self,
+        state: [&[f64]; N],
+        coeffs: [f64; N],
+        mut op: F,
+    ) -> Result<(), SpatialDiffusionError>
     where
         F: FnMut(usize, [f64; N], [f64; N]),
     {
         if N == 0 {
-            return;
+            return Ok(());
         }
         let n = self.width * self.height;
         if n == 0 {
-            return;
+            return Ok(());
         }
         // Basic check for one buffer length to ensure safety
         if state[0].len() != n {
-            panic!("Buffer size mismatch in FiniteDifference2D");
+            return Err(SpatialDiffusionError::BufferSizeMismatch {
+                species: 0,
+                expected: n,
+                actual: state[0].len(),
+            });
         }
 
         let inv_dx_sq = 1.0 / (self.dx * self.dx);
@@ -371,11 +440,13 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
 
         // Verify all buffers are large enough to avoid UB in unsafe block
         for (s, buffer) in state.iter().enumerate().take(N) {
-            assert!(
-                buffer.len() >= n,
-                "Buffer too small for diffusion (species {})",
-                s
-            );
+            if buffer.len() < n {
+                return Err(SpatialDiffusionError::BufferSizeMismatch {
+                    species: s,
+                    expected: n,
+                    actual: buffer.len(),
+                });
+            }
         }
 
         iter_stencil_2d(
@@ -405,6 +476,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
                 op(idx, current_vals, diff_vals);
             },
         );
+        Ok(())
     }
 }
 
@@ -429,7 +501,8 @@ mod tests_2d {
             [u.as_slice(), v.as_slice()],
             [out_u.as_mut_slice(), out_v.as_mut_slice()],
             [1.0, 1.0],
-        );
+        )
+        .unwrap();
 
         for val in out_u {
             assert_eq!(val, 0.0);
@@ -463,7 +536,8 @@ mod tests_2d {
             [u.as_slice(), v.as_slice()],
             [out_u.as_mut_slice(), out_v.as_mut_slice()],
             [1.0, 1.0],
-        );
+        )
+        .unwrap();
 
         // Interior points should be exactly 4.0
         // (1,1) is index 1*5 + 1 = 6.
@@ -513,7 +587,8 @@ mod tests_2d {
             [u.as_slice(), v.as_slice()],
             [out_u_1.as_mut_slice(), out_v_1.as_mut_slice()],
             [d_u, d_v],
-        );
+        )
+        .unwrap();
         for i in 0..n {
             out_u_1[i] = u[i] + dt * (out_u_1[i] + 1.0); // Dummy reaction +1
             out_v_1[i] = v[i] + dt * (out_v_1[i] + 2.0); // Dummy reaction +2
@@ -533,7 +608,8 @@ mod tests_2d {
                 out_u_2[i] = u_curr + dt * (diff_u + reac_u);
                 out_v_2[i] = v_curr + dt * (diff_v + reac_v);
             },
-        );
+        )
+        .unwrap();
 
         for i in 0..n {
             assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
@@ -561,7 +637,7 @@ mod tests_2d {
 
         // Apply diffusion
         let coeffs = [0.1, 0.2];
-        DiffusionModel::apply(&diff, &state, &mut out, &coeffs);
+        DiffusionModel::apply(&diff, &state, &mut out, &coeffs).unwrap();
 
         // Check center point diffusion
         // Laplacian at center: (0+0+0+0 - 4*1) = -4

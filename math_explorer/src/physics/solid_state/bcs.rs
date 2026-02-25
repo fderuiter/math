@@ -228,6 +228,7 @@ pub fn coherence_factors_strong(xi_k: ElectronVolts, delta: ElectronVolts) -> (f
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
 

@@ -27,6 +27,7 @@ pub fn point_kernel(radius: f64, amplitude: f64, beta: f64) -> Result<f64, Strin
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
 

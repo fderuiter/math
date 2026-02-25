@@ -173,10 +173,10 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> Turin
     }
 
     /// Updates the grid using the solver strategy.
-    pub fn step(&mut self, dt: f64) {
+    pub fn step(&mut self, dt: f64) -> Result<(), solvers::MorphogenesisError> {
         let n = self.state.len();
         if n == 0 {
-            return;
+            return Ok(());
         }
 
         // Ensure buffers are the right size
@@ -193,10 +193,11 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> Turin
             self.d_u,
             self.d_v,
             dt,
-        );
+        )?;
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
+        Ok(())
     }
 }
 
@@ -229,11 +230,13 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> OdeSy
         let out_v = &mut out.v;
 
         // 1. Compute Diffusion
-        self.diffusion.apply(
-            [u.as_slice(), v.as_slice()],
-            [out_u.as_mut_slice(), out_v.as_mut_slice()],
-            [self.d_u, self.d_v],
-        );
+        self.diffusion
+            .apply(
+                [u.as_slice(), v.as_slice()],
+                [out_u.as_mut_slice(), out_v.as_mut_slice()],
+                [self.d_u, self.d_v],
+            )
+            .expect("SpatialDiffusion::apply failed in derivative_in_place");
 
         // 2. Compute Reaction and Accumulate
         // SAFETY:
@@ -269,7 +272,7 @@ impl<K: ReactionKinetics, D: SpatialDiffusion<2>, S: TuringSolverStrategy> TimeS
 
     fn step(&mut self, dt: f64) {
         // Delegate to the optimized inherent method
-        self.step(dt);
+        self.step(dt).expect("TuringSystem::step failed");
     }
 }
 
@@ -310,7 +313,7 @@ mod tests {
         // Run for a few steps
         let dt = 0.01;
         for _ in 0..5 {
-            system.step(dt);
+            system.step(dt).unwrap();
         }
 
         // Capture output

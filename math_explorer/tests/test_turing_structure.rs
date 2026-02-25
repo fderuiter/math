@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use math_explorer::biology::morphogenesis::{TuringState, TuringSystem};
-    use math_explorer::pure_math::analysis::ode::{RungeKutta4, Solver, TimeStepper};
+    use math_explorer::biology::morphogenesis::TuringSystem;
+    use math_explorer::pure_math::analysis::ode::{RungeKutta4, TimeStepper};
 
     #[test]
     fn test_turing_system_generic_step() {

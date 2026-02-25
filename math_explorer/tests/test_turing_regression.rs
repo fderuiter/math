@@ -33,7 +33,7 @@ fn test_turing_regression() {
     }
 
     for _ in 0..iterations {
-        system.step(0.01);
+        system.step(0.01).unwrap();
     }
 
     // Verify exactness
@@ -57,7 +57,7 @@ fn test_custom_kinetics_strategy() {
 
     // Run simulation
     for _ in 0..iterations {
-        system.step(0.1);
+        system.step(0.1).unwrap();
     }
 
     // Check that values changed (diffusion + reaction happened)

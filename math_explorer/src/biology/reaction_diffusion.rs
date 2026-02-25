@@ -7,6 +7,19 @@
 use crate::pure_math::analysis::ode::solvers::Euler;
 use crate::pure_math::analysis::ode::traits::{OdeSystem, Solver, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
+use thiserror::Error;
+
+/// Errors that can occur during diffusion.
+#[derive(Debug, Clone, PartialEq, Error)]
+pub enum DiffusionError {
+    #[error("Grid size mismatch: state {state_grid} != model {model_grid}")]
+    GridSizeMismatch {
+        state_grid: usize,
+        model_grid: usize,
+    },
+    #[error("Species count mismatch: expected {expected}, got {actual}")]
+    SpeciesCountMismatch { expected: usize, actual: usize },
+}
 
 /// Represents the state of a multi-species chemical system.
 ///
@@ -207,7 +220,12 @@ pub trait DiffusionModel {
     /// * `state`: Current chemical state.
     /// * `out`: Output buffer for the diffusion term (D * Laplacian).
     /// * `coeffs`: Diffusion coefficients for each species.
-    fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
+    fn apply(
+        &self,
+        state: &ChemicalState,
+        out: &mut ChemicalState,
+        coeffs: &[f64],
+    ) -> Result<(), DiffusionError>;
 }
 
 /// Defines a strategy for time integration of the Reaction-Diffusion system.
@@ -265,7 +283,10 @@ impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
 
     fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
         // Compute Diffusion
-        self.diffusion.apply(state, out, &self.diffusion_coeffs);
+        // Panic if diffusion fails (violates OdeSystem contract)
+        self.diffusion
+            .apply(state, out, &self.diffusion_coeffs)
+            .expect("Diffusion application failed: dimensions must match");
 
         // Add Reaction
         // Optimized: Use batch processing to allow vectorization and avoid gather/scatter

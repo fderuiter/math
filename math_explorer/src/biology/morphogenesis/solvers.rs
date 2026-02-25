@@ -1,6 +1,16 @@
 use super::reaction::ReactionKinetics;
 use super::state::TuringState;
-use crate::biology::diffusion::SpatialDiffusion;
+use crate::biology::diffusion::{SpatialDiffusion, SpatialDiffusionError};
+use thiserror::Error;
+
+/// Errors that can occur during time-stepping.
+#[derive(Debug, Clone, PartialEq, Error)]
+pub enum MorphogenesisError {
+    #[error("Spatial diffusion error: {0}")]
+    DiffusionError(#[from] SpatialDiffusionError),
+    #[error("State size mismatch: expected {expected}, got {actual}")]
+    StateSizeMismatch { expected: usize, actual: usize },
+}
 
 /// Strategy for time-stepping the Turing System.
 ///
@@ -26,7 +36,7 @@ pub trait TuringSolverStrategy {
         d_u: f64,
         d_v: f64,
         dt: f64,
-    );
+    ) -> Result<(), MorphogenesisError>;
 }
 
 /// A fused Euler integration solver.
@@ -53,15 +63,18 @@ impl TuringSolverStrategy for FusedEulerSolver {
         d_u: f64,
         d_v: f64,
         dt: f64,
-    ) {
+    ) -> Result<(), MorphogenesisError> {
         let n = state.len();
         if n == 0 {
-            return;
+            return Ok(());
         }
 
         // Ensure buffers are the right size (safety check, though caller should handle)
         if next_state.len() != n {
-            return;
+            return Err(MorphogenesisError::StateSizeMismatch {
+                expected: n,
+                actual: next_state.len(),
+            });
         }
 
         let u = &state.u;
@@ -90,6 +103,7 @@ impl TuringSolverStrategy for FusedEulerSolver {
                     next_v[i] = v_curr + dt * (diff_v + reac_v);
                 }
             },
-        );
+        )?;
+        Ok(())
     }
 }
