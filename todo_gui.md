@@ -82,7 +82,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 3.1 Deep Learning Theory
 *   **Module:** `ai::deep_learning_theory`
 *   **Features:**
-    *   [ ] **Loss Landscape:** 3D surface plot of loss functions.
+    *   [x] **Loss Landscape:** 3D surface plot of loss functions.
     *   [ ] **Training Monitor:** Real-time curves for training/validation loss and accuracy.
     *   [ ] **Activation Functions:** Interactive plotter for ReLU, Sigmoid, Tanh, GELU, etc.
 

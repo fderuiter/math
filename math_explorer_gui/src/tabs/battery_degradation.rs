@@ -43,7 +43,10 @@ impl ExplorerTab for BatteryDegradationTab {
             ui.add_enabled_ui(false, |ui| {
                 ui.add(egui::Slider::new(&mut self.temperature, -20.0..=60.0).text("°C"));
             })
-            .response.on_disabled_hover_text("Temperature dependency is not yet implemented in the core model.");
+            .response
+            .on_disabled_hover_text(
+                "Temperature dependency is not yet implemented in the core model.",
+            );
 
             ui.add_space(10.0);
 
@@ -78,9 +81,17 @@ impl ExplorerTab for BatteryDegradationTab {
                 .show(ui, |plot_ui| {
                     plot_ui.line(line);
                     // Add a horizontal line at 70% (End of Life)
-                    plot_ui.hline(HLine::new("End of Life (70%)", 0.7).color(egui::Color32::RED).style(egui_plot::LineStyle::Dashed { length: 10.0 }));
+                    plot_ui.hline(
+                        HLine::new("End of Life (70%)", 0.7)
+                            .color(egui::Color32::RED)
+                            .style(egui_plot::LineStyle::Dashed { length: 10.0 }),
+                    );
                     // Add a horizontal line at 80% (First Life)
-                    plot_ui.hline(HLine::new("First Life (80%)", 0.8).color(egui::Color32::YELLOW).style(egui_plot::LineStyle::Dashed { length: 10.0 }));
+                    plot_ui.hline(
+                        HLine::new("First Life (80%)", 0.8)
+                            .color(egui::Color32::YELLOW)
+                            .style(egui_plot::LineStyle::Dashed { length: 10.0 }),
+                    );
                 });
 
             ui.add_space(10.0);
