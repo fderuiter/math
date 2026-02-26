@@ -12,18 +12,13 @@ pub trait TuringSolverStrategy<const N: usize = 2> {
     /// # Arguments
     /// * `state` - Current system state.
     /// * `next_state` - Buffer for the next system state.
-    /// * `kinetics` - Reaction kinetics model.
-    /// * `diffusion` - Spatial diffusion model.
-    /// * `diffusion_coeffs` - Diffusion coefficients for each species.
+    /// * `dynamics` - The physics model (kinetics + diffusion + coefficients).
     /// * `dt` - Time step size.
-    #[allow(clippy::too_many_arguments)]
     fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
         state: &TuringState<N>,
         next_state: &mut TuringState<N>,
-        kinetics: &K,
-        diffusion: &D,
-        diffusion_coeffs: [f64; N],
+        dynamics: &TuringDynamics<N, K, D>,
         dt: f64,
     );
 }
@@ -125,7 +120,7 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
 /// Manually stepping a system:
 ///
 /// ```rust
-/// use math_explorer::biology::morphogenesis::{FusedEulerSolver, TuringSolverStrategy, TuringState, SchnakenbergKinetics};
+/// use math_explorer::biology::morphogenesis::{FusedEulerSolver, TuringSolverStrategy, TuringState, SchnakenbergKinetics, TuringDynamics};
 /// use math_explorer::biology::diffusion::FiniteDifference1D;
 ///
 /// // 1. Setup System Components
@@ -135,10 +130,15 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
 /// let mut next_state = TuringState::new(n);
 /// let kinetics = SchnakenbergKinetics::default();
 /// let diffusion = FiniteDifference1D::new(1.0);
+/// let dynamics = TuringDynamics {
+///    kinetics: &kinetics,
+///    diffusion: &diffusion,
+///    diffusion_coeffs: [1.0, 40.0],
+/// };
 ///
 /// // 2. Perform a single time step
-/// // D_u = 1.0, D_v = 40.0, dt = 0.01
-/// solver.step(&state, &mut next_state, &kinetics, &diffusion, [1.0, 40.0], 0.01);
+/// // dt = 0.01
+/// solver.step(&state, &mut next_state, &dynamics, 0.01);
 /// ```
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FusedEulerSolver;
@@ -158,9 +158,7 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
         &mut self,
         state: &TuringState<N>,
         next_state: &mut TuringState<N>,
-        kinetics: &K,
-        diffusion: &D,
-        diffusion_coeffs: [f64; N],
+        dynamics: &TuringDynamics<N, K, D>,
         dt: f64,
     ) {
         let n = state.len();
@@ -181,21 +179,25 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
             .map(|v| v.as_mut_slice())
             .collect();
 
-        diffusion.map_diffusion(concentrations_slices, diffusion_coeffs, |i, vals, diffs| {
-            let rates = kinetics.reaction(vals);
+        dynamics.diffusion.map_diffusion(
+            concentrations_slices,
+            dynamics.diffusion_coeffs,
+            |i, vals, diffs| {
+                let rates = dynamics.kinetics.reaction(vals);
 
-            for s in 0..N {
-                let curr = vals[s];
-                let diff = diffs[s];
-                let reac = rates[s];
+                for s in 0..N {
+                    let curr = vals[s];
+                    let diff = diffs[s];
+                    let reac = rates[s];
 
-                if let Some(slice) = next_slices.get_mut(s)
-                    && i < slice.len()
-                {
-                    slice[i] = curr + dt * (diff + reac);
+                    if let Some(slice) = next_slices.get_mut(s)
+                        && i < slice.len()
+                    {
+                        slice[i] = curr + dt * (diff + reac);
+                    }
                 }
-            }
-        });
+            },
+        );
     }
 }
 
@@ -219,18 +221,10 @@ impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N>
         &mut self,
         state: &TuringState<N>,
         next_state: &mut TuringState<N>,
-        kinetics: &K,
-        diffusion: &D,
-        diffusion_coeffs: [f64; N],
+        dynamics: &TuringDynamics<N, K, D>,
         dt: f64,
     ) {
-        let dynamics = TuringDynamics {
-            kinetics,
-            diffusion,
-            diffusion_coeffs,
-        };
-
         next_state.copy_from(state);
-        self.solver.step(&dynamics, 0.0, next_state, dt);
+        self.solver.step(dynamics, 0.0, next_state, dt);
     }
 }
