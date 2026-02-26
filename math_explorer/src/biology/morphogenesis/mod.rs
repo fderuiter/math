@@ -165,13 +165,17 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
             self.next_state = TuringState::new(n);
         }
 
+        let dynamics = TuringDynamics {
+            kinetics: &self.kinetics,
+            diffusion: &self.diffusion,
+            diffusion_coeffs: self.diffusion_coeffs,
+        };
+
         // Delegate time-stepping to the strategy
         self.solver.step(
             &self.state,
             &mut self.next_state,
-            &self.kinetics,
-            &self.diffusion,
-            self.diffusion_coeffs,
+            &dynamics,
             dt,
         );
 
