@@ -172,12 +172,8 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
         };
 
         // Delegate time-stepping to the strategy
-        self.solver.step(
-            &self.state,
-            &mut self.next_state,
-            &dynamics,
-            dt,
-        );
+        self.solver
+            .step(&self.state, &mut self.next_state, &dynamics, dt);
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
