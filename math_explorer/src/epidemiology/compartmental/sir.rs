@@ -1,7 +1,7 @@
 use super::common::{validate_initial_infected, validate_population, validate_rate};
 use crate::epidemiology::error::EpidemiologyError;
 use crate::impl_compartmental_ops;
-use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, TimeStepper};
+use crate::pure_math::analysis::ode::{OdeModel, OdeSystem, RungeKutta4};
 
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -50,30 +50,7 @@ impl OdeSystem<SIRState> for SIRDynamics {
 /// $$dR/dt = \gamma I$$
 ///
 /// Use `SIRModel::builder()` or `SIRModel::new()` to construct.
-#[derive(Debug, Clone)]
-pub struct SIRModel<S: Solver<SIRState> = RungeKutta4<SIRState>> {
-    state: SIRState,
-    /// The underlying dynamics model (parameters + equations).
-    pub dynamics: SIRDynamics,
-    /// The numerical solver strategy.
-    solver: S,
-}
-
-impl<S: Solver<SIRState>> TimeStepper<SIRState> for SIRModel<S> {
-    fn get_state(&self) -> &SIRState {
-        &self.state
-    }
-
-    fn get_state_mut(&mut self) -> &mut SIRState {
-        &mut self.state
-    }
-
-    fn step(&mut self, dt: f64) {
-        // Delegate stepping to the injected solver strategy.
-        // pass &self.dynamics to avoid partial borrow of self.
-        self.solver.step(&self.dynamics, 0.0, &mut self.state, dt);
-    }
-}
+pub type SIRModel<S = RungeKutta4<SIRState>> = OdeModel<SIRState, SIRDynamics, S>;
 
 /// Builder for SIRModel to ensure valid parameter configuration.
 #[derive(Debug, Default, Clone)]
@@ -135,87 +112,33 @@ impl SIRModelBuilder {
             r: 0.0,
         };
 
-        Ok(SIRModel {
+        Ok(SIRModel::from_parts(
             state,
-            dynamics: SIRDynamics { n, beta, gamma },
-            solver: RungeKutta4::new(&state),
-        })
+            SIRDynamics { n, beta, gamma },
+            RungeKutta4::new(&state),
+        ))
     }
 }
 
-impl SIRModel<RungeKutta4<SIRState>> {
+impl SIRModelBuilder {
     /// Returns a new builder for the SIRModel.
-    pub fn builder() -> SIRModelBuilder {
-        SIRModelBuilder::default()
-    }
-
-    /// Constructs a new SIRModel with the given parameters using RungeKutta4.
-    pub fn new(
-        n: f64,
-        i0: f64,
-        beta: f64,
-        gamma: f64,
-    ) -> Result<SIRModel<RungeKutta4<SIRState>>, EpidemiologyError> {
-        Self::builder().n(n).i0(i0).beta(beta).gamma(gamma).build()
+    /// (This is redundant but kept for discoverability if needed, or simply rely on default)
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 
-impl<S: Solver<SIRState>> SIRModel<S> {
-    /// Advances the state by dt using the configured solver.
-    pub fn step(&mut self, dt: f64) {
-        <Self as TimeStepper<SIRState>>::step(self, dt);
-    }
-
-    /// Advances the state by dt using a provided solver strategy (temporarily ignoring the internal solver).
-    pub fn step_with<OtherS: Solver<SIRState>>(&mut self, solver: &mut OtherS, dt: f64) {
-        <Self as TimeStepper<SIRState>>::step_with(self, solver, dt);
-    }
-
-    /// Replaces the current solver with a new one.
-    pub fn with_solver<NewS: Solver<SIRState>>(self, new_solver: NewS) -> SIRModel<NewS> {
-        SIRModel {
-            state: self.state,
-            dynamics: self.dynamics,
-            solver: new_solver,
-        }
-    }
-
-    /// Returns the transmission rate beta.
-    pub fn beta(&self) -> f64 {
-        self.dynamics.beta
-    }
-
-    /// Returns the recovery rate gamma.
-    pub fn gamma(&self) -> f64 {
-        self.dynamics.gamma
-    }
-
-    /// Returns the total population size N.
-    pub fn n(&self) -> f64 {
-        self.dynamics.n
-    }
-
-    /// Returns the current state.
-    pub fn state(&self) -> &SIRState {
-        &self.state
-    }
-}
-
-impl<S: Solver<SIRState>> OdeSystem<SIRState> for SIRModel<S> {
-    fn derivative(&self, t: f64, state: &SIRState) -> SIRState {
-        // Delegate to the pure dynamics component
-        self.dynamics.derivative(t, state)
-    }
-}
+// Removed impl SIRModel block as inherent impls on type aliases are not allowed.
+// Users should use SIRModelBuilder and access dynamics directly.
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pure_math::analysis::ode::{Euler, RungeKutta4};
+    use crate::pure_math::analysis::ode::{Euler, RungeKutta4, Solver, TimeStepper};
 
     #[test]
     fn test_builder() {
-        let model = SIRModel::builder()
+        let model = SIRModelBuilder::default()
             .n(1000.0)
             .i0(10.0)
             .beta(0.5)
@@ -223,13 +146,13 @@ mod tests {
             .build();
         assert!(model.is_ok());
         let model = model.unwrap();
-        assert_eq!(model.n(), 1000.0);
-        assert_eq!(model.beta(), 0.5);
+        assert_eq!(model.dynamics.n, 1000.0); // Use dynamics.n
+        assert_eq!(model.dynamics.beta, 0.5); // Use dynamics.beta
     }
 
     #[test]
     fn test_builder_missing_param() {
-        let model = SIRModel::builder().n(1000.0).build();
+        let model = SIRModelBuilder::default().n(1000.0).build();
         assert!(matches!(
             model,
             Err(EpidemiologyError::MissingParameter { .. })
@@ -241,13 +164,19 @@ mod tests {
         let n = 1000.0;
         let i0 = 10.0;
         // R0 = beta / gamma = 0.5 / 1.0 = 0.5 < 1
-        let mut model = SIRModel::new(n, i0, 0.5, 1.0).unwrap();
+        let mut model = SIRModelBuilder::default()
+            .n(n)
+            .i0(i0)
+            .beta(0.5)
+            .gamma(1.0)
+            .build()
+            .unwrap();
 
-        let initial_i = model.state().i;
-        model.step(0.1);
+        let initial_i = model.state.i; // Use direct field access
+        model.step(0.1); // Uses TimeStepper trait
 
         assert!(
-            model.state().i < initial_i,
+            model.state.i < initial_i,
             "Infected should decrease when R0 < 1"
         );
     }
@@ -256,19 +185,31 @@ mod tests {
     fn test_sir_step_with_rk4() {
         let n = 1000.0;
         let i0 = 10.0;
-        let mut model_std = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
-        let mut model_with = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
+        let mut model_std = SIRModelBuilder::default()
+            .n(n)
+            .i0(i0)
+            .beta(0.5)
+            .gamma(0.1)
+            .build()
+            .unwrap();
+        let mut model_with = SIRModelBuilder::default()
+            .n(n)
+            .i0(i0)
+            .beta(0.5)
+            .gamma(0.1)
+            .build()
+            .unwrap();
 
         let dt = 0.1;
         model_std.step(dt);
-        let state = *model_with.state();
+        let state = model_with.state; // Copy state
 
         // Use external solver
         model_with.step_with(&mut RungeKutta4::new(&state), dt);
 
         assert_eq!(
-            model_std.state(),
-            model_with.state(),
+            model_std.state,
+            model_with.state,
             "step and step_with(RK4) should yield identical results"
         );
     }
@@ -277,14 +218,20 @@ mod tests {
     fn test_sir_step_with_euler() {
         let n = 1000.0;
         let i0 = 10.0;
-        let mut model = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
+        let mut model = SIRModelBuilder::default()
+            .n(n)
+            .i0(i0)
+            .beta(0.5)
+            .gamma(0.1)
+            .build()
+            .unwrap();
 
         // Euler is less accurate but should still run without panic
-        let state = *model.state();
+        let state = model.state;
         model.step_with(&mut Euler::new(&state), 0.1);
 
-        assert!(model.state().s <= n);
-        assert!(model.state().i >= 0.0);
+        assert!(model.state.s <= n);
+        assert!(model.state.i >= 0.0);
     }
 
     #[test]
@@ -327,15 +274,21 @@ mod tests {
     fn test_swapping_solver() {
         let n = 1000.0;
         let i0 = 10.0;
-        let model = SIRModel::new(n, i0, 0.5, 0.1).unwrap();
+        let model = SIRModelBuilder::default()
+            .n(n)
+            .i0(i0)
+            .beta(0.5)
+            .gamma(0.1)
+            .build()
+            .unwrap();
 
         // Swap from RK4 (default) to Euler
-        let state = *model.state();
+        let state = model.state;
         let mut model_euler = model.with_solver(Euler::new(&state));
 
         model_euler.step(0.1);
 
         // Just check it ran
-        assert!(model_euler.state().s <= n);
+        assert!(model_euler.state.s <= n);
     }
 }

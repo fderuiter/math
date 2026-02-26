@@ -9,7 +9,8 @@
 //! ##  Quick Start: Simulating an Outbreak
 //!
 //! ```rust
-//! use math_explorer::epidemiology::{SIRModel, SIRState};
+//! use math_explorer::epidemiology::{SIRModel, SIRModelBuilder, SIRState};
+//! use math_explorer::pure_math::analysis::ode::TimeStepper;
 //!
 //! // 1. Initialize the model
 //! // Population: 1000, Initial Infected: 10
@@ -18,7 +19,13 @@
 //! let i0 = 10.0;
 //! let beta = 0.5;
 //! let gamma = 0.1;
-//! let mut model = SIRModel::new(n, i0, beta, gamma).expect("Valid parameters");
+//! let mut model = SIRModelBuilder::default()
+//!     .n(n)
+//!     .i0(i0)
+//!     .beta(beta)
+//!     .gamma(gamma)
+//!     .build()
+//!     .expect("Valid parameters");
 //!
 //! // 2. Run the simulation
 //! let dt = 0.1;
@@ -26,8 +33,8 @@
 //!
 //! for _ in 0..1000 {
 //!     model.step(dt);
-//!     if model.state().i > peak_infected {
-//!         peak_infected = model.state().i;
+//!     if model.state.i > peak_infected {
+//!         peak_infected = model.state.i;
 //!     }
 //! }
 //!
@@ -75,4 +82,4 @@ pub mod stochastic;
 
 pub use error::EpidemiologyError;
 // Re-exports for easier access
-pub use compartmental::{SEIRModel, SEIRState, SIRModel, SIRState};
+pub use compartmental::{SEIRModel, SEIRModelBuilder, SEIRState, SIRModel, SIRModelBuilder, SIRState};

@@ -8,11 +8,12 @@ impl<S: Solver<SIRState>> StochasticSystem<SIRState> for SIRModel<S> {
     fn propensities(&self, state: &SIRState, out: &mut Vec<f64>) {
         // Reaction 0: Infection (S + I -> 2I)
         // Rate: beta * S * I / N
-        let infection_rate = self.beta() * state.s * state.i / self.n();
+        // Access parameters via self.dynamics
+        let infection_rate = self.dynamics.beta * state.s * state.i / self.dynamics.n;
 
         // Reaction 1: Recovery (I -> R)
         // Rate: gamma * I
-        let recovery_rate = self.gamma() * state.i;
+        let recovery_rate = self.dynamics.gamma * state.i;
 
         out.push(infection_rate);
         out.push(recovery_rate);
@@ -51,6 +52,7 @@ pub fn probability_of_extinction(r0: f64, initial_cases: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::epidemiology::compartmental::SIRModelBuilder;
     use rand::SeedableRng;
     use rand::rngs::StdRng;
     use std::error::Error;
@@ -76,9 +78,14 @@ mod tests {
         let n = 100.0;
         let i0 = 10.0;
         // High beta, low gamma -> likely infection
-        let model = SIRModel::new(n, i0, 2.0, 0.1)?;
+        let model = SIRModelBuilder::default()
+            .n(n)
+            .i0(i0)
+            .beta(2.0)
+            .gamma(0.1)
+            .build()?;
 
-        let mut state = *model.state(); // Working copy of state
+        let mut state = model.state; // Working copy of state
         let initial_s = state.s;
         let initial_i = state.i;
 
