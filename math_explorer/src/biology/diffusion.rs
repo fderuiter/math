@@ -2,6 +2,14 @@
 //!
 //! This module provides strategies for computing the spatial diffusion term $D \nabla^2 u$
 //! in reaction-diffusion systems.
+//!
+//! ## Performance Optimization
+//!
+//! Implementations like `FiniteDifference2D` use **Loop Splitting** to separate the "hot path" (interior points)
+//! from boundary handling. This allows the compiler to:
+//! 1. Vectorize the interior loop without conditional checks.
+//! 2. Unroll loops for better instruction pipelining.
+//! 3. Use `unsafe` indexing (with rigorous safety proofs) to eliminate bounds checks.
 
 /// Defines a strategy for computing spatial diffusion.
 pub trait SpatialDiffusion<const N: usize> {
@@ -247,6 +255,22 @@ where
 ///
 /// This struct computes the discrete Laplacian operator $\nabla^2 u$ on a 2D rectangular grid.
 /// It uses a standard 5-point stencil (center, left, right, up, down).
+///
+/// # The Stencil
+///
+/// The Laplacian is approximated using values from the center cell and its four immediate neighbors:
+///
+/// ```mermaid
+/// graph TD
+///     Up[u_{i, j+1}] --> Center[u_{i, j}]
+///     Down[u_{i, j-1}] --> Center
+///     Left[u_{i-1, j}] --> Center
+///     Right[u_{i+1, j}] --> Center
+///
+///     style Center fill:#f9f,stroke:#333,stroke-width:2px
+/// ```
+///
+/// $$ \nabla^2 u \approx \frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{\Delta x^2} + \frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{\Delta y^2} $$
 ///
 /// # Boundary Conditions
 ///
