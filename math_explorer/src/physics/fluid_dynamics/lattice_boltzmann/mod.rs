@@ -363,7 +363,6 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         }
     }
 
-
     /// Enforce specific boundary conditions (like driving velocity).
     fn boundary_conditions(&mut self) {
         // ... (Existing code is commented out, preserving it as is)
