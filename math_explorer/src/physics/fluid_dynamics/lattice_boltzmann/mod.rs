@@ -185,8 +185,62 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         self.stream();
         self.state.swap_buffers();
         self.boundary_conditions(); // Apply macroscopic BCs if any
-        self.macroscopic();
-        self.collision();
+        self.macroscopic_and_collision();
+    }
+
+    /// Fused Macroscopic + Collision step.
+    ///
+    /// # Performance
+    /// This optimization fuses the macroscopic moment calculation and the collision step
+    /// into a single loop. This reduces memory bandwidth pressure by:
+    /// 1. Reading `f` only once (instead of twice).
+    /// 2. Keeping `rho`, `ux`, `uy` in CPU registers for the collision step, avoiding
+    ///    store-then-load latency for these variables.
+    fn macroscopic_and_collision(&mut self) {
+        let cx = L::directions_x();
+        let cy = L::directions_y();
+
+        let collision_model = &self.collision_model;
+
+        // Use zipping for iteration to enable better vectorization and eliminate bounds checks
+        self.state
+            .f
+            .iter_mut()
+            .zip(self.state.rho.iter_mut())
+            .zip(self.state.ux.iter_mut())
+            .zip(self.state.uy.iter_mut())
+            .zip(self.state.obstacles.iter())
+            .for_each(|((((f_cell, rho), ux), uy), is_obs)| {
+                if *is_obs {
+                    *ux = 0.0;
+                    *uy = 0.0;
+                    return;
+                }
+
+                let mut local_rho = 0.0;
+                let mut local_jx = 0.0;
+                let mut local_jy = 0.0;
+
+                for k in 0..Q {
+                    let val = f_cell[k];
+                    local_rho += val;
+                    local_jx += val * cx[k] as f64;
+                    local_jy += val * cy[k] as f64;
+                }
+
+                *rho = local_rho;
+
+                let (local_ux, local_uy) = if local_rho > 0.0 {
+                    (local_jx / local_rho, local_jy / local_rho)
+                } else {
+                    (0.0, 0.0)
+                };
+
+                *ux = local_ux;
+                *uy = local_uy;
+
+                collision_model.apply(f_cell, local_rho, local_ux, local_uy);
+            });
     }
 
     /// Streaming step: Move particles to neighboring cells.
@@ -197,6 +251,13 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
 
         let width = self.state.width;
         let height = self.state.height;
+
+        // Precompute offsets to avoid multiplication in the inner loop.
+        // offset[k] = -(dx[k] + dy[k] * width)
+        let mut offsets = [0isize; Q];
+        for k in 0..Q {
+            offsets[k] = -((cx[k] as isize) + (cy[k] as isize) * (width as isize));
+        }
 
         // 1. Interior (Hot Path) - Loop Splitting & Unsafe optimizations
         // Avoid bounds checks for x, y, and array access in the bulk of the simulation.
@@ -213,14 +274,11 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                     }
 
                     for k in 0..Q {
-                        let dx = cx[k];
-                        let dy = cy[k];
-
-                        // Prev coordinates are guaranteed valid because dx, dy are in {-1, 0, 1}
-                        // and we are at least 1 unit from border.
-                        let prev_x = (x as i32) - dx;
-                        let prev_y = (y as i32) - dy;
-                        let prev_idx = (prev_y as usize) * width + (prev_x as usize);
+                        // Calculate prev_idx using precomputed offset.
+                        // Since we are in the interior (y >= 1, x >= 1), idx is at least width + 1.
+                        // The max negative offset is -(1 + width).
+                        // So idx + offset >= 0.
+                        let prev_idx = (idx as isize + offsets[k]) as usize;
 
                         // SAFETY: prev_idx is valid. k and opp[k] are < Q.
                         unsafe {
@@ -305,50 +363,6 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         }
     }
 
-    /// Updates macroscopic variables (rho, u) from distribution functions.
-    fn macroscopic(&mut self) {
-        let cx = L::directions_x();
-        let cy = L::directions_y();
-
-        for i in 0..self.state.width * self.state.height {
-            if self.state.obstacles[i] {
-                self.state.ux[i] = 0.0;
-                self.state.uy[i] = 0.0;
-                continue;
-            }
-
-            let mut rho = 0.0;
-            let mut jx = 0.0;
-            let mut jy = 0.0;
-
-            for k in 0..Q {
-                rho += self.state.f[i][k];
-                jx += self.state.f[i][k] * cx[k] as f64;
-                jy += self.state.f[i][k] * cy[k] as f64;
-            }
-
-            self.state.rho[i] = rho;
-            if rho > 0.0 {
-                self.state.ux[i] = jx / rho;
-                self.state.uy[i] = jy / rho;
-            }
-        }
-    }
-
-    /// Collision step: Delegates to strategy.
-    fn collision(&mut self) {
-        for i in 0..self.state.width * self.state.height {
-            if self.state.obstacles[i] {
-                continue;
-            }
-            self.collision_model.apply(
-                &mut self.state.f[i],
-                self.state.rho[i],
-                self.state.ux[i],
-                self.state.uy[i],
-            );
-        }
-    }
 
     /// Enforce specific boundary conditions (like driving velocity).
     fn boundary_conditions(&mut self) {
