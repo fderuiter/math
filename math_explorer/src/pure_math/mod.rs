@@ -47,6 +47,7 @@ pub mod elliptic_curves;
 pub mod graph_theory;
 pub mod logic;
 pub mod number_theory;
+pub mod optimization;
 pub mod special_functions;
 pub mod statistics;
 pub mod tensor;
