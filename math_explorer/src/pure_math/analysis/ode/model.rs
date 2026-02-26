@@ -1,5 +1,5 @@
-use super::traits::{OdeSystem, Solver, VectorOperations};
 use super::stepper::TimeStepper;
+use super::traits::{OdeSystem, Solver, VectorOperations};
 
 /// A generic struct representing an ODE-based model.
 ///

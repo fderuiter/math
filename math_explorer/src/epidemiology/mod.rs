@@ -82,4 +82,6 @@ pub mod stochastic;
 
 pub use error::EpidemiologyError;
 // Re-exports for easier access
-pub use compartmental::{SEIRModel, SEIRModelBuilder, SEIRState, SIRModel, SIRModelBuilder, SIRState};
+pub use compartmental::{
+    SEIRModel, SEIRModelBuilder, SEIRState, SIRModel, SIRModelBuilder, SIRState,
+};

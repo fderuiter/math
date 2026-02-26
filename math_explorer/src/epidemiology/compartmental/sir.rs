@@ -208,8 +208,7 @@ mod tests {
         model_with.step_with(&mut RungeKutta4::new(&state), dt);
 
         assert_eq!(
-            model_std.state,
-            model_with.state,
+            model_std.state, model_with.state,
             "step and step_with(RK4) should yield identical results"
         );
     }
