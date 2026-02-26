@@ -1,4 +1,5 @@
 use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
+use math_explorer::ai::deep_learning_theory::model::TwoLayerMLP;
 use math_explorer::ai::optimization::SGD;
 use nalgebra::DVector;
 
@@ -14,7 +15,7 @@ fn test_deep_learning_cycle() {
     let y_true = DVector::from_vec(vec![1.0, 0.0]);
 
     // Initial prediction should be close to uniform or random
-    let initial_pred = network.predict(&x);
+    let _initial_pred = network.predict(&x);
     let initial_loss = network.train_step(&x, &y_true);
 
     // Train for a few steps
@@ -34,6 +35,29 @@ fn test_deep_learning_cycle() {
         "Did not learn to predict class 0"
     );
     assert!(final_pred[0] > 0.8, "Prediction confidence too low");
+}
+
+#[test]
+fn test_explicit_model_construction() {
+    // Explicitly construct TwoLayerMLP and inject it
+    let model = TwoLayerMLP::new(2, 4, 2);
+    let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1)));
+
+    let x = DVector::from_vec(vec![1.0, 0.0]);
+    let pred = network.predict(&x);
+    assert_eq!(pred.len(), 2);
+}
+
+#[test]
+fn test_backward_compatibility_layer_access() {
+    // Verify we can still access layer1/layer2 like before (via Deref)
+    let network = TrainingLoop::new(2, 4, 2, Box::new(SGD::new(0.1)));
+
+    // This access works because of Deref<Target=TwoLayerMLP>
+    let _w1 = &network.layer1.weights;
+    let _b2 = &network.layer2.bias;
+
+    assert_eq!(network.layer1.weights.ncols(), 2);
 }
 
 #[test]
