@@ -2,6 +2,7 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod loss_landscape;
+pub mod training_monitor;
 
 /// A trait for sub-tools within the AI tab.
 pub trait AiTool {
@@ -20,7 +21,10 @@ pub struct AiTab {
 impl Default for AiTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(loss_landscape::LossLandscapeTool::default())],
+            tools: vec![
+                Box::new(loss_landscape::LossLandscapeTool::default()),
+                Box::new(training_monitor::TrainingMonitorTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
