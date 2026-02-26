@@ -11,7 +11,10 @@ fn test_security_lbm_invariant_check() {
         solver.step();
     }));
 
-    assert!(result.is_err(), "Should have panicked due to invariant violation");
+    assert!(
+        result.is_err(),
+        "Should have panicked due to invariant violation"
+    );
 
     // Optional: Verify panic message contains "LatticeState invariant violated"
     // (Requires downcasting the Any error, which is a bit verbose, so basic panic check is good enough)
