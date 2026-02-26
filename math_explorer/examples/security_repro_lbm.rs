@@ -1,4 +1,4 @@
-use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{LatticeBoltzmannD2Q9};
+use math_explorer::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
 
 fn main() {
     let mut solver = LatticeBoltzmannD2Q9::new(10, 10, 1.0);
