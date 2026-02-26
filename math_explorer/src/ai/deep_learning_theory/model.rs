@@ -42,8 +42,7 @@ impl Trainable for TwoLayerMLP {
     fn forward(&self, x: &Vector) -> Vector {
         let z1 = self.layer1.forward(x);
         let a1 = relu(&z1);
-        let z2 = self.layer2.forward(&a1);
-        z2
+        self.layer2.forward(&a1)
     }
 
     fn backward_update(
