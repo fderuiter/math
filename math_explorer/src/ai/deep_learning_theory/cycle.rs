@@ -1,6 +1,6 @@
 use super::linear_algebra::Vector;
-use super::probability::softmax;
 use super::model::{Trainable, TwoLayerMLP};
+use super::probability::softmax;
 use crate::ai::optimization::{Optimizer, cross_entropy_softmax_prime};
 use std::ops::{Deref, DerefMut};
 
@@ -78,7 +78,8 @@ impl<M: Trainable> TrainingLoop<M> {
         let loss_grad = cross_entropy_softmax_prime(&z, y_true);
 
         // Delegate specific backprop logic to the model strategy
-        self.model.backward_update(x, &loss_grad, &mut *self.optimizer);
+        self.model
+            .backward_update(x, &loss_grad, &mut *self.optimizer);
 
         loss
     }

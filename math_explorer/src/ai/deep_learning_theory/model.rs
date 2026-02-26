@@ -14,7 +14,12 @@ pub trait Trainable {
     /// * `x` - Input vector.
     /// * `loss_grad` - Gradient of the loss with respect to the output logits (dJ/dz).
     /// * `optimizer` - The optimizer strategy to update parameters.
-    fn backward_update(&mut self, x: &Vector, loss_grad: &Vector, optimizer: &mut dyn Optimizer<f64>);
+    fn backward_update(
+        &mut self,
+        x: &Vector,
+        loss_grad: &Vector,
+        optimizer: &mut dyn Optimizer<f64>,
+    );
 }
 
 /// A standard Two-Layer Multi-Layer Perceptron (MLP).
@@ -41,7 +46,12 @@ impl Trainable for TwoLayerMLP {
         z2
     }
 
-    fn backward_update(&mut self, x: &Vector, loss_grad: &Vector, optimizer: &mut dyn Optimizer<f64>) {
+    fn backward_update(
+        &mut self,
+        x: &Vector,
+        loss_grad: &Vector,
+        optimizer: &mut dyn Optimizer<f64>,
+    ) {
         // --- Forward Re-computation (needed for gradients) ---
         // Ideally, we'd cache these, but re-computing is simpler for this educational example.
         let z1 = self.layer1.forward(x);
