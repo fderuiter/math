@@ -1,5 +1,6 @@
 use eframe::egui;
 
+pub mod ai;
 pub mod battery_degradation;
 pub mod chaos;
 pub mod clinical_trials;
