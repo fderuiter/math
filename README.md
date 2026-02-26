@@ -121,6 +121,43 @@ graph TD
 
 ---
 
+##  Architecture & Patterns
+
+To maintain flexibility and testability across domains, Math Explorer relies heavily on the **Strategy Pattern**. This allows users to swap numerical solvers, diffusion models, or reaction kinetics without changing the core system logic.
+
+```mermaid
+classDiagram
+    class OdeSystem {
+        <<Trait>>
+        +derivative(t, state)
+    }
+
+    class Solver {
+        <<Trait>>
+        +step(system, t, state, dt)
+    }
+
+    class TuringSystem {
+        +kinetics: ReactionKinetics
+        +diffusion: SpatialDiffusion
+        +step()
+    }
+
+    class RungeKutta4 {
+        +step()
+    }
+
+    class FusedEulerSolver {
+        +step()
+    }
+
+    OdeSystem <|-- TuringSystem
+    Solver <|.. RungeKutta4
+    TuringSystem --> Solver : Uses
+    TuringSystem --> ReactionKinetics : Uses
+    TuringSystem --> SpatialDiffusion : Uses
+```
+
 ##  Graphical User Interface
 
 We provide a native GUI application to explore simulations interactively.
@@ -252,6 +289,22 @@ inputs.social.helped_during_crisis = true; // High social utility
 
 let score = calculate_favoritism_score(&inputs);
 println!("Favoritism Score: {}", score); // Higher is better
+```
+
+###  Pure Math: Abstract Algebra
+Construct Finite Fields ($\mathbb{F}_p$) and perform polynomial arithmetic.
+
+```rust
+use math_explorer::pure_math::algebra::{Fp, Polynomial};
+
+// 1. Arithmetic in Finite Field F_7
+let a = Fp::<7>::new(3);
+let b = Fp::<7>::new(5);
+// (3 * 5) % 7 = 15 % 7 = 1
+assert_eq!(a * b, Fp::<7>::new(1));
+
+// 2. Polynomials over F_7: P(x) = 3x^2 + 5
+let p = Polynomial::new(vec![b, Fp::<7>::new(0), a]);
 ```
 
 ###  Pure Math: Tensor Calculus
