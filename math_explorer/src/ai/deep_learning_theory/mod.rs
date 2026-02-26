@@ -88,9 +88,11 @@
 //! *   **[Calculus](calculus)**: Implementation of `relu`, `sigmoid`, and the `linear_backward` pass.
 //! *   **[Linear Algebra](linear_algebra)**: `DenseLayer` struct and matrix operations.
 //! *   **[Probability](probability)**: `softmax` and Maximum Likelihood Estimation concepts.
+//! *   **[Model](model)**: The `Trainable` trait and `TwoLayerMLP` implementation.
 //! *   **[Cycle](cycle)**: The `TrainingLoop` that ties it all together.
 
 pub mod calculus;
 pub mod cycle;
 pub mod linear_algebra;
+pub mod model;
 pub mod probability;
