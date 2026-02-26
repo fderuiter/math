@@ -21,12 +21,12 @@ fn main() {
     }
     let duration = start.elapsed();
 
-    println!(
-        "Time for {} iterations: {:?}",
-        iterations, duration
-    );
+    println!("Time for {} iterations: {:?}", iterations, duration);
     let avg_ns = duration.as_nanos() as f64 / iterations as f64;
     println!("Average per step: {:.2} ns", avg_ns);
     // Simple verification (checksum) to prevent compiler from optimizing away the loop
-    println!("Final density checksum: {:.6}", solver.state.rho.iter().sum::<f64>());
+    println!(
+        "Final density checksum: {:.6}",
+        solver.state.rho.iter().sum::<f64>()
+    );
 }
