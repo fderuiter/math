@@ -119,8 +119,8 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 4.3 Favoritism (Satirical)
 *   **Module:** `applied::favoritism`
 *   **Features:**
-    *   [ ] **Family Leaderboard:** Dynamic ranking of family members based on "favoritism scores".
-    *   [ ] **Input Form:** Sliders for "Gift Value", "Call Frequency", "Compliments".
+    *   [x] **Family Leaderboard:** Dynamic ranking of family members based on "favoritism scores".
+    *   [x] **Input Form:** Sliders for "Gift Value", "Call Frequency", "Compliments".
 
 ### 4.4 Financial Math (Kelly Criterion)
 *   **Module:** `pure_math::statistics::kelly`
