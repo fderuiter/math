@@ -44,6 +44,44 @@
 //!     style V fill:#f9f,stroke:#333,stroke-width:2px
 //! ```
 //!
+//! ## Architecture
+//!
+//! The implementation follows a modular design to separate the neuron state, the physics model, and the kinetics strategy.
+//!
+//! ```mermaid
+//! classDiagram
+//!     class HodgkinHuxleyNeuron {
+//!         +v: f64
+//!         +n: f64
+//!         +m: f64
+//!         +h: f64
+//!         +update(dt, i_ext)
+//!     }
+//!
+//!     class HodgkinHuxleyModel {
+//!         +derivative(state)
+//!     }
+//!
+//!     class GatingKinetics {
+//!         <<Trait>>
+//!         +alpha_n(v)
+//!         +beta_n(v)
+//!         +alpha_m(v)
+//!         +beta_m(v)
+//!         +alpha_h(v)
+//!         +beta_h(v)
+//!     }
+//!
+//!     class StandardKinetics {
+//!         +alpha_n(v)
+//!         ...
+//!     }
+//!
+//!     HodgkinHuxleyNeuron --> HodgkinHuxleyModel : Uses for update
+//!     HodgkinHuxleyModel --> GatingKinetics : Uses for rates
+//!     GatingKinetics <|.. StandardKinetics
+//! ```
+//!
 //! ##  Quick Start
 //!
 //! Simulate a single neuron firing an action potential.
@@ -85,6 +123,6 @@ pub use error::HodgkinHuxleyError;
 pub use neuron::HodgkinHuxleyNeuron;
 
 // Optionally re-export types if we want users to use the advanced API
-pub use kinetics::GatingKinetics;
+pub use kinetics::{GatingKinetics, StandardKinetics};
 pub use model::HodgkinHuxleyModel;
 pub use types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
