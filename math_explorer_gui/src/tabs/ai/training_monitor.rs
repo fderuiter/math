@@ -2,9 +2,9 @@ use crate::tabs::ai::AiTool;
 use eframe::egui;
 use egui::Color32;
 use egui_plot::{Line, Plot, Points};
+use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
 use math_explorer::ai::deep_learning_theory::linear_algebra::Vector;
 use math_explorer::ai::deep_learning_theory::model::TwoLayerMLP;
-use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
 use math_explorer::ai::optimization::Adam;
 use std::f64::consts::PI;
 
@@ -106,7 +106,14 @@ impl AiTool for TrainingMonitorTool {
             ui.heading("Controls");
             ui.separator();
 
-            if ui.button(if self.is_training { "Stop Training" } else { "Start Training" }).clicked() {
+            if ui
+                .button(if self.is_training {
+                    "Stop Training"
+                } else {
+                    "Start Training"
+                })
+                .clicked()
+            {
                 self.is_training = !self.is_training;
             }
 
@@ -118,7 +125,10 @@ impl AiTool for TrainingMonitorTool {
             ui.heading("Hyperparameters");
 
             ui.label("Learning Rate");
-            if ui.add(egui::Slider::new(&mut self.learning_rate, 0.001..=0.1).logarithmic(true)).changed() {
+            if ui
+                .add(egui::Slider::new(&mut self.learning_rate, 0.001..=0.1).logarithmic(true))
+                .changed()
+            {
                 // Ideally, update optimizer LR immediately, but for simplicity we apply on reset
                 // or we could expose set_lr on the optimizer trait if needed.
                 // For this demo, let's just hint that reset is needed or update on reset.
@@ -126,8 +136,11 @@ impl AiTool for TrainingMonitorTool {
             }
 
             ui.label("Hidden Neurons");
-            if ui.add(egui::Slider::new(&mut self.hidden_dim, 2..=64)).changed() {
-                 self.reset();
+            if ui
+                .add(egui::Slider::new(&mut self.hidden_dim, 2..=64))
+                .changed()
+            {
+                self.reset();
             }
 
             ui.separator();
@@ -165,28 +178,36 @@ impl AiTool for TrainingMonitorTool {
 
             // Bottom: Data Visualization
             ui.heading("Decision Boundary Visualization");
-            Plot::new("data_plot")
-                .data_aspect(1.0)
-                .show(ui, |plot_ui| {
-                    // Draw actual data points
-                    let mut class_0_points = Vec::new();
-                    let mut class_1_points = Vec::new();
+            Plot::new("data_plot").data_aspect(1.0).show(ui, |plot_ui| {
+                // Draw actual data points
+                let mut class_0_points = Vec::new();
+                let mut class_1_points = Vec::new();
 
-                    for (x, y) in &self.data {
-                        let point = [x[0], x[1]];
-                        if y[0] > 0.5 { // Class 0
-                            class_0_points.push(point);
-                        } else { // Class 1
-                            class_1_points.push(point);
-                        }
+                for (x, y) in &self.data {
+                    let point = [x[0], x[1]];
+                    if y[0] > 0.5 {
+                        // Class 0
+                        class_0_points.push(point);
+                    } else {
+                        // Class 1
+                        class_1_points.push(point);
                     }
+                }
 
-                    plot_ui.points(Points::new("Class 0", class_0_points).color(Color32::RED).radius(4.0));
-                    plot_ui.points(Points::new("Class 1", class_1_points).color(Color32::BLUE).radius(4.0));
+                plot_ui.points(
+                    Points::new("Class 0", class_0_points)
+                        .color(Color32::RED)
+                        .radius(4.0),
+                );
+                plot_ui.points(
+                    Points::new("Class 1", class_1_points)
+                        .color(Color32::BLUE)
+                        .radius(4.0),
+                );
 
-                    // Optionally draw prediction grid (expensive, maybe skip for now or low res)
-                    // If we want to show decision boundary, we can sample a grid.
-                });
+                // Optionally draw prediction grid (expensive, maybe skip for now or low res)
+                // If we want to show decision boundary, we can sample a grid.
+            });
         });
     }
 }
