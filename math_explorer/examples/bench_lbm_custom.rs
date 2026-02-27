@@ -27,6 +27,6 @@ fn main() {
     // Simple verification (checksum) to prevent compiler from optimizing away the loop
     println!(
         "Final density checksum: {:.6}",
-        solver.state.rho.iter().sum::<f64>()
+        solver.state.density().iter().sum::<f64>()
     );
 }
