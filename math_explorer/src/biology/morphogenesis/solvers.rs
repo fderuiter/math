@@ -157,6 +157,7 @@ impl FusedEulerSolver {
 }
 
 impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
+    #[inline]
     fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
         state: &TuringState<N>,
@@ -171,18 +172,26 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
             return;
         }
 
+        // SAFETY: Check vector lengths to avoid UB in unsafe block
         if next_state.len() != n {
             return;
+        }
+        // Explicitly check all buffers in next_state to ensure safety for get_unchecked
+        for (i, vec) in next_state.concentrations.iter().enumerate() {
+            assert!(
+                vec.len() >= n,
+                "Output buffer {} too small in FusedEulerSolver",
+                i
+            );
         }
 
         let concentrations_slices: [&[f64]; N] =
             std::array::from_fn(|i| state.concentrations[i].as_slice());
 
-        let mut next_slices: Vec<&mut [f64]> = next_state
-            .concentrations
-            .iter_mut()
-            .map(|v| v.as_mut_slice())
-            .collect();
+        // Use stack allocation (array) instead of heap allocation (Vec)
+        let mut out_iter = next_state.concentrations.iter_mut();
+        let mut next_slices: [&mut [f64]; N] =
+            std::array::from_fn(|_| out_iter.next().unwrap().as_mut_slice());
 
         diffusion.map_diffusion(concentrations_slices, diffusion_coeffs, |i, vals, diffs| {
             let rates = kinetics.reaction(vals);
@@ -192,10 +201,12 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
                 let diff = diffs[s];
                 let reac = rates[s];
 
-                if let Some(slice) = next_slices.get_mut(s)
-                    && i < slice.len()
-                {
-                    slice[i] = curr + dt * (diff + reac);
+                // SAFETY: We verified that all next_slices have length >= n at the start of the function.
+                // map_diffusion iterates i from 0 to n-1.
+                // Thus, next_slices[s][i] is safe.
+                unsafe {
+                    *next_slices.get_unchecked_mut(s).get_unchecked_mut(i) =
+                        curr + dt * (diff + reac);
                 }
             }
         });
