@@ -53,7 +53,7 @@
 //! // 3. Run Simulation
 //! let dt = 0.01;
 //! for _ in 0..100 {
-//!     system.step(dt);
+//!     system.step(dt).unwrap();
 //! }
 //!
 //! // 4. Analyze Results
@@ -61,6 +61,7 @@
 //! println!("Concentration of Activator at center: {:.4}", u_center);
 //! ```
 
+pub mod error;
 pub mod reaction;
 pub mod solvers;
 pub mod state;
@@ -68,6 +69,7 @@ pub mod state;
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
 use crate::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 
+pub use error::MorphogenesisError;
 pub use reaction::{ReactionKinetics, SchnakenbergKinetics};
 pub use solvers::{FusedEulerSolver, StandardSolverAdapter, TuringDynamics, TuringSolverStrategy};
 pub use state::TuringState;
@@ -154,10 +156,10 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
     }
 
     /// Updates the grid using the solver strategy.
-    pub fn step(&mut self, dt: f64) {
+    pub fn step(&mut self, dt: f64) -> Result<(), MorphogenesisError> {
         let n = self.state.len();
         if n == 0 {
-            return;
+            return Ok(());
         }
 
         // Ensure buffers are the right size
@@ -166,17 +168,18 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
         }
 
         // Delegate time-stepping to the strategy
-        self.solver.step(
+        self.solver.step_result(
             &self.state,
             &mut self.next_state,
             &self.kinetics,
             &self.diffusion,
             self.diffusion_coeffs,
             dt,
-        );
+        )?;
 
         // Swap buffers (states)
         std::mem::swap(&mut self.state, &mut self.next_state);
+        Ok(())
     }
 }
 
@@ -236,8 +239,12 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
     }
 
     fn step(&mut self, dt: f64) {
-        // Delegate to the optimized inherent method
-        self.step(dt);
+        // Delegate to the optimized inherent method, ignoring the result to match the trait signature.
+        // Ideally TimeStepper should be updated to return Result, but that's a larger refactor.
+        // For now, we panic if the inherent step fails, maintaining safety but not cleanliness.
+        if let Err(e) = self.step(dt) {
+            panic!("TuringSystem step failed: {}", e);
+        }
     }
 }
 
@@ -279,7 +286,7 @@ mod tests {
         // Run for a few steps
         let dt = 0.01;
         for _ in 0..5 {
-            system.step(dt);
+            system.step(dt).unwrap();
         }
 
         // Capture output

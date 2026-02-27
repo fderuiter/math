@@ -24,8 +24,11 @@ impl EdgeProbability {
     /// ```
     /// use math_explorer::pure_math::statistics::kelly::EdgeProbability;
     ///
-    /// let p = EdgeProbability::new(0.55).unwrap();
-    /// assert_eq!(p.value(), 0.55);
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let p = EdgeProbability::new(0.55)?;
+    ///     assert_eq!(p.value(), 0.55);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn new(value: f64) -> Result<Self, KellyError> {
         if !(0.0..=1.0).contains(&value) || !value.is_finite() {
@@ -73,8 +76,11 @@ impl Odds {
     /// ```
     /// use math_explorer::pure_math::statistics::kelly::Odds;
     ///
-    /// let odds = Odds::new(2.5).unwrap();
-    /// assert_eq!(odds.value(), 2.5);
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let odds = Odds::new(2.5)?;
+    ///     assert_eq!(odds.value(), 2.5);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn new(value: f64) -> Result<Self, KellyError> {
         if value <= 1.0 || !value.is_finite() {
@@ -107,11 +113,14 @@ impl Odds {
     /// ```
     /// use math_explorer::pure_math::statistics::kelly::Odds;
     ///
-    /// let underdog = Odds::from_american(200.0).unwrap(); // +200
-    /// assert!((underdog.value() - 3.0).abs() < 0.01);
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let underdog = Odds::from_american(200.0)?; // +200
+    ///     assert!((underdog.value() - 3.0).abs() < 0.01);
     ///
-    /// let favorite = Odds::from_american(-150.0).unwrap(); // -150
-    /// assert!((favorite.value() - 1.667).abs() < 0.01);
+    ///     let favorite = Odds::from_american(-150.0)?; // -150
+    ///     assert!((favorite.value() - 1.667).abs() < 0.01);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn from_american(american: f64) -> Result<Self, KellyError> {
         if !american.is_finite() || american == 0.0 || (-100.0..100.0).contains(&american) {
@@ -137,8 +146,11 @@ impl Odds {
     /// ```
     /// use math_explorer::pure_math::statistics::kelly::Odds;
     ///
-    /// let odds = Odds::from_fractional(5.0, 2.0).unwrap(); // 5/2
-    /// assert!((odds.value() - 3.5).abs() < 0.01);
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let odds = Odds::from_fractional(5.0, 2.0)?; // 5/2
+    ///     assert!((odds.value() - 3.5).abs() < 0.01);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn from_fractional(numerator: f64, denominator: f64) -> Result<Self, KellyError> {
         if denominator <= 0.0
@@ -163,8 +175,11 @@ impl Odds {
     /// ```
     /// use math_explorer::pure_math::statistics::kelly::Odds;
     ///
-    /// let odds = Odds::new(2.0).unwrap();
-    /// assert!((odds.implied_probability() - 0.5).abs() < 0.01);
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let odds = Odds::new(2.0)?;
+    ///     assert!((odds.implied_probability() - 0.5).abs() < 0.01);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn implied_probability(&self) -> f64 {
         1.0 / self.0
@@ -193,8 +208,11 @@ impl BankrollFraction {
     /// ```
     /// use math_explorer::pure_math::statistics::kelly::BankrollFraction;
     ///
-    /// let fraction = BankrollFraction::new(0.1).unwrap();
-    /// assert_eq!(fraction.value(), 0.1);
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let fraction = BankrollFraction::new(0.1)?;
+    ///     assert_eq!(fraction.value(), 0.1);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn new(value: f64) -> Result<Self, KellyError> {
         if !(0.0..=1.0).contains(&value) || !value.is_finite() {
@@ -215,9 +233,12 @@ impl BankrollFraction {
     /// ```
     /// use math_explorer::pure_math::statistics::kelly::BankrollFraction;
     ///
-    /// let fraction = BankrollFraction::new(0.1).unwrap();
-    /// let bet = fraction.bet_amount(1000.0).unwrap();
-    /// assert_eq!(bet, 100.0);
+    /// fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let fraction = BankrollFraction::new(0.1)?;
+    ///     let bet = fraction.bet_amount(1000.0)?;
+    ///     assert_eq!(bet, 100.0);
+    ///     Ok(())
+    /// }
     /// ```
     pub fn bet_amount(&self, bankroll: f64) -> Result<f64, KellyError> {
         if bankroll <= 0.0 || !bankroll.is_finite() {

@@ -1,3 +1,4 @@
+use super::error::MorphogenesisError;
 use super::reaction::ReactionKinetics;
 use super::state::TuringState;
 use crate::biology::diffusion::SpatialDiffusion;
@@ -17,6 +18,7 @@ pub trait TuringSolverStrategy<const N: usize = 2> {
     /// * `diffusion_coeffs` - Diffusion coefficients for each species.
     /// * `dt` - Time step size.
     #[allow(clippy::too_many_arguments)]
+    #[deprecated(note = "Use step_result instead for proper error handling")]
     fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
         state: &TuringState<N>,
@@ -25,7 +27,38 @@ pub trait TuringSolverStrategy<const N: usize = 2> {
         diffusion: &D,
         diffusion_coeffs: [f64; N],
         dt: f64,
-    );
+    ) {
+        if let Err(e) = self.step_result(
+            state,
+            next_state,
+            kinetics,
+            diffusion,
+            diffusion_coeffs,
+            dt,
+        ) {
+            panic!("TuringSolverStrategy::step failed: {}", e);
+        }
+    }
+
+    /// Performs a single time step of the simulation, returning a Result.
+    ///
+    /// # Arguments
+    /// * `state` - Current system state.
+    /// * `next_state` - Buffer for the next system state.
+    /// * `kinetics` - Reaction kinetics model.
+    /// * `diffusion` - Spatial diffusion model.
+    /// * `diffusion_coeffs` - Diffusion coefficients for each species.
+    /// * `dt` - Time step size.
+    #[allow(clippy::too_many_arguments)]
+    fn step_result<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
+        &mut self,
+        state: &TuringState<N>,
+        next_state: &mut TuringState<N>,
+        kinetics: &K,
+        diffusion: &D,
+        diffusion_coeffs: [f64; N],
+        dt: f64,
+    ) -> Result<(), MorphogenesisError>;
 }
 
 /// A descriptor for the Turing system's physics (OdeSystem).
@@ -141,7 +174,7 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
 ///
 /// // 2. Perform a single time step
 /// // D_u = 1.0, D_v = 40.0, dt = 0.01
-/// solver.step(&state, &mut next_state, &kinetics, &diffusion, [1.0, 40.0], 0.01);
+/// solver.step_result(&state, &mut next_state, &kinetics, &diffusion, [1.0, 40.0], 0.01).unwrap();
 /// ```
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FusedEulerSolver;
@@ -157,7 +190,7 @@ impl FusedEulerSolver {
 }
 
 impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
-    fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
+    fn step_result<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
         state: &TuringState<N>,
         next_state: &mut TuringState<N>,
@@ -165,14 +198,17 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
         diffusion: &D,
         diffusion_coeffs: [f64; N],
         dt: f64,
-    ) {
+    ) -> Result<(), MorphogenesisError> {
         let n = state.len();
         if n == 0 {
-            return;
+            return Ok(());
         }
 
         if next_state.len() != n {
-            return;
+            return Err(MorphogenesisError::BufferSizeMismatch {
+                expected: n,
+                found: next_state.len(),
+            });
         }
 
         let concentrations_slices: [&[f64]; N] =
@@ -199,6 +235,8 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
                 }
             }
         });
+
+        Ok(())
     }
 }
 
@@ -218,7 +256,7 @@ impl<S> StandardSolverAdapter<S> {
 impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N>
     for StandardSolverAdapter<S>
 {
-    fn step<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
+    fn step_result<K: ReactionKinetics<N>, D: SpatialDiffusion<N>>(
         &mut self,
         state: &TuringState<N>,
         next_state: &mut TuringState<N>,
@@ -226,7 +264,7 @@ impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N>
         diffusion: &D,
         diffusion_coeffs: [f64; N],
         dt: f64,
-    ) {
+    ) -> Result<(), MorphogenesisError> {
         let dynamics = TuringDynamics {
             kinetics,
             diffusion,
@@ -235,5 +273,6 @@ impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N>
 
         next_state.copy_from(state);
         self.solver.step(&dynamics, 0.0, next_state, dt);
+        Ok(())
     }
 }

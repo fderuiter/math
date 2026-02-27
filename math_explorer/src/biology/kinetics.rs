@@ -135,46 +135,48 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_original_behavior() {
+    fn test_original_behavior() -> Result<(), Box<dyn std::error::Error>> {
         #[allow(deprecated)]
-        let reaction = EnzymeReaction::new(100.0, 50.0).unwrap();
+        let reaction = EnzymeReaction::new(100.0, 50.0)?;
         // At [S] = Km, v = Vmax / 2
-        let v = reaction.reaction_velocity(50.0).unwrap();
+        let v = reaction.reaction_velocity(50.0)?;
         assert!((v - 50.0).abs() < 1e-6);
 
         // At [S] = 0, v = 0
-        let v_0 = reaction.reaction_velocity(0.0).unwrap();
+        let v_0 = reaction.reaction_velocity(0.0)?;
         assert!((v_0 - 0.0).abs() < 1e-6);
 
         // At very high [S], v -> Vmax
-        let v_high = reaction.reaction_velocity(10000.0).unwrap();
+        let v_high = reaction.reaction_velocity(10000.0)?;
         assert!((v_high - 100.0).abs() < 1.0);
+        Ok(())
     }
 
     #[test]
-    fn test_hill_kinetics() {
+    fn test_hill_kinetics() -> Result<(), Box<dyn std::error::Error>> {
         // n=1 should behave like Michaelis-Menten
-        let hill_mm = HillKinetics::new(100.0, 50.0, 1.0).unwrap();
-        let v_mm = hill_mm.reaction_velocity(50.0).unwrap();
+        let hill_mm = HillKinetics::new(100.0, 50.0, 1.0)?;
+        let v_mm = hill_mm.reaction_velocity(50.0)?;
         assert!((v_mm - 50.0).abs() < 1e-6);
 
         // n=2 (Positive Cooperativity)
         // v = Vmax * S^2 / (Km^2 + S^2)
         // If S = Km, v = Vmax / 2 (still true for Hill)
-        let hill_coop = HillKinetics::new(100.0, 50.0, 2.0).unwrap();
-        let v_coop_half = hill_coop.reaction_velocity(50.0).unwrap();
+        let hill_coop = HillKinetics::new(100.0, 50.0, 2.0)?;
+        let v_coop_half = hill_coop.reaction_velocity(50.0)?;
         assert!((v_coop_half - 50.0).abs() < 1e-6);
 
         // If S = 2*Km = 100
         // MM: v = 100 * 100 / (50 + 100) = 10000 / 150 = 66.67
         // Hill(n=2): v = 100 * 100^2 / (50^2 + 100^2) = 100 * 10000 / (2500 + 10000) = 1000000 / 12500 = 80.0
         // Higher velocity due to cooperativity
-        let mm = MichaelisMenten::new(100.0, 50.0).unwrap();
-        let v_mm_high = mm.reaction_velocity(100.0).unwrap();
-        let v_hill_high = hill_coop.reaction_velocity(100.0).unwrap();
+        let mm = MichaelisMenten::new(100.0, 50.0)?;
+        let v_mm_high = mm.reaction_velocity(100.0)?;
+        let v_hill_high = hill_coop.reaction_velocity(100.0)?;
 
         assert!(v_hill_high > v_mm_high);
         assert!((v_hill_high - 80.0).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
@@ -188,7 +190,7 @@ mod tests {
             KineticsError::InvalidParameters
         );
 
-        let mm = MichaelisMenten::new(100.0, 50.0).unwrap();
+        let mm = MichaelisMenten::new(100.0, 50.0).expect("Valid parameters");
         assert_eq!(
             mm.reaction_velocity(-10.0).unwrap_err(),
             KineticsError::NegativeSubstrateConcentration

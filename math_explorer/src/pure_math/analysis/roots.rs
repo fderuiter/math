@@ -24,19 +24,22 @@ pub enum AnalysisError {
 /// ```
 /// use math_explorer::pure_math::analysis::roots::{RootFinder, Bisection, NewtonRaphson};
 ///
-/// // Define the function f(x) = x^2 - 4
-/// let f = |x: f64| x * x - 4.0;
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     // Define the function f(x) = x^2 - 4
+///     let f = |x: f64| x * x - 4.0;
 ///
-/// // Use Bisection (bracketing method)
-/// let bisection = Bisection::default();
-/// let root = bisection.find_root(f, 0.0, 5.0).unwrap();
-/// assert!((root - 2.0).abs() < 1e-6);
+///     // Use Bisection (bracketing method)
+///     let bisection = Bisection::default();
+///     let root = bisection.find_root(f, 0.0, 5.0)?;
+///     assert!((root - 2.0).abs() < 1e-6);
 ///
-/// // Use Newton-Raphson (open method)
-/// let newton = NewtonRaphson::default();
-/// // Note: For open methods, min/max are used to determine the initial guess.
-/// let root = newton.find_root(f, 0.0, 5.0).unwrap();
-/// assert!((root - 2.0).abs() < 1e-6);
+///     // Use Newton-Raphson (open method)
+///     let newton = NewtonRaphson::default();
+///     // Note: For open methods, min/max are used to determine the initial guess.
+///     let root = newton.find_root(f, 0.0, 5.0)?;
+///     assert!((root - 2.0).abs() < 1e-6);
+///     Ok(())
+/// }
 /// ```
 pub trait RootFinder {
     /// Finds a root of the function `f`.
@@ -70,15 +73,18 @@ pub trait RootFinder {
 /// ```
 /// use math_explorer::pure_math::analysis::roots::{RootFinder, Bisection};
 ///
-/// let solver = Bisection::default();
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let solver = Bisection::default();
 ///
-/// // Find root of x^2 - 2 = 0 in [1, 2]
-/// let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
-/// assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+///     // Find root of x^2 - 2 = 0 in [1, 2]
+///     let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0)?;
+///     assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
 ///
-/// // Error if root is not bracketed (signs at endpoints must differ)
-/// let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
-/// assert!(result.is_err());
+///     // Error if root is not bracketed (signs at endpoints must differ)
+///     let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
+///     assert!(result.is_err());
+///     Ok(())
+/// }
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub struct Bisection {
@@ -181,17 +187,20 @@ impl RootFinder for Bisection {
 /// ```
 /// use math_explorer::pure_math::analysis::roots::{RootFinder, NewtonRaphson};
 ///
-/// let solver = NewtonRaphson::default();
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let solver = NewtonRaphson::default();
 ///
-/// // Find root of x^2 - 2 = 0
-/// // Initial guess will be (1.0 + 2.0) / 2.0 = 1.5
-/// let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
-/// assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+///     // Find root of x^2 - 2 = 0
+///     // Initial guess will be (1.0 + 2.0) / 2.0 = 1.5
+///     let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0)?;
+///     assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
 ///
-/// // Example where root is outside the initial "interval"
-/// // Root of x - 10 = 0 is 10. Initial guess is 2.5.
-/// let root = solver.find_root(|x| x - 10.0, 0.0, 5.0).unwrap();
-/// assert!((root - 10.0).abs() < 1e-6);
+///     // Example where root is outside the initial "interval"
+///     // Root of x - 10 = 0 is 10. Initial guess is 2.5.
+///     let root = solver.find_root(|x| x - 10.0, 0.0, 5.0)?;
+///     assert!((root - 10.0).abs() < 1e-6);
+///     Ok(())
+/// }
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub struct NewtonRaphson {
@@ -288,37 +297,40 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_newton_raphson_sqrt() {
+    fn test_newton_raphson_sqrt() -> Result<(), AnalysisError> {
         let solver = NewtonRaphson::default();
         // x^2 - 2 = 0, derivative 2x
         let root = solver
-            .find_root_with_derivative(|x| x * x - 2.0, |x| 2.0 * x, 1.5)
-            .unwrap();
+            .find_root_with_derivative(|x| x * x - 2.0, |x| 2.0 * x, 1.5)?;
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
-    fn test_newton_raphson_numerical() {
+    fn test_newton_raphson_numerical() -> Result<(), AnalysisError> {
         let solver = NewtonRaphson::default();
         // x^2 - 2 = 0
-        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0)?;
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-5);
+        Ok(())
     }
 
     #[test]
-    fn test_bisection_square_root() {
+    fn test_bisection_square_root() -> Result<(), AnalysisError> {
         let solver = Bisection::default();
         // x^2 - 2 = 0  => x = sqrt(2) approx 1.41421356
-        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0).unwrap();
+        let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0)?;
         assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
-    fn test_bisection_linear() {
+    fn test_bisection_linear() -> Result<(), AnalysisError> {
         let solver = Bisection::default();
         // 2x - 4 = 0 => x = 2
-        let root = solver.find_root(|x| 2.0 * x - 4.0, 0.0, 5.0).unwrap();
+        let root = solver.find_root(|x| 2.0 * x - 4.0, 0.0, 5.0)?;
         assert!((root - 2.0).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
