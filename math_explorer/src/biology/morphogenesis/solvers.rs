@@ -79,21 +79,18 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
             .apply(state_slices, out_slices, self.diffusion_coeffs);
 
         // 2. Compute Reaction and Accumulate
-        let state_ptrs: [*const f64; N] = std::array::from_fn(|i| state.concentrations[i].as_ptr());
-        let out_ptrs: [*mut f64; N] = std::array::from_fn(|i| out.concentrations[i].as_mut_ptr());
+        for i in 0..n {
+            // Gather inputs
+            // We use standard indexing here. The compiler can often elide bounds checks
+            // because we asserted lengths at the start of the function.
+            let inputs: [f64; N] = std::array::from_fn(|s| state.concentrations[s][i]);
 
-        unsafe {
-            for i in 0..n {
-                // Gather inputs
-                let inputs: [f64; N] = std::array::from_fn(|s| *state_ptrs[s].add(i));
+            // Compute Reaction
+            let rates = self.kinetics.reaction(inputs);
 
-                // Compute Reaction
-                let rates = self.kinetics.reaction(inputs);
-
-                // Accumulate results
-                for s in 0..N {
-                    *out_ptrs[s].add(i) += rates[s];
-                }
+            // Accumulate results
+            for (s, rate) in rates.iter().enumerate().take(N) {
+                out.concentrations[s][i] += rate;
             }
         }
     }
