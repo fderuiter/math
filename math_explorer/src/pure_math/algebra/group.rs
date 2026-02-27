@@ -1,6 +1,11 @@
 //! # Group Theory
 //!
 //! This module provides implementations of common groups and tools for group theory analysis.
+//!
+//! It includes:
+//! - **Cyclic Groups ($Z_n$)**: Implemented as both `CyclicElement` (dynamic modulus) and `Zn<N>` (static modulus).
+//! - **Symmetric Groups ($S_n$)**: Implemented as `Permutation`.
+//! - **Analysis Tools**: Functions to check for subgroups, normal subgroups, and generate cosets.
 
 use crate::pure_math::algebra::traits::{Group, Monoid, Semigroup};
 use std::collections::HashSet;
@@ -11,6 +16,13 @@ use std::hash::Hash;
 // ============================================================================
 
 /// An element of the Cyclic Group $Z_n$ under addition.
+///
+/// This struct allows for runtime definition of the modulus.
+///
+/// # Warning: Monoid Identity
+/// The `Monoid` trait requires a static `identity()` method. Since `CyclicElement`'s modulus is defined at runtime,
+/// `Monoid::identity()` cannot be correctly implemented (it panics).
+/// Use `Zn<N>` for a type-safe implementation where N is known at compile time.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct CyclicElement {
     pub value: usize,
@@ -18,6 +30,7 @@ pub struct CyclicElement {
 }
 
 impl CyclicElement {
+    /// Creates a new element in $Z_n$.
     pub fn new(value: usize, modulo: usize) -> Self {
         CyclicElement {
             value: value % modulo,
@@ -40,33 +53,36 @@ impl Semigroup for CyclicElement {
 }
 
 impl Monoid for CyclicElement {
+    /// **Panics:** Use `Zn<N>` if you need `Monoid::identity`.
     fn identity() -> Self {
-        // This is tricky because identity needs context (modulo).
-        // The trait method `identity()` doesn't take self.
-        // This suggests the `Group` trait as defined in traits.rs is for types where identity is unique globally
-        // (like i64, f64) or the type captures the group structure fully.
-        // For CyclicElement, we can't implement `Monoid` correctly without knowing the modulus if we use `identity() -> Self`.
-        // However, for the purpose of this exercise, we might assume a fixed global context or panic,
-        // OR we change the design.
-        //
-        // A better design might be to have a `Group` struct that acts on `Element` types.
-        // But adhering to the requested "Group Theory" overview, and the trait I wrote:
-        // `fn identity() -> Self`.
-        // This limits us to types where identity is constant.
-
-        // workaround: return a placeholder or use a specific type per n (const generics).
-        // For this implementation, I will use a panic for the static method and encourage using instance methods if possible,
-        // but `Monoid` requires `identity()`.
-
-        // Let's use 0 mod 1 as a dummy default, but this is flawed.
-        // BETTER APPROACH: Use const generics for CyclicGroup<N>.
         panic!(
-            "Use CyclicGroup::<N>::identity() or specific constructors. Generic trait identity cannot infer modulo."
+            "Monoid::identity() is not supported for CyclicElement because the modulus is dynamic. \
+             Use Zn<N> or construct elements explicitly."
         )
     }
 }
 
-// To properly implement the traits as defined, we should use const generics.
+/// An element of the Cyclic Group $Z_N$ where N is a compile-time constant.
+///
+/// This implementation fully satisfies `Semigroup`, `Monoid`, and `Group`.
+///
+/// # Example
+///
+/// ```rust
+/// use math_explorer::pure_math::algebra::{Zn, Group, Semigroup};
+///
+/// // Work in Z_5
+/// let a = Zn::<5>::new(3);
+/// let b = Zn::<5>::new(4);
+///
+/// // (3 + 4) mod 5 = 7 mod 5 = 2
+/// let sum = Zn::<5>::operate(&a, &b);
+/// assert_eq!(sum.value, 2);
+///
+/// // Inverse of 3 in Z_5 is 2 (because 3 + 2 = 5 = 0)
+/// let inv = a.inverse();
+/// assert_eq!(inv.value, 2);
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Zn<const N: usize> {
     pub value: usize,
@@ -151,10 +167,6 @@ impl Semigroup for Permutation {
         Permutation { map: new_map }
     }
 }
-
-// Again, Monoid for Permutation is hard without const generics or knowing size.
-// I will implement a wrapper for Fixed size permutations or just utility functions.
-// But let's implementing the logic for analysis.
 
 // ============================================================================
 // Group Analysis Tools
