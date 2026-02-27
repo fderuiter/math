@@ -245,12 +245,31 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
 
     /// Streaming step: Move particles to neighboring cells.
     fn stream(&mut self) {
+        let width = self.state.width;
+        let height = self.state.height;
+        let required_len = width * height;
+
+        // Security Check: Ensure invariants hold before entering unsafe blocks.
+        // Since `state` fields are public, a user could corrupt them (e.g., changing width without resizing f).
+        assert_eq!(
+            self.state.f.len(),
+            required_len,
+            "LatticeState invariant violated: f.len() != width * height"
+        );
+        assert_eq!(
+            self.state.f_new.len(),
+            required_len,
+            "LatticeState invariant violated: f_new.len() != width * height"
+        );
+        assert_eq!(
+            self.state.obstacles.len(),
+            required_len,
+            "LatticeState invariant violated: obstacles.len() != width * height"
+        );
+
         let cx = L::directions_x();
         let cy = L::directions_y();
         let opp = L::opposite_indices();
-
-        let width = self.state.width;
-        let height = self.state.height;
 
         // Precompute offsets to avoid multiplication in the inner loop.
         // offset[k] = -(dx[k] + dy[k] * width)
