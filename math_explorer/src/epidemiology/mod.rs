@@ -10,6 +10,7 @@
 //!
 //! ```rust
 //! use math_explorer::epidemiology::{SIRModel, SIRState};
+//! use math_explorer::pure_math::analysis::ode::TimeStepper;
 //!
 //! // 1. Initialize the model
 //! // Population: 1000, Initial Infected: 10
@@ -26,8 +27,8 @@
 //!
 //! for _ in 0..1000 {
 //!     model.step(dt);
-//!     if model.state().i > peak_infected {
-//!         peak_infected = model.state().i;
+//!     if model.state.i > peak_infected {
+//!         peak_infected = model.state.i;
 //!     }
 //! }
 //!
