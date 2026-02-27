@@ -77,8 +77,8 @@ impl ConvLayer {
         });
         let grad_b = DVector::from_fn(self.bias.len(), |_, _| rand::random::<f32>() - 0.5);
 
-        optimizer.update_matrix(layer_idx, &mut self.kernel, &grad_k);
-        optimizer.update_vector(layer_idx, &mut self.bias, &grad_b);
+        optimizer.update_matrix_legacy(layer_idx, &mut self.kernel, &grad_k);
+        optimizer.update_vector_legacy(layer_idx, &mut self.bias, &grad_b);
     }
 }
 

@@ -99,8 +99,8 @@ impl PredictorModel for Predictor {
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
 
             // Use the optimizer strategy to update weights
-            optimizer.update_matrix(i, &mut layer.kernel, &grad_k);
-            optimizer.update_vector(i, &mut layer.bias, &grad_b);
+            optimizer.update_matrix_legacy(i, &mut layer.kernel, &grad_k);
+            optimizer.update_vector_legacy(i, &mut layer.bias, &grad_b);
         }
     }
 }
