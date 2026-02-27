@@ -83,6 +83,11 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     let base_idx = z * stride_z + y * stride_y + x;
 
                     // 1. Get Values & Index
+                    // SAFETY: `base_idx` is computed from `x,y,z` which are strictly less than `width-1`, `height-1`, `depth-1`.
+                    // The offsets applied in `get_cube_values_unchecked` are at most `stride_y + stride_z + 1`.
+                    // The maximum index accessed is `(depth-2)*stride_z + (height-2)*stride_y + (width-2) + stride_y + stride_z + 1`
+                    // which equals `(depth-1)*stride_z + (height-1)*stride_y + (width-1)`.
+                    // This is strictly less than `width * height * depth`, which is validated by `validate_grid` to be `<= data.len()`.
                     let (values, index) = unsafe {
                         self.get_cube_values_unchecked(base_idx, stride_y, stride_z, threshold)
                     };
@@ -97,6 +102,11 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     let positions = self.get_cube_positions(x, y, z);
 
                     // 4. Get Normals (with caching)
+                    // SAFETY: `compute_gradients_unchecked` only uses the fast path (calling `gradient_unchecked`)
+                    // when `row_is_interior` and `x_interior` are true. This means `x,y,z` are at least 1 and at most max-2.
+                    // The gradient calculation uses `index - 1` and `index + 1` in all 3 dimensions.
+                    // Since `x,y,z >= 1`, we never underflow. Since `x,y,z <= max-2`, adding the offsets never overflows
+                    // the total bounds `width * height * depth`, matching the guarantees checked by `validate_grid`.
                     let (normals, right_face) = unsafe {
                         self.compute_gradients_unchecked(
                             (x, y, z),
@@ -164,6 +174,9 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         // Helper macro to fetch and update index
         macro_rules! fetch {
             ($i:expr, $offset:expr, $bit:expr) => {
+                // SAFETY: Caller guarantees that `base_idx + $offset` is within bounds
+                // of `self.grid.data` by virtue of loop bounds in `extract` and
+                // capacity checks in `validate_grid`.
                 let v = unsafe { *data.get_unchecked(base_idx + $offset) };
                 values[$i] = v;
                 if v < threshold {
