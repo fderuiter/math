@@ -64,7 +64,6 @@ where
         // We pass &self.dynamics to the solver.
         // The solver needs a reference to something implementing OdeSystem<State>.
         // Dynamics implements OdeSystem<State>.
-        self.solver
-            .step(&self.dynamics, 0.0, &mut self.state, dt);
+        self.solver.step(&self.dynamics, 0.0, &mut self.state, dt);
     }
 }
