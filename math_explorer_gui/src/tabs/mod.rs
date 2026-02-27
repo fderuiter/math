@@ -5,6 +5,7 @@ pub mod battery_degradation;
 pub mod chaos;
 pub mod clinical_trials;
 pub mod epidemiology;
+pub mod favoritism;
 pub mod fluid_dynamics;
 pub mod game_theory;
 pub mod medical;

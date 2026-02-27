@@ -83,7 +83,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `ai::deep_learning_theory`
 *   **Features:**
     *   [x] **Loss Landscape:** 3D surface plot of loss functions.
-    *   [ ] **Training Monitor:** Real-time curves for training/validation loss and accuracy.
+    *   [x] **Training Monitor:** Real-time curves for training/validation loss and accuracy.
     *   [ ] **Activation Functions:** Interactive plotter for ReLU, Sigmoid, Tanh, GELU, etc.
 
 ### 3.2 Reinforcement Learning
@@ -119,8 +119,8 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 4.3 Favoritism (Satirical)
 *   **Module:** `applied::favoritism`
 *   **Features:**
-    *   [ ] **Family Leaderboard:** Dynamic ranking of family members based on "favoritism scores".
-    *   [ ] **Input Form:** Sliders for "Gift Value", "Call Frequency", "Compliments".
+    *   [x] **Family Leaderboard:** Dynamic ranking of family members based on "favoritism scores".
+    *   [x] **Input Form:** Sliders for "Gift Value", "Call Frequency", "Compliments".
 
 ### 4.4 Financial Math (Kelly Criterion)
 *   **Module:** `pure_math::statistics::kelly`

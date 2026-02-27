@@ -1,0 +1,260 @@
+use crate::tabs::ai::AiTool;
+use eframe::egui;
+use egui::Color32;
+use egui_plot::{Line, Plot, Points};
+use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
+use math_explorer::ai::deep_learning_theory::linear_algebra::Vector;
+use math_explorer::ai::deep_learning_theory::model::TwoLayerMLP;
+use math_explorer::ai::optimization::Adam;
+use std::f64::consts::PI;
+
+pub struct TrainingMonitorTool {
+    training_loop: TrainingLoop<TwoLayerMLP>,
+
+    // Dataset: (x, y_true)
+    data: Vec<(Vector, Vector)>,
+
+    // UI State
+    is_training: bool,
+    epoch: usize,
+
+    // Hyperparameters
+    learning_rate: f64,
+    hidden_dim: usize,
+
+    // Metrics History
+    loss_history: Vec<[f64; 2]>,
+    accuracy_history: Vec<[f64; 2]>,
+}
+
+impl Default for TrainingMonitorTool {
+    fn default() -> Self {
+        let hidden_dim = 16;
+        let learning_rate = 0.01;
+
+        let optimizer = Box::new(Adam::new(learning_rate));
+        let training_loop = TrainingLoop::new(2, hidden_dim, 2, optimizer);
+
+        let data = generate_spiral_data(100);
+
+        Self {
+            training_loop,
+            data,
+            is_training: false,
+            epoch: 0,
+            learning_rate,
+            hidden_dim,
+            loss_history: Vec::new(),
+            accuracy_history: Vec::new(),
+        }
+    }
+}
+
+impl TrainingMonitorTool {
+    fn reset(&mut self) {
+        let optimizer = Box::new(Adam::new(self.learning_rate));
+        self.training_loop = TrainingLoop::new(2, self.hidden_dim, 2, optimizer);
+        self.epoch = 0;
+        self.loss_history.clear();
+        self.accuracy_history.clear();
+        self.is_training = false;
+
+        // Regenerate data for freshness
+        self.data = generate_spiral_data(100);
+    }
+
+    fn step(&mut self) {
+        let mut epoch_loss = 0.0;
+        let mut correct = 0;
+
+        // Simple Full Batch (or online for simplicity)
+        // Here we do online updates (SGD style loop) over the dataset
+        for (x, y_true) in &self.data {
+            let loss = self.training_loop.train_step(x, y_true);
+            epoch_loss += loss;
+
+            // Check accuracy
+            let y_pred = self.training_loop.predict(x);
+            if argmax(&y_pred) == argmax(y_true) {
+                correct += 1;
+            }
+        }
+
+        let avg_loss = epoch_loss / self.data.len() as f64;
+        let accuracy = correct as f64 / self.data.len() as f64;
+
+        self.loss_history.push([self.epoch as f64, avg_loss]);
+        self.accuracy_history.push([self.epoch as f64, accuracy]);
+        self.epoch += 1;
+    }
+}
+
+impl AiTool for TrainingMonitorTool {
+    fn name(&self) -> &'static str {
+        "Training Monitor"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        // Run training step if active
+        if self.is_training {
+            self.step();
+            // Request repaint for smooth animation
+            ctx.request_repaint();
+        }
+
+        egui::SidePanel::left("training_monitor_controls").show(ctx, |ui| {
+            ui.heading("Controls");
+            ui.separator();
+
+            if ui
+                .button(if self.is_training {
+                    "Stop Training"
+                } else {
+                    "Start Training"
+                })
+                .clicked()
+            {
+                self.is_training = !self.is_training;
+            }
+
+            if ui.button("Reset Model").clicked() {
+                self.reset();
+            }
+
+            ui.separator();
+            ui.heading("Hyperparameters");
+
+            ui.label("Learning Rate");
+            if ui
+                .add(egui::Slider::new(&mut self.learning_rate, 0.001..=0.1).logarithmic(true))
+                .changed()
+            {
+                // Ideally, update optimizer LR immediately, but for simplicity we apply on reset
+                // or we could expose set_lr on the optimizer trait if needed.
+                // For this demo, let's just hint that reset is needed or update on reset.
+                ui.label("Note: Requires Reset to apply effectively");
+            }
+
+            ui.label("Hidden Neurons");
+            if ui
+                .add(egui::Slider::new(&mut self.hidden_dim, 2..=64))
+                .changed()
+            {
+                self.reset();
+            }
+
+            ui.separator();
+            ui.label(format!("Epoch: {}", self.epoch));
+            if let Some(last_loss) = self.loss_history.last() {
+                ui.label(format!("Loss: {:.4}", last_loss[1]));
+            }
+            if let Some(last_acc) = self.accuracy_history.last() {
+                ui.label(format!("Accuracy: {:.1}%", last_acc[1] * 100.0));
+            }
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            // Top: Metrics
+            ui.columns(2, |columns| {
+                columns[0].heading("Loss History");
+                Plot::new("loss_plot")
+                    .height(200.0)
+                    .show(&mut columns[0], |plot_ui| {
+                        plot_ui.line(Line::new("Loss", self.loss_history.clone()));
+                    });
+
+                columns[1].heading("Accuracy History");
+                Plot::new("accuracy_plot")
+                    .height(200.0)
+                    .show(&mut columns[1], |plot_ui| {
+                        plot_ui.line(
+                            Line::new("Accuracy", self.accuracy_history.clone())
+                                .color(Color32::GREEN),
+                        );
+                    });
+            });
+
+            ui.separator();
+
+            // Bottom: Data Visualization
+            ui.heading("Decision Boundary Visualization");
+            Plot::new("data_plot").data_aspect(1.0).show(ui, |plot_ui| {
+                // Draw actual data points
+                let mut class_0_points = Vec::new();
+                let mut class_1_points = Vec::new();
+
+                for (x, y) in &self.data {
+                    let point = [x[0], x[1]];
+                    if y[0] > 0.5 {
+                        // Class 0
+                        class_0_points.push(point);
+                    } else {
+                        // Class 1
+                        class_1_points.push(point);
+                    }
+                }
+
+                plot_ui.points(
+                    Points::new("Class 0", class_0_points)
+                        .color(Color32::RED)
+                        .radius(4.0),
+                );
+                plot_ui.points(
+                    Points::new("Class 1", class_1_points)
+                        .color(Color32::BLUE)
+                        .radius(4.0),
+                );
+
+                // Optionally draw prediction grid (expensive, maybe skip for now or low res)
+                // If we want to show decision boundary, we can sample a grid.
+            });
+        });
+    }
+}
+
+/// Generates a 2D spiral dataset for classification.
+/// Returns a vector of (Input, Target) pairs.
+fn generate_spiral_data(points_per_class: usize) -> Vec<(Vector, Vector)> {
+    let mut data = Vec::new();
+    let n = points_per_class; // Points per class
+
+    for class_idx in 0..2 {
+        for i in 0..n {
+            let r = i as f64 / n as f64; // Radius
+            let t = 2.5 * r * 2.0 * PI + (class_idx as f64 * PI); // Angle
+
+            let x = r * t.sin() + rand::random::<f64>() * 0.1; // Add noise
+            let y = r * t.cos() + rand::random::<f64>() * 0.1;
+
+            let input = Vector::from_vec(vec![x, y]);
+
+            // One-hot encoding
+            let target = if class_idx == 0 {
+                Vector::from_vec(vec![1.0, 0.0])
+            } else {
+                Vector::from_vec(vec![0.0, 1.0])
+            };
+
+            data.push((input, target));
+        }
+    }
+
+    // Shuffle data (simple shuffle)
+    use rand::seq::SliceRandom;
+    let mut rng = rand::thread_rng();
+    data.shuffle(&mut rng);
+
+    data
+}
+
+fn argmax(v: &Vector) -> usize {
+    let mut max_idx = 0;
+    let mut max_val = f64::MIN;
+    for (i, &val) in v.iter().enumerate() {
+        if val > max_val {
+            max_val = val;
+            max_idx = i;
+        }
+    }
+    max_idx
+}

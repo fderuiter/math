@@ -1,19 +1,38 @@
-use super::calculus::{linear_backward, relu, relu_prime};
-use super::linear_algebra::{DenseLayer, Vector};
+use super::linear_algebra::Vector;
+use super::model::{Trainable, TwoLayerMLP};
 use super::probability::softmax;
 use crate::ai::optimization::{Optimizer, cross_entropy_softmax_prime};
+use std::ops::{Deref, DerefMut};
 
 /// The Deep Learning Cycle: Forward -> Loss -> Backward -> Update
 ///
-/// This struct demonstrates a simple neural network training loop.
-/// Architecture: Input -> Dense -> ReLU -> Dense -> Softmax -> Output
-pub struct TrainingLoop {
-    pub layer1: DenseLayer,
-    pub layer2: DenseLayer,
+/// This struct manages the training loop for any `Trainable` model.
+/// Architecture: Decoupled via `Trainable` trait.
+///
+/// # Generics
+/// * `M`: The model type, implementing `Trainable`. Defaults to `TwoLayerMLP` for backward compatibility.
+pub struct TrainingLoop<M: Trainable = TwoLayerMLP> {
+    pub model: M,
     pub optimizer: Box<dyn Optimizer<f64>>,
 }
 
-impl TrainingLoop {
+// Deref implementation allows `network.layer1` access if `M` has those fields (like `TwoLayerMLP`).
+impl<M: Trainable> Deref for TrainingLoop<M> {
+    type Target = M;
+
+    fn deref(&self) -> &Self::Target {
+        &self.model
+    }
+}
+
+impl<M: Trainable> DerefMut for TrainingLoop<M> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.model
+    }
+}
+
+impl TrainingLoop<TwoLayerMLP> {
+    /// Backward compatibility constructor for the default MLP architecture.
     pub fn new(
         input_dim: usize,
         hidden_dim: usize,
@@ -21,10 +40,16 @@ impl TrainingLoop {
         optimizer: Box<dyn Optimizer<f64>>,
     ) -> Self {
         Self {
-            layer1: DenseLayer::new(input_dim, hidden_dim),
-            layer2: DenseLayer::new(hidden_dim, output_dim),
+            model: TwoLayerMLP::new(input_dim, hidden_dim, output_dim),
             optimizer,
         }
+    }
+}
+
+impl<M: Trainable> TrainingLoop<M> {
+    /// Creates a new Training Loop with a custom model.
+    pub fn new_with_model(model: M, optimizer: Box<dyn Optimizer<f64>>) -> Self {
+        Self { model, optimizer }
     }
 
     /// Performs one iteration of training (Forward, Backward, Update).
@@ -37,60 +62,31 @@ impl TrainingLoop {
     /// The scalar loss value.
     pub fn train_step(&mut self, x: &Vector, y_true: &Vector) -> f64 {
         // --- 1. Forward Pass (Linear Algebra) ---
-        // z1 = W1*x + b1
-        let z1 = self.layer1.forward(x);
-        // a1 = ReLU(z1)
-        let a1 = relu(&z1);
-        // z2 = W2*a1 + b2
-        let z2 = self.layer2.forward(&a1);
-        // a2 = Softmax(z2) (Prediction)
-        let y_pred = softmax(&z2);
+        // Get logits from the model
+        let z = self.model.forward(x);
+        // Prediction (Softmax)
+        let y_pred = softmax(&z);
 
         // --- 2. Loss Calculation (Probability & Statistics) ---
-        // Using Cross-Entropy. We calculate it just for reporting,
-        // but for gradients we use the simplified analytical form combined with Softmax.
+        // Using Cross-Entropy.
         let epsilon = 1e-15;
         let loss = -(y_true.dot(&y_pred.map(|v| (v + epsilon).ln())));
 
         // --- 3. Backward Pass (Calculus) ---
-        // Gradient of Loss w.r.t z2 (logits)
-        // dL/dz2 = y_pred - y_true
-        let d_z2 = cross_entropy_softmax_prime(&z2, y_true);
+        // Gradient of Loss w.r.t logits (z)
+        // dL/dz = y_pred - y_true
+        let loss_grad = cross_entropy_softmax_prime(&z, y_true);
 
-        // Backprop through Layer 2
-        // dL/dW2, dL/db2, dL/da1
-        let (d_a1, d_w2, d_b2) = linear_backward(&d_z2, &a1, &self.layer2.weights);
-
-        // Backprop through ReLU
-        // dL/dz1 = dL/da1 * ReLU'(z1)
-        let d_z1 = d_a1.component_mul(&relu_prime(&z1));
-
-        // Backprop through Layer 1
-        // dL/dW1, dL/db1, dL/dx
-        let (_, d_w1, d_b1) = linear_backward(&d_z1, x, &self.layer1.weights);
-
-        // --- 4. Update (Optimization) ---
-        // Using Strategy Pattern
-        // Layer 2
-        self.optimizer
-            .update_matrix(2, &mut self.layer2.weights, &d_w2);
-        self.optimizer
-            .update_vector(2, &mut self.layer2.bias, &d_b2);
-
-        // Layer 1
-        self.optimizer
-            .update_matrix(1, &mut self.layer1.weights, &d_w1);
-        self.optimizer
-            .update_vector(1, &mut self.layer1.bias, &d_b1);
+        // Delegate specific backprop logic to the model strategy
+        self.model
+            .backward_update(x, &loss_grad, &mut *self.optimizer);
 
         loss
     }
 
     /// Predicts the class for a given input.
     pub fn predict(&self, x: &Vector) -> Vector {
-        let z1 = self.layer1.forward(x);
-        let a1 = relu(&z1);
-        let z2 = self.layer2.forward(&a1);
-        softmax(&z2)
+        let z = self.model.forward(x);
+        softmax(&z)
     }
 }
