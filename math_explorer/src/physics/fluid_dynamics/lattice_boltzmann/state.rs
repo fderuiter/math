@@ -4,20 +4,20 @@
 /// This struct is purely a data holder and does not implement the solver logic.
 #[derive(Debug, Clone)]
 pub struct LatticeState<const Q: usize> {
-    pub width: usize,
-    pub height: usize,
+    pub(crate) width: usize,
+    pub(crate) height: usize,
     /// Distribution functions (flattened: y * width + x). Each cell holds [f64; Q].
-    pub f: Vec<[f64; Q]>,
+    pub(crate) f: Vec<[f64; Q]>,
     /// Buffer for streaming step.
-    pub f_new: Vec<[f64; Q]>,
+    pub(crate) f_new: Vec<[f64; Q]>,
     /// Macroscopic density.
-    pub rho: Vec<f64>,
+    pub(crate) rho: Vec<f64>,
     /// Macroscopic velocity X.
-    pub ux: Vec<f64>,
+    pub(crate) ux: Vec<f64>,
     /// Macroscopic velocity Y.
-    pub uy: Vec<f64>,
+    pub(crate) uy: Vec<f64>,
     /// Boolean grid for obstacles (true = solid).
-    pub obstacles: Vec<bool>,
+    pub(crate) obstacles: Vec<bool>,
 }
 
 impl<const Q: usize> LatticeState<Q> {
@@ -58,5 +58,37 @@ impl<const Q: usize> LatticeState<Q> {
     #[inline]
     pub fn is_valid(&self, x: usize, y: usize) -> bool {
         x < self.width && y < self.height
+    }
+
+    // --- Public Accessors ---
+
+    /// Returns the width of the lattice grid.
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    /// Returns the height of the lattice grid.
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
+    /// Returns a slice of the macroscopic density field.
+    pub fn density(&self) -> &[f64] {
+        &self.rho
+    }
+
+    /// Returns a slice of the macroscopic X-velocity field.
+    pub fn velocity_x(&self) -> &[f64] {
+        &self.ux
+    }
+
+    /// Returns a slice of the macroscopic Y-velocity field.
+    pub fn velocity_y(&self) -> &[f64] {
+        &self.uy
+    }
+
+    /// Returns a slice of the obstacle mask (true = obstacle).
+    pub fn obstacles(&self) -> &[bool] {
+        &self.obstacles
     }
 }
