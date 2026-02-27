@@ -72,12 +72,13 @@ impl Trainable for TwoLayerMLP {
         let (_, d_w1, d_b1) = linear_backward(&d_z1, x, &self.layer1.weights);
 
         // --- Update ---
+        // Use legacy update methods provided by the Optimizer facade
         // Layer 2
-        optimizer.update_matrix(2, &mut self.layer2.weights, &d_w2);
-        optimizer.update_vector(2, &mut self.layer2.bias, &d_b2);
+        optimizer.update_matrix_legacy(2, &mut self.layer2.weights, &d_w2);
+        optimizer.update_vector_legacy(2, &mut self.layer2.bias, &d_b2);
 
         // Layer 1
-        optimizer.update_matrix(1, &mut self.layer1.weights, &d_w1);
-        optimizer.update_vector(1, &mut self.layer1.bias, &d_b1);
+        optimizer.update_matrix_legacy(1, &mut self.layer1.weights, &d_w1);
+        optimizer.update_vector_legacy(1, &mut self.layer1.bias, &d_b1);
     }
 }
