@@ -69,24 +69,22 @@ impl ReactionModel for SchnakenbergKinetics {
         rates[1] = out[1];
     }
 
-    fn add_reaction_batch(&self, concentrations: &[Vec<f64>], rates: &mut [Vec<f64>]) {
-        if concentrations.len() < 2 || rates.len() < 2 {
+    fn add_reaction_batch(
+        &self,
+        state: &crate::biology::reaction_diffusion::ChemicalState,
+        rates: &mut crate::biology::reaction_diffusion::ChemicalState,
+    ) {
+        if state.num_species() < 2 {
             return;
         }
 
-        let u_vec = &concentrations[0];
-        let v_vec = &concentrations[1];
+        let u_vec = state.species(0);
+        let v_vec = state.species(1);
+
+        let n = state.grid_size();
 
         // Split mutable borrow to access both rate vectors simultaneously
-        let (left, right) = rates.split_at_mut(1);
-        let rates_u = &mut left[0];
-        let rates_v = &mut right[0];
-
-        let n = u_vec
-            .len()
-            .min(v_vec.len())
-            .min(rates_u.len())
-            .min(rates_v.len());
+        let (rates_u, rates_v) = rates.concentrations.split_at_mut(n);
 
         // Vectorized loop: Access memory linearly, enabling prefetch and SIMD
         for i in 0..n {

@@ -83,8 +83,8 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
         let inv_dx_sq = 1.0 / dx_sq;
 
         for (s, d) in coeffs.iter().enumerate().take(n_species) {
-            let u = &state.concentrations[s];
-            let out_u = &mut out.concentrations[s];
+            let u = state.species(s);
+            let out_u = out.species_mut(s);
             let d = *d;
             apply_1d_stencil(u, out_u, d, inv_dx_sq);
         }
@@ -354,8 +354,8 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
         );
 
         for (s, coeff) in coeffs.iter().enumerate().take(n_species) {
-            let src = &state.concentrations[s];
-            let dst = &mut out.concentrations[s];
+            let src = state.species(s);
+            let dst = out.species_mut(s);
             let coeff = *coeff;
 
             apply_2d_stencil_optimized(self.width, self.height, self.dx, self.dy, src, dst, coeff);
