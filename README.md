@@ -344,6 +344,17 @@ cargo run --release --package math_explorer --example lorenz_chaos
 
 ---
 
+## 👻 Ghost Modules
+
+Some modules are intentionally excluded from the default compilation to reduce build times or avoid heavy external dependencies (like LibTorch). These are called "Ghost Modules."
+
+### Example: Generative Turbulence
+A deep learning-based module for generating turbulent flow fields using `tch-rs`. It is excluded by default because it requires a local LibTorch installation.
+
+To learn how to enable it and explore the code, see the [Generative Turbulence Documentation](math_explorer/src/applied/generative_turbulence/README.md).
+
+---
+
 ##  Testing
 
 We rely on standard Rust testing frameworks. To verify the integrity of all mathematical implementations:
