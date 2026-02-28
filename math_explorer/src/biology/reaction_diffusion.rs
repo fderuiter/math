@@ -63,7 +63,11 @@ impl Add for ChemicalState {
     type Output = Self;
 
     fn add(mut self, rhs: Self) -> Self {
-        for (val, r_val) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+        for (val, r_val) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
             *val += r_val;
         }
         self
@@ -72,7 +76,11 @@ impl Add for ChemicalState {
 
 impl AddAssign for ChemicalState {
     fn add_assign(&mut self, rhs: Self) {
-        for (val, r_val) in self.concentrations.iter_mut().zip(rhs.concentrations.iter()) {
+        for (val, r_val) in self
+            .concentrations
+            .iter_mut()
+            .zip(rhs.concentrations.iter())
+        {
             *val += r_val;
         }
     }
@@ -99,7 +107,11 @@ impl MulAssign<f64> for ChemicalState {
 
 impl VectorOperations for ChemicalState {
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (val, r_val) in self.concentrations.iter_mut().zip(other.concentrations.iter()) {
+        for (val, r_val) in self
+            .concentrations
+            .iter_mut()
+            .zip(other.concentrations.iter())
+        {
             *val += r_val * scale;
         }
     }
@@ -164,15 +176,15 @@ pub trait ReactionModel {
 
         for i in 0..n_grid {
             // Gather
-            for s in 0..n_species {
-                local_concs[s] = state.species(s)[i];
+            for (s, conc) in local_concs.iter_mut().enumerate().take(n_species) {
+                *conc = state.species(s)[i];
             }
 
             self.reaction(&local_concs, &mut local_rates);
 
             // Scatter (Accumulate)
-            for s in 0..n_species {
-                out_rates.species_mut(s)[i] += local_rates[s];
+            for (s, rate) in local_rates.iter().enumerate().take(n_species) {
+                out_rates.species_mut(s)[i] += rate;
             }
         }
     }

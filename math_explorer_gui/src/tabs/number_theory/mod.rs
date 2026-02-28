@@ -4,16 +4,9 @@ use eframe::egui;
 mod prime_spiral;
 use prime_spiral::PrimeSpiralWidget;
 
+#[derive(Default)]
 pub struct NumberTheoryTab {
     prime_spiral: PrimeSpiralWidget,
-}
-
-impl Default for NumberTheoryTab {
-    fn default() -> Self {
-        Self {
-            prime_spiral: PrimeSpiralWidget::default(),
-        }
-    }
 }
 
 impl ExplorerTab for NumberTheoryTab {
