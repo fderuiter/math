@@ -62,7 +62,7 @@ impl PrimeSpiralWidget {
             is_prime_lookup[p as usize] = true;
         }
 
-        for i in 1..=num_pixels {
+        for (i, &is_prime) in is_prime_lookup.iter().enumerate().take(num_pixels + 1).skip(1) {
             // Fix unary negation on usize by casting to i32 first
             if (-(size as i32) / 2 <= x)
                 && (x <= size as i32 / 2)
@@ -73,7 +73,7 @@ impl PrimeSpiralWidget {
                 let py = (center_y + y) as usize;
 
                 if px < size && py < size {
-                    if is_prime_lookup[i] {
+                    if is_prime {
                         pixels[py * size + px] = Color32::WHITE;
                     }
                     if i == 1 {
