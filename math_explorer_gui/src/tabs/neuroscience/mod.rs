@@ -2,9 +2,11 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod hodgkin_huxley;
+pub mod neural_network_viz;
 pub mod spike_analysis;
 
 use hodgkin_huxley::HodgkinHuxleyTool;
+use neural_network_viz::NeuralNetworkVizTool;
 use spike_analysis::SpikeAnalysisTool;
 
 /// A trait for sub-tools within the Neuroscience tab.
@@ -27,6 +29,7 @@ impl Default for NeuroscienceTab {
             tools: vec![
                 Box::new(HodgkinHuxleyTool::default()),
                 Box::new(SpikeAnalysisTool::default()),
+                Box::new(NeuralNetworkVizTool::default()),
             ],
             selected_tool_index: 0,
         }
