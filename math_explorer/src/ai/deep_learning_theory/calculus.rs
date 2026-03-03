@@ -69,3 +69,33 @@ where
     let dz = prime_fn(z);
     grad_a.component_mul(&dz) // Element-wise multiplication (Hadamard product)
 }
+
+/// Tanh activation function: f(z) = tanh(z).
+pub fn tanh(z: &Vector) -> Vector {
+    z.map(|v| v.tanh())
+}
+
+/// Derivative of Tanh: f'(z) = 1 - tanh^2(z).
+pub fn tanh_prime(z: &Vector) -> Vector {
+    let t = tanh(z);
+    t.map(|v| 1.0 - v * v)
+}
+
+/// GELU (Gaussian Error Linear Unit) activation function: f(z) = 0.5 * z * (1 + tanh(sqrt(2/pi) * (z + 0.044715 * z^3))).
+/// Using the approximate formulation.
+pub fn gelu(z: &Vector) -> Vector {
+    let sqrt_2_over_pi = (2.0f64 / std::f64::consts::PI).sqrt();
+    z.map(|v| 0.5 * v * (1.0 + (sqrt_2_over_pi * (v + 0.044715 * v.powi(3))).tanh()))
+}
+
+/// Derivative of GELU (approximate).
+pub fn gelu_prime(z: &Vector) -> Vector {
+    let sqrt_2_over_pi = (2.0f64 / std::f64::consts::PI).sqrt();
+    z.map(|v| {
+        let x = sqrt_2_over_pi * (v + 0.044715 * v.powi(3));
+        let tanh_x = x.tanh();
+        let sech2_x = 1.0 - tanh_x * tanh_x;
+        0.5 * (1.0 + tanh_x)
+            + 0.5 * v * sech2_x * sqrt_2_over_pi * (1.0 + 3.0 * 0.044715 * v.powi(2))
+    })
+}

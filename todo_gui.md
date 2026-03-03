@@ -84,7 +84,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Features:**
     *   [x] **Loss Landscape:** 3D surface plot of loss functions.
     *   [x] **Training Monitor:** Real-time curves for training/validation loss and accuracy.
-    *   [ ] **Activation Functions:** Interactive plotter for ReLU, Sigmoid, Tanh, GELU, etc.
+    *   [x] **Activation Functions:** Interactive plotter for ReLU, Sigmoid, Tanh, GELU, etc.
 
 ### 3.2 Reinforcement Learning
 *   **Module:** `ai::reinforcement_learning`
