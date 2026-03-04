@@ -1,6 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod activation_functions;
 pub mod loss_landscape;
 pub mod training_monitor;
 
@@ -24,6 +25,7 @@ impl Default for AiTab {
             tools: vec![
                 Box::new(loss_landscape::LossLandscapeTool::default()),
                 Box::new(training_monitor::TrainingMonitorTool::default()),
+                Box::new(activation_functions::ActivationFunctionsTool::default()),
             ],
             selected_tool_index: 0,
         }
