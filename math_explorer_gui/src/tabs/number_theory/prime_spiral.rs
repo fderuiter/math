@@ -62,7 +62,12 @@ impl PrimeSpiralWidget {
             is_prime_lookup[p as usize] = true;
         }
 
-        for (i, &is_prime) in is_prime_lookup.iter().enumerate().take(num_pixels + 1).skip(1) {
+        for (i, &is_prime) in is_prime_lookup
+            .iter()
+            .enumerate()
+            .take(num_pixels + 1)
+            .skip(1)
+        {
             // Fix unary negation on usize by casting to i32 first
             if (-(size as i32) / 2 <= x)
                 && (x <= size as i32 / 2)

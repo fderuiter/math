@@ -11,7 +11,7 @@ enum ActivationFunction {
     ReLU,
     Sigmoid,
     Tanh,
-    GELU,
+    Gelu,
 }
 
 pub struct ActivationFunctionsTool {
@@ -43,14 +43,26 @@ impl AiTool for ActivationFunctionsTool {
             ui.separator();
 
             ui.label("Select Activation Function:");
-            ui.radio_value(&mut self.selected_function, ActivationFunction::ReLU, "ReLU");
+            ui.radio_value(
+                &mut self.selected_function,
+                ActivationFunction::ReLU,
+                "ReLU",
+            );
             ui.radio_value(
                 &mut self.selected_function,
                 ActivationFunction::Sigmoid,
                 "Sigmoid",
             );
-            ui.radio_value(&mut self.selected_function, ActivationFunction::Tanh, "Tanh");
-            ui.radio_value(&mut self.selected_function, ActivationFunction::GELU, "GELU");
+            ui.radio_value(
+                &mut self.selected_function,
+                ActivationFunction::Tanh,
+                "Tanh",
+            );
+            ui.radio_value(
+                &mut self.selected_function,
+                ActivationFunction::Gelu,
+                "GELU",
+            );
 
             ui.separator();
             ui.label("Plot Range");
@@ -83,7 +95,7 @@ impl AiTool for ActivationFunctionsTool {
                     ui.label("f(x) = tanh(x)");
                     ui.label("f'(x) = 1 - tanh^2(x)");
                 }
-                ActivationFunction::GELU => {
+                ActivationFunction::Gelu => {
                     ui.label("f(x) ≈ 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))");
                 }
             }
@@ -104,7 +116,7 @@ impl AiTool for ActivationFunctionsTool {
                 ActivationFunction::ReLU => (relu(&x_vec), relu_prime(&x_vec)),
                 ActivationFunction::Sigmoid => (sigmoid(&x_vec), sigmoid_prime(&x_vec)),
                 ActivationFunction::Tanh => (tanh(&x_vec), tanh_prime(&x_vec)),
-                ActivationFunction::GELU => (gelu(&x_vec), gelu_prime(&x_vec)),
+                ActivationFunction::Gelu => (gelu(&x_vec), gelu_prime(&x_vec)),
             };
 
             // Map to egui_plot points
