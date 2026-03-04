@@ -39,8 +39,12 @@ impl Default for NeuralNetworkVizTool {
             let next = (i + 1) % num_neurons;
             let prev = (i + num_neurons - 1) % num_neurons;
 
-            weights[next][i] = 2.0; // Excitatory connection
-            weights[prev][i] = -1.0; // Inhibitory connection
+            if let Some(row) = weights.get_mut(next) {
+                row[i] = 2.0; // Excitatory connection
+            }
+            if let Some(row) = weights.get_mut(prev) {
+                row[i] = -1.0; // Inhibitory connection
+            }
         }
 
         // Inject some initial current into the first neuron to kickstart
@@ -68,16 +72,16 @@ impl NeuralNetworkVizTool {
 
         // Compute synaptic currents.
         // Simple model: if a presynaptic neuron is firing (V > 0), inject current.
-        for i in 0..num_neurons {
-            for j in 0..num_neurons {
-                if self.neurons[j].v() > 0.0 {
-                    next_inputs[i] += self.weights[i][j] * 50.0; // Synaptic strength scalar
+        for (i, input) in next_inputs.iter_mut().enumerate().take(num_neurons) {
+            for (j, neuron) in self.neurons.iter().enumerate().take(num_neurons) {
+                if neuron.v() > 0.0 {
+                    *input += self.weights[i][j] * 50.0; // Synaptic strength scalar
                 }
             }
         }
 
-        for i in 0..num_neurons {
-            let total_i_ext = self.external_input[i] + next_inputs[i];
+        for (i, input) in next_inputs.iter().enumerate().take(num_neurons) {
+            let total_i_ext = self.external_input[i] + input;
             self.neurons[i].update(self.dt, total_i_ext);
         }
     }

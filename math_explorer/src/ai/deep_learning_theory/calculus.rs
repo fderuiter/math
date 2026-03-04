@@ -85,9 +85,7 @@ pub fn tanh_prime(z: &Vector) -> Vector {
 /// Approximation: 0.5 * z * (1 + tanh(sqrt(2/pi) * (z + 0.044715 * z^3)))
 pub fn gelu(z: &Vector) -> Vector {
     let sqrt_2_over_pi = (2.0f64 / std::f64::consts::PI).sqrt();
-    z.map(|v| {
-        0.5 * v * (1.0 + (sqrt_2_over_pi * (v + 0.044715 * v.powi(3))).tanh())
-    })
+    z.map(|v| 0.5 * v * (1.0 + (sqrt_2_over_pi * (v + 0.044715 * v.powi(3))).tanh()))
 }
 
 /// Derivative of GELU (Approximation).
