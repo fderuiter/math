@@ -89,7 +89,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 3.2 Reinforcement Learning
 *   **Module:** `ai::reinforcement_learning`
 *   **Features:**
-    *   [ ] **Grid World:** Agent navigation visualization.
+    *   [x] **Grid World:** Agent navigation visualization.
     *   [ ] **Q-Table Inspector:** Heatmap of Q-values.
     *   [ ] **Reward Plots:** Cumulative reward over episodes.
 
