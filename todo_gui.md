@@ -109,12 +109,12 @@ This document outlines the roadmap for integrating the various modules of the `m
     *   [x] **Capacity Fade:** Plot capacity vs. cycle number based on depth of discharge (DoD) and temperature.
     *   [ ] **Lifetime Estimator:** Calculator for expected battery life under specific usage profiles.
 
-### 4.2 Clinical Trials
+### 4.2 Clinical Trials - **[Implemented]**
 *   **Module:** `applied::clinical_trials`
 *   **Features:**
     *   [x] **Survival Curves:** Kaplan-Meier plot generator.
     *   [x] **Sample Size Calculator:** Form inputs for $\alpha$, $\beta$, and effect size.
-    *   [ ] **Randomization:** Interactive subject allocation tool.
+    *   [x] **Randomization:** Interactive subject allocation tool.
 
 ### 4.3 Favoritism (Satirical)
 *   **Module:** `applied::favoritism`
