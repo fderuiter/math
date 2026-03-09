@@ -1,15 +1,15 @@
-use crate::tabs::ExplorerTab;
+use super::BatteryDegradationTool;
 use eframe::egui;
 use egui_plot::{HLine, Line, Plot, PlotPoints};
 use math_explorer::applied::battery_degradation::{Cycles, DepthOfDischarge, PowerLawModel};
 
-pub struct BatteryDegradationTab {
+pub struct CapacityFadeTool {
     dod: f64,
     temperature: f64,
     cycles_to_simulate: f64,
 }
 
-impl Default for BatteryDegradationTab {
+impl Default for CapacityFadeTool {
     fn default() -> Self {
         Self {
             dod: 80.0,
@@ -19,12 +19,12 @@ impl Default for BatteryDegradationTab {
     }
 }
 
-impl ExplorerTab for BatteryDegradationTab {
+impl BatteryDegradationTool for CapacityFadeTool {
     fn name(&self) -> &'static str {
-        "Battery Degradation"
+        "Capacity Fade"
     }
 
-    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn show(&mut self, ctx: &egui::Context) {
         // Enforce valid ranges for internal state before using it
         self.dod = self.dod.clamp(0.0, 100.0);
         self.cycles_to_simulate = self.cycles_to_simulate.max(100.0);
