@@ -96,7 +96,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 3.3 Transformers
 *   **Module:** `ai::transformer`
 *   **Features:**
-    *   [ ] **Attention Maps:** Heatmap visualization of self-attention weights.
+    *   [x] **Attention Maps:** Heatmap visualization of self-attention weights.
     *   [ ] **Tokenization:** Text input field showing token breakdown and embeddings.
 
 ---
