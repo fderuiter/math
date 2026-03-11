@@ -1,9 +1,11 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod randomization;
 pub mod sample_size;
 pub mod survival;
 
+use randomization::RandomizationTool;
 use sample_size::SampleSizeCalculatorTool;
 use survival::SurvivalAnalysisTool;
 
@@ -27,6 +29,7 @@ impl Default for ClinicalTrialsTab {
             tools: vec![
                 Box::new(SurvivalAnalysisTool::default()),
                 Box::new(SampleSizeCalculatorTool::default()),
+                Box::new(RandomizationTool::default()),
             ],
             selected_tool_index: 0,
         }
