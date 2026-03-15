@@ -86,7 +86,7 @@ impl NetworkEpidemicModel {
         let mut next_states = self.states.clone();
         let mut rng = rand::thread_rng();
 
-        for i in 0..self.num_nodes {
+        for (i, next_state) in next_states.iter_mut().enumerate().take(self.num_nodes) {
             match self.states[i] {
                 NodeState::Susceptible => {
                     // Check infected neighbors
@@ -96,14 +96,14 @@ impl NetworkEpidemicModel {
                         .count();
                     for _ in 0..infected_neighbors {
                         if rng.r#gen::<f64>() < self.beta {
-                            next_states[i] = NodeState::Infected;
+                            *next_state = NodeState::Infected;
                             break;
                         }
                     }
                 }
                 NodeState::Infected => {
                     if rng.r#gen::<f64>() < self.gamma {
-                        next_states[i] = NodeState::Recovered;
+                        *next_state = NodeState::Recovered;
                     }
                 }
                 NodeState::Recovered => {}
