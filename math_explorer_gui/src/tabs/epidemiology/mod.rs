@@ -1,8 +1,10 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod network_propagation;
 pub mod sir;
 
+use network_propagation::NetworkPropagationTool;
 use sir::SirTool;
 
 /// A trait for sub-tools within the Epidemiology tab.
@@ -22,7 +24,10 @@ pub struct EpidemiologyTab {
 impl Default for EpidemiologyTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(SirTool::default())],
+            tools: vec![
+                Box::new(SirTool::default()),
+                Box::new(NetworkPropagationTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }

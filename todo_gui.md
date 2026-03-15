@@ -61,7 +61,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Features:**
     *   [x] **SIR/SEIR Models:** Time-series plots of Susceptible, Infected, Recovered populations.
     *   [x] **Parameter Sliders:** Adjust transmission rate ($\beta$) and recovery rate ($\gamma$).
-    *   [ ] **Network Propagation:** Graph visualization of disease spread through a population.
+    *   [x] **Network Propagation:** Graph visualization of disease spread through a population.
 
 ### 2.3 Evolutionary Game Theory
 *   **Module:** `applied::game_theory::evolutionary`
