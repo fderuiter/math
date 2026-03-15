@@ -1,8 +1,6 @@
 use super::BatteryDegradationTool;
 use eframe::egui;
-use math_explorer::applied::battery_degradation::{
-    Capacity, DepthOfDischarge, PowerLawModel,
-};
+use math_explorer::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
 
 pub struct LifetimeEstimatorTool {
     target_capacity: f64,
