@@ -125,7 +125,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 4.4 Financial Math (Kelly Criterion)
 *   **Module:** `pure_math::statistics::kelly`
 *   **Features:**
-    *   [ ] **Bankroll Growth:** Simulation of wealth over multiple bets using Kelly vs. fractional Kelly.
+    *   [x] **Bankroll Growth:** Simulation of wealth over multiple bets using Kelly vs. fractional Kelly.
     *   [ ] **Bet Size Calculator:** Input fields for odds and probability of winning.
 
 ---
