@@ -29,12 +29,13 @@ impl Default for AttentionMapsTool {
 
 impl AttentionMapsTool {
     fn recalculate(&mut self) {
-        let (output, weights) = math_explorer::ai::transformer::attention::scaled_dot_product_attention(
-            &self.q_matrix,
-            &self.k_matrix,
-            &self.v_matrix,
-            None,
-        );
+        let (output, weights) =
+            math_explorer::ai::transformer::attention::scaled_dot_product_attention(
+                &self.q_matrix,
+                &self.k_matrix,
+                &self.v_matrix,
+                None,
+            );
         self.output_matrix = output;
         self.attention_weights = weights;
     }
@@ -93,10 +94,8 @@ impl AttentionMapsTool {
                             ((1.0 - normalized) * 200.0 + 55.0) as u8,
                         );
 
-                        let (rect, _response) = ui.allocate_exact_size(
-                            egui::vec2(40.0, 40.0),
-                            egui::Sense::hover(),
-                        );
+                        let (rect, _response) =
+                            ui.allocate_exact_size(egui::vec2(40.0, 40.0), egui::Sense::hover());
 
                         ui.painter().rect_filled(rect, 2.0, color);
 
@@ -135,13 +134,15 @@ impl AiTool for AttentionMapsTool {
                     ui.vertical(|ui| {
                         let mut changed = false;
                         ui.group(|ui| {
-                            changed |= Self::draw_matrix_input(ui, "Queries (Q)", &mut self.q_matrix);
+                            changed |=
+                                Self::draw_matrix_input(ui, "Queries (Q)", &mut self.q_matrix);
                         });
                         ui.group(|ui| {
                             changed |= Self::draw_matrix_input(ui, "Keys (K)", &mut self.k_matrix);
                         });
                         ui.group(|ui| {
-                            changed |= Self::draw_matrix_input(ui, "Values (V)", &mut self.v_matrix);
+                            changed |=
+                                Self::draw_matrix_input(ui, "Values (V)", &mut self.v_matrix);
                         });
 
                         if changed {
@@ -153,7 +154,11 @@ impl AiTool for AttentionMapsTool {
 
                     ui.vertical(|ui| {
                         ui.group(|ui| {
-                            Self::draw_heatmap(ui, "Attention Weights (softmax(Q * K^T / sqrt(d_k)))", &self.attention_weights);
+                            Self::draw_heatmap(
+                                ui,
+                                "Attention Weights (softmax(Q * K^T / sqrt(d_k)))",
+                                &self.attention_weights,
+                            );
                         });
 
                         ui.add_space(20.0);
