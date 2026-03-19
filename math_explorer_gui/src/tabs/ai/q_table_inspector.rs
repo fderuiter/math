@@ -1,9 +1,7 @@
+use super::grid_world::{GridState, GridWorldEnv, Move};
 use crate::tabs::ai::AiTool;
 use eframe::egui;
-use math_explorer::ai::reinforcement_learning::{
-    algorithms::TabularQAgent, MarkovDecisionProcess,
-};
-use super::grid_world::{GridState, Move, GridWorldEnv};
+use math_explorer::ai::reinforcement_learning::{algorithms::TabularQAgent, MarkovDecisionProcess};
 
 #[derive(Clone, Copy, PartialEq)]
 enum HeatmapView {
@@ -58,13 +56,8 @@ impl QTableInspectorTool {
                     let reward = self.env.reward(&current_state, &action, &next_state);
                     let next_actions = self.env.actions(&next_state);
 
-                    self.agent.update(
-                        &current_state,
-                        &action,
-                        reward,
-                        &next_state,
-                        &next_actions,
-                    );
+                    self.agent
+                        .update(&current_state, &action, reward, &next_state, &next_actions);
 
                     current_state = next_state;
                 }
@@ -133,12 +126,14 @@ impl AiTool for QTableInspectorTool {
             ui.label("Legend:");
             ui.horizontal(|ui| {
                 ui.label("Goal:");
-                let (response, painter) = ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
+                let (response, painter) =
+                    ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
                 painter.rect_filled(response.rect, 0.0, egui::Color32::GREEN);
             });
             ui.horizontal(|ui| {
                 ui.label("Trap:");
-                let (response, painter) = ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
+                let (response, painter) =
+                    ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
                 painter.rect_filled(response.rect, 0.0, egui::Color32::RED);
             });
         });
@@ -163,8 +158,12 @@ impl AiTool for QTableInspectorTool {
                 for y in 0..self.env.height {
                     let state = GridState { x, y };
                     let q = self.get_q_value_for_view(&state);
-                    if q < min_q { min_q = q; }
-                    if q > max_q { max_q = q; }
+                    if q < min_q {
+                        min_q = q;
+                    }
+                    if q > max_q {
+                        max_q = q;
+                    }
                 }
             }
 

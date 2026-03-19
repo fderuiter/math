@@ -12,7 +12,7 @@ pub trait PredictorModel {
 
     /// Updates the weights of the predictor using the provided optimizer.
     /// Note: This replaces the previous simplified learning rate update.
-    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O);
+    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O) -> Result<(), crate::ai::optimization::OptimizationError>;
 }
 
 /// A multi-layer perceptron (MLP) used as the predictor in the CERA framework.
@@ -89,7 +89,7 @@ impl PredictorModel for Predictor {
         x
     }
 
-    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O) {
+    fn update_weights<O: Optimizer<f32>>(&mut self, optimizer: &mut O) -> Result<(), crate::ai::optimization::OptimizationError> {
         for (i, layer) in self.layers.iter_mut().enumerate() {
             // Placeholder: Generate random gradients to simulate training dynamics
             // In a real implementation, these would come from backpropagation.
@@ -99,9 +99,10 @@ impl PredictorModel for Predictor {
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| rand::random::<f32>() - 0.5);
 
             // Use the optimizer strategy to update weights
-            optimizer.update_matrix_legacy(i, &mut layer.kernel, &grad_k);
-            optimizer.update_vector_legacy(i, &mut layer.bias, &grad_b);
+            optimizer.update_matrix_legacy(i, &mut layer.kernel, &grad_k)?;
+            optimizer.update_vector_legacy(i, &mut layer.bias, &grad_b)?;
         }
+        Ok(())
     }
 }
 

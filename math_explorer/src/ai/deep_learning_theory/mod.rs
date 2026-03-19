@@ -73,7 +73,7 @@
 //! let y_target = DVector::from_vec(vec![1.0, 0.0]); // One-hot for Class 0
 //!
 //! // 5. Perform a Single Training Step
-//! let loss = model.train_step(&x, &y_target);
+//! let loss = model.train_step(&x, &y_target).unwrap();
 //!
 //! println!("Initial Loss: {:.4}", loss);
 //!

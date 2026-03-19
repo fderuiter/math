@@ -32,7 +32,13 @@ impl Default for TrainingMonitorTool {
         let hidden_dim = 16;
         let learning_rate = 0.01;
 
-        let optimizer = Box::new(Adam::new(learning_rate));
+        // Fallback to SGD if Adam fails (though it shouldn't for f64 constants).
+        let optimizer: Box<dyn math_explorer::ai::optimization::Optimizer<f64>> =
+            match Adam::new(learning_rate) {
+                Ok(adam) => Box::new(adam),
+                Err(_) => Box::new(math_explorer::ai::optimization::SGD::new(learning_rate)),
+            };
+
         let training_loop = TrainingLoop::new(2, hidden_dim, 2, optimizer);
 
         let data = generate_spiral_data(100);
@@ -52,12 +58,14 @@ impl Default for TrainingMonitorTool {
 
 impl TrainingMonitorTool {
     fn reset(&mut self) {
-        let optimizer = Box::new(Adam::new(self.learning_rate));
-        self.training_loop = TrainingLoop::new(2, self.hidden_dim, 2, optimizer);
-        self.epoch = 0;
-        self.loss_history.clear();
-        self.accuracy_history.clear();
-        self.is_training = false;
+        if let Ok(adam) = Adam::new(self.learning_rate) {
+            let optimizer = Box::new(adam);
+            self.training_loop = TrainingLoop::new(2, self.hidden_dim, 2, optimizer);
+            self.epoch = 0;
+            self.loss_history.clear();
+            self.accuracy_history.clear();
+            self.is_training = false;
+        }
 
         // Regenerate data for freshness
         self.data = generate_spiral_data(100);
@@ -70,7 +78,7 @@ impl TrainingMonitorTool {
         // Simple Full Batch (or online for simplicity)
         // Here we do online updates (SGD style loop) over the dataset
         for (x, y_true) in &self.data {
-            let loss = self.training_loop.train_step(x, y_true);
+            let loss = self.training_loop.train_step(x, y_true).unwrap_or(0.0);
             epoch_loss += loss;
 
             // Check accuracy

@@ -19,7 +19,7 @@ pub trait Trainable {
         x: &Vector,
         loss_grad: &Vector,
         optimizer: &mut dyn Optimizer<f64>,
-    );
+    ) -> Result<(), crate::ai::optimization::OptimizationError>;
 }
 
 /// A standard Two-Layer Multi-Layer Perceptron (MLP).
@@ -50,7 +50,7 @@ impl Trainable for TwoLayerMLP {
         x: &Vector,
         loss_grad: &Vector,
         optimizer: &mut dyn Optimizer<f64>,
-    ) {
+    ) -> Result<(), crate::ai::optimization::OptimizationError> {
         // --- Forward Re-computation (needed for gradients) ---
         // Ideally, we'd cache these, but re-computing is simpler for this educational example.
         let z1 = self.layer1.forward(x);
@@ -74,11 +74,13 @@ impl Trainable for TwoLayerMLP {
         // --- Update ---
         // Use legacy update methods provided by the Optimizer facade
         // Layer 2
-        optimizer.update_matrix_legacy(2, &mut self.layer2.weights, &d_w2);
-        optimizer.update_vector_legacy(2, &mut self.layer2.bias, &d_b2);
+        optimizer.update_matrix_legacy(2, &mut self.layer2.weights, &d_w2)?;
+        optimizer.update_vector_legacy(2, &mut self.layer2.bias, &d_b2)?;
 
         // Layer 1
-        optimizer.update_matrix_legacy(1, &mut self.layer1.weights, &d_w1);
-        optimizer.update_vector_legacy(1, &mut self.layer1.bias, &d_b1);
+        optimizer.update_matrix_legacy(1, &mut self.layer1.weights, &d_w1)?;
+        optimizer.update_vector_legacy(1, &mut self.layer1.bias, &d_b1)?;
+
+        Ok(())
     }
 }

@@ -16,12 +16,12 @@ fn test_deep_learning_cycle() {
 
     // Initial prediction should be close to uniform or random
     let _initial_pred = network.predict(&x);
-    let initial_loss = network.train_step(&x, &y_true);
+    let initial_loss = network.train_step(&x, &y_true).unwrap();
 
     // Train for a few steps
     let mut final_loss = 0.0;
     for _ in 0..100 {
-        final_loss = network.train_step(&x, &y_true);
+        final_loss = network.train_step(&x, &y_true).unwrap();
     }
 
     // Prediction should improve (loss should decrease)

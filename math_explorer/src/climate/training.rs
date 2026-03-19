@@ -38,12 +38,13 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
     /// the end-to-end testing of the model's architecture and data flow.
     /// A full implementation would require a proper autograd engine to compute
     /// gradients and an optimizer (e.g., Adam) to update the weights.
-    fn optimizer_step(&mut self) {
+    fn optimizer_step(&mut self) -> Result<(), crate::ai::optimization::OptimizationError> {
         // Use the autoencoder's interface for updates
-        self.model.autoencoder.update_weights(&mut self.optimizer);
+        self.model.autoencoder.update_weights(&mut self.optimizer)?;
 
         // Use the predictor's interface for updates
-        self.model.predictor.update_weights(&mut self.optimizer);
+        self.model.predictor.update_weights(&mut self.optimizer)?;
+        Ok(())
     }
 
     /// Trains the CERA model on synthetic data.
@@ -118,7 +119,7 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
                 );
 
                 // --- Backward pass and optimization ---
-                self.optimizer_step();
+                let _ = self.optimizer_step();
                 total_loss += loss;
             }
             if n_batches > 0 {
