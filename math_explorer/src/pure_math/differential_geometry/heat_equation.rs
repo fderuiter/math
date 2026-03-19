@@ -1,4 +1,4 @@
-use super::surface::ParametricSurface;
+use super::surface::{ParametricSurface, SurfaceAnalysis};
 
 /// Solves the Heat Equation $\frac{\partial u}{\partial t} = \alpha \Delta_S u$ on a parametric surface.
 /// Uses explicit Euler time-stepping with a discrete 5-point stencil for the Laplace-Beltrami operator.
