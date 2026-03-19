@@ -60,6 +60,6 @@
 //! *   **[FRACTRAN](fractran)**: Universal Minsky Machines and minimal space computation.
 
 pub mod combinatorics;
+pub mod fractran;
 pub mod geometry;
 pub mod kolmogorov;
-pub mod fractran;
