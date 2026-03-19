@@ -57,7 +57,9 @@
 //! *   **[Combinatorics](combinatorics)**: Implementation of the Combinatorial Lemma for similarity sets.
 //! *   **[Geometry](geometry)**: Geometric primitives (Points, Lines) using exact rational arithmetic.
 //! *   **[Kolmogorov](kolmogorov)**: Functions for approximating complexity bounds.
+//! *   **[FRACTRAN](fractran)**: Universal Minsky Machines and minimal space computation.
 
 pub mod combinatorics;
 pub mod geometry;
 pub mod kolmogorov;
+pub mod fractran;

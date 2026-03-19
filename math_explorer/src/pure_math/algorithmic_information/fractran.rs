@@ -1,0 +1,282 @@
+//! # FRACTRAN and Universal Minsky Machines
+//!
+//! This module provides a complete, mathematically rigorous implementation of FRACTRAN,
+//! an esoteric programming language developed by John Conway, and its relationship
+//! to Universal Minsky Machines (UMM).
+//!
+//! ## Mathematical Foundations
+//!
+//! A **FRACTRAN** program is an ordered list of positive rational numbers:
+//! $$ f_1, f_2, \dots, f_k $$
+//!
+//! The state of the machine is represented by a single positive integer $N$.
+//! In each step, the machine evaluates the products $N \cdot f_i$ in order.
+//! The state is updated to the first product that is an integer:
+//! $$ N \leftarrow N \cdot f_i $$
+//! The machine halts when no such product is an integer.
+//!
+//! ### FRACTRAN Encoding of Minsky Machines
+//!
+//! Minsky machines are register machines that can be simulated by FRACTRAN.
+//! Given registers $r_1, r_2, \dots$ and states $s_1, s_2, \dots$, we assign:
+//! - Distinct primes $p_j$ for each register $r_j$.
+//! - Distinct primes $q_i$ for each state $s_i$.
+//!
+//! The state of the Minsky machine with register values $a_1, a_2, \dots$ and
+//! state $s_i$ is encoded as:
+//! $$ N = q_i \prod p_j^{a_j} $$
+//!
+//! Each Minsky instruction is compiled into one or more FRACTRAN fractions:
+//!
+//! 1.  **INC $r_j$ and go to $s_{next}$:**
+//!     $$ \frac{q_{next} \cdot p_j}{q_i} $$
+//!
+//! 2.  **JZDEC $r_j$: If $a_j > 0$, decrement $r_j$ and go to $s_T$, else go to $s_F$:**
+//!     This requires two fractions in sequence:
+//!     $$ \frac{q_T}{q_i \cdot p_j} \quad \text{(Success: } a_j > 0 \text{)} $$
+//!     $$ \frac{q_F}{q_i} \quad \text{(Fail/Jump: } a_j = 0 \text{)} $$
+
+use rug::{Integer, Rational};
+use rug::ops::Pow;
+
+/// An instruction for a Minsky Machine.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MinskyInstruction {
+    /// Increment register `r_j` and transition to state `s_next`.
+    ///
+    /// FRACTRAN encoding: $\frac{s_{next} \cdot p_j}{s_{curr}}$
+    Inc {
+        /// The current state.
+        state: usize,
+        /// The register index to increment.
+        register: usize,
+        /// The next state to transition to.
+        next_state: usize,
+    },
+    /// Jump-if-Zero or Decrement.
+    /// If register `r_j > 0`, decrement `r_j` and transition to `s_success`.
+    /// Else, transition to `s_fail`.
+    ///
+    /// FRACTRAN encoding:
+    /// 1. $\frac{s_{success}}{s_{curr} \cdot p_j}$
+    /// 2. $\frac{s_{fail}}{s_{curr}}$
+    Jzdec {
+        /// The current state.
+        state: usize,
+        /// The register index to check/decrement.
+        register: usize,
+        /// The state to transition to if `r_j > 0`.
+        success_state: usize,
+        /// The state to transition to if `r_j == 0`.
+        fail_state: usize,
+    },
+}
+
+/// A Minsky Machine containing a list of instructions.
+#[derive(Debug, Clone)]
+pub struct MinskyMachine {
+    pub instructions: Vec<MinskyInstruction>,
+}
+
+impl MinskyMachine {
+    /// Create a new Minsky Machine.
+    pub fn new(instructions: Vec<MinskyInstruction>) -> Self {
+        Self { instructions }
+    }
+}
+
+/// A FRACTRAN program represented by a list of rational numbers.
+#[derive(Debug, Clone)]
+pub struct FractranProgram {
+    pub fractions: Vec<Rational>,
+}
+
+impl FractranProgram {
+    /// Create a new FRACTRAN program.
+    pub fn new(fractions: Vec<Rational>) -> Self {
+        Self { fractions }
+    }
+
+    /// Execute a single step of the FRACTRAN program.
+    /// Returns `Some(new_n)` if a step was taken, or `None` if the program halted.
+    pub fn step(&self, n: &Integer) -> Option<Integer> {
+        let n_rational = Rational::from(n.clone());
+        for fraction in &self.fractions {
+            let product = n_rational.clone() * fraction;
+            if product.is_integer() {
+                return Some(product.numer().clone());
+            }
+        }
+        None
+    }
+
+    /// Execute the program for a maximum number of steps or until halting.
+    pub fn execute(&self, initial_n: Integer, max_steps: usize) -> (Integer, usize) {
+        let mut n = initial_n;
+        for steps in 0..max_steps {
+            if let Some(next_n) = self.step(&n) {
+                n = next_n;
+            } else {
+                return (n, steps);
+            }
+        }
+        (n, max_steps)
+    }
+}
+
+/// Compiler to translate a Minsky Machine into a FRACTRAN program.
+pub struct FractranCompiler {
+    pub state_primes: Vec<Integer>,
+    pub register_primes: Vec<Integer>,
+}
+
+impl FractranCompiler {
+    /// Create a new FRACTRAN compiler with the given prime assignments.
+    pub fn new(state_primes: Vec<u64>, register_primes: Vec<u64>) -> Self {
+        Self {
+            state_primes: state_primes.into_iter().map(Integer::from).collect(),
+            register_primes: register_primes.into_iter().map(Integer::from).collect(),
+        }
+    }
+
+    /// Compile a Minsky Machine into a FRACTRAN program.
+    pub fn compile(&self, machine: &MinskyMachine) -> FractranProgram {
+        let mut fractions = Vec::new();
+
+        for instr in &machine.instructions {
+            match instr {
+                MinskyInstruction::Inc {
+                    state,
+                    register,
+                    next_state,
+                } => {
+                    // frac: (s_next * p_r) / s
+                    let s_next = &self.state_primes[*next_state];
+                    let p_r = &self.register_primes[*register];
+                    let s = &self.state_primes[*state];
+
+                    let numer = s_next.clone() * p_r;
+                    let denom = s.clone();
+                    fractions.push(Rational::from((numer, denom)));
+                }
+                MinskyInstruction::Jzdec {
+                    state,
+                    register,
+                    success_state,
+                    fail_state,
+                } => {
+                    // frac 1: s_T / (s * p_r)
+                    let s_success = &self.state_primes[*success_state];
+                    let s = &self.state_primes[*state];
+                    let p_r = &self.register_primes[*register];
+
+                    let numer1 = s_success.clone();
+                    let denom1 = s.clone() * p_r;
+                    fractions.push(Rational::from((numer1, denom1)));
+
+                    // frac 2: s_F / s
+                    let s_fail = &self.state_primes[*fail_state];
+                    let numer2 = s_fail.clone();
+                    let denom2 = s.clone();
+                    fractions.push(Rational::from((numer2, denom2)));
+                }
+            }
+        }
+
+        FractranProgram::new(fractions)
+    }
+
+    /// Encode the state into the integer `N = s_i * p_1^r_1 * p_2^r_2 * ...`
+    pub fn encode_state(&self, state: usize, registers: &[u32]) -> Integer {
+        let mut n = self.state_primes[state].clone();
+        for (i, &val) in registers.iter().enumerate() {
+            let p_r = &self.register_primes[i];
+            let p_r_pow = p_r.clone().pow(val);
+            n *= p_r_pow;
+        }
+        n
+    }
+}
+
+/// Constants defining a Universal FRACTRAN Architecture.
+/// Simulates a Universal Turing Machine with minimal space requirements.
+pub struct UniversalFractranArchitecture;
+
+impl UniversalFractranArchitecture {
+    /// Get the 14 state primes required for the minimal UTM simulation.
+    pub fn state_primes() -> Vec<u64> {
+        vec![
+            3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
+        ]
+    }
+
+    /// Get the 2 register primes required for the minimal UTM simulation.
+    pub fn register_primes() -> Vec<u64> {
+        vec![2, 53]
+    }
+
+    /// Get the standard compiler for the 16-prime universal architecture.
+    pub fn standard_compiler() -> FractranCompiler {
+        FractranCompiler::new(Self::state_primes(), Self::register_primes())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fractran_addition() {
+        // Simple program to add two registers: r0 and r1
+        // r0 is represented by p=2, r1 by q=3.
+        // FRACTRAN fraction: 3/2.
+        // N = 2^a * 3^b -> N * (3/2)^a = 3^(a+b)
+        let prog = FractranProgram::new(vec![Rational::from((3, 2))]);
+
+        let a = 5;
+        let b = 7;
+        let initial_n = Integer::from(2).pow(a) * Integer::from(3).pow(b);
+
+        let (final_n, steps) = prog.execute(initial_n, 100);
+
+        // Expect exactly `a` steps
+        assert_eq!(steps, a as usize);
+        assert_eq!(final_n, Integer::from(3).pow(a + b));
+    }
+
+    #[test]
+    fn test_minsky_to_fractran() {
+        // State 0: INC r0 -> State 1
+        // State 1: JZDEC r0 (success -> 0, fail -> 2)
+        // state primes: 2, 3, 5
+        // register primes: 7
+        let compiler = FractranCompiler::new(vec![2, 3, 5], vec![7]);
+
+        let machine = MinskyMachine::new(vec![
+            MinskyInstruction::Inc {
+                state: 0,
+                register: 0,
+                next_state: 1,
+            },
+            MinskyInstruction::Jzdec {
+                state: 1,
+                register: 0,
+                success_state: 0,
+                fail_state: 2,
+            },
+        ]);
+
+        let prog = compiler.compile(&machine);
+
+        // Expected fractions:
+        // INC: (s1 * p0) / s0 = (3 * 7) / 2 = 21/2
+        // JZDEC success: s0 / (s1 * p0) = 2 / (3 * 7) = 2/21
+        // JZDEC fail: s2 / s1 = 5 / 3
+
+        let frac1 = Rational::from((21, 2));
+        let frac2 = Rational::from((2, 21));
+        let frac3 = Rational::from((5, 3));
+
+        assert_eq!(prog.fractions, vec![frac1, frac2, frac3]);
+    }
+}
