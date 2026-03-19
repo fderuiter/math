@@ -17,8 +17,8 @@
 //!     Theorem: For any component $p^{2a} \parallel N$, let $M = N / p^{2a}$. Then the divisor sum of
 //!     the remaining primes must exactly satisfy $\sigma(M) \equiv 1 - p \pmod{p^{2a}}$.
 
-use rug::ops::Pow;
 use rug::Float;
+use rug::ops::Pow;
 
 /// Sieve primes based on the Legendre-Cyclotomic theorem.
 ///
@@ -49,8 +49,12 @@ fn prime_factors(mut n: u64) -> Vec<u64> {
 
 pub fn legendre_cyclotomic_sieve(limit: u64) -> Vec<u64> {
     let mut is_prime = vec![true; (limit + 1) as usize];
-    if limit >= 0 { is_prime[0] = false; }
-    if limit >= 1 { is_prime[1] = false; }
+    if limit >= 0 {
+        is_prime[0] = false;
+    }
+    if limit >= 1 {
+        is_prime[1] = false;
+    }
 
     let sqrt_limit = (limit as f64).sqrt() as usize;
     for i in 2..=sqrt_limit {
@@ -112,7 +116,12 @@ impl FloatMatrix {
         for _ in 0..rows * cols {
             data.push(Float::with_val(prec, 0.0));
         }
-        FloatMatrix { rows, cols, data, prec }
+        FloatMatrix {
+            rows,
+            cols,
+            data,
+            prec,
+        }
     }
 
     pub fn get(&self, row: usize, col: usize) -> &Float {
@@ -247,7 +256,10 @@ pub fn lll_reduction(basis: &FloatMatrix, delta: f64) -> FloatMatrix {
         let norm_b_star_k_minus_1 = dot(&b_star_k_minus_1, &b_star_k_minus_1, prec);
         let mu_k_k_minus_1 = mu.get(k, k - 1);
 
-        let threshold_factor = Float::with_val(prec, &delta_f - Float::with_val(prec, mu_k_k_minus_1 * mu_k_k_minus_1));
+        let threshold_factor = Float::with_val(
+            prec,
+            &delta_f - Float::with_val(prec, mu_k_k_minus_1 * mu_k_k_minus_1),
+        );
         let threshold = Float::with_val(prec, &threshold_factor * &norm_b_star_k_minus_1);
 
         if norm_b_star_k >= threshold {
@@ -296,7 +308,7 @@ pub fn compute_involution_targets(core: &[(u64, u32)]) -> Vec<u64> {
 /// `moduli`: moduli corresponding to the discrete log targets (phi(p_i^(2a_i))).
 pub fn construct_sdml_lattice(
     tail_candidates: &[f64],
-    discrete_logs: &[Vec<f64>], // M x c matrix
+    discrete_logs: &[Vec<f64>],   // M x c matrix
     discrete_log_targets: &[f64], // c targets
     target_archimedean: f64,
     moduli: &[f64], // c moduli
