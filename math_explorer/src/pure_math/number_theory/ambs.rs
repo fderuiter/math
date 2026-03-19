@@ -1,6 +1,6 @@
-use rug::{Integer, ops::Pow, ops::RemRounding};
 use crate::pure_math::number_theory::alcf::sigma;
 use crate::pure_math::number_theory::primes::is_prime;
+use rug::{Integer, ops::Pow, ops::RemRounding};
 
 /// Computes the modular inverse of a mod m, if it exists.
 pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
@@ -44,7 +44,9 @@ pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
 pub fn precompute_valid_prime_powers(limit_p: u64, max_e: u32) -> Vec<(u64, u32, u64)> {
     let mut valid = Vec::new();
     for p in 3..=limit_p {
-        if !is_prime(p) { continue; }
+        if !is_prime(p) {
+            continue;
+        }
         for e in 1..=max_e {
             let p_power = p.pow(2 * e);
             let sig = sigma(p_power);
@@ -123,7 +125,10 @@ impl AmbsDsp {
         }
 
         let p_minus_one = Integer::from(p - 1);
-        let legendre = n_mod.clone().pow_mod(&Integer::from(&p_minus_one / 2), p).unwrap();
+        let legendre = n_mod
+            .clone()
+            .pow_mod(&Integer::from(&p_minus_one / 2), p)
+            .unwrap();
         if legendre != 1 {
             return vec![]; // Not a quadratic residue
         }
@@ -173,7 +178,10 @@ impl AmbsDsp {
                 return vec![];
             }
 
-            let b = c.clone().pow_mod(&Integer::from(1_u32 << (m - i - 1)), p).unwrap();
+            let b = c
+                .clone()
+                .pow_mod(&Integer::from(1_u32 << (m - i - 1)), p)
+                .unwrap();
             m = i;
             c = b.clone().pow_mod(&Integer::from(2), p).unwrap();
             t = (t * &c).rem_euc(p);
@@ -185,11 +193,7 @@ impl AmbsDsp {
         }
 
         let root2 = Integer::from(p - &r);
-        if r == root2 {
-            vec![r]
-        } else {
-            vec![r, root2]
-        }
+        if r == root2 { vec![r] } else { vec![r, root2] }
     }
 
     /// Hensel's Lifting for x^2 = a (mod p^k)
@@ -319,11 +323,15 @@ impl AmbsDsp {
             let n_l_int = Integer::from(n_l);
 
             let x_l_opt = modular_inverse(&Integer::from(-2 * &n_l_int), &s_l);
-            if x_l_opt.is_none() { continue; }
+            if x_l_opt.is_none() {
+                continue;
+            }
             let x_l = x_l_opt.unwrap();
 
             let roots = Self::compute_modular_square_roots(&x_l, &s_l);
-            if roots.is_empty() { continue; }
+            if roots.is_empty() {
+                continue;
+            }
 
             // c_max = sqrt(10^50 / N_L) / S_L
             let z_max = Integer::from(&n_max / &n_l_int).sqrt();
@@ -342,7 +350,10 @@ impl AmbsDsp {
                 for q in primes {
                     let q_int = Integer::from(q);
                     if let Some(s_l_inv) = modular_inverse(&s_l, &q_int) {
-                        let target_c = (Integer::from(-&r_i) * s_l_inv).rem_euc(&q_int).to_usize().unwrap();
+                        let target_c = (Integer::from(-&r_i) * s_l_inv)
+                            .rem_euc(&q_int)
+                            .to_usize()
+                            .unwrap();
                         let q_usize = q as usize;
                         for c in (target_c..c_max).step_by(q_usize) {
                             c_valid[c] = false;
@@ -354,7 +365,7 @@ impl AmbsDsp {
                     if c_valid[c] {
                         let z = Integer::from(&r_i + Integer::from(c) * &s_l);
                         let z_sq = Integer::from(&z * &z);
-                        let target_sigma = (Integer::from(2) * &n_l_int * &z_sq + 1) / &s_l;
+                        let _target_sigma = (Integer::from(2) * &n_l_int * &z_sq + 1) / &s_l;
 
                         // we need a BigInt sigma function here, but we can verify mathematically.
                         // Assuming a big sigma function:
@@ -386,10 +397,19 @@ mod tests {
 
     #[test]
     fn test_modular_inverse() {
-        assert_eq!(modular_inverse(&Integer::from(3), &Integer::from(11)), Some(Integer::from(4)));
-        assert_eq!(modular_inverse(&Integer::from(10), &Integer::from(17)), Some(Integer::from(12)));
+        assert_eq!(
+            modular_inverse(&Integer::from(3), &Integer::from(11)),
+            Some(Integer::from(4))
+        );
+        assert_eq!(
+            modular_inverse(&Integer::from(10), &Integer::from(17)),
+            Some(Integer::from(12))
+        );
         assert_eq!(modular_inverse(&Integer::from(2), &Integer::from(4)), None);
-        assert_eq!(modular_inverse(&Integer::from(-2), &Integer::from(7)), Some(Integer::from(3)));
+        assert_eq!(
+            modular_inverse(&Integer::from(-2), &Integer::from(7)),
+            Some(Integer::from(3))
+        );
     }
 
     #[test]
