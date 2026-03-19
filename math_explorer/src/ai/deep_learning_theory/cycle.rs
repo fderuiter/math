@@ -60,7 +60,11 @@ impl<M: Trainable> TrainingLoop<M> {
     ///
     /// # Returns
     /// The scalar loss value.
-    pub fn train_step(&mut self, x: &Vector, y_true: &Vector) -> Result<f64, crate::ai::optimization::OptimizationError> {
+    pub fn train_step(
+        &mut self,
+        x: &Vector,
+        y_true: &Vector,
+    ) -> Result<f64, crate::ai::optimization::OptimizationError> {
         // --- 1. Forward Pass (Linear Algebra) ---
         // Get logits from the model
         let z = self.model.forward(x);
