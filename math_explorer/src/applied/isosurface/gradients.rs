@@ -2,17 +2,72 @@ use super::types::{Point3D, VoxelGrid};
 
 /// Strategy trait for estimating gradients in a voxel grid.
 pub trait GradientEstimator {
-    /// Computes the gradient at a specific grid point.
+    /// Computes the gradient at a specific 3D grid coordinate.
     ///
-    /// This is the safe method that handles boundary checks.
+    /// This method safely computes the gradient by checking boundary conditions.
+    /// If the coordinate is on the boundary of the grid, a forward or backward difference
+    /// is used instead of a central difference.
+    ///
+    /// # Arguments
+    ///
+    /// * `grid` - The [`VoxelGrid`] containing the scalar field data.
+    /// * `x` - The x-coordinate in the grid.
+    /// * `y` - The y-coordinate in the grid.
+    /// * `z` - The z-coordinate in the grid.
+    ///
+    /// # Returns
+    ///
+    /// A [`Point3D`] representing the gradient vector $( \partial f / \partial x, \partial f / \partial y, \partial f / \partial z )$.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use math_explorer::applied::isosurface::types::{VoxelGrid, Point3D};
+    /// use math_explorer::applied::isosurface::gradients::{GradientEstimator, CentralDifferenceEstimator};
+    ///
+    /// let data = vec![0.0, 1.0, 2.0, 1.0, 2.0, 3.0, 2.0, 3.0, 4.0];
+    /// let grid = VoxelGrid {
+    ///     width: 3,
+    ///     height: 3,
+    ///     depth: 1,
+    ///     data,
+    ///     voxel_size: Point3D::new(1.0, 1.0, 1.0),
+    ///     origin: Point3D::new(0.0, 0.0, 0.0),
+    /// };
+    /// let estimator = CentralDifferenceEstimator;
+    ///
+    /// let grad = estimator.gradient(&grid, 1, 1, 0);
+    /// assert_eq!(grad.x, 1.0); // (grid[2, 1, 0] - grid[0, 1, 0]) / 2.0 = (3.0 - 1.0) / 2.0
+    /// assert_eq!(grad.y, 1.0); // (grid[1, 2, 0] - grid[1, 0, 0]) / 2.0 = (3.0 - 1.0) / 2.0
+    /// assert_eq!(grad.z, -2.0); // Boundary condition fallback: grid[1, 1, 1] - grid[1, 1, 0] = 0.0 - 2.0 = -2.0
+    /// ```
     fn gradient(&self, grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D;
 
-    /// Computes the gradient at a specific index using direct memory access.
+    /// Computes the gradient at a specific linear index using direct memory access.
+    ///
+    /// This is a high-performance, unchecked variant intended for use in inner loops
+    /// where bounds checking has already been performed or is guaranteed not to fail
+    /// due to structural padding.
+    ///
+    /// # Arguments
+    ///
+    /// * `data` - A flat slice representing the 3D grid data.
+    /// * `idx` - The 1D linear index corresponding to the $(x, y, z)$ coordinate.
+    /// * `stride_y` - The stride to advance one unit in the y-direction (typically `width`).
+    /// * `stride_z` - The stride to advance one unit in the z-direction (typically `width * height`).
+    ///
+    /// # Returns
+    ///
+    /// A [`Point3D`] representing the gradient vector.
     ///
     /// # Safety
-    /// This method is unsafe because it performs unchecked pointer arithmetic.
-    /// The caller must ensure that `idx` is valid and that `idx ± stride_y` and `idx ± stride_z`
-    /// are within the bounds of `data`.
+    ///
+    /// This method performs unchecked pointer arithmetic and array indexing.
+    /// The caller must guarantee that:
+    /// 1. `idx` is strictly greater than or equal to `stride_z`.
+    /// 2. `idx + stride_z` is strictly less than `data.len()`.
+    /// 3. The points `idx ± 1`, `idx ± stride_y`, and `idx ± stride_z` all lie
+    ///    within the allocated bounds of `data`.
     unsafe fn gradient_unchecked(
         &self,
         data: &[f32],
