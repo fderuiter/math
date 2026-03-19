@@ -11,13 +11,13 @@ use super::types::LoraStateDict;
 /// # Architecture
 /// This struct uses the Strategy Pattern to decouple the combination logic
 /// and objective evaluation from the data structure.
-pub struct LoraEnsemble {
+pub struct LoraEnsemble<C = LinearCombinationStrategy, O = L1RegularizationStrategy> {
     modules: Vec<LoraStateDict>,
-    combination_strategy: Box<dyn CombinationStrategy>,
-    objective_strategy: Box<dyn ObjectiveStrategy>,
+    combination_strategy: C,
+    objective_strategy: O,
 }
 
-impl LoraEnsemble {
+impl LoraEnsemble<LinearCombinationStrategy, L1RegularizationStrategy> {
     /// Creates a new `LoraEnsemble` with default strategies (Linear Combination, L1 Regularization).
     ///
     /// # Arguments
@@ -25,18 +25,20 @@ impl LoraEnsemble {
     pub fn new(modules: Vec<LoraStateDict>) -> Self {
         Self {
             modules,
-            combination_strategy: Box::new(LinearCombinationStrategy),
+            combination_strategy: LinearCombinationStrategy,
             // Default alpha=0.0 since it wasn't stored before.
             // But evaluate_objective overrides this anyway for legacy calls.
-            objective_strategy: Box::new(L1RegularizationStrategy::new(0.0)),
+            objective_strategy: L1RegularizationStrategy::new(0.0),
         }
     }
+}
 
+impl<C: CombinationStrategy, O: ObjectiveStrategy> LoraEnsemble<C, O> {
     /// Creates a new `LoraEnsemble` with custom strategies.
     pub fn with_strategies(
         modules: Vec<LoraStateDict>,
-        combination_strategy: Box<dyn CombinationStrategy>,
-        objective_strategy: Box<dyn ObjectiveStrategy>,
+        combination_strategy: C,
+        objective_strategy: O,
     ) -> Self {
         Self {
             modules,
