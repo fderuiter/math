@@ -90,7 +90,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `ai::reinforcement_learning`
 *   **Features:**
     *   [x] **Grid World:** Agent navigation visualization.
-    *   [ ] **Q-Table Inspector:** Heatmap of Q-values.
+    *   [x] **Q-Table Inspector:** Heatmap of Q-values.
     *   [ ] **Reward Plots:** Cumulative reward over episodes.
 
 ### 3.3 Transformers
