@@ -36,8 +36,8 @@
 //!     $$ \frac{q_T}{q_i \cdot p_j} \quad \text{(Success: } a_j > 0 \text{)} $$
 //!     $$ \frac{q_F}{q_i} \quad \text{(Fail/Jump: } a_j = 0 \text{)} $$
 
-use rug::{Integer, Rational};
 use rug::ops::Pow;
+use rug::{Integer, Rational};
 
 /// An instruction for a Minsky Machine.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -205,9 +205,7 @@ pub struct UniversalFractranArchitecture;
 impl UniversalFractranArchitecture {
     /// Get the 14 state primes required for the minimal UTM simulation.
     pub fn state_primes() -> Vec<u64> {
-        vec![
-            3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,
-        ]
+        vec![3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
     }
 
     /// Get the 2 register primes required for the minimal UTM simulation.
