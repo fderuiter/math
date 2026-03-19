@@ -32,17 +32,9 @@ pub struct GridWorldEnv {
     pub gamma: f64,
 }
 
-impl MarkovDecisionProcess for GridWorldEnv {
-    type S = GridState;
-    type A = Move;
-
-    fn transition_probability(
-        &self,
-        next_state: &Self::S,
-        current_state: &Self::S,
-        action: &Self::A,
-    ) -> f64 {
-        // Simplified deterministic transition for the tool
+impl GridWorldEnv {
+    /// Applies an action and returns the next state, executing the environment transition logic.
+    pub fn step(&self, current_state: &GridState, action: &Move) -> GridState {
         let mut expected_next = *current_state;
         match action {
             Move::Up => expected_next.y -= 1,
@@ -56,12 +48,26 @@ impl MarkovDecisionProcess for GridWorldEnv {
             && expected_next.y >= 0
             && expected_next.y < self.height;
 
-        let actual_next = if is_valid {
+        if is_valid {
             expected_next
         } else {
             *current_state
-        };
+        }
+    }
+}
 
+impl MarkovDecisionProcess for GridWorldEnv {
+    type S = GridState;
+    type A = Move;
+
+    fn transition_probability(
+        &self,
+        next_state: &Self::S,
+        current_state: &Self::S,
+        action: &Self::A,
+    ) -> f64 {
+        // Simplified deterministic transition for the tool
+        let actual_next = self.step(current_state, action);
         if *next_state == actual_next {
             1.0
         } else {
@@ -140,25 +146,7 @@ impl GridWorldTool {
         }
 
         if let Some(action) = self.agent.select_action(&self.current_state, &actions) {
-            let mut expected_next = self.current_state;
-            match action {
-                Move::Up => expected_next.y -= 1,
-                Move::Down => expected_next.y += 1,
-                Move::Left => expected_next.x -= 1,
-                Move::Right => expected_next.x += 1,
-            }
-
-            let is_valid = expected_next.x >= 0
-                && expected_next.x < self.env.width
-                && expected_next.y >= 0
-                && expected_next.y < self.env.height;
-
-            let next_state = if is_valid {
-                expected_next
-            } else {
-                self.current_state
-            };
-
+            let next_state = self.env.step(&self.current_state, &action);
             let reward = self.env.reward(&self.current_state, &action, &next_state);
             let next_actions = self.env.actions(&next_state);
 

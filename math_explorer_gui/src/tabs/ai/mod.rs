@@ -5,6 +5,7 @@ pub mod activation_functions;
 pub mod attention_maps;
 pub mod grid_world;
 pub mod loss_landscape;
+pub mod q_table_inspector;
 pub mod training_monitor;
 
 /// A trait for sub-tools within the AI tab.
@@ -30,6 +31,7 @@ impl Default for AiTab {
                 Box::new(activation_functions::ActivationFunctionsTool::default()),
                 Box::new(attention_maps::AttentionMapsTool::default()),
                 Box::new(grid_world::GridWorldTool::default()),
+                Box::new(q_table_inspector::QTableInspectorTool::default()),
             ],
             selected_tool_index: 0,
         }

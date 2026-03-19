@@ -1,0 +1,225 @@
+use crate::tabs::ai::AiTool;
+use eframe::egui;
+use math_explorer::ai::reinforcement_learning::{
+    algorithms::TabularQAgent, MarkovDecisionProcess,
+};
+use super::grid_world::{GridState, Move, GridWorldEnv};
+
+#[derive(Clone, Copy, PartialEq)]
+enum HeatmapView {
+    MaxQ,
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+pub struct QTableInspectorTool {
+    env: GridWorldEnv,
+    agent: TabularQAgent<GridState, Move>,
+    episodes_trained: u32,
+    view: HeatmapView,
+}
+
+impl Default for QTableInspectorTool {
+    fn default() -> Self {
+        let env = GridWorldEnv {
+            width: 5,
+            height: 5,
+            start: GridState { x: 0, y: 0 },
+            goal: GridState { x: 4, y: 4 },
+            traps: vec![GridState { x: 2, y: 2 }, GridState { x: 3, y: 2 }],
+            gamma: 0.9,
+        };
+        let agent = TabularQAgent::new(0.1, 0.9, 0.1);
+        Self {
+            env,
+            agent,
+            episodes_trained: 0,
+            view: HeatmapView::MaxQ,
+        }
+    }
+}
+
+impl QTableInspectorTool {
+    fn train(&mut self, episodes: u32) {
+        for _ in 0..episodes {
+            let mut current_state = self.env.start;
+            let mut steps = 0;
+
+            while !self.env.is_terminal(&current_state) && steps < 100 {
+                let actions = self.env.actions(&current_state);
+                if actions.is_empty() {
+                    break;
+                }
+
+                if let Some(action) = self.agent.select_action(&current_state, &actions) {
+                    let next_state = self.env.step(&current_state, &action);
+                    let reward = self.env.reward(&current_state, &action, &next_state);
+                    let next_actions = self.env.actions(&next_state);
+
+                    self.agent.update(
+                        &current_state,
+                        &action,
+                        reward,
+                        &next_state,
+                        &next_actions,
+                    );
+
+                    current_state = next_state;
+                }
+                steps += 1;
+            }
+        }
+        self.episodes_trained += episodes;
+    }
+
+    fn get_q_value_for_view(&self, state: &GridState) -> f64 {
+        match self.view {
+            HeatmapView::MaxQ => {
+                let mut max_q = f64::NEG_INFINITY;
+                for action in [Move::Up, Move::Down, Move::Left, Move::Right] {
+                    let q = self.agent.get_q_value(state, &action);
+                    if q > max_q {
+                        max_q = q;
+                    }
+                }
+                if max_q == f64::NEG_INFINITY {
+                    0.0
+                } else {
+                    max_q
+                }
+            }
+            HeatmapView::Up => self.agent.get_q_value(state, &Move::Up),
+            HeatmapView::Down => self.agent.get_q_value(state, &Move::Down),
+            HeatmapView::Left => self.agent.get_q_value(state, &Move::Left),
+            HeatmapView::Right => self.agent.get_q_value(state, &Move::Right),
+        }
+    }
+}
+
+impl AiTool for QTableInspectorTool {
+    fn name(&self) -> &'static str {
+        "Q-Table Inspector"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        egui::SidePanel::left("q_table_controls").show(ctx, |ui| {
+            ui.heading("Training Controls");
+            ui.separator();
+
+            ui.label(format!("Episodes Trained: {}", self.episodes_trained));
+
+            if ui.button("Train 100 Episodes").clicked() {
+                self.train(100);
+            }
+            if ui.button("Train 1000 Episodes").clicked() {
+                self.train(1000);
+            }
+            if ui.button("Reset Agent").clicked() {
+                self.agent = TabularQAgent::new(0.1, 0.9, 0.1);
+                self.episodes_trained = 0;
+            }
+
+            ui.separator();
+            ui.heading("Heatmap View");
+            ui.radio_value(&mut self.view, HeatmapView::MaxQ, "Max Q-Value");
+            ui.radio_value(&mut self.view, HeatmapView::Up, "Move Up Q-Value");
+            ui.radio_value(&mut self.view, HeatmapView::Down, "Move Down Q-Value");
+            ui.radio_value(&mut self.view, HeatmapView::Left, "Move Left Q-Value");
+            ui.radio_value(&mut self.view, HeatmapView::Right, "Move Right Q-Value");
+
+            ui.separator();
+            ui.label("Legend:");
+            ui.horizontal(|ui| {
+                ui.label("Goal:");
+                let (response, painter) = ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
+                painter.rect_filled(response.rect, 0.0, egui::Color32::GREEN);
+            });
+            ui.horizontal(|ui| {
+                ui.label("Trap:");
+                let (response, painter) = ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
+                painter.rect_filled(response.rect, 0.0, egui::Color32::RED);
+            });
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Q-Value Heatmap");
+
+            let cell_size = 60.0;
+            let grid_size = egui::vec2(
+                self.env.width as f32 * cell_size,
+                self.env.height as f32 * cell_size,
+            );
+
+            let (response, painter) = ui.allocate_painter(grid_size, egui::Sense::hover());
+            let rect = response.rect;
+
+            // Determine min and max Q-values across the board for current view to normalize colors
+            let mut min_q = 0.0;
+            let mut max_q = 0.0;
+
+            for x in 0..self.env.width {
+                for y in 0..self.env.height {
+                    let state = GridState { x, y };
+                    let q = self.get_q_value_for_view(&state);
+                    if q < min_q { min_q = q; }
+                    if q > max_q { max_q = q; }
+                }
+            }
+
+            // To avoid division by zero when min == max
+            if (max_q - min_q).abs() < f64::EPSILON {
+                max_q = min_q + 1.0;
+            }
+
+            for x in 0..self.env.width {
+                for y in 0..self.env.height {
+                    let top_left =
+                        rect.min + egui::vec2(x as f32 * cell_size, y as f32 * cell_size);
+                    let cell_rect =
+                        egui::Rect::from_min_size(top_left, egui::vec2(cell_size, cell_size));
+
+                    let state = GridState { x, y };
+                    let q_value = self.get_q_value_for_view(&state);
+
+                    let fill_color = if state == self.env.goal {
+                        egui::Color32::GREEN
+                    } else if self.env.traps.contains(&state) {
+                        egui::Color32::RED
+                    } else {
+                        // Normalize Q value to 0..1 for coloring
+                        let normalized = (q_value - min_q) / (max_q - min_q);
+
+                        // Map 0 to low-value color (e.g. blue), 1 to high-value color (e.g. yellow)
+                        let r = (normalized * 255.0) as u8;
+                        let g = (normalized * 255.0) as u8;
+                        let b = ((1.0 - normalized) * 255.0) as u8;
+
+                        egui::Color32::from_rgb(r, g, b)
+                    };
+
+                    painter.rect_filled(cell_rect, 0.0, fill_color);
+                    painter.rect_stroke(
+                        cell_rect,
+                        0.0,
+                        egui::Stroke::new(1.0, egui::Color32::BLACK),
+                        egui::StrokeKind::Middle,
+                    );
+
+                    // Display Q-value text
+                    if state != self.env.goal && !self.env.traps.contains(&state) {
+                        let text_color = egui::Color32::BLACK; // or white depending on background
+                        painter.text(
+                            cell_rect.center(),
+                            egui::Align2::CENTER_CENTER,
+                            format!("{:.2}", q_value),
+                            egui::FontId::proportional(14.0),
+                            text_color,
+                        );
+                    }
+                }
+            }
+        });
+    }
+}
