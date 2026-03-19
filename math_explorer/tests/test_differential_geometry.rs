@@ -4,7 +4,9 @@ use math_explorer::pure_math::differential_geometry::mean_curvature_flow::{
     DiscreteSurface, MeanCurvatureFlow,
 };
 use math_explorer::pure_math::differential_geometry::operators::laplace_beltrami;
-use math_explorer::pure_math::differential_geometry::surface::{ParametricSurface, Sphere, Torus, SurfaceAnalysis};
+use math_explorer::pure_math::differential_geometry::surface::{
+    ParametricSurface, Sphere, SurfaceAnalysis, Torus,
+};
 use nalgebra::Point3;
 use std::f64::consts::PI;
 
