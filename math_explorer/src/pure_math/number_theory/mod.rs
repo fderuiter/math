@@ -24,7 +24,9 @@
 //! *   **[Q-Series](q_series)**: Algebraic manipulation of power series in $q$.
 //! *   **[Class Number](class_number)**: Investigations into binary quadratic forms.
 //! *   **[Hurwitz-Kronecker](hurwitz_kronecker)**: Class number relations.
+//! *   **[ALCF](alcf)**: Algebraic-Lattice Cyclotomic Framework for quasiperfect numbers.
 
+pub mod alcf;
 pub mod class_number;
 pub mod hurwitz_kronecker;
 pub mod partitions;
