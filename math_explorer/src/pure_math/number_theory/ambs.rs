@@ -15,7 +15,7 @@ pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
 pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     let mut factors = Vec::new();
     let mut count = 0;
-    while n % 2 == 0 {
+    while n.is_multiple_of(2) {
         count += 1;
         n /= 2;
     }
@@ -26,7 +26,7 @@ pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     let mut i = 3;
     while i * i <= n {
         count = 0;
-        while n % i == 0 {
+        while n.is_multiple_of(i) {
             count += 1;
             n /= i;
         }
@@ -215,7 +215,7 @@ impl AmbsDsp {
                 if let Some(f_prime_inv) = f_prime_inv_opt {
                     let term = (f_x_n / &p_n) * f_prime_inv;
                     let term_mod = term.rem_euc(p);
-                    x_n = x_n - term_mod * &p_n;
+                    x_n -= term_mod * &p_n;
                     p_n *= p;
                     x_n = x_n.rem_euc(&p_n);
                 } else {
@@ -361,9 +361,9 @@ impl AmbsDsp {
                     }
                 }
 
-                for c in 0..c_max {
-                    if c_valid[c] {
-                        let z = Integer::from(&r_i + Integer::from(c) * &s_l);
+                for (c, &is_valid) in c_valid.iter().enumerate().take(c_max) {
+                    if is_valid {
+                        let z = &r_i + Integer::from(c) * &s_l;
                         let z_sq = Integer::from(&z * &z);
                         let _target_sigma = (Integer::from(2) * &n_l_int * &z_sq + 1) / &s_l;
 
