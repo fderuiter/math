@@ -29,13 +29,13 @@ use rug::ops::Pow;
 /// Get prime factors of a number n
 fn prime_factors(mut n: u64) -> Vec<u64> {
     let mut factors = Vec::new();
-    while n % 2 == 0 {
+    while n.is_multiple_of(2) {
         factors.push(2);
         n /= 2;
     }
     let mut i = 3;
     while i * i <= n {
-        while n % i == 0 {
+        while n.is_multiple_of(i) {
             factors.push(i);
             n /= i;
         }
@@ -49,9 +49,7 @@ fn prime_factors(mut n: u64) -> Vec<u64> {
 
 pub fn legendre_cyclotomic_sieve(limit: u64) -> Vec<u64> {
     let mut is_prime = vec![true; (limit + 1) as usize];
-    if limit >= 0 {
-        is_prime[0] = false;
-    }
+    is_prime[0] = false;
     if limit >= 1 {
         is_prime[1] = false;
     }
@@ -91,7 +89,7 @@ pub fn legendre_cyclotomic_sieve(limit: u64) -> Vec<u64> {
 pub fn sigma(n: u64) -> u64 {
     let mut sum = 0;
     for i in 1..=(n as f64).sqrt() as u64 {
-        if n % i == 0 {
+        if n.is_multiple_of(i) {
             sum += i;
             if i * i != n {
                 sum += n / i;
@@ -145,8 +143,8 @@ impl FloatMatrix {
     }
 
     pub fn set_column(&mut self, col: usize, col_vec: &[Float]) {
-        for r in 0..self.rows {
-            self.set(r, col, col_vec[r].clone());
+        for (r, val) in col_vec.iter().enumerate().take(self.rows) {
+            self.set(r, col, val.clone());
         }
     }
 
@@ -328,8 +326,8 @@ pub fn construct_sdml_lattice(
     // Rows 1..M (indices 0..m-1): Candidates
     for i in 0..m {
         b.set(i, i, Float::with_val(prec, 1.0)); // Identity for subset sum
-        for j in 0..c {
-            let val = Float::with_val(prec, discrete_logs[i][j]);
+        for (j, log_row) in discrete_logs[i].iter().enumerate().take(c) {
+            let val = Float::with_val(prec, *log_row);
             b.set(i, m + j, Float::with_val(prec, val * &k_mod));
         }
         let tc = Float::with_val(prec, tail_candidates[i]);
@@ -337,8 +335,8 @@ pub fn construct_sdml_lattice(
     }
 
     // Rows M+1..M+c (indices m..m+c-1): Modulo wrap-arounds
-    for j in 0..c {
-        let modulo_val = Float::with_val(prec, moduli[j]);
+    for (j, modulo_v) in moduli.iter().enumerate().take(c) {
+        let modulo_val = Float::with_val(prec, *modulo_v);
         b.set(m + j, m + j, Float::with_val(prec, modulo_val * &k_mod));
     }
 
@@ -346,8 +344,8 @@ pub fn construct_sdml_lattice(
     for i in 0..m {
         b.set(m + c, i, Float::with_val(prec, 0.5)); // Shift to +/- 1/2
     }
-    for j in 0..c {
-        let target = Float::with_val(prec, -discrete_log_targets[j]);
+    for (j, discrete_log_target) in discrete_log_targets.iter().enumerate().take(c) {
+        let target = Float::with_val(prec, -*discrete_log_target);
         b.set(m + c, m + j, Float::with_val(prec, target * &k_mod));
     }
     let ta = Float::with_val(prec, -target_archimedean);
@@ -385,8 +383,8 @@ pub fn alcf_search(_target_bound_log: f64, core_size: usize, tail_window: usize)
 
     // Generate a simple core for demonstration
     let mut core = Vec::new();
-    for i in 0..core_size {
-        core.push((p_feasible[i], 1)); // (p_i, a_i=1)
+    for p in p_feasible.iter().take(core_size) {
+        core.push((*p, 1)); // (p_i, a_i=1)
     }
 
     let h_core = abundancy_index(&core);
