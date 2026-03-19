@@ -60,7 +60,7 @@ impl<M: Trainable> TrainingLoop<M> {
     ///
     /// # Returns
     /// The scalar loss value.
-    pub fn train_step(&mut self, x: &Vector, y_true: &Vector) -> f64 {
+    pub fn train_step(&mut self, x: &Vector, y_true: &Vector) -> Result<f64, crate::ai::optimization::OptimizationError> {
         // --- 1. Forward Pass (Linear Algebra) ---
         // Get logits from the model
         let z = self.model.forward(x);
@@ -79,9 +79,9 @@ impl<M: Trainable> TrainingLoop<M> {
 
         // Delegate specific backprop logic to the model strategy
         self.model
-            .backward_update(x, &loss_grad, &mut *self.optimizer);
+            .backward_update(x, &loss_grad, &mut *self.optimizer)?;
 
-        loss
+        Ok(loss)
     }
 
     /// Predicts the class for a given input.

@@ -4,6 +4,14 @@
 
 use nalgebra::{DMatrix, DVector, RealField};
 use std::collections::HashMap;
+use thiserror::Error;
+
+/// Errors that can occur during optimization.
+#[derive(Debug, Clone, PartialEq, Error)]
+pub enum OptimizationError {
+    #[error("Failed to convert numerical value")]
+    ConversionError,
+}
 
 /// Represents an L1 Norm-Regularized Least Squares problem.
 ///
@@ -44,9 +52,19 @@ impl L1RegularizedLeastSquares {
 /// * `Key`: A unique identifier for the parameter being updated (e.g., `u64`, `String`, or a specialized Enum).
 pub trait Optimizer<T: RealField + Copy, Key = u64> {
     /// Updates a matrix parameter.
-    fn update_matrix(&mut self, key: Key, param: &mut DMatrix<T>, grad: &DMatrix<T>);
+    fn update_matrix(
+        &mut self,
+        key: Key,
+        param: &mut DMatrix<T>,
+        grad: &DMatrix<T>,
+    ) -> Result<(), OptimizationError>;
     /// Updates a vector parameter.
-    fn update_vector(&mut self, key: Key, param: &mut DVector<T>, grad: &DVector<T>);
+    fn update_vector(
+        &mut self,
+        key: Key,
+        param: &mut DVector<T>,
+        grad: &DVector<T>,
+    ) -> Result<(), OptimizationError>;
 }
 
 /// Gradient Descent Update Rule.
@@ -64,12 +82,24 @@ impl<T: RealField + Copy> SGD<T> {
 }
 
 impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
-    fn update_vector(&mut self, _key: Key, param: &mut DVector<T>, grad: &DVector<T>) {
+    fn update_vector(
+        &mut self,
+        _key: Key,
+        param: &mut DVector<T>,
+        grad: &DVector<T>,
+    ) -> Result<(), OptimizationError> {
         *param -= grad.clone() * self.learning_rate;
+        Ok(())
     }
 
-    fn update_matrix(&mut self, _key: Key, param: &mut DMatrix<T>, grad: &DMatrix<T>) {
+    fn update_matrix(
+        &mut self,
+        _key: Key,
+        param: &mut DMatrix<T>,
+        grad: &DMatrix<T>,
+    ) -> Result<(), OptimizationError> {
         *param -= grad.clone() * self.learning_rate;
+        Ok(())
     }
 }
 
@@ -99,14 +129,14 @@ impl<T: RealField + Copy, Key> Adam<T, Key>
 where
     Key: Eq + std::hash::Hash + Clone,
 {
-    pub fn new(lr: T) -> Self {
-        Self {
+    pub fn new(lr: T) -> Result<Self, OptimizationError> {
+        Ok(Self {
             learning_rate: lr,
-            beta1: T::from_f64(0.9).unwrap(),
-            beta2: T::from_f64(0.999).unwrap(),
-            epsilon: T::from_f64(1e-8).unwrap(),
+            beta1: T::from_f64(0.9).ok_or(OptimizationError::ConversionError)?,
+            beta2: T::from_f64(0.999).ok_or(OptimizationError::ConversionError)?,
+            epsilon: T::from_f64(1e-8).ok_or(OptimizationError::ConversionError)?,
             states: HashMap::new(),
-        }
+        })
     }
 
     fn get_state(&mut self, key: Key, shape: (usize, usize)) -> &mut AdamState<T> {
@@ -122,7 +152,12 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for Adam<T, Key>
 where
     Key: Eq + std::hash::Hash + Clone,
 {
-    fn update_matrix(&mut self, key: Key, param: &mut DMatrix<T>, grad: &DMatrix<T>) {
+    fn update_matrix(
+        &mut self,
+        key: Key,
+        param: &mut DMatrix<T>,
+        grad: &DMatrix<T>,
+    ) -> Result<(), OptimizationError> {
         let beta1 = self.beta1;
         let beta2 = self.beta2;
         let epsilon = self.epsilon;
@@ -132,7 +167,7 @@ where
         let state = self.get_state(key, (param.nrows(), param.ncols()));
 
         state.t += 1;
-        let t_val = T::from_i32(state.t).unwrap();
+        let t_val = T::from_i32(state.t).ok_or(OptimizationError::ConversionError)?;
 
         // Update biased first moment estimate
         // m = beta1 * m + (1 - beta1) * grad
@@ -155,9 +190,15 @@ where
         // param -= lr * m_hat / (sqrt(v_hat) + epsilon)
         let update = m_hat.component_div(&v_hat.map(|v| v.sqrt() + epsilon));
         *param -= update * lr;
+        Ok(())
     }
 
-    fn update_vector(&mut self, key: Key, param: &mut DVector<T>, grad: &DVector<T>) {
+    fn update_vector(
+        &mut self,
+        key: Key,
+        param: &mut DVector<T>,
+        grad: &DVector<T>,
+    ) -> Result<(), OptimizationError> {
         let beta1 = self.beta1;
         let beta2 = self.beta2;
         let epsilon = self.epsilon;
@@ -170,7 +211,7 @@ where
         let state = self.get_state(key, (rows, cols));
 
         state.t += 1;
-        let t_val = T::from_i32(state.t).unwrap();
+        let t_val = T::from_i32(state.t).ok_or(OptimizationError::ConversionError)?;
 
         // Convert grad to DMatrix for consistent operations with state
         let grad_mat = DMatrix::from_column_slice(rows, cols, grad.as_slice());
@@ -188,5 +229,6 @@ where
         // Convert update back to Vector
         let update_vec = DVector::from_column_slice(update_mat.as_slice());
         *param -= update_vec * lr;
+        Ok(())
     }
 }

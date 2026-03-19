@@ -142,7 +142,7 @@ mod tests {
     }
 
     #[test]
-    fn test_decay_process() {
+    fn test_decay_process() -> Result<(), StochasticError> {
         let rng = StdRng::seed_from_u64(42);
         let mut solver = GillespieSolver::new(rng);
         let model = DecayModel { k: 0.1 };
@@ -150,7 +150,7 @@ mod tests {
 
         let mut time = 0.0;
         while time < 10.0 {
-            let dt = solver.step(&model, &mut state).unwrap();
+            let dt = solver.step(&model, &mut state)?;
             if dt.is_infinite() {
                 break;
             }
@@ -160,5 +160,6 @@ mod tests {
         // With k=0.1, mean lifetime is 10.0. In 10.0 time units, approx 1/e remain.
         assert!(state.x < 100);
         assert!(state.x > 0);
+        Ok(())
     }
 }
