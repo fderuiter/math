@@ -27,6 +27,7 @@
 //! *   **[ALCF](alcf)**: Algebraic-Lattice Cyclotomic Framework for quasiperfect numbers.
 
 pub mod alcf;
+pub mod ambs;
 pub mod class_number;
 pub mod hurwitz_kronecker;
 pub mod partitions;
