@@ -3,7 +3,9 @@ use std::fmt::Debug;
 use std::hash::Hash;
 
 // Re-export the core trait and implementations from pure_math
-pub use crate::pure_math::analysis::optimization::{Optimizer as GenericOptimizer, SGD};
+pub use crate::pure_math::analysis::optimization::{
+    OptimizationError, Optimizer as GenericOptimizer, SGD,
+};
 
 // Import the generic Adam implementation from pure_math
 use crate::pure_math::analysis::optimization::Adam as GenericAdam;
@@ -84,8 +86,8 @@ pub trait Optimizer<T: RealField + Copy>: GenericOptimizer<T, (usize, ParamType)
         layer_idx: usize,
         param: &mut DMatrix<T>,
         grad: &DMatrix<T>,
-    ) {
-        self.update_matrix((layer_idx, ParamType::Weight), param, grad);
+    ) -> Result<(), OptimizationError> {
+        self.update_matrix((layer_idx, ParamType::Weight), param, grad)
     }
 
     fn update_vector_legacy(
@@ -93,8 +95,8 @@ pub trait Optimizer<T: RealField + Copy>: GenericOptimizer<T, (usize, ParamType)
         layer_idx: usize,
         param: &mut DVector<T>,
         grad: &DVector<T>,
-    ) {
-        self.update_vector((layer_idx, ParamType::Bias), param, grad);
+    ) -> Result<(), OptimizationError> {
+        self.update_vector((layer_idx, ParamType::Bias), param, grad)
     }
 }
 

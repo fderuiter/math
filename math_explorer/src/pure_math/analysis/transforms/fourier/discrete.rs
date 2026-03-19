@@ -76,7 +76,7 @@ mod tests {
     use std::f64::consts::PI;
 
     #[test]
-    fn test_fft_forward_inverse_identity() {
+    fn test_fft_forward_inverse_identity() -> Result<(), TransformError> {
         let mut fft = FastFourierTransform::new();
         // Create a simple signal: sine wave
         let n = 32;
@@ -88,30 +88,32 @@ mod tests {
             .collect();
 
         // Forward
-        let spectrum = fft.forward(&signal).unwrap();
+        let spectrum = fft.forward(&signal)?;
 
         // Inverse
-        let reconstructed = fft.inverse(&spectrum).unwrap();
+        let reconstructed = fft.inverse(&spectrum)?;
 
         // Check closeness
         for (orig, recon) in signal.iter().zip(reconstructed.iter()) {
             assert!((orig.re - recon.re).abs() < 1e-10);
             assert!((orig.im - recon.im).abs() < 1e-10);
         }
+        Ok(())
     }
 
     #[test]
-    fn test_fft_impulse() {
+    fn test_fft_impulse() -> Result<(), TransformError> {
         let mut fft = FastFourierTransform::new();
         let n = 8;
         let mut signal = vec![Complex64::new(0.0, 0.0); n];
         signal[0] = Complex64::new(1.0, 0.0); // Impulse at t=0
 
         // FFT of impulse is constant 1
-        let spectrum = fft.forward(&signal).unwrap();
+        let spectrum = fft.forward(&signal)?;
         for val in spectrum {
             assert!((val.re - 1.0).abs() < 1e-10);
             assert!(val.im.abs() < 1e-10);
         }
+        Ok(())
     }
 }
