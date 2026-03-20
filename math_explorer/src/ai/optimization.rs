@@ -25,18 +25,20 @@ pub type Adam<T> = GenericAdam<T, (usize, ParamType)>;
 /// Used primarily for Regression.
 ///
 /// J(\theta) = \frac{1}{n} \sum_{i=1}^{n} (y^{(i)} - \hat{y}^{(i)})^2
-pub fn mean_squared_error<T: RealField + Copy>(y_pred: &DVector<T>, y_true: &DVector<T>) -> T {
+use crate::ai::AIError;
+
+pub fn mean_squared_error<T: RealField + Copy>(y_pred: &DVector<T>, y_true: &DVector<T>) -> Result<T, AIError> {
     let diff = y_pred - y_true;
-    let n = T::from_usize(y_pred.len()).unwrap();
-    diff.dot(&diff) / n
+    let n = T::from_usize(y_pred.len()).ok_or_else(|| AIError::ConversionError { reason: "Failed to convert usize to T".to_string() })?;
+    Ok(diff.dot(&diff) / n)
 }
 
 /// Derivative of MSE with respect to y_pred.
 /// \frac{\partial J}{\partial \hat{y}} = \frac{2}{n} (\hat{y} - y)
-pub fn mse_prime<T: RealField + Copy>(y_pred: &DVector<T>, y_true: &DVector<T>) -> DVector<T> {
-    let n = T::from_usize(y_pred.len()).unwrap();
-    let two = T::from_f64(2.0).unwrap();
-    (y_pred - y_true) * (two / n)
+pub fn mse_prime<T: RealField + Copy>(y_pred: &DVector<T>, y_true: &DVector<T>) -> Result<DVector<T>, AIError> {
+    let n = T::from_usize(y_pred.len()).ok_or_else(|| AIError::ConversionError { reason: "Failed to convert usize to T".to_string() })?;
+    let two = T::from_f64(2.0).ok_or_else(|| AIError::ConversionError { reason: "Failed to convert 2.0 to T".to_string() })?;
+    Ok((y_pred - y_true) * (two / n))
 }
 
 /// Cross-Entropy Loss function.
@@ -45,13 +47,13 @@ pub fn mse_prime<T: RealField + Copy>(y_pred: &DVector<T>, y_true: &DVector<T>) 
 /// J(\theta) = - \sum_{i} y_i \log(\hat{y}_i)
 ///
 /// Note: This implementation assumes y_true is a one-hot vector or probability distribution.
-pub fn cross_entropy_loss<T: RealField + Copy>(y_pred: &DVector<T>, y_true: &DVector<T>) -> T {
+pub fn cross_entropy_loss<T: RealField + Copy>(y_pred: &DVector<T>, y_true: &DVector<T>) -> Result<T, AIError> {
     // Add a small epsilon to avoid log(0)
-    let epsilon = T::from_f64(1e-15).unwrap();
+    let epsilon = T::from_f64(1e-15).ok_or_else(|| AIError::ConversionError { reason: "Failed to convert 1e-15 to T".to_string() })?;
     let y_pred_safe = y_pred.map(|v| if v > epsilon { v } else { epsilon });
 
     let log_likelihood = y_pred_safe.map(|v| v.ln());
-    -(y_true.dot(&log_likelihood))
+    Ok(-(y_true.dot(&log_likelihood)))
 }
 
 /// Derivative of Cross-Entropy Loss combined with Softmax.

@@ -92,11 +92,11 @@ impl Optimizer for AdamOptimizer {
         let m = self
             .m
             .as_mut()
-            .expect("Optimizer state m should be initialized");
+            .ok_or(AIError::UninitializedState { name: "m".to_string() })?;
         let v = self
             .v
             .as_mut()
-            .expect("Optimizer state v should be initialized");
+            .ok_or(AIError::UninitializedState { name: "v".to_string() })?;
 
         // Update biased first moment estimate: m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
         *m = &*m * self.beta1 + grads * (1.0 - self.beta1);
@@ -159,7 +159,7 @@ impl Optimizer for SgdOptimizer {
         let v = self
             .velocity
             .as_mut()
-            .expect("Optimizer state velocity should be initialized");
+            .ok_or(AIError::UninitializedState { name: "velocity".to_string() })?;
 
         // Update velocity: v_{t+1} = momentum * v_t + g_t
         // Note: Some implementations use v_{t+1} = momentum * v_t - lr * g_t.
