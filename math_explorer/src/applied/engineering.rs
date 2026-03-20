@@ -46,13 +46,16 @@ pub struct TotalBits(u32);
 impl TotalBits {
     /// Creates a new `TotalBits`.
     ///
-    /// # Panics
-    /// Panics if `value` is 0, since a frame cannot have 0 bits.
-    pub fn new(value: u32) -> Self {
+    /// # Errors
+    /// Returns `EngineeringError` if `value` is 0, since a frame cannot have 0 bits.
+    pub fn new(value: u32) -> Result<Self, EngineeringError> {
         if value == 0 {
-            panic!("TotalBits must be greater than 0");
+            return Err(EngineeringError::InvalidParameter {
+                name: "TotalBits".to_string(),
+                value: 0.0,
+            });
         }
-        Self(value)
+        Ok(Self(value))
     }
 
     /// Returns the inner value.
@@ -87,7 +90,7 @@ impl TotalBits {
 /// let throughput = calculate_uart_throughput(
 ///     BaudRate::new(9600),
 ///     DataBits::new(8),
-///     TotalBits::new(10),
+///     TotalBits::new(10).unwrap(),
 /// );
 /// assert_eq!(throughput, 7680.0);
 /// ```
@@ -144,13 +147,16 @@ pub struct CuttingSpeed(f64);
 impl CuttingSpeed {
     /// Creates a new `CuttingSpeed`.
     ///
-    /// # Panics
-    /// Panics if `value` is negative or zero.
-    pub fn new(value: f64) -> Self {
+    /// # Errors
+    /// Returns `EngineeringError` if `value` is negative or zero.
+    pub fn new(value: f64) -> Result<Self, EngineeringError> {
         if value <= 0.0 {
-            panic!("CuttingSpeed must be positive");
+            return Err(EngineeringError::InvalidParameter {
+                name: "CuttingSpeed".to_string(),
+                value,
+            });
         }
-        Self(value)
+        Ok(Self(value))
     }
 
     /// Returns the inner value.
@@ -166,13 +172,16 @@ pub struct MaterialConstant(f64);
 impl MaterialConstant {
     /// Creates a new `MaterialConstant`.
     ///
-    /// # Panics
-    /// Panics if `value` is negative.
-    pub fn new(value: f64) -> Self {
+    /// # Errors
+    /// Returns `EngineeringError` if `value` is negative.
+    pub fn new(value: f64) -> Result<Self, EngineeringError> {
         if value < 0.0 {
-            panic!("MaterialConstant must be non-negative");
+            return Err(EngineeringError::InvalidParameter {
+                name: "MaterialConstant".to_string(),
+                value,
+            });
         }
-        Self(value)
+        Ok(Self(value))
     }
 
     /// Returns the inner value.
@@ -188,13 +197,16 @@ pub struct ToolExponent(f64);
 impl ToolExponent {
     /// Creates a new `ToolExponent`.
     ///
-    /// # Panics
-    /// Panics if `value` is zero, to prevent division by zero in the exponent.
-    pub fn new(value: f64) -> Self {
+    /// # Errors
+    /// Returns `EngineeringError` if `value` is zero, to prevent division by zero in the exponent.
+    pub fn new(value: f64) -> Result<Self, EngineeringError> {
         if value == 0.0 {
-            panic!("ToolExponent cannot be zero");
+            return Err(EngineeringError::InvalidParameter {
+                name: "ToolExponent".to_string(),
+                value,
+            });
         }
-        Self(value)
+        Ok(Self(value))
     }
 
     /// Returns the inner value.
@@ -280,9 +292,9 @@ impl ToolLife {
 ///
 /// // High Speed Steel (HSS) tool cutting steel
 /// let life = calculate_taylor_tool_life(
-///     CuttingSpeed::new(40.0),
-///     MaterialConstant::new(100.0),
-///     ToolExponent::new(0.1),
+///     CuttingSpeed::new(40.0).unwrap(),
+///     MaterialConstant::new(100.0).unwrap(),
+///     ToolExponent::new(0.1).unwrap(),
 /// );
 /// // Expecting (100/40)^(1/0.1) = 2.5^10 = 9536.7...
 /// assert!(life.value() > 9000.0);
@@ -357,17 +369,20 @@ mod tests {
 
     #[test]
     fn test_calculate_uart_throughput() {
-        let eff =
-            calculate_uart_throughput(BaudRate::new(9600), DataBits::new(8), TotalBits::new(10));
+        let eff = calculate_uart_throughput(
+            BaudRate::new(9600),
+            DataBits::new(8),
+            TotalBits::new(10).unwrap(),
+        );
         assert_eq!(eff, 7680.0);
     }
 
     #[test]
     fn test_calculate_taylor_tool_life() {
         let life = calculate_taylor_tool_life(
-            CuttingSpeed::new(40.0),
-            MaterialConstant::new(100.0),
-            ToolExponent::new(0.1),
+            CuttingSpeed::new(40.0).unwrap(),
+            MaterialConstant::new(100.0).unwrap(),
+            ToolExponent::new(0.1).unwrap(),
         );
         assert!(life.value() > 9000.0);
     }
