@@ -357,11 +357,8 @@ mod tests {
 
     #[test]
     fn test_calculate_uart_throughput() {
-        let eff = calculate_uart_throughput(
-            BaudRate::new(9600),
-            DataBits::new(8),
-            TotalBits::new(10),
-        );
+        let eff =
+            calculate_uart_throughput(BaudRate::new(9600), DataBits::new(8), TotalBits::new(10));
         assert_eq!(eff, 7680.0);
     }
 
