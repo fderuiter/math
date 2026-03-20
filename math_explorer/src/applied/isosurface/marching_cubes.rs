@@ -244,6 +244,11 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
             normals[4] = grads[2];
             normals[7] = grads[3];
         } else if can_use_fast_path {
+            // SAFETY: `can_use_fast_path` ensures that the current coordinates (x, y, z)
+            // are interior nodes (strictly greater than 0 and less than width-2, height-2, depth-2).
+            // Therefore, `base_idx` and its immediate neighbors (±1, ±stride_y, ±stride_z)
+            // are guaranteed to be within the allocated bounds of the `data` slice, fulfilling
+            // the preconditions of `gradient_unchecked`.
             normals[0] = unsafe {
                 self.estimator
                     .gradient_unchecked(data, base_idx, stride_y, stride_z)
@@ -275,6 +280,10 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         // These are always computed anew as they become the next Left Face
         let right_face = if can_use_fast_path {
             let next_x_idx = base_idx + 1;
+            // SAFETY: Similar to the left face, `can_use_fast_path` guarantees that `next_x_idx`
+            // and its required offsets are within the bounds of `data`. Since `x < width - 2`,
+            // `x + 1` is also an interior node (`< width - 1`), meaning `next_x_idx` will have
+            // valid neighbors.
             let n1 = unsafe {
                 self.estimator
                     .gradient_unchecked(data, next_x_idx, stride_y, stride_z)
