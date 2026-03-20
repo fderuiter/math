@@ -55,4 +55,3 @@ impl OdeSystem<Vector2<f64>> for CannibalismModel {
         Vector2::new(dndt, dcdt)
     }
 }
-
