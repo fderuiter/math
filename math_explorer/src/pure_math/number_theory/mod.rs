@@ -28,6 +28,7 @@
 
 pub mod alcf;
 pub mod ambs;
+pub mod ualbf;
 pub mod class_number;
 pub mod hurwitz_kronecker;
 pub mod partitions;
