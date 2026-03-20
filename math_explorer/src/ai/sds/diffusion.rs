@@ -82,8 +82,9 @@ pub fn inject_noise(
 /// Helper to generate Gaussian noise matching image dimensions
 pub fn generate_noise(rows: usize, cols: usize) -> Result<DMatrix<f64>, crate::ai::AIError> {
     let mut rng = rand::thread_rng();
-    let normal = Normal::new(0.0, 1.0)
-        .map_err(|e| crate::ai::AIError::ConversionError { reason: format!("Invalid normal distribution: {}", e) })?;
+    let normal = Normal::new(0.0, 1.0).map_err(|e| crate::ai::AIError::ConversionError {
+        reason: format!("Invalid normal distribution: {}", e),
+    })?;
     Ok(DMatrix::from_fn(rows, cols, |_, _| normal.sample(&mut rng)))
 }
 

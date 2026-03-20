@@ -89,14 +89,12 @@ impl Optimizer for AdamOptimizer {
             self.v = Some(DMatrix::zeros(params.nrows(), params.ncols()));
         }
 
-        let m = self
-            .m
-            .as_mut()
-            .ok_or(AIError::UninitializedState { name: "m".to_string() })?;
-        let v = self
-            .v
-            .as_mut()
-            .ok_or(AIError::UninitializedState { name: "v".to_string() })?;
+        let m = self.m.as_mut().ok_or(AIError::UninitializedState {
+            name: "m".to_string(),
+        })?;
+        let v = self.v.as_mut().ok_or(AIError::UninitializedState {
+            name: "v".to_string(),
+        })?;
 
         // Update biased first moment estimate: m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
         *m = &*m * self.beta1 + grads * (1.0 - self.beta1);
@@ -156,10 +154,9 @@ impl Optimizer for SgdOptimizer {
             self.velocity = Some(DMatrix::zeros(params.nrows(), params.ncols()));
         }
 
-        let v = self
-            .velocity
-            .as_mut()
-            .ok_or(AIError::UninitializedState { name: "velocity".to_string() })?;
+        let v = self.velocity.as_mut().ok_or(AIError::UninitializedState {
+            name: "velocity".to_string(),
+        })?;
 
         // Update velocity: v_{t+1} = momentum * v_t + g_t
         // Note: Some implementations use v_{t+1} = momentum * v_t - lr * g_t.

@@ -19,9 +19,9 @@
 //! - Guy, R. K. (2004). *Unsolved Problems in Number Theory* (3rd ed.), Problem B2.
 //! - Cohen, G. L., & Hagis, P. (1982). Results concerning odd perfect numbers.
 use crate::pure_math::number_theory::alcf::sigma;
-use crate::pure_math::number_theory::ambs::{modular_inverse, prime_factors, AmbsDsp};
+use crate::pure_math::number_theory::ambs::{AmbsDsp, modular_inverse, prime_factors};
 use crate::pure_math::number_theory::primes::is_prime;
-use rug::{ops::RemRounding, Integer};
+use rug::{Integer, ops::RemRounding};
 
 /// A single prime-power component p^(2e) that survived the global annihilation sieve.
 #[allow(dead_code)]
@@ -116,7 +116,10 @@ pub fn phase1_global_annihilation_sieve(limit_p: u64, max_e: u32) -> (Vec<PrimeP
 /// let prefixes = phase2_build_prefix_tree(&comps, &Integer::from(50u64));
 /// for p in &prefixes { assert!(p.n_l >= Integer::from(50u64)); }
 /// ```
-pub fn phase2_build_prefix_tree(components: &[PrimePower], stop_threshold: &Integer) -> Vec<Prefix> {
+pub fn phase2_build_prefix_tree(
+    components: &[PrimePower],
+    stop_threshold: &Integer,
+) -> Vec<Prefix> {
     let mut pool: Vec<Prefix> = Vec::new();
 
     let mut stack: Vec<Prefix> = vec![Prefix {
