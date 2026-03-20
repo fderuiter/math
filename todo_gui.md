@@ -86,12 +86,12 @@ This document outlines the roadmap for integrating the various modules of the `m
     *   [x] **Training Monitor:** Real-time curves for training/validation loss and accuracy.
     *   [x] **Activation Functions:** Interactive plotter for ReLU, Sigmoid, Tanh, GELU, etc.
 
-### 3.2 Reinforcement Learning
+### 3.2 Reinforcement Learning - **[Implemented]**
 *   **Module:** `ai::reinforcement_learning`
 *   **Features:**
     *   [x] **Grid World:** Agent navigation visualization.
     *   [x] **Q-Table Inspector:** Heatmap of Q-values.
-    *   [ ] **Reward Plots:** Cumulative reward over episodes.
+    *   [x] **Reward Plots:** Cumulative reward over episodes.
 
 ### 3.3 Transformers
 *   **Module:** `ai::transformer`
