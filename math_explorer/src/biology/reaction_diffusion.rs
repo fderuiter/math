@@ -201,38 +201,6 @@ pub trait DiffusionModel {
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
 }
 
-/// Defines a strategy for time integration of the Reaction-Diffusion system.
-#[deprecated(note = "Use pure_math::analysis::ode::traits::Solver instead.")]
-pub trait ReactionDiffusionSolver {
-    /// Advances the system by a time step `dt`.
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    );
-}
-
-/// A standard Forward Euler solver.
-///
-/// This solver separates the diffusion and reaction steps, prioritizing
-/// architectural cleanliness (SRP) over fused-loop optimizations.
-#[deprecated(note = "Use standard OdeSystem solvers or ReactionDiffusionSystem::step instead.")]
-#[derive(Debug, Default, Clone, Copy)]
-pub struct ForwardEuler;
-
-#[allow(deprecated)]
-impl ReactionDiffusionSolver for ForwardEuler {
-    fn step<R: ReactionModel, D: DiffusionModel>(
-        &mut self,
-        system: &mut ReactionDiffusionSystem<R, D>,
-        dt: f64,
-    ) {
-        // Delegate to the system's own step method which now handles Euler integration
-        // and manages borrow checking correctly.
-        system.step(dt);
-    }
-}
-
 /// A pure physics definition of a Reaction-Diffusion system.
 ///
 /// This struct encapsulates the immutable laws of the system (reaction kinetics, diffusion strategy,

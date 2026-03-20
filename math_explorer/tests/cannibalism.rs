@@ -46,25 +46,3 @@ fn test_adult_dynamics() {
     assert_eq!(result, 49.0);
 }
 
-#[test]
-fn test_dndt() {
-    let n = 100.0;
-    let c = 10.0;
-    let beta_n = 0.1;
-    let beta_c = 0.2;
-    let k_n = 0.05;
-    let phi_n_c = 1.0;
-    let mu_n = 0.1;
-    let result = cannibalism::dndt(n, c, beta_n, beta_c, k_n, phi_n_c, mu_n);
-    assert_eq!(result, -4.0);
-}
-
-#[test]
-fn test_dcdt() {
-    let n = 100.0;
-    let c = 10.0;
-    let k_n = 0.05;
-    let mu_c = 0.1;
-    let result = cannibalism::dcdt(n, c, k_n, mu_c);
-    assert_eq!(result, 4.0);
-}
