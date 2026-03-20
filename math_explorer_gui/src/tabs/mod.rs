@@ -24,7 +24,7 @@ pub mod solid_state;
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust
 /// use math_explorer_gui::tabs::ExplorerTab;
 /// use eframe::egui;
 ///

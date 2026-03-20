@@ -239,7 +239,7 @@ let encoder = Encoder::new(2, 512, 8, 2048);
 
 // Dummy input: Sequence length 10
 let input = DMatrix::zeros(10, 512);
-let encoded = encoder.forward(input, None);
+let _encoded = encoder.forward(input, None);
 ```
 
 ###  Climate Modeling: CERA Framework
@@ -267,7 +267,7 @@ let config = CeraConfig {
 
 // 2. Initialize Model & Trainer
 let mut model = Cera::new(config).expect("Invalid config");
-let mut trainer = CeraTrainer::new(&mut model);
+let trainer = CeraTrainer::new(&mut model);
 
 // 3. Train on synthetic data (Batch Size * Num Levels, Channels)
 let inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
@@ -304,7 +304,7 @@ let b = Fp::<7>::new(5);
 assert_eq!(a * b, Fp::<7>::new(1));
 
 // 2. Polynomials over F_7: P(x) = 3x^2 + 5
-let p = Polynomial::new(vec![b, Fp::<7>::new(0), a]);
+let _p = Polynomial::new(vec![b, Fp::<7>::new(0), a]);
 ```
 
 ###  Pure Math: Tensor Calculus
@@ -315,7 +315,7 @@ use math_explorer::pure_math::tensor::{christoffel_symbols, RiemannianMetric};
 use nalgebra::{DMatrix, DVector};
 
 // Metric for a 2D sphere (Radius = 1.0)
-let metric = RiemannianMetric::new(|p: &DVector<f64>| {
+let metric = RiemannianMetric::new(|p| {
     let theta = p[0];
     let g11 = 1.0;
     let g22 = theta.sin().powi(2);
@@ -324,7 +324,7 @@ let metric = RiemannianMetric::new(|p: &DVector<f64>| {
 
 // Compute symbols at theta = 45 degrees
 let point = DVector::from_vec(vec![std::f64::consts::FRAC_PI_4, 0.0]);
-let gammas = christoffel_symbols(&metric, &point).expect("Singular metric");
+let gammas = christoffel_symbols(&metric, &point).unwrap();
 
 println!("Gamma^theta_phi_phi: {:.4}", gammas[0][(1, 1)]); // -0.5000
 ```

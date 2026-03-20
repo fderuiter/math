@@ -28,9 +28,52 @@ If you want to experiment with generative turbulence models:
     // pub mod generative_turbulence;
     ```
 
-## Contents
+## Architecture & Flow
 
-*   **`models/`**: Variational Autoencoders (VAEs) and GANs for flow field generation.
-*   **`networks/`**: Convolutional neural network backbones.
-*   **`training.rs`**: Training loops and optimization logic.
-*   **`analysis.rs`**: Statistical analysis of generated flow fields (energy spectra, correlation functions).
+The overarching purpose of this module is to map low-resolution or sparse fluid data into high-fidelity representations (e.g., Super-resolution).
+
+```mermaid
+graph TD
+    %% Data Pipeline
+    subgraph Data Flow
+        Input[Sparse/Low-Res Flow Field] --> Loader(data.rs: DataLoader)
+        Loader --> Preprocess[Normalization & Patching]
+    end
+
+    %% Network Backbone
+    subgraph Neural Networks
+        Preprocess --> UNet(networks/: U-Net Backbone)
+        UNet --> Features[Latent Flow Features]
+    end
+
+    %% Generative Models
+    subgraph Generative Models
+        Features --> VAE(models/: Variational Autoencoder)
+        Features --> GAN(models/: adv-NO Generator)
+        GAN --> Discriminator(models/: adv-NO Discriminator)
+    end
+
+    %% Training & Optimization
+    subgraph Optimization
+        VAE --> Loss(losses.rs: Physics-Informed Loss)
+        GAN --> Loss
+        Discriminator -.-> Loss
+        Loss --> Trainer(training.rs: Training Loop)
+        Trainer -.-> |Update Weights| UNet
+    end
+
+    %% Output
+    subgraph Analysis
+        Trainer --> Output[High-Res Flow Field]
+        Output --> Stats(analysis.rs: Energy Spectra)
+    end
+```
+
+### Module Responsibilities
+
+*   **`data.rs`**: Feeds turbulent flow snapshots into the system, handling batching and normalizations.
+*   **`networks/`**: Provides the structural backbone (like Convolutional U-Nets) used to extract multi-scale spatial features from the fluids.
+*   **`models/`**: Implements the actual generative logic (e.g., adv-NO, Diffusion Models, VAEs) combining network backbones into a coherent pipeline.
+*   **`losses.rs`**: Contains domain-specific loss functions. Standard MSE is often insufficient for turbulence; physics-informed constraints (like divergence-free fields or spectral matching) are enforced here.
+*   **`training.rs`**: The coordination loop that pushes data through the models, calculates loss, and steps the optimizers.
+*   **`analysis.rs`**: Validates the physical correctness of the generated flows by analyzing energy spectra and velocity correlation functions.
