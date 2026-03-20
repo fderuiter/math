@@ -1,0 +1,87 @@
+use eframe::egui::{self, Ui};
+use math_explorer::pure_math::number_theory::ualbf::{ualbf_search, UalbfSearchResult};
+
+pub struct UalbfWidget {
+    limit_p: u64,
+    max_exponent: u32,
+    stop_threshold_log: f64,
+    result: Option<UalbfSearchResult>,
+    status_message: String,
+}
+
+impl Default for UalbfWidget {
+    fn default() -> Self {
+        Self {
+            limit_p: 200,
+            max_exponent: 1,
+            stop_threshold_log: 10.0,
+            result: None,
+            status_message: String::from("Ready. Configure parameters and click Run."),
+        }
+    }
+}
+
+impl UalbfWidget {
+    pub fn ui(&mut self, ui: &mut Ui) {
+        ui.group(|ui| {
+            ui.label(egui::RichText::new("UALBF Parameters").strong());
+
+            let mut limit_p_f = self.limit_p as f64;
+            ui.add(egui::Slider::new(&mut limit_p_f, 100.0..=10000.0).text("Prime limit"));
+            self.limit_p = limit_p_f as u64;
+
+            let mut max_exp_f = self.max_exponent as f64;
+            ui.add(
+                egui::Slider::new(&mut max_exp_f, 1.0..=4.0)
+                    .text("Max exponent")
+                    .step_by(1.0),
+            );
+            self.max_exponent = max_exp_f as u32;
+
+            ui.add(
+                egui::Slider::new(&mut self.stop_threshold_log, 10.0..=15.0)
+                    .text("Stop threshold (10^x)"),
+            );
+
+            if ui.button("Run UALBF Pipeline").clicked() {
+                let threshold_str = format!("{:.0}", 10f64.powf(self.stop_threshold_log));
+                let target_max = "1000000000000";
+                let result =
+                    ualbf_search(self.limit_p, self.max_exponent, &threshold_str, target_max);
+                self.status_message = format!(
+                    "Done. Valid: {}, Pruned: {}, Prefixes: {}, Rejected: {}, Candidates: {}",
+                    result.valid_components,
+                    result.pruned_components,
+                    result.prefix_count,
+                    result.rejected_by_lattice,
+                    result.candidates_checked,
+                );
+                self.result = Some(result);
+            }
+        });
+
+        ui.label(&self.status_message);
+
+        if let Some(ref result) = self.result {
+            ui.separator();
+            ui.label(egui::RichText::new("Results").strong());
+            ui.label(format!(
+                "Phase 1 — Valid components: {}",
+                result.valid_components
+            ));
+            ui.label(format!(
+                "Phase 1 — Pruned components: {}",
+                result.pruned_components
+            ));
+            ui.label(format!("Phase 2 — Prefix count: {}", result.prefix_count));
+            ui.label(format!(
+                "Phase 3 — Rejected by lattice oracle: {}",
+                result.rejected_by_lattice
+            ));
+            ui.label(format!(
+                "Phase 4 — Candidates checked: {}",
+                result.candidates_checked
+            ));
+        }
+    }
+}

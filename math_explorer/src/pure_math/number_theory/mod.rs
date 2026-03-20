@@ -33,6 +33,7 @@ pub mod hurwitz_kronecker;
 pub mod partitions;
 pub mod primes;
 pub mod q_series;
+pub mod ualbf;
 
 // Re-exports for convenience
 pub use primes::{is_prime, primes_up_to};

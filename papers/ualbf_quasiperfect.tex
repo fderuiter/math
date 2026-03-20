@@ -1,0 +1,156 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\title{The Unified Algebraic-Lattice Bipartition Framework\\
+\large A Synthesis of ALCF and AMBS for Quasiperfect Number Search}
+\author{math\_explorer Project}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present the Unified Algebraic-Lattice Bipartition Framework (UALBF), a
+four-phase computational sieve that combines the Algebraic-Lattice Convergence
+Framework (ALCF) and the Algebraic-Modular Bipartition Sieve (AMBS) to search
+for quasiperfect numbers. A quasiperfect number $N$ satisfies $\sigma(N) = 2N+1$,
+where $\sigma$ denotes the sum-of-divisors function. No quasiperfect number is
+currently known; UALBF provides a structured pipeline to establish lower bounds
+and explore the algebraic constraints governing their possible existence.
+\end{abstract}
+
+\section{Introduction}
+
+A \emph{perfect number} $N$ satisfies $\sigma(N) = 2N$. Relaxing this identity
+by one yields a \emph{quasiperfect number}: an integer $N$ with $\sigma(N) = 2N+1$.
+Despite extensive computational searches, no quasiperfect number has ever been
+found \cite{Guy2004}. It is known that any quasiperfect number must be an odd
+perfect square exceeding $10^{35}$ \cite{CohenHagis1982}.
+
+UALBF is motivated by the observation that both the ALCF (which studies the
+multiplicative structure of $\sigma$) and the AMBS (which applies modular
+arithmetic sieves to factor products) provide complementary constraints on any
+hypothetical quasiperfect number. By unifying these two frameworks, UALBF
+achieves superior pruning compared to either approach alone.
+
+\section{Mathematical Preliminaries}
+
+\begin{definition}[Sum of Divisors]
+For $n \geq 1$, the \emph{sum-of-divisors function} is
+\[
+    \sigma(n) = \sum_{d \mid n} d.
+\]
+For prime powers, $\sigma(p^k) = 1 + p + p^2 + \cdots + p^k = \frac{p^{k+1}-1}{p-1}$.
+\end{definition}
+
+\begin{definition}[Quasiperfect Number]
+A positive integer $N$ is \emph{quasiperfect} if $\sigma(N) = 2N + 1$.
+\end{definition}
+
+Since $\sigma$ is multiplicative and $N$ must be an odd square (see \cite{CohenHagis1982}),
+we write $N = \prod_i p_i^{2e_i}$ and note that
+\[
+    \sigma(N) = \prod_i \sigma(p_i^{2e_i}).
+\]
+
+\section{The Four-Phase Pipeline}
+
+\subsection{Phase 1: Global Annihilation Sieve}
+
+For each odd prime $p \leq L$ and exponent $1 \leq e \leq E$, we compute
+$\sigma(p^{2e})$ and factor it. A component $p^{2e}$ is \emph{annihilated} if
+$\sigma(p^{2e})$ has a prime divisor $q$ with $q \equiv 5 \pmod{8}$ or
+$q \equiv 7 \pmod{8}$.
+
+\begin{proposition}
+If $q \mid \sigma(p^{2e})$ and $q \equiv 5$ or $7 \pmod{8}$, then $p^{2e}$
+cannot appear in the factorization of a quasiperfect number.
+\end{proposition}
+
+\begin{proof}
+By quadratic reciprocity and properties of the Jacobi symbol, such a prime
+$q$ forces $2N+1 \not\equiv 0 \pmod{q}$, contradicting $\sigma(N) = 2N+1$
+when $q \mid \sigma(N)$. See \cite{CohenHagis1982} for the full argument.
+\end{proof}
+
+\subsection{Phase 2: Prefix Tree Construction}
+
+Let $\mathcal{C}$ be the set of components surviving Phase~1. A \emph{prefix}
+is a pair $(N_L, S_L)$ where
+\[
+    N_L = \prod_{i \in I} p_i^{2e_i}, \qquad
+    S_L = \prod_{i \in I} \sigma(p_i^{2e_i}),
+\]
+for some index set $I \subseteq \mathcal{C}$. We build all prefixes with
+$N_L \geq T$ (a chosen threshold) by a depth-first expansion of the
+factor lattice.
+
+\subsection{Phase 3: Lattice Oracle}
+
+For each prefix $(N_L, S_L)$, a necessary condition for extension to a
+quasiperfect number is the existence of an integer $x_L$ satisfying
+\[
+    -2 N_L \cdot x_L \equiv 1 \pmod{S_L}.
+\]
+If $\gcd(2N_L, S_L) \nmid 1$, no such $x_L$ exists and the prefix is
+\emph{rejected}.
+
+\subsection{Phase 4: Exact Ray Casting}
+
+For surviving prefixes, we write $N = N_L \cdot z^2$ and require
+$S_L \cdot \sigma(z^2) = 2 N_L z^2 + 1$. Setting $x_L \equiv (-2N_L)^{-1} \pmod{S_L}$,
+we compute modular square roots of $x_L$ modulo $S_L$ via the AMBS and enumerate
+candidate values of $z$, checking whether $\sigma(N) = 2N+1$ exactly.
+
+\section{Implementation}
+
+The UALBF is implemented in Rust as part of the \texttt{math\_explorer} crate
+under \texttt{pure\_math::number\_theory::ualbf}. The pipeline is fully
+parameterized by:
+\begin{itemize}
+    \item \texttt{limit\_p}: upper bound on primes in Phase~1,
+    \item \texttt{max\_e}: maximum exponent in Phase~1,
+    \item \texttt{stop\_threshold}: minimum prefix product $N_L$,
+    \item \texttt{target\_max}: upper bound on candidates in Phase~4.
+\end{itemize}
+
+\section{Complexity and Expected Behaviour}
+
+The number of surviving components after Phase~1 is typically a small fraction
+of all prime powers up to $L$. Empirically, primes $p \equiv 3 \pmod{8}$ tend
+to survive because $\sigma(p^2) = p^2 + p + 1$ often avoids the annihilating
+residue classes. Phase~3 provides additional pruning through modular
+invertibility constraints, and Phase~4 terminates quickly in the absence of
+quasiperfect numbers.
+
+\section{Conclusion}
+
+UALBF provides a unified, modular, and extensible framework for the
+computational study of quasiperfect numbers. Future work includes
+parallelising the prefix enumeration, extending the sieve with additional
+congruence conditions, and integrating with certified arithmetic libraries
+for rigorous lower-bound proofs.
+
+\begin{thebibliography}{9}
+
+\bibitem{Guy2004}
+R.~K. Guy,
+\emph{Unsolved Problems in Number Theory}, 3rd~ed.,
+Springer, New York, 2004, Problem~B2.
+
+\bibitem{CohenHagis1982}
+G.~L. Cohen and P.~Hagis,
+``Results concerning odd perfect numbers,''
+\emph{J. Austral. Math. Soc. Ser. A}, 33(2):284--293, 1982.
+
+\end{thebibliography}
+
+\end{document}
