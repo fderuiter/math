@@ -1,28 +1,29 @@
-use std::fmt;
+use thiserror::Error;
 
 /// Errors related to AI/Machine Learning calculations.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Error, Debug, Clone, PartialEq)]
 pub enum AIError {
     /// Dimension mismatch between tensors/matrices.
+    #[error("Dimension mismatch: expected {expected}, got {got}")]
     DimensionMismatch { expected: String, got: String },
+
     /// Invalid parameter value (e.g. negative learning rate).
+    #[error("Invalid parameter {name}: {value}")]
     InvalidParameter { name: String, value: f64 },
+
     /// Optimization failed or diverged.
+    #[error("Optimization diverged")]
     OptimizationDivergence,
-}
 
-impl fmt::Display for AIError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::DimensionMismatch { expected, got } => {
-                write!(f, "Dimension mismatch: expected {}, got {}", expected, got)
-            }
-            Self::InvalidParameter { name, value } => {
-                write!(f, "Invalid parameter {}: {}", name, value)
-            }
-            Self::OptimizationDivergence => write!(f, "Optimization diverged"),
-        }
-    }
-}
+    /// Type conversion failed.
+    #[error("Conversion error: {reason}")]
+    ConversionError { reason: String },
 
-impl std::error::Error for AIError {}
+    /// State is uninitialized.
+    #[error("Uninitialized state: {name}")]
+    UninitializedState { name: String },
+
+    /// Mismatched data distribution lengths.
+    #[error("Distributions have different lengths: expected {expected}, got {got}")]
+    DistributionLengthMismatch { expected: usize, got: usize },
+}

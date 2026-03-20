@@ -103,7 +103,7 @@ impl AiTool for LossLandscapeTool {
 
                     // Calculate predictions: y_pred = w*x + b
                     let y_pred = self.x_data.map(|x| w * x + b);
-                    let loss = mean_squared_error(&y_pred, &self.y_data);
+                    let loss = mean_squared_error(&y_pred, &self.y_data).unwrap_or(0.0);
 
                     if loss < min_loss {
                         min_loss = loss;

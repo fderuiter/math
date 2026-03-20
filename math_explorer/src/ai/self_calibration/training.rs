@@ -53,12 +53,17 @@ fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
 /// # Returns
 ///
 /// The KL divergence loss.
-pub fn calculate_kl_divergence_loss(responses: &[Response], predicted_dist: &[f64]) -> f64 {
+use crate::ai::AIError;
+
+pub fn calculate_kl_divergence_loss(responses: &[Response], predicted_dist: &[f64]) -> Result<f64, AIError> {
     if responses.len() != predicted_dist.len() {
-        panic!("Distributions have different lengths.");
+        return Err(AIError::DistributionLengthMismatch {
+            expected: predicted_dist.len(),
+            got: responses.len(),
+        });
     }
     if responses.is_empty() {
-        return 0.0;
+        return Ok(0.0);
     }
     let target_dist = calculate_target_distribution(responses);
     let mut kl_divergence = 0.0;
@@ -67,7 +72,7 @@ pub fn calculate_kl_divergence_loss(responses: &[Response], predicted_dist: &[f6
             kl_divergence += q * (q / p).ln();
         }
     }
-    kl_divergence
+    Ok(kl_divergence)
 }
 
 #[cfg(test)]
@@ -99,7 +104,7 @@ mod tests {
             },
         ];
         let predicted_dist_q = vec![0.4, 0.1, 0.4, 0.1];
-        let loss = calculate_kl_divergence_loss(&responses, &predicted_dist_q);
+        let loss = calculate_kl_divergence_loss(&responses, &predicted_dist_q).unwrap();
         assert!((loss - 0.07019869).abs() < 1e-6);
     }
 }
