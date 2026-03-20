@@ -45,4 +45,3 @@ fn test_adult_dynamics() {
     let result = cannibalism::adult_dynamics(n_t_alpha, f_i_t, a_t);
     assert_eq!(result, 49.0);
 }
-
