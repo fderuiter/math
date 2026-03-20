@@ -55,7 +55,10 @@ fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
 /// The KL divergence loss.
 use crate::ai::AIError;
 
-pub fn calculate_kl_divergence_loss(responses: &[Response], predicted_dist: &[f64]) -> Result<f64, AIError> {
+pub fn calculate_kl_divergence_loss(
+    responses: &[Response],
+    predicted_dist: &[f64],
+) -> Result<f64, AIError> {
     if responses.len() != predicted_dist.len() {
         return Err(AIError::DistributionLengthMismatch {
             expected: predicted_dist.len(),

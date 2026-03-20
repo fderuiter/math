@@ -31,7 +31,11 @@ impl UalbfWidget {
             self.limit_p = limit_p_f as u64;
 
             let mut max_exp_f = self.max_exponent as f64;
-            ui.add(egui::Slider::new(&mut max_exp_f, 1.0..=4.0).text("Max exponent").step_by(1.0));
+            ui.add(
+                egui::Slider::new(&mut max_exp_f, 1.0..=4.0)
+                    .text("Max exponent")
+                    .step_by(1.0),
+            );
             self.max_exponent = max_exp_f as u32;
 
             ui.add(
