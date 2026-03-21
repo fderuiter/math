@@ -4,7 +4,8 @@
 //! can occur at any continuous time point rather than discrete steps.
 
 use crate::pure_math::statistics::markov::error::{MarkovError, Result};
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, RealField};
+use num_traits::ToPrimitive;
 
 /// A continuous-time Markov chain characterized by its generator matrix.
 ///
@@ -35,7 +36,7 @@ use nalgebra::{DMatrix, DVector};
 ///      3.0, -3.0,
 /// ]);
 ///
-/// let chain = ContinuousMarkovChain::new(generator).unwrap();
+/// let chain = ContinuousMarkovChain::<f64>::new(generator).unwrap();
 ///
 /// // Compute transition probabilities at t=1.0
 /// let p_t = chain.transition_probabilities(1.0).unwrap();
@@ -47,14 +48,14 @@ use nalgebra::{DMatrix, DVector};
 /// }
 /// ```
 #[derive(Debug, Clone)]
-pub struct ContinuousMarkovChain {
+pub struct ContinuousMarkovChain<T: RealField + Copy + ToPrimitive> {
     /// The generator matrix G.
-    generator: DMatrix<f64>,
+    generator: DMatrix<T>,
     /// Number of states.
     num_states: usize,
 }
 
-impl ContinuousMarkovChain {
+impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     /// Creates a new continuous-time Markov chain.
     ///
     /// # Arguments
@@ -68,7 +69,7 @@ impl ContinuousMarkovChain {
     /// # Errors
     ///
     /// - `InvalidGenerator`: If the matrix is not a valid generator
-    pub fn new(generator: DMatrix<f64>) -> Result<Self> {
+    pub fn new(generator: DMatrix<T>) -> Result<Self> {
         let n = generator.nrows();
 
         if generator.ncols() != n {
@@ -92,26 +93,26 @@ impl ContinuousMarkovChain {
     /// 1. Each row sums to 0 (within tolerance)
     /// 2. Off-diagonal elements are non-negative
     /// 3. Diagonal elements are non-positive
-    fn validate_generator(generator: &DMatrix<f64>) -> Result<()> {
-        const TOLERANCE: f64 = 1e-10;
+    fn validate_generator(generator: &DMatrix<T>) -> Result<()> {
+        let tolerance = T::from_f64(1e-10).unwrap();
 
         for i in 0..generator.nrows() {
             // Check row sum is 0
-            let row_sum: f64 = generator.row(i).iter().sum();
-            if row_sum.abs() > TOLERANCE {
+            let row_sum: T = generator.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
+            if row_sum.abs() > tolerance {
                 return Err(MarkovError::InvalidGenerator {
-                    reason: format!("Row {} sums to {} instead of 0.0", i, row_sum),
+                    reason: format!("Row {} sums to {} instead of 0.0", i, row_sum.to_f64().unwrap_or(f64::NAN)),
                 });
             }
 
             // Check diagonal is non-positive
-            if generator[(i, i)] > TOLERANCE {
+            if generator[(i, i)] > tolerance {
                 return Err(MarkovError::InvalidGenerator {
                     reason: format!(
                         "Diagonal element G[{},{}] = {} must be non-positive",
                         i,
                         i,
-                        generator[(i, i)]
+                        generator[(i, i)].to_f64().unwrap_or(f64::NAN)
                     ),
                 });
             }
@@ -120,11 +121,11 @@ impl ContinuousMarkovChain {
             for j in 0..generator.ncols() {
                 if i != j {
                     let rate = generator[(i, j)];
-                    if rate < -TOLERANCE {
+                    if rate < -tolerance {
                         return Err(MarkovError::InvalidGenerator {
                             reason: format!(
                                 "Off-diagonal element G[{},{}] = {} must be non-negative",
-                                i, j, rate
+                                i, j, rate.to_f64().unwrap_or(f64::NAN)
                             ),
                         });
                     }
@@ -145,7 +146,7 @@ impl ContinuousMarkovChain {
     }
 
     /// Returns the generator matrix.
-    pub fn generator(&self) -> &DMatrix<f64> {
+    pub fn generator(&self) -> &DMatrix<T> {
         &self.generator
     }
 
@@ -172,14 +173,14 @@ impl ContinuousMarkovChain {
     /// # Implementation
     ///
     /// Uses the scaling and squaring method with Padé approximation.
-    pub fn transition_probabilities(&self, t: f64) -> Result<DMatrix<f64>> {
-        if !t.is_finite() || t < 0.0 {
+    pub fn transition_probabilities(&self, t: T) -> Result<DMatrix<T>> {
+        if !t.is_finite() || t < T::zero() {
             return Err(MarkovError::InvalidState {
-                reason: format!("Time t must be non-negative and finite, got {}", t),
+                reason: format!("Time t must be non-negative and finite, got {}", t.to_f64().unwrap_or(f64::NAN)),
             });
         }
 
-        if t == 0.0 {
+        if t == T::zero() {
             return Ok(DMatrix::identity(self.num_states, self.num_states));
         }
 
@@ -192,7 +193,7 @@ impl ContinuousMarkovChain {
     ///
     /// This is a simplified implementation. For production use, consider using
     /// a specialized library like `nalgebra::linalg::Exp`.
-    fn matrix_exponential(&self, a: &DMatrix<f64>) -> Result<DMatrix<f64>> {
+    fn matrix_exponential(&self, a: &DMatrix<T>) -> Result<DMatrix<T>> {
         let n = a.nrows();
 
         // Scaling: choose s such that ||A/2^s|| < 1
@@ -203,7 +204,7 @@ impl ContinuousMarkovChain {
             0
         };
 
-        let scale = 2.0_f64.powi(s);
+        let scale = T::from_f64(2.0).unwrap().powi(s);
         let a_scaled = a / scale;
 
         // Padé approximation of order 6
@@ -212,13 +213,13 @@ impl ContinuousMarkovChain {
         let a6 = &a2 * &a4;
 
         // Coefficients for Padé(6,6)
-        let c0 = 1.0;
-        let c1 = 0.5;
-        let c2 = 1.0 / 9.0;
-        let c3 = 1.0 / 72.0;
-        let c4 = 1.0 / 1008.0;
-        let c5 = 1.0 / 30240.0;
-        let c6 = 1.0 / 1814400.0;
+        let c0 = T::one();
+        let c1 = T::from_f64(0.5).unwrap();
+        let c2 = T::from_f64(1.0 / 9.0).unwrap();
+        let c3 = T::from_f64(1.0 / 72.0).unwrap();
+        let c4 = T::from_f64(1.0 / 1008.0).unwrap();
+        let c5 = T::from_f64(1.0 / 30240.0).unwrap();
+        let c6 = T::from_f64(1.0 / 1814400.0).unwrap();
 
         let id = DMatrix::identity(n, n);
 
@@ -246,10 +247,10 @@ impl ContinuousMarkovChain {
     }
 
     /// Computes the 1-norm of a matrix (maximum absolute column sum).
-    fn matrix_norm_1(&self, a: &DMatrix<f64>) -> f64 {
+    fn matrix_norm_1(&self, a: &DMatrix<T>) -> f64 {
         let mut max_sum: f64 = 0.0;
         for j in 0..a.ncols() {
-            let col_sum: f64 = a.column(j).iter().map(|x| x.abs()).sum();
+            let col_sum: f64 = a.column(j).iter().fold(0.0, |acc, &x| acc + x.to_f64().unwrap_or(0.0).abs());
             max_sum = max_sum.max(col_sum);
         }
         max_sum
@@ -265,30 +266,30 @@ impl ContinuousMarkovChain {
     /// # Returns
     ///
     /// The steady-state distribution if it exists and converges, or None otherwise.
-    pub fn steady_state(&self) -> Option<DVector<f64>> {
+    pub fn steady_state(&self) -> Option<DVector<T>> {
         // For irreducible CTMCs, we can find the steady state by computing
         // the null space of G^T and normalizing.
 
         // Alternative approach: simulate for a long time
         // π ≈ e^T·P(t) for large t, where e^T is any initial distribution
 
-        const LONG_TIME: f64 = 100.0;
+        let long_time = T::from_f64(100.0).unwrap();
         const MAX_ATTEMPTS: usize = 5;
 
         for attempt in 0..MAX_ATTEMPTS {
-            let t = LONG_TIME * (1 + attempt) as f64;
+            let t = long_time * T::from_usize(1 + attempt).unwrap();
 
             if let Ok(p_t) = self.transition_probabilities(t) {
                 // Use uniform initial distribution
-                let mut pi = DVector::from_element(self.num_states, 1.0 / self.num_states as f64);
+                let mut pi = DVector::from_element(self.num_states, T::one() / T::from_usize(self.num_states).unwrap());
                 pi = p_t.transpose() * pi;
 
                 // Check if it's approximately stationary
                 let pi_next = self.generator.transpose() * &pi;
-                if pi_next.norm() < 1e-6 {
+                if pi_next.norm() < T::from_f64(1e-6).unwrap() {
                     // Normalize to ensure exact sum to 1
-                    let sum = pi.sum();
-                    if sum > 1e-10 {
+                    let sum = pi.iter().fold(T::zero(), |acc, &x| acc + x);
+                    if sum > T::from_f64(1e-10).unwrap() {
                         pi /= sum;
                         return Some(pi);
                     }
@@ -316,7 +317,7 @@ impl ContinuousMarkovChain {
     ///
     /// The expected time satisfies: Q·t = -1, where Q is the transient
     /// submatrix of the generator.
-    pub fn expected_absorption_times(&self, transient_states: &[usize]) -> Result<DVector<f64>> {
+    pub fn expected_absorption_times(&self, transient_states: &[usize]) -> Result<DVector<T>> {
         let n_t = transient_states.len();
         if n_t == 0 {
             return Err(MarkovError::InvalidState {
@@ -333,7 +334,7 @@ impl ContinuousMarkovChain {
         }
 
         // Solve Q·t = -1
-        let ones = DVector::from_element(n_t, -1.0);
+        let ones = DVector::from_element(n_t, -T::one());
 
         q.try_inverse()
             .ok_or_else(|| MarkovError::SingularMatrix {
@@ -362,9 +363,9 @@ impl ContinuousMarkovChain {
     pub fn simulate_trajectory<R: rand::Rng>(
         &self,
         initial_state: usize,
-        max_time: f64,
+        max_time: T,
         rng: &mut R,
-    ) -> Result<Vec<(f64, usize)>> {
+    ) -> Result<Vec<(T, usize)>> {
         use rand_distr::{Distribution, Exp, WeightedIndex};
 
         if initial_state >= self.num_states {
@@ -373,25 +374,25 @@ impl ContinuousMarkovChain {
             });
         }
 
-        let mut trajectory = vec![(0.0, initial_state)];
+        let mut trajectory = vec![(T::zero(), initial_state)];
         let mut current_state = initial_state;
-        let mut current_time = 0.0;
+        let mut current_time = T::zero();
 
         while current_time < max_time {
             // Get rate out of current state
             let rate = -self.generator[(current_state, current_state)];
 
-            if rate < 1e-10 {
+            if rate < T::from_f64(1e-10).unwrap() {
                 // Absorbing state or very slow rate
                 break;
             }
 
             // Sample holding time
-            let exp_dist = Exp::new(rate).map_err(|_| MarkovError::NumericalError {
-                reason: format!("Invalid rate for exponential: {}", rate),
+            let exp_dist = Exp::new(rate.to_f64().unwrap_or(0.0)).map_err(|_| MarkovError::NumericalError {
+                reason: format!("Invalid rate for exponential: {}", rate.to_f64().unwrap_or(f64::NAN)),
             })?;
             let holding_time: f64 = exp_dist.sample(rng);
-            current_time += holding_time;
+            current_time += T::from_f64(holding_time).unwrap();
 
             if current_time >= max_time {
                 break;
@@ -403,8 +404,8 @@ impl ContinuousMarkovChain {
             for j in 0..self.num_states {
                 if j != current_state {
                     let transition_rate = self.generator[(current_state, j)];
-                    if transition_rate > 1e-10 {
-                        weights.push(transition_rate);
+                    if transition_rate > T::from_f64(1e-10).unwrap() {
+                        weights.push(transition_rate.to_f64().unwrap_or(0.0));
                         next_states.push(j);
                     }
                 }

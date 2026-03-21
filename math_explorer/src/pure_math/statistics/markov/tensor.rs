@@ -4,18 +4,20 @@
 //! such as modeling basketball possessions with shot clock urgency effects.
 
 use crate::pure_math::statistics::markov::error::{MarkovError, Result};
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, RealField};
+
+use num_traits::ToPrimitive;
 
 /// A time index for non-stationary transition matrices.
 ///
 /// In basketball, this might represent the shot clock time (0-24 seconds).
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct TimeIndex {
+pub struct TimeIndex<T: RealField + Copy + ToPrimitive> {
     /// The time value.
-    time: f64,
+    time: T,
 }
 
-impl TimeIndex {
+impl<T: RealField + Copy + ToPrimitive> TimeIndex<T> {
     /// Creates a new time index.
     ///
     /// # Arguments
@@ -25,17 +27,17 @@ impl TimeIndex {
     /// # Returns
     ///
     /// A new `TimeIndex` or an error if the time is invalid.
-    pub fn new(time: f64) -> Result<Self> {
+    pub fn new(time: T) -> Result<Self> {
         if !time.is_finite() {
             return Err(MarkovError::InvalidState {
-                reason: format!("Time must be finite, got {}", time),
+                reason: format!("Time must be finite, got {}", time.to_f64().unwrap_or(f64::NAN)),
             });
         }
         Ok(TimeIndex { time })
     }
 
     /// Returns the time value.
-    pub fn value(&self) -> f64 {
+    pub fn value(&self) -> T {
         self.time
     }
 }
@@ -56,20 +58,19 @@ impl TimeIndex {
 ///
 /// ```rust
 /// use math_explorer::pure_math::statistics::markov::tensor::{TransitionTensor, TimeIndex};
-/// use nalgebra::DMatrix;
 ///
 /// // Create a tensor with transitions at different shot clock times
-/// let mut tensor = TransitionTensor::new(2, TimeIndex::new(0.0).unwrap(), TimeIndex::new(24.0).unwrap());
+/// let mut tensor = TransitionTensor::<f64>::new(2, TimeIndex::new(0.0).unwrap(), TimeIndex::new(24.0).unwrap());
 ///
 /// // Add transition matrix at t=24 (full shot clock - patient offense)
-/// let p_24 = DMatrix::from_row_slice(2, 2, &[
+/// let p_24 = nalgebra::DMatrix::from_row_slice(2, 2, &[
 ///     0.9, 0.1,  // Mostly stay in possession
 ///     0.2, 0.8,
 /// ]);
 /// tensor.add_time_slice(TimeIndex::new(24.0).unwrap(), p_24).unwrap();
 ///
 /// // Add transition matrix at t=5 (urgency - more shots)
-/// let p_5 = DMatrix::from_row_slice(2, 2, &[
+/// let p_5 = nalgebra::DMatrix::from_row_slice(2, 2, &[
 ///     0.5, 0.5,  // More aggressive
 ///     0.3, 0.7,
 /// ]);
@@ -79,18 +80,18 @@ impl TimeIndex {
 /// let p_15 = tensor.transition_matrix_at(TimeIndex::new(15.0).unwrap()).unwrap();
 /// ```
 #[derive(Debug, Clone)]
-pub struct TransitionTensor {
+pub struct TransitionTensor<T: RealField + Copy + ToPrimitive> {
     /// Number of states.
     num_states: usize,
     /// Minimum time.
-    min_time: TimeIndex,
+    min_time: TimeIndex<T>,
     /// Maximum time.
-    max_time: TimeIndex,
+    max_time: TimeIndex<T>,
     /// Time-indexed transition matrices, sorted by time.
-    time_slices: Vec<(TimeIndex, DMatrix<f64>)>,
+    time_slices: Vec<(TimeIndex<T>, DMatrix<T>)>,
 }
 
-impl TransitionTensor {
+impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     /// Creates a new transition tensor.
     ///
     /// # Arguments
@@ -102,7 +103,7 @@ impl TransitionTensor {
     /// # Returns
     ///
     /// A new `TransitionTensor`.
-    pub fn new(num_states: usize, min_time: TimeIndex, max_time: TimeIndex) -> Self {
+    pub fn new(num_states: usize, min_time: TimeIndex<T>, max_time: TimeIndex<T>) -> Self {
         TransitionTensor {
             num_states,
             min_time,
@@ -127,12 +128,12 @@ impl TransitionTensor {
     /// - `TimeIndexOutOfBounds`: If time is outside [min_time, max_time]
     /// - `DimensionMismatch`: If matrix size doesn't match num_states
     /// - `NotStochastic`: If matrix rows don't sum to 1
-    pub fn add_time_slice(&mut self, time: TimeIndex, matrix: DMatrix<f64>) -> Result<()> {
+    pub fn add_time_slice(&mut self, time: TimeIndex<T>, matrix: DMatrix<T>) -> Result<()> {
         // Validate time bounds
         if time.value() < self.min_time.value() || time.value() > self.max_time.value() {
             return Err(MarkovError::TimeIndexOutOfBounds {
-                time: time.value(),
-                valid_range: (self.min_time.value(), self.max_time.value()),
+                time: time.value().to_f64().unwrap_or(f64::NAN),
+                valid_range: (self.min_time.value().to_f64().unwrap_or(f64::NAN), self.max_time.value().to_f64().unwrap_or(f64::NAN)),
             });
         }
 
@@ -159,21 +160,21 @@ impl TransitionTensor {
     }
 
     /// Validates that a matrix is row-stochastic.
-    fn validate_stochastic(matrix: &DMatrix<f64>) -> Result<()> {
-        const TOLERANCE: f64 = 1e-10;
+    fn validate_stochastic(matrix: &DMatrix<T>) -> Result<()> {
+        let tolerance = T::from_f64(1e-10).unwrap();
 
         for i in 0..matrix.nrows() {
-            let row_sum: f64 = matrix.row(i).iter().sum();
-            if (row_sum - 1.0).abs() > TOLERANCE {
+            let row_sum: T = matrix.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
+            if (row_sum - T::one()).abs() > tolerance {
                 return Err(MarkovError::NotStochastic {
-                    reason: format!("Row {} sums to {} instead of 1.0", i, row_sum),
+                    reason: format!("Row {} sums to {} instead of 1.0", i, row_sum.to_f64().unwrap_or(f64::NAN)),
                 });
             }
 
             for j in 0..matrix.ncols() {
                 let p = matrix[(i, j)];
-                if !p.is_finite() || !(0.0..=1.0).contains(&p) {
-                    return Err(MarkovError::InvalidProbability { value: p });
+                if !p.is_finite() || p < T::zero() || p > T::one() {
+                    return Err(MarkovError::InvalidProbability { value: p.to_f64().unwrap_or(f64::NAN) });
                 }
             }
         }
@@ -199,7 +200,7 @@ impl TransitionTensor {
     /// - If time < first slice time: return first slice
     /// - If time > last slice time: return last slice
     /// - Otherwise: linear interpolation between adjacent slices
-    pub fn transition_matrix_at(&self, time: TimeIndex) -> Result<DMatrix<f64>> {
+    pub fn transition_matrix_at(&self, time: TimeIndex<T>) -> Result<DMatrix<T>> {
         if self.time_slices.is_empty() {
             return Err(MarkovError::InvalidState {
                 reason: "No time slices added to tensor".to_string(),
@@ -208,8 +209,8 @@ impl TransitionTensor {
 
         if time.value() < self.min_time.value() || time.value() > self.max_time.value() {
             return Err(MarkovError::TimeIndexOutOfBounds {
-                time: time.value(),
-                valid_range: (self.min_time.value(), self.max_time.value()),
+                time: time.value().to_f64().unwrap_or(f64::NAN),
+                valid_range: (self.min_time.value().to_f64().unwrap_or(f64::NAN), self.max_time.value().to_f64().unwrap_or(f64::NAN)),
             });
         }
 
@@ -236,7 +237,7 @@ impl TransitionTensor {
                     let (t2, p2) = &self.time_slices[idx];
 
                     let alpha = (time.value() - t1.value()) / (t2.value() - t1.value());
-                    let interpolated = p1 * (1.0 - alpha) + p2 * alpha;
+                    let interpolated = p1 * (T::one() - alpha) + p2 * alpha;
 
                     Ok(interpolated)
                 }
@@ -255,7 +256,7 @@ impl TransitionTensor {
     }
 
     /// Returns the time range.
-    pub fn time_range(&self) -> (f64, f64) {
+    pub fn time_range(&self) -> (T, T) {
         (self.min_time.value(), self.max_time.value())
     }
 
@@ -273,26 +274,26 @@ impl TransitionTensor {
     /// over the time interval.
     pub fn average_transition(
         &self,
-        start_time: TimeIndex,
-        end_time: TimeIndex,
+        start_time: TimeIndex<T>,
+        end_time: TimeIndex<T>,
         num_samples: usize,
-    ) -> Result<DMatrix<f64>> {
+    ) -> Result<DMatrix<T>> {
         if num_samples == 0 {
             return Err(MarkovError::InvalidState {
                 reason: "num_samples must be positive".to_string(),
             });
         }
 
-        let dt = (end_time.value() - start_time.value()) / (num_samples - 1) as f64;
+        let dt = (end_time.value() - start_time.value()) / T::from_usize(num_samples - 1).unwrap();
         let mut sum = DMatrix::zeros(self.num_states, self.num_states);
 
         for i in 0..num_samples {
-            let t = start_time.value() + i as f64 * dt;
+            let t = start_time.value() + T::from_usize(i).unwrap() * dt;
             let p = self.transition_matrix_at(TimeIndex::new(t)?)?;
             sum += p;
         }
 
-        Ok(sum / num_samples as f64)
+        Ok(sum / T::from_usize(num_samples).unwrap())
     }
 }
 
