@@ -101,7 +101,11 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             let row_sum: T = generator.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
             if row_sum.abs() > tolerance {
                 return Err(MarkovError::InvalidGenerator {
-                    reason: format!("Row {} sums to {} instead of 0.0", i, row_sum.to_f64().unwrap_or(f64::NAN)),
+                    reason: format!(
+                        "Row {} sums to {} instead of 0.0",
+                        i,
+                        row_sum.to_f64().unwrap_or(f64::NAN)
+                    ),
                 });
             }
 
@@ -125,7 +129,9 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
                         return Err(MarkovError::InvalidGenerator {
                             reason: format!(
                                 "Off-diagonal element G[{},{}] = {} must be non-negative",
-                                i, j, rate.to_f64().unwrap_or(f64::NAN)
+                                i,
+                                j,
+                                rate.to_f64().unwrap_or(f64::NAN)
                             ),
                         });
                     }
@@ -176,7 +182,10 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     pub fn transition_probabilities(&self, t: T) -> Result<DMatrix<T>> {
         if !t.is_finite() || t < T::zero() {
             return Err(MarkovError::InvalidState {
-                reason: format!("Time t must be non-negative and finite, got {}", t.to_f64().unwrap_or(f64::NAN)),
+                reason: format!(
+                    "Time t must be non-negative and finite, got {}",
+                    t.to_f64().unwrap_or(f64::NAN)
+                ),
             });
         }
 
@@ -250,7 +259,10 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     fn matrix_norm_1(&self, a: &DMatrix<T>) -> f64 {
         let mut max_sum: f64 = 0.0;
         for j in 0..a.ncols() {
-            let col_sum: f64 = a.column(j).iter().fold(0.0, |acc, &x| acc + x.to_f64().unwrap_or(0.0).abs());
+            let col_sum: f64 = a
+                .column(j)
+                .iter()
+                .fold(0.0, |acc, &x| acc + x.to_f64().unwrap_or(0.0).abs());
             max_sum = max_sum.max(col_sum);
         }
         max_sum
@@ -281,7 +293,10 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
 
             if let Ok(p_t) = self.transition_probabilities(t) {
                 // Use uniform initial distribution
-                let mut pi = DVector::from_element(self.num_states, T::one() / T::from_usize(self.num_states).unwrap());
+                let mut pi = DVector::from_element(
+                    self.num_states,
+                    T::one() / T::from_usize(self.num_states).unwrap(),
+                );
                 pi = p_t.transpose() * pi;
 
                 // Check if it's approximately stationary
@@ -388,8 +403,13 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             }
 
             // Sample holding time
-            let exp_dist = Exp::new(rate.to_f64().unwrap_or(0.0)).map_err(|_| MarkovError::NumericalError {
-                reason: format!("Invalid rate for exponential: {}", rate.to_f64().unwrap_or(f64::NAN)),
+            let exp_dist = Exp::new(rate.to_f64().unwrap_or(0.0)).map_err(|_| {
+                MarkovError::NumericalError {
+                    reason: format!(
+                        "Invalid rate for exponential: {}",
+                        rate.to_f64().unwrap_or(f64::NAN)
+                    ),
+                }
             })?;
             let holding_time: f64 = exp_dist.sample(rng);
             current_time += T::from_f64(holding_time).unwrap();
