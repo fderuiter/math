@@ -123,18 +123,8 @@ fn test_enantiomer_model_ir() {
     let c_total = model.concentration_ir_single_dose(t);
 
     // Expected value is C_d(t) + C_l(t) with scaled doses.
-    let c_d = concentration_bateman(
-        &d_params
-            .with_dose(d_params.d() * f_d)
-            .unwrap(),
-        t,
-    );
-    let c_l = concentration_bateman(
-        &l_params
-            .with_dose(l_params.d() * f_l)
-            .unwrap(),
-        t,
-    );
+    let c_d = concentration_bateman(&d_params.with_dose(d_params.d() * f_d).unwrap(), t);
+    let c_l = concentration_bateman(&l_params.with_dose(l_params.d() * f_l).unwrap(), t);
     let expected_c = c_d + c_l;
 
     assert!((c_total - expected_c).abs() < TOLERANCE);
