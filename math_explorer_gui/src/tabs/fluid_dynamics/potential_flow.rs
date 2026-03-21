@@ -50,42 +50,14 @@ impl Default for PotentialFlowTool {
     }
 }
 
-impl PotentialFlowTool {
-    fn add_element(&mut self) {
-        let element: Box<dyn FlowElement> = match self.selected_element_type {
-            ElementType::Uniform => Box::new(UniformFlow::new(
-                self.new_element_strength,
-                self.new_element_angle,
-            )),
-            ElementType::Source => Box::new(Source::new(
-                self.new_element_strength,
-                self.new_element_x,
-                self.new_element_y,
-            )),
-            ElementType::Sink => Box::new(Source::new(
-                -self.new_element_strength,
-                self.new_element_x,
-                self.new_element_y,
-            )),
-            ElementType::Vortex => Box::new(Vortex::new(
-                self.new_element_strength,
-                self.new_element_x,
-                self.new_element_y,
-            )),
-            ElementType::Doublet => Box::new(Doublet::new(
-                self.new_element_strength,
-                self.new_element_x,
-                self.new_element_y,
-            )),
-        };
-        self.field.add(element);
+use crate::tabs::fluid_dynamics::FluidDynamicsTool;
+
+impl FluidDynamicsTool for PotentialFlowTool {
+    fn name(&self) -> &'static str {
+        "Potential Flow"
     }
 
-    fn clear(&mut self) {
-        self.field.clear();
-    }
-
-    pub fn show(&mut self, ctx: &egui::Context) {
+    fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("potential_flow_controls").show(ctx, |ui| {
             ui.heading("Potential Flow Controls");
             ui.separator();
@@ -192,5 +164,41 @@ impl PotentialFlowTool {
                     );
                 });
         });
+    }
+}
+
+impl PotentialFlowTool {
+    fn add_element(&mut self) {
+        let element: Box<dyn FlowElement> = match self.selected_element_type {
+            ElementType::Uniform => Box::new(UniformFlow::new(
+                self.new_element_strength,
+                self.new_element_angle,
+            )),
+            ElementType::Source => Box::new(Source::new(
+                self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+            ElementType::Sink => Box::new(Source::new(
+                -self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+            ElementType::Vortex => Box::new(Vortex::new(
+                self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+            ElementType::Doublet => Box::new(Doublet::new(
+                self.new_element_strength,
+                self.new_element_x,
+                self.new_element_y,
+            )),
+        };
+        self.field.add(element);
+    }
+
+    fn clear(&mut self) {
+        self.field.clear();
     }
 }

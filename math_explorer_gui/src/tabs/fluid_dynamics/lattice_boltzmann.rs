@@ -61,8 +61,14 @@ impl Default for LatticeBoltzmannTool {
     }
 }
 
-impl LatticeBoltzmannTool {
-    pub fn show(&mut self, ctx: &egui::Context) {
+use crate::tabs::fluid_dynamics::FluidDynamicsTool;
+
+impl FluidDynamicsTool for LatticeBoltzmannTool {
+    fn name(&self) -> &'static str {
+        "Lattice Boltzmann (Demo)"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
         // Update Simulation
         if self.running {
             for _ in 0..self.steps_per_frame {
@@ -186,7 +192,9 @@ impl LatticeBoltzmannTool {
                 });
         });
     }
+}
 
+impl LatticeBoltzmannTool {
     fn apply_brush(&mut self, cx: i32, cy: i32) {
         let r = self.draw_radius as i32;
         let width = self.solver.width() as i32;

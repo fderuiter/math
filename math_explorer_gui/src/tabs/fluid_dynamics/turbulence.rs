@@ -35,12 +35,14 @@ impl Default for TurbulenceTool {
     }
 }
 
-impl TurbulenceTool {
-    pub fn update(&mut self, dt: f64) {
-        self.time += dt;
+use crate::tabs::fluid_dynamics::FluidDynamicsTool;
+
+impl FluidDynamicsTool for TurbulenceTool {
+    fn name(&self) -> &'static str {
+        "Turbulence / Reynolds Analysis"
     }
 
-    pub fn show(&mut self, ctx: &egui::Context) {
+    fn show(&mut self, ctx: &egui::Context) {
         let dt = ctx.input(|i| i.stable_dt).min(0.1) as f64;
         self.update(dt);
 
@@ -192,5 +194,11 @@ impl TurbulenceTool {
 
         // Request repaint for animation
         ctx.request_repaint();
+    }
+}
+
+impl TurbulenceTool {
+    pub fn update(&mut self, dt: f64) {
+        self.time += dt;
     }
 }
