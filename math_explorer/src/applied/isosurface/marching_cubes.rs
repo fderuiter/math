@@ -159,6 +159,17 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         Ok(())
     }
 
+    /// Fetches the scalar values for the 8 corners of a cube and computes its case index.
+    ///
+    /// This method is highly optimized for the inner loop of the marching cubes algorithm.
+    /// It uses unchecked indexing and bitwise operations to compute the active edges.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that `base_idx` corresponds to a valid `(x, y, z)` coordinate
+    /// such that `x < width - 1`, `y < height - 1`, and `z < depth - 1`. Specifically,
+    /// `base_idx + stride_y + stride_z + 1` must be strictly less than the length of `self.grid.data`.
+    /// Failure to uphold this invariant will result in undefined behavior via out-of-bounds memory access.
     #[inline(always)]
     unsafe fn get_cube_values_unchecked(
         &self,
@@ -219,6 +230,20 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         ]
     }
 
+    /// Computes the gradient (normal vectors) for the 8 corners of a cube, utilizing caching.
+    ///
+    /// This method implements a fast path for interior points where boundary conditions
+    /// do not apply, avoiding branch predictions and bounds checks.
+    ///
+    /// # Safety
+    ///
+    /// The caller must guarantee the following invariants to prevent undefined behavior:
+    /// 1. If `row_is_interior` is `true`, then `coords.1` (y) and `coords.2` (z) must be strictly
+    ///    greater than `0` and less than `height - 2` and `depth - 2` respectively.
+    /// 2. `coords.0` (x) must not cause an overflow when evaluating bounds logic.
+    /// 3. If the fast path is taken, `base_idx` and `base_idx + 1` (along with their ±1 offsets
+    ///    in all dimensions) must be within the bounds of `self.grid.data`. This means `x, y, z`
+    ///    must be at least 1 and at most their respective `dimension - 2`.
     #[inline(always)]
     unsafe fn compute_gradients_unchecked(
         &self,
@@ -379,6 +404,45 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     }
 }
 
+/// Extracts the isosurface for the given threshold using the Marching Cubes algorithm.
+///
+/// Converts a scalar field (voxel grid) into a polygonal mesh using a central
+/// difference estimator for normal calculation.
+///
+/// # Arguments
+///
+/// * `grid` - A reference to the [`VoxelGrid`] representing the volumetric data.
+/// * `threshold` - The scalar value at which to extract the surface.
+///
+/// # Returns
+///
+/// Returns `Ok(Mesh)` containing the generated triangles on success, or
+/// an `IsosurfaceError` if the grid is invalid or data length mismatches.
+///
+/// # Examples
+///
+/// ```
+/// use math_explorer::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
+///
+/// // Create a tiny 2x2x2 grid representing a corner
+/// let grid = VoxelGrid {
+///     width: 2, height: 2, depth: 2,
+///     data: vec![
+///         -1.0, -1.0,  // z=0, y=0
+///         -1.0, -1.0,  // z=0, y=1
+///          1.0,  1.0,  // z=1, y=0
+///          1.0,  1.0   // z=1, y=1
+///     ],
+///     voxel_size: Point3D::new(1.0, 1.0, 1.0),
+///     origin: Point3D::new(0.0, 0.0, 0.0),
+/// };
+///
+/// // Extract the surface where value == 0.0
+/// let mesh = extract_isosurface(&grid, 0.0).expect("Failed to extract isosurface");
+///
+/// // The simple gradient will yield triangles spanning across the middle.
+/// assert!(!mesh.triangles.is_empty(), "Mesh should contain triangles");
+/// ```
 pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, IsosurfaceError> {
     let extractor = MarchingCubes::new(grid, CentralDifferenceEstimator);
     extractor.extract(threshold)
