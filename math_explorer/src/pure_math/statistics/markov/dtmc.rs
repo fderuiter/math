@@ -9,7 +9,8 @@
 //! - Absorption probabilities
 
 use crate::pure_math::statistics::markov::error::{MarkovError, Result};
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, RealField};
+use num_traits::ToPrimitive;
 
 /// Classification of a state in a Markov chain.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -62,7 +63,7 @@ pub enum StateType {
 ///     StateType::Absorbing,
 /// ];
 ///
-/// let chain = MarkovChain::new(transition_matrix, state_types).unwrap();
+/// let chain = MarkovChain::<f64>::new(transition_matrix, state_types).unwrap();
 ///
 /// // Compute expected number of visits
 /// let fundamental = chain.fundamental_matrix().unwrap();
@@ -73,9 +74,9 @@ pub enum StateType {
 /// println!("Absorption probabilities: {:?}", absorption_probs);
 /// ```
 #[derive(Debug, Clone)]
-pub struct MarkovChain {
+pub struct MarkovChain<T: RealField + Copy + ToPrimitive> {
     /// The transition matrix P.
-    transition_matrix: DMatrix<f64>,
+    transition_matrix: DMatrix<T>,
     /// Type of each state (transient or absorbing).
     state_types: Vec<StateType>,
     /// Indices of transient states.
@@ -84,7 +85,7 @@ pub struct MarkovChain {
     absorbing_indices: Vec<usize>,
 }
 
-impl MarkovChain {
+impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// Creates a new Markov chain.
     ///
     /// # Arguments
@@ -100,7 +101,7 @@ impl MarkovChain {
     ///
     /// - `DimensionMismatch`: If matrix size doesn't match state_types length
     /// - `NotStochastic`: If matrix rows don't sum to 1
-    pub fn new(transition_matrix: DMatrix<f64>, state_types: Vec<StateType>) -> Result<Self> {
+    pub fn new(transition_matrix: DMatrix<T>, state_types: Vec<StateType>) -> Result<Self> {
         let n = transition_matrix.nrows();
 
         // Validate dimensions
@@ -126,13 +127,14 @@ impl MarkovChain {
             if *state_type == StateType::Absorbing {
                 // Check that P[i,i] = 1 and all other entries in row i are 0
                 for j in 0..n {
-                    let expected = if i == j { 1.0 } else { 0.0 };
+                    let expected = if i == j { T::one() } else { T::zero() };
                     let actual = transition_matrix[(i, j)];
-                    if (actual - expected).abs() > 1e-10 {
+                    let tolerance = T::from_f64(1e-10).unwrap();
+                    if (actual - expected).abs() > tolerance {
                         return Err(MarkovError::InvalidState {
                             reason: format!(
                                 "State {} marked as absorbing but P[{},{}] = {} != {}",
-                                i, i, j, actual, expected
+                                i, i, j, actual.to_f64().unwrap_or(f64::NAN), expected.to_f64().unwrap_or(f64::NAN)
                             ),
                         });
                     }
@@ -174,22 +176,22 @@ impl MarkovChain {
     }
 
     /// Validates that a matrix is row-stochastic (each row sums to 1).
-    fn validate_stochastic(matrix: &DMatrix<f64>) -> Result<()> {
-        const TOLERANCE: f64 = 1e-10;
+    fn validate_stochastic(matrix: &DMatrix<T>) -> Result<()> {
+        let tolerance = T::from_f64(1e-10).unwrap();
 
         for i in 0..matrix.nrows() {
-            let row_sum: f64 = matrix.row(i).iter().sum();
-            if (row_sum - 1.0).abs() > TOLERANCE {
+            let row_sum: T = matrix.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
+            if (row_sum - T::one()).abs() > tolerance {
                 return Err(MarkovError::NotStochastic {
-                    reason: format!("Row {} sums to {} instead of 1.0", i, row_sum),
+                    reason: format!("Row {} sums to {} instead of 1.0", i, row_sum.to_f64().unwrap_or(f64::NAN)),
                 });
             }
 
             // Check all probabilities are valid
             for j in 0..matrix.ncols() {
                 let p = matrix[(i, j)];
-                if !p.is_finite() || !(0.0..=1.0).contains(&p) {
-                    return Err(MarkovError::InvalidProbability { value: p });
+                if !p.is_finite() || p < T::zero() || p > T::one() {
+                    return Err(MarkovError::InvalidProbability { value: p.to_f64().unwrap_or(f64::NAN) });
                 }
             }
         }
@@ -198,7 +200,7 @@ impl MarkovChain {
     }
 
     /// Returns the transition matrix.
-    pub fn transition_matrix(&self) -> &DMatrix<f64> {
+    pub fn transition_matrix(&self) -> &DMatrix<T> {
         &self.transition_matrix
     }
 
@@ -227,7 +229,7 @@ impl MarkovChain {
     /// # Returns
     ///
     /// The Q submatrix of size (n_transient × n_transient).
-    pub fn q_matrix(&self) -> DMatrix<f64> {
+    pub fn q_matrix(&self) -> DMatrix<T> {
         let n_t = self.transient_indices.len();
         let mut q = DMatrix::zeros(n_t, n_t);
 
@@ -245,7 +247,7 @@ impl MarkovChain {
     /// # Returns
     ///
     /// The R submatrix of size (n_transient × n_absorbing).
-    pub fn r_matrix(&self) -> DMatrix<f64> {
+    pub fn r_matrix(&self) -> DMatrix<T> {
         let n_t = self.transient_indices.len();
         let n_a = self.absorbing_indices.len();
         let mut r = DMatrix::zeros(n_t, n_a);
@@ -274,7 +276,7 @@ impl MarkovChain {
     /// # Errors
     ///
     /// Returns `SingularMatrix` if (I - Q) is not invertible.
-    pub fn fundamental_matrix(&self) -> Result<DMatrix<f64>> {
+    pub fn fundamental_matrix(&self) -> Result<DMatrix<T>> {
         let q = self.q_matrix();
         let n_t = q.nrows();
         let i_minus_q = DMatrix::identity(n_t, n_t) - q;
@@ -300,7 +302,7 @@ impl MarkovChain {
     /// # Errors
     ///
     /// Returns an error if the fundamental matrix cannot be computed.
-    pub fn absorption_probabilities(&self) -> Result<DMatrix<f64>> {
+    pub fn absorption_probabilities(&self) -> Result<DMatrix<T>> {
         if self.absorbing_indices.is_empty() {
             return Err(MarkovError::InvalidState {
                 reason: "No absorbing states in chain".to_string(),
@@ -325,13 +327,13 @@ impl MarkovChain {
     /// # Errors
     ///
     /// Returns an error if the fundamental matrix cannot be computed.
-    pub fn expected_absorption_times(&self) -> Result<DVector<f64>> {
+    pub fn expected_absorption_times(&self) -> Result<DVector<T>> {
         let n = self.fundamental_matrix()?;
         let n_t = n.nrows();
         let mut times = DVector::zeros(n_t);
 
         for i in 0..n_t {
-            times[i] = n.row(i).sum();
+            times[i] = n.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
         }
 
         Ok(times)
@@ -346,7 +348,7 @@ impl MarkovChain {
     /// # Returns
     ///
     /// The n-step transition matrix P^n.
-    pub fn n_step_transition(&self, n: usize) -> DMatrix<f64> {
+    pub fn n_step_transition(&self, n: usize) -> DMatrix<T> {
         if n == 0 {
             return DMatrix::identity(self.num_states(), self.num_states());
         }
@@ -382,7 +384,7 @@ impl MarkovChain {
     ///
     /// The stationary distribution as a probability vector, or None if it
     /// doesn't exist or convergence fails.
-    pub fn stationary_distribution(&self) -> Option<DVector<f64>> {
+    pub fn stationary_distribution(&self) -> Option<DVector<T>> {
         // For chains with absorbing states, only absorbing states have non-zero
         // stationary probability
         if !self.absorbing_indices.is_empty() {
@@ -391,7 +393,7 @@ impl MarkovChain {
 
             // Each absorbing state gets equal probability
             for &idx in &self.absorbing_indices {
-                pi[idx] = 1.0 / n_absorbing as f64;
+                pi[idx] = T::one() / T::from_usize(n_absorbing).unwrap();
             }
 
             return Some(pi);
@@ -399,16 +401,16 @@ impl MarkovChain {
 
         // For ergodic chains, use power method
         const MAX_ITERS: usize = 10000;
-        const TOLERANCE: f64 = 1e-12;
+        let tolerance = T::from_f64(1e-12).unwrap();
 
-        let mut pi = DVector::from_element(self.num_states(), 1.0 / self.num_states() as f64);
+        let mut pi = DVector::from_element(self.num_states(), T::one() / T::from_usize(self.num_states()).unwrap());
 
         for _ in 0..MAX_ITERS {
             let pi_next = self.transition_matrix.transpose() * &pi;
 
             // Check convergence
             let diff = (&pi_next - &pi).norm();
-            if diff < TOLERANCE {
+            if diff < tolerance {
                 return Some(pi_next);
             }
 
@@ -442,7 +444,7 @@ impl MarkovChain {
     /// Returns an error if:
     /// - The fundamental matrix cannot be computed
     /// - The reward vector size doesn't match the number of absorbing states
-    pub fn expected_possession_value(&self, rewards: &DVector<f64>) -> Result<DVector<f64>> {
+    pub fn expected_possession_value(&self, rewards: &DVector<T>) -> Result<DVector<T>> {
         if rewards.len() != self.num_absorbing() {
             return Err(MarkovError::DimensionMismatch {
                 expected: self.num_absorbing(),
