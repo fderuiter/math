@@ -122,11 +122,11 @@ This document outlines the roadmap for integrating the various modules of the `m
     *   [x] **Family Leaderboard:** Dynamic ranking of family members based on "favoritism scores".
     *   [x] **Input Form:** Sliders for "Gift Value", "Call Frequency", "Compliments".
 
-### 4.4 Financial Math (Kelly Criterion)
+### 4.4 Financial Math (Kelly Criterion) - **[Implemented]**
 *   **Module:** `pure_math::statistics::kelly`
 *   **Features:**
     *   [x] **Bankroll Growth:** Simulation of wealth over multiple bets using Kelly vs. fractional Kelly.
-    *   [ ] **Bet Size Calculator:** Input fields for odds and probability of winning.
+    *   [x] **Bet Size Calculator:** Input fields for odds and probability of winning.
 
 ---
 

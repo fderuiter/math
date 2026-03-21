@@ -2,6 +2,7 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod bankroll_growth;
+pub mod bet_size;
 
 /// A trait for sub-tools within the Financial Math tab.
 pub trait FinancialMathTool {
@@ -20,7 +21,10 @@ pub struct FinancialMathTab {
 impl Default for FinancialMathTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(bankroll_growth::BankrollGrowthTool::default())],
+            tools: vec![
+                Box::new(bankroll_growth::BankrollGrowthTool::default()),
+                Box::new(bet_size::BetSizeCalculatorTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
