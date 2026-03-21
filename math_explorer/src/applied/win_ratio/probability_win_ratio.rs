@@ -74,17 +74,11 @@ impl ProbabilityWinRatioContext {
         FPDFX0: Fn(f64) -> f64,
         I: Integrator + ?Sized,
     {
-        let integrand1 = |t: f64| s1(t) * pdf_t0(t);
-        let integral1 = integrator
-            .integrate(integrand1, 0.0, self.c, self.error_tolerance)
-            .value;
-
-        let integrand2 = |x: f64| g1_given_c(x) * pdf_x0_given_c(x);
-        let integral2 = integrator
-            .integrate(integrand2, 0.0, self.c, self.error_tolerance)
-            .value;
-
-        integral1 - self.s0_at_c * self.s1_at_c * integral2
+        self.calculate_probability_internal(
+            |t| s1(t) * pdf_t0(t),
+            |x| g1_given_c(x) * pdf_x0_given_c(x),
+            integrator,
+        )
     }
 
     /// Calculates the loss probability, L(c).
@@ -128,12 +122,29 @@ impl ProbabilityWinRatioContext {
         FPDFX1: Fn(f64) -> f64,
         I: Integrator + ?Sized,
     {
-        let integrand1 = |t: f64| s0(t) * pdf_t1(t);
+        self.calculate_probability_internal(
+            |t| s0(t) * pdf_t1(t),
+            |x| g0_given_c(x) * pdf_x1_given_c(x),
+            integrator,
+        )
+    }
+
+    /// Internal helper method to compute probability to avoid duplicating numerical integration logic.
+    fn calculate_probability_internal<F1, F2, I>(
+        &self,
+        integrand1: F1,
+        integrand2: F2,
+        integrator: &I,
+    ) -> f64
+    where
+        F1: Fn(f64) -> f64,
+        F2: Fn(f64) -> f64,
+        I: Integrator + ?Sized,
+    {
         let integral1 = integrator
             .integrate(integrand1, 0.0, self.c, self.error_tolerance)
             .value;
 
-        let integrand2 = |x: f64| g0_given_c(x) * pdf_x1_given_c(x);
         let integral2 = integrator
             .integrate(integrand2, 0.0, self.c, self.error_tolerance)
             .value;
