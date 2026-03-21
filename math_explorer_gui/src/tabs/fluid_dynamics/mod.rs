@@ -9,27 +9,29 @@ use lattice_boltzmann::LatticeBoltzmannTool;
 use potential_flow::PotentialFlowTool;
 use turbulence::TurbulenceTool;
 
-#[derive(PartialEq)]
-enum FluidMode {
-    PotentialFlow,
-    Turbulence,
-    LatticeBoltzmann,
+/// A trait for sub-tools within the Fluid Dynamics tab.
+pub trait FluidDynamicsTool {
+    /// Returns the name of the tool.
+    fn name(&self) -> &'static str;
+
+    /// Renders the tool's UI.
+    fn show(&mut self, ctx: &egui::Context);
 }
 
 pub struct FluidDynamicsTab {
-    mode: FluidMode,
-    potential_flow: PotentialFlowTool,
-    turbulence: TurbulenceTool,
-    lattice_boltzmann: LatticeBoltzmannTool,
+    tools: Vec<Box<dyn FluidDynamicsTool>>,
+    selected_tool_index: usize,
 }
 
 impl Default for FluidDynamicsTab {
     fn default() -> Self {
         Self {
-            mode: FluidMode::PotentialFlow,
-            potential_flow: PotentialFlowTool::default(),
-            turbulence: TurbulenceTool::default(),
-            lattice_boltzmann: LatticeBoltzmannTool::default(),
+            tools: vec![
+                Box::new(PotentialFlowTool::default()),
+                Box::new(TurbulenceTool::default()),
+                Box::new(LatticeBoltzmannTool::default()),
+            ],
+            selected_tool_index: 0,
         }
     }
 }
@@ -40,27 +42,30 @@ impl ExplorerTab for FluidDynamicsTab {
     }
 
     fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Render Top Menu for Tool Selection
         egui::TopBottomPanel::top("fluid_mode_selector").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.label("Mode:");
-                ui.selectable_value(&mut self.mode, FluidMode::PotentialFlow, "Potential Flow");
-                ui.selectable_value(
-                    &mut self.mode,
-                    FluidMode::Turbulence,
-                    "Turbulence / Reynolds Analysis",
-                );
-                ui.selectable_value(
-                    &mut self.mode,
-                    FluidMode::LatticeBoltzmann,
-                    "Lattice Boltzmann (Demo)",
-                );
+                ui.label("Tool:");
+                for (i, tool) in self.tools.iter().enumerate() {
+                    if ui
+                        .selectable_label(self.selected_tool_index == i, tool.name())
+                        .clicked()
+                    {
+                        self.selected_tool_index = i;
+                    }
+                }
             });
         });
 
-        match self.mode {
-            FluidMode::PotentialFlow => self.potential_flow.show(ctx),
-            FluidMode::Turbulence => self.turbulence.show(ctx),
-            FluidMode::LatticeBoltzmann => self.lattice_boltzmann.show(ctx),
+        // Delegate to active tool
+        if let Some(tool) = self.tools.get_mut(self.selected_tool_index) {
+            tool.show(ctx);
+        } else {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.centered_and_justified(|ui| {
+                    ui.label("No tool selected");
+                });
+            });
         }
     }
 }
