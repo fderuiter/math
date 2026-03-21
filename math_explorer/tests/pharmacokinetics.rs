@@ -112,28 +112,26 @@ fn test_superposition() {
 
 #[test]
 fn test_enantiomer_model_ir() {
-    let model = EnantiomerModel {
-        d_params: get_d_amphetamine_params(),
-        l_params: get_l_amphetamine_params(),
-        f_d: 0.75,
-        f_l: 0.25,
-    };
+    let d_params = get_d_amphetamine_params();
+    let l_params = get_l_amphetamine_params();
+    let f_d = 0.75;
+    let f_l = 0.25;
+
+    let model = EnantiomerModel::new(d_params, l_params, f_d, f_l).unwrap();
 
     let t = 5.0;
     let c_total = model.concentration_ir_single_dose(t);
 
     // Expected value is C_d(t) + C_l(t) with scaled doses.
     let c_d = concentration_bateman(
-        &model
-            .d_params
-            .with_dose(model.d_params.d() * model.f_d)
+        &d_params
+            .with_dose(d_params.d() * f_d)
             .unwrap(),
         t,
     );
     let c_l = concentration_bateman(
-        &model
-            .l_params
-            .with_dose(model.l_params.d() * model.f_l)
+        &l_params
+            .with_dose(l_params.d() * f_l)
             .unwrap(),
         t,
     );
@@ -144,12 +142,12 @@ fn test_enantiomer_model_ir() {
 
 #[test]
 fn test_enantiomer_model_xr() {
-    let model = EnantiomerModel {
-        d_params: get_d_amphetamine_params(),
-        l_params: get_l_amphetamine_params(),
-        f_d: 0.75,
-        f_l: 0.25,
-    };
+    let d_params = get_d_amphetamine_params();
+    let l_params = get_l_amphetamine_params();
+    let f_d = 0.75;
+    let f_l = 0.25;
+
+    let model = EnantiomerModel::new(d_params, l_params, f_d, f_l).unwrap();
 
     let lag_time = 4.0;
     let f1 = 0.5;

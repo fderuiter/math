@@ -4,45 +4,61 @@ use super::superposition::SuperpositionModel;
 use super::traits::PharmacokineticModel;
 use super::two_pulse::TwoPulseModel;
 
+use super::error::PharmacokineticsError;
+
 /// A model for a drug composed of two enantiomers (e.g., d- and l-amphetamine).
+///
+/// Constructed via [`EnantiomerModel::new`] to ensure valid parameter states.
 #[derive(Debug, Clone, Copy)]
 pub struct EnantiomerModel {
-    /// Parameters for the d-enantiomer. The dose `d` should be the total dose of the mixture.
-    pub d_params: PKParameters,
-    /// Parameters for the l-enantiomer. The dose `d` should be the total dose of the mixture.
-    pub l_params: PKParameters,
-    /// Fraction of d-enantiomer in the dose (e.g., 0.75 for Adderall).
-    pub f_d: f64,
-    /// Fraction of l-enantiomer in the dose (e.g., 0.25 for Adderall).
-    pub f_l: f64,
+    d_model: BatemanModel,
+    l_model: BatemanModel,
 }
 
 impl EnantiomerModel {
-    fn get_d_model(&self) -> BatemanModel {
-        let dose = self.d_params.d() * self.f_d;
-        // We assume f_d is non-negative. If dose becomes negative, with_dose returns Error.
-        // Since we can't easily propagate error from here (trait signature), we unwrap.
-        // This implies EnantiomerModel should be constructed carefully.
-        let params = self
-            .d_params
-            .with_dose(dose)
-            .expect("Invalid dose calculated in EnantiomerModel");
-        BatemanModel::new(params)
-    }
+    /// Creates a new `EnantiomerModel` from the given parameters and fractions.
+    ///
+    /// # Arguments
+    /// * `d_params` - Parameters for the d-enantiomer. The dose `d` should be the total dose of the mixture.
+    /// * `l_params` - Parameters for the l-enantiomer. The dose `d` should be the total dose of the mixture.
+    /// * `f_d` - Fraction of d-enantiomer in the dose (e.g., 0.75 for Adderall).
+    /// * `f_l` - Fraction of l-enantiomer in the dose (e.g., 0.25 for Adderall).
+    ///
+    /// # Returns
+    /// - `Ok(EnantiomerModel)` if fractions and resulting doses are valid.
+    /// - `Err(PharmacokineticsError)` if any parameter or fraction is invalid.
+    pub fn new(
+        d_params: PKParameters,
+        l_params: PKParameters,
+        f_d: f64,
+        f_l: f64,
+    ) -> Result<Self, PharmacokineticsError> {
+        if !(0.0..=1.0).contains(&f_d) {
+            return Err(PharmacokineticsError::InvalidParameter(format!(
+                "Fraction of d-enantiomer f_d={} must be between 0.0 and 1.0",
+                f_d
+            )));
+        }
+        if !(0.0..=1.0).contains(&f_l) {
+            return Err(PharmacokineticsError::InvalidParameter(format!(
+                "Fraction of l-enantiomer f_l={} must be between 0.0 and 1.0",
+                f_l
+            )));
+        }
 
-    fn get_l_model(&self) -> BatemanModel {
-        let dose = self.l_params.d() * self.f_l;
-        let params = self
-            .l_params
-            .with_dose(dose)
-            .expect("Invalid dose calculated in EnantiomerModel");
-        BatemanModel::new(params)
+        let d_dose = d_params.d() * f_d;
+        let l_dose = l_params.d() * f_l;
+
+        let d_model = BatemanModel::new(d_params.with_dose(d_dose)?);
+        let l_model = BatemanModel::new(l_params.with_dose(l_dose)?);
+
+        Ok(Self { d_model, l_model })
     }
 }
 
 impl PharmacokineticModel for EnantiomerModel {
     fn concentration(&self, t: f64) -> f64 {
-        self.get_d_model().concentration(t) + self.get_l_model().concentration(t)
+        self.d_model.concentration(t) + self.l_model.concentration(t)
     }
 }
 
