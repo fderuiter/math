@@ -153,8 +153,8 @@ impl Simplex {
 
     /// Returns all faces (sub-simplices of dimension one less).
     ///
-    /// For an edge [0,1], the faces are vertices [0] and [1].
-    /// For a triangle [0,1,2], the faces are edges [0,1], [0,2], [1,2].
+    /// For an edge `[0,1]`, the faces are vertices `[0]` and `[1]`.
+    /// For a triangle `[0,1,2]`, the faces are edges `[0,1]`, `[0,2]`, `[1,2]`.
     pub fn faces(&self) -> Vec<Simplex> {
         if self.vertices.len() == 1 {
             return vec![]; // 0-simplex has no faces
