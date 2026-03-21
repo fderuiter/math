@@ -30,7 +30,10 @@ impl<T: RealField + Copy + ToPrimitive> TimeIndex<T> {
     pub fn new(time: T) -> Result<Self> {
         if !time.is_finite() {
             return Err(MarkovError::InvalidState {
-                reason: format!("Time must be finite, got {}", time.to_f64().unwrap_or(f64::NAN)),
+                reason: format!(
+                    "Time must be finite, got {}",
+                    time.to_f64().unwrap_or(f64::NAN)
+                ),
             });
         }
         Ok(TimeIndex { time })
@@ -133,7 +136,10 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
         if time.value() < self.min_time.value() || time.value() > self.max_time.value() {
             return Err(MarkovError::TimeIndexOutOfBounds {
                 time: time.value().to_f64().unwrap_or(f64::NAN),
-                valid_range: (self.min_time.value().to_f64().unwrap_or(f64::NAN), self.max_time.value().to_f64().unwrap_or(f64::NAN)),
+                valid_range: (
+                    self.min_time.value().to_f64().unwrap_or(f64::NAN),
+                    self.max_time.value().to_f64().unwrap_or(f64::NAN),
+                ),
             });
         }
 
@@ -167,14 +173,20 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
             let row_sum: T = matrix.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
             if (row_sum - T::one()).abs() > tolerance {
                 return Err(MarkovError::NotStochastic {
-                    reason: format!("Row {} sums to {} instead of 1.0", i, row_sum.to_f64().unwrap_or(f64::NAN)),
+                    reason: format!(
+                        "Row {} sums to {} instead of 1.0",
+                        i,
+                        row_sum.to_f64().unwrap_or(f64::NAN)
+                    ),
                 });
             }
 
             for j in 0..matrix.ncols() {
                 let p = matrix[(i, j)];
                 if !p.is_finite() || p < T::zero() || p > T::one() {
-                    return Err(MarkovError::InvalidProbability { value: p.to_f64().unwrap_or(f64::NAN) });
+                    return Err(MarkovError::InvalidProbability {
+                        value: p.to_f64().unwrap_or(f64::NAN),
+                    });
                 }
             }
         }
@@ -210,7 +222,10 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
         if time.value() < self.min_time.value() || time.value() > self.max_time.value() {
             return Err(MarkovError::TimeIndexOutOfBounds {
                 time: time.value().to_f64().unwrap_or(f64::NAN),
-                valid_range: (self.min_time.value().to_f64().unwrap_or(f64::NAN), self.max_time.value().to_f64().unwrap_or(f64::NAN)),
+                valid_range: (
+                    self.min_time.value().to_f64().unwrap_or(f64::NAN),
+                    self.max_time.value().to_f64().unwrap_or(f64::NAN),
+                ),
             });
         }
 

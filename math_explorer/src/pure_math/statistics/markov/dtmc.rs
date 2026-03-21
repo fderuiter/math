@@ -134,7 +134,11 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
                         return Err(MarkovError::InvalidState {
                             reason: format!(
                                 "State {} marked as absorbing but P[{},{}] = {} != {}",
-                                i, i, j, actual.to_f64().unwrap_or(f64::NAN), expected.to_f64().unwrap_or(f64::NAN)
+                                i,
+                                i,
+                                j,
+                                actual.to_f64().unwrap_or(f64::NAN),
+                                expected.to_f64().unwrap_or(f64::NAN)
                             ),
                         });
                     }
@@ -183,7 +187,11 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
             let row_sum: T = matrix.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
             if (row_sum - T::one()).abs() > tolerance {
                 return Err(MarkovError::NotStochastic {
-                    reason: format!("Row {} sums to {} instead of 1.0", i, row_sum.to_f64().unwrap_or(f64::NAN)),
+                    reason: format!(
+                        "Row {} sums to {} instead of 1.0",
+                        i,
+                        row_sum.to_f64().unwrap_or(f64::NAN)
+                    ),
                 });
             }
 
@@ -191,7 +199,9 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
             for j in 0..matrix.ncols() {
                 let p = matrix[(i, j)];
                 if !p.is_finite() || p < T::zero() || p > T::one() {
-                    return Err(MarkovError::InvalidProbability { value: p.to_f64().unwrap_or(f64::NAN) });
+                    return Err(MarkovError::InvalidProbability {
+                        value: p.to_f64().unwrap_or(f64::NAN),
+                    });
                 }
             }
         }
@@ -403,7 +413,10 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
         const MAX_ITERS: usize = 10000;
         let tolerance = T::from_f64(1e-12).unwrap();
 
-        let mut pi = DVector::from_element(self.num_states(), T::one() / T::from_usize(self.num_states()).unwrap());
+        let mut pi = DVector::from_element(
+            self.num_states(),
+            T::one() / T::from_usize(self.num_states()).unwrap(),
+        );
 
         for _ in 0..MAX_ITERS {
             let pi_next = self.transition_matrix.transpose() * &pi;
