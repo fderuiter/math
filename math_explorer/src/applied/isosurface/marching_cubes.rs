@@ -58,6 +58,48 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     }
 
     /// Extracts the isosurface for the given threshold.
+    ///
+    /// # Arguments
+    ///
+    /// * `threshold` - The scalar value at which to extract the surface. Values in the grid
+    ///   less than this threshold are considered "inside" the volume, and values greater
+    ///   than or equal to the threshold are considered "outside".
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(Mesh)` containing the generated triangles on success.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`IsosurfaceError`] if the associated grid dimensions are invalid
+    /// (e.g., less than 2x2x2) or if the data buffer length does not match the dimensions.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use math_explorer::applied::isosurface::{CentralDifferenceEstimator, VoxelGrid, Point3D};
+    /// use math_explorer::applied::isosurface::marching_cubes::MarchingCubes;
+    ///
+    /// // Define a minimal 2x2x2 grid.
+    /// let grid = VoxelGrid {
+    ///     width: 2, height: 2, depth: 2,
+    ///     data: vec![
+    ///         -1.0, -1.0,  // z=0, y=0
+    ///         -1.0, -1.0,  // z=0, y=1
+    ///          1.0,  1.0,  // z=1, y=0
+    ///          1.0,  1.0   // z=1, y=1
+    ///     ],
+    ///     voxel_size: Point3D::new(1.0, 1.0, 1.0),
+    ///     origin: Point3D::new(0.0, 0.0, 0.0),
+    /// };
+    ///
+    /// // Instantiate the custom extractor.
+    /// let extractor = MarchingCubes::new(&grid, CentralDifferenceEstimator);
+    ///
+    /// // Extract the surface at threshold 0.0.
+    /// let mesh = extractor.extract(0.0).expect("Extraction failed");
+    /// assert!(!mesh.triangles.is_empty(), "Expected a generated mesh");
+    /// ```
     pub fn extract(&self, threshold: f32) -> Result<Mesh, IsosurfaceError> {
         self.validate_grid()?;
 
