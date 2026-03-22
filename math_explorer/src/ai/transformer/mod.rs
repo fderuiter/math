@@ -81,6 +81,7 @@ pub mod feed_forward;
 pub mod layer_norm;
 pub mod model;
 pub mod positional_encoding;
+pub mod tokenization;
 pub mod traits;
 
 pub use attention::MultiHeadAttention;
