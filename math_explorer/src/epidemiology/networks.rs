@@ -35,7 +35,18 @@ pub struct NetworkEpidemicModel {
 }
 
 impl NetworkEpidemicModel {
+    /// Creates a new network epidemic model and initializes it with a geometric graph.
+    ///
+    /// This method uses the default thread-local RNG. For deterministic behavior,
+    /// use `new_with_rng`.
     pub fn new(num_nodes: usize, beta: f64, gamma: f64) -> Self {
+        let mut rng = rand::thread_rng();
+        Self::new_with_rng(num_nodes, beta, gamma, &mut rng)
+    }
+
+    /// Creates a new network epidemic model and initializes it with a geometric graph
+    /// using an injected RNG.
+    pub fn new_with_rng<R: Rng>(num_nodes: usize, beta: f64, gamma: f64, rng: &mut R) -> Self {
         let mut model = Self {
             num_nodes,
             states: vec![NodeState::Susceptible; num_nodes],
@@ -44,12 +55,18 @@ impl NetworkEpidemicModel {
             beta,
             gamma,
         };
-        model.initialize_geometric_graph();
+        model.initialize_geometric_graph_with_rng(rng);
         model
     }
 
+    /// Initializes a geometric graph. This method uses the default thread-local RNG.
     pub fn initialize_geometric_graph(&mut self) {
         let mut rng = rand::thread_rng();
+        self.initialize_geometric_graph_with_rng(&mut rng);
+    }
+
+    /// Initializes a geometric graph using an injected RNG.
+    pub fn initialize_geometric_graph_with_rng<R: Rng>(&mut self, rng: &mut R) {
         self.states = vec![NodeState::Susceptible; self.num_nodes];
         self.positions = vec![[0.0, 0.0]; self.num_nodes];
         self.adjacency = vec![vec![]; self.num_nodes];
@@ -82,9 +99,15 @@ impl NetworkEpidemicModel {
         }
     }
 
+    /// Steps the simulation forward using the default thread-local RNG.
     pub fn step(&mut self) {
-        let mut next_states = self.states.clone();
         let mut rng = rand::thread_rng();
+        self.step_with_rng(&mut rng);
+    }
+
+    /// Steps the simulation forward using an injected RNG.
+    pub fn step_with_rng<R: Rng>(&mut self, rng: &mut R) {
+        let mut next_states = self.states.clone();
 
         for (i, next_state) in next_states.iter_mut().enumerate().take(self.num_nodes) {
             match self.states[i] {
