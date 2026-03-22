@@ -19,7 +19,8 @@ impl Default for NetworkPropagationTool {
 
 impl NetworkPropagationTool {
     fn reset_network(&mut self) {
-        self.model.initialize_geometric_graph();
+        let mut rng = rand::thread_rng();
+        self.model.initialize_geometric_graph_with_rng(&mut rng);
         self.is_running = false;
     }
 }
@@ -31,7 +32,8 @@ impl EpidemiologyTool for NetworkPropagationTool {
 
     fn show(&mut self, ui: &mut egui::Ui) {
         if self.is_running {
-            self.model.step();
+            let mut rng = rand::thread_rng();
+            self.model.step_with_rng(&mut rng);
             ui.ctx().request_repaint();
         }
 
