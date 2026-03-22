@@ -1,0 +1,194 @@
+use crate::tabs::ai::AiTool;
+use eframe::egui;
+use math_explorer::ai::transformer::tokenization::{CharTokenizer, PseudoEmbedding, Tokenizer, WordTokenizer};
+
+/// A simple struct to represent a token and its pseudo-embedding
+struct TokenData {
+    text: String,
+    embedding: Vec<f64>,
+}
+
+pub struct TokenizationTool {
+    input_text: String,
+    d_model: usize,
+    tokens: Vec<TokenData>,
+    use_subword: bool,
+}
+
+impl Default for TokenizationTool {
+    fn default() -> Self {
+        let initial_text = "Attention is all you need.".to_string();
+        let mut tool = Self {
+            input_text: initial_text,
+            d_model: 8,
+            tokens: Vec::new(),
+            use_subword: false,
+        };
+        tool.recalculate_tokens();
+        tool
+    }
+}
+
+impl TokenizationTool {
+    fn recalculate_tokens(&mut self) {
+        let raw_tokens = if self.use_subword {
+            CharTokenizer.tokenize(&self.input_text)
+        } else {
+            WordTokenizer.tokenize(&self.input_text)
+        };
+
+        let embedder = PseudoEmbedding { d_model: self.d_model };
+
+        self.tokens = raw_tokens
+            .into_iter()
+            .map(|text| {
+                let embedding = embedder.embed_token(&text);
+                TokenData { text, embedding }
+            })
+            .collect();
+    }
+}
+
+impl AiTool for TokenizationTool {
+    fn name(&self) -> &'static str {
+        "Tokenization & Embeddings"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Tokenization & Input Embeddings");
+            ui.label(
+                "Explore how text is broken down into discrete tokens and mapped \
+                 to high-dimensional continuous vectors (embeddings) before entering a Transformer.",
+            );
+            ui.separator();
+
+            let mut text_changed = false;
+            let mut params_changed = false;
+
+            // --- Controls Panel ---
+            ui.horizontal(|ui| {
+                ui.group(|ui| {
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new("Input Text").strong());
+                        if ui
+                            .add_sized(
+                                [400.0, 60.0],
+                                egui::TextEdit::multiline(&mut self.input_text)
+                                    .hint_text("Type a sentence here..."),
+                            )
+                            .changed()
+                        {
+                            text_changed = true;
+                        }
+                    });
+                });
+
+                ui.group(|ui| {
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new("Parameters").strong());
+
+                        ui.horizontal(|ui| {
+                            ui.label("Embedding Dimension (d_model):");
+                            if ui
+                                .add(egui::Slider::new(&mut self.d_model, 4..=32))
+                                .changed()
+                            {
+                                params_changed = true;
+                            }
+                        });
+
+                        ui.horizontal(|ui| {
+                            ui.label("Tokenizer Strategy:");
+                            if ui.radio_value(&mut self.use_subword, false, "Word/Punctuation").changed() {
+                                params_changed = true;
+                            }
+                            if ui.radio_value(&mut self.use_subword, true, "Character-level").changed() {
+                                params_changed = true;
+                            }
+                        });
+                    });
+                });
+            });
+
+            if text_changed || params_changed {
+                self.recalculate_tokens();
+            }
+
+            ui.add_space(10.0);
+            ui.separator();
+
+            // --- Tokens Display Panel ---
+            ui.heading(format!("Tokens (Count: {})", self.tokens.len()));
+            egui::ScrollArea::vertical().id_salt("tokens_scroll").max_height(100.0).show(ui, |ui| {
+                ui.horizontal_wrapped(|ui| {
+                    ui.spacing_mut().item_spacing = egui::vec2(8.0, 8.0);
+                    for token in &self.tokens {
+                        // Render each token as a distinct visual block
+                        let rect = egui::Frame::NONE
+                            .fill(ui.visuals().widgets.inactive.bg_fill)
+                            .stroke(ui.visuals().widgets.inactive.bg_stroke)
+                            .corner_radius(4.0)
+                            .inner_margin(6.0)
+                            .show(ui, |ui| {
+                                ui.label(egui::RichText::new(&token.text).monospace().color(ui.visuals().strong_text_color()));
+                            });
+
+                        rect.response.on_hover_text(format!("Token ID: Hash of '{}'", token.text));
+                    }
+                });
+            });
+
+            ui.add_space(10.0);
+            ui.separator();
+
+            // --- Embeddings Matrix Panel ---
+            ui.heading("Embedding Matrix");
+            ui.label("Visual representation of the pseudo-embeddings mapped to each token. Red is negative, Green is positive.");
+
+            egui::ScrollArea::both().id_salt("embeddings_scroll").show(ui, |ui| {
+                egui::Grid::new("embeddings_grid")
+                    .striped(true)
+                    .num_columns(self.d_model + 1)
+                    .spacing([8.0, 8.0])
+                    .show(ui, |ui| {
+                        // Header row
+                        ui.label(egui::RichText::new("Token").strong());
+                        for i in 0..self.d_model {
+                            ui.label(egui::RichText::new(format!("Dim {}", i)).strong().small());
+                        }
+                        ui.end_row();
+
+                        // Data rows
+                        for token in &self.tokens {
+                            ui.label(egui::RichText::new(&token.text).monospace());
+
+                            for &val in &token.embedding {
+                                // Simple heatmap color mapping
+                                let color = if val < 0.0 {
+                                    egui::Color32::from_rgb((255.0 * val.abs()) as u8, 0, 0)
+                                } else {
+                                    egui::Color32::from_rgb(0, (255.0 * val) as u8, 0)
+                                };
+
+                                let text_color = if val.abs() > 0.5 { egui::Color32::WHITE } else { ui.visuals().text_color() };
+
+                                egui::Frame::NONE
+                                    .fill(color)
+                                    .corner_radius(2.0)
+                                    .inner_margin(4.0)
+                                    .show(ui, |ui| {
+                                        ui.label(
+                                            egui::RichText::new(format!("{:.2}", val))
+                                                .color(text_color)
+                                                .small(),
+                                        );
+                                    });
+                            }
+                            ui.end_row();
+                        }
+                    });
+            });
+        });
+    }
+}

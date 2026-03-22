@@ -93,11 +93,11 @@ This document outlines the roadmap for integrating the various modules of the `m
     *   [x] **Q-Table Inspector:** Heatmap of Q-values.
     *   [x] **Reward Plots:** Cumulative reward over episodes.
 
-### 3.3 Transformers
+### 3.3 Transformers - **[Implemented]**
 *   **Module:** `ai::transformer`
 *   **Features:**
     *   [x] **Attention Maps:** Heatmap visualization of self-attention weights.
-    *   [ ] **Tokenization:** Text input field showing token breakdown and embeddings.
+    *   [x] **Tokenization:** Text input field showing token breakdown and embeddings.
 
 ---
 
