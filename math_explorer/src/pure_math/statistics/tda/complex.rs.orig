@@ -149,14 +149,14 @@ pub fn vietoris_rips_complex(
 
     // Add all vertices (0-simplices)
     for i in 0..n {
-        complex.add_simplex(Simplex::new(vec![i])?);
+        complex.add_simplex(Simplex::new(vec![i]).unwrap());
     }
 
     // Add edges (1-simplices) where distance ≤ radius
     for (i, row) in dist.iter().enumerate().take(n) {
         for (j, &d) in row.iter().enumerate().take(n).skip(i + 1) {
             if d <= radius {
-                complex.add_simplex(Simplex::new(vec![i, j])?);
+                complex.add_simplex(Simplex::new(vec![i, j]).unwrap());
             }
         }
     }
@@ -175,7 +175,7 @@ pub fn vietoris_rips_complex(
                 let d_jk = row_j[k];
 
                 if d_ik <= radius && d_jk <= radius {
-                    complex.add_simplex(Simplex::new(vec![i, j, k])?);
+                    complex.add_simplex(Simplex::new(vec![i, j, k]).unwrap());
                 }
             }
         }
