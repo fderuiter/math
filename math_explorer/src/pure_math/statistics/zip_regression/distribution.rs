@@ -24,8 +24,8 @@ use statrs::function::gamma::ln_gamma;
 ///
 /// # Statistical Properties
 ///
-/// - **Mean**: E[Y] = (1-ρ)λ
-/// - **Variance**: Var[Y] = (1-ρ)λ(1 + ρλ)
+/// - **Mean**: E\[Y\] = (1-ρ)λ
+/// - **Variance**: Var\[Y\] = (1-ρ)λ(1 + ρλ)
 /// - The variance is strictly greater than the mean when ρ > 0, demonstrating overdispersion
 ///
 /// # References
@@ -130,7 +130,7 @@ impl ZipDistribution {
 
     /// Computes the mean (expected value) of the distribution.
     ///
-    /// The mean is given by: E[Y] = (1-ρ)λ
+    /// The mean is given by: E\[Y\] = (1-ρ)λ
     ///
     /// # Returns
     ///
@@ -153,9 +153,9 @@ impl ZipDistribution {
 
     /// Computes the variance of the distribution.
     ///
-    /// The variance is given by: Var[Y] = (1-ρ)λ(1 + ρλ)
+    /// The variance is given by: Var\[Y\] = (1-ρ)λ(1 + ρλ)
     ///
-    /// Note that Var[Y] > E[Y] when ρ > 0, demonstrating overdispersion.
+    /// Note that Var\[Y\] > E\[Y\] when ρ > 0, demonstrating overdispersion.
     ///
     /// # Returns
     ///

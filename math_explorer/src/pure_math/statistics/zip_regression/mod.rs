@@ -34,9 +34,9 @@
 //!
 //! ### Statistical Properties
 //!
-//! - **Mean**: E[Y] = (1-ρ)λ
-//! - **Variance**: Var[Y] = (1-ρ)λ(1 + ρλ)
-//! - **Overdispersion**: Var[Y] > E[Y] when ρ > 0
+//! - **Mean**: E\[Y\] = (1-ρ)λ
+//! - **Variance**: Var\[Y\] = (1-ρ)λ(1 + ρλ)
+//! - **Overdispersion**: Var\[Y\] > E\[Y\] when ρ > 0
 //!
 //! ## ZIP Regression
 //!
