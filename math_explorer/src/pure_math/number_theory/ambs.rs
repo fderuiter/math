@@ -147,7 +147,9 @@ impl AmbsDsp {
 
         if p.clone() % 4 == 3 {
             let power = Integer::from(p + 1) / 4;
-            let root = n_mod.pow_mod(&power, p).map_err(|_| AmbsError::ModuloError)?;
+            let root = n_mod
+                .pow_mod(&power, p)
+                .map_err(|_| AmbsError::ModuloError)?;
             let root2 = Integer::from(p - &root);
             if root == root2 {
                 return Ok(vec![root]);
@@ -165,21 +167,33 @@ impl AmbsDsp {
 
         let mut z = Integer::from(2);
         let power_z = Integer::from(p - 1) / 2;
-        while z.clone().pow_mod(&power_z, p).map_err(|_| AmbsError::ModuloError)? != p.clone() - 1 {
+        while z
+            .clone()
+            .pow_mod(&power_z, p)
+            .map_err(|_| AmbsError::ModuloError)?
+            != p.clone() - 1
+        {
             z += 1;
         }
 
         let mut m = s;
         let mut c = z.pow_mod(&q, p).map_err(|_| AmbsError::ModuloError)?;
-        let mut t = n_mod.clone().pow_mod(&q, p).map_err(|_| AmbsError::ModuloError)?;
+        let mut t = n_mod
+            .clone()
+            .pow_mod(&q, p)
+            .map_err(|_| AmbsError::ModuloError)?;
         let power_r = Integer::from(&q + 1) / 2;
-        let mut r = n_mod.pow_mod(&power_r, p).map_err(|_| AmbsError::ModuloError)?;
+        let mut r = n_mod
+            .pow_mod(&power_r, p)
+            .map_err(|_| AmbsError::ModuloError)?;
 
         while t != 0 && t != 1 {
             let mut t2i = t.clone();
             let mut i = 0;
             for j in 1..m {
-                t2i = t2i.pow_mod(&Integer::from(2), p).map_err(|_| AmbsError::ModuloError)?;
+                t2i = t2i
+                    .pow_mod(&Integer::from(2), p)
+                    .map_err(|_| AmbsError::ModuloError)?;
                 if t2i == 1 {
                     i = j;
                     break;
@@ -195,7 +209,10 @@ impl AmbsDsp {
                 .pow_mod(&Integer::from(1_u32 << (m - i - 1)), p)
                 .map_err(|_| AmbsError::ModuloError)?;
             m = i;
-            c = b.clone().pow_mod(&Integer::from(2), p).map_err(|_| AmbsError::ModuloError)?;
+            c = b
+                .clone()
+                .pow_mod(&Integer::from(2), p)
+                .map_err(|_| AmbsError::ModuloError)?;
             t = (t * &c).rem_euc(p);
             r = (r * b).rem_euc(p);
         }
@@ -205,7 +222,11 @@ impl AmbsDsp {
         }
 
         let root2 = Integer::from(p - &r);
-        if r == root2 { Ok(vec![r]) } else { Ok(vec![r, root2]) }
+        if r == root2 {
+            Ok(vec![r])
+        } else {
+            Ok(vec![r, root2])
+        }
     }
 
     /// Hensel's Lifting for x^2 = a (mod p^k)
@@ -289,7 +310,10 @@ impl AmbsDsp {
         res
     }
 
-    pub fn compute_modular_square_roots(x_l: &Integer, s_l: &Integer) -> Result<Vec<Integer>, AmbsError> {
+    pub fn compute_modular_square_roots(
+        x_l: &Integer,
+        s_l: &Integer,
+    ) -> Result<Vec<Integer>, AmbsError> {
         let s_l_u64 = s_l.to_u64().unwrap_or(0); // Assuming S_L fits in u64 for factorization
         if s_l_u64 == 0 {
             // Factorization of very large S_L is computationally expensive,
