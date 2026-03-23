@@ -1,3 +1,15 @@
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum AmbsError {
+    #[error("Failed to parse integer from string: {0}")]
+    ParseError(String),
+    #[error("Modulo operation failed")]
+    ModuloError,
+    #[error("Conversion to usize failed")]
+    ConversionError,
+}
+
 use crate::pure_math::number_theory::alcf::sigma;
 use crate::pure_math::number_theory::primes::is_prime;
 use rug::{Integer, ops::Pow, ops::RemRounding};
@@ -118,29 +130,29 @@ impl AmbsDsp {
     }
 
     /// Tonelli-Shanks algorithm to find r such that r^2 = n (mod p)
-    fn tonelli_shanks(n: &Integer, p: &Integer) -> Vec<Integer> {
+    fn tonelli_shanks(n: &Integer, p: &Integer) -> Result<Vec<Integer>, AmbsError> {
         let n_mod = n.clone().rem_euc(p);
         if n_mod == 0 {
-            return vec![Integer::from(0)];
+            return Ok(vec![Integer::from(0)]);
         }
 
         let p_minus_one = Integer::from(p - 1);
         let legendre = n_mod
             .clone()
             .pow_mod(&Integer::from(&p_minus_one / 2), p)
-            .unwrap();
+            .map_err(|_| AmbsError::ModuloError)?;
         if legendre != 1 {
-            return vec![]; // Not a quadratic residue
+            return Ok(vec![]); // Not a quadratic residue
         }
 
         if p.clone() % 4 == 3 {
             let power = Integer::from(p + 1) / 4;
-            let root = n_mod.pow_mod(&power, p).unwrap();
+            let root = n_mod.pow_mod(&power, p).map_err(|_| AmbsError::ModuloError)?;
             let root2 = Integer::from(p - &root);
             if root == root2 {
-                return vec![root];
+                return Ok(vec![root]);
             }
-            return vec![root, root2];
+            return Ok(vec![root, root2]);
         }
 
         // General Tonelli-Shanks
@@ -153,21 +165,21 @@ impl AmbsDsp {
 
         let mut z = Integer::from(2);
         let power_z = Integer::from(p - 1) / 2;
-        while z.clone().pow_mod(&power_z, p).unwrap() != p.clone() - 1 {
+        while z.clone().pow_mod(&power_z, p).map_err(|_| AmbsError::ModuloError)? != p.clone() - 1 {
             z += 1;
         }
 
         let mut m = s;
-        let mut c = z.pow_mod(&q, p).unwrap();
-        let mut t = n_mod.clone().pow_mod(&q, p).unwrap();
+        let mut c = z.pow_mod(&q, p).map_err(|_| AmbsError::ModuloError)?;
+        let mut t = n_mod.clone().pow_mod(&q, p).map_err(|_| AmbsError::ModuloError)?;
         let power_r = Integer::from(&q + 1) / 2;
-        let mut r = n_mod.pow_mod(&power_r, p).unwrap();
+        let mut r = n_mod.pow_mod(&power_r, p).map_err(|_| AmbsError::ModuloError)?;
 
         while t != 0 && t != 1 {
             let mut t2i = t.clone();
             let mut i = 0;
             for j in 1..m {
-                t2i = t2i.pow_mod(&Integer::from(2), p).unwrap();
+                t2i = t2i.pow_mod(&Integer::from(2), p).map_err(|_| AmbsError::ModuloError)?;
                 if t2i == 1 {
                     i = j;
                     break;
@@ -175,30 +187,30 @@ impl AmbsDsp {
             }
 
             if i == 0 {
-                return vec![];
+                return Ok(vec![]);
             }
 
             let b = c
                 .clone()
                 .pow_mod(&Integer::from(1_u32 << (m - i - 1)), p)
-                .unwrap();
+                .map_err(|_| AmbsError::ModuloError)?;
             m = i;
-            c = b.clone().pow_mod(&Integer::from(2), p).unwrap();
+            c = b.clone().pow_mod(&Integer::from(2), p).map_err(|_| AmbsError::ModuloError)?;
             t = (t * &c).rem_euc(p);
             r = (r * b).rem_euc(p);
         }
 
         if t == 0 {
-            return vec![Integer::from(0)];
+            return Ok(vec![Integer::from(0)]);
         }
 
         let root2 = Integer::from(p - &r);
-        if r == root2 { vec![r] } else { vec![r, root2] }
+        if r == root2 { Ok(vec![r]) } else { Ok(vec![r, root2]) }
     }
 
     /// Hensel's Lifting for x^2 = a (mod p^k)
-    fn hensels_lifting(a: &Integer, p: &Integer, k: u32) -> Vec<Integer> {
-        let roots_mod_p = Self::tonelli_shanks(a, p);
+    fn hensels_lifting(a: &Integer, p: &Integer, k: u32) -> Result<Vec<Integer>, AmbsError> {
+        let roots_mod_p = Self::tonelli_shanks(a, p)?;
         let mut final_roots = Vec::new();
 
         let p_k = p.clone().pow(k);
@@ -232,7 +244,7 @@ impl AmbsDsp {
 
         final_roots.sort();
         final_roots.dedup();
-        final_roots
+        Ok(final_roots)
     }
 
     /// Chinese Remainder Theorem
@@ -277,12 +289,12 @@ impl AmbsDsp {
         res
     }
 
-    pub fn compute_modular_square_roots(x_l: &Integer, s_l: &Integer) -> Vec<Integer> {
+    pub fn compute_modular_square_roots(x_l: &Integer, s_l: &Integer) -> Result<Vec<Integer>, AmbsError> {
         let s_l_u64 = s_l.to_u64().unwrap_or(0); // Assuming S_L fits in u64 for factorization
         if s_l_u64 == 0 {
             // Factorization of very large S_L is computationally expensive,
             // but B_stop = 10^11.5 guarantees S_L fits in u64.
-            return vec![];
+            return Ok(vec![]);
         }
 
         let factors = prime_factors(s_l_u64);
@@ -291,9 +303,9 @@ impl AmbsDsp {
 
         for (p, e) in factors {
             let p_int = Integer::from(p);
-            let roots = Self::hensels_lifting(x_l, &p_int, e);
+            let roots = Self::hensels_lifting(x_l, &p_int, e)?;
             if roots.is_empty() {
-                return vec![];
+                return Ok(vec![]);
             }
             root_lists.push(roots);
             moduli.push(p_int.pow(e));
@@ -308,11 +320,12 @@ impl AmbsDsp {
             }
         }
 
-        final_roots
+        Ok(final_roots)
     }
 
-    pub fn search(&mut self, n_max_str: &str) -> Option<Integer> {
-        let n_max = Integer::from_str_radix(n_max_str, 10).unwrap();
+    pub fn search(&mut self, n_max_str: &str) -> Result<Option<Integer>, AmbsError> {
+        let n_max = Integer::from_str_radix(n_max_str, 10)
+            .map_err(|e| AmbsError::ParseError(e.to_string()))?;
 
         // Run DFS first to build prefix_pool
         self.build_prefix(1, 0, 3.0);
@@ -328,7 +341,7 @@ impl AmbsDsp {
             }
             let x_l = x_l_opt.unwrap();
 
-            let roots = Self::compute_modular_square_roots(&x_l, &s_l);
+            let roots = Self::compute_modular_square_roots(&x_l, &s_l)?;
             if roots.is_empty() {
                 continue;
             }
@@ -353,7 +366,7 @@ impl AmbsDsp {
                         let target_c = (Integer::from(-&r_i) * s_l_inv)
                             .rem_euc(&q_int)
                             .to_usize()
-                            .unwrap();
+                            .ok_or(AmbsError::ConversionError)?;
                         let q_usize = q as usize;
                         for c in (target_c..c_max).step_by(q_usize) {
                             c_valid[c] = false;
@@ -379,7 +392,7 @@ impl AmbsDsp {
                 }
             }
         }
-        None
+        Ok(None)
     }
 }
 
@@ -430,12 +443,12 @@ mod tests {
     #[test]
     fn test_tonelli_shanks() {
         // x^2 = 10 mod 13 => 6^2 = 36 = 10 mod 13, 7^2 = 49 = 10 mod 13
-        let roots = AmbsDsp::tonelli_shanks(&Integer::from(10), &Integer::from(13));
+        let roots = AmbsDsp::tonelli_shanks(&Integer::from(10), &Integer::from(13)).unwrap();
         assert!(roots.contains(&Integer::from(6)));
         assert!(roots.contains(&Integer::from(7)));
 
         // x^2 = 5 mod 11 => 4^2 = 16 = 5 mod 11, 7^2 = 49 = 5 mod 11
-        let roots2 = AmbsDsp::tonelli_shanks(&Integer::from(5), &Integer::from(11));
+        let roots2 = AmbsDsp::tonelli_shanks(&Integer::from(5), &Integer::from(11)).unwrap();
         assert!(roots2.contains(&Integer::from(4)));
         assert!(roots2.contains(&Integer::from(7)));
     }

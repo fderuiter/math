@@ -1,0 +1,3 @@
+- Create a `thiserror` based `AmbsError` enum in `math_explorer/src/pure_math/number_theory/ambs.rs` and update functions to return `Result`.
+- Fix `unwrap()` in `math_explorer/src/biology/morphogenesis/solvers.rs`.
+- We'll then use `?` syntax.
