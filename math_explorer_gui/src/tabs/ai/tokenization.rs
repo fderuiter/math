@@ -1,6 +1,8 @@
 use crate::tabs::ai::AiTool;
 use eframe::egui;
-use math_explorer::ai::transformer::tokenization::{CharTokenizer, PseudoEmbedding, Tokenizer, WordTokenizer};
+use math_explorer::ai::transformer::tokenization::{
+    CharTokenizer, PseudoEmbedding, Tokenizer, WordTokenizer,
+};
 
 /// A simple struct to represent a token and its pseudo-embedding
 struct TokenData {
@@ -37,7 +39,9 @@ impl TokenizationTool {
             WordTokenizer.tokenize(&self.input_text)
         };
 
-        let embedder = PseudoEmbedding { d_model: self.d_model };
+        let embedder = PseudoEmbedding {
+            d_model: self.d_model,
+        };
 
         self.tokens = raw_tokens
             .into_iter()
