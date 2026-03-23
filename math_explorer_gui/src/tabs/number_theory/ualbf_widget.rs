@@ -1,4 +1,4 @@
-use eframe::egui::{self, Ui};
+use eframe::egui;
 use math_explorer::pure_math::number_theory::ualbf::{ualbf_search, UalbfSearchResult};
 
 pub struct UalbfWidget {
@@ -21,10 +21,23 @@ impl Default for UalbfWidget {
     }
 }
 
-impl UalbfWidget {
-    pub fn ui(&mut self, ui: &mut Ui) {
-        ui.group(|ui| {
-            ui.label(egui::RichText::new("UALBF Parameters").strong());
+use super::NumberTheoryTool;
+
+impl NumberTheoryTool for UalbfWidget {
+    fn name(&self) -> &'static str {
+        "UALBF"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("UALBF: Unified Algebraic-Lattice Bipartition Framework");
+            ui.label(
+                "A synthesis of ALCF and AMBS for proving lower bounds on quasiperfect numbers.",
+            );
+            ui.add_space(10.0);
+
+            ui.group(|ui| {
+                ui.label(egui::RichText::new("UALBF Parameters").strong());
 
             let mut limit_p_f = self.limit_p as f64;
             ui.add(egui::Slider::new(&mut limit_p_f, 100.0..=10000.0).text("Prime limit"));
@@ -78,10 +91,11 @@ impl UalbfWidget {
                 "Phase 3 — Rejected by lattice oracle: {}",
                 result.rejected_by_lattice
             ));
-            ui.label(format!(
-                "Phase 4 — Candidates checked: {}",
-                result.candidates_checked
-            ));
-        }
+                ui.label(format!(
+                    "Phase 4 — Candidates checked: {}",
+                    result.candidates_checked
+                ));
+            }
+        });
     }
 }

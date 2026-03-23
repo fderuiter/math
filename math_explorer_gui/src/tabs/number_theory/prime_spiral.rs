@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32, ColorImage, TextureHandle, TextureOptions, Ui};
+use eframe::egui::{self, Color32, ColorImage, TextureHandle, TextureOptions};
 use math_explorer::pure_math::number_theory::primes::primes_up_to;
 
 pub struct PrimeSpiralWidget {
@@ -15,10 +15,21 @@ impl Default for PrimeSpiralWidget {
     }
 }
 
-impl PrimeSpiralWidget {
-    pub fn ui(&mut self, ui: &mut Ui) {
-        ui.vertical(|ui| {
-            ui.horizontal(|ui| {
+use super::NumberTheoryTool;
+
+impl NumberTheoryTool for PrimeSpiralWidget {
+    fn name(&self) -> &'static str {
+        "Prime Spiral (Ulam Spiral)"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Prime Spiral (Ulam Spiral)");
+            ui.label("A graphical depiction of the set of prime numbers...");
+            ui.add_space(10.0);
+
+            ui.vertical(|ui| {
+                ui.horizontal(|ui| {
                 ui.label("Grid Size:");
                 if ui
                     .add(egui::Slider::new(&mut self.grid_size, 10..=1000).text("side length"))
@@ -32,13 +43,16 @@ impl PrimeSpiralWidget {
                 self.regenerate_texture(ui.ctx());
             }
 
-            if let Some(texture) = &self.texture {
-                // Correctly use ui.image with 1 argument (impl Into<ImageSource>)
-                ui.image(texture);
-            }
+                if let Some(texture) = &self.texture {
+                    // Correctly use ui.image with 1 argument (impl Into<ImageSource>)
+                    ui.image(texture);
+                }
+            });
         });
     }
+}
 
+impl PrimeSpiralWidget {
     fn regenerate_texture(&mut self, ctx: &egui::Context) {
         let size = self.grid_size;
         let num_pixels = size * size;
