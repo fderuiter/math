@@ -209,7 +209,10 @@ fn phase4_inner(prefix: &Prefix, target_max: &Integer) -> (Option<Integer>, usiz
 
     let x_l_reduced = x_l.clone().rem_euc(&prefix.s_l);
 
-    let roots = AmbsDsp::compute_modular_square_roots(&x_l_reduced, &prefix.s_l);
+    let roots = match AmbsDsp::compute_modular_square_roots(&x_l_reduced, &prefix.s_l) {
+        Ok(r) => r,
+        Err(_) => return (None, 0),
+    };
     if roots.is_empty() {
         return (None, 0);
     }
