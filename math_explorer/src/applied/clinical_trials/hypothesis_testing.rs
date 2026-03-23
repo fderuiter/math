@@ -124,8 +124,8 @@ impl<'a> HypothesisTest<&'a ContingencyTable> for ChiSquare2x2 {
         let chi_sq = term_a + term_b + term_c + term_d;
 
         // DoF for 2x2 is 1
-        let dist =
-            ChiSquared::new(1.0).map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
+        let dist = ChiSquared::new(1.0)
+            .map_err(|e| ClinicalTrialError::StatisticalError(e.to_string()))?;
         let p_value = 1.0 - dist.cdf(chi_sq);
 
         Ok(TestResult {

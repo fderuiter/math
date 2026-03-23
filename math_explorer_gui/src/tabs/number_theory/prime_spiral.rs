@@ -30,18 +30,18 @@ impl NumberTheoryTool for PrimeSpiralWidget {
 
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {
-                ui.label("Grid Size:");
-                if ui
-                    .add(egui::Slider::new(&mut self.grid_size, 10..=1000).text("side length"))
-                    .changed()
-                {
-                    self.texture = None; // Invalidate texture
-                }
-            });
+                    ui.label("Grid Size:");
+                    if ui
+                        .add(egui::Slider::new(&mut self.grid_size, 10..=1000).text("side length"))
+                        .changed()
+                    {
+                        self.texture = None; // Invalidate texture
+                    }
+                });
 
-            if self.texture.is_none() {
-                self.regenerate_texture(ui.ctx());
-            }
+                if self.texture.is_none() {
+                    self.regenerate_texture(ui.ctx());
+                }
 
                 if let Some(texture) = &self.texture {
                     // Correctly use ui.image with 1 argument (impl Into<ImageSource>)

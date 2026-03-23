@@ -37,7 +37,9 @@ impl NumberTheoryTool for FactorizationTool {
                                 Ok((num, prime_check, factors))
                             }
                         }
-                        Err(_) => Err("Please enter a valid positive integer (max 64-bit).".to_string()),
+                        Err(_) => {
+                            Err("Please enter a valid positive integer (max 64-bit).".to_string())
+                        }
                     });
                 }
             });
@@ -54,7 +56,9 @@ impl NumberTheoryTool for FactorizationTool {
                             ui.horizontal(|ui| {
                                 ui.label("Is Prime:");
                                 if *prime_check {
-                                    ui.label(egui::RichText::new("Yes").color(egui::Color32::GREEN));
+                                    ui.label(
+                                        egui::RichText::new("Yes").color(egui::Color32::GREEN),
+                                    );
                                 } else {
                                     ui.label(egui::RichText::new("No").color(egui::Color32::RED));
                                 }
