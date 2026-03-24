@@ -52,13 +52,25 @@ use rand::Rng;
 /// assert!(magnetization_ratio > 0.8, "System did not magnetize! Ratio: {}", magnetization_ratio);
 /// ```
 pub struct SpinLattice {
-    pub width: usize,
-    pub height: usize,
-    pub spins: Vec<i8>,             // Flattened 2D grid
-    pub neighbors: Vec<[usize; 4]>, // Precomputed neighbor indices [left, right, up, down]
+    width: usize,
+    height: usize,
+    spins: Vec<i8>,             // Flattened 2D grid
+    neighbors: Vec<[usize; 4]>, // Precomputed neighbor indices [left, right, up, down]
 }
 
 impl SpinLattice {
+    /// Returns the width of the lattice.
+    #[inline]
+    pub fn width(&self) -> usize {
+        self.width
+    }
+
+    /// Returns the height of the lattice.
+    #[inline]
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
     /// Creates a new random spin lattice.
     pub fn new(width: usize, height: usize) -> Self {
         let mut rng = rand::thread_rng();
@@ -110,6 +122,12 @@ impl SpinLattice {
     /// Sets the spin at (x, y).
     pub fn set(&mut self, x: usize, y: usize, val: i8) {
         self.spins[y * self.width + x] = val;
+    }
+
+    /// Returns a reference to the flattened spins array.
+    #[inline]
+    pub fn spins(&self) -> &[i8] {
+        &self.spins
     }
 
     /// Calculates the total energy (Hamiltonian) of the lattice.

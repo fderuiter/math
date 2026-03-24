@@ -73,7 +73,11 @@
 //!     let initial_state = DVector::from_vec(vec![0.0, 5.0]);
 //!     let initial_covariance = DMatrix::identity(2, 2);
 //!
-//!     let mut kf = KalmanFilter::new(initial_state, initial_covariance, model, 1.0);
+//!     let mut kf = KalmanFilter::builder(model, 1.0)
+//!         .initial_state(initial_state)
+//!         .initial_covariance(initial_covariance)
+//!         .build()
+//!         .unwrap();
 //!
 //!     // 2. Predict Step (Time evolves)
 //!     kf.predict();
