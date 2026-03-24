@@ -320,14 +320,20 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                 self.estimator
                     .gradient_unchecked(data, base_idx, stride_y, stride_z)
             };
+            // SAFETY: Same as above, `can_use_fast_path` ensures `base_idx + stride_y`
+            // and its required offsets remain within the valid interior bounds of `data`.
             normals[3] = unsafe {
                 self.estimator
                     .gradient_unchecked(data, base_idx + stride_y, stride_y, stride_z)
             };
+            // SAFETY: Same as above, `can_use_fast_path` ensures `base_idx + stride_z`
+            // and its required offsets remain within the valid interior bounds of `data`.
             normals[4] = unsafe {
                 self.estimator
                     .gradient_unchecked(data, base_idx + stride_z, stride_y, stride_z)
             };
+            // SAFETY: Same as above, `can_use_fast_path` ensures `base_idx + stride_y + stride_z`
+            // and its required offsets remain within the valid interior bounds of `data`.
             normals[7] = unsafe {
                 self.estimator.gradient_unchecked(
                     data,
@@ -355,14 +361,20 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                 self.estimator
                     .gradient_unchecked(data, next_x_idx, stride_y, stride_z)
             };
+            // SAFETY: Same as above, `can_use_fast_path` guarantees `next_x_idx + stride_y`
+            // is interior, so its neighbor offsets are within the bounds of `data`.
             let n2 = unsafe {
                 self.estimator
                     .gradient_unchecked(data, next_x_idx + stride_y, stride_y, stride_z)
             };
+            // SAFETY: Same as above, `can_use_fast_path` guarantees `next_x_idx + stride_z`
+            // is interior, so its neighbor offsets are within the bounds of `data`.
             let n5 = unsafe {
                 self.estimator
                     .gradient_unchecked(data, next_x_idx + stride_z, stride_y, stride_z)
             };
+            // SAFETY: Same as above, `can_use_fast_path` guarantees `next_x_idx + stride_y + stride_z`
+            // is interior, so its neighbor offsets are within the bounds of `data`.
             let n6 = unsafe {
                 self.estimator.gradient_unchecked(
                     data,
