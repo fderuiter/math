@@ -30,13 +30,36 @@ impl SecondOrderLinearPde2D {
     }
 }
 
-/// Boundary condition types.
-pub enum BoundaryCondition {
-    /// Specify value $u = f$
-    Dirichlet(Box<dyn Fn(f64, f64) -> f64>),
-    /// Specify derivative $\frac{\partial u}{\partial n} = g$
-    Neumann(Box<dyn Fn(f64, f64) -> f64>),
-    // Robin omitted for simplicity but follows $\alpha u + \beta u_n = h$
+/// Strategy trait for evaluating boundary conditions.
+///
+/// Adheres to the Strategy Pattern and Open/Closed Principle, allowing
+/// users to implement custom boundary condition types (e.g., Robin) without
+/// modifying the core enum.
+pub trait BoundaryCondition {
+    /// Evaluates the boundary condition at the given spatial or spatio-temporal coordinates.
+    fn evaluate_boundary(&self, x: f64, y: f64) -> f64;
+}
+
+/// Dirichlet boundary condition: specifies the value $u = f$ on the boundary.
+pub struct DirichletBoundary {
+    pub function: Box<dyn Fn(f64, f64) -> f64>,
+}
+
+impl BoundaryCondition for DirichletBoundary {
+    fn evaluate_boundary(&self, x: f64, y: f64) -> f64 {
+        (self.function)(x, y)
+    }
+}
+
+/// Neumann boundary condition: specifies the normal derivative $\frac{\partial u}{\partial n} = g$.
+pub struct NeumannBoundary {
+    pub function: Box<dyn Fn(f64, f64) -> f64>,
+}
+
+impl BoundaryCondition for NeumannBoundary {
+    fn evaluate_boundary(&self, x: f64, y: f64) -> f64 {
+        (self.function)(x, y)
+    }
 }
 
 pub mod greens;
