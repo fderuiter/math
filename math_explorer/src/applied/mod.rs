@@ -12,8 +12,6 @@
 //! - **Social Science (Satire)**: `favoritism`.
 //! - **General Algorithms**: `algorithms`, `win_ratio`.
 
-
-
 /// Modeling of battery health and capacity fade over time.
 pub mod battery_degradation;
 
