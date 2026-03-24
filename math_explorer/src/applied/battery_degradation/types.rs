@@ -3,17 +3,6 @@
 //! These types ensure physical validity of parameters (e.g., depth of discharge cannot be negative).
 
 use std::fmt;
-use thiserror::Error;
-
-#[derive(Debug, Clone, PartialEq, Error)]
-pub enum BatteryDegradationError {
-    #[error("DepthOfDischarge must be between 0.0 and 100.0, got {0}")]
-    InvalidDepthOfDischarge(f64),
-    #[error("Capacity must be between 0.0 and 1.0, got {0}")]
-    InvalidCapacity(f64),
-    #[error("Cycles cannot be negative, got {0}")]
-    InvalidCycles(f64),
-}
 
 /// Depth of Discharge (DoD) as a percentage (0.0 to 100.0).
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -22,14 +11,17 @@ pub struct DepthOfDischarge(f64);
 impl DepthOfDischarge {
     /// Creates a new `DepthOfDischarge`.
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// Returns `BatteryDegradationError::InvalidDepthOfDischarge` if `value` is not between 0.0 and 100.0 inclusive.
-    pub fn new(value: f64) -> Result<Self, BatteryDegradationError> {
+    /// Panics if `value` is not between 0.0 and 100.0 inclusive.
+    pub fn new(value: f64) -> Self {
         if !(0.0..=100.0).contains(&value) {
-            return Err(BatteryDegradationError::InvalidDepthOfDischarge(value));
+            panic!(
+                "DepthOfDischarge must be between 0.0 and 100.0, got {}",
+                value
+            );
         }
-        Ok(Self(value))
+        Self(value)
     }
 
     /// Returns the value as a f64.
@@ -51,14 +43,14 @@ pub struct Capacity(f64);
 impl Capacity {
     /// Creates a new `Capacity`.
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// Returns `BatteryDegradationError::InvalidCapacity` if `value` is not between 0.0 and 1.0 inclusive.
-    pub fn new(value: f64) -> Result<Self, BatteryDegradationError> {
+    /// Panics if `value` is not between 0.0 and 1.0 inclusive.
+    pub fn new(value: f64) -> Self {
         if !(0.0..=1.0).contains(&value) {
-            return Err(BatteryDegradationError::InvalidCapacity(value));
+            panic!("Capacity must be between 0.0 and 1.0, got {}", value);
         }
-        Ok(Self(value))
+        Self(value)
     }
 
     /// Returns the value as a f64.
@@ -80,14 +72,14 @@ pub struct Cycles(f64);
 impl Cycles {
     /// Creates a new `Cycles`.
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// Returns `BatteryDegradationError::InvalidCycles` if `value` is negative.
-    pub fn new(value: f64) -> Result<Self, BatteryDegradationError> {
+    /// Panics if `value` is negative.
+    pub fn new(value: f64) -> Self {
         if value < 0.0 {
-            return Err(BatteryDegradationError::InvalidCycles(value));
+            panic!("Cycles cannot be negative, got {}", value);
         }
-        Ok(Self(value))
+        Self(value)
     }
 
     /// Returns the value as a f64.
