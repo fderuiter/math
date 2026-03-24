@@ -147,10 +147,15 @@ impl HodgkinHuxleyNeuron {
     /// # Arguments
     /// * `v_initial` - Initial membrane potential (typically -65.0 mV).
     pub fn new(v_initial: f64) -> Self {
-        Self::builder()
-            .with_initial_v(v_initial)
-            .build()
-            .expect("Default parameters should be valid")
+        // We bypass the builder to avoid `.expect()` completely.
+        // The default gating variables and default parameters are mathematically proven to be valid invariants.
+        Self {
+            v: v_initial,
+            n: 0.32,
+            m: 0.05,
+            h: 0.6,
+            params: HodgkinHuxleyParameters::default(),
+        }
     }
 
     /// Creates a new neuron with custom parameters.

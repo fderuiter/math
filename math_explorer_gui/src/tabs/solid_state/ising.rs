@@ -81,7 +81,7 @@ impl SolidStateTool for IsingModelTool {
                 ui.separator();
 
                 let m = self.lattice.magnetization();
-                let max_m = (self.lattice.width * self.lattice.height) as f64;
+                let max_m = (self.lattice.width() * self.lattice.height()) as f64;
                 let m_avg = m as f64 / max_m;
                 ui.label(format!("Magnetization: {:.3}", m_avg));
 
@@ -121,14 +121,14 @@ impl SolidStateTool for IsingModelTool {
 
         // Visualization
         egui::CentralPanel::default().show(ctx, |ui| {
-            let width = self.lattice.width;
-            let height = self.lattice.height;
+            let width = self.lattice.width();
+            let height = self.lattice.height();
 
             let image = egui::ColorImage::from_rgba_unmultiplied(
                 [width, height],
                 &self
                     .lattice
-                    .spins
+                    .spins()
                     .iter()
                     .flat_map(|&s| {
                         if s > 0 {

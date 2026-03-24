@@ -197,37 +197,6 @@ impl<M: KalmanSystem> KalmanFilter<M> {
         KalmanFilterBuilder::new(model, dt)
     }
 
-    /// Creates a new Kalman Filter.
-    ///
-    /// # Deprecated
-    /// Use `KalmanFilter::builder()` instead to ensure safe construction.
-    ///
-    /// # Arguments
-    ///
-    /// * `initial_state` - Initial estimate of the state vector.
-    /// * `initial_covariance` - Initial uncertainty covariance matrix.
-    /// * `model` - The system model implementation.
-    /// * `dt` - Default time step.
-    ///
-    /// # Panics
-    /// Panics if dimensions mismatch.
-    #[deprecated(
-        since = "0.2.0",
-        note = "Use KalmanFilter::builder() for safe construction"
-    )]
-    pub fn new(
-        initial_state: DVector<f64>,
-        initial_covariance: DMatrix<f64>,
-        model: M,
-        dt: f64,
-    ) -> Self {
-        Self::builder(model, dt)
-            .initial_state(initial_state)
-            .initial_covariance(initial_covariance)
-            .build()
-            .expect("KalmanFilter::new encountered invalid dimensions")
-    }
-
     /// Performs the **Prediction Step**.
     ///
     /// Projects the current state estimate and covariance forward in time.
