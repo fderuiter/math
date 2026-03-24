@@ -12,7 +12,7 @@
 //! - **Social Science (Satire)**: `favoritism`.
 //! - **General Algorithms**: `algorithms`, `win_ratio`.
 
-pub mod engineering_error;
+
 
 /// Modeling of battery health and capacity fade over time.
 pub mod battery_degradation;
@@ -56,3 +56,5 @@ pub mod clinical_trials;
 /// General purpose algorithms, including Sorting and other utility structures.
 pub mod algorithms;
 pub mod engineering;
+
+pub use engineering::error as engineering_error;
