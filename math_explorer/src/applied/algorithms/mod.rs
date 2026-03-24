@@ -40,7 +40,7 @@
 //!     measurement_noise: f64,
 //! }
 //!
-//! impl KalmanModel for ConstantVelocityModel {
+//! impl KalmanModel<f64> for ConstantVelocityModel {
 //!     fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
 //!         // State = [pos, vel]
 //!         // pos_k = pos_{k-1} + vel_{k-1} * dt
@@ -73,13 +73,17 @@
 //!     let initial_state = DVector::from_vec(vec![0.0, 5.0]);
 //!     let initial_covariance = DMatrix::identity(2, 2);
 //!
-//!     let mut kf = KalmanFilter::new(initial_state, initial_covariance, model, 1.0);
+//!     let mut kf = KalmanFilter::builder(model, 1.0)
+//!         .initial_state(initial_state)
+//!         .initial_covariance(initial_covariance)
+//!         .build()
+//!         .unwrap();
 //!
 //!     // 2. Predict Step (Time evolves)
 //!     kf.predict();
 //!
 //!     // Predicted State: Pos = 5.0, Vel = 5.0
-//!     assert!((kf.state[0] - 5.0).abs() < 1e-6);
+//!     assert!((kf.state[0] - 5.0f64).abs() < 1e-6);
 //!
 //!     // 3. Update Step (New Measurement arrives)
 //!     // Sensor says Position = 5.2 (slightly off due to noise)

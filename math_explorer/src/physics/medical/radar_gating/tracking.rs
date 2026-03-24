@@ -26,7 +26,7 @@ impl ConstantVelocityModel {
     }
 }
 
-impl KalmanModel for ConstantVelocityModel {
+impl KalmanModel<f64> for ConstantVelocityModel {
     fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
         // [1, dt]
         // [0, 1 ]
@@ -54,7 +54,7 @@ impl KalmanModel for ConstantVelocityModel {
 /// This maintains the original API of the radar gating module while using the unified core algorithm.
 #[derive(Debug, Clone)]
 pub struct TrackingFilter {
-    inner: KalmanFilter<ConstantVelocityModel>,
+    inner: KalmanFilter<f64, ConstantVelocityModel>,
 }
 
 impl TrackingFilter {
