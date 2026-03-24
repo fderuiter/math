@@ -1,0 +1,132 @@
+use eframe::egui;
+use math_explorer::pure_math::number_theory::partitions;
+use super::NumberTheoryTool;
+use egui_plot::{Plot, BarChart, Bar};
+
+#[derive(PartialEq, Clone, Copy)]
+enum PartitionFunctionType {
+    PStar,
+    M,
+    TStar,
+    A,
+    B,
+    K,
+    L,
+    FK,
+}
+
+pub struct PartitionsWidget {
+    precision: usize,
+    selected_function: PartitionFunctionType,
+    f_k_val: usize,
+    coeffs: Vec<i64>,
+}
+
+impl Default for PartitionsWidget {
+    fn default() -> Self {
+        Self {
+            precision: 20,
+            selected_function: PartitionFunctionType::PStar,
+            f_k_val: 1,
+            coeffs: Vec::new(),
+        }
+    }
+}
+
+impl PartitionsWidget {
+    fn calculate(&mut self) {
+        let q_series = match self.selected_function {
+            PartitionFunctionType::PStar => partitions::gen_p_star(self.precision),
+            PartitionFunctionType::M => partitions::gen_m(self.precision),
+            PartitionFunctionType::TStar => partitions::gen_t_star(self.precision),
+            PartitionFunctionType::A => partitions::gen_a(self.precision),
+            PartitionFunctionType::B => partitions::gen_b(self.precision),
+            PartitionFunctionType::K => partitions::gen_k(self.precision),
+            PartitionFunctionType::L => partitions::gen_l(self.precision),
+            PartitionFunctionType::FK => partitions::f_k(self.f_k_val, self.precision),
+        };
+
+        self.coeffs = q_series.coeffs;
+    }
+}
+
+impl NumberTheoryTool for PartitionsWidget {
+    fn name(&self) -> &'static str {
+        "Partition Function"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Partition Function & Q-Series");
+            ui.label("Calculate and visualize restricted partition functions.");
+
+            ui.horizontal(|ui| {
+                ui.vertical(|ui| {
+                    ui.set_min_width(200.0);
+                    ui.heading("Configuration");
+
+                    ui.add(egui::Slider::new(&mut self.precision, 1..=200).text("Precision (max q power)"));
+
+                    ui.separator();
+                    ui.label("Select Partition Function:");
+
+                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::PStar, "P*(n)");
+                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::M, "M(n)");
+                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::TStar, "T*(n)");
+                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::A, "A(n)");
+                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::B, "B(n)");
+                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::K, "K(n)");
+                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::L, "L(n)");
+                    ui.horizontal(|ui| {
+                        ui.radio_value(&mut self.selected_function, PartitionFunctionType::FK, "f_k(n)");
+                        if self.selected_function == PartitionFunctionType::FK {
+                            ui.add(egui::DragValue::new(&mut self.f_k_val).range(1..=100));
+                            ui.label("k");
+                        }
+                    });
+
+                    ui.separator();
+
+                    if ui.button("Calculate").clicked() {
+                        self.calculate();
+                    }
+
+                    if !self.coeffs.is_empty() {
+                        ui.separator();
+                        ui.label("Calculated Coefficients:");
+                        egui::ScrollArea::vertical().max_height(300.0).show(ui, |ui| {
+                            for (n, coeff) in self.coeffs.iter().enumerate() {
+                                ui.label(format!("n = {}: {}", n, coeff));
+                            }
+                        });
+                    }
+                });
+
+                ui.separator();
+
+                ui.vertical(|ui| {
+                    ui.heading("Partition Function Plot");
+                    ui.label("Bar chart of coefficients for the selected generating function.");
+
+                    if self.coeffs.is_empty() {
+                        ui.label("Click 'Calculate' to generate the Q-series and display the plot.");
+                        return;
+                    }
+
+                    let bars: Vec<Bar> = self.coeffs.iter().enumerate().map(|(n, &coeff)| {
+                        Bar::new(n as f64, coeff as f64).width(0.8)
+                    }).collect();
+
+                    let chart = BarChart::new("Coefficients", bars).name("Coefficients");
+
+                    Plot::new("partition_plot")
+                        .allow_zoom(true)
+                        .allow_drag(true)
+                        .show(ui, |plot_ui| {
+                            plot_ui.bar_chart(chart);
+                        });
+                });
+            });
+        });
+    }
+}

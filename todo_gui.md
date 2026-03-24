@@ -144,7 +144,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Features:**
     *   [x] **Prime Spiral:** Ulam spiral visualization.
     *   [x] **Factorization Tool:** Large number factorization and primality testing.
-    *   [ ] **Partition Function:** Calculator and visualization of integer partitions (Ferrers diagrams).
+    *   [x] **Partition Function:** Calculator and visualization of integer partitions (Ferrers diagrams).
 
 ### 5.3 Graph Theory
 *   **Module:** `pure_math::graph_theory`
