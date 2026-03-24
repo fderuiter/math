@@ -2,6 +2,7 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod factorization;
+pub mod partitions_widget;
 pub mod prime_spiral;
 pub mod ualbf_widget;
 
@@ -26,6 +27,7 @@ impl Default for NumberTheoryTab {
                 Box::new(prime_spiral::PrimeSpiralWidget::default()),
                 Box::new(ualbf_widget::UalbfWidget::default()),
                 Box::new(factorization::FactorizationTool::default()),
+                Box::new(partitions_widget::PartitionsWidget::default()),
             ],
             selected_tool_index: 0,
         }
