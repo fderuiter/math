@@ -3,6 +3,19 @@ use nalgebra::Vector3;
 
 const H: f64 = 1e-5;
 
+/// Computes the partial derivative of a scalar function `f` with respect to the
+/// `i`-th coordinate using a centered finite difference method.
+fn partial_derivative<F>(i: usize, point: &Vector3<f64>, f: F) -> f64
+where
+    F: Fn(&Vector3<f64>) -> f64,
+{
+    let mut p_plus = *point;
+    p_plus[i] += H;
+    let mut p_minus = *point;
+    p_minus[i] -= H;
+    (f(&p_plus) - f(&p_minus)) / (2.0 * H)
+}
+
 /// Computes the gradient of a scalar field $\nabla \Phi$.
 /// Returns the components of the gradient in the local basis vectors of the coordinate system.
 pub fn gradient<S, F>(coords: &S, field: F, point: &Vector3<f64>) -> Vector3<f64>
@@ -14,12 +27,7 @@ where
     let mut grad = Vector3::zeros();
 
     for i in 0..3 {
-        let mut p_plus = *point;
-        p_plus[i] += H;
-        let mut p_minus = *point;
-        p_minus[i] -= H;
-
-        let df = (field(&p_plus) - field(&p_minus)) / (2.0 * H);
+        let df = partial_derivative(i, point, &field);
         grad[i] = df / factors[i];
     }
 
@@ -38,46 +46,17 @@ where
 
     let mut sum = 0.0;
 
-    // Term 1: d/du1 (h2 h3 A1)
-    {
-        let term_func = |p: &Vector3<f64>| {
-            let h = coords.scale_factors(p);
-            let a = field(p);
-            h[1] * h[2] * a[0]
-        };
-        let mut p_plus = *point;
-        p_plus[0] += H;
-        let mut p_minus = *point;
-        p_minus[0] -= H;
-        sum += (term_func(&p_plus) - term_func(&p_minus)) / (2.0 * H);
-    }
+    for i in 0..3 {
+        let j = (i + 1) % 3;
+        let k = (i + 2) % 3;
 
-    // Term 2: d/du2 (h3 h1 A2)
-    {
         let term_func = |p: &Vector3<f64>| {
             let h = coords.scale_factors(p);
             let a = field(p);
-            h[2] * h[0] * a[1]
+            h[j] * h[k] * a[i]
         };
-        let mut p_plus = *point;
-        p_plus[1] += H;
-        let mut p_minus = *point;
-        p_minus[1] -= H;
-        sum += (term_func(&p_plus) - term_func(&p_minus)) / (2.0 * H);
-    }
 
-    // Term 3: d/du3 (h1 h2 A3)
-    {
-        let term_func = |p: &Vector3<f64>| {
-            let h = coords.scale_factors(p);
-            let a = field(p);
-            h[0] * h[1] * a[2]
-        };
-        let mut p_plus = *point;
-        p_plus[2] += H;
-        let mut p_minus = *point;
-        p_minus[2] -= H;
-        sum += (term_func(&p_plus) - term_func(&p_minus)) / (2.0 * H);
+        sum += partial_derivative(i, point, term_func);
     }
 
     if h1h2h3.abs() < 1e-12 {
@@ -95,68 +74,24 @@ where
     F: Fn(&Vector3<f64>) -> Vector3<f64>,
 {
     let h = coords.scale_factors(point);
-    // h1h2h3 cancels out with leading h factors in the determinant expansion
     let mut result = Vector3::zeros();
 
-    // Helper for d/dui (factor * component)
-    // We need d/du2 (h3 A3) - d/du3 (h2 A2)
+    for i in 0..3 {
+        let j = (i + 1) % 3;
+        let k = (i + 2) % 3;
 
-    // Component 1 (factor h1)
-    let term1_1 = {
-        let func = |p: &Vector3<f64>| coords.scale_factors(p)[2] * field(p)[2];
-        let mut p_plus = *point;
-        p_plus[1] += H;
-        let mut p_minus = *point;
-        p_minus[1] -= H;
-        (func(&p_plus) - func(&p_minus)) / (2.0 * H)
-    };
-    let term1_2 = {
-        let func = |p: &Vector3<f64>| coords.scale_factors(p)[1] * field(p)[1];
-        let mut p_plus = *point;
-        p_plus[2] += H;
-        let mut p_minus = *point;
-        p_minus[2] -= H;
-        (func(&p_plus) - func(&p_minus)) / (2.0 * H)
-    };
-    result[0] = (term1_1 - term1_2) / (h[1] * h[2]); // Formula: (1/h2h3) * (...) which is (h1 / h1h2h3) * (...)
+        let term_1 = {
+            let func = |p: &Vector3<f64>| coords.scale_factors(p)[k] * field(p)[k];
+            partial_derivative(j, point, func)
+        };
 
-    // Component 2 (factor h2)
-    let term2_1 = {
-        let func = |p: &Vector3<f64>| coords.scale_factors(p)[0] * field(p)[0];
-        let mut p_plus = *point;
-        p_plus[2] += H;
-        let mut p_minus = *point;
-        p_minus[2] -= H;
-        (func(&p_plus) - func(&p_minus)) / (2.0 * H)
-    };
-    let term2_2 = {
-        let func = |p: &Vector3<f64>| coords.scale_factors(p)[2] * field(p)[2];
-        let mut p_plus = *point;
-        p_plus[0] += H;
-        let mut p_minus = *point;
-        p_minus[0] -= H;
-        (func(&p_plus) - func(&p_minus)) / (2.0 * H)
-    };
-    result[1] = (term2_1 - term2_2) / (h[0] * h[2]);
+        let term_2 = {
+            let func = |p: &Vector3<f64>| coords.scale_factors(p)[j] * field(p)[j];
+            partial_derivative(k, point, func)
+        };
 
-    // Component 3 (factor h3)
-    let term3_1 = {
-        let func = |p: &Vector3<f64>| coords.scale_factors(p)[1] * field(p)[1];
-        let mut p_plus = *point;
-        p_plus[0] += H;
-        let mut p_minus = *point;
-        p_minus[0] -= H;
-        (func(&p_plus) - func(&p_minus)) / (2.0 * H)
-    };
-    let term3_2 = {
-        let func = |p: &Vector3<f64>| coords.scale_factors(p)[0] * field(p)[0];
-        let mut p_plus = *point;
-        p_plus[1] += H;
-        let mut p_minus = *point;
-        p_minus[1] -= H;
-        (func(&p_plus) - func(&p_minus)) / (2.0 * H)
-    };
-    result[2] = (term3_1 - term3_2) / (h[0] * h[1]);
+        result[i] = (term_1 - term_2) / (h[j] * h[k]);
+    }
 
     result
 }
@@ -172,62 +107,17 @@ where
 
     let mut sum = 0.0;
 
-    // Term 1: d/du1 ( (h2 h3 / h1) dPhi/du1 )
-    {
+    for i in 0..3 {
+        let j = (i + 1) % 3;
+        let k = (i + 2) % 3;
+
         let term_func = |p: &Vector3<f64>| {
             let h = coords.scale_factors(p);
-            // dPhi/du1
-            let mut p_plus = *p;
-            p_plus[0] += H;
-            let mut p_minus = *p;
-            p_minus[0] -= H;
-            let dphi = (field(&p_plus) - field(&p_minus)) / (2.0 * H);
-
-            (h[1] * h[2] / h[0]) * dphi
+            let dphi = partial_derivative(i, p, &field);
+            (h[j] * h[k] / h[i]) * dphi
         };
-        let mut p_plus = *point;
-        p_plus[0] += H;
-        let mut p_minus = *point;
-        p_minus[0] -= H;
-        sum += (term_func(&p_plus) - term_func(&p_minus)) / (2.0 * H);
-    }
 
-    // Term 2: d/du2 ( (h3 h1 / h2) dPhi/du2 )
-    {
-        let term_func = |p: &Vector3<f64>| {
-            let h = coords.scale_factors(p);
-            let mut p_plus = *p;
-            p_plus[1] += H;
-            let mut p_minus = *p;
-            p_minus[1] -= H;
-            let dphi = (field(&p_plus) - field(&p_minus)) / (2.0 * H);
-
-            (h[2] * h[0] / h[1]) * dphi
-        };
-        let mut p_plus = *point;
-        p_plus[1] += H;
-        let mut p_minus = *point;
-        p_minus[1] -= H;
-        sum += (term_func(&p_plus) - term_func(&p_minus)) / (2.0 * H);
-    }
-
-    // Term 3: d/du3 ( (h1 h2 / h3) dPhi/du3 )
-    {
-        let term_func = |p: &Vector3<f64>| {
-            let h = coords.scale_factors(p);
-            let mut p_plus = *p;
-            p_plus[2] += H;
-            let mut p_minus = *p;
-            p_minus[2] -= H;
-            let dphi = (field(&p_plus) - field(&p_minus)) / (2.0 * H);
-
-            (h[0] * h[1] / h[2]) * dphi
-        };
-        let mut p_plus = *point;
-        p_plus[2] += H;
-        let mut p_minus = *point;
-        p_minus[2] -= H;
-        sum += (term_func(&p_plus) - term_func(&p_minus)) / (2.0 * H);
+        sum += partial_derivative(i, point, term_func);
     }
 
     if h1h2h3.abs() < 1e-12 {
