@@ -136,7 +136,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `pure_math::analysis`
 *   **Features:**
     *   [ ] **ODE/PDE Solvers:** Generic solver interface where users can type equations (parsed or selected) and see solutions.
-    *   [ ] **Riemann Integration:** Visualization of area under curves with adjustable partition size.
+    *   [x] **Riemann Integration:** Visualization of area under curves with adjustable partition size.
     *   [ ] **Complex Mapping:** Conformal map visualizer (z-plane to w-plane grid transformation).
 
 ### 5.2 Number Theory

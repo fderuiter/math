@@ -1,7 +1,7 @@
-use eframe::egui;
-use math_explorer::pure_math::number_theory::partitions;
 use super::NumberTheoryTool;
-use egui_plot::{Plot, BarChart, Bar};
+use eframe::egui;
+use egui_plot::{Bar, BarChart, Plot};
+use math_explorer::pure_math::number_theory::partitions;
 
 #[derive(PartialEq, Clone, Copy)]
 enum PartitionFunctionType {
@@ -65,20 +65,55 @@ impl NumberTheoryTool for PartitionsWidget {
                     ui.set_min_width(200.0);
                     ui.heading("Configuration");
 
-                    ui.add(egui::Slider::new(&mut self.precision, 1..=200).text("Precision (max q power)"));
+                    ui.add(
+                        egui::Slider::new(&mut self.precision, 1..=200)
+                            .text("Precision (max q power)"),
+                    );
 
                     ui.separator();
                     ui.label("Select Partition Function:");
 
-                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::PStar, "P*(n)");
-                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::M, "M(n)");
-                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::TStar, "T*(n)");
-                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::A, "A(n)");
-                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::B, "B(n)");
-                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::K, "K(n)");
-                    ui.radio_value(&mut self.selected_function, PartitionFunctionType::L, "L(n)");
+                    ui.radio_value(
+                        &mut self.selected_function,
+                        PartitionFunctionType::PStar,
+                        "P*(n)",
+                    );
+                    ui.radio_value(
+                        &mut self.selected_function,
+                        PartitionFunctionType::M,
+                        "M(n)",
+                    );
+                    ui.radio_value(
+                        &mut self.selected_function,
+                        PartitionFunctionType::TStar,
+                        "T*(n)",
+                    );
+                    ui.radio_value(
+                        &mut self.selected_function,
+                        PartitionFunctionType::A,
+                        "A(n)",
+                    );
+                    ui.radio_value(
+                        &mut self.selected_function,
+                        PartitionFunctionType::B,
+                        "B(n)",
+                    );
+                    ui.radio_value(
+                        &mut self.selected_function,
+                        PartitionFunctionType::K,
+                        "K(n)",
+                    );
+                    ui.radio_value(
+                        &mut self.selected_function,
+                        PartitionFunctionType::L,
+                        "L(n)",
+                    );
                     ui.horizontal(|ui| {
-                        ui.radio_value(&mut self.selected_function, PartitionFunctionType::FK, "f_k(n)");
+                        ui.radio_value(
+                            &mut self.selected_function,
+                            PartitionFunctionType::FK,
+                            "f_k(n)",
+                        );
                         if self.selected_function == PartitionFunctionType::FK {
                             ui.add(egui::DragValue::new(&mut self.f_k_val).range(1..=100));
                             ui.label("k");
@@ -94,11 +129,13 @@ impl NumberTheoryTool for PartitionsWidget {
                     if !self.coeffs.is_empty() {
                         ui.separator();
                         ui.label("Calculated Coefficients:");
-                        egui::ScrollArea::vertical().max_height(300.0).show(ui, |ui| {
-                            for (n, coeff) in self.coeffs.iter().enumerate() {
-                                ui.label(format!("n = {}: {}", n, coeff));
-                            }
-                        });
+                        egui::ScrollArea::vertical()
+                            .max_height(300.0)
+                            .show(ui, |ui| {
+                                for (n, coeff) in self.coeffs.iter().enumerate() {
+                                    ui.label(format!("n = {}: {}", n, coeff));
+                                }
+                            });
                     }
                 });
 
@@ -109,13 +146,18 @@ impl NumberTheoryTool for PartitionsWidget {
                     ui.label("Bar chart of coefficients for the selected generating function.");
 
                     if self.coeffs.is_empty() {
-                        ui.label("Click 'Calculate' to generate the Q-series and display the plot.");
+                        ui.label(
+                            "Click 'Calculate' to generate the Q-series and display the plot.",
+                        );
                         return;
                     }
 
-                    let bars: Vec<Bar> = self.coeffs.iter().enumerate().map(|(n, &coeff)| {
-                        Bar::new(n as f64, coeff as f64).width(0.8)
-                    }).collect();
+                    let bars: Vec<Bar> = self
+                        .coeffs
+                        .iter()
+                        .enumerate()
+                        .map(|(n, &coeff)| Bar::new(n as f64, coeff as f64).width(0.8))
+                        .collect();
 
                     let chart = BarChart::new("Coefficients", bars).name("Coefficients");
 
