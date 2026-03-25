@@ -1,3 +1,5 @@
-- Create a `thiserror` based `AmbsError` enum in `math_explorer/src/pure_math/number_theory/ambs.rs` and update functions to return `Result`.
-- Fix `unwrap()` in `math_explorer/src/biology/morphogenesis/solvers.rs`.
-- We'll then use `?` syntax.
+1. **Goal**: Add a missing `# Panics` section for the `Simplex::faces` method in `math_explorer/src/pure_math/statistics/tda/core.rs`.
+2. **Context**: The method `faces` removes one vertex at a time and calls `Simplex::new(face_vertices).unwrap()`. The inline comment states `// unwrap is safe because we know vertices are valid`, but `unwrap()` on a `Result` causes `clippy::missing_panics_doc` to warn about missing `# Panics` documentation.
+3. **Change**: Add a `# Panics` documentation section above `pub fn faces(&self) -> Vec<Simplex>` in `math_explorer/src/pure_math/statistics/tda/core.rs` explaining why it is conceptually impossible for the method to actually panic (since we only construct faces from a valid simplex, length is strictly > 0 due to early return for 1-vertex, and properties like uniqueness and sortedness are inherited).
+4. **Pre-commit Checks**: Run `cargo clippy`, `cargo test --doc`, and `cargo doc --no-deps`.
+5. **Submit**: Present the PR with the required structured summary format.
