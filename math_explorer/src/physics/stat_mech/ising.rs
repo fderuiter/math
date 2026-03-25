@@ -35,12 +35,13 @@ use rand::Rng;
 /// let temp = 1.0 * j_coupling / KB;
 ///
 /// // 3. Initialize Lattice
-/// let mut lattice = SpinLattice::new(width, height);
+/// let mut rng = rand::thread_rng();
+/// let mut lattice = SpinLattice::new(width, height, &mut rng);
 ///
 /// // 4. Run Metropolis Simulation to reach equilibrium
 /// // Note: This is a probabilistic process. We use enough steps to overcome
 /// // initial disorder and potential metastable states.
-/// lattice.evolve(500_000, temp, j_coupling, h_field);
+/// lattice.evolve(500_000, temp, j_coupling, h_field, &mut rng);
 ///
 /// // 5. Check Magnetization
 /// // At low temp, spins align. M should be close to max_m or -max_m.
@@ -72,8 +73,7 @@ impl SpinLattice {
     }
 
     /// Creates a new random spin lattice.
-    pub fn new(width: usize, height: usize) -> Self {
-        let mut rng = rand::thread_rng();
+    pub fn new<R: Rng + ?Sized>(width: usize, height: usize, rng: &mut R) -> Self {
         let count = width * height;
         let spins = (0..count)
             .map(|_| if rng.gen_bool(0.5) { 1 } else { -1 })
@@ -170,8 +170,13 @@ impl SpinLattice {
     /// 1. Select a random site.
     /// 2. Calculate energy cost to flip Delta E.
     /// 3. Accept flip if Delta E < 0 OR with probability e^(-beta * Delta E).
-    pub fn metropolis_step(&mut self, temperature: f64, j_coupling: f64, h_field: f64) {
-        let mut rng = rand::thread_rng();
+    pub fn metropolis_step<R: Rng + ?Sized>(
+        &mut self,
+        temperature: f64,
+        j_coupling: f64,
+        h_field: f64,
+        rng: &mut R,
+    ) {
         let x = rng.gen_range(0..self.width);
         let y = rng.gen_range(0..self.height);
 
@@ -213,12 +218,18 @@ impl SpinLattice {
     /// 1. It precomputes Boltzmann factors (`exp(-beta * dE)`) into a lookup table.
     /// 2. It reuses the random number generator, avoiding TLS overhead.
     /// 3. It precomputes neighbor indices to avoid coordinate arithmetic in the loop.
-    pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
+    pub fn evolve<R: Rng + ?Sized>(
+        &mut self,
+        steps: usize,
+        temperature: f64,
+        j_coupling: f64,
+        h_field: f64,
+        rng: &mut R,
+    ) {
         if steps == 0 || self.spins.is_empty() {
             return;
         }
 
-        let mut rng = rand::thread_rng();
         let beta = 1.0 / (KB * temperature);
 
         // Precompute probabilities: lut[s_idx][sum_idx]
@@ -288,12 +299,13 @@ mod tests {
 
         let width = 20;
         let height = 20;
-        let mut lattice = SpinLattice::new(width, height);
+        let mut rng = rand::thread_rng();
+        let mut lattice = SpinLattice::new(width, height, &mut rng);
 
         // Run many steps to equilibrate
         let steps = 10_000;
         for _ in 0..steps {
-            lattice.metropolis_step(t_high, j_val, h_val);
+            lattice.metropolis_step(t_high, j_val, h_val, &mut rng);
         }
 
         let m = lattice.magnetization();

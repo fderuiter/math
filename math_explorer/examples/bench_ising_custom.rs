@@ -18,10 +18,11 @@ fn main() {
     );
 
     // --- Before: metropolis_step loop ---
-    let mut lattice = SpinLattice::new(width, height);
+    let mut rng = rand::thread_rng();
+    let mut lattice = SpinLattice::new(width, height, &mut rng);
     let start = Instant::now();
     for _ in 0..iterations {
-        lattice.metropolis_step(temp, j_coupling, h_field);
+        lattice.metropolis_step(temp, j_coupling, h_field, &mut rng);
     }
     let duration = start.elapsed();
     let old_speed = (iterations as f64 / duration.as_secs_f64()) / 1_000_000.0;
@@ -32,9 +33,10 @@ fn main() {
     );
 
     // --- After: evolve batch ---
-    let mut lattice = SpinLattice::new(width, height);
+    let mut rng = rand::thread_rng();
+    let mut lattice = SpinLattice::new(width, height, &mut rng);
     let start = Instant::now();
-    lattice.evolve(iterations, temp, j_coupling, h_field);
+    lattice.evolve(iterations, temp, j_coupling, h_field, &mut rng);
     let duration = start.elapsed();
     let new_speed = (iterations as f64 / duration.as_secs_f64()) / 1_000_000.0;
     println!(

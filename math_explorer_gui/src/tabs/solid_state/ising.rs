@@ -15,8 +15,9 @@ pub struct IsingModelTool {
 
 impl Default for IsingModelTool {
     fn default() -> Self {
+        let mut rng = rand::thread_rng();
         Self {
-            lattice: SpinLattice::new(100, 100),
+            lattice: SpinLattice::new(100, 100, &mut rng),
             temperature: 2.269, // Near Critical Temp for J=1
             j_coupling: 1.0,
             h_field: 0.0,
@@ -73,7 +74,8 @@ impl SolidStateTool for IsingModelTool {
                     }
 
                     if ui.button("Reset").clicked() {
-                        self.lattice = SpinLattice::new(100, 100);
+                        let mut rng = rand::thread_rng();
+                        self.lattice = SpinLattice::new(100, 100, &mut rng);
                         self.texture = None; // Force texture recreation
                     }
                 });
@@ -114,8 +116,14 @@ impl SolidStateTool for IsingModelTool {
             };
             let t_phys = self.temperature * j_scale / KB;
 
-            self.lattice
-                .evolve(self.steps_per_frame, t_phys, self.j_coupling, self.h_field);
+            let mut rng = rand::thread_rng();
+            self.lattice.evolve(
+                self.steps_per_frame,
+                t_phys,
+                self.j_coupling,
+                self.h_field,
+                &mut rng,
+            );
             ctx.request_repaint();
         }
 
