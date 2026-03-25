@@ -155,6 +155,29 @@ impl Simplex {
     ///
     /// For an edge `[0,1]`, the faces are vertices `[0]` and `[1]`.
     /// For a triangle `[0,1,2]`, the faces are edges `[0,1]`, `[0,2]`, `[1,2]`.
+    ///
+    /// # Panics
+    ///
+    /// This method will conceptually never panic. The internal `unwrap()` on `Simplex::new`
+    /// relies on two invariants guaranteed by the struct's definition:
+    /// 1. The vertices of the newly constructed face will never be empty because `faces()`
+    ///    returns early for a 0-simplex (1 vertex).
+    /// 2. The vertices of the original `Simplex` are already unique and sorted, so removing
+    ///    a single vertex inherently preserves uniqueness and sortedness.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use math_explorer::pure_math::statistics::tda::Simplex;
+    ///
+    /// let triangle = Simplex::new(vec![0, 1, 2]).unwrap();
+    /// let faces = triangle.faces();
+    ///
+    /// assert_eq!(faces.len(), 3);
+    /// assert!(faces.contains(&Simplex::new(vec![0, 1]).unwrap()));
+    /// assert!(faces.contains(&Simplex::new(vec![0, 2]).unwrap()));
+    /// assert!(faces.contains(&Simplex::new(vec![1, 2]).unwrap()));
+    /// ```
     pub fn faces(&self) -> Vec<Simplex> {
         if self.vertices.len() == 1 {
             return vec![]; // 0-simplex has no faces
