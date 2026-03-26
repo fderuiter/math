@@ -1,6 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod ode;
 pub mod riemann;
 
 /// A trait for sub-tools within the Analysis & Calculus tab.
@@ -20,7 +21,10 @@ pub struct AnalysisTab {
 impl Default for AnalysisTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(riemann::RiemannIntegrationTool::default())],
+            tools: vec![
+                Box::new(riemann::RiemannIntegrationTool::default()),
+                Box::new(ode::OdeSolverTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
