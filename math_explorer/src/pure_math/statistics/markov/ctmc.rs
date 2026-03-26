@@ -13,8 +13,8 @@ use num_traits::ToPrimitive;
 ///
 /// A continuous-time Markov chain (CTMC) is characterized by a generator matrix G
 /// (also called rate matrix or infinitesimal generator) where:
-/// - G[i,j] for i ≠ j: the rate of transition from state i to state j
-/// - G[i,i] = -Σⱼ≠ᵢ G[i,j]: chosen so each row sums to 0
+/// - G\[i,j\] for i ≠ j: the rate of transition from state i to state j
+/// - G\[i,i\] = -Σⱼ≠ᵢ G\[i,j\]: chosen so each row sums to 0
 ///
 /// The transition probability matrix over time t is:
 /// P(t) = exp(Gt) = Σₖ₌₀^∞ (Gt)^k / k!
@@ -278,6 +278,11 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     /// # Returns
     ///
     /// The steady-state distribution if it exists and converges, or None otherwise.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if `T::from_f64` fails when attempting to cast
+    /// numeric constants (e.g., tolerances or exponents) to the generic type `T`.
     pub fn steady_state(&self) -> Option<DVector<T>> {
         // For irreducible CTMCs, we can find the steady state by computing
         // the null space of G^T and normalizing.
@@ -373,8 +378,34 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     /// # Algorithm
     ///
     /// Uses the Gillespie algorithm:
-    /// 1. In state i, the holding time is Exponential(-G[i,i])
-    /// 2. Next state is chosen with probabilities G[i,j] / (-G[i,i])
+    /// 1. In state i, the holding time is Exponential(-G\[i,i\])
+    /// 2. Next state is chosen with probabilities G\[i,j\] / (-G\[i,i\])
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if `T::from_f64` fails when casting time values
+    /// or small numerical tolerances into the generic real field `T`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use math_explorer::pure_math::statistics::markov::ContinuousMarkovChain;
+    /// use nalgebra::DMatrix;
+    /// use rand::SeedableRng;
+    /// use rand::rngs::StdRng;
+    ///
+    /// // A simple 2-state Birth-Death process
+    /// let generator = DMatrix::from_row_slice(2, 2, &[
+    ///     -1.0,  1.0,
+    ///      2.0, -2.0
+    /// ]);
+    /// let chain = ContinuousMarkovChain::new(generator).unwrap();
+    /// let mut rng = StdRng::seed_from_u64(42);
+    ///
+    /// let trajectory = chain.simulate_trajectory(0, 10.0, &mut rng).unwrap();
+    /// assert!(!trajectory.is_empty());
+    /// assert_eq!(trajectory[0], (0.0, 0));
+    /// ```
     pub fn simulate_trajectory<R: rand::Rng>(
         &self,
         initial_state: usize,
