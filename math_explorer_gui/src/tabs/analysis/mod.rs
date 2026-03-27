@@ -1,6 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod complex_mapping;
 pub mod ode;
 pub mod riemann;
 
@@ -24,6 +25,7 @@ impl Default for AnalysisTab {
             tools: vec![
                 Box::new(riemann::RiemannIntegrationTool::default()),
                 Box::new(ode::OdeSolverTool::default()),
+                Box::new(complex_mapping::ComplexMappingTool::default()),
             ],
             selected_tool_index: 0,
         }
