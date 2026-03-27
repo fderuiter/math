@@ -132,12 +132,12 @@ This document outlines the roadmap for integrating the various modules of the `m
 
 ## 5. Pure Mathematics
 
-### 5.1 Analysis & Calculus
+### 5.1 Analysis & Calculus - **[Implemented]**
 *   **Module:** `pure_math::analysis`
 *   **Features:**
     *   [x] **ODE/PDE Solvers:** Generic solver interface where users can type equations (parsed or selected) and see solutions.
     *   [x] **Riemann Integration:** Visualization of area under curves with adjustable partition size.
-    *   [ ] **Complex Mapping:** Conformal map visualizer (z-plane to w-plane grid transformation).
+    *   [x] **Complex Mapping:** Conformal map visualizer (z-plane to w-plane grid transformation).
 
 ### 5.2 Number Theory
 *   **Module:** `pure_math::number_theory`
