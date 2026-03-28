@@ -10,6 +10,7 @@ pub mod favoritism;
 pub mod financial_math;
 pub mod fluid_dynamics;
 pub mod game_theory;
+pub mod graph_theory;
 pub mod medical;
 pub mod morphogenesis;
 pub mod mri;
