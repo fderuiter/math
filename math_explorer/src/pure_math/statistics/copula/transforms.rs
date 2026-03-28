@@ -4,7 +4,7 @@ use super::core::Probability;
 use super::error::CopulaError;
 use statrs::distribution::{ContinuousCDF, Normal};
 
-/// Transforms a value from its original distribution to a uniform [0,1] distribution.
+/// Transforms a value from its original distribution to a uniform \[0,1\] distribution.
 ///
 /// This implements the **Probability Integral Transform**:
 /// U = F(X)
@@ -83,7 +83,7 @@ impl ProbabilityTransform for NormalTransform {
 
 /// Inverse standard normal CDF (Φ⁻¹).
 ///
-/// Maps a uniform probability u ∈ [0,1] to a z-score in N(0,1).
+/// Maps a uniform probability u ∈ \[0,1\] to a z-score in N(0,1).
 ///
 /// # Arguments
 ///

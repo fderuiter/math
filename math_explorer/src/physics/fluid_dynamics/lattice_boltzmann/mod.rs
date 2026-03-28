@@ -99,6 +99,32 @@ impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
 }
 
 /// Generic Lattice Boltzmann Solver.
+///
+/// Implements the discrete streaming and collision steps to simulate fluid dynamics.
+///
+/// # Examples
+///
+/// ```rust
+/// use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{LatticeBoltzmannD2Q9, BgkCollision};
+///
+/// // Create a 20x10 lattice with a relaxation time (tau) of 1.0.
+/// // Tau determines the kinematic viscosity: nu = (tau - 0.5) / 3.
+/// let mut solver = LatticeBoltzmannD2Q9::new(20, 10, 1.0);
+///
+/// // Set an obstacle at coordinates (10, 5)
+/// solver.set_obstacle(10, 5, true);
+///
+/// // Set a continuous inlet velocity on the left edge (x=0)
+/// solver.set_inlet(0, 4, 1, 2, 0.1, 0.0);
+///
+/// // Perform a single simulation step
+/// solver.step();
+///
+/// // Velocity inside an obstacle is strictly enforced to 0.0
+/// let (ux, uy) = solver.get_velocity(10, 5);
+/// assert_eq!(ux, 0.0);
+/// assert_eq!(uy, 0.0);
+/// ```
 pub struct LatticeBoltzmann<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> {
     /// The simulation state (grids, obstacles).
     pub state: LatticeState<Q>,

@@ -38,10 +38,10 @@ impl PhaseUnwrapper {
     /// Processes a new complex sample to update displacement.
     ///
     /// Steps:
-    /// 1. Extract Phase ($\phi[n]$).
+    /// 1. Extract Phase ($\phi\[n\]$).
     /// 2. Calculate Differential Phase ($\Delta \phi$).
     /// 3. Unwrap Phase (Handle aliasing).
-    /// 4. Update Accumulated Displacement ($D[n]$).
+    /// 4. Update Accumulated Displacement ($D\[n\]$).
     ///
     /// # Arguments
     ///
