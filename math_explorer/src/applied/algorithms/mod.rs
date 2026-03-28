@@ -40,7 +40,7 @@
 //!     measurement_noise: f64,
 //! }
 //!
-//! impl KalmanModel for ConstantVelocityModel {
+//! impl KalmanModel<f64> for ConstantVelocityModel {
 //!     fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
 //!         // State = [pos, vel]
 //!         // pos_k = pos_{k-1} + vel_{k-1} * dt
