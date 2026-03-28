@@ -149,7 +149,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 ### 5.3 Graph Theory
 *   **Module:** `pure_math::graph_theory`
 *   **Features:**
-    *   [ ] **Graph Editor:** Add/remove nodes and edges interactively.
+    *   [x] **Graph Editor:** Add/remove nodes and edges interactively.
     *   [ ] **Algorithm visualizer:** Step-by-step animation of Dijkstra, BFS, DFS.
     *   [ ] **Network Metrics:** Calculate centrality, diameter, and clustering coefficients.
 

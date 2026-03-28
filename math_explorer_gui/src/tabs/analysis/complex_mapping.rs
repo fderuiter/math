@@ -156,34 +156,38 @@ impl AnalysisTool for ComplexMappingTool {
                     .show(&mut columns[0], |plot_ui| {
                         // Draw grid lines
                         if self.grid_max > self.grid_min && self.grid_density > 1 {
-                            let step = (self.grid_max - self.grid_min) / (self.grid_density as f64 - 1.0);
+                            let step =
+                                (self.grid_max - self.grid_min) / (self.grid_density as f64 - 1.0);
 
                             // Vertical lines (constant x)
                             for i in 0..self.grid_density {
                                 let x = self.grid_min + (i as f64) * step;
-                                let points = vec![
-                                    [x, self.grid_min],
-                                    [x, self.grid_max],
-                                ];
-                                plot_ui.line(Line::new("", PlotPoints::new(points)).color(egui::Color32::from_rgb(100, 150, 250)));
+                                let points = vec![[x, self.grid_min], [x, self.grid_max]];
+                                plot_ui.line(
+                                    Line::new("", PlotPoints::new(points))
+                                        .color(egui::Color32::from_rgb(100, 150, 250)),
+                                );
                             }
 
                             // Horizontal lines (constant y)
                             for i in 0..self.grid_density {
                                 let y = self.grid_min + (i as f64) * step;
-                                let points = vec![
-                                    [self.grid_min, y],
-                                    [self.grid_max, y],
-                                ];
-                                plot_ui.line(Line::new("", PlotPoints::new(points)).color(egui::Color32::from_rgb(250, 150, 100)));
+                                let points = vec![[self.grid_min, y], [self.grid_max, y]];
+                                plot_ui.line(
+                                    Line::new("", PlotPoints::new(points))
+                                        .color(egui::Color32::from_rgb(250, 150, 100)),
+                                );
                             }
                         }
 
                         // Inspection point
                         plot_ui.points(
-                            egui_plot::Points::new("", PlotPoints::new(vec![self.inspection_point]))
-                                .color(egui::Color32::RED)
-                                .radius(5.0),
+                            egui_plot::Points::new(
+                                "",
+                                PlotPoints::new(vec![self.inspection_point]),
+                            )
+                            .color(egui::Color32::RED)
+                            .radius(5.0),
                         );
                     });
 
@@ -194,7 +198,8 @@ impl AnalysisTool for ComplexMappingTool {
                     .y_axis_label("Im(w)")
                     .show(&mut columns[1], |plot_ui| {
                         if self.grid_max > self.grid_min && self.grid_density > 1 {
-                            let step = (self.grid_max - self.grid_min) / (self.grid_density as f64 - 1.0);
+                            let step =
+                                (self.grid_max - self.grid_min) / (self.grid_density as f64 - 1.0);
                             let resolution = 50; // points per line
 
                             // Map vertical lines (constant x)
@@ -202,12 +207,17 @@ impl AnalysisTool for ComplexMappingTool {
                                 let x = self.grid_min + (i as f64) * step;
                                 let mut points = Vec::with_capacity(resolution);
                                 for j in 0..resolution {
-                                    let y = self.grid_min + (self.grid_max - self.grid_min) * (j as f64) / (resolution as f64 - 1.0);
+                                    let y = self.grid_min
+                                        + (self.grid_max - self.grid_min) * (j as f64)
+                                            / (resolution as f64 - 1.0);
                                     let z = Complex64::new(x, y);
                                     let w = self.function.evaluate(z);
                                     points.push([w.re, w.im]);
                                 }
-                                plot_ui.line(Line::new("", PlotPoints::new(points)).color(egui::Color32::from_rgb(100, 150, 250)));
+                                plot_ui.line(
+                                    Line::new("", PlotPoints::new(points))
+                                        .color(egui::Color32::from_rgb(100, 150, 250)),
+                                );
                             }
 
                             // Map horizontal lines (constant y)
@@ -215,12 +225,17 @@ impl AnalysisTool for ComplexMappingTool {
                                 let y = self.grid_min + (i as f64) * step;
                                 let mut points = Vec::with_capacity(resolution);
                                 for j in 0..resolution {
-                                    let x = self.grid_min + (self.grid_max - self.grid_min) * (j as f64) / (resolution as f64 - 1.0);
+                                    let x = self.grid_min
+                                        + (self.grid_max - self.grid_min) * (j as f64)
+                                            / (resolution as f64 - 1.0);
                                     let z = Complex64::new(x, y);
                                     let w = self.function.evaluate(z);
                                     points.push([w.re, w.im]);
                                 }
-                                plot_ui.line(Line::new("", PlotPoints::new(points)).color(egui::Color32::from_rgb(250, 150, 100)));
+                                plot_ui.line(
+                                    Line::new("", PlotPoints::new(points))
+                                        .color(egui::Color32::from_rgb(250, 150, 100)),
+                                );
                             }
                         }
 

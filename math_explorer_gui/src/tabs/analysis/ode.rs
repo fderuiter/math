@@ -347,8 +347,8 @@ impl AnalysisTool for OdeSolverTool {
                 }
             }
 
-            let line_y = Line::new("y(t)", PlotPoints::new(plot_points_y))
-                .color(egui::Color32::LIGHT_BLUE);
+            let line_y =
+                Line::new("y(t)", PlotPoints::new(plot_points_y)).color(egui::Color32::LIGHT_BLUE);
 
             Plot::new("ode_plot")
                 .view_aspect(2.0)

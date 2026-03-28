@@ -10,3 +10,4 @@ nalgebra = "0.34.0"
 math_explorer = { path = "../math_explorer" }
 num-complex = "0.4.6"
 rand = "0.8.5"
+petgraph = "0.6.5"
