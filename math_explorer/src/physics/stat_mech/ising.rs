@@ -181,7 +181,13 @@ impl SpinLattice {
     }
 
     /// Performs one Metropolis algorithm step using the provided RNG.
-    pub fn metropolis_step_with_rng<R: Rng + ?Sized>(&mut self, temperature: f64, j_coupling: f64, h_field: f64, rng: &mut R) {
+    pub fn metropolis_step_with_rng<R: Rng + ?Sized>(
+        &mut self,
+        temperature: f64,
+        j_coupling: f64,
+        h_field: f64,
+        rng: &mut R,
+    ) {
         let x = rng.gen_range(0..self.width);
         let y = rng.gen_range(0..self.height);
 
@@ -229,7 +235,14 @@ impl SpinLattice {
     }
 
     /// Performs multiple Metropolis steps efficiently using the provided RNG.
-    pub fn evolve_with_rng<R: Rng + ?Sized>(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64, rng: &mut R) {
+    pub fn evolve_with_rng<R: Rng + ?Sized>(
+        &mut self,
+        steps: usize,
+        temperature: f64,
+        j_coupling: f64,
+        h_field: f64,
+        rng: &mut R,
+    ) {
         if steps == 0 || self.spins.is_empty() {
             return;
         }
