@@ -74,6 +74,11 @@ impl SpinLattice {
     /// Creates a new random spin lattice.
     pub fn new(width: usize, height: usize) -> Self {
         let mut rng = rand::thread_rng();
+        Self::new_with_rng(width, height, &mut rng)
+    }
+
+    /// Creates a new random spin lattice using the provided RNG.
+    pub fn new_with_rng<R: Rng + ?Sized>(width: usize, height: usize, rng: &mut R) -> Self {
         let count = width * height;
         let spins = (0..count)
             .map(|_| if rng.gen_bool(0.5) { 1 } else { -1 })
@@ -172,6 +177,11 @@ impl SpinLattice {
     /// 3. Accept flip if Delta E < 0 OR with probability e^(-beta * Delta E).
     pub fn metropolis_step(&mut self, temperature: f64, j_coupling: f64, h_field: f64) {
         let mut rng = rand::thread_rng();
+        self.metropolis_step_with_rng(temperature, j_coupling, h_field, &mut rng)
+    }
+
+    /// Performs one Metropolis algorithm step using the provided RNG.
+    pub fn metropolis_step_with_rng<R: Rng + ?Sized>(&mut self, temperature: f64, j_coupling: f64, h_field: f64, rng: &mut R) {
         let x = rng.gen_range(0..self.width);
         let y = rng.gen_range(0..self.height);
 
@@ -214,11 +224,16 @@ impl SpinLattice {
     /// 2. It reuses the random number generator, avoiding TLS overhead.
     /// 3. It precomputes neighbor indices to avoid coordinate arithmetic in the loop.
     pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
+        let mut rng = rand::thread_rng();
+        self.evolve_with_rng(steps, temperature, j_coupling, h_field, &mut rng)
+    }
+
+    /// Performs multiple Metropolis steps efficiently using the provided RNG.
+    pub fn evolve_with_rng<R: Rng + ?Sized>(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64, rng: &mut R) {
         if steps == 0 || self.spins.is_empty() {
             return;
         }
 
-        let mut rng = rand::thread_rng();
         let beta = 1.0 / (KB * temperature);
 
         // Precompute probabilities: lut[s_idx][sum_idx]
@@ -274,6 +289,8 @@ impl SpinLattice {
 mod tests {
     use super::*;
     use crate::physics::stat_mech::KB;
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn test_ising_disordered() {
@@ -288,12 +305,13 @@ mod tests {
 
         let width = 20;
         let height = 20;
-        let mut lattice = SpinLattice::new(width, height);
+        let mut rng = StdRng::seed_from_u64(42);
+        let mut lattice = SpinLattice::new_with_rng(width, height, &mut rng);
 
         // Run many steps to equilibrate
         let steps = 10_000;
         for _ in 0..steps {
-            lattice.metropolis_step(t_high, j_val, h_val);
+            lattice.metropolis_step_with_rng(t_high, j_val, h_val, &mut rng);
         }
 
         let m = lattice.magnetization();
