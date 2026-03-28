@@ -23,7 +23,7 @@
 //!
 //! ### Step 1: Probability Integral Transform
 //!
-//! Transform each variable to a uniform [0,1] distribution:
+//! Transform each variable to a uniform \[0,1\] distribution:
 //! ```text
 //! U = F(X)
 //! ```
