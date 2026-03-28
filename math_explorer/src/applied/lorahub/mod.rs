@@ -48,7 +48,6 @@
 //! ```rust
 //! use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
 //! use nalgebra::DMatrix;
-//! use std::collections::HashMap;
 //!
 //! // 1. Create Dummy LoRA Modules (usually loaded from disk)
 //! let mut lora_1 = LoraStateDict::new();
@@ -69,7 +68,7 @@
 //! let result = ensemble.combine(&weights).expect("Combination failed");
 //!
 //! // 5. Verify: 0.5 * 1.0 + 0.5 * 2.0 = 1.5
-//! let combined_matrix = &result["layer1.weight"];
+//! let combined_matrix = result.get("layer1.weight").unwrap();
 //! assert!((combined_matrix[(0, 0)] - 1.5).abs() < 1e-6);
 //! println!("Combined Matrix Element: {:.2}", combined_matrix[(0, 0)]);
 //! ```
