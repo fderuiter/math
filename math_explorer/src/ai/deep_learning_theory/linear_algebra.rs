@@ -46,14 +46,25 @@ pub struct DenseLayer {
 
 impl DenseLayer {
     /// Creates a new dense layer with random initialization.
+    ///
+    /// This method uses the default thread-local RNG.
     pub fn new(input_dim: usize, output_dim: usize) -> Self {
         let mut rng = rand::thread_rng();
+        Self::new_with_rng(input_dim, output_dim, &mut rng)
+    }
+
+    /// Creates a new dense layer with random initialization using the provided RNG.
+    pub fn new_with_rng<R: rand::Rng + ?Sized>(
+        input_dim: usize,
+        output_dim: usize,
+        rng: &mut R,
+    ) -> Self {
         // He initialization or simple uniform can be used.
         // Using Uniform(-0.1, 0.1) for simplicity in this theory module.
         let dist = Uniform::new(-0.1, 0.1);
 
-        let weights = DMatrix::from_fn(output_dim, input_dim, |_, _| dist.sample(&mut rng));
-        let bias = DVector::from_fn(output_dim, |_, _| dist.sample(&mut rng));
+        let weights = DMatrix::from_fn(output_dim, input_dim, |_, _| dist.sample(rng));
+        let bias = DVector::from_fn(output_dim, |_, _| dist.sample(rng));
 
         Self { weights, bias }
     }
