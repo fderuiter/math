@@ -1,6 +1,7 @@
-//! Strong types for battery degradation modeling.
-//!
-//! These types ensure physical validity of parameters (e.g., depth of discharge cannot be negative).
+use super::error::BatteryError;
+// Strong types for battery degradation modeling.
+//
+// These types ensure physical validity of parameters (e.g., depth of discharge cannot be negative).
 
 use std::fmt;
 
@@ -11,17 +12,14 @@ pub struct DepthOfDischarge(f64);
 impl DepthOfDischarge {
     /// Creates a new `DepthOfDischarge`.
     ///
-    /// # Panics
+    /// # Errors
     ///
-    /// Panics if `value` is not between 0.0 and 100.0 inclusive.
-    pub fn new(value: f64) -> Self {
+    /// Returns `BatteryError::InvalidDepthOfDischarge` if `value` is not between 0.0 and 100.0 inclusive.
+    pub fn new(value: f64) -> Result<Self, BatteryError> {
         if !(0.0..=100.0).contains(&value) {
-            panic!(
-                "DepthOfDischarge must be between 0.0 and 100.0, got {}",
-                value
-            );
+            return Err(BatteryError::InvalidDepthOfDischarge(value));
         }
-        Self(value)
+        Ok(Self(value))
     }
 
     /// Returns the value as a f64.
@@ -43,14 +41,14 @@ pub struct Capacity(f64);
 impl Capacity {
     /// Creates a new `Capacity`.
     ///
-    /// # Panics
+    /// # Errors
     ///
-    /// Panics if `value` is not between 0.0 and 1.0 inclusive.
-    pub fn new(value: f64) -> Self {
+    /// Returns `BatteryError::InvalidCapacity` if `value` is not between 0.0 and 1.0 inclusive.
+    pub fn new(value: f64) -> Result<Self, BatteryError> {
         if !(0.0..=1.0).contains(&value) {
-            panic!("Capacity must be between 0.0 and 1.0, got {}", value);
+            return Err(BatteryError::InvalidCapacity(value));
         }
-        Self(value)
+        Ok(Self(value))
     }
 
     /// Returns the value as a f64.
@@ -72,14 +70,14 @@ pub struct Cycles(f64);
 impl Cycles {
     /// Creates a new `Cycles`.
     ///
-    /// # Panics
+    /// # Errors
     ///
-    /// Panics if `value` is negative.
-    pub fn new(value: f64) -> Self {
+    /// Returns `BatteryError::NegativeCycles` if `value` is negative.
+    pub fn new(value: f64) -> Result<Self, BatteryError> {
         if value < 0.0 {
-            panic!("Cycles cannot be negative, got {}", value);
+            return Err(BatteryError::NegativeCycles(value));
         }
-        Self(value)
+        Ok(Self(value))
     }
 
     /// Returns the value as a f64.
