@@ -50,7 +50,8 @@ mod tests {
         let standard = PowerLawModel::standard();
         // alpha * d^beta. Doubling alpha should double cycles if beta stays same
         let improved = PowerLawModel::new(
-            standard.n70(DepthOfDischarge::new(100.0).unwrap()).as_f64() * 2.0 / 100.0_f64.powf(-1.2639),
+            standard.n70(DepthOfDischarge::new(100.0).unwrap()).as_f64() * 2.0
+                / 100.0_f64.powf(-1.2639),
             -1.2639,
         );
 

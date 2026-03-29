@@ -43,8 +43,8 @@
 //! - [`model`]: Core logic including the `PowerLawModel` struct.
 //! - [`types`]: Type-safe wrappers for `Capacity`, `Cycles`, and `DepthOfDischarge`.
 
-pub mod model;
 pub mod error;
+pub mod model;
 pub mod types;
 
 pub use model::PowerLawModel;
@@ -79,7 +79,10 @@ pub fn capacity(n: f64, d: f64) -> f64 {
     let n_clamped = n.max(0.0);
     PowerLawModel::standard()
         // SAFETY: n and d are explicitly clamped to their respective valid ranges.
-        .capacity(Cycles::new(n_clamped).unwrap(), DepthOfDischarge::new(d_clamped).unwrap())
+        .capacity(
+            Cycles::new(n_clamped).unwrap(),
+            DepthOfDischarge::new(d_clamped).unwrap(),
+        )
         .as_f64()
 }
 
