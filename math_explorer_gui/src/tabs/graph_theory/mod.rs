@@ -1,6 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod algorithm_visualizer;
 pub mod graph_editor;
 
 /// A trait for sub-tools within the Graph Theory tab.
@@ -20,7 +21,10 @@ pub struct GraphTheoryTab {
 impl Default for GraphTheoryTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(graph_editor::GraphEditorTool::default())],
+            tools: vec![
+                Box::new(graph_editor::GraphEditorTool::default()),
+                Box::new(algorithm_visualizer::AlgorithmVisualizerTool::default()),
+            ],
             selected_tool_index: 0,
         }
     }
