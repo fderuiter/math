@@ -9,6 +9,11 @@ use rand::Rng;
 /// * `f64` - Final position.
 pub fn random_walk_1d(steps: usize) -> f64 {
     let mut rng = rand::thread_rng();
+    random_walk_1d_with_rng(steps, &mut rng)
+}
+
+/// Simulates a 1D Random Walk using an injected RNG.
+pub fn random_walk_1d_with_rng<R: Rng + ?Sized>(steps: usize, rng: &mut R) -> f64 {
     let mut position = 0.0;
     for _ in 0..steps {
         if rng.gen_bool(0.5) {
@@ -31,10 +36,20 @@ pub fn random_walk_1d(steps: usize) -> f64 {
 /// # Returns
 /// * `f64` - Estimated Diffusion Coefficient D.
 pub fn estimate_diffusion_coefficient(num_walks: usize, time_steps: usize) -> f64 {
+    let mut rng = rand::thread_rng();
+    estimate_diffusion_coefficient_with_rng(num_walks, time_steps, &mut rng)
+}
+
+/// Estimates the Diffusion Coefficient D using an injected RNG.
+pub fn estimate_diffusion_coefficient_with_rng<R: Rng + ?Sized>(
+    num_walks: usize,
+    time_steps: usize,
+    rng: &mut R,
+) -> f64 {
     let mut sum_sq_displacement = 0.0;
 
     for _ in 0..num_walks {
-        let final_pos = random_walk_1d(time_steps);
+        let final_pos = random_walk_1d_with_rng(time_steps, rng);
         sum_sq_displacement += final_pos * final_pos;
     }
 
@@ -46,11 +61,14 @@ pub fn estimate_diffusion_coefficient(num_walks: usize, time_steps: usize) -> f6
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn test_diffusion() {
         // For Random Walk D ~ 0.5 (since dx=1, dt=1).
-        let d = estimate_diffusion_coefficient(1000, 100);
+        let mut rng = StdRng::seed_from_u64(42);
+        let d = estimate_diffusion_coefficient_with_rng(1000, 100, &mut rng);
         assert!(
             (d - 0.5).abs() < 0.1,
             "Diffusion coefficient should be approx 0.5. Got {}",
