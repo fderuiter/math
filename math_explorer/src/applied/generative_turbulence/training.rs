@@ -15,9 +15,9 @@ pub struct Trainer {
 
 impl Trainer {
     /// Creates a new trainer.
-    pub fn new(vs: VarStore) -> Self {
-        let optimizer = tch::nn::Adam::default().build(&vs, 1e-4).unwrap();
-        Trainer { vs, optimizer }
+    pub fn new(vs: VarStore) -> Result<Self, tch::TchError> {
+        let optimizer = tch::nn::Adam::default().build(&vs, 1e-4)?;
+        Ok(Trainer { vs, optimizer })
     }
 
     /// Runs the training loop for the adversarially trained Neural Operator (adv-NO).
