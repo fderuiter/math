@@ -3,6 +3,7 @@ use eframe::egui;
 
 pub mod algorithm_visualizer;
 pub mod graph_editor;
+pub mod network_metrics;
 
 /// A trait for sub-tools within the Graph Theory tab.
 pub trait GraphTheoryTool {
@@ -24,6 +25,7 @@ impl Default for GraphTheoryTab {
             tools: vec![
                 Box::new(graph_editor::GraphEditorTool::default()),
                 Box::new(algorithm_visualizer::AlgorithmVisualizerTool::default()),
+                Box::new(network_metrics::NetworkMetricsTool::default()),
             ],
             selected_tool_index: 0,
         }

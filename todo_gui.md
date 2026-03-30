@@ -146,12 +146,12 @@ This document outlines the roadmap for integrating the various modules of the `m
     *   [x] **Factorization Tool:** Large number factorization and primality testing.
     *   [x] **Partition Function:** Calculator and visualization of integer partitions (Ferrers diagrams).
 
-### 5.3 Graph Theory
+### 5.3 Graph Theory - **[Implemented]**
 *   **Module:** `pure_math::graph_theory`
 *   **Features:**
     *   [x] **Graph Editor:** Add/remove nodes and edges interactively.
     *   [x] **Algorithm visualizer:** Step-by-step animation of Dijkstra, BFS, DFS.
-    *   [ ] **Network Metrics:** Calculate centrality, diameter, and clustering coefficients.
+    *   [x] **Network Metrics:** Calculate centrality, diameter, and clustering coefficients.
 
 ### 5.4 Geometry & Topology
 *   **Module:** `pure_math::differential_geometry` / `pure_math::topology`

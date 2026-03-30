@@ -1,0 +1,210 @@
+use super::GraphTheoryTool;
+use eframe::egui;
+use eframe::egui::Pos2;
+use math_explorer::pure_math::graph_theory::graph::Graph;
+use math_explorer::pure_math::graph_theory::parameters::network_metrics::{
+    average_clustering_coefficient, closeness_centrality, clustering_coefficients,
+    degree_centrality, diameter,
+};
+use petgraph::graph::NodeIndex;
+use std::collections::HashMap;
+
+#[derive(PartialEq)]
+enum MetricType {
+    DegreeCentrality,
+    ClosenessCentrality,
+    ClusteringCoefficient,
+}
+
+pub struct NetworkMetricsTool {
+    graph: Graph<Pos2, f64>,
+    node_indices: HashMap<usize, NodeIndex>,
+    node_positions: HashMap<usize, Pos2>,
+    edges: Vec<(usize, usize, f64)>,
+
+    selected_metric: MetricType,
+    metric_values: HashMap<usize, f64>,
+    global_diameter: Option<usize>,
+    global_clustering: Option<f64>,
+}
+
+impl Default for NetworkMetricsTool {
+    fn default() -> Self {
+        let mut tool = Self {
+            graph: Graph::new(),
+            node_indices: HashMap::new(),
+            node_positions: HashMap::new(),
+            edges: Vec::new(),
+            selected_metric: MetricType::DegreeCentrality,
+            metric_values: HashMap::new(),
+            global_diameter: None,
+            global_clustering: None,
+        };
+        tool.build_sample_graph();
+        tool
+    }
+}
+
+impl NetworkMetricsTool {
+    fn build_sample_graph(&mut self) {
+        // Create a star-like graph to show clear centrality differences
+        let center = Pos2::new(300.0, 300.0);
+        let center_id = 0;
+        let center_idx = self.graph.add_node(center);
+        self.node_indices.insert(center_id, center_idx);
+        self.node_positions.insert(center_id, center);
+
+        let num_outer = 6;
+        let radius = 150.0;
+
+        for i in 0..num_outer {
+            let angle = 2.0 * std::f32::consts::PI * (i as f32) / (num_outer as f32);
+            let pos = Pos2::new(
+                center.x + radius * angle.cos(),
+                center.y + radius * angle.sin(),
+            );
+            let id = i + 1;
+            let idx = self.graph.add_node(pos);
+            self.node_indices.insert(id, idx);
+            self.node_positions.insert(id, pos);
+
+            // Connect to center
+            self.edges.push((center_id, id, 1.0));
+            self.graph.add_edge(center_idx, idx, 1.0);
+
+            // Connect outer nodes forming a ring
+            if i > 0 {
+                let prev_id = i;
+                self.edges.push((prev_id, id, 1.0));
+                let prev_idx = self.node_indices[&prev_id];
+                self.graph.add_edge(prev_idx, idx, 1.0);
+            }
+        }
+
+        // Connect last outer node to first outer node to close the ring
+        let first_id = 1;
+        let last_id = num_outer;
+        self.edges.push((last_id, first_id, 1.0));
+        let first_idx = self.node_indices[&first_id];
+        let last_idx = self.node_indices[&last_id];
+        self.graph.add_edge(last_idx, first_idx, 1.0);
+
+        self.compute_metrics();
+    }
+
+    fn compute_metrics(&mut self) {
+        self.metric_values.clear();
+
+        let raw_metrics = match self.selected_metric {
+            MetricType::DegreeCentrality => degree_centrality(&self.graph),
+            MetricType::ClosenessCentrality => closeness_centrality(&self.graph),
+            MetricType::ClusteringCoefficient => clustering_coefficients(&self.graph),
+        };
+
+        for (&id, &idx) in &self.node_indices {
+            if let Some(&val) = raw_metrics.get(&idx) {
+                self.metric_values.insert(id, val);
+            }
+        }
+
+        self.global_diameter = Some(diameter(&self.graph));
+        self.global_clustering = Some(average_clustering_coefficient(&self.graph));
+    }
+}
+
+impl GraphTheoryTool for NetworkMetricsTool {
+    fn name(&self) -> &'static str {
+        "Network Metrics"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        egui::SidePanel::left("network_metrics_controls").show(ctx, |ui| {
+            ui.heading("Network Metrics");
+            ui.separator();
+
+            ui.label("Select Metric to Visualize:");
+            let mut changed = false;
+
+            if ui.radio_value(&mut self.selected_metric, MetricType::DegreeCentrality, "Degree Centrality").clicked() {
+                changed = true;
+            }
+            if ui.radio_value(&mut self.selected_metric, MetricType::ClosenessCentrality, "Closeness Centrality").clicked() {
+                changed = true;
+            }
+            if ui.radio_value(&mut self.selected_metric, MetricType::ClusteringCoefficient, "Local Clustering Coefficient").clicked() {
+                changed = true;
+            }
+
+            if changed {
+                self.compute_metrics();
+            }
+
+            ui.separator();
+
+            ui.heading("Global Metrics");
+            if let Some(d) = self.global_diameter {
+                ui.label(format!("Diameter: {}", d));
+            }
+            if let Some(c) = self.global_clustering {
+                ui.label(format!("Avg Clustering Coefficient: {:.3}", c));
+            }
+
+            ui.separator();
+            ui.label("Nodes are color-coded based on the selected metric value. Red indicates higher values.");
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let (response, painter) = ui.allocate_painter(ui.available_size(), egui::Sense::hover());
+
+            let to_screen = eframe::egui::emath::RectTransform::from_to(
+                eframe::egui::Rect::from_min_size(Pos2::ZERO, response.rect.size()),
+                response.rect,
+            );
+
+            // Draw edges
+            for &(u, v, _) in &self.edges {
+                if let (Some(&pos_u), Some(&pos_v)) =
+                    (self.node_positions.get(&u), self.node_positions.get(&v))
+                {
+                    let screen_pos_u = to_screen.transform_pos(pos_u);
+                    let screen_pos_v = to_screen.transform_pos(pos_v);
+                    painter.line_segment([screen_pos_u, screen_pos_v], (2.0, egui::Color32::GRAY));
+                }
+            }
+
+            // Find max/min metric values for color scaling
+            let mut max_val = 0.0_f64;
+            let mut min_val = f64::MAX;
+            for &val in self.metric_values.values() {
+                if val > max_val { max_val = val; }
+                if val < min_val { min_val = val; }
+            }
+            let range = max_val - min_val;
+
+            // Draw nodes
+            for (&id, &pos) in &self.node_positions {
+                let screen_pos = to_screen.transform_pos(pos);
+                let val = self.metric_values.get(&id).copied().unwrap_or(0.0);
+
+                // Color mapping: light blue (low) to red (high)
+                let t = if range > 0.0 { ((val - min_val) / range) as f32 } else { 0.5 };
+
+                let r = (173.0 + t * (255.0 - 173.0)) as u8;
+                let g = (216.0 - t * 216.0) as u8;
+                let b = (230.0 - t * 230.0) as u8;
+
+                let fill_color = egui::Color32::from_rgb(r, g, b);
+
+                painter.circle(screen_pos, 20.0, fill_color, (1.0, egui::Color32::WHITE));
+
+                painter.text(
+                    screen_pos,
+                    egui::Align2::CENTER_CENTER,
+                    format!("{:.2}", val),
+                    egui::FontId::proportional(12.0),
+                    egui::Color32::BLACK,
+                );
+            }
+        });
+    }
+}
