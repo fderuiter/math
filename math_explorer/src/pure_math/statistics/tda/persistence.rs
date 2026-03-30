@@ -22,13 +22,26 @@ pub struct PersistenceInterval {
 impl PersistenceInterval {
     /// Creates a new persistence interval.
     ///
+    /// # Errors
+    ///
+    /// Returns [`TdaError::InvalidRadius`] if:
+    /// - `birth` is negative.
+    /// - `death` is strictly less than `birth`.
+    /// - Either `birth` or `death` is not finite (e.g., `NaN` or `Infinity`).
+    ///
     /// # Example
     ///
     /// ```
-    /// use math_explorer::pure_math::statistics::tda::PersistenceInterval;
+    /// use math_explorer::pure_math::statistics::tda::{PersistenceInterval, TdaError};
     ///
     /// let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
     /// assert_eq!(interval.persistence(), 1.5);
+    ///
+    /// // Invalid radii result in an error
+    /// assert!(matches!(
+    ///     PersistenceInterval::new(2.0, 1.0, 1),
+    ///     Err(TdaError::InvalidRadius { .. })
+    /// ));
     /// ```
     pub fn new(birth: f64, death: f64, dimension: usize) -> Result<Self, TdaError> {
         if birth < 0.0 || death < birth || !birth.is_finite() || !death.is_finite() {
@@ -152,11 +165,22 @@ impl Default for PersistenceBarcode {
 ///
 /// * `Result<PersistenceBarcode, TdaError>` - The persistence barcode or error
 ///
+/// # Errors
+///
+/// Returns [`TdaError::InvalidRadius`] if `radii` is empty.
+/// Propagates errors from `vietoris_rips_complex` or Betti number computations if the point cloud or radii are invalid.
+///
+/// # Panics
+///
+/// This function internally unwrap values, but they are provably infallible because:
+/// - `radii.last().unwrap()` is guarded by checking `radii.is_empty()` at the start.
+/// - `PersistenceInterval::new(...).unwrap()` is guaranteed to succeed because the loop structure and topological progression ensure `death` (current `radius` or `final_radius`) is always greater than or equal to `birth` (a previously recorded radius), and input radii are expected to be finite and non-negative.
+///
 /// # Example
 ///
 /// ```
 /// use math_explorer::pure_math::statistics::tda::{
-///     PointCloud, Point2D, compute_persistence
+///     PointCloud, Point2D, compute_persistence, TdaError
 /// };
 ///
 /// let points = vec![
@@ -175,6 +199,12 @@ impl Default for PersistenceBarcode {
 ///         interval.dimension, interval.birth, interval.death,
 ///         interval.persistence());
 /// }
+///
+/// // Empty radii results in an error
+/// assert!(matches!(
+///     compute_persistence(&cloud, &[]),
+///     Err(TdaError::InvalidRadius { .. })
+/// ));
 /// ```
 pub fn compute_persistence(
     cloud: &PointCloud,
