@@ -23,7 +23,7 @@ impl Vgg19Features {
     /// Creates a new Vgg19 feature extractor.
     /// It builds the first few blocks of VGG19. For this to work,
     /// a VarStore with pre-trained weights must be loaded separately.
-    pub fn new(p: &Path, device: tch::Device) -> Self {
+    pub fn new(p: &Path, device: tch::Device) -> Result<Self, tch::TchError> {
         let p = p / "features";
         let conv_cfg = nn::ConvConfig{ padding: 1, ..Default::default() };
         let conv1_1 = nn::conv2d(&p / "0", 3, 64, 3, conv_cfg);
@@ -33,10 +33,10 @@ impl Vgg19Features {
         let conv3_1 = nn::conv2d(&p / "10", 128, 256, 3, conv_cfg);
 
         // ImageNet normalization stats
-        let mean = Tensor::f_from_slice(&[0.485f32, 0.456f32, 0.406f32]).unwrap().view([1, 3, 1, 1]).to(device);
-        let std = Tensor::f_from_slice(&[0.229f32, 0.224f32, 0.225f32]).unwrap().view([1, 3, 1, 1]).to(device);
+        let mean = Tensor::f_from_slice(&[0.485f32, 0.456f32, 0.406f32])?.view([1, 3, 1, 1]).to(device);
+        let std = Tensor::f_from_slice(&[0.229f32, 0.224f32, 0.225f32])?.view([1, 3, 1, 1]).to(device);
 
-        Vgg19Features { conv1_1, conv1_2, conv2_1, conv2_2, conv3_1, mean, std }
+        Ok(Vgg19Features { conv1_1, conv1_2, conv2_1, conv2_2, conv3_1, mean, std })
     }
 
     /// Forward pass to extract feature maps.

@@ -51,6 +51,11 @@ impl Capacity {
         Ok(Self(value))
     }
 
+    /// Creates a new `Capacity`, clamping the value to the `[0.0, 1.0]` range to ensure validity.
+    pub fn new_clamped(value: f64) -> Self {
+        Self(value.clamp(0.0, 1.0))
+    }
+
     /// Returns the value as a f64.
     pub fn as_f64(&self) -> f64 {
         self.0
@@ -78,6 +83,11 @@ impl Cycles {
             return Err(BatteryError::NegativeCycles(value));
         }
         Ok(Self(value))
+    }
+
+    /// Creates a new `Cycles`, clamping the value to be at least `0.0` to ensure validity.
+    pub fn new_clamped(value: f64) -> Self {
+        Self(value.max(0.0))
     }
 
     /// Returns the value as a f64.

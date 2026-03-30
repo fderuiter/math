@@ -46,22 +46,19 @@ impl DegradationModel for PowerLawModel {
     /// for a given depth-of-discharge (DoD).
     fn n70(&self, d: DepthOfDischarge) -> Cycles {
         let val = self.alpha * d.as_f64().powf(self.beta);
-        // SAFETY: The value calculated from the power law with positive inputs is always non-negative.
-        Cycles::new(val).unwrap()
+        Cycles::new_clamped(val)
     }
 
     /// Calculates the remaining battery capacity after a number of cycles.
     fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity {
         let n70_val = self.n70(d).as_f64();
         if n70_val == 0.0 {
-            // SAFETY: 0.0 is clearly between 0.0 and 1.0.
-            return Capacity::new(0.0).unwrap();
+            return Capacity::new_clamped(0.0);
         }
         let exponent = n.as_f64() / n70_val;
         let cap = 0.7_f64.powf(exponent);
         // Clamp to 1.0 just in case floating point error pushes it slightly over for n=0
-        // SAFETY: 0.7^exponent is always non-negative for valid inputs, and we clamp the upper bound to 1.0.
-        Capacity::new(cap.min(1.0)).unwrap()
+        Capacity::new_clamped(cap)
     }
 
     /// Calculates the number of equivalent full cycles to reach a target capacity.
@@ -71,8 +68,7 @@ impl DegradationModel for PowerLawModel {
         let ln_target = target.as_f64().ln();
 
         let val = (ln_target / LN_0_7) * n70_val;
-        // SAFETY: The value is explicitly clamped to a minimum of 0.0 using `val.max(0.0)`.
-        Cycles::new(val.max(0.0)).unwrap()
+        Cycles::new_clamped(val)
     }
 }
 

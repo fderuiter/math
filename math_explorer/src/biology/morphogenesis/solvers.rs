@@ -65,9 +65,16 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
         // Prepare slices for diffusion application
         let state_slices: [&[f64]; N] = std::array::from_fn(|i| state.concentrations[i].as_slice());
 
-        let mut out_iter = out.concentrations.iter_mut();
-        let out_slices: [&mut [f64]; N] =
-            std::array::from_fn(|_| out_iter.next().unwrap().as_mut_slice());
+        // Create an array of mutable slices from the concentrations Vec without using unwrap or unsafe.
+        let mut out_slices: [&mut [f64]; N] = std::array::from_fn(|_| &mut [] as &mut [f64]);
+
+        // Safe disjoint mutable borrowing of array elements:
+        let mut iter = out.concentrations.iter_mut();
+        for slice in &mut out_slices {
+            if let Some(vec) = iter.next() {
+                *slice = vec.as_mut_slice();
+            }
+        }
 
         // 1. Compute Diffusion
         self.diffusion
