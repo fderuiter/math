@@ -11,6 +11,11 @@ const DEFAULT_BETA_END: f64 = 0.02;
 /// Output: Timestep scalar t.
 pub fn sample_timestep(max_timesteps: usize) -> usize {
     let mut rng = rand::thread_rng();
+    sample_timestep_with_rng(max_timesteps, &mut rng)
+}
+
+/// Module 2.1: Time Sampling using an injected RNG.
+pub fn sample_timestep_with_rng<R: Rng + ?Sized>(max_timesteps: usize, rng: &mut R) -> usize {
     rng.gen_range(1..=max_timesteps)
 }
 
@@ -82,10 +87,19 @@ pub fn inject_noise(
 /// Helper to generate Gaussian noise matching image dimensions
 pub fn generate_noise(rows: usize, cols: usize) -> Result<DMatrix<f64>, crate::ai::AIError> {
     let mut rng = rand::thread_rng();
+    generate_noise_with_rng(rows, cols, &mut rng)
+}
+
+/// Helper to generate Gaussian noise matching image dimensions using an injected RNG.
+pub fn generate_noise_with_rng<R: Rng + ?Sized>(
+    rows: usize,
+    cols: usize,
+    rng: &mut R,
+) -> Result<DMatrix<f64>, crate::ai::AIError> {
     let normal = Normal::new(0.0, 1.0).map_err(|e| crate::ai::AIError::ConversionError {
         reason: format!("Invalid normal distribution: {}", e),
     })?;
-    Ok(DMatrix::from_fn(rows, cols, |_, _| normal.sample(&mut rng)))
+    Ok(DMatrix::from_fn(rows, cols, |_, _| normal.sample(rng)))
 }
 
 #[cfg(test)]
