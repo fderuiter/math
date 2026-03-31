@@ -63,7 +63,11 @@ impl BatteryDegradationTool for LifetimeEstimatorTool {
             let dod_val = DepthOfDischarge::new(self.dod);
             let capacity_val = Capacity::new(self.target_capacity / 100.0);
 
-            let total_cycles = if let (Ok(c), Ok(d)) = (capacity_val, dod_val) { model.cycles_to_capacity(c, d).as_f64() } else { 0.0 };
+            let total_cycles = if let (Ok(c), Ok(d)) = (capacity_val, dod_val) {
+                model.cycles_to_capacity(c, d).as_f64()
+            } else {
+                0.0
+            };
             let lifetime_days = total_cycles / self.cycles_per_day;
             let lifetime_years = lifetime_days / 365.25;
 

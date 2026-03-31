@@ -2,9 +2,9 @@ use crate::tabs::{
     ai::AiTab, analysis::AnalysisTab, battery_degradation::BatteryDegradationTab, chaos::ChaosTab,
     clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab, favoritism::FavoritismTab,
     financial_math::FinancialMathTab, fluid_dynamics::FluidDynamicsTab, game_theory::GameTheoryTab,
-    GeometryTopologyTab, graph_theory::GraphTheoryTab, medical::MedicalTab, morphogenesis::MorphogenesisTab,
+    graph_theory::GraphTheoryTab, medical::MedicalTab, morphogenesis::MorphogenesisTab,
     mri::MriTab, neuroscience::NeuroscienceTab, number_theory::NumberTheoryTab,
-    quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
+    quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab, GeometryTopologyTab,
 };
 use eframe::egui;
 

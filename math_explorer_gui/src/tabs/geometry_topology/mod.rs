@@ -20,9 +20,7 @@ pub struct GeometryTopologyTab {
 impl Default for GeometryTopologyTab {
     fn default() -> Self {
         Self {
-            tools: vec![
-                Box::new(surface_viewer::SurfaceViewer::default()),
-            ],
+            tools: vec![Box::new(surface_viewer::SurfaceViewer::default())],
             selected_tool_index: 0,
         }
     }
