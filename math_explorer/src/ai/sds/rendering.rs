@@ -84,6 +84,16 @@ pub fn generate_ray_bundle(
 /// Output: Sample points along rays r(t_i) = o + t_i * d.
 pub fn stratified_sampling(t_near: f64, t_far: f64, n_samples: usize) -> Vec<f64> {
     let mut rng = rand::thread_rng();
+    stratified_sampling_with_rng(t_near, t_far, n_samples, &mut rng)
+}
+
+/// Module 1.2: Stratified Sampling using an injected RNG.
+pub fn stratified_sampling_with_rng<R: Rng + ?Sized>(
+    t_near: f64,
+    t_far: f64,
+    n_samples: usize,
+    rng: &mut R,
+) -> Vec<f64> {
     let bin_size = (t_far - t_near) / n_samples as f64;
     let mut samples = Vec::with_capacity(n_samples);
 
@@ -162,10 +172,23 @@ pub fn render_image<M: NeRFModel + ?Sized>(
     t_far: f64,
     n_samples: usize,
 ) -> DMatrix<Vector3<f64>> {
+    let mut rng = rand::thread_rng();
+    render_image_with_rng(bundle, model, t_near, t_far, n_samples, &mut rng)
+}
+
+/// Module 1.4: Volume Integration (Full Image) using an injected RNG.
+pub fn render_image_with_rng<M: NeRFModel + ?Sized, R: Rng + ?Sized>(
+    bundle: &RayBundle,
+    model: &M,
+    t_near: f64,
+    t_far: f64,
+    n_samples: usize,
+    rng: &mut R,
+) -> DMatrix<Vector3<f64>> {
     let mut image_data = Vec::with_capacity(bundle.width * bundle.height);
 
     for ray in &bundle.rays {
-        let ts = stratified_sampling(t_near, t_far, n_samples);
+        let ts = stratified_sampling_with_rng(t_near, t_far, n_samples, rng);
         let mut densities = Vec::with_capacity(n_samples);
         let mut colors = Vec::with_capacity(n_samples);
         let mut deltas = Vec::with_capacity(n_samples);
