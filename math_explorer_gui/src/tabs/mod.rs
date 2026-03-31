@@ -10,6 +10,7 @@ pub mod favoritism;
 pub mod financial_math;
 pub mod fluid_dynamics;
 pub mod game_theory;
+pub mod geometry_topology;
 pub mod graph_theory;
 pub mod medical;
 pub mod morphogenesis;
@@ -18,6 +19,8 @@ pub mod neuroscience;
 pub mod number_theory;
 pub mod quantum;
 pub mod solid_state;
+
+pub use geometry_topology::GeometryTopologyTab;
 
 /// A trait for defining a tab in the Math Explorer application.
 ///
