@@ -2,7 +2,7 @@ use crate::tabs::{
     ai::AiTab, analysis::AnalysisTab, battery_degradation::BatteryDegradationTab, chaos::ChaosTab,
     clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab, favoritism::FavoritismTab,
     financial_math::FinancialMathTab, fluid_dynamics::FluidDynamicsTab, game_theory::GameTheoryTab,
-    graph_theory::GraphTheoryTab, medical::MedicalTab, morphogenesis::MorphogenesisTab,
+    GeometryTopologyTab, graph_theory::GraphTheoryTab, medical::MedicalTab, morphogenesis::MorphogenesisTab,
     mri::MriTab, neuroscience::NeuroscienceTab, number_theory::NumberTheoryTab,
     quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
 };
@@ -26,6 +26,7 @@ impl Default for MathExplorerApp {
                 Box::new(NeuroscienceTab::default()),
                 Box::new(NumberTheoryTab::default()),
                 Box::new(GraphTheoryTab::default()),
+                Box::new(GeometryTopologyTab::default()),
                 Box::new(AnalysisTab::default()),
                 Box::new(EpidemiologyTab::default()),
                 Box::new(GameTheoryTab::default()),

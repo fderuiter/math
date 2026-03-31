@@ -152,3 +152,21 @@ impl ParametricSurface for Torus {
         Point3::new(x, y, z)
     }
 }
+
+/// A Klein Bottle immersion (Figure-8 parametrization) in R^3.
+/// This self-intersects since a true Klein bottle cannot be embedded in R^3 without intersection.
+pub struct KleinBottle {
+    pub radius: f64,
+}
+
+impl ParametricSurface for KleinBottle {
+    fn position(&self, u: f64, v: f64) -> Point3<f64> {
+        // Standard "figure-8" immersion:
+        // u \in [0, 2pi), v \in [0, 2pi)
+        let r = self.radius;
+        let x = (r + r / 2.0 * v.cos() * (u / 2.0).cos() - r / 2.0 * v.sin() * (u / 2.0).sin()) * u.cos();
+        let y = (r + r / 2.0 * v.cos() * (u / 2.0).cos() - r / 2.0 * v.sin() * (u / 2.0).sin()) * u.sin();
+        let z = r / 2.0 * v.sin() * (u / 2.0).cos() + r / 2.0 * v.cos() * (u / 2.0).sin();
+        Point3::new(x, y, z)
+    }
+}
