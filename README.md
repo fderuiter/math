@@ -1,30 +1,18 @@
 # Math Explorer
 
+![CI/CD](https://github.com/fderuiter/math-explorer/actions/workflows/rust.yml/badge.svg)
+![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)
 ![License](https://img.shields.io/badge/license-AGPL-blue.svg)
-![Language](https://img.shields.io/badge/language-Rust-orange.svg)
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)
-![Maintenance](https://img.shields.io/badge/maintained%3F-yes-brightgreen.svg)
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)
 
-**Math Explorer** is a comprehensive Rust library that bridges the gap between rigorous academic theory and executable code. From simulating **Quantum Mechanics** to modeling **Social Favoritism**, this repository serves as a verifiable playground for complex algorithms.
+**Math Explorer** is a comprehensive Rust library that bridges the gap between rigorous academic theory and executable code. From simulating Quantum Mechanics to modeling Social Favoritism, this repository serves as a verifiable playground for complex algorithms.
 
 > **"Code explains HOW; Docs explain WHY."**
 
 ---
 
-##  Why Math Explorer?
+## Install
 
-Mathematical notation is often abstract and disconnected from implementation. **Math Explorer** exists to:
-1.  **Demystify Complex Math:** Translate Greek letters into runnable Rust code.
-2.  **Fight Knowledge Rot:** Ensure algorithms are preserved with working examples and tests.
-3.  **Provide a Playground:** Allow users to experiment with parameters in real-time via the [GUI](math_explorer_gui).
-
----
-
-##  Quickstart (30 Seconds)
-
-Get up and running immediately.
-
-### 1. Install
 Add `math_explorer` to your project (or clone the repo):
 
 ```bash
@@ -36,7 +24,11 @@ cargo build --release --package math_explorer
 cargo run --release --package math_explorer_gui
 ```
 
-### 2. Run "Hello World" (Quantum Physics)
+---
+
+## Usage
+
+### Run "Hello World" (Quantum Physics)
 Calculate Clebsch-Gordan coefficients for angular momentum coupling:
 
 ```rust
@@ -49,42 +41,29 @@ fn main() {
 }
 ```
 
----
+### Graphical User Interface
+We provide a native GUI application to explore simulations interactively.
 
-##  Project Structure
+> **See the [Math Explorer GUI Documentation](math_explorer_gui/README.md) for architecture details and contribution guides.**
 
-This workspace consists of two main crates:
-
+#### Launching the GUI
 ```bash
-.
-├── math_explorer/          # The Core Library (Logic)
-│   ├── src/ai/             # Transformers, NeRF, RL
-│   ├── src/applied/        # Favoritism, Clinical Trials, Battery Degradation
-│   ├── src/biology/        # Neuroscience, Morphogenesis
-│   ├── src/climate/        # CERA Framework
-│   ├── src/epidemiology/   # SIR/SEIR Models
-│   ├── src/physics/        # Quantum, Chaos, Fluid Dynamics
-│   └── src/pure_math/      # Statistics, Number Theory
-│
-└── math_explorer_gui/      # The Visualization App (UI)
-    ├── src/tabs/           # Plugin-style tabs for each domain
-    └── src/main.rs         # Entry point for the eframe app
+cargo run --release --package math_explorer_gui
 ```
 
----
+#### Current Capabilities
+*   **Physics / MRI:** Bloch Simulator with real-time control over $T_1$, $T_2$, $\vec{B}$-field, and magnetization vectors.
+*   **Physics / Fluid Dynamics:** Potential Flow visualization, Turbulence/Reynolds Number analysis, and interactive Lattice Boltzmann (LBM) flow simulation.
+*   **Physics / Medical:** Dose Calculation (2D Heatmap of radiation dose distribution).
+*   **Physics / Chaos:** Attractor Plotter (Lorenz, Rossler), Bifurcation Diagrams, and Fractal Generator.
+*   **Physics / Quantum:** Schrödinger Solver, Wavefunction Evolution, and Clebsch-Gordan Calculator.
+*   **Physics / Solid State:** Crystal Lattice Viewer (FCC, BCC, SC).
 
-##  Table of Contents
+*See [todo_gui.md](todo_gui.md) for the development roadmap.*
 
-- [Features](#-features)
-- [Graphical User Interface](#-graphical-user-interface)
-- [Deep Dive: Modules](#-deep-dive-modules)
-- [Testing](#-testing)
-- [Contributing](#-contributing)
-- [License](#-license)
+### Deep Dive: Modules
 
-##  Features
-
-Math Explorer is organized into high-level domains, each solving specific problems:
+The modules are organized into high-level domains, each solving specific problems:
 
 ```mermaid
 graph TD
@@ -119,11 +98,7 @@ graph TD
 | ** Pure Math** | `math_explorer::pure_math` | **Statistics** (Glicko-2, Markov, TDA), **Tensors** (Christoffel Symbols), Number Theory, Graph Theory, and **Abstract Algebra**. |
 | ** GUI** | `math_explorer_gui` | Interactive **eframe/egui** application for visualizing simulations (currently MRI Physics). |
 
----
-
-##  Architecture & Patterns
-
-To maintain flexibility and testability across domains, Math Explorer relies heavily on the **Strategy Pattern**. This allows users to swap numerical solvers, diffusion models, or reaction kinetics without changing the core system logic.
+To maintain flexibility and testability across domains, Math Explorer relies heavily on the Strategy Pattern. This allows users to swap numerical solvers, diffusion models, or reaction kinetics without changing the core system logic.
 
 ```mermaid
 classDiagram
@@ -158,32 +133,7 @@ classDiagram
     TuringSystem --> SpatialDiffusion : Uses
 ```
 
-##  Graphical User Interface
-
-We provide a native GUI application to explore simulations interactively.
-
-> **See the [Math Explorer GUI Documentation](math_explorer_gui/README.md) for architecture details and contribution guides.**
-
-### Launching the GUI
-```bash
-cargo run --release --package math_explorer_gui
-```
-
-### Current Capabilities
-*   **Physics / MRI:** Bloch Simulator with real-time control over $T_1$, $T_2$, $\vec{B}$-field, and magnetization vectors.
-*   **Physics / Fluid Dynamics:** Potential Flow visualization, Turbulence/Reynolds Number analysis, and interactive Lattice Boltzmann (LBM) flow simulation.
-*   **Physics / Medical:** Dose Calculation (2D Heatmap of radiation dose distribution).
-*   **Physics / Chaos:** Attractor Plotter (Lorenz, Rossler), Bifurcation Diagrams, and Fractal Generator.
-*   **Physics / Quantum:** Schrödinger Solver, Wavefunction Evolution, and Clebsch-Gordan Calculator.
-*   **Physics / Solid State:** Crystal Lattice Viewer (FCC, BCC, SC).
-
-*See [todo_gui.md](todo_gui.md) for the development roadmap.*
-
----
-
-##  Deep Dive: Modules
-
-###  Competitive Statistics: Glicko-2
+#### Competitive Statistics: Glicko-2
 Implement the same rating system used by professional esports leagues.
 
 ```rust
@@ -191,42 +141,46 @@ use math_explorer::pure_math::statistics::glicko2::{
     GlickoPlayer, Rating, RatingDeviation, Volatility, MatchResult, update_rating, SystemConstant
 };
 
-// Player wins against a 1700-rated opponent
-let player = GlickoPlayer::default(); // 1500 rating
-let opponent = GlickoPlayer::new(
-    Rating::new(1700.0).unwrap(),
-    RatingDeviation::new(300.0).unwrap(),
-    Volatility::default()
-);
+fn main() {
+    // Player wins against a 1700-rated opponent
+    let player = GlickoPlayer::default(); // 1500 rating
+    let opponent = GlickoPlayer::new(
+        Rating::new(1700.0).unwrap(),
+        RatingDeviation::new(300.0).unwrap(),
+        Volatility::default()
+    );
 
-let result = MatchResult::new(opponent, 1.0).unwrap(); // Win
-let tau = SystemConstant::new(0.5).unwrap();
+    let result = MatchResult::new(opponent, 1.0).unwrap(); // Win
+    let tau = SystemConstant::new(0.5).unwrap();
 
-let new_player = update_rating(&player, &[result], &tau).unwrap();
-println!("New Rating: {:.0}", new_player.rating.value());
+    let new_player = update_rating(&player, &[result], &tau).unwrap();
+    println!("New Rating: {:.0}", new_player.rating.value());
+}
 ```
 
-###  Biology & Neuroscience
+#### Biology & Neuroscience
 Simulate the electrical characteristics of excitable cells using the Hodgkin-Huxley model.
 
 ```rust
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
 
-// Initialize a neuron at resting potential (-65.0 mV)
-let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
-let dt = 0.01; // 0.01 ms time step
+fn main() {
+    // Initialize a neuron at resting potential (-65.0 mV)
+    let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
+    let dt = 0.01; // 0.01 ms time step
 
-// Simulate for 10ms with 10 uA/cm^2 current injection
-for _ in 0..1000 {
-    neuron.update(dt, 10.0);
-    if neuron.v() > 0.0 {
-        println!("Action Potential Generated!");
-        break;
+    // Simulate for 10ms with 10 uA/cm^2 current injection
+    for _ in 0..1000 {
+        neuron.update(dt, 10.0);
+        if neuron.v() > 0.0 {
+            println!("Action Potential Generated!");
+            break;
+        }
     }
 }
 ```
 
-###  Artificial Intelligence
+#### Artificial Intelligence
 Implement state-of-the-art architectures from scratch.
 
 **Example: Transformer Encoder**
@@ -234,15 +188,17 @@ Implement state-of-the-art architectures from scratch.
 use math_explorer::ai::transformer::Encoder;
 use nalgebra::DMatrix;
 
-// Initialize an Encoder stack: 2 layers, 512 embedding dim, 8 heads, 2048 FF dim
-let encoder = Encoder::new(2, 512, 8, 2048);
+fn main() {
+    // Initialize an Encoder stack: 2 layers, 512 embedding dim, 8 heads, 2048 FF dim
+    let encoder = Encoder::new(2, 512, 8, 2048);
 
-// Dummy input: Sequence length 10
-let input = DMatrix::zeros(10, 512);
-let encoded = encoder.forward(input, None);
+    // Dummy input: Sequence length 10
+    let input = DMatrix::zeros(10, 512);
+    let _encoded = encoder.forward(input, None);
+}
 ```
 
-###  Climate Modeling: CERA Framework
+#### Climate Modeling: CERA Framework
 Train a model to learn climate-invariant representations using the CERA architecture.
 
 ```rust
@@ -251,85 +207,93 @@ use math_explorer::climate::config::CeraConfig;
 use math_explorer::climate::training::CeraTrainer;
 use nalgebra::DMatrix;
 
-// 1. Configure the architecture
-let config = CeraConfig {
-    in_channels: 2,         // e.g., Temp, Humidity
-    latent_channels: 4,     // Compressed state
-    aligned_channels: 2,    // Invariant state
-    num_levels: 10,         // Atmospheric levels
-    output_size: 5,         // Prediction target
-    epochs: 1,
-    batch_size: 2,
-    learning_rate: 0.01,
-    lambda_pred: 1.0,
-    lambda_emd: 0.1,
-};
+fn main() {
+    // 1. Configure the architecture
+    let config = CeraConfig {
+        in_channels: 2,         // e.g., Temp, Humidity
+        latent_channels: 4,     // Compressed state
+        aligned_channels: 2,    // Invariant state
+        num_levels: 10,         // Atmospheric levels
+        output_size: 5,         // Prediction target
+        epochs: 1,
+        batch_size: 2,
+        learning_rate: 0.01,
+        lambda_pred: 1.0,
+        lambda_emd: 0.1,
+    };
 
-// 2. Initialize Model & Trainer
-let mut model = Cera::new(config).expect("Invalid config");
-let mut trainer = CeraTrainer::new(&mut model);
+    // 2. Initialize Model & Trainer
+    let mut model = Cera::new(config).expect("Invalid config");
+    let mut trainer = CeraTrainer::new(&mut model);
 
-// 3. Train on synthetic data (Batch Size * Num Levels, Channels)
-let inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
-let targets = DMatrix::<f32>::from_fn(2, 5, |_, _| rand::random());
-let warm_inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
+    // 3. Train on synthetic data (Batch Size * Num Levels, Channels)
+    let inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
+    let targets = DMatrix::<f32>::from_fn(2, 5, |_, _| rand::random());
+    let warm_inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
 
-trainer.train(&inputs, &targets, &warm_inputs);
+    trainer.train(&inputs, &targets, &warm_inputs);
+}
 ```
 
-###  Applied Mathematics: Favoritism
-A "rigorous" mathematical model to determine who the favorite child is.
+#### Applied Mathematics: Favoritism
+A mathematical model to determine who the favorite child is.
 
 ```rust
 use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
-let mut inputs = FavoritismInputs::default();
-inputs.personality.wealth = 10.0;          // High wealth factor
-inputs.social.helped_during_crisis = true; // High social utility
+fn main() {
+    let mut inputs = FavoritismInputs::default();
+    inputs.personality.wealth = 10.0;          // High wealth factor
+    inputs.social.helped_during_crisis = true; // High social utility
 
-let score = calculate_favoritism_score(&inputs);
-println!("Favoritism Score: {}", score); // Higher is better
+    let score = calculate_favoritism_score(&inputs);
+    println!("Favoritism Score: {}", score); // Higher is better
+}
 ```
 
-###  Pure Math: Abstract Algebra
+#### Pure Math: Abstract Algebra
 Construct Finite Fields ($\mathbb{F}_p$) and perform polynomial arithmetic.
 
 ```rust
 use math_explorer::pure_math::algebra::{Fp, Polynomial};
 
-// 1. Arithmetic in Finite Field F_7
-let a = Fp::<7>::new(3);
-let b = Fp::<7>::new(5);
-// (3 * 5) % 7 = 15 % 7 = 1
-assert_eq!(a * b, Fp::<7>::new(1));
+fn main() {
+    // 1. Arithmetic in Finite Field F_7
+    let a = Fp::<7>::new(3);
+    let b = Fp::<7>::new(5);
+    // (3 * 5) % 7 = 15 % 7 = 1
+    assert_eq!(a * b, Fp::<7>::new(1));
 
-// 2. Polynomials over F_7: P(x) = 3x^2 + 5
-let p = Polynomial::new(vec![b, Fp::<7>::new(0), a]);
+    // 2. Polynomials over F_7: P(x) = 3x^2 + 5
+    let _p = Polynomial::new(vec![b, Fp::<7>::new(0), a]);
+}
 ```
 
-###  Pure Math: Tensor Calculus
+#### Pure Math: Tensor Calculus
 Compute Christoffel symbols for a curved manifold (e.g., a sphere).
 
 ```rust
 use math_explorer::pure_math::tensor::{christoffel_symbols, RiemannianMetric};
 use nalgebra::{DMatrix, DVector};
 
-// Metric for a 2D sphere (Radius = 1.0)
-let metric = RiemannianMetric::new(|p: &DVector<f64>| {
-    let theta = p[0];
-    let g11 = 1.0;
-    let g22 = theta.sin().powi(2);
-    DMatrix::from_vec(2, 2, vec![g11, 0.0, 0.0, g22])
-});
+fn main() {
+    // Metric for a 2D sphere (Radius = 1.0)
+    let metric = RiemannianMetric::new(|p: &DVector<f64>| {
+        let theta = p[0];
+        let g11 = 1.0;
+        let g22 = theta.sin().powi(2);
+        DMatrix::from_vec(2, 2, vec![g11, 0.0, 0.0, g22])
+    });
 
-// Compute symbols at theta = 45 degrees
-let point = DVector::from_vec(vec![std::f64::consts::FRAC_PI_4, 0.0]);
-let gammas = christoffel_symbols(&metric, &point).expect("Singular metric");
+    // Compute symbols at theta = 45 degrees
+    let point = DVector::from_vec(vec![std::f64::consts::FRAC_PI_4, 0.0]);
+    let gammas = christoffel_symbols(&metric, &point).expect("Singular metric");
 
-println!("Gamma^theta_phi_phi: {:.4}", gammas[0][(1, 1)]); // -0.5000
+    println!("Gamma^theta_phi_phi: {:.4}", gammas[0][(1, 1)]); // -0.5000
+}
 ```
 
-###  Physics: Chaos Theory
+#### Physics: Chaos Theory
 Explore the Lorenz System and Lyapunov exponents.
 
 **Example: The Butterfly Effect**
@@ -344,34 +308,30 @@ cargo run --release --package math_explorer --example lorenz_chaos
 
 ---
 
-## 👻 Ghost Modules
+## Config
 
 Some modules are intentionally excluded from the default compilation to reduce build times or avoid heavy external dependencies (like LibTorch). These are called "Ghost Modules."
 
-### Example: Generative Turbulence
+### Generative Turbulence
 A deep learning-based module for generating turbulent flow fields using `tch-rs`. It is excluded by default because it requires a local LibTorch installation.
 
 To learn how to enable it and explore the code, see the [Generative Turbulence Documentation](math_explorer/src/applied/generative_turbulence/README.md).
 
 ---
 
-##  Testing
+## Contributing
 
-We rely on standard Rust testing frameworks. To verify the integrity of all mathematical implementations:
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our style guide and process.
+
+**The Golden Rule:** If you add code, you must add documentation and tests.
+
+To verify the integrity of all mathematical implementations:
 
 ```bash
 # Test the core library
 cargo test --package math_explorer
 ```
 
-This runs unit tests for everything from Prime Number generation to NeRF rendering logic.
-
-##  Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our style guide and process.
-
-**The Golden Rule:** If you add code, you must add documentation and tests.
-
-##  License
+### License
 
 This project is open-source. See the [LICENSE](LICENSE) file for details.
