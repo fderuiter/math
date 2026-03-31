@@ -1,7 +1,9 @@
 use super::GeometryTopologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::pure_math::differential_geometry::surface::{KleinBottle, ParametricSurface, Sphere, Torus};
+use math_explorer::pure_math::differential_geometry::surface::{
+    KleinBottle, ParametricSurface, Sphere, Torus,
+};
 use nalgebra::Point3;
 use std::f64::consts::PI;
 
@@ -119,27 +121,29 @@ impl GeometryTopologyTool for SurfaceViewer {
             ui.horizontal(|ui| {
                 ui.radio_value(&mut self.surface_type, SurfaceType::Sphere, "Sphere");
                 ui.radio_value(&mut self.surface_type, SurfaceType::Torus, "Torus");
-                ui.radio_value(&mut self.surface_type, SurfaceType::KleinBottle, "Klein Bottle");
+                ui.radio_value(
+                    &mut self.surface_type,
+                    SurfaceType::KleinBottle,
+                    "Klein Bottle",
+                );
             });
 
             ui.separator();
 
-            ui.collapsing("Parameters", |ui| {
-                match self.surface_type {
-                    SurfaceType::Sphere => {
-                        ui.label("Radius");
-                        ui.add(egui::Slider::new(&mut self.sphere_radius, 0.1..=5.0));
-                    }
-                    SurfaceType::Torus => {
-                        ui.label("Major Radius (R)");
-                        ui.add(egui::Slider::new(&mut self.torus_major_radius, 1.0..=5.0));
-                        ui.label("Minor Radius (r)");
-                        ui.add(egui::Slider::new(&mut self.torus_minor_radius, 0.1..=2.0));
-                    }
-                    SurfaceType::KleinBottle => {
-                        ui.label("Radius");
-                        ui.add(egui::Slider::new(&mut self.klein_radius, 0.5..=5.0));
-                    }
+            ui.collapsing("Parameters", |ui| match self.surface_type {
+                SurfaceType::Sphere => {
+                    ui.label("Radius");
+                    ui.add(egui::Slider::new(&mut self.sphere_radius, 0.1..=5.0));
+                }
+                SurfaceType::Torus => {
+                    ui.label("Major Radius (R)");
+                    ui.add(egui::Slider::new(&mut self.torus_major_radius, 1.0..=5.0));
+                    ui.label("Minor Radius (r)");
+                    ui.add(egui::Slider::new(&mut self.torus_minor_radius, 0.1..=2.0));
+                }
+                SurfaceType::KleinBottle => {
+                    ui.label("Radius");
+                    ui.add(egui::Slider::new(&mut self.klein_radius, 0.5..=5.0));
                 }
             });
 
@@ -165,12 +169,16 @@ impl GeometryTopologyTool for SurfaceViewer {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             let surface: Box<dyn ParametricSurface> = match self.surface_type {
-                SurfaceType::Sphere => Box::new(Sphere { radius: self.sphere_radius }),
+                SurfaceType::Sphere => Box::new(Sphere {
+                    radius: self.sphere_radius,
+                }),
                 SurfaceType::Torus => Box::new(Torus {
                     major_radius: self.torus_major_radius,
-                    minor_radius: self.torus_minor_radius
+                    minor_radius: self.torus_minor_radius,
                 }),
-                SurfaceType::KleinBottle => Box::new(KleinBottle { radius: self.klein_radius }),
+                SurfaceType::KleinBottle => Box::new(KleinBottle {
+                    radius: self.klein_radius,
+                }),
             };
 
             let grid_lines = self.generate_grid_lines(surface.as_ref());

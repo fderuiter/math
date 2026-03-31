@@ -309,7 +309,12 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
                     egui::Color32::LIGHT_BLUE
                 };
 
-                painter.circle(screen_pos, node_radius, fill_color, (1.0, egui::Color32::WHITE));
+                painter.circle(
+                    screen_pos,
+                    node_radius,
+                    fill_color,
+                    (1.0, egui::Color32::WHITE),
+                );
 
                 let label = if self.selected_algorithm == Algorithm::Dijkstra && is_visited {
                     if let Some(dist) = self.distances.get(&id) {

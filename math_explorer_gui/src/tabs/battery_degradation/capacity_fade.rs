@@ -65,8 +65,12 @@ impl BatteryDegradationTool for CapacityFadeTool {
             let points: Vec<[f64; 2]> = (0..=100)
                 .map(|i| {
                     let cycle = (self.cycles_to_simulate / 100.0) * (i as f64);
-                    if let (Ok(c), Ok(d)) = (Cycles::new(cycle), dod_val.clone()) { let capacity = model.capacity(c, d);
-                    [cycle, capacity.as_f64()] } else { [cycle, 0.0] }
+                    if let (Ok(c), Ok(d)) = (Cycles::new(cycle), dod_val.clone()) {
+                        let capacity = model.capacity(c, d);
+                        [cycle, capacity.as_f64()]
+                    } else {
+                        [cycle, 0.0]
+                    }
                 })
                 .collect();
 
@@ -97,7 +101,11 @@ impl BatteryDegradationTool for CapacityFadeTool {
             ui.add_space(10.0);
 
             // Calculate N70 for current DoD
-            let n70 = if let Ok(d) = dod_val { model.n70(d).as_f64() } else { 0.0 };
+            let n70 = if let Ok(d) = dod_val {
+                model.n70(d).as_f64()
+            } else {
+                0.0
+            };
             ui.horizontal(|ui| {
                 ui.label(format!("Projected Cycle Life (to 70%): {:.0} cycles", n70));
             });

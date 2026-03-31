@@ -164,8 +164,10 @@ impl ParametricSurface for KleinBottle {
         // Standard "figure-8" immersion:
         // u \in [0, 2pi), v \in [0, 2pi)
         let r = self.radius;
-        let x = (r + r / 2.0 * v.cos() * (u / 2.0).cos() - r / 2.0 * v.sin() * (u / 2.0).sin()) * u.cos();
-        let y = (r + r / 2.0 * v.cos() * (u / 2.0).cos() - r / 2.0 * v.sin() * (u / 2.0).sin()) * u.sin();
+        let x = (r + r / 2.0 * v.cos() * (u / 2.0).cos() - r / 2.0 * v.sin() * (u / 2.0).sin())
+            * u.cos();
+        let y = (r + r / 2.0 * v.cos() * (u / 2.0).cos() - r / 2.0 * v.sin() * (u / 2.0).sin())
+            * u.sin();
         let z = r / 2.0 * v.sin() * (u / 2.0).cos() + r / 2.0 * v.cos() * (u / 2.0).sin();
         Point3::new(x, y, z)
     }

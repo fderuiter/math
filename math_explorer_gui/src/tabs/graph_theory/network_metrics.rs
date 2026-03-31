@@ -154,7 +154,8 @@ impl GraphTheoryTool for NetworkMetricsTool {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            let (response, painter) = ui.allocate_painter(ui.available_size(), egui::Sense::hover());
+            let (response, painter) =
+                ui.allocate_painter(ui.available_size(), egui::Sense::hover());
 
             let to_screen = eframe::egui::emath::RectTransform::from_to(
                 eframe::egui::Rect::from_min_size(Pos2::ZERO, response.rect.size()),
@@ -176,8 +177,12 @@ impl GraphTheoryTool for NetworkMetricsTool {
             let mut max_val = 0.0_f64;
             let mut min_val = f64::MAX;
             for &val in self.metric_values.values() {
-                if val > max_val { max_val = val; }
-                if val < min_val { min_val = val; }
+                if val > max_val {
+                    max_val = val;
+                }
+                if val < min_val {
+                    min_val = val;
+                }
             }
             let range = max_val - min_val;
 
@@ -187,7 +192,11 @@ impl GraphTheoryTool for NetworkMetricsTool {
                 let val = self.metric_values.get(&id).copied().unwrap_or(0.0);
 
                 // Color mapping: light blue (low) to red (high)
-                let t = if range > 0.0 { ((val - min_val) / range) as f32 } else { 0.5 };
+                let t = if range > 0.0 {
+                    ((val - min_val) / range) as f32
+                } else {
+                    0.5
+                };
 
                 let r = (173.0 + t * (255.0 - 173.0)) as u8;
                 let g = (216.0 - t * 216.0) as u8;
