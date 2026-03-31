@@ -4,8 +4,8 @@
 //!
 //! # Kinetic Models
 //!
-//! * **Michaelis-Menten**: $v = \frac{V_{max}[S]}{K_m + [S]}$
-//! * **Hill Kinetics**: $v = \frac{V_{max}[S]^n}{K_m^n + [S]^n}$
+//! * **Michaelis-Menten**: $v = \frac{V_{max}\[S\]}{K_m + \[S\]}$
+//! * **Hill Kinetics**: $v = \frac{V_{max}\[S\]^n}{K_m^n + \[S\]^n}$
 //!
 //! ##  Quick Start
 //!
@@ -41,13 +41,13 @@ pub enum KineticsError {
 
 /// Defines the interface for kinetic models.
 pub trait KineticsModel {
-    /// Calculates the reaction velocity for a given substrate concentration $[S]$.
+    /// Calculates the reaction velocity for a given substrate concentration $\[S\]$.
     fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError>;
 }
 
 /// Represents an enzymatic reaction following Michaelis-Menten kinetics.
 ///
-/// $$ v = \frac{V_{max}[S]}{K_m + [S]} $$
+/// $$ v = \frac{V_{max}\[S\]}{K_m + \[S\]} $$
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MichaelisMenten {
     /// Maximum reaction rate ($V_{max}$).
@@ -88,7 +88,23 @@ impl KineticsModel for MichaelisMenten {
 
 /// Represents an enzymatic reaction following Hill kinetics (cooperative binding).
 ///
-/// $$ v = \frac{V_{max}[S]^n}{K_m^n + [S]^n} $$
+/// $$ v = \frac{V_{max}\[S\]^n}{K_m^n + \[S\]^n} $$
+///
+/// # Examples
+///
+/// ```rust
+/// use math_explorer::biology::kinetics::{HillKinetics, KineticsModel};
+///
+/// // Create a cooperative enzyme with Hill coefficient n=2.0
+/// let cooperative_enzyme = HillKinetics::new(100.0, 50.0, 2.0).expect("Invalid parameters");
+///
+/// // Calculate velocity at substrate concentration 100.0
+/// let velocity = cooperative_enzyme.reaction_velocity(100.0).expect("Substrate must be non-negative");
+///
+/// // With positive cooperativity, the velocity is higher than Michaelis-Menten
+/// // v = 100 * 100^2 / (50^2 + 100^2) = 100 * 10000 / 12500 = 80.0
+/// assert!((velocity - 80.0).abs() < 1e-6);
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct HillKinetics {
     /// Maximum reaction rate ($V_{max}$).
