@@ -157,7 +157,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `pure_math::differential_geometry` / `pure_math::topology`
 *   **Features:**
     *   [x] **Surface Viewer:** 3D parametric surface plotter (torus, sphere, klein bottle).
-    *   [ ] **Curvature Heatmap:** Color-code surfaces by Gaussian or Mean curvature.
+    *   [x] **Curvature Heatmap:** Color-code surfaces by Gaussian or Mean curvature.
     *   [ ] **Simplicial Complexes:** Visualization of Vietoris-Rips complexes from point clouds (TDA).
 
 ---

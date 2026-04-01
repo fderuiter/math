@@ -95,9 +95,8 @@ pub fn perceptual_loss(pred: &Tensor, target: &Tensor, vgg_features: &Vgg19Featu
     total_loss
 }
 
-/// Computes the adversarial loss for the generator (adv-NO).
-/// Implements the relativistic average GAN (RaGAN) loss.
-pub fn generator_loss(real_pred: &Tensor, fake_pred: &Tensor) -> Tensor {
+/// Computes the relativistic average GAN (RaGAN) loss.
+pub fn ragan_loss(real_pred: &Tensor, fake_pred: &Tensor) -> Tensor {
     let real_avg = real_pred.mean(Kind::Float);
     let fake_avg = fake_pred.mean(Kind::Float);
     let real_loss = (real_pred - &fake_avg).binary_cross_entropy_with_logits(
@@ -115,24 +114,16 @@ pub fn generator_loss(real_pred: &Tensor, fake_pred: &Tensor) -> Tensor {
     real_loss + fake_loss
 }
 
+/// Computes the adversarial loss for the generator (adv-NO).
+/// Implements the relativistic average GAN (RaGAN) loss.
+pub fn generator_loss(real_pred: &Tensor, fake_pred: &Tensor) -> Tensor {
+    ragan_loss(real_pred, fake_pred)
+}
+
 /// Computes the adversarial loss for the discriminator.
 /// Implements the relativistic average GAN (RaGAN) loss.
 pub fn discriminator_loss(real_pred: &Tensor, fake_pred: &Tensor) -> Tensor {
-    let real_avg = real_pred.mean(Kind::Float);
-    let fake_avg = fake_pred.mean(Kind::Float);
-    let real_loss = (real_pred - &fake_avg).binary_cross_entropy_with_logits(
-        &Tensor::ones_like(real_pred),
-        Option::<Tensor>::None,
-        Option::<Tensor>::None,
-        tch::Reduction::Mean,
-    );
-    let fake_loss = (fake_pred - &real_avg).binary_cross_entropy_with_logits(
-        &Tensor::zeros_like(fake_pred),
-        Option::<Tensor>::None,
-        Option::<Tensor>::None,
-        tch::Reduction::Mean,
-    );
-    real_loss + fake_loss
+    ragan_loss(real_pred, fake_pred)
 }
 
 /// Computes the score-matching loss for the diffusion model.
