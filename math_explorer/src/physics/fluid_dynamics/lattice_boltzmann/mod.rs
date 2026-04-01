@@ -312,7 +312,11 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                 for x in 1..width - 1 {
                     let idx = idx_row + x;
 
-                    // SAFETY: We are within 1..W-1 and 1..H-1, so idx is valid.
+                    // SAFETY: `idx` is calculated as `y * width + x`.
+                    // The loops constrain `y` to `1..height - 1` and `x` to `1..width - 1`.
+                    // Therefore, the maximum `idx` is `(height - 2) * width + (width - 2)`,
+                    // which is `< width * height`. We previously asserted that
+                    // `obstacles.len() == width * height`, guaranteeing this access is within bounds.
                     let is_obstacle = unsafe { *self.state.obstacles.get_unchecked(idx) };
                     if is_obstacle {
                         continue;
@@ -325,7 +329,13 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                         // So idx + offset >= 0.
                         let prev_idx = (idx as isize + offsets[k]) as usize;
 
-                        // SAFETY: prev_idx is valid. k and opp[k] are < Q.
+                        // SAFETY: `prev_idx` is calculated by applying a directional offset to `idx`.
+                        // The offsets correspond to the lattice directions (0, ±1) scaled by `width` for y.
+                        // Because `x` and `y` are strictly in the interior (`1..width-1`, `1..height-1`),
+                        // `x + dx` is in `0..width` and `y + dy` is in `0..height`.
+                        // Thus `prev_idx` is strictly `< width * height`. We asserted that `obstacles`, `f`,
+                        // and `f_new` all have length `width * height`.
+                        // Furthermore, `k` and `opp[k]` are both `< Q` by construction of the lattice model.
                         unsafe {
                             let source_is_obstacle = *self.state.obstacles.get_unchecked(prev_idx);
 
