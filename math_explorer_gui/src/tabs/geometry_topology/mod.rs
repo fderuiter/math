@@ -1,6 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod curvature_heatmap;
 pub mod surface_viewer;
 
 /// A trait for sub-tools within the Geometry & Topology tab.
@@ -20,7 +21,10 @@ pub struct GeometryTopologyTab {
 impl Default for GeometryTopologyTab {
     fn default() -> Self {
         Self {
-            tools: vec![Box::new(surface_viewer::SurfaceViewer::default())],
+            tools: vec![
+                Box::new(surface_viewer::SurfaceViewer::default()),
+                Box::new(curvature_heatmap::CurvatureHeatmap::default()),
+            ],
             selected_tool_index: 0,
         }
     }
