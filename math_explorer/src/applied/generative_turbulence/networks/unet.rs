@@ -117,6 +117,105 @@ impl Module for UpsampleBlock {
 }
 
 
+/// A builder for constructing a `UNet`.
+///
+/// This implements the **Builder Pattern** to mitigate construction risks
+/// caused by having multiple `i64` parameters with the same type.
+#[derive(Debug, Clone, Copy)]
+pub struct UNetBuilder {
+    c_in: i64,
+    c_out: i64,
+    c_init: i64,
+    time_emb_dim: Option<i64>,
+}
+
+impl Default for UNetBuilder {
+    fn default() -> Self {
+        Self {
+            c_in: 3,
+            c_out: 3,
+            c_init: 64,
+            time_emb_dim: None,
+        }
+    }
+}
+
+impl UNetBuilder {
+    /// Creates a new builder with default parameters.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Sets the number of input channels.
+    pub fn c_in(mut self, c_in: i64) -> Self {
+        self.c_in = c_in;
+        self
+    }
+
+    /// Sets the number of output channels.
+    pub fn c_out(mut self, c_out: i64) -> Self {
+        self.c_out = c_out;
+        self
+    }
+
+    /// Sets the initial number of channels for the internal convolutional blocks.
+    pub fn c_init(mut self, c_init: i64) -> Self {
+        self.c_init = c_init;
+        self
+    }
+
+    /// Sets the dimension of the time embedding. If `None`, time conditioning is disabled.
+    pub fn time_emb_dim(mut self, time_emb_dim: Option<i64>) -> Self {
+        self.time_emb_dim = time_emb_dim;
+        self
+    }
+
+    /// Builds the `UNet` module.
+    ///
+    /// # Arguments
+    /// * `p` - The path to the variable store.
+    pub fn build(self, p: &Path) -> UNet {
+        let time_embedding = self.time_emb_dim.map(|dim| TimeEmbedding::new(&(p / "time_emb"), dim));
+        let time_dim_for_blocks = self.time_emb_dim;
+
+        let down1 = DownBlock::new(&(p / "d1"), self.c_in, self.c_init, time_dim_for_blocks);
+        let down2 = DownBlock::new(&(p / "d2"), self.c_init, self.c_init * 2, time_dim_for_blocks);
+        let down3 = DownBlock::new(&(p / "d3"), self.c_init * 2, self.c_init * 4, time_dim_for_blocks);
+        let down4 = DownBlock::new(&(p / "d4"), self.c_init * 4, self.c_init * 8, time_dim_for_blocks);
+
+        let bottleneck = conv_block(&(p / "bn"), self.c_init * 8, self.c_init * 16);
+
+        let up1 = UpBlock::new(&(p / "u1"), self.c_init * 16 + self.c_init * 8, self.c_init * 8, time_dim_for_blocks);
+        let up2 = UpBlock::new(&(p / "u2"), self.c_init * 8 + self.c_init * 4, self.c_init * 4, time_dim_for_blocks);
+        let up3 = UpBlock::new(&(p / "u3"), self.c_init * 4 + self.c_init * 2, self.c_init * 2, time_dim_for_blocks);
+        let up4 = UpBlock::new(&(p / "u4"), self.c_init * 2 + self.c_init, self.c_init, time_dim_for_blocks);
+
+        // Upsampling path for super-resolution (3 blocks for 8x)
+        let upsample1 = UpsampleBlock::new(&(p / "up1"), self.c_init);
+        let upsample2 = UpsampleBlock::new(&(p / "up2"), self.c_init);
+        let upsample3 = UpsampleBlock::new(&(p / "up3"), self.c_init);
+
+        let final_conv = nn::conv2d(p / "final", self.c_init, self.c_out, 3, nn::ConvConfig{ padding: 1, ..Default::default() });
+
+        UNet {
+            time_embedding,
+            down1,
+            down2,
+            down3,
+            down4,
+            bottleneck,
+            up1,
+            up2,
+            up3,
+            up4,
+            upsample1,
+            upsample2,
+            upsample3,
+            final_conv,
+        }
+    }
+}
+
 /// A U-Net model, configurable for 2D inputs and optional time conditioning.
 #[derive(Debug)]
 pub struct UNet {
@@ -137,45 +236,19 @@ pub struct UNet {
 }
 
 impl UNet {
+    /// Creates a new `UNet`.
+    ///
+    /// # Deprecation Notice
+    /// This method is deprecated due to parameter confusion risks (Primitive Obsession).
+    /// Prefer using `UNetBuilder::new().c_in(..).c_out(..).build(p)`.
+    #[deprecated(note = "Use UNetBuilder instead")]
     pub fn new(p: &Path, c_in: i64, c_out: i64, c_init: i64, time_emb_dim: Option<i64>) -> Self {
-        let time_embedding = time_emb_dim.map(|dim| TimeEmbedding::new(&(p / "time_emb"), dim));
-        let time_dim_for_blocks = time_emb_dim;
-
-        let down1 = DownBlock::new(&(p / "d1"), c_in, c_init, time_dim_for_blocks);
-        let down2 = DownBlock::new(&(p / "d2"), c_init, c_init * 2, time_dim_for_blocks);
-        let down3 = DownBlock::new(&(p / "d3"), c_init * 2, c_init * 4, time_dim_for_blocks);
-        let down4 = DownBlock::new(&(p / "d4"), c_init * 4, c_init * 8, time_dim_for_blocks);
-
-        let bottleneck = conv_block(&(p / "bn"), c_init * 8, c_init * 16);
-
-        let up1 = UpBlock::new(&(p / "u1"), c_init * 16 + c_init * 8, c_init * 8, time_dim_for_blocks);
-        let up2 = UpBlock::new(&(p / "u2"), c_init * 8 + c_init * 4, c_init * 4, time_dim_for_blocks);
-        let up3 = UpBlock::new(&(p / "u3"), c_init * 4 + c_init * 2, c_init * 2, time_dim_for_blocks);
-        let up4 = UpBlock::new(&(p / "u4"), c_init * 2 + c_init, c_init, time_dim_for_blocks);
-
-        // Upsampling path for super-resolution (3 blocks for 8x)
-        let upsample1 = UpsampleBlock::new(&(p / "up1"), c_init);
-        let upsample2 = UpsampleBlock::new(&(p / "up2"), c_init);
-        let upsample3 = UpsampleBlock::new(&(p / "up3"), c_init);
-
-        let final_conv = nn::conv2d(p / "final", c_init, c_out, 3, nn::ConvConfig{ padding: 1, ..Default::default() });
-
-        UNet {
-            time_embedding,
-            down1,
-            down2,
-            down3,
-            down4,
-            bottleneck,
-            up1,
-            up2,
-            up3,
-            up4,
-            upsample1,
-            upsample2,
-            upsample3,
-            final_conv,
-        }
+        UNetBuilder::new()
+            .c_in(c_in)
+            .c_out(c_out)
+            .c_init(c_init)
+            .time_emb_dim(time_emb_dim)
+            .build(p)
     }
 
     /// The forward pass for the U-Net.
