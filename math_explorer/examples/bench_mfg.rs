@@ -1,4 +1,4 @@
-use math_explorer::applied::game_theory::mean_field::MeanFieldGame1D;
+use math_explorer::applied::game_theory::mean_field::{Density, MeanFieldGame1D, Position};
 use std::time::Instant;
 
 fn main() {
@@ -22,9 +22,9 @@ fn main() {
 
     let mfg = MeanFieldGame1D::new(0.1, 1.0, grid_points, time_steps, -2.0, 2.0);
 
-    let cost_fn = |x: f64, m: f64| -> f64 { m + x * x };
-    let term_fn = |x: f64, _m: f64| -> f64 { x * x };
-    let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
+    let cost_fn = |p: Position, d: Density| -> f64 { d.0 + p.0 * p.0 };
+    let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
+    let init_dist = |p: Position| -> f64 { (-p.0 * p.0 * 5.0).exp() };
 
     println!("Starting solve...");
     let start = Instant::now();
