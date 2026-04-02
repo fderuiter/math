@@ -425,32 +425,130 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
 
     // --- Accessors ---
 
+    /// Retrieves the number of grid points along the horizontal (X) axis.
+    ///
+    /// # Returns
+    ///
+    /// The width of the simulation domain.
     pub fn width(&self) -> usize {
         self.state.width
     }
 
+    /// Retrieves the number of grid points along the vertical (Y) axis.
+    ///
+    /// # Returns
+    ///
+    /// The height of the simulation domain.
     pub fn height(&self) -> usize {
         self.state.height
     }
 
+    /// Retrieves the macroscopic fluid density ($\rho$) at the specified coordinates.
+    ///
+    /// # Arguments
+    ///
+    /// * `x` - The horizontal coordinate.
+    /// * `y` - The vertical coordinate.
+    ///
+    /// # Returns
+    ///
+    /// A `f64` representing the macroscopic fluid density at the cell.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
     pub fn get_density(&self, x: usize, y: usize) -> f64 {
         self.state.rho[self.state.index(x, y)]
     }
 
+    /// Retrieves the macroscopic fluid velocity $(u_x, u_y)$ at the specified coordinates.
+    ///
+    /// # Arguments
+    ///
+    /// * `x` - The horizontal coordinate.
+    /// * `y` - The vertical coordinate.
+    ///
+    /// # Returns
+    ///
+    /// A tuple `(f64, f64)` containing the horizontal and vertical velocity components.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use math_explorer::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
+    ///
+    /// let solver = LatticeBoltzmannD2Q9::new(10, 10, 1.0);
+    /// let (ux, uy) = solver.get_velocity(5, 5);
+    ///
+    /// // The simulation initializes at rest (equilibrium).
+    /// assert_eq!(ux, 0.0);
+    /// assert_eq!(uy, 0.0);
+    /// ```
     pub fn get_velocity(&self, x: usize, y: usize) -> (f64, f64) {
         let idx = self.state.index(x, y);
         (self.state.ux[idx], self.state.uy[idx])
     }
 
+    /// Calculates the magnitude of the macroscopic fluid velocity at the specified coordinates.
+    ///
+    /// Computes the Euclidean norm of the velocity vector: $\sqrt{u_x^2 + u_y^2}$.
+    ///
+    /// # Arguments
+    ///
+    /// * `x` - The horizontal coordinate.
+    /// * `y` - The vertical coordinate.
+    ///
+    /// # Returns
+    ///
+    /// A `f64` representing the total speed of the fluid at the cell.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
     pub fn get_velocity_magnitude(&self, x: usize, y: usize) -> f64 {
         let idx = self.state.index(x, y);
         (self.state.ux[idx].powi(2) + self.state.uy[idx].powi(2)).sqrt()
     }
 
+    /// Checks if a given cell is marked as an obstacle.
+    ///
+    /// Obstacles enforce the bounce-back boundary condition during the collision step,
+    /// driving the fluid velocity at their coordinates to exactly zero.
+    ///
+    /// # Arguments
+    ///
+    /// * `x` - The horizontal coordinate.
+    /// * `y` - The vertical coordinate.
+    ///
+    /// # Returns
+    ///
+    /// `true` if the cell is an obstacle, `false` otherwise.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
     pub fn is_obstacle(&self, x: usize, y: usize) -> bool {
         self.state.obstacles[self.state.index(x, y)]
     }
 
+    /// Clears all obstacles from the lattice.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use math_explorer::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
+    ///
+    /// let mut solver = LatticeBoltzmannD2Q9::new(10, 10, 1.0);
+    /// solver.set_obstacle(5, 5, true);
+    /// assert!(solver.is_obstacle(5, 5));
+    ///
+    /// solver.clear_obstacles();
+    /// assert!(!solver.is_obstacle(5, 5));
+    /// ```
     pub fn clear_obstacles(&mut self) {
         for b in &mut self.state.obstacles {
             *b = false;
