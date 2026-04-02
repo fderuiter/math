@@ -11,30 +11,15 @@ fn test_revenue_simulation_deterministic() {
 
     // Seed 1
     let mut rng1 = StdRng::seed_from_u64(12345);
-    let rev1 = simulate_optimal_revenue_with_rng(
-        &dist,
-        n_bidders,
-        n_simulations,
-        &mut rng1,
-    );
+    let rev1 = simulate_optimal_revenue_with_rng(&dist, n_bidders, n_simulations, &mut rng1);
 
     // Seed 2
     let mut rng2 = StdRng::seed_from_u64(12345);
-    let rev2 = simulate_optimal_revenue_with_rng(
-        &dist,
-        n_bidders,
-        n_simulations,
-        &mut rng2,
-    );
+    let rev2 = simulate_optimal_revenue_with_rng(&dist, n_bidders, n_simulations, &mut rng2);
 
     // Seed 3
     let mut rng3 = StdRng::seed_from_u64(67890);
-    let rev3 = simulate_optimal_revenue_with_rng(
-        &dist,
-        n_bidders,
-        n_simulations,
-        &mut rng3,
-    );
+    let rev3 = simulate_optimal_revenue_with_rng(&dist, n_bidders, n_simulations, &mut rng3);
 
     assert_eq!(
         rev1, rev2,

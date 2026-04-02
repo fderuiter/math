@@ -134,15 +134,9 @@ mod tests {
         let point_one = DVector::from_vec(vec![1.0]);
 
         // x=0 => f(0)=0. 0 is in {y | |y-0| < eps}. True.
-        assert!(is_fixed_point(
-            &correspondence,
-            &point_zero
-        ));
+        assert!(is_fixed_point(&correspondence, &point_zero));
 
         // x=1 => f(1)=0.5. 1 is NOT in {y | |y-0.5| < eps}. False.
-        assert!(!is_fixed_point(
-            &correspondence,
-            &point_one
-        ));
+        assert!(!is_fixed_point(&correspondence, &point_one));
     }
 }
