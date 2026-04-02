@@ -1,3 +1,11 @@
+/// Represents a 1D spatial position.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct Position(pub f64);
+
+/// Represents a probability density value.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct Density(pub f64);
+
 /// Represents a 1D Mean Field Game (MFG) configuration.
 ///
 /// # Field Descriptions

@@ -20,13 +20,14 @@
 //!
 //! // 2. Define Costs and Initial Distribution
 //! // Running Cost: F(x, m) = m + x^2 (Agents dislike crowds + prefer origin)
-//! let cost_fn = |x: f64, m: f64| -> f64 { m + x * x };
+//! use math_explorer::applied::game_theory::mean_field::types::{Density, Position};
+//! let cost_fn = |p: Position, d: Density| -> f64 { d.0 + p.0 * p.0 };
 //!
 //! // Terminal Cost: G(x) = x^2 (Agents want to be at origin at T)
-//! let term_fn = |x: f64, _m: f64| -> f64 { x * x };
+//! let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
 //!
 //! // Initial Distribution: Gaussian centered at origin
-//! let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
+//! let init_dist = |p: Position| -> f64 { (-p.0 * p.0 * 5.0).exp() };
 //!
 //! // 3. Solve using Fixed Point Iteration
 //! let solver = FixedPointSolver::new(5); // 5 Iterations
@@ -41,7 +42,7 @@ pub mod types;
 
 pub use physics::{Hamiltonian, QuadraticHamiltonian};
 pub use solver::{FixedPointSolver, MFGSolver};
-pub use types::MFGConfig;
+pub use types::{Density, MFGConfig, Position};
 
 // Re-export for backward compatibility, though the API has changed slightly (requires solver struct).
 // We can provide a type alias if MeanFieldGame1D was just a struct.
@@ -77,9 +78,9 @@ impl MeanFieldGame1D {
 
     pub fn solve(
         &self,
-        cost_function: impl Fn(f64, f64) -> f64,
-        terminal_cost: impl Fn(f64, f64) -> f64,
-        initial_distribution: impl Fn(f64) -> f64,
+        cost_function: impl Fn(Position, Density) -> f64,
+        terminal_cost: impl Fn(Position, Density) -> f64,
+        initial_distribution: impl Fn(Position) -> f64,
         iterations: usize,
     ) -> (nalgebra::DMatrix<f64>, nalgebra::DMatrix<f64>) {
         let solver = FixedPointSolver::new(iterations);
@@ -100,9 +101,9 @@ mod tests {
     fn test_mfg_run_legacy() {
         let mfg = MeanFieldGame1D::new(0.1, 1.0, 50, 100, -2.0, 2.0);
 
-        let cost_fn = |x: f64, m: f64| -> f64 { m + x * x };
-        let term_fn = |x: f64, _m: f64| -> f64 { x * x };
-        let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
+        let cost_fn = |p: Position, d: Density| -> f64 { d.0 + p.0 * p.0 };
+        let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
+        let init_dist = |p: Position| -> f64 { (-p.0 * p.0 * 5.0).exp() };
 
         let (u, m) = mfg.solve(cost_fn, term_fn, init_dist, 5);
 
@@ -117,9 +118,9 @@ mod tests {
         let hamiltonian = QuadraticHamiltonian::new(2.0);
         let solver = FixedPointSolver::new_with_hamiltonian(5, hamiltonian);
 
-        let cost_fn = |x: f64, m: f64| -> f64 { m + x * x };
-        let term_fn = |x: f64, _m: f64| -> f64 { x * x };
-        let init_dist = |x: f64| -> f64 { (-x * x * 5.0).exp() };
+        let cost_fn = |p: Position, d: Density| -> f64 { d.0 + p.0 * p.0 };
+        let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
+        let init_dist = |p: Position| -> f64 { (-p.0 * p.0 * 5.0).exp() };
 
         let (u, m) = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
 

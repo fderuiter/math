@@ -1,5 +1,5 @@
 use super::physics::{Hamiltonian, QuadraticHamiltonian};
-use super::types::MFGConfig;
+use super::types::{Density, MFGConfig, Position};
 use nalgebra::DMatrix;
 
 /// Strategy trait for solving Mean Field Games.
@@ -20,9 +20,9 @@ pub trait MFGSolver {
     fn solve(
         &self,
         config: &MFGConfig,
-        cost_function: &impl Fn(f64, f64) -> f64,
-        terminal_cost: &impl Fn(f64, f64) -> f64,
-        initial_distribution: &impl Fn(f64) -> f64,
+        cost_function: &impl Fn(Position, Density) -> f64,
+        terminal_cost: &impl Fn(Position, Density) -> f64,
+        initial_distribution: &impl Fn(Position) -> f64,
     ) -> (DMatrix<f64>, DMatrix<f64>);
 }
 
@@ -59,9 +59,9 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
     fn solve(
         &self,
         config: &MFGConfig,
-        cost_function: &impl Fn(f64, f64) -> f64,
-        terminal_cost: &impl Fn(f64, f64) -> f64,
-        initial_distribution: &impl Fn(f64) -> f64,
+        cost_function: &impl Fn(Position, Density) -> f64,
+        terminal_cost: &impl Fn(Position, Density) -> f64,
+        initial_distribution: &impl Fn(Position) -> f64,
     ) -> (DMatrix<f64>, DMatrix<f64>) {
         let nx = config.grid_points;
         let nt = config.time_steps;
@@ -77,7 +77,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
 
         // Initialize m at t=0
         for i in 0..nx {
-            m[(i, 0)] = initial_distribution(xs[i]);
+            m[(i, 0)] = initial_distribution(Position(xs[i]));
         }
 
         // Normalize initial distribution
@@ -96,7 +96,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
             // 1. Solve HJB Backward
             // Terminal condition
             for i in 0..nx {
-                u[(i, nt)] = terminal_cost(xs[i], m[(i, nt)]);
+                u[(i, nt)] = terminal_cost(Position(xs[i]), Density(m[(i, nt)]));
             }
 
             // Backward in time
@@ -112,7 +112,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
                         / (config.dx * config.dx);
 
                     let hamiltonian = self.hamiltonian.evaluate(du_dx);
-                    let running_cost = cost_function(x, m[(i, n + 1)]);
+                    let running_cost = cost_function(Position(x), Density(m[(i, n + 1)]));
 
                     u[(i, n)] = u[(i, n + 1)]
                         - config.dt * (hamiltonian - config.viscosity * d2u_dx2 - running_cost);
