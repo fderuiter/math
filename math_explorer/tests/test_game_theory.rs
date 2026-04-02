@@ -27,7 +27,12 @@ fn test_equilibrium_integration() {
 fn test_mean_field_integration() {
     let mfg = MeanFieldGame1D::new(0.1, 1.0, 10, 10, -1.0, 1.0);
     // Just ensure it runs without panic
-    let _res = mfg.solve(|_p: Position, d: Density| d.0 * d.0, |_p: Position, _d: Density| 0.0, |_p: Position| 1.0, 2);
+    let _res = mfg.solve(
+        |_p: Position, d: Density| d.0 * d.0,
+        |_p: Position, _d: Density| 0.0,
+        |_p: Position| 1.0,
+        2,
+    );
 }
 
 #[test]
