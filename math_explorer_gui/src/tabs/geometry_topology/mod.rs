@@ -2,6 +2,7 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod curvature_heatmap;
+pub mod simplicial_complexes;
 pub mod surface_viewer;
 
 /// A trait for sub-tools within the Geometry & Topology tab.
@@ -24,6 +25,7 @@ impl Default for GeometryTopologyTab {
             tools: vec![
                 Box::new(surface_viewer::SurfaceViewer::default()),
                 Box::new(curvature_heatmap::CurvatureHeatmap::default()),
+                Box::new(simplicial_complexes::SimplicialComplexesTool::default()),
             ],
             selected_tool_index: 0,
         }

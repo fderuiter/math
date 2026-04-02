@@ -158,7 +158,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Features:**
     *   [x] **Surface Viewer:** 3D parametric surface plotter (torus, sphere, klein bottle).
     *   [x] **Curvature Heatmap:** Color-code surfaces by Gaussian or Mean curvature.
-    *   [ ] **Simplicial Complexes:** Visualization of Vietoris-Rips complexes from point clouds (TDA).
+    *   [x] **Simplicial Complexes:** Visualization of Vietoris-Rips complexes from point clouds (TDA).
 
 ---
 

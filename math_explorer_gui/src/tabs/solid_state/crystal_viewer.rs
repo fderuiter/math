@@ -1,11 +1,21 @@
 use super::SolidStateTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
-use math_explorer::physics::solid_state::lattice::CrystalSystem;
+use math_explorer::physics::solid_state::lattice::{
+    BodyCenteredCubic, CrystalSystem, FaceCenteredCubic, SimpleCubic,
+};
 use nalgebra::Vector3;
 
+#[derive(PartialEq)]
+#[allow(clippy::enum_variant_names)]
+pub enum CrystalSystemEnum {
+    SimpleCubic,
+    BodyCenteredCubic,
+    FaceCenteredCubic,
+}
+
 pub struct CrystalViewer {
-    system: CrystalSystem,
+    system: CrystalSystemEnum,
     lattice_constant: f64,
 
     // Camera
@@ -17,7 +27,7 @@ pub struct CrystalViewer {
 impl Default for CrystalViewer {
     fn default() -> Self {
         Self {
-            system: CrystalSystem::FaceCenteredCubic,
+            system: CrystalSystemEnum::FaceCenteredCubic,
             lattice_constant: 2.0,
             yaw: 0.5,
             pitch: 0.5,
@@ -104,16 +114,29 @@ impl SolidStateTool for CrystalViewer {
             ui.separator();
 
             ui.label("Crystal System");
-            egui::ComboBox::from_label("System")
-                .selected_text(format!("{:?}", self.system))
+            let selected_text = match self.system {
+                CrystalSystemEnum::SimpleCubic => "Simple Cubic",
+                CrystalSystemEnum::BodyCenteredCubic => "BCC",
+                CrystalSystemEnum::FaceCenteredCubic => "FCC",
+            };
+            egui::ComboBox::from_id_salt("System")
+                .selected_text(selected_text)
                 .show_ui(ui, |ui| {
                     ui.selectable_value(
                         &mut self.system,
-                        CrystalSystem::SimpleCubic,
+                        CrystalSystemEnum::SimpleCubic,
                         "Simple Cubic",
                     );
-                    ui.selectable_value(&mut self.system, CrystalSystem::BodyCenteredCubic, "BCC");
-                    ui.selectable_value(&mut self.system, CrystalSystem::FaceCenteredCubic, "FCC");
+                    ui.selectable_value(
+                        &mut self.system,
+                        CrystalSystemEnum::BodyCenteredCubic,
+                        "BCC",
+                    );
+                    ui.selectable_value(
+                        &mut self.system,
+                        CrystalSystemEnum::FaceCenteredCubic,
+                        "FCC",
+                    );
                 });
 
             ui.label("Lattice Constant (a)");
@@ -137,7 +160,17 @@ impl SolidStateTool for CrystalViewer {
                     self.draw_unit_cell_box(plot_ui);
 
                     // Draw Atoms
-                    let unit_cell = self.system.generate(self.lattice_constant);
+                    let unit_cell = match self.system {
+                        CrystalSystemEnum::SimpleCubic => {
+                            SimpleCubic.generate(self.lattice_constant)
+                        }
+                        CrystalSystemEnum::BodyCenteredCubic => {
+                            BodyCenteredCubic.generate(self.lattice_constant)
+                        }
+                        CrystalSystemEnum::FaceCenteredCubic => {
+                            FaceCenteredCubic.generate(self.lattice_constant)
+                        }
+                    };
                     let points: Vec<[f64; 2]> = unit_cell
                         .atomic_positions
                         .iter()
