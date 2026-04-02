@@ -67,15 +67,28 @@ pub trait Correspondence {
     fn is_in_image(&self, source: &DVector<f64>, target: &DVector<f64>) -> bool;
 }
 
+/// Checks if $x^* \in \phi(x^*)$.
+///
+/// If this returns true, `point` represents a Nash Equilibrium (or a fixed point of the dynamical system).
+pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64>) -> bool {
+    correspondence.is_in_image(point, point)
+}
+
 /// Verifies if a point is a fixed point for the given correspondence.
+#[deprecated(
+    since = "0.2.0",
+    note = "FixedPointVerifier struct is deprecated. Use the module-level is_fixed_point function directly."
+)]
 pub struct FixedPointVerifier;
 
+#[allow(deprecated)]
 impl FixedPointVerifier {
-    /// Checks if $x^* \in \phi(x^*)$.
-    ///
-    /// If this returns true, `point` represents a Nash Equilibrium (or a fixed point of the dynamical system).
+    #[deprecated(
+        since = "0.2.0",
+        note = "Use the module-level is_fixed_point function directly."
+    )]
     pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64>) -> bool {
-        correspondence.is_in_image(point, point)
+        is_fixed_point(correspondence, point)
     }
 }
 
@@ -121,13 +134,13 @@ mod tests {
         let point_one = DVector::from_vec(vec![1.0]);
 
         // x=0 => f(0)=0. 0 is in {y | |y-0| < eps}. True.
-        assert!(FixedPointVerifier::is_fixed_point(
+        assert!(is_fixed_point(
             &correspondence,
             &point_zero
         ));
 
         // x=1 => f(1)=0.5. 1 is NOT in {y | |y-0.5| < eps}. False.
-        assert!(!FixedPointVerifier::is_fixed_point(
+        assert!(!is_fixed_point(
             &correspondence,
             &point_one
         ));

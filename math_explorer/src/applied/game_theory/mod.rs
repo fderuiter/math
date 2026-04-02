@@ -37,7 +37,7 @@
 //! According to Myerson's Lemma, this is where the virtual valuation $J(v) = 0$.
 //!
 //! ```rust
-//! use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
+//! use math_explorer::applied::game_theory::mechanism_design::optimal_reserve_price;
 //! use statrs::distribution::Uniform;
 //!
 //! fn main() {
@@ -45,7 +45,7 @@
 //!     let valuation_dist = Uniform::new(0.0, 100.0).unwrap();
 //!
 //!     // Calculate the revenue-maximizing reserve price
-//!     let reserve_price = MechanismDesign::optimal_reserve_price(&valuation_dist, 0.0, 100.0);
+//!     let reserve_price = optimal_reserve_price(&valuation_dist, 0.0, 100.0);
 //!
 //!     println!("Optimal Reserve Price: ${:.2}", reserve_price);
 //!     // For Uniform(0, 100), the answer is $50.

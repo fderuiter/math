@@ -1,4 +1,4 @@
-use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
+use math_explorer::applied::game_theory::mechanism_design::simulate_optimal_revenue_with_rng;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 use statrs::distribution::Uniform;
@@ -11,7 +11,7 @@ fn test_revenue_simulation_deterministic() {
 
     // Seed 1
     let mut rng1 = StdRng::seed_from_u64(12345);
-    let rev1 = MechanismDesign::simulate_optimal_revenue_with_rng(
+    let rev1 = simulate_optimal_revenue_with_rng(
         &dist,
         n_bidders,
         n_simulations,
@@ -20,7 +20,7 @@ fn test_revenue_simulation_deterministic() {
 
     // Seed 2
     let mut rng2 = StdRng::seed_from_u64(12345);
-    let rev2 = MechanismDesign::simulate_optimal_revenue_with_rng(
+    let rev2 = simulate_optimal_revenue_with_rng(
         &dist,
         n_bidders,
         n_simulations,
@@ -29,7 +29,7 @@ fn test_revenue_simulation_deterministic() {
 
     // Seed 3
     let mut rng3 = StdRng::seed_from_u64(67890);
-    let rev3 = MechanismDesign::simulate_optimal_revenue_with_rng(
+    let rev3 = simulate_optimal_revenue_with_rng(
         &dist,
         n_bidders,
         n_simulations,
