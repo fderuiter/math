@@ -118,7 +118,10 @@ impl CurvatureHeatmap {
         egui::Color32::from_rgb(r, g, b)
     }
 
-    fn generate_colored_lines<T: ParametricSurface>(&self, surface: &T) -> Vec<(Vec<[f64; 2]>, egui::Color32)> {
+    fn generate_colored_lines<T: ParametricSurface>(
+        &self,
+        surface: &T,
+    ) -> Vec<(Vec<[f64; 2]>, egui::Color32)> {
         let mut lines = Vec::new();
 
         let u_min = 0.0;
@@ -132,7 +135,11 @@ impl CurvatureHeatmap {
 
         let mut curvature_map = vec![vec![0.0; self.v_resolution + 1]; self.u_resolution + 1];
 
-        for (i, row) in curvature_map.iter_mut().enumerate().take(self.u_resolution + 1) {
+        for (i, row) in curvature_map
+            .iter_mut()
+            .enumerate()
+            .take(self.u_resolution + 1)
+        {
             let u = u_min + (u_max - u_min) * (i as f64 / self.u_resolution as f64);
             for (j, item) in row.iter_mut().enumerate().take(self.v_resolution + 1) {
                 let v = v_min + (v_max - v_min) * (j as f64 / self.v_resolution as f64);
@@ -167,23 +174,23 @@ impl CurvatureHeatmap {
                 let p2 = surface.position(u_start, v_end);
 
                 let c1 = curvature_map[i][j];
-                let c2 = curvature_map[i][j+1];
+                let c2 = curvature_map[i][j + 1];
                 let avg_curvature = (c1 + c2) / 2.0;
 
                 lines.push((
                     vec![self.project(p1), self.project(p2)],
-                    self.map_color(avg_curvature, min_curvature, max_curvature)
+                    self.map_color(avg_curvature, min_curvature, max_curvature),
                 ));
 
                 // Segment 2: u_start, v_start to u_end, v_start
                 let p3 = surface.position(u_end, v_start);
 
-                let c3 = curvature_map[i+1][j];
+                let c3 = curvature_map[i + 1][j];
                 let avg_curvature2 = (c1 + c3) / 2.0;
 
                 lines.push((
                     vec![self.project(p1), self.project(p3)],
-                    self.map_color(avg_curvature2, min_curvature, max_curvature)
+                    self.map_color(avg_curvature2, min_curvature, max_curvature),
                 ));
             }
         }
@@ -217,7 +224,11 @@ impl GeometryTopologyTool for CurvatureHeatmap {
 
             ui.label("Select Curvature Type:");
             ui.horizontal(|ui| {
-                ui.radio_value(&mut self.curvature_type, CurvatureType::Gaussian, "Gaussian");
+                ui.radio_value(
+                    &mut self.curvature_type,
+                    CurvatureType::Gaussian,
+                    "Gaussian",
+                );
                 ui.radio_value(&mut self.curvature_type, CurvatureType::Mean, "Mean");
             });
 
