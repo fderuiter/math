@@ -99,6 +99,36 @@ impl MusicEstimator {
     /// # Returns
     ///
     /// A vector of `(Range, Power)` tuples.
+    ///
+    /// # Panics
+    ///
+    /// This method performs an `unwrap()` when sorting eigenvalues descending. This is provably
+    /// infallible because the algorithm explicitly checks and returns an error (`RadarError::NumericalInstability`)
+    /// if any eigenvalues contain `NaN` prior to sorting.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use math_explorer::physics::medical::radar_gating::super_resolution::MusicEstimator;
+    /// use num_complex::Complex;
+    ///
+    /// // Initialize estimator for 1 target with 4 samples per chirp and 2 snapshots smoothing.
+    /// let mut estimator = MusicEstimator::new(4, 2, 1).unwrap();
+    ///
+    /// // Provide simulated chirp data (e.g., reflections)
+    /// let chirp1 = vec![Complex::new(1.0, 0.0), Complex::new(0.0, 1.0), Complex::new(-1.0, 0.0), Complex::new(0.0, -1.0)];
+    /// let chirp2 = vec![Complex::new(0.9, 0.1), Complex::new(-0.1, 0.9), Complex::new(-0.9, -0.1), Complex::new(0.1, -0.9)];
+    ///
+    /// estimator.add_snapshot(&chirp1).unwrap();
+    /// estimator.add_snapshot(&chirp2).unwrap();
+    ///
+    /// // Compute the spectrum
+    /// let bandwidth = 1.5e9; // 1.5 GHz
+    /// let c = 3e8;           // Speed of light
+    /// let spectrum = estimator.compute_spectrum(0.0, 1.0, 0.1, bandwidth, c).unwrap();
+    ///
+    /// assert_eq!(spectrum.len(), 11); // 0.0 to 1.0 with 0.1 step inclusive
+    /// ```
     pub fn compute_spectrum(
         &self,
         start_range: f64,
