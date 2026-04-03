@@ -49,7 +49,7 @@
 
 use crate::applied::game_theory::error::GameTheoryError;
 use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
-use crate::pure_math::analysis::ode::{ArrayState, Euler, OdeSystem, Solver};
+use crate::pure_math::analysis::ode::{ArrayState, Euler, OdeSystem, Solver, SolverExt};
 use nalgebra::{DMatrix, DVector};
 
 /// Represents a population playing the Hawk-Dove game.

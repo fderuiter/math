@@ -2,7 +2,7 @@
 
 use super::error::ChaosError;
 use super::logistic::LogisticMap;
-use crate::pure_math::analysis::ode::{OdeSystem, Solver};
+use crate::pure_math::analysis::ode::{OdeSystem, Solver, SolverExt};
 use nalgebra::Vector3;
 
 /// Calculates the Lyapunov Exponent for the Logistic Map.

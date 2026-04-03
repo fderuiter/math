@@ -1,7 +1,7 @@
 //! Classical Dynamics Simulator using Bloch Equations.
 
 use super::proton;
-use crate::pure_math::analysis::ode::{Euler, OdeSystem, Solver, TimeStepper};
+use crate::pure_math::analysis::ode::{Euler, OdeSystem, Solver, SolverExt, TimeStepper};
 use nalgebra::Vector3;
 
 /// Classical Dynamics Simulator using Bloch Equations.

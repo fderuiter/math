@@ -1,4 +1,4 @@
-use math_explorer::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, VecState};
+use math_explorer::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, SolverExt, VecState};
 
 /// A simple decay model: dy/dt = -y
 struct DecayModel;
