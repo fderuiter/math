@@ -1,7 +1,7 @@
 use super::strategies::MatrixPayoff;
 use super::traits::FitnessStrategy;
 use crate::applied::game_theory::error::GameTheoryError;
-use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, SolverExt};
 use nalgebra::{DMatrix, DVector};
 
 /// Represents an Evolutionary Game solved via **Replicator Dynamics**.

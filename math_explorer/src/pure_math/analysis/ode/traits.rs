@@ -60,13 +60,27 @@ pub trait OdeSystem<State: VectorOperations> {
 
 /// A trait defining a numerical ODE solver strategy.
 pub trait Solver<State: VectorOperations> {
-    /// Advances the system state by one time step `dt`.
-    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
-    where
-        S: OdeSystem<State> + ?Sized;
-
     /// Advances the system state by one time step `dt` in-place.
     fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized;
+}
+
+/// Extension trait for `Solver` providing derived computational methods.
+pub trait SolverExt<State: VectorOperations>: Solver<State> {
+    /// Advances the system state by one time step `dt`.
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized;
+}
+
+impl<State: VectorOperations, T: Solver<State> + ?Sized> SolverExt<State> for T {
+    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
+    where
+        S: OdeSystem<State> + ?Sized,
+    {
+        let mut new_state = state.clone();
+        self.step(system, t, &mut new_state, dt);
+        new_state
+    }
 }

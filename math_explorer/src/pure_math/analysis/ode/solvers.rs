@@ -78,16 +78,6 @@ impl<State: Clone> Euler<State> {
 }
 
 impl<State: VectorOperations> Solver<State> for Euler<State> {
-    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
-    where
-        S: OdeSystem<State> + ?Sized,
-    {
-        // For solve (returning new state), we can clone the input and step in-place.
-        let mut new_state = state.clone();
-        self.step(system, t, &mut new_state, dt);
-        new_state
-    }
-
     fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized,
@@ -157,15 +147,6 @@ impl<State: Clone> RungeKutta4<State> {
 }
 
 impl<State: VectorOperations> Solver<State> for RungeKutta4<State> {
-    fn solve<S>(&mut self, system: &S, t: f64, state: &State, dt: f64) -> State
-    where
-        S: OdeSystem<State> + ?Sized,
-    {
-        let mut new_state = state.clone();
-        self.step(system, t, &mut new_state, dt);
-        new_state
-    }
-
     fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized,

@@ -17,4 +17,4 @@ pub use model::OdeModel;
 pub use solvers::{Euler, RungeKutta4};
 pub use state::{ArrayState, VecState};
 pub use stepper::TimeStepper;
-pub use traits::{OdeSystem, Solver, VectorOperations};
+pub use traits::{OdeSystem, Solver, SolverExt, VectorOperations};

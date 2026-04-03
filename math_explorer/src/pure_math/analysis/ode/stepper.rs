@@ -1,4 +1,4 @@
-use super::traits::{OdeSystem, Solver, VectorOperations};
+use super::traits::{OdeSystem, Solver, SolverExt, VectorOperations};
 
 /// A trait for systems that can advance in time.
 ///
