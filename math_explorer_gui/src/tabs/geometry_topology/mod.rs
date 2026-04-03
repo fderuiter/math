@@ -3,6 +3,7 @@ use eframe::egui;
 
 pub mod curvature_heatmap;
 pub mod surface_viewer;
+pub mod vietoris_rips;
 
 /// A trait for sub-tools within the Geometry & Topology tab.
 pub trait GeometryTopologyTool {
@@ -24,6 +25,7 @@ impl Default for GeometryTopologyTab {
             tools: vec![
                 Box::new(surface_viewer::SurfaceViewer::default()),
                 Box::new(curvature_heatmap::CurvatureHeatmap::default()),
+                Box::new(vietoris_rips::VietorisRipsTool::default()),
             ],
             selected_tool_index: 0,
         }

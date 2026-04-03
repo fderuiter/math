@@ -153,12 +153,12 @@ This document outlines the roadmap for integrating the various modules of the `m
     *   [x] **Algorithm visualizer:** Step-by-step animation of Dijkstra, BFS, DFS.
     *   [x] **Network Metrics:** Calculate centrality, diameter, and clustering coefficients.
 
-### 5.4 Geometry & Topology
+### 5.4 Geometry & Topology - **[Implemented]**
 *   **Module:** `pure_math::differential_geometry` / `pure_math::topology`
 *   **Features:**
     *   [x] **Surface Viewer:** 3D parametric surface plotter (torus, sphere, klein bottle).
     *   [x] **Curvature Heatmap:** Color-code surfaces by Gaussian or Mean curvature.
-    *   [ ] **Simplicial Complexes:** Visualization of Vietoris-Rips complexes from point clouds (TDA).
+    *   [x] **Simplicial Complexes:** Visualization of Vietoris-Rips complexes from point clouds (TDA).
 
 ---
 
