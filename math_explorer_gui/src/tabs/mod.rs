@@ -4,6 +4,7 @@ pub mod ai;
 pub mod analysis;
 pub mod battery_degradation;
 pub mod chaos;
+pub mod climate;
 pub mod clinical_trials;
 pub mod epidemiology;
 pub mod favoritism;
@@ -20,6 +21,7 @@ pub mod number_theory;
 pub mod quantum;
 pub mod solid_state;
 
+pub use climate::ClimateTab;
 pub use geometry_topology::GeometryTopologyTab;
 
 /// A trait for defining a tab in the Math Explorer application.
