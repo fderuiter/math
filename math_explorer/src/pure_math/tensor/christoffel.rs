@@ -3,8 +3,54 @@ use super::types::TensorError;
 use nalgebra::{DMatrix, DVector};
 
 /// Computes the Christoffel symbols of the second kind $\Gamma^k_{ij}$ at a given point.
-/// Returns a vector of matrices, where the k-th matrix contains elements $[i, j]$.
-/// Result[k][i, j] = $\Gamma^k_{ij}$.
+///
+/// The Christoffel symbols are derived from the metric tensor and are essential for defining
+/// the affine connection and computing covariant derivatives on a Riemannian manifold.
+/// This implementation uses a central difference numerical approximation for the metric derivatives.
+///
+/// # Arguments
+///
+/// * `metric` - An implementation of the [`Metric`] trait representing the Riemannian metric $g_{ij}$.
+/// * `point` - The coordinate vector $x$ where the Christoffel symbols should be evaluated.
+///
+/// # Returns
+///
+/// Returns a `Result` containing a `Vec` of `DMatrix<f64>` on success.
+/// The outer vector represents the upper index $k$, and the inner matrix represents the lower indices $i$ and $j$.
+/// Therefore, `result[k][(i, j)]` corresponds to $\Gamma^k_{ij}$.
+///
+/// # Errors
+///
+/// Returns [`TensorError::SingularMetric`] if the metric tensor is singular (non-invertible) at the given point,
+/// or another [`TensorError`] variant if operations fail (e.g., dimension mismatch).
+///
+/// # Examples
+///
+/// ```
+/// use math_explorer::pure_math::tensor::christoffel::christoffel_symbols;
+/// use math_explorer::pure_math::tensor::metric::RiemannianMetric;
+/// use nalgebra::{DMatrix, DVector};
+///
+/// // Define a 2D polar metric: g_{rr} = 1, g_{\theta\theta} = r^2, off-diagonals = 0
+/// let polar_metric = RiemannianMetric::new(|p: &DVector<f64>| {
+///     let r = p[0];
+///     DMatrix::from_vec(2, 2, vec![
+///         1.0, 0.0,
+///         0.0, r * r,
+///     ])
+/// });
+///
+/// // Evaluate at r = 2.0, \theta = \pi/4
+/// let point = DVector::from_vec(vec![2.0, std::f64::consts::PI / 4.0]);
+/// let gammas = christoffel_symbols(&polar_metric, &point).unwrap();
+///
+/// // In polar coordinates:
+/// // \Gamma^r_{\theta\theta} = -r
+/// assert!((gammas[0][(1, 1)] - (-2.0)).abs() < 1e-4);
+/// // \Gamma^\theta_{r\theta} = \Gamma^\theta_{\theta r} = 1/r
+/// assert!((gammas[1][(0, 1)] - 0.5).abs() < 1e-4);
+/// assert!((gammas[1][(1, 0)] - 0.5).abs() < 1e-4);
+/// ```
 pub fn christoffel_symbols(
     metric: &impl Metric,
     point: &DVector<f64>,
