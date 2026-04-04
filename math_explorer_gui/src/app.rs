@@ -1,11 +1,11 @@
 use crate::tabs::{
     ai::AiTab, analysis::AnalysisTab, battery_degradation::BatteryDegradationTab, chaos::ChaosTab,
     climate::ClimateTab, clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab,
-    favoritism::FavoritismTab,
-    financial_math::FinancialMathTab, fluid_dynamics::FluidDynamicsTab, game_theory::GameTheoryTab,
-    graph_theory::GraphTheoryTab, medical::MedicalTab, morphogenesis::MorphogenesisTab,
-    mri::MriTab, neuroscience::NeuroscienceTab, number_theory::NumberTheoryTab,
-    quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab, GeometryTopologyTab,
+    favoritism::FavoritismTab, financial_math::FinancialMathTab, fluid_dynamics::FluidDynamicsTab,
+    game_theory::GameTheoryTab, graph_theory::GraphTheoryTab, medical::MedicalTab,
+    morphogenesis::MorphogenesisTab, mri::MriTab, neuroscience::NeuroscienceTab,
+    number_theory::NumberTheoryTab, quantum::QuantumTab, solid_state::SolidStateTab, ExplorerTab,
+    GeometryTopologyTab,
 };
 use eframe::egui;
 
