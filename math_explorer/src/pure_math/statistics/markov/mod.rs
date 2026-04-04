@@ -311,6 +311,7 @@ pub mod dtmc;
 pub mod error;
 pub mod hmm;
 pub mod tensor;
+pub mod validation;
 
 // Re-export commonly used types
 pub use ctmc::ContinuousMarkovChain;

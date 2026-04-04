@@ -120,7 +120,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
         }
 
         // Validate stochasticity
-        Self::validate_stochastic(&transition_matrix)?;
+        crate::pure_math::statistics::markov::validation::validate_stochastic_matrix(&transition_matrix)?;
 
         // Validate absorbing states
         for (i, state_type) in state_types.iter().enumerate() {
@@ -177,36 +177,6 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
             transient_indices,
             absorbing_indices,
         })
-    }
-
-    /// Validates that a matrix is row-stochastic (each row sums to 1).
-    fn validate_stochastic(matrix: &DMatrix<T>) -> Result<()> {
-        let tolerance = T::from_f64(1e-10).unwrap();
-
-        for i in 0..matrix.nrows() {
-            let row_sum: T = matrix.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
-            if (row_sum - T::one()).abs() > tolerance {
-                return Err(MarkovError::NotStochastic {
-                    reason: format!(
-                        "Row {} sums to {} instead of 1.0",
-                        i,
-                        row_sum.to_f64().unwrap_or(f64::NAN)
-                    ),
-                });
-            }
-
-            // Check all probabilities are valid
-            for j in 0..matrix.ncols() {
-                let p = matrix[(i, j)];
-                if !p.is_finite() || p < T::zero() || p > T::one() {
-                    return Err(MarkovError::InvalidProbability {
-                        value: p.to_f64().unwrap_or(f64::NAN),
-                    });
-                }
-            }
-        }
-
-        Ok(())
     }
 
     /// Returns the transition matrix.
