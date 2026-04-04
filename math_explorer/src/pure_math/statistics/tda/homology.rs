@@ -230,7 +230,7 @@ mod tests {
     #[test]
     fn test_betti_number_0_single_vertex() {
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0]).unwrap());
+        complex.add_simplex(Simplex::new(vec![0]).unwrap()).unwrap();
 
         let beta0 = betti_number_0(&complex).unwrap();
         assert_eq!(beta0, 1);
@@ -239,8 +239,8 @@ mod tests {
     #[test]
     fn test_betti_number_0_two_components() {
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0]).unwrap());
-        complex.add_simplex(Simplex::new(vec![1]).unwrap());
+        complex.add_simplex(Simplex::new(vec![0]).unwrap()).unwrap();
+        complex.add_simplex(Simplex::new(vec![1]).unwrap()).unwrap();
         // No edge connecting them
 
         let beta0 = betti_number_0(&complex).unwrap();
@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn test_betti_number_0_connected() {
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0, 1]).unwrap());
+        complex.add_simplex(Simplex::new(vec![0, 1]).unwrap()).unwrap();
 
         let beta0 = betti_number_0(&complex).unwrap();
         assert_eq!(beta0, 1);
@@ -260,7 +260,7 @@ mod tests {
     fn test_betti_number_1_no_cycle() {
         // Simple edge: no cycle
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0, 1]).unwrap());
+        complex.add_simplex(Simplex::new(vec![0, 1]).unwrap()).unwrap();
 
         let beta1 = betti_number_1(&complex).unwrap();
         assert_eq!(beta1, 0);
@@ -270,9 +270,9 @@ mod tests {
     fn test_betti_number_1_triangle_hollow() {
         // Three edges forming a triangle (hollow - one cycle)
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0, 1]).unwrap());
-        complex.add_simplex(Simplex::new(vec![1, 2]).unwrap());
-        complex.add_simplex(Simplex::new(vec![2, 0]).unwrap());
+        complex.add_simplex(Simplex::new(vec![0, 1]).unwrap()).unwrap();
+        complex.add_simplex(Simplex::new(vec![1, 2]).unwrap()).unwrap();
+        complex.add_simplex(Simplex::new(vec![2, 0]).unwrap()).unwrap();
 
         let beta1 = betti_number_1(&complex).unwrap();
         assert_eq!(beta1, 1); // One hole
@@ -282,7 +282,7 @@ mod tests {
     fn test_betti_number_1_triangle_filled() {
         // Filled triangle (no hole)
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0, 1, 2]).unwrap());
+        complex.add_simplex(Simplex::new(vec![0, 1, 2]).unwrap()).unwrap();
 
         let beta1 = betti_number_1(&complex).unwrap();
         assert_eq!(beta1, 0); // No holes

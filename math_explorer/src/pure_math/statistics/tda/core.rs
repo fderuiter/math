@@ -156,14 +156,10 @@ impl Simplex {
     /// For an edge `[0,1]`, the faces are vertices `[0]` and `[1]`.
     /// For a triangle `[0,1,2]`, the faces are edges `[0,1]`, `[0,2]`, `[1,2]`.
     ///
-    /// # Panics
+    /// # Errors
     ///
-    /// This method will conceptually never panic. The internal `unwrap()` on `Simplex::new`
-    /// relies on two invariants guaranteed by the struct's definition:
-    /// 1. The vertices of the newly constructed face will never be empty because `faces()`
-    ///    returns early for a 0-simplex (1 vertex).
-    /// 2. The vertices of the original `Simplex` are already unique and sorted, so removing
-    ///    a single vertex inherently preserves uniqueness and sortedness.
+    /// Returns an error if the created face simplex is invalid (which should not
+    /// conceptually happen due to the invariants of a valid parent simplex).
     ///
     /// # Examples
     ///
@@ -171,27 +167,26 @@ impl Simplex {
     /// use math_explorer::pure_math::statistics::tda::Simplex;
     ///
     /// let triangle = Simplex::new(vec![0, 1, 2]).unwrap();
-    /// let faces = triangle.faces();
+    /// let faces = triangle.faces().unwrap();
     ///
     /// assert_eq!(faces.len(), 3);
     /// assert!(faces.contains(&Simplex::new(vec![0, 1]).unwrap()));
     /// assert!(faces.contains(&Simplex::new(vec![0, 2]).unwrap()));
     /// assert!(faces.contains(&Simplex::new(vec![1, 2]).unwrap()));
     /// ```
-    pub fn faces(&self) -> Vec<Simplex> {
+    pub fn faces(&self) -> Result<Vec<Simplex>, TdaError> {
         if self.vertices.len() == 1 {
-            return vec![]; // 0-simplex has no faces
+            return Ok(vec![]); // 0-simplex has no faces
         }
 
         let mut faces = Vec::new();
         for i in 0..self.vertices.len() {
             let mut face_vertices = self.vertices.clone();
             face_vertices.remove(i);
-            // unwrap is safe because we know vertices are valid
-            faces.push(Simplex::new(face_vertices).unwrap());
+            faces.push(Simplex::new(face_vertices)?);
         }
 
-        faces
+        Ok(faces)
     }
 
     /// Computes the diameter of the simplex in the point cloud.
@@ -268,24 +263,24 @@ mod tests {
     fn test_simplex_vertex() {
         let s = Simplex::new(vec![0]).unwrap();
         assert_eq!(s.dimension(), 0);
-        assert_eq!(s.faces().len(), 0);
+        assert_eq!(s.faces().unwrap().len(), 0);
     }
 
     #[test]
     fn test_simplex_edge() {
         let s = Simplex::new(vec![0, 1]).unwrap();
         assert_eq!(s.dimension(), 1);
-        assert_eq!(s.faces().len(), 2);
+        assert_eq!(s.faces().unwrap().len(), 2);
     }
 
     #[test]
     fn test_simplex_triangle() {
         let s = Simplex::new(vec![0, 1, 2]).unwrap();
         assert_eq!(s.dimension(), 2);
-        assert_eq!(s.faces().len(), 3);
+        assert_eq!(s.faces().unwrap().len(), 3);
 
         // All faces should be edges
-        for face in s.faces() {
+        for face in s.faces().unwrap() {
             assert_eq!(face.dimension(), 1);
         }
     }
