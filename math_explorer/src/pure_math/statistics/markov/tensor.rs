@@ -152,7 +152,7 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
         }
 
         // Validate stochasticity
-        Self::validate_stochastic(&matrix)?;
+        crate::pure_math::statistics::markov::validation::validate_stochastic_matrix(&matrix)?;
 
         // Insert in sorted order
         let insert_pos = self
@@ -161,35 +161,6 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
             .unwrap_or_else(|pos| pos);
 
         self.time_slices.insert(insert_pos, (time, matrix));
-
-        Ok(())
-    }
-
-    /// Validates that a matrix is row-stochastic.
-    fn validate_stochastic(matrix: &DMatrix<T>) -> Result<()> {
-        let tolerance = T::from_f64(1e-10).unwrap();
-
-        for i in 0..matrix.nrows() {
-            let row_sum: T = matrix.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
-            if (row_sum - T::one()).abs() > tolerance {
-                return Err(MarkovError::NotStochastic {
-                    reason: format!(
-                        "Row {} sums to {} instead of 1.0",
-                        i,
-                        row_sum.to_f64().unwrap_or(f64::NAN)
-                    ),
-                });
-            }
-
-            for j in 0..matrix.ncols() {
-                let p = matrix[(i, j)];
-                if !p.is_finite() || p < T::zero() || p > T::one() {
-                    return Err(MarkovError::InvalidProbability {
-                        value: p.to_f64().unwrap_or(f64::NAN),
-                    });
-                }
-            }
-        }
 
         Ok(())
     }

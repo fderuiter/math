@@ -116,13 +116,13 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
         let num_observations = emissions.ncols();
 
         // Validate initial probabilities
-        Self::validate_probability_vector(&initial)?;
+        crate::pure_math::statistics::markov::validation::validate_probability_vector(&initial)?;
 
         // Validate transition matrix
-        Self::validate_stochastic_matrix(&transitions)?;
+        crate::pure_math::statistics::markov::validation::validate_stochastic_matrix(&transitions)?;
 
         // Validate emission matrix
-        Self::validate_stochastic_matrix(&emissions)?;
+        crate::pure_math::statistics::markov::validation::validate_stochastic_matrix(&emissions)?;
 
         Ok(HiddenMarkovModel {
             initial,
@@ -131,64 +131,6 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
             num_states,
             num_observations,
         })
-    }
-
-    /// Validates that a vector is a probability distribution (sums to 1).
-    fn validate_probability_vector(vec: &DVector<T>) -> Result<()> {
-        let tolerance = T::from_f64(1e-10).unwrap();
-        let one = T::one();
-        let zero = T::zero();
-
-        let sum: T = vec.iter().fold(zero, |acc, &x| acc + x);
-        if (sum - one).abs() > tolerance {
-            return Err(MarkovError::NotStochastic {
-                reason: format!(
-                    "Probability vector sums to {:?} instead of 1.0",
-                    sum.to_f64().unwrap_or(f64::NAN)
-                ),
-            });
-        }
-
-        for &p in vec.iter() {
-            if !p.is_finite() || p < zero || p > one {
-                return Err(MarkovError::InvalidProbability {
-                    value: p.to_f64().unwrap_or(f64::NAN),
-                });
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Validates that a matrix is row-stochastic.
-    fn validate_stochastic_matrix(matrix: &DMatrix<T>) -> Result<()> {
-        let tolerance = T::from_f64(1e-10).unwrap();
-        let one = T::one();
-        let zero = T::zero();
-
-        for i in 0..matrix.nrows() {
-            let row_sum: T = matrix.row(i).iter().fold(zero, |acc, &x| acc + x);
-            if (row_sum - one).abs() > tolerance {
-                return Err(MarkovError::NotStochastic {
-                    reason: format!(
-                        "Row {} sums to {:?} instead of 1.0",
-                        i,
-                        row_sum.to_f64().unwrap_or(f64::NAN)
-                    ),
-                });
-            }
-
-            for j in 0..matrix.ncols() {
-                let p = matrix[(i, j)];
-                if !p.is_finite() || p < zero || p > one {
-                    return Err(MarkovError::InvalidProbability {
-                        value: p.to_f64().unwrap_or(f64::NAN),
-                    });
-                }
-            }
-        }
-
-        Ok(())
     }
 
     /// Returns the number of hidden states.

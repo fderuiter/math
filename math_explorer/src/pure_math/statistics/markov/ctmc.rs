@@ -79,76 +79,12 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             });
         }
 
-        Self::validate_generator(&generator)?;
+        crate::pure_math::statistics::markov::validation::validate_generator_matrix(&generator)?;
 
         Ok(ContinuousMarkovChain {
             generator,
             num_states: n,
         })
-    }
-
-    /// Validates that a matrix is a valid generator.
-    ///
-    /// Requirements:
-    /// 1. Each row sums to 0 (within tolerance)
-    /// 2. Off-diagonal elements are non-negative
-    /// 3. Diagonal elements are non-positive
-    fn validate_generator(generator: &DMatrix<T>) -> Result<()> {
-        let tolerance = T::from_f64(1e-10).unwrap();
-
-        for i in 0..generator.nrows() {
-            // Check row sum is 0
-            let row_sum: T = generator.row(i).iter().fold(T::zero(), |acc, &x| acc + x);
-            if row_sum.abs() > tolerance {
-                return Err(MarkovError::InvalidGenerator {
-                    reason: format!(
-                        "Row {} sums to {} instead of 0.0",
-                        i,
-                        row_sum.to_f64().unwrap_or(f64::NAN)
-                    ),
-                });
-            }
-
-            // Check diagonal is non-positive
-            if generator[(i, i)] > tolerance {
-                return Err(MarkovError::InvalidGenerator {
-                    reason: format!(
-                        "Diagonal element G[{},{}] = {} must be non-positive",
-                        i,
-                        i,
-                        generator[(i, i)].to_f64().unwrap_or(f64::NAN)
-                    ),
-                });
-            }
-
-            // Check off-diagonals are non-negative
-            for j in 0..generator.ncols() {
-                if i != j {
-                    let rate = generator[(i, j)];
-                    if rate < -tolerance {
-                        return Err(MarkovError::InvalidGenerator {
-                            reason: format!(
-                                "Off-diagonal element G[{},{}] = {} must be non-negative",
-                                i,
-                                j,
-                                rate.to_f64().unwrap_or(f64::NAN)
-                            ),
-                        });
-                    }
-                }
-            }
-
-            // Check all values are finite
-            for j in 0..generator.ncols() {
-                if !generator[(i, j)].is_finite() {
-                    return Err(MarkovError::InvalidGenerator {
-                        reason: format!("G[{},{}] is not finite", i, j),
-                    });
-                }
-            }
-        }
-
-        Ok(())
     }
 
     /// Returns the generator matrix.
