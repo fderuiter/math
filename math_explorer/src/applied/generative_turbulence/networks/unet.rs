@@ -236,21 +236,6 @@ pub struct UNet {
 }
 
 impl UNet {
-    /// Creates a new `UNet`.
-    ///
-    /// # Deprecation Notice
-    /// This method is deprecated due to parameter confusion risks (Primitive Obsession).
-    /// Prefer using `UNetBuilder::new().c_in(..).c_out(..).build(p)`.
-    #[deprecated(note = "Use UNetBuilder instead")]
-    pub fn new(p: &Path, c_in: i64, c_out: i64, c_init: i64, time_emb_dim: Option<i64>) -> Self {
-        UNetBuilder::new()
-            .c_in(c_in)
-            .c_out(c_out)
-            .c_init(c_init)
-            .time_emb_dim(time_emb_dim)
-            .build(p)
-    }
-
     /// The forward pass for the U-Net.
     pub fn forward_with_time(&self, xs: &Tensor, time: Option<&Tensor>) -> Tensor {
         let t = self.time_embedding.as_ref().zip(time).map(|(te, t)| te.forward(t));
