@@ -120,7 +120,9 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
         }
 
         // Validate stochasticity
-        crate::pure_math::statistics::markov::validation::validate_stochastic_matrix(&transition_matrix)?;
+        crate::pure_math::statistics::markov::validation::validate_stochastic_matrix(
+            &transition_matrix,
+        )?;
 
         // Validate absorbing states
         for (i, state_type) in state_types.iter().enumerate() {
