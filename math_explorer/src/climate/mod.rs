@@ -102,8 +102,8 @@
 pub mod autoencoder;
 pub mod cera;
 pub mod config;
+pub mod dataset;
 pub mod loss;
 pub mod predictor;
 pub mod tensor_ops;
-pub mod dataset;
 pub mod training;
