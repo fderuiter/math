@@ -3,7 +3,9 @@ use nalgebra::{DMatrix, DVector, RealField};
 use num_traits::ToPrimitive;
 
 /// Validates that a matrix is row-stochastic.
-pub fn validate_stochastic_matrix<T: RealField + Copy + ToPrimitive>(matrix: &DMatrix<T>) -> Result<()> {
+pub fn validate_stochastic_matrix<T: RealField + Copy + ToPrimitive>(
+    matrix: &DMatrix<T>,
+) -> Result<()> {
     let tolerance = T::from_f64(1e-10).unwrap();
     let one = T::one();
     let zero = T::zero();
@@ -34,7 +36,9 @@ pub fn validate_stochastic_matrix<T: RealField + Copy + ToPrimitive>(matrix: &DM
 }
 
 /// Validates that a vector is a valid probability distribution.
-pub fn validate_probability_vector<T: RealField + Copy + ToPrimitive>(vec: &DVector<T>) -> Result<()> {
+pub fn validate_probability_vector<T: RealField + Copy + ToPrimitive>(
+    vec: &DVector<T>,
+) -> Result<()> {
     let tolerance = T::from_f64(1e-10).unwrap();
     let one = T::one();
     let zero = T::zero();
@@ -61,7 +65,9 @@ pub fn validate_probability_vector<T: RealField + Copy + ToPrimitive>(vec: &DVec
 }
 
 /// Validates that a matrix is a valid continuous-time Markov chain generator.
-pub fn validate_generator_matrix<T: RealField + Copy + ToPrimitive>(generator: &DMatrix<T>) -> Result<()> {
+pub fn validate_generator_matrix<T: RealField + Copy + ToPrimitive>(
+    generator: &DMatrix<T>,
+) -> Result<()> {
     let tolerance = T::from_f64(1e-10).unwrap();
     let zero = T::zero();
 
