@@ -4,7 +4,7 @@
 //! reconstructing turbulent flow fields from sparse observations.
 
 use tch::nn::VarStore;
-use crate::applied::generative_turbulence::networks::unet::UNet;
+use crate::applied::generative_turbulence::networks::unet::{UNet, UNetBuilder};
 
 /// Represents the conditional diffusion model.
 pub struct DiffusionModel {
@@ -23,13 +23,13 @@ impl DiffusionModel {
     /// * `c_init` - Number of initial channels in the U-Net.
     pub fn new(vs: &VarStore, c_in: i64, c_out: i64, c_init: i64) -> Self {
         // The score network is a U-Net, conditioned on noise level (sigma) and sparse data.
-        let score_network = UNet::new(
-            &vs.root(),
-            c_in,
-            c_out,
-            c_init,
-            Some(TIME_EMB_DIM),
-        );
+        let score_network = UNetBuilder::new()
+            .c_in(c_in)
+            .c_out(c_out)
+            .c_init(c_init)
+            .time_emb_dim(Some(TIME_EMB_DIM))
+            .build(&vs.root());
+
         DiffusionModel { score_network }
     }
 }
