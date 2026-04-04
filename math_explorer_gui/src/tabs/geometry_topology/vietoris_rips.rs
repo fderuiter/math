@@ -43,17 +43,15 @@ impl VietorisRipsTool {
 
     fn update_complex(&mut self) {
         match PointCloud::new(self.points.clone()) {
-            Ok(cloud) => {
-                match vietoris_rips_complex(&cloud, self.radius) {
-                    Ok(complex) => {
-                        self.complex = complex;
-                        self.error_msg = None;
-                    }
-                    Err(e) => {
-                        self.error_msg = Some(format!("Error building complex: {:?}", e));
-                    }
+            Ok(cloud) => match vietoris_rips_complex(&cloud, self.radius) {
+                Ok(complex) => {
+                    self.complex = complex;
+                    self.error_msg = None;
                 }
-            }
+                Err(e) => {
+                    self.error_msg = Some(format!("Error building complex: {:?}", e));
+                }
+            },
             Err(e) => {
                 self.error_msg = Some(format!("Error building point cloud: {:?}", e));
             }
@@ -131,16 +129,12 @@ impl GeometryTopologyTool for VietorisRipsTool {
                     let p1 = &self.points[t.vertices[1]];
                     let p2 = &self.points[t.vertices[2]];
 
-                    let points = vec![
-                        [p0.x, p0.y],
-                        [p1.x, p1.y],
-                        [p2.x, p2.y],
-                    ];
+                    let points = vec![[p0.x, p0.y], [p1.x, p1.y], [p2.x, p2.y]];
 
                     plot_ui.polygon(
                         Polygon::new("Triangle", PlotPoints::new(points))
                             .fill_color(egui::Color32::from_rgba_unmultiplied(100, 150, 250, 50))
-                            .stroke(egui::Stroke::new(0.0, egui::Color32::TRANSPARENT))
+                            .stroke(egui::Stroke::new(0.0, egui::Color32::TRANSPARENT)),
                     );
                 }
 
@@ -150,15 +144,12 @@ impl GeometryTopologyTool for VietorisRipsTool {
                     let p0 = &self.points[e.vertices[0]];
                     let p1 = &self.points[e.vertices[1]];
 
-                    let points = vec![
-                        [p0.x, p0.y],
-                        [p1.x, p1.y],
-                    ];
+                    let points = vec![[p0.x, p0.y], [p1.x, p1.y]];
 
                     plot_ui.line(
                         Line::new("Edge", PlotPoints::new(points))
                             .color(egui::Color32::from_rgb(150, 150, 150))
-                            .width(1.5)
+                            .width(1.5),
                     );
                 }
 
@@ -171,7 +162,7 @@ impl GeometryTopologyTool for VietorisRipsTool {
                 plot_ui.points(
                     Points::new("Vertices", PlotPoints::new(vertex_coords))
                         .color(egui::Color32::from_rgb(50, 50, 200))
-                        .radius(4.0)
+                        .radius(4.0),
                 );
             });
         });
