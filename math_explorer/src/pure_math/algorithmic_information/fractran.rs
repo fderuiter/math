@@ -40,47 +40,118 @@ use rug::ops::Pow;
 use rug::{Integer, Rational};
 
 /// An instruction for a Minsky Machine.
+///
+/// Implementors define how an instruction is compiled into a list of FRACTRAN fractions.
+pub trait MinskyInstruction: std::fmt::Debug + Send + Sync + MinskyInstructionClone {
+    /// Compiles the instruction into FRACTRAN fractions using the given compiler.
+    fn compile(&self, compiler: &FractranCompiler) -> Vec<Rational>;
+}
+
+/// Helper trait for cloning boxed MinskyInstructions.
+pub trait MinskyInstructionClone {
+    fn clone_box(&self) -> Box<dyn MinskyInstruction>;
+}
+
+impl<T> MinskyInstructionClone for T
+where
+    T: 'static + MinskyInstruction + Clone,
+{
+    fn clone_box(&self) -> Box<dyn MinskyInstruction> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn MinskyInstruction> {
+    fn clone(&self) -> Box<dyn MinskyInstruction> {
+        self.clone_box()
+    }
+}
+
+/// Increment register `r_j` and transition to state `s_next`.
+///
+/// FRACTRAN encoding: $\frac{s_{next} \cdot p_j}{s_{curr}}$
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MinskyInstruction {
-    /// Increment register `r_j` and transition to state `s_next`.
-    ///
-    /// FRACTRAN encoding: $\frac{s_{next} \cdot p_j}{s_{curr}}$
-    Inc {
-        /// The current state.
-        state: usize,
-        /// The register index to increment.
-        register: usize,
-        /// The next state to transition to.
-        next_state: usize,
-    },
-    /// Jump-if-Zero or Decrement.
-    /// If register `r_j > 0`, decrement `r_j` and transition to `s_success`.
-    /// Else, transition to `s_fail`.
-    ///
-    /// FRACTRAN encoding:
-    /// 1. $\frac{s_{success}}{s_{curr} \cdot p_j}$
-    /// 2. $\frac{s_{fail}}{s_{curr}}$
-    Jzdec {
-        /// The current state.
-        state: usize,
-        /// The register index to check/decrement.
-        register: usize,
-        /// The state to transition to if `r_j > 0`.
-        success_state: usize,
-        /// The state to transition to if `r_j == 0`.
-        fail_state: usize,
-    },
+pub struct IncInstruction {
+    /// The current state.
+    pub state: usize,
+    /// The register index to increment.
+    pub register: usize,
+    /// The next state to transition to.
+    pub next_state: usize,
+}
+
+impl MinskyInstruction for IncInstruction {
+    fn compile(&self, compiler: &FractranCompiler) -> Vec<Rational> {
+        // frac: (s_next * p_r) / s
+        let s_next = &compiler.state_primes[self.next_state];
+        let p_r = &compiler.register_primes[self.register];
+        let s = &compiler.state_primes[self.state];
+
+        let numer = s_next.clone() * p_r;
+        let denom = s.clone();
+        vec![Rational::from((numer, denom))]
+    }
+}
+
+/// Jump-if-Zero or Decrement.
+/// If register `r_j > 0`, decrement `r_j` and transition to `s_success`.
+/// Else, transition to `s_fail`.
+///
+/// FRACTRAN encoding:
+/// 1. $\frac{s_{success}}{s_{curr} \cdot p_j}$
+/// 2. $\frac{s_{fail}}{s_{curr}}$
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JzdecInstruction {
+    /// The current state.
+    pub state: usize,
+    /// The register index to check/decrement.
+    pub register: usize,
+    /// The state to transition to if `r_j > 0`.
+    pub success_state: usize,
+    /// The state to transition to if `r_j == 0`.
+    pub fail_state: usize,
+}
+
+impl MinskyInstruction for JzdecInstruction {
+    fn compile(&self, compiler: &FractranCompiler) -> Vec<Rational> {
+        let mut fractions = Vec::with_capacity(2);
+
+        // frac 1: s_T / (s * p_r)
+        let s_success = &compiler.state_primes[self.success_state];
+        let s = &compiler.state_primes[self.state];
+        let p_r = &compiler.register_primes[self.register];
+
+        let numer1 = s_success.clone();
+        let denom1 = s.clone() * p_r;
+        fractions.push(Rational::from((numer1, denom1)));
+
+        // frac 2: s_F / s
+        let s_fail = &compiler.state_primes[self.fail_state];
+        let numer2 = s_fail.clone();
+        let denom2 = s.clone();
+        fractions.push(Rational::from((numer2, denom2)));
+
+        fractions
+    }
 }
 
 /// A Minsky Machine containing a list of instructions.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct MinskyMachine {
-    pub instructions: Vec<MinskyInstruction>,
+    pub instructions: Vec<Box<dyn MinskyInstruction>>,
+}
+
+impl std::fmt::Debug for MinskyMachine {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MinskyMachine")
+            .field("instructions", &self.instructions)
+            .finish()
+    }
 }
 
 impl MinskyMachine {
     /// Create a new Minsky Machine.
-    pub fn new(instructions: Vec<MinskyInstruction>) -> Self {
+    pub fn new(instructions: Vec<Box<dyn MinskyInstruction>>) -> Self {
         Self { instructions }
     }
 }
@@ -144,43 +215,8 @@ impl FractranCompiler {
         let mut fractions = Vec::new();
 
         for instr in &machine.instructions {
-            match instr {
-                MinskyInstruction::Inc {
-                    state,
-                    register,
-                    next_state,
-                } => {
-                    // frac: (s_next * p_r) / s
-                    let s_next = &self.state_primes[*next_state];
-                    let p_r = &self.register_primes[*register];
-                    let s = &self.state_primes[*state];
-
-                    let numer = s_next.clone() * p_r;
-                    let denom = s.clone();
-                    fractions.push(Rational::from((numer, denom)));
-                }
-                MinskyInstruction::Jzdec {
-                    state,
-                    register,
-                    success_state,
-                    fail_state,
-                } => {
-                    // frac 1: s_T / (s * p_r)
-                    let s_success = &self.state_primes[*success_state];
-                    let s = &self.state_primes[*state];
-                    let p_r = &self.register_primes[*register];
-
-                    let numer1 = s_success.clone();
-                    let denom1 = s.clone() * p_r;
-                    fractions.push(Rational::from((numer1, denom1)));
-
-                    // frac 2: s_F / s
-                    let s_fail = &self.state_primes[*fail_state];
-                    let numer2 = s_fail.clone();
-                    let denom2 = s.clone();
-                    fractions.push(Rational::from((numer2, denom2)));
-                }
-            }
+            let mut compiled_fractions = instr.compile(self);
+            fractions.append(&mut compiled_fractions);
         }
 
         FractranProgram::new(fractions)
@@ -251,17 +287,17 @@ mod tests {
         let compiler = FractranCompiler::new(vec![2, 3, 5], vec![7]);
 
         let machine = MinskyMachine::new(vec![
-            MinskyInstruction::Inc {
+            Box::new(IncInstruction {
                 state: 0,
                 register: 0,
                 next_state: 1,
-            },
-            MinskyInstruction::Jzdec {
+            }),
+            Box::new(JzdecInstruction {
                 state: 1,
                 register: 0,
                 success_state: 0,
                 fail_state: 2,
-            },
+            }),
         ]);
 
         let prog = compiler.compile(&machine);
