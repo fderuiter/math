@@ -38,14 +38,17 @@
 //! ```mermaid
 //! graph TD
 //!     Pop[Population Scale] -->|Evolutionary Dynamics| Evolution[evolution]
-//!     Tissue[Tissue Scale] -->|Reaction-Diffusion| Morph[morphogenesis]
+//!     Tissue[Tissue Scale] --> Morph[morphogenesis]
 //!     Cell[Cellular Scale] -->|Action Potentials| Neuro[neuroscience]
 //!     Mol[Molecular Scale] -->|Enzyme Kinetics| Kinetics[kinetics]
+//!     Generic[Generic Framework] -->|Separation of Concerns| RD[reaction_diffusion]
+//!     RD --> Morph
 //!
 //!     style Pop fill:#ff9,stroke:#333,stroke-width:2px
 //!     style Tissue fill:#bbf,stroke:#333,stroke-width:2px
 //!     style Cell fill:#dfd,stroke:#333,stroke-width:2px
 //!     style Mol fill:#fdd,stroke:#333,stroke-width:2px
+//!     style Generic fill:#ddd,stroke:#333,stroke-width:2px
 //! ```
 //!
 //! ## Submodules
