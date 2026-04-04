@@ -170,11 +170,10 @@ impl Default for PersistenceBarcode {
 /// Returns [`TdaError::InvalidRadius`] if `radii` is empty.
 /// Propagates errors from `vietoris_rips_complex` or Betti number computations if the point cloud or radii are invalid.
 ///
-/// # Panics
+/// # Errors
 ///
-/// This function internally unwrap values, but they are provably infallible because:
-/// - `radii.last().unwrap()` is guarded by checking `radii.is_empty()` at the start.
-/// - `PersistenceInterval::new(...).unwrap()` is guaranteed to succeed because the loop structure and topological progression ensure `death` (current `radius` or `final_radius`) is always greater than or equal to `birth` (a previously recorded radius), and input radii are expected to be finite and non-negative.
+/// Returns [`TdaError::InvalidRadius`] if `radii` is empty or if invalid radii are encountered.
+/// Propagates errors from `vietoris_rips_complex`, Betti number computations, and `PersistenceInterval::new`.
 ///
 /// # Example
 ///
@@ -242,7 +241,7 @@ pub fn compute_persistence(
                 match component_births.pop() {
                     Some((_, birth)) if birth < radius => {
                         // Only record if it has non-zero persistence
-                        barcode.add_interval(PersistenceInterval::new(birth, radius, 0).unwrap());
+                        barcode.add_interval(PersistenceInterval::new(birth, radius, 0)?);
                     }
                     _ => {}
                 }
@@ -261,7 +260,7 @@ pub fn compute_persistence(
             for _ in 0..deaths {
                 match hole_births.pop() {
                     Some(birth) if birth < radius => {
-                        barcode.add_interval(PersistenceInterval::new(birth, radius, 1).unwrap());
+                        barcode.add_interval(PersistenceInterval::new(birth, radius, 1)?);
                     }
                     _ => {}
                 }
@@ -273,19 +272,19 @@ pub fn compute_persistence(
     }
 
     // Handle features that persist to the end
-    let final_radius = radii.last().copied().unwrap();
+    let final_radius = radii.last().copied().ok_or(TdaError::InvalidRadius { value: 0.0 })?;
 
     // Remaining components
     for (_, birth) in component_births {
         if birth < final_radius {
-            barcode.add_interval(PersistenceInterval::new(birth, final_radius, 0).unwrap());
+            barcode.add_interval(PersistenceInterval::new(birth, final_radius, 0)?);
         }
     }
 
     // Remaining holes
     for birth in hole_births {
         if birth < final_radius {
-            barcode.add_interval(PersistenceInterval::new(birth, final_radius, 1).unwrap());
+            barcode.add_interval(PersistenceInterval::new(birth, final_radius, 1)?);
         }
     }
 

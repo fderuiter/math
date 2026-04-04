@@ -25,7 +25,7 @@ impl SimplicialComplex {
     ///
     /// Automatically adds all faces of the simplex as well to maintain
     /// the simplicial complex property.
-    pub fn add_simplex(&mut self, simplex: Simplex) {
+    pub fn add_simplex(&mut self, simplex: Simplex) -> Result<(), TdaError> {
         let dim = simplex.dimension();
 
         // Ensure we have enough dimension levels
@@ -37,9 +37,10 @@ impl SimplicialComplex {
         self.simplices[dim].insert(simplex.clone());
 
         // Recursively add all faces
-        for face in simplex.faces() {
-            self.add_simplex(face);
+        for face in simplex.faces()? {
+            self.add_simplex(face)?;
         }
+        Ok(())
     }
 
     /// Returns the number of simplices of a given dimension.
@@ -50,7 +51,7 @@ impl SimplicialComplex {
     /// use math_explorer::pure_math::statistics::tda::{SimplicialComplex, Simplex};
     ///
     /// let mut complex = SimplicialComplex::new();
-    /// complex.add_simplex(Simplex::new(vec![0, 1]).unwrap());
+    /// complex.add_simplex(Simplex::new(vec![0, 1]).unwrap()).unwrap();
     ///
     /// assert_eq!(complex.count_simplices(0), 2); // 2 vertices
     /// assert_eq!(complex.count_simplices(1), 1); // 1 edge
@@ -149,14 +150,14 @@ pub fn vietoris_rips_complex(
 
     // Add all vertices (0-simplices)
     for i in 0..n {
-        complex.add_simplex(Simplex::new(vec![i])?);
+        complex.add_simplex(Simplex::new(vec![i])?)?;
     }
 
     // Add edges (1-simplices) where distance ≤ radius
     for (i, row) in dist.iter().enumerate().take(n) {
         for (j, &d) in row.iter().enumerate().take(n).skip(i + 1) {
             if d <= radius {
-                complex.add_simplex(Simplex::new(vec![i, j])?);
+                complex.add_simplex(Simplex::new(vec![i, j])?)?;
             }
         }
     }
@@ -175,7 +176,7 @@ pub fn vietoris_rips_complex(
                 let d_jk = row_j[k];
 
                 if d_ik <= radius && d_jk <= radius {
-                    complex.add_simplex(Simplex::new(vec![i, j, k])?);
+                    complex.add_simplex(Simplex::new(vec![i, j, k])?)?;
                 }
             }
         }
@@ -193,7 +194,7 @@ mod tests {
     fn test_simplicial_complex_add_edge() {
         let mut complex = SimplicialComplex::new();
         let edge = Simplex::new(vec![0, 1]).unwrap();
-        complex.add_simplex(edge);
+        complex.add_simplex(edge).unwrap();
 
         // Should have 2 vertices and 1 edge
         assert_eq!(complex.count_simplices(0), 2);
@@ -204,7 +205,7 @@ mod tests {
     fn test_simplicial_complex_add_triangle() {
         let mut complex = SimplicialComplex::new();
         let triangle = Simplex::new(vec![0, 1, 2]).unwrap();
-        complex.add_simplex(triangle);
+        complex.add_simplex(triangle).unwrap();
 
         // Should have 3 vertices, 3 edges, and 1 triangle
         assert_eq!(complex.count_simplices(0), 3);
@@ -216,7 +217,7 @@ mod tests {
     fn test_simplicial_complex_contains() {
         let mut complex = SimplicialComplex::new();
         let edge = Simplex::new(vec![0, 1]).unwrap();
-        complex.add_simplex(edge.clone());
+        complex.add_simplex(edge.clone()).unwrap();
 
         assert!(complex.contains(&edge));
         assert!(!complex.contains(&Simplex::new(vec![1, 2]).unwrap()));
