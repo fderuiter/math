@@ -272,7 +272,10 @@ pub fn compute_persistence(
     }
 
     // Handle features that persist to the end
-    let final_radius = radii.last().copied().ok_or(TdaError::InvalidRadius { value: 0.0 })?;
+    let final_radius = radii
+        .last()
+        .copied()
+        .ok_or(TdaError::InvalidRadius { value: 0.0 })?;
 
     // Remaining components
     for (_, birth) in component_births {
