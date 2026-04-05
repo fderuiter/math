@@ -1,7 +1,7 @@
-pub mod model;
 pub mod forward_backward;
-pub mod viterbi;
 pub mod generation;
+pub mod model;
+pub mod viterbi;
 
 #[cfg(test)]
 mod tests;

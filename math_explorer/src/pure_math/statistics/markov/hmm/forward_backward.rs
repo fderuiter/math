@@ -38,7 +38,10 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// # Returns
     ///
     /// A matrix where column t contains α(t, ·).
-    pub(crate) fn forward_probabilities(&self, observations: &[usize]) -> Result<(DMatrix<T>, Vec<T>)> {
+    pub(crate) fn forward_probabilities(
+        &self,
+        observations: &[usize],
+    ) -> Result<(DMatrix<T>, Vec<T>)> {
         if observations.is_empty() {
             return Err(MarkovError::InvalidObservation {
                 reason: "Observation sequence is empty".to_string(),

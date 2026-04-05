@@ -2,9 +2,9 @@
 mod tests {
     use super::super::model::HiddenMarkovModel;
     use approx::assert_relative_eq;
+    use nalgebra::{DMatrix, DVector};
     use rand::SeedableRng;
     use rand::rngs::StdRng;
-    use nalgebra::{DMatrix, DVector};
 
     #[test]
     fn test_hmm_creation() {
