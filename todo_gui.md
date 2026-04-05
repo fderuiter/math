@@ -168,7 +168,7 @@ This document outlines the roadmap for integrating the various modules of the `m
 *   **Module:** `climate`
 *   **Features:**
     *   [x] **Temperature Anomalies:** Time-series visualization of global temperature data.
-    *   [ ] **CERA Model:** Interactive inputs for the Coupled Energy-Resource-Atmosphere model.
+    *   [x] **CERA Model:** Interactive inputs for the Coupled Energy-Resource-Atmosphere model.
     *   [ ] **CO2 Projections:** Scenario sliders for emissions reduction.
 
 ---
