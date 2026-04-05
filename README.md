@@ -28,8 +28,14 @@ cargo run --release --package math_explorer_gui
 
 ## Usage
 
-### Run "Hello World" (Quantum Physics)
-Calculate Clebsch-Gordan coefficients for angular momentum coupling:
+### Run "Hello World"
+Experience the library in action by running our pre-built Quantum Mechanics example:
+
+```bash
+cargo run --package math_explorer --example hello_world
+```
+
+This will calculate Clebsch-Gordan coefficients with a stylized terminal output. Alternatively, you can use the API directly in your own code:
 
 ```rust
 use math_explorer::physics::quantum::clebsch_gordan;
