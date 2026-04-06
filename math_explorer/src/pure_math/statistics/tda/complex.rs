@@ -9,7 +9,7 @@ use std::collections::HashSet;
 #[derive(Debug, Clone)]
 pub struct SimplicialComplex {
     /// All simplices in the complex, organized by dimension.
-    /// simplices[d] contains all d-dimensional simplices.
+    /// `simplices[d]` contains all `d`-dimensional simplices.
     pub simplices: Vec<HashSet<Simplex>>,
 }
 
@@ -25,6 +25,11 @@ impl SimplicialComplex {
     ///
     /// Automatically adds all faces of the simplex as well to maintain
     /// the simplicial complex property.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`TdaError::InvalidSimplex`] if generating the faces of the simplex fails
+    /// (e.g., due to duplicate vertices or other invalid structural states).
     pub fn add_simplex(&mut self, simplex: Simplex) -> Result<(), TdaError> {
         let dim = simplex.dimension();
 
@@ -104,7 +109,7 @@ impl Default for SimplicialComplex {
 /// The Vietoris-Rips complex at radius ε includes:
 /// - All vertices (0-simplices)
 /// - An edge between vertices i and j if d(i,j) ≤ ε
-/// - A triangle [i,j,k] if all pairwise distances ≤ ε
+/// - A triangle `[i, j, k]` if all pairwise distances ≤ ε
 /// - Higher-dimensional simplices similarly
 ///
 /// This implementation constructs up to 2-dimensional simplices (triangles).
@@ -117,6 +122,12 @@ impl Default for SimplicialComplex {
 /// # Returns
 ///
 /// * `Result<SimplicialComplex, TdaError>` - The Vietoris-Rips complex or error
+///
+/// # Errors
+///
+/// Returns a [`TdaError::InvalidRadius`] if `radius` is negative or non-finite.
+/// Additionally, returns a [`TdaError::InvalidSimplex`] if creating any of the required
+/// simplices fails during the complex construction.
 ///
 /// # Example
 ///
