@@ -77,11 +77,11 @@
 //!
 //! ## Modules
 //!
-//! - [`pair_comparison`]: Core logic for matched and unmatched pair comparisons.
-//! - [`sample_win_ratio`]: Tools for sample-based estimation.
-//! - [`probability_win_ratio`]: Theoretical probability calculations.
-//! - [`simulation`]: Monte Carlo simulations for power analysis.
-//! - [`bmi`]: Utility for calculating Body Mass Index (BMI), a common covariate in cardiovascular trials.
+//! - `pair_comparison`: Core logic for matched and unmatched pair comparisons.
+//! - `sample_win_ratio`: Tools for sample-based estimation.
+//! - `probability_win_ratio`: Theoretical probability calculations.
+//! - `simulation`: Monte Carlo simulations for power analysis.
+//! - `bmi`: Utility for calculating Body Mass Index (BMI), a common covariate in cardiovascular trials.
 
 pub mod bmi;
 pub mod pair_comparison;

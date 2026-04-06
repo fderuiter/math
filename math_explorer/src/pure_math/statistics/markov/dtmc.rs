@@ -28,7 +28,7 @@ pub enum StateType {
 /// A discrete-time Markov chain is a stochastic process {Xₙ} with the Markov property:
 /// P(Xₙ₊₁ = j | X₀, X₁, ..., Xₙ) = P(Xₙ₊₁ = j | Xₙ)
 ///
-/// The chain is characterized by a transition matrix P where P[i,j] = P(Xₙ₊₁ = j | Xₙ = i).
+/// The chain is characterized by a transition matrix P where `P[i,j] = P(Xₙ₊₁ = j | Xₙ = i)`.
 ///
 /// For chains with absorbing states, the canonical form is:
 /// ```text
@@ -41,7 +41,7 @@ pub enum StateType {
 /// - 0: absorbing → transient (impossible)
 /// - I: absorbing → absorbing (identity)
 ///
-/// The fundamental matrix is N = (I - Q)⁻¹, where N[i,j] is the expected number
+/// The fundamental matrix is N = (I - Q)⁻¹, where `N[i,j]` is the expected number
 /// of times the chain visits transient state j starting from transient state i.
 ///
 /// # Example
@@ -90,7 +90,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// # Arguments
     ///
-    /// * `transition_matrix` - The transition matrix P where P[i,j] = P(next=j | current=i)
+    /// * `transition_matrix` - The transition matrix P where `P[i,j] = P(next=j | current=i)`
     /// * `state_types` - Classification of each state
     ///
     /// # Returns
@@ -247,7 +247,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// # Mathematical Background
     ///
-    /// The fundamental matrix N has the property that N[i,j] is the expected
+    /// The fundamental matrix N has the property that `N[i,j]` is the expected
     /// number of times the chain visits transient state j before absorption,
     /// given that it starts in transient state i.
     ///
@@ -274,7 +274,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// # Mathematical Background
     ///
-    /// B[i,j] is the probability that the chain, starting from transient state i,
+    /// `B[i,j]` is the probability that the chain, starting from transient state i,
     /// will eventually be absorbed into absorbing state j.
     ///
     /// # Returns
@@ -300,7 +300,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// # Mathematical Background
     ///
-    /// The expected absorption time from transient state i is t[i] = Σⱼ N[i,j].
+    /// The expected absorption time from transient state i is `t[i] = Σⱼ N[i,j]`.
     ///
     /// # Returns
     ///

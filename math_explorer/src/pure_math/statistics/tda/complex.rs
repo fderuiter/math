@@ -9,7 +9,7 @@ use std::collections::HashSet;
 #[derive(Debug, Clone)]
 pub struct SimplicialComplex {
     /// All simplices in the complex, organized by dimension.
-    /// simplices[d] contains all d-dimensional simplices.
+    /// `simplices[d]` contains all d-dimensional simplices.
     pub simplices: Vec<HashSet<Simplex>>,
 }
 
@@ -104,7 +104,7 @@ impl Default for SimplicialComplex {
 /// The Vietoris-Rips complex at radius ε includes:
 /// - All vertices (0-simplices)
 /// - An edge between vertices i and j if d(i,j) ≤ ε
-/// - A triangle [i,j,k] if all pairwise distances ≤ ε
+/// - A triangle `[i,j,k]` if all pairwise distances ≤ ε
 /// - Higher-dimensional simplices similarly
 ///
 /// This implementation constructs up to 2-dimensional simplices (triangles).

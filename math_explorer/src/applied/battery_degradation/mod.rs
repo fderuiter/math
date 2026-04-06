@@ -40,8 +40,8 @@
 //!
 //! ## Modules
 //!
-//! - [`model`]: Core logic including the `PowerLawModel` struct.
-//! - [`types`]: Type-safe wrappers for `Capacity`, `Cycles`, and `DepthOfDischarge`.
+//! - `model`: Core logic including the `PowerLawModel` struct.
+//! - `types`: Type-safe wrappers for `Capacity`, `Cycles`, and `DepthOfDischarge`.
 
 pub mod error;
 pub mod model;

@@ -50,7 +50,7 @@ impl<T: RealField + Copy + ToPrimitive> TimeIndex<T> {
 /// # Mathematical Background
 ///
 /// A non-stationary Markov chain has transition probabilities that depend on time:
-/// P(Xₙ₊₁ = j | Xₙ = i, n) = Pₙ[i,j]
+/// `P(Xₙ₊₁ = j | Xₙ = i, n) = Pₙ[i,j]`
 ///
 /// This is useful for modeling:
 /// - Shot clock urgency in basketball (transition rates change as time runs out)
