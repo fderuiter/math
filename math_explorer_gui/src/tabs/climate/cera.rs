@@ -1,0 +1,110 @@
+use crate::tabs::climate::ClimateTool;
+use eframe::egui;
+use math_explorer::climate::cera::Cera;
+use math_explorer::climate::config::CeraConfig;
+use nalgebra::DMatrix;
+
+pub struct CeraTool {
+    in_channels: usize,
+    latent_channels: usize,
+    aligned_channels: usize,
+    num_levels: usize,
+    output_size: usize,
+    prediction_result: Option<Result<Vec<f64>, String>>,
+}
+
+impl Default for CeraTool {
+    fn default() -> Self {
+        Self {
+            in_channels: 2,
+            latent_channels: 4,
+            aligned_channels: 2,
+            num_levels: 10,
+            output_size: 5,
+            prediction_result: None,
+        }
+    }
+}
+
+impl ClimateTool for CeraTool {
+    fn name(&self) -> &'static str {
+        "CERA Model"
+    }
+
+    fn show(&mut self, ui: &mut egui::Ui) {
+        ui.label("Configure CERA (Climate-invariant Encoding through Representation Alignment) Model:");
+
+        ui.horizontal(|ui| {
+            ui.label("Input Channels:");
+            ui.add(egui::Slider::new(&mut self.in_channels, 1..=10));
+        });
+
+        ui.horizontal(|ui| {
+            ui.label("Latent Channels:");
+            ui.add(egui::Slider::new(&mut self.latent_channels, 1..=20));
+        });
+
+        ui.horizontal(|ui| {
+            ui.label("Aligned Channels:");
+            ui.add(egui::Slider::new(&mut self.aligned_channels, 1..=self.latent_channels));
+        });
+
+        ui.horizontal(|ui| {
+            ui.label("Number of Levels:");
+            ui.add(egui::Slider::new(&mut self.num_levels, 1..=50));
+        });
+
+        ui.horizontal(|ui| {
+            ui.label("Output Size:");
+            ui.add(egui::Slider::new(&mut self.output_size, 1..=20));
+        });
+
+        if ui.button("Run Prediction").clicked() {
+            let config = CeraConfig {
+                in_channels: self.in_channels,
+                latent_channels: self.latent_channels,
+                aligned_channels: self.aligned_channels,
+                num_levels: self.num_levels,
+                output_size: self.output_size,
+                epochs: 1,
+                batch_size: 1,
+                learning_rate: 0.01,
+                lambda_pred: 1.0,
+                lambda_emd: 0.1,
+            };
+
+            match Cera::new(config) {
+                Ok(model) => {
+                    let inputs = DMatrix::from_fn(self.num_levels, self.in_channels, |_, _| rand::random::<f32>());
+                    let prediction = model.predict(&inputs);
+
+                    let mut result_vec = Vec::new();
+                    for val in prediction.iter() {
+                        result_vec.push(*val as f64);
+                    }
+                    self.prediction_result = Some(Ok(result_vec));
+                }
+                Err(e) => {
+                    self.prediction_result = Some(Err(e));
+                }
+            }
+        }
+
+        ui.separator();
+
+        match &self.prediction_result {
+            Some(Ok(predictions)) => {
+                ui.label("Prediction Results:");
+                for (i, val) in predictions.iter().enumerate() {
+                    ui.label(format!("Output {}: {:.4}", i, val));
+                }
+            }
+            Some(Err(err)) => {
+                ui.colored_label(egui::Color32::RED, format!("Error: {}", err));
+            }
+            None => {
+                ui.label("Click 'Run Prediction' to test the model with random inputs.");
+            }
+        }
+    }
+}
