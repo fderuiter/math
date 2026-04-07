@@ -32,6 +32,8 @@
 //! assert_eq!(p_star.get_coeff(0), 1);
 //! ```
 
+use crate::pure_math::number_theory::error::NumberTheoryError;
+
 // Define QSeries as a type alias for QSeries<i64> to preserve backward compatibility
 // and allow specific usage in this module.
 pub type QSeries = crate::pure_math::number_theory::q_series::QSeries<i64>;
@@ -127,7 +129,7 @@ pub fn gen_p_star(precision: usize) -> QSeries {
 /// Generating function for $M(n)$.
 ///
 /// $$\sum M(n)q^n = \frac{f_2^5 f_5^5}{f_1 f_{10}}$$
-pub fn gen_m(precision: usize) -> QSeries {
+pub fn gen_m(precision: usize) -> Result<QSeries, NumberTheoryError> {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
     let f5 = f_k(5, precision);
@@ -139,13 +141,13 @@ pub fn gen_m(precision: usize) -> QSeries {
     let numerator = &f2_pow5 * &f5_pow5;
     let denominator = &f1 * &f10;
 
-    &numerator / &denominator
+    numerator.divide(&denominator)
 }
 
 /// Generating function for $T^*(n)$.
 ///
 /// $$\sum T^*(n)q^n = \frac{f_1^5 f_{10}^5}{f_2 f_5}$$
-pub fn gen_t_star(precision: usize) -> QSeries {
+pub fn gen_t_star(precision: usize) -> Result<QSeries, NumberTheoryError> {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
     let f5 = f_k(5, precision);
@@ -157,13 +159,13 @@ pub fn gen_t_star(precision: usize) -> QSeries {
     let numerator = &f1_pow5 * &f10_pow5;
     let denominator = &f2 * &f5;
 
-    &numerator / &denominator
+    numerator.divide(&denominator)
 }
 
 /// Generating function for $A(n)$.
 ///
 /// $$\sum A(n)q^n = \frac{f_2^6 f_7^6}{f_1^2}$$
-pub fn gen_a(precision: usize) -> QSeries {
+pub fn gen_a(precision: usize) -> Result<QSeries, NumberTheoryError> {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
     let f7 = f_k(7, precision);
@@ -174,13 +176,13 @@ pub fn gen_a(precision: usize) -> QSeries {
 
     let numerator = &f2_pow6 * &f7_pow6;
 
-    &numerator / &f1_pow2
+    numerator.divide(&f1_pow2)
 }
 
 /// Generating function for $B(n)$.
 ///
 /// $$\sum B(n)q^n = \frac{f_1^6 f_{14}^4}{f_2^2 f_7^2}$$
-pub fn gen_b(precision: usize) -> QSeries {
+pub fn gen_b(precision: usize) -> Result<QSeries, NumberTheoryError> {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
     let f7 = f_k(7, precision);
@@ -194,7 +196,7 @@ pub fn gen_b(precision: usize) -> QSeries {
     let numerator = &f1_pow6 * &f14_pow4;
     let denominator = &f2_pow2 * &f7_pow2;
 
-    &numerator / &denominator
+    numerator.divide(&denominator)
 }
 
 /// Generating function for $K(n)$.
@@ -217,7 +219,7 @@ pub fn gen_k(precision: usize) -> QSeries {
 /// Generating function for $L(n)$.
 ///
 /// $$\sum L(n)q^n = \frac{f_1^5 f_7^5}{f_2 f_{14}}$$
-pub fn gen_l(precision: usize) -> QSeries {
+pub fn gen_l(precision: usize) -> Result<QSeries, NumberTheoryError> {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
     let f7 = f_k(7, precision);
@@ -229,7 +231,7 @@ pub fn gen_l(precision: usize) -> QSeries {
     let numerator = &f1_pow5 * &f7_pow5;
     let denominator = &f2 * &f14;
 
-    &numerator / &denominator
+    numerator.divide(&denominator)
 }
 
 #[cfg(test)]
