@@ -1,4 +1,5 @@
 pub mod cera;
+pub mod co2_projections;
 pub mod temperature;
 
 use crate::tabs::ExplorerTab;
@@ -21,6 +22,7 @@ impl Default for ClimateTab {
             tools: vec![
                 Box::new(temperature::TemperatureAnomaliesTool::default()),
                 Box::new(cera::CeraTool::default()),
+                Box::new(co2_projections::Co2ProjectionsTool::default()),
             ],
             selected_tool: 0,
         }
