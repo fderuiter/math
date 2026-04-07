@@ -32,7 +32,9 @@ impl ClimateTool for CeraTool {
     }
 
     fn show(&mut self, ui: &mut egui::Ui) {
-        ui.label("Configure CERA (Climate-invariant Encoding through Representation Alignment) Model:");
+        ui.label(
+            "Configure CERA (Climate-invariant Encoding through Representation Alignment) Model:",
+        );
 
         ui.horizontal(|ui| {
             ui.label("Input Channels:");
@@ -46,7 +48,10 @@ impl ClimateTool for CeraTool {
 
         ui.horizontal(|ui| {
             ui.label("Aligned Channels:");
-            ui.add(egui::Slider::new(&mut self.aligned_channels, 1..=self.latent_channels));
+            ui.add(egui::Slider::new(
+                &mut self.aligned_channels,
+                1..=self.latent_channels,
+            ));
         });
 
         ui.horizontal(|ui| {
@@ -75,7 +80,9 @@ impl ClimateTool for CeraTool {
 
             match Cera::new(config) {
                 Ok(model) => {
-                    let inputs = DMatrix::from_fn(self.num_levels, self.in_channels, |_, _| rand::random::<f32>());
+                    let inputs = DMatrix::from_fn(self.num_levels, self.in_channels, |_, _| {
+                        rand::random::<f32>()
+                    });
                     let prediction = model.predict(&inputs);
 
                     let mut result_vec = Vec::new();

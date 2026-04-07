@@ -11,6 +11,5 @@ pub mod state;
 #[cfg(test)]
 mod tests;
 
-
 pub use model::*;
 pub use state::*;

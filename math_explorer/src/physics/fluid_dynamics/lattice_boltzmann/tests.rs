@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use crate::physics::fluid_dynamics::lattice_boltzmann::model::*; use crate::physics::fluid_dynamics::lattice_boltzmann::algorithms::*; use crate::physics::fluid_dynamics::lattice_boltzmann::state::*;
+    use crate::physics::fluid_dynamics::lattice_boltzmann::algorithms::*;
+    use crate::physics::fluid_dynamics::lattice_boltzmann::model::*;
+    use crate::physics::fluid_dynamics::lattice_boltzmann::state::*;
 
     const Q: usize = 9;
 
