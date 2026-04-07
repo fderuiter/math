@@ -273,10 +273,10 @@ pub fn phase4_exact_ray_casting(prefix: &Prefix, target_max: &Integer) -> Option
 ///
 /// ```rust
 /// use math_explorer::pure_math::number_theory::ualbf::ualbf_search;
-/// let result = ualbf_search(50, 1, "1000", "1000000");
+/// let result = ualbf_search(50, 1, "1000", "1000000").unwrap();
 /// assert!(result.valid_components > 0 || result.pruned_components > 0);
 /// ```
-use crate::pure_math::number_theory::error::NumberTheoryError;
+use crate::pure_math::number_theory::NumberTheoryError;
 
 pub fn ualbf_search(
     limit_p: u64,

@@ -5,7 +5,7 @@
 //! other areas of number theory.
 
 use crate::pure_math::algebra::traits::EuclideanDomain;
-use std::ops::{Add, Mul};
+use std::ops::{Add, Div, Mul};
 
 /// Represents a q-series, a power series in q.
 /// The vector `coeffs` stores the coefficients, where the index represents the power of q.
@@ -131,18 +131,18 @@ impl<T: EuclideanDomain> Mul for &QSeries<T> {
     }
 }
 
-use crate::pure_math::number_theory::error::NumberTheoryError;
+impl<T: EuclideanDomain> Div for &QSeries<T> {
+    type Output = QSeries<T>;
 
-impl<T: EuclideanDomain> QSeries<T> {
-    pub fn divide(&self, other: &Self) -> Result<QSeries<T>, NumberTheoryError> {
+    fn div(self, other: Self) -> QSeries<T> {
         let len1 = self.coeffs.len();
         let len2 = other.coeffs.len();
         if len2 == 0 {
-            return Err(NumberTheoryError::DivisionByZeroQSeries);
+            panic!("Division by zero QSeries");
         }
         let b0 = other.get_coeff(0);
         if b0.is_zero() {
-            return Err(NumberTheoryError::DivisionByZeroConstantTerm);
+            panic!("Division by a QSeries with zero constant term");
         }
 
         let precision = len1;
@@ -163,7 +163,7 @@ impl<T: EuclideanDomain> QSeries<T> {
             new_coeffs[n] = numerator / b0.clone();
         }
 
-        Ok(QSeries { coeffs: new_coeffs })
+        QSeries { coeffs: new_coeffs }
     }
 }
 
@@ -197,7 +197,7 @@ mod tests {
         // 1 / (1-q) = 1+q+q^2+...
         let one = QSeries::from_vec(vec![1i64, 0, 0, 0, 0]);
         let one_minus_q = QSeries::from_vec(vec![1i64, -1]);
-        let geom_series = one.divide(&one_minus_q).unwrap();
+        let geom_series = &one / &one_minus_q;
         assert_eq!(geom_series.coeffs, vec![1, 1, 1, 1, 1]);
     }
 }
