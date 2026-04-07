@@ -276,17 +276,19 @@ pub fn phase4_exact_ray_casting(prefix: &Prefix, target_max: &Integer) -> Option
 /// let result = ualbf_search(50, 1, "1000", "1000000");
 /// assert!(result.valid_components > 0 || result.pruned_components > 0);
 /// ```
+use crate::pure_math::number_theory::error::NumberTheoryError;
+
 pub fn ualbf_search(
     limit_p: u64,
     max_e: u32,
     stop_threshold_str: &str,
     target_max_str: &str,
-) -> UalbfSearchResult {
+) -> Result<UalbfSearchResult, NumberTheoryError> {
     let stop_threshold: Integer = Integer::parse(stop_threshold_str)
-        .expect("stop_threshold parse")
+        .map_err(|e| NumberTheoryError::ParseError(e.to_string()))?
         .into();
     let target_max: Integer = Integer::parse(target_max_str)
-        .expect("target_max parse")
+        .map_err(|e| NumberTheoryError::ParseError(e.to_string()))?
         .into();
 
     let (components, pruned_components) = phase1_global_annihilation_sieve(limit_p, max_e);
@@ -307,13 +309,13 @@ pub fn ualbf_search(
         }
     }
 
-    UalbfSearchResult {
+    Ok(UalbfSearchResult {
         valid_components,
         pruned_components,
         prefix_count,
         rejected_by_lattice,
         candidates_checked,
-    }
+    })
 }
 
 #[cfg(test)]
@@ -370,7 +372,7 @@ mod tests {
 
     #[test]
     fn test_ualbf_search_runs() {
-        let result = ualbf_search(50, 1, "1000", "1000000");
+        let result = ualbf_search(50, 1, "1000", "1000000").unwrap();
         assert!(
             result.valid_components > 0 || result.pruned_components > 0,
             "pipeline produced no output"
