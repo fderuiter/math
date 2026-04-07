@@ -1,5 +1,16 @@
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum AmbsError {
+    #[error("Failed to parse integer from string: {0}")]
+    ParseError(String),
+    #[error("Modulo operation failed")]
+    ModuloError,
+    #[error("Conversion to usize failed")]
+    ConversionError,
+}
+
 use crate::pure_math::number_theory::alcf::sigma;
-use crate::pure_math::number_theory::error::NumberTheoryError as AmbsError;
 use crate::pure_math::number_theory::primes::is_prime;
 use rug::{Integer, ops::Pow, ops::RemRounding};
 
@@ -349,10 +360,10 @@ impl AmbsDsp {
             let n_l_int = Integer::from(n_l);
 
             let x_l_opt = modular_inverse(&Integer::from(-2 * &n_l_int), &s_l);
-            let x_l = match x_l_opt {
-                Some(val) => val,
-                None => continue,
-            };
+            if x_l_opt.is_none() {
+                continue;
+            }
+            let x_l = x_l_opt.unwrap();
 
             let roots = Self::compute_modular_square_roots(&x_l, &s_l)?;
             if roots.is_empty() {

@@ -26,13 +26,13 @@ fn test_qseries_div() {
     // (1-q^4) / (1-q^2) = 1+q^2
     let s1 = f_k(1, 10);
     let s2 = f_k(2, 10);
-    let s3 = (&s1 * &s2).divide(&s1).unwrap();
+    let s3 = &(&s1 * &s2) / &s1;
     assert_eq!(s3.coeffs, s2.coeffs);
 
     // 1 / (1-q) = 1+q+q^2+...
     let one = QSeries::from_vec(vec![1, 0, 0, 0, 0]);
     let one_minus_q = QSeries::from_vec(vec![1, -1]);
-    let geom_series = one.divide(&one_minus_q).unwrap();
+    let geom_series = &one / &one_minus_q;
     assert_eq!(geom_series.coeffs, vec![1, 1, 1, 1, 1]);
 }
 
@@ -62,7 +62,7 @@ fn test_gen_p_star() {
 
 #[test]
 fn test_gen_m() {
-    let m = gen_m(7).unwrap();
+    let m = gen_m(7);
     assert_eq!(m.coeffs, vec![1, 1, -3, -2, 0, -8, 1]);
 }
 
@@ -122,7 +122,7 @@ fn test_theorem_2() {
 #[test]
 fn test_corollary_2_alpha_1() {
     let precision = 30;
-    let m = gen_m(precision).unwrap();
+    let m = gen_m(precision);
     for n in 0.. {
         let index = 5 * n + 4;
         if index >= precision {
