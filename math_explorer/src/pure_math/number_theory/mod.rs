@@ -29,10 +29,10 @@
 pub mod alcf;
 pub mod ambs;
 pub mod class_number;
+pub mod error;
 pub mod hurwitz_kronecker;
 pub mod partitions;
 pub mod primes;
-pub mod error;
 pub mod q_series;
 pub mod ualbf;
 
