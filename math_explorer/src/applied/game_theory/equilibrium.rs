@@ -26,6 +26,28 @@ pub struct BoxSet {
 }
 
 impl BoxSet {
+    /// Creates a new `BoxSet` representing a hyper-rectangle.
+    ///
+    /// The resulting `BoxSet` constrains the domain across $n$ dimensions,
+    /// where $n$ is the length of the provided vectors.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `min_vals` and `max_vals` have different lengths,
+    /// because a hyper-rectangle must have consistent dimensionality for
+    /// its lower and upper bounds.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use math_explorer::applied::game_theory::equilibrium::{BoxSet, ConvexSet};
+    /// use nalgebra::DVector;
+    ///
+    /// let box_set = BoxSet::new(vec![0.0, -1.0], vec![1.0, 1.0]);
+    ///
+    /// // A point inside the box
+    /// assert!(box_set.contains(&DVector::from_vec(vec![0.5, 0.0])));
+    /// ```
     pub fn new(min_vals: Vec<f64>, max_vals: Vec<f64>) -> Self {
         assert_eq!(min_vals.len(), max_vals.len());
         Self {
