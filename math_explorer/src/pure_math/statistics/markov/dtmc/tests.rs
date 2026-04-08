@@ -1,6 +1,6 @@
 use super::*;
-use nalgebra::{DMatrix, DVector};
 use approx::assert_relative_eq;
+use nalgebra::{DMatrix, DVector};
 
 #[test]
 fn test_simple_absorbing_chain() {

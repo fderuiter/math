@@ -416,6 +416,5 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     }
 }
 
-
 #[cfg(test)]
 mod tests;

@@ -442,6 +442,5 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     }
 }
 
-
 #[cfg(test)]
 mod tests;

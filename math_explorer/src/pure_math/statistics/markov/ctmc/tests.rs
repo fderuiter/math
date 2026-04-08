@@ -1,6 +1,6 @@
 use super::*;
-use nalgebra::{DMatrix, DVector};
 use approx::assert_relative_eq;
+use nalgebra::{DMatrix, DVector};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
