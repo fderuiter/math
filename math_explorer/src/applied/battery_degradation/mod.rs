@@ -70,10 +70,7 @@ pub fn n70(d: f64) -> f64 {
 )]
 pub fn capacity(n: f64, d: f64) -> f64 {
     PowerLawModel::standard()
-        .capacity(
-            Cycles::new_clamped(n),
-            DepthOfDischarge::new_clamped(d),
-        )
+        .capacity(Cycles::new_clamped(n), DepthOfDischarge::new_clamped(d))
         .as_f64()
 }
 
