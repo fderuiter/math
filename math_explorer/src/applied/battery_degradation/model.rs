@@ -101,7 +101,7 @@ mod tests {
 
         // Check anchor points from documentation approximately
         // DoD=100%, N70=300
-        let n70_100 = model.n70(DepthOfDischarge::new(100.0).unwrap()).as_f64();
+        let n70_100 = model.n70(DepthOfDischarge::new_clamped(100.0)).as_f64();
         assert!(
             (n70_100 - 300.0).abs() < 50.0,
             "Expected ~300, got {}",
@@ -109,7 +109,7 @@ mod tests {
         );
 
         // DoD=10%, N70=6000
-        let n70_10 = model.n70(DepthOfDischarge::new(10.0).unwrap()).as_f64();
+        let n70_10 = model.n70(DepthOfDischarge::new_clamped(10.0)).as_f64();
         assert!(
             (n70_10 - 6000.0).abs() < 500.0,
             "Expected ~6000, got {}",
@@ -120,30 +120,30 @@ mod tests {
     #[test]
     fn test_capacity_decay() {
         let model = PowerLawModel::standard();
-        let dod = DepthOfDischarge::new(60.0).unwrap();
+        let dod = DepthOfDischarge::new_clamped(60.0);
         let n70 = model.n70(dod).as_f64();
 
         // At 0 cycles, capacity should be 1.0
-        let cap_0 = model.capacity(Cycles::new(0.0).unwrap(), dod);
+        let cap_0 = model.capacity(Cycles::new_clamped(0.0), dod);
         assert!((cap_0.as_f64() - 1.0).abs() < 1e-6);
 
         // At n70 cycles, capacity should be 0.7
-        let cap_n70 = model.capacity(Cycles::new(n70).unwrap(), dod);
+        let cap_n70 = model.capacity(Cycles::new_clamped(n70), dod);
         assert!((cap_n70.as_f64() - 0.7).abs() < 1e-6);
     }
 
     #[test]
     fn test_cycles_to_capacity() {
         let model = PowerLawModel::standard();
-        let dod = DepthOfDischarge::new(50.0).unwrap();
+        let dod = DepthOfDischarge::new_clamped(50.0);
 
         // Target 0.7 capacity -> should return n70
-        let cycles = model.cycles_to_capacity(Capacity::new(0.7).unwrap(), dod);
+        let cycles = model.cycles_to_capacity(Capacity::new_clamped(0.7), dod);
         let n70 = model.n70(dod);
         assert!((cycles.as_f64() - n70.as_f64()).abs() < 1e-6);
 
         // Target 1.0 capacity -> should be 0 cycles
-        let cycles_0 = model.cycles_to_capacity(Capacity::new(1.0).unwrap(), dod);
+        let cycles_0 = model.cycles_to_capacity(Capacity::new_clamped(1.0), dod);
         assert!(cycles_0.as_f64() < 1e-6);
     }
 
@@ -151,7 +151,7 @@ mod tests {
     fn test_trait_implementation() {
         // This function accepts any implementation of DegradationModel
         fn evaluate_model<M: DegradationModel>(model: &M) -> f64 {
-            let d = DepthOfDischarge::new(50.0).unwrap();
+            let d = DepthOfDischarge::new_clamped(50.0);
             model.n70(d).as_f64()
         }
 

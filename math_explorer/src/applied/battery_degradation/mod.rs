@@ -25,14 +25,14 @@
 //!     let model = PowerLawModel::standard();
 //!
 //!     // 2. Define a scenario: 80% to 20% charge window = 60% DoD
-//!     let dod = DepthOfDischarge::new(60.0).unwrap();
+//!     let dod = DepthOfDischarge::new_clamped(60.0);
 //!
 //!     // 3. Estimate Life Expectancy (Cycles to 70% SOH)
 //!     let life_cycles = model.n70(dod);
 //!     println!("Expected Life: {:.0} cycles", life_cycles.as_f64());
 //!
 //!     // 4. Predict Capacity after 1000 cycles
-//!     let current_cycles = Cycles::new(1000.0).unwrap();
+//!     let current_cycles = Cycles::new_clamped(1000.0);
 //!     let remaining_capacity = model.capacity(current_cycles, dod);
 //!     println!("Capacity after 1000 cycles: {:.1}%", remaining_capacity.as_f64() * 100.0);
 //! }
@@ -53,55 +53,40 @@ pub use types::{Capacity, Cycles, DepthOfDischarge};
 /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀).
 /// # Panics
 ///
-/// This function internally clamps inputs to valid ranges, so it guarantees infallible unwrap.
 #[deprecated(
     since = "0.2.0",
-    note = "Use `PowerLawModel::standard().n70(DepthOfDischarge::new(d))` instead"
+    note = "Use `PowerLawModel::standard().n70(DepthOfDischarge::new_clamped(d))` instead"
 )]
 pub fn n70(d: f64) -> f64 {
-    let d_clamped = d.clamp(0.0, 100.0);
     PowerLawModel::standard()
-        // SAFETY: d is explicitly clamped to 0.0-100.0, which is the valid range.
-        .n70(DepthOfDischarge::new(d_clamped).unwrap())
+        .n70(DepthOfDischarge::new_clamped(d))
         .as_f64()
 }
 
 /// Calculates the remaining battery capacity after a number of cycles.
-/// # Panics
-///
-/// This function internally clamps inputs to valid ranges, so it guarantees infallible unwrap.
 #[deprecated(
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().capacity(...)` instead"
 )]
 pub fn capacity(n: f64, d: f64) -> f64 {
-    let d_clamped = d.clamp(0.0, 100.0);
-    let n_clamped = n.max(0.0);
     PowerLawModel::standard()
-        // SAFETY: n and d are explicitly clamped to their respective valid ranges.
         .capacity(
-            Cycles::new(n_clamped).unwrap(),
-            DepthOfDischarge::new(d_clamped).unwrap(),
+            Cycles::new_clamped(n),
+            DepthOfDischarge::new_clamped(d),
         )
         .as_f64()
 }
 
 /// Calculates the number of equivalent full cycles to reach a target capacity.
-/// # Panics
-///
-/// This function internally clamps inputs to valid ranges, so it guarantees infallible unwrap.
 #[deprecated(
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().cycles_to_capacity(...)` instead"
 )]
 pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
-    let d_clamped = d.clamp(0.0, 100.0);
-    let target_clamped = target_capacity.clamp(0.0, 1.0);
     PowerLawModel::standard()
-        // SAFETY: target_capacity and d are explicitly clamped to their respective valid ranges.
         .cycles_to_capacity(
-            Capacity::new(target_clamped).unwrap(),
-            DepthOfDischarge::new(d_clamped).unwrap(),
+            Capacity::new_clamped(target_capacity),
+            DepthOfDischarge::new_clamped(d),
         )
         .as_f64()
 }
