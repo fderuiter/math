@@ -59,17 +59,23 @@ impl NumberTheoryTool for UalbfWidget {
                 if ui.button("Run UALBF Pipeline").clicked() {
                     let threshold_str = format!("{:.0}", 10f64.powf(self.stop_threshold_log));
                     let target_max = "1000000000000";
-                    let result =
-                        ualbf_search(self.limit_p, self.max_exponent, &threshold_str, target_max);
-                    self.status_message = format!(
-                        "Done. Valid: {}, Pruned: {}, Prefixes: {}, Rejected: {}, Candidates: {}",
-                        result.valid_components,
-                        result.pruned_components,
-                        result.prefix_count,
-                        result.rejected_by_lattice,
-                        result.candidates_checked,
-                    );
-                    self.result = Some(result);
+                    match ualbf_search(self.limit_p, self.max_exponent, &threshold_str, target_max) {
+                        Ok(result) => {
+                            self.status_message = format!(
+                                "Done. Valid: {}, Pruned: {}, Prefixes: {}, Rejected: {}, Candidates: {}",
+                                result.valid_components,
+                                result.pruned_components,
+                                result.prefix_count,
+                                result.rejected_by_lattice,
+                                result.candidates_checked,
+                            );
+                            self.result = Some(result);
+                        }
+                        Err(e) => {
+                            self.status_message = format!("Error: {}", e);
+                            self.result = None;
+                        }
+                    }
                 }
             });
 
