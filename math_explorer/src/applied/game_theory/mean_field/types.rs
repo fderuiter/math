@@ -1,5 +1,5 @@
-use crate::applied::game_theory::error::GameTheoryError;
 use std::num::NonZeroUsize;
+use crate::applied::game_theory::error::GameTheoryError;
 
 /// Represents a 1D spatial position.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -74,6 +74,18 @@ impl
             time_steps: WithoutTimeSteps,
             space_bounds: WithoutSpaceBounds,
         }
+    }
+}
+
+impl Default for MFGConfigBuilder<
+        WithoutViscosity,
+        WithoutTimeHorizon,
+        WithoutGridPoints,
+        WithoutTimeSteps,
+        WithoutSpaceBounds,
+    > {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

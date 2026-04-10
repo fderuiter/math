@@ -61,6 +61,12 @@ pub use types::{Density, MFGConfig, MFGConfigBuilder, Position};
 /// Legacy wrapper for backward compatibility.
 ///
 /// Wraps `MFGConfig` and uses `FixedPointSolver` by default.
+///
+/// ```rust
+/// use std::num::NonZeroUsize;
+/// use math_explorer::applied::game_theory::mean_field::{MeanFieldGame1D, MFGConfigBuilder};
+/// let mfg = MeanFieldGame1D::new(0.1, 1.0, 50, 100, -2.0, 2.0);
+/// ```
 pub struct MeanFieldGame1D {
     config: MFGConfig,
 }
