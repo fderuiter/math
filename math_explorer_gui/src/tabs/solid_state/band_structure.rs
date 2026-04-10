@@ -1,0 +1,113 @@
+use super::SolidStateTool;
+use eframe::egui;
+use egui_plot::{Line, Plot, PlotPoints};
+use math_explorer::physics::solid_state::band_theory::{free_electron_1d, tight_binding_1d};
+use std::f64::consts::PI;
+
+pub struct BandStructureTool {
+    e0: f64,
+    t: f64,
+    a: f64,
+    hbar: f64,
+    m: f64,
+    show_free_electron: bool,
+}
+
+impl Default for BandStructureTool {
+    fn default() -> Self {
+        Self {
+            e0: 0.0,
+            t: 1.0,
+            a: 1.0,
+            hbar: 1.0,
+            m: 1.0,
+            show_free_electron: false,
+        }
+    }
+}
+
+impl SolidStateTool for BandStructureTool {
+    fn name(&self) -> &'static str {
+        "Band Structure"
+    }
+
+    fn show(&mut self, ctx: &egui::Context) {
+        egui::SidePanel::right("band_structure_controls")
+            .resizable(false)
+            .min_width(250.0)
+            .show(ctx, |ui| {
+                ui.heading("Parameters");
+                ui.separator();
+
+                ui.label("Tight Binding Model");
+                ui.add(
+                    egui::Slider::new(&mut self.e0, -5.0..=5.0)
+                        .text("E₀ (On-site Energy)")
+                        .step_by(0.1),
+                );
+                ui.add(
+                    egui::Slider::new(&mut self.t, 0.0..=5.0)
+                        .text("t (Hopping Parameter)")
+                        .step_by(0.1),
+                );
+                ui.add(
+                    egui::Slider::new(&mut self.a, 0.1..=5.0)
+                        .text("a (Lattice Constant)")
+                        .step_by(0.1),
+                );
+
+                ui.separator();
+                ui.checkbox(&mut self.show_free_electron, "Show Free Electron Model");
+                if self.show_free_electron {
+                    ui.add(
+                        egui::Slider::new(&mut self.hbar, 0.1..=5.0)
+                            .text("ħ (Reduced Planck)")
+                            .step_by(0.1),
+                    );
+                    ui.add(
+                        egui::Slider::new(&mut self.m, 0.1..=5.0)
+                            .text("m (Effective Mass)")
+                            .step_by(0.1),
+                    );
+                }
+            });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("E-k Diagram");
+
+            // Generate points for the Brillouin Zone
+            let k_min = -PI / self.a;
+            let k_max = PI / self.a;
+            let num_points = 200;
+            let k_step = (k_max - k_min) / (num_points as f64 - 1.0);
+
+            let tb_points: PlotPoints = (0..num_points)
+                .map(|i| {
+                    let k = k_min + (i as f64) * k_step;
+                    let e = tight_binding_1d(k, self.e0, self.t, self.a);
+                    [k, e]
+                })
+                .collect();
+
+            let plot = Plot::new("band_structure_plot")
+                .x_axis_label("Wavevector (k)")
+                .y_axis_label("Energy (E)")
+                .legend(egui_plot::Legend::default());
+
+            plot.show(ui, |plot_ui| {
+                plot_ui.line(Line::new("Tight Binding", tb_points).name("Tight Binding"));
+
+                if self.show_free_electron {
+                    let fe_points: PlotPoints = (0..num_points)
+                        .map(|i| {
+                            let k = k_min + (i as f64) * k_step;
+                            let e = free_electron_1d(k, self.hbar, self.m);
+                            [k, e]
+                        })
+                        .collect();
+                    plot_ui.line(Line::new("Free Electron", fe_points).name("Free Electron"));
+                }
+            });
+        });
+    }
+}

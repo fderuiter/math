@@ -1,6 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
+pub mod band_structure;
 pub mod crystal_viewer;
 pub mod ising;
 
@@ -24,6 +25,7 @@ impl Default for SolidStateTab {
             tools: vec![
                 Box::new(crystal_viewer::CrystalViewer::default()),
                 Box::new(ising::IsingModelTool::default()),
+                Box::new(band_structure::BandStructureTool::default()),
             ],
             selected_tool_index: 0,
         }
