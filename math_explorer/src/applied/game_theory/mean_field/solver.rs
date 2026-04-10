@@ -63,8 +63,8 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
         terminal_cost: &impl Fn(Position, Density) -> f64,
         initial_distribution: &impl Fn(Position) -> f64,
     ) -> (DMatrix<f64>, DMatrix<f64>) {
-        let nx = config.grid_points;
-        let nt = config.time_steps;
+        let nx = config.grid_points.get();
+        let nt = config.time_steps.get();
 
         // Initialize m (density) and u (value)
         let mut m = DMatrix::zeros(nx, nt + 1);

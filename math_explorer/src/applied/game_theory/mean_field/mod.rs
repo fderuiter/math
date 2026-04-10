@@ -16,7 +16,17 @@
 //! // 1. Configuration
 //! // Viscosity (noise) = 0.1, Time Horizon = 1.0
 //! // Grid: 50 spatial points, 100 time steps. Range: [-2.0, 2.0]
-//! let config = MFGConfig::new(0.1, 1.0, 50, 100, -2.0, 2.0);
+//! use std::num::NonZeroUsize;
+//! use math_explorer::applied::game_theory::mean_field::types::MFGConfigBuilder;
+//! let config = MFGConfigBuilder::new()
+//!     .viscosity(0.1)
+//!     .time_horizon(1.0)
+//!     .grid_points(NonZeroUsize::new(50).unwrap())
+//!     .time_steps(NonZeroUsize::new(100).unwrap())
+//!     .space_bounds(-2.0, 2.0)
+//!     .unwrap()
+//!     .build()
+//!     .unwrap();
 //!
 //! // 2. Define Costs and Initial Distribution
 //! // Running Cost: F(x, m) = m + x^2 (Agents dislike crowds + prefer origin)
@@ -42,7 +52,7 @@ pub mod types;
 
 pub use physics::{Hamiltonian, QuadraticHamiltonian};
 pub use solver::{FixedPointSolver, MFGSolver};
-pub use types::{Density, MFGConfig, Position};
+pub use types::{Density, MFGConfig, MFGConfigBuilder, Position};
 
 // Re-export for backward compatibility, though the API has changed slightly (requires solver struct).
 // We can provide a type alias if MeanFieldGame1D was just a struct.
@@ -64,15 +74,17 @@ impl MeanFieldGame1D {
         space_min: f64,
         space_max: f64,
     ) -> Self {
+        use std::num::NonZeroUsize;
         Self {
-            config: MFGConfig::new(
-                viscosity,
-                time_horizon,
-                grid_points,
-                time_steps,
-                space_min,
-                space_max,
-            ),
+            config: MFGConfigBuilder::new()
+                .viscosity(viscosity)
+                .time_horizon(time_horizon)
+                .grid_points(NonZeroUsize::new(grid_points).expect("Grid points must be non-zero"))
+                .time_steps(NonZeroUsize::new(time_steps).expect("Time steps must be non-zero"))
+                .space_bounds(space_min, space_max)
+                .expect("Failed to configure space bounds")
+                .build()
+                .expect("Failed to build MFGConfig with given parameters"),
         }
     }
 
@@ -113,7 +125,16 @@ mod tests {
 
     #[test]
     fn test_mfg_with_custom_hamiltonian() {
-        let config = MFGConfig::new(0.1, 1.0, 50, 100, -2.0, 2.0);
+        use std::num::NonZeroUsize;
+        let config = MFGConfigBuilder::new()
+            .viscosity(0.1)
+            .time_horizon(1.0)
+            .grid_points(NonZeroUsize::new(50).unwrap())
+            .time_steps(NonZeroUsize::new(100).unwrap())
+            .space_bounds(-2.0, 2.0)
+            .unwrap()
+            .build()
+            .unwrap();
         // Heavy particles (mass = 2.0)
         let hamiltonian = QuadraticHamiltonian::new(2.0);
         let solver = FixedPointSolver::new_with_hamiltonian(5, hamiltonian);
