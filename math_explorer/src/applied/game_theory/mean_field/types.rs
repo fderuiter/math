@@ -1,5 +1,5 @@
-use std::num::NonZeroUsize;
 use crate::applied::game_theory::error::GameTheoryError;
+use std::num::NonZeroUsize;
 
 /// Represents a 1D spatial position.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
@@ -17,8 +17,8 @@ pub struct Density(pub f64);
 /// - `dt`, `dx`: Discretization steps.
 #[derive(Clone, Debug)]
 pub struct MFGConfig {
-    pub viscosity: f64,     // nu
-    pub time_horizon: f64,  // T
+    pub viscosity: f64,            // nu
+    pub time_horizon: f64,         // T
     pub time_steps: NonZeroUsize,  // Nt
     pub grid_points: NonZeroUsize, // Nx
     pub dt: f64,
@@ -41,7 +41,10 @@ pub struct WithoutTimeSteps;
 pub struct WithTimeSteps(NonZeroUsize);
 
 pub struct WithoutSpaceBounds;
-pub struct WithSpaceBounds { min: f64, max: f64 }
+pub struct WithSpaceBounds {
+    min: f64,
+    max: f64,
+}
 
 /// Type-State Builder for `MFGConfig`.
 #[derive(Debug)]
@@ -53,7 +56,15 @@ pub struct MFGConfigBuilder<V, T, G, TS, S> {
     space_bounds: S,
 }
 
-impl MFGConfigBuilder<WithoutViscosity, WithoutTimeHorizon, WithoutGridPoints, WithoutTimeSteps, WithoutSpaceBounds> {
+impl
+    MFGConfigBuilder<
+        WithoutViscosity,
+        WithoutTimeHorizon,
+        WithoutGridPoints,
+        WithoutTimeSteps,
+        WithoutSpaceBounds,
+    >
+{
     /// Creates a new Type-State builder.
     pub fn new() -> Self {
         Self {
@@ -94,7 +105,10 @@ impl<V, G, TS, S> MFGConfigBuilder<V, WithoutTimeHorizon, G, TS, S> {
 
 impl<V, T, TS, S> MFGConfigBuilder<V, T, WithoutGridPoints, TS, S> {
     /// Sets the number of grid points (Nx).
-    pub fn grid_points(self, grid_points: NonZeroUsize) -> MFGConfigBuilder<V, T, WithGridPoints, TS, S> {
+    pub fn grid_points(
+        self,
+        grid_points: NonZeroUsize,
+    ) -> MFGConfigBuilder<V, T, WithGridPoints, TS, S> {
         MFGConfigBuilder {
             viscosity: self.viscosity,
             time_horizon: self.time_horizon,
@@ -107,7 +121,10 @@ impl<V, T, TS, S> MFGConfigBuilder<V, T, WithoutGridPoints, TS, S> {
 
 impl<V, T, G, S> MFGConfigBuilder<V, T, G, WithoutTimeSteps, S> {
     /// Sets the number of time steps (Nt).
-    pub fn time_steps(self, time_steps: NonZeroUsize) -> MFGConfigBuilder<V, T, G, WithTimeSteps, S> {
+    pub fn time_steps(
+        self,
+        time_steps: NonZeroUsize,
+    ) -> MFGConfigBuilder<V, T, G, WithTimeSteps, S> {
         MFGConfigBuilder {
             viscosity: self.viscosity,
             time_horizon: self.time_horizon,
@@ -120,7 +137,11 @@ impl<V, T, G, S> MFGConfigBuilder<V, T, G, WithoutTimeSteps, S> {
 
 impl<V, T, G, TS> MFGConfigBuilder<V, T, G, TS, WithoutSpaceBounds> {
     /// Sets the space bounds.
-    pub fn space_bounds(self, space_min: f64, space_max: f64) -> Result<MFGConfigBuilder<V, T, G, TS, WithSpaceBounds>, GameTheoryError> {
+    pub fn space_bounds(
+        self,
+        space_min: f64,
+        space_max: f64,
+    ) -> Result<MFGConfigBuilder<V, T, G, TS, WithSpaceBounds>, GameTheoryError> {
         if space_max <= space_min {
             return Err(GameTheoryError::InvalidParameter {
                 name: "space_bounds".to_string(),
@@ -132,12 +153,17 @@ impl<V, T, G, TS> MFGConfigBuilder<V, T, G, TS, WithoutSpaceBounds> {
             time_horizon: self.time_horizon,
             grid_points: self.grid_points,
             time_steps: self.time_steps,
-            space_bounds: WithSpaceBounds { min: space_min, max: space_max },
+            space_bounds: WithSpaceBounds {
+                min: space_min,
+                max: space_max,
+            },
         })
     }
 }
 
-impl MFGConfigBuilder<WithViscosity, WithTimeHorizon, WithGridPoints, WithTimeSteps, WithSpaceBounds> {
+impl
+    MFGConfigBuilder<WithViscosity, WithTimeHorizon, WithGridPoints, WithTimeSteps, WithSpaceBounds>
+{
     /// Builds the `MFGConfig` struct.
     /// This method is only available when all required fields have been set.
     pub fn build(self) -> Result<MFGConfig, GameTheoryError> {
