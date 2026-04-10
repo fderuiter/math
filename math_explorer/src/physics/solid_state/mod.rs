@@ -13,6 +13,7 @@
 //! 7. Interactions (Electron-Phonon)
 //! 8. Types and Errors (Strong types and error handling)
 
+pub mod band_theory;
 pub mod bcs;
 pub mod error;
 pub mod interactions;
@@ -22,4 +23,3 @@ pub mod phonons;
 pub mod screening;
 pub mod second_quantization;
 pub mod types;
-pub mod band_theory;
