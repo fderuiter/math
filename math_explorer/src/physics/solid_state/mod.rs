@@ -22,3 +22,4 @@ pub mod phonons;
 pub mod screening;
 pub mod second_quantization;
 pub mod types;
+pub mod band_theory;
