@@ -85,6 +85,12 @@ impl EulerMaruyama {
     ///
     /// The next value X_{t+Δt}
     ///
+    /// # Panics
+    ///
+    /// Panics if the standard normal distribution (`Normal::new(0.0, 1.0)`) fails to initialize.
+    /// This should theoretically never happen as 0.0 and 1.0 are valid parameters for the mean
+    /// and standard deviation.
+    ///
     /// # Example
     ///
     /// ```
