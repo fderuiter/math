@@ -11,24 +11,26 @@
 
 ---
 
-## Install
-
-Add `math_explorer` to your project (or clone the repo):
+## Quickstart
 
 ```bash
 git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer
-# Build the library
+
+# Build the core library
 cargo build --release --package math_explorer
-# Run the GUI
+```
+
+### 1. The Interactive GUI (Recommended)
+We provide a native eframe/egui application to explore simulations (Physics, Biology, Chaos Theory, etc.) interactively.
+
+> **See the [Math Explorer GUI Documentation](math_explorer_gui/README.md) for architecture details and contribution guides.**
+
+```bash
 cargo run --release --package math_explorer_gui
 ```
 
----
-
-## Usage
-
-### Run "Hello World"
+### 2. Command Line "Hello World"
 Experience the library in action by running our pre-built Quantum Mechanics example:
 
 ```bash
@@ -45,16 +47,6 @@ fn main() {
     let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
     println!("Clebsch-Gordan Coefficient: {:.4}", coeff);
 }
-```
-
-### Graphical User Interface
-We provide a native GUI application to explore simulations interactively.
-
-> **See the [Math Explorer GUI Documentation](math_explorer_gui/README.md) for architecture details and contribution guides.**
-
-#### Launching the GUI
-```bash
-cargo run --release --package math_explorer_gui
 ```
 
 #### Current Capabilities
