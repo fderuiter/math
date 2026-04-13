@@ -36,7 +36,36 @@ pub type SimilarityFn<U> = Box<dyn Fn(&U, &U) -> bool>;
 /// # Example
 ///
 /// ```
-/// // See tests/algorithmic_information.rs for a full construction
+/// use std::collections::{HashMap, HashSet};
+/// use math_explorer::pure_math::algorithmic_information::combinatorics::{combinatorial_lemma, SimilarityFn};
+///
+/// // 1. Define the feature space X
+/// let mut x_set = HashSet::new();
+/// x_set.insert(1);
+/// x_set.insert(2);
+///
+/// // 2. Define the candidates V
+/// let mut v_set = HashSet::new();
+/// v_set.insert("u");
+/// v_set.insert("v");
+///
+/// // 3. Define the neighborhood mapping N(v)
+/// let mut n_v = HashMap::new();
+/// n_v.insert("u", x_set.clone()); // 'u' has features {1, 2}
+/// n_v.insert("v", x_set.clone()); // 'v' has features {1, 2}
+///
+/// // 4. Define similarity functions for each feature
+/// let mut sim: HashMap<i32, SimilarityFn<&str>> = HashMap::new();
+/// // Under feature 1, everyone is similar
+/// sim.insert(1, Box::new(|_u: &&str, _v: &&str| true));
+/// // Under feature 2, everyone is dissimilar
+/// sim.insert(2, Box::new(|_u: &&str, _v: &&str| false));
+///
+/// // 5. Search for a dissimilar pair with alpha = 0.9
+/// // Threshold = (0.9^2 / 2) * |X| = (0.81 / 2) * 2 = 0.81
+/// // Since they have 1 dissimilarity (feature 2), 1 > 0.81, so a pair is found.
+/// let result = combinatorial_lemma(&x_set, &v_set, &n_v, &sim, 0.9);
+/// assert!(result.is_some());
 /// ```
 pub fn combinatorial_lemma<T, U>(
     x_set: &HashSet<T>,
