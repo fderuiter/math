@@ -153,7 +153,7 @@ pub fn dice_similarity_coefficient(set_a: &[bool], set_b: &[bool]) -> f64 {
 ///
 /// # Formula
 ///
-/// $Error = \sum (Y_{measured}[i] - Y_{reference}[i])^2$
+/// $Error = \sum (`Y_{measured}[i]` - `Y_{reference}[i]`)^2$
 pub fn time_shift_error(measured: &[f64], reference: &[f64]) -> f64 {
     let n = measured.len().min(reference.len());
     measured

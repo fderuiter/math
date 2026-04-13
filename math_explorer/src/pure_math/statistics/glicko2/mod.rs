@@ -183,7 +183,7 @@
 //! ## References
 //!
 //! - Glickman, M. E. (2012). *Example of the Glicko-2 system*.
-//!   Retrieved from http://www.glicko.net/glicko/glicko2.pdf
+//!   Retrieved from <http://www.glicko.net/glicko/glicko2.pdf>
 //! - Glickman, M. E. (1999). *Parameter estimation in large dynamic paired comparison experiments*.
 //!   Journal of the Royal Statistical Society: Series C, 48(3), 377-394.
 

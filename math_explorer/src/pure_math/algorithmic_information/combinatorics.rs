@@ -35,7 +35,7 @@ pub type SimilarityFn<U> = Box<dyn Fn(&U, &U) -> bool>;
 ///
 /// # Example
 ///
-/// ```
+/// ```text
 /// // See tests/algorithmic_information.rs for a full construction
 /// ```
 pub fn combinatorial_lemma<T, U>(
