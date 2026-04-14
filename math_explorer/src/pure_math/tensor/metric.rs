@@ -4,15 +4,29 @@ use nalgebra::{DMatrix, DVector};
 /// A trait representing a metric tensor field $g_{ij}(x)$.
 pub trait Metric {
     /// Computes the covariant metric tensor $g_{ij}$ at a given point.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `TensorError` if the metric calculation fails for the given point.
     fn metric_at(&self, point: &DVector<f64>) -> Result<DMatrix<f64>, TensorError>;
 
     /// Computes the inverse (contravariant) metric tensor $g^{ij}$ at a given point.
+    ///
+    /// # Errors
+    ///
+    /// Returns `TensorError::SingularMetric` if the covariant metric tensor is not invertible.
+    /// May also return a `TensorError` propagated from `metric_at`.
     fn inverse_metric_at(&self, point: &DVector<f64>) -> Result<DMatrix<f64>, TensorError> {
         let g_cov = self.metric_at(point)?;
         g_cov.try_inverse().ok_or(TensorError::SingularMetric)
     }
 
     /// Lowers the index of a contravariant vector: $A_i = g_{ij} A^j$.
+    ///
+    /// # Errors
+    ///
+    /// Returns `TensorError::DimensionMismatch` if the vector's dimension does not match the metric's dimensions.
+    /// May also return a `TensorError` propagated from `metric_at`.
     fn lower_index(
         &self,
         vec: &ContravariantVector,
@@ -30,6 +44,11 @@ pub trait Metric {
     }
 
     /// Raises the index of a covariant vector: $A^i = g^{ij} A_j$.
+    ///
+    /// # Errors
+    ///
+    /// Returns `TensorError::DimensionMismatch` if the vector's dimension does not match the inverse metric's dimensions.
+    /// May also return a `TensorError` propagated from `inverse_metric_at`.
     fn raise_index(
         &self,
         vec: &CovariantVector,

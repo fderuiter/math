@@ -23,6 +23,10 @@ impl MeanReversionRate {
     ///
     /// * `Result<MeanReversionRate, OuError>` - The validated rate or an error
     ///
+    /// # Errors
+    ///
+    /// Returns `OuError::InvalidMeanReversionRate` if the value is zero, negative, or non-finite.
+    ///
     /// # Example
     ///
     /// ```
@@ -65,6 +69,10 @@ impl Volatility {
     ///
     /// * `Result<Volatility, OuError>` - The validated parameter or an error
     ///
+    /// # Errors
+    ///
+    /// Returns `OuError::InvalidVolatility` if the value is negative or non-finite.
+    ///
     /// # Example
     ///
     /// ```
@@ -103,6 +111,10 @@ impl LongTermMean {
     /// # Returns
     ///
     /// * `Result<LongTermMean, OuError>` - The validated mean or an error
+    ///
+    /// # Errors
+    ///
+    /// Returns `OuError::InvalidSimulationParams` if the value is non-finite.
     ///
     /// # Example
     ///
@@ -180,6 +192,10 @@ impl OuParams {
     /// # Returns
     ///
     /// * `Result<OuParams, OuError>` - The validated parameters or an error
+    ///
+    /// # Errors
+    ///
+    /// Returns an `OuError` if any parameter is invalid (e.g., negative volatility).
     pub fn from_values(mu: f64, theta: f64, sigma: f64) -> Result<Self, OuError> {
         Ok(Self {
             mu: LongTermMean::new(mu)?,

@@ -58,6 +58,11 @@ impl ZipRegression {
     /// # Returns
     ///
     /// * `Result<ZipRegression, ZipError>` - The model or an error
+    ///
+    /// # Errors
+    ///
+    /// Returns `ZipError::InsufficientData` if there are fewer than 2 counts.
+    /// Returns `ZipError::InvalidDimensions` if the number of rows in `x_matrix` or `z_matrix` does not match the number of counts.
     pub fn new(
         counts: Vec<Count>,
         x_matrix: DMatrix<f64>,
@@ -105,6 +110,10 @@ impl ZipRegression {
     /// # Returns
     ///
     /// * `Result<ZipParams, ZipError>` - The predicted parameters
+    ///
+    /// # Errors
+    ///
+    /// Returns a `ZipError` if the calculated parameters (after link functions) are invalid.
     pub fn predict(
         x_row: &DVector<f64>,
         z_row: &DVector<f64>,
@@ -181,6 +190,10 @@ impl ZipRegression {
 /// # Returns
 ///
 /// * `Result<ZipParams, ZipError>` - Estimated parameters using method of moments
+///
+/// # Errors
+///
+/// Returns `ZipError::InsufficientData` if the `counts` slice is empty.
 ///
 /// # Example
 ///
