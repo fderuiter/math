@@ -44,6 +44,10 @@ pub struct PointCloud {
 impl PointCloud {
     /// Creates a new point cloud.
     ///
+    /// # Errors
+    ///
+    /// Returns `TdaError::EmptyPointCloud` if the given vector is empty.
+    ///
     /// # Example
     ///
     /// ```
@@ -113,6 +117,10 @@ impl Simplex {
     /// Creates a new simplex from vertex indices.
     ///
     /// Vertices are automatically sorted for canonical representation.
+    ///
+    /// # Errors
+    ///
+    /// Returns `TdaError::InvalidSimplex` if the vector is empty or contains duplicate indices.
     ///
     /// # Example
     ///

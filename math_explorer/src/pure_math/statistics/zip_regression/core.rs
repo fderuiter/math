@@ -20,6 +20,10 @@ impl PoissonRate {
     ///
     /// * `Result<PoissonRate, ZipError>` - The validated rate or an error
     ///
+    /// # Errors
+    ///
+    /// Returns `ZipError::InvalidRate` if the value is zero, negative, or non-finite.
+    ///
     /// # Example
     ///
     /// ```
@@ -58,6 +62,10 @@ impl ZeroInflation {
     /// # Returns
     ///
     /// * `Result<ZeroInflation, ZipError>` - The validated parameter or an error
+    ///
+    /// # Errors
+    ///
+    /// Returns `ZipError::InvalidProbability` if the value is outside [0, 1] or non-finite.
     ///
     /// # Example
     ///
@@ -102,6 +110,10 @@ impl Count {
     /// # Returns
     ///
     /// * `Result<Count, ZipError>` - The validated count or an error
+    ///
+    /// # Errors
+    ///
+    /// Returns `ZipError::InvalidCount` if the value is negative, non-finite, or has a fractional part.
     pub fn from_f64(value: f64) -> Result<Self, ZipError> {
         if value < 0.0 || !value.is_finite() || value.fract() != 0.0 {
             return Err(ZipError::InvalidCount { value });
@@ -164,6 +176,10 @@ impl ZipParams {
     /// # Returns
     ///
     /// * `Result<ZipParams, ZipError>` - The validated parameters or an error
+    ///
+    /// # Errors
+    ///
+    /// Returns `ZipError` if either parameter is invalid according to its constraints.
     pub fn from_values(rho: f64, lambda: f64) -> Result<Self, ZipError> {
         Ok(Self {
             rho: ZeroInflation::new(rho)?,

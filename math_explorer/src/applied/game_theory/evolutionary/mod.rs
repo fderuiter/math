@@ -11,9 +11,9 @@
 //!
 //! ## Submodules
 //!
-//! - [`replicator`]: Implements the Replicator Dynamics ODE system.
-//! - [`strategies`]: Defines payoff structures (e.g., Matrix Games).
-//! - [`traits`]: Defines the `FitnessStrategy` trait for custom fitness landscapes.
+//! - `replicator`: Implements the Replicator Dynamics ODE system.
+//! - `strategies`: Defines payoff structures (e.g., Matrix Games).
+//! - `traits`: Defines the `FitnessStrategy` trait for custom fitness landscapes.
 
 mod replicator;
 mod strategies;

@@ -66,6 +66,10 @@ impl ZipDistribution {
     /// # Returns
     ///
     /// * `Result<ZipDistribution, ZipError>` - The distribution or an error
+    ///
+    /// # Errors
+    ///
+    /// Returns a `ZipError` if the underlying parameters are invalid (e.g., negative lambda).
     pub fn from_values(rho: f64, lambda: f64) -> Result<Self, ZipError> {
         Ok(Self {
             params: ZipParams::from_values(rho, lambda)?,
