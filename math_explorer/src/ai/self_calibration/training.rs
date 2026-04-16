@@ -83,7 +83,7 @@ mod tests {
     use super::*;
     use crate::ai::self_calibration::types::Response;
     #[test]
-    fn test_kl_divergence_calculation() {
+    fn test_kl_divergence_calculation() -> Result<(), crate::ai::AIError> {
         let responses = vec![
             Response {
                 text: "A".to_string(),
@@ -107,7 +107,8 @@ mod tests {
             },
         ];
         let predicted_dist_q = vec![0.4, 0.1, 0.4, 0.1];
-        let loss = calculate_kl_divergence_loss(&responses, &predicted_dist_q).unwrap();
+        let loss = calculate_kl_divergence_loss(&responses, &predicted_dist_q)?;
         assert!((loss - 0.07019869).abs() < 1e-6);
+        Ok(())
     }
 }
