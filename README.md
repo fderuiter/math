@@ -11,15 +11,24 @@
 
 ---
 
-## Quickstart
+## Install
 
 ```bash
 git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer
 
-# Build the core library
+# Check prerequisites, build the core library, and run tests
+./setup.sh
+```
+
+Alternatively, you can manually build the library using Cargo:
+
+```bash
+# Build the core library manually
 cargo build --release --package math_explorer
 ```
+
+## Usage
 
 ### 1. The Interactive GUI (Recommended)
 We provide a native eframe/egui application to explore simulations (Physics, Biology, Chaos Theory, etc.) interactively.
