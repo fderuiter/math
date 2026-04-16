@@ -148,7 +148,10 @@ mod tests {
         let combined = ensemble.combine(&weights)?;
         let expected_a = DMatrix::from_vec(2, 2, vec![3.0, 4.0, 5.0, 6.0]);
         let expected_b = DMatrix::from_vec(2, 2, vec![0.3, 0.4, 0.5, 0.6]);
-        assert_eq!(combined.get("tensor_a").ok_or("tensor_a not found")?, &expected_a);
+        assert_eq!(
+            combined.get("tensor_a").ok_or("tensor_a not found")?,
+            &expected_a
+        );
 
         // Compare tensor_b with a tolerance for floating point precision
         let combined_b = combined.get("tensor_b").ok_or("tensor_b not found")?;
