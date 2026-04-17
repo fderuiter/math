@@ -14,9 +14,6 @@ pub trait Trainable {
     /// * `x` - Input vector.
     /// * `loss_grad` - Gradient of the loss with respect to the output logits (dJ/dz).
     /// * `optimizer` - The optimizer strategy to update parameters.
-    ///
-    /// # Errors
-    /// Returns an `OptimizationError` if the parameter updates fail during optimization.
     fn backward_update(
         &mut self,
         x: &Vector,

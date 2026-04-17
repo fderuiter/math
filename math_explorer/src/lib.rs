@@ -117,7 +117,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lorahub_functions() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_lorahub_functions() {
         // Create two dummy LoRA state dicts
         let mut lora1 = lorahub::LoraStateDict::new();
         lora1.insert(
@@ -145,16 +145,13 @@ mod tests {
         let ensemble = lorahub::LoraEnsemble::new(loras);
 
         // Test combine
-        let combined = ensemble.combine(&weights)?;
+        let combined = ensemble.combine(&weights).unwrap();
         let expected_a = DMatrix::from_vec(2, 2, vec![3.0, 4.0, 5.0, 6.0]);
         let expected_b = DMatrix::from_vec(2, 2, vec![0.3, 0.4, 0.5, 0.6]);
-        assert_eq!(
-            combined.get("tensor_a").ok_or("tensor_a not found")?,
-            &expected_a
-        );
+        assert_eq!(combined.get("tensor_a").unwrap(), &expected_a);
 
         // Compare tensor_b with a tolerance for floating point precision
-        let combined_b = combined.get("tensor_b").ok_or("tensor_b not found")?;
+        let combined_b = combined.get("tensor_b").unwrap();
         let tolerance = 1e-9;
         assert!(
             (combined_b - &expected_b).abs().max() < tolerance,
@@ -178,11 +175,10 @@ mod tests {
         // Expected Reg: 0.1 * (| -1| + |2| + |-3|) / 3 = 0.1 * 6 / 3 = 0.2
         // Expected Score: 1.5 + 0.2 = 1.7
         assert!((objective_score - 1.7).abs() < 1e-9);
-        Ok(())
     }
 
     #[test]
-    fn test_find_favorite_child() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_find_favorite_child() {
         use super::applied::favoritism::favorite_child::{Child, find_favorite_child};
         use nalgebra::DVector;
 
@@ -212,10 +208,9 @@ mod tests {
         };
 
         let children = vec![child_a.clone(), child_b.clone(), child_c.clone()];
-        let favorite = find_favorite_child(&children).ok_or("No favorite child found")?;
+        let favorite = find_favorite_child(&children).unwrap();
 
         assert_eq!(favorite.name, "Child B");
-        Ok(())
     }
 }
 

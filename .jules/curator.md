@@ -1,1 +1,0 @@
-## 2026-04-16 - README Restructure | Gap: Missing standardized Install section and missing reference to setup.sh. | Strategy: Updated README.md to follow Badges -> Hook -> Install -> Usage -> Config -> Contributing structure. | Outcome: Reduced cognitive load by pointing to a robust script that runs verification prior to building and testing the core crate.
