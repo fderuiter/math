@@ -2,7 +2,7 @@ use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_
 
 fn main() {
     let mut inputs = FavoritismInputs::default();
-    inputs.personality.wealth = 10.0;          // High wealth factor
+    inputs.personality.wealth = 10.0; // High wealth factor
     inputs.social.helped_during_crisis = true; // High social utility
 
     let score = calculate_favoritism_score(&inputs);

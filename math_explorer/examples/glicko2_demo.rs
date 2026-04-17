@@ -1,5 +1,5 @@
 use math_explorer::pure_math::statistics::glicko2::{
-    GlickoPlayer, Rating, RatingDeviation, Volatility, MatchResult, update_rating, SystemConstant
+    GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility, update_rating,
 };
 
 fn main() {
@@ -8,7 +8,7 @@ fn main() {
     let opponent = GlickoPlayer::new(
         Rating::new(1700.0).unwrap(),
         RatingDeviation::new(300.0).unwrap(),
-        Volatility::default()
+        Volatility::default(),
     );
 
     let result = MatchResult::new(opponent, 1.0).unwrap(); // Win

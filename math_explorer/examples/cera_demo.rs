@@ -6,11 +6,11 @@ use nalgebra::DMatrix;
 fn main() {
     // 1. Configure the architecture
     let config = CeraConfig {
-        in_channels: 2,         // e.g., Temp, Humidity
-        latent_channels: 4,     // Compressed state
-        aligned_channels: 2,    // Invariant state
-        num_levels: 10,         // Atmospheric levels
-        output_size: 5,         // Prediction target
+        in_channels: 2,      // e.g., Temp, Humidity
+        latent_channels: 4,  // Compressed state
+        aligned_channels: 2, // Invariant state
+        num_levels: 10,      // Atmospheric levels
+        output_size: 5,      // Prediction target
         epochs: 1,
         batch_size: 2,
         learning_rate: 0.01,
