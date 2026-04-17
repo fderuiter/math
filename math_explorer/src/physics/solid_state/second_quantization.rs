@@ -119,7 +119,7 @@ impl ParticleStatistics for Fermion {
             {
                 1.0
             }
-            _ => 0.0, // {c, c} = 0, {c^\dagger, c^\dagger} = 0
+            _ => 0.0, // {c, c} = 0, {c^\dagger, c^\dagger} = 0, or i != j
         }
     }
 }
@@ -151,7 +151,7 @@ impl ParticleStatistics for Boson {
             {
                 -1.0
             }
-            _ => 0.0, // [a, a] = 0, [a^\dagger, a^\dagger] = 0
+            _ => 0.0, // [a, a] = 0, [a^\dagger, a^\dagger] = 0, or i != j
         }
     }
 }

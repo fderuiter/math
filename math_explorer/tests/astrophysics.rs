@@ -42,8 +42,7 @@ fn test_calculate_apparent_magnitude_from_distance() {
     assert!((result.unwrap() - expected.unwrap()).abs() < F64_TOLERANCE);
 
     // Test case for TypeCode95To99 (should be None)
-    let result =
-        calculate_apparent_magnitude_from_distance(distance, &TypeCode95To99);
+    let result = calculate_apparent_magnitude_from_distance(distance, &TypeCode95To99);
     assert!(result.is_none());
 }
 
@@ -54,20 +53,17 @@ fn test_calculate_log_mass_from_absolute_magnitude() {
 
     // Test case for GeneralIrregular
     let expected = -0.6670 * absolute_magnitude_v - 1.4975;
-    let result = calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &GeneralIrregular);
+    let result =
+        calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &GeneralIrregular);
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for TypeCode10
-    let result =
-        calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &TypeCode10);
+    let result = calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &TypeCode10);
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for TypeCode95To99
     let expected = -0.3837 * absolute_magnitude_v - 2.2864;
-    let result = calculate_log_mass_from_absolute_magnitude(
-        absolute_magnitude_v,
-        &TypeCode95To99,
-    );
+    let result = calculate_log_mass_from_absolute_magnitude(absolute_magnitude_v, &TypeCode95To99);
     assert!((result - expected).abs() < F64_TOLERANCE);
 }
 

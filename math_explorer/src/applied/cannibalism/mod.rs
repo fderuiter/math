@@ -24,13 +24,11 @@
 //! - `two_dimensional_ode`: Simplified dynamics.
 
 pub mod death_rate;
-pub mod error;
 pub mod juvenile_adult_dynamics;
 pub mod mckendrick_von_foerster;
 pub mod two_dimensional_ode;
 
 pub use death_rate::*;
-pub use error::*;
 pub use juvenile_adult_dynamics::*;
 pub use mckendrick_von_foerster::*;
 pub use two_dimensional_ode::*;
