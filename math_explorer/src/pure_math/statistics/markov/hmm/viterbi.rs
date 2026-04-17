@@ -24,6 +24,37 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// # Returns
     ///
     /// The most likely state sequence.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`MarkovError::InvalidObservation`] if the `observations` sequence is empty or
+    /// contains an index out of bounds.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the state index cannot be converted to or from the generic type `T`.
+    /// This is highly unlikely for standard floating-point types.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use math_explorer::pure_math::statistics::markov::hmm::HiddenMarkovModel;
+    /// use nalgebra::{DMatrix, DVector};
+    ///
+    /// let initial = DVector::from_vec(vec![0.5, 0.5]);
+    /// let transitions = DMatrix::from_row_slice(2, 2, &[
+    ///     0.7, 0.3,
+    ///     0.4, 0.6,
+    /// ]);
+    /// let emissions = DMatrix::from_row_slice(2, 2, &[
+    ///     0.7, 0.3,
+    ///     0.2, 0.8,
+    /// ]);
+    /// let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+    /// let obs = vec![1, 0];
+    /// let path = hmm.viterbi(&obs).unwrap();
+    /// assert_eq!(path, vec![1, 0]);
+    /// ```
     pub fn viterbi(&self, observations: &[usize]) -> Result<Vec<usize>> {
         if observations.is_empty() {
             return Err(MarkovError::InvalidObservation {
