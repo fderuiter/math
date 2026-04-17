@@ -83,6 +83,69 @@ pub struct WinRatioAnalysis<T> {
     _marker: PhantomData<T>,
 }
 
+/// A strategy for pairing subjects between two groups for comparison.
+pub trait PairingStrategy<T> {
+    fn evaluate(
+        &self,
+        analysis: &WinRatioAnalysis<T>,
+        group1: &[Vec<T>],
+        group2: &[Vec<T>],
+    ) -> (i32, i32);
+}
+
+/// Unmatched Pair comparison (All-Pairs).
+pub struct UnmatchedPairing;
+
+impl<T> PairingStrategy<T> for UnmatchedPairing {
+    fn evaluate(
+        &self,
+        analysis: &WinRatioAnalysis<T>,
+        group1: &[Vec<T>],
+        group2: &[Vec<T>],
+    ) -> (i32, i32) {
+        let mut wins = 0;
+        let mut losses = 0;
+        for subj1 in group1 {
+            for subj2 in group2 {
+                match analysis.compare_subjects(subj1, subj2) {
+                    ComparisonResult::Win => wins += 1,
+                    ComparisonResult::Loss => losses += 1,
+                    ComparisonResult::Tie => (),
+                }
+            }
+        }
+        (wins, losses)
+    }
+}
+
+/// Matched Pair comparison.
+pub struct MatchedPairing;
+
+impl<T> PairingStrategy<T> for MatchedPairing {
+    fn evaluate(
+        &self,
+        analysis: &WinRatioAnalysis<T>,
+        group1: &[Vec<T>],
+        group2: &[Vec<T>],
+    ) -> (i32, i32) {
+        assert_eq!(
+            group1.len(),
+            group2.len(),
+            "Groups must be of equal length for matched pairs."
+        );
+        let mut wins = 0;
+        let mut losses = 0;
+        for (subj1, subj2) in group1.iter().zip(group2.iter()) {
+            match analysis.compare_subjects(subj1, subj2) {
+                ComparisonResult::Win => wins += 1,
+                ComparisonResult::Loss => losses += 1,
+                ComparisonResult::Tie => (),
+            }
+        }
+        (wins, losses)
+    }
+}
+
 impl<T> WinRatioAnalysis<T> {
     /// Creates a new analysis with no strategies.
     pub fn new() -> Self {
@@ -118,39 +181,24 @@ impl<T> WinRatioAnalysis<T> {
         ComparisonResult::Tie
     }
 
+    /// Evaluates pairs using the provided pairing strategy.
+    pub fn evaluate_pairs<P: PairingStrategy<T>>(
+        &self,
+        group1: &[Vec<T>],
+        group2: &[Vec<T>],
+        strategy: &P,
+    ) -> (i32, i32) {
+        strategy.evaluate(self, group1, group2)
+    }
+
     /// Performs an Unmatched Pair comparison (All-Pairs).
     pub fn unmatched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-        let mut wins = 0;
-        let mut losses = 0;
-        for subj1 in group1 {
-            for subj2 in group2 {
-                match self.compare_subjects(subj1, subj2) {
-                    ComparisonResult::Win => wins += 1,
-                    ComparisonResult::Loss => losses += 1,
-                    ComparisonResult::Tie => (),
-                }
-            }
-        }
-        (wins, losses)
+        self.evaluate_pairs(group1, group2, &UnmatchedPairing)
     }
 
     /// Performs a Matched Pair comparison.
     pub fn matched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-        assert_eq!(
-            group1.len(),
-            group2.len(),
-            "Groups must be of equal length for matched pairs."
-        );
-        let mut wins = 0;
-        let mut losses = 0;
-        for (subj1, subj2) in group1.iter().zip(group2.iter()) {
-            match self.compare_subjects(subj1, subj2) {
-                ComparisonResult::Win => wins += 1,
-                ComparisonResult::Loss => losses += 1,
-                ComparisonResult::Tie => (),
-            }
-        }
-        (wins, losses)
+        self.evaluate_pairs(group1, group2, &MatchedPairing)
     }
 }
 
@@ -187,20 +235,19 @@ pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> Compar
 /// **DEPRECATED**: Use `WinRatioAnalysis::unmatched_pairs`.
 #[deprecated(note = "Use WinRatioAnalysis::unmatched_pairs.")]
 pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-    let mut wins = 0;
-    let mut losses = 0;
-    for subj1 in group1 {
-        for subj2 in group2 {
-            // Suppress deprecation warning for internal use
-            #[allow(deprecated)]
-            match compare_outcomes(subj1, subj2) {
-                ComparisonResult::Win => wins += 1,
-                ComparisonResult::Loss => losses += 1,
-                ComparisonResult::Tie => (),
-            }
+    // This assumes the length of the first vector is the number of outcomes.
+    // If group1 or group1[0] is empty, this returns early gracefully via min(length).
+    let mut analysis = WinRatioAnalysis::new();
+    if let Some(first) = group1.first() {
+        for _ in 0..first.len() {
+            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
+        }
+    } else if let Some(first) = group2.first() {
+        for _ in 0..first.len() {
+            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
         }
     }
-    (wins, losses)
+    analysis.unmatched_pairs(group1, group2)
 }
 
 /// Performs a Matched Pair comparison.
@@ -208,22 +255,17 @@ pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (
 /// **DEPRECATED**: Use `WinRatioAnalysis::matched_pairs`.
 #[deprecated(note = "Use WinRatioAnalysis::matched_pairs.")]
 pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-    assert_eq!(
-        group1.len(),
-        group2.len(),
-        "Groups must be of equal length for matched pairs."
-    );
-    let mut wins = 0;
-    let mut losses = 0;
-    for (subj1, subj2) in group1.iter().zip(group2.iter()) {
-        #[allow(deprecated)]
-        match compare_outcomes(subj1, subj2) {
-            ComparisonResult::Win => wins += 1,
-            ComparisonResult::Loss => losses += 1,
-            ComparisonResult::Tie => (),
+    let mut analysis = WinRatioAnalysis::new();
+    if let Some(first) = group1.first() {
+        for _ in 0..first.len() {
+            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
+        }
+    } else if let Some(first) = group2.first() {
+        for _ in 0..first.len() {
+            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
         }
     }
-    (wins, losses)
+    analysis.matched_pairs(group1, group2)
 }
 
 /// Calculates the raw Win Ratio.

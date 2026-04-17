@@ -147,6 +147,7 @@ impl GalaxyModel for TypeCode95To99 {
 /// Represents the morphological type of an irregular dwarf galaxy.
 /// The formulas for calculating physical properties can vary based on the type.
 #[derive(Debug, PartialEq)]
+#[deprecated(since = "0.2.0", note = "Use direct Trait objects instead")]
 pub enum GalaxyType {
     /// Represents all irregular dwarf galaxies as a single group.
     All,
@@ -158,6 +159,7 @@ pub enum GalaxyType {
 
 // Implement GalaxyModel for GalaxyType to delegate to the appropriate strategy.
 // This allows the Enum to be used where the Trait is expected, and simplifies legacy functions.
+#[allow(deprecated)]
 impl GalaxyModel for GalaxyType {
     fn log_mass_from_distance(&self, d: Mpc) -> SolarMassLog {
         match self {
@@ -212,29 +214,29 @@ pub struct Galaxy {
 ///
 /// # Arguments
 /// * `distance` - The distance to the galaxy in Megaparsecs (Mpc).
-/// * `galaxy_type` - The morphological type of the galaxy.
+/// * `model` - The morphological model of the galaxy.
 ///
 /// # Returns
 /// The calculated logarithm of the mass.
 #[deprecated(note = "Use GalaxyModel::log_mass_from_distance with strong types instead")]
-pub fn calculate_log_mass_from_distance(distance: f64, galaxy_type: &GalaxyType) -> f64 {
-    galaxy_type.log_mass_from_distance(Mpc(distance)).0
+pub fn calculate_log_mass_from_distance(distance: f64, model: &impl GalaxyModel) -> f64 {
+    model.log_mass_from_distance(Mpc(distance)).0
 }
 
 /// Calculates the apparent B-band magnitude of a galaxy based on its distance.
 ///
 /// # Arguments
 /// * `distance` - The distance to the galaxy in Megaparsecs (Mpc).
-/// * `galaxy_type` - The morphological type of the galaxy.
+/// * `model` - The morphological model of the galaxy.
 ///
 /// # Returns
 /// The calculated apparent magnitude, or `None` if the formula is not applicable for the given type.
 #[deprecated(note = "Use GalaxyModel::apparent_magnitude_from_distance with strong types instead")]
 pub fn calculate_apparent_magnitude_from_distance(
     distance: f64,
-    galaxy_type: &GalaxyType,
+    model: &impl GalaxyModel,
 ) -> Option<f64> {
-    galaxy_type
+    model
         .apparent_magnitude_from_distance(Mpc(distance))
         .map(|m| m.0)
 }
@@ -243,16 +245,16 @@ pub fn calculate_apparent_magnitude_from_distance(
 ///
 /// # Arguments
 /// * `absolute_magnitude_v` - The absolute magnitude of the galaxy in the V-band.
-/// * `galaxy_type` - The morphological type of the galaxy.
+/// * `model` - The morphological model of the galaxy.
 ///
 /// # Returns
 /// The calculated logarithm of the mass.
 #[deprecated(note = "Use GalaxyModel::log_mass_from_absolute_magnitude with strong types instead")]
 pub fn calculate_log_mass_from_absolute_magnitude(
     absolute_magnitude_v: f64,
-    galaxy_type: &GalaxyType,
+    model: &impl GalaxyModel,
 ) -> f64 {
-    galaxy_type
+    model
         .log_mass_from_absolute_magnitude(Magnitude(absolute_magnitude_v))
         .0
 }
@@ -261,13 +263,11 @@ pub fn calculate_log_mass_from_absolute_magnitude(
 ///
 /// # Arguments
 /// * `log_mass_solar` - The logarithm of the galaxy's mass in solar masses.
-/// * `galaxy_type` - The morphological type of the galaxy.
+/// * `model` - The morphological model of the galaxy.
 ///
 /// # Returns
 /// The calculated redshift.
 #[deprecated(note = "Use GalaxyModel::redshift_from_log_mass with strong types instead")]
-pub fn calculate_redshift_from_log_mass(log_mass_solar: f64, galaxy_type: &GalaxyType) -> f64 {
-    galaxy_type
-        .redshift_from_log_mass(SolarMassLog(log_mass_solar))
-        .0
+pub fn calculate_redshift_from_log_mass(log_mass_solar: f64, model: &impl GalaxyModel) -> f64 {
+    model.redshift_from_log_mass(SolarMassLog(log_mass_solar)).0
 }
