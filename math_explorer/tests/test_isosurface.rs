@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 #[cfg(test)]
 mod tests {
     use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};

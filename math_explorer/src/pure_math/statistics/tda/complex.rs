@@ -202,97 +202,104 @@ mod tests {
     use crate::pure_math::statistics::tda::core::Point2D;
 
     #[test]
-    fn test_simplicial_complex_add_edge() {
+    fn test_simplicial_complex_add_edge() -> Result<(), Box<dyn std::error::Error>> {
         let mut complex = SimplicialComplex::new();
-        let edge = Simplex::new(vec![0, 1]).unwrap();
-        complex.add_simplex(edge).unwrap();
+        let edge = Simplex::new(vec![0, 1])?;
+        complex.add_simplex(edge)?;
 
         // Should have 2 vertices and 1 edge
         assert_eq!(complex.count_simplices(0), 2);
         assert_eq!(complex.count_simplices(1), 1);
+        Ok(())
     }
 
     #[test]
-    fn test_simplicial_complex_add_triangle() {
+    fn test_simplicial_complex_add_triangle() -> Result<(), Box<dyn std::error::Error>> {
         let mut complex = SimplicialComplex::new();
-        let triangle = Simplex::new(vec![0, 1, 2]).unwrap();
-        complex.add_simplex(triangle).unwrap();
+        let triangle = Simplex::new(vec![0, 1, 2])?;
+        complex.add_simplex(triangle)?;
 
         // Should have 3 vertices, 3 edges, and 1 triangle
         assert_eq!(complex.count_simplices(0), 3);
         assert_eq!(complex.count_simplices(1), 3);
         assert_eq!(complex.count_simplices(2), 1);
+        Ok(())
     }
 
     #[test]
-    fn test_simplicial_complex_contains() {
+    fn test_simplicial_complex_contains() -> Result<(), Box<dyn std::error::Error>> {
         let mut complex = SimplicialComplex::new();
-        let edge = Simplex::new(vec![0, 1]).unwrap();
-        complex.add_simplex(edge.clone()).unwrap();
+        let edge = Simplex::new(vec![0, 1])?;
+        complex.add_simplex(edge.clone())?;
 
         assert!(complex.contains(&edge));
-        assert!(!complex.contains(&Simplex::new(vec![1, 2]).unwrap()));
+        assert!(!complex.contains(&Simplex::new(vec![1, 2])?));
+        Ok(())
     }
 
     #[test]
-    fn test_vietoris_rips_three_points_small_radius() {
+    fn test_vietoris_rips_three_points_small_radius() -> Result<(), Box<dyn std::error::Error>> {
         // Three points forming a right triangle
         let points = vec![
             Point2D::new(0.0, 0.0),
             Point2D::new(1.0, 0.0),
             Point2D::new(0.0, 1.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         // Small radius: only vertices
-        let complex = vietoris_rips_complex(&cloud, 0.5).unwrap();
+        let complex = vietoris_rips_complex(&cloud, 0.5)?;
         assert_eq!(complex.count_simplices(0), 3); // 3 vertices
         assert_eq!(complex.count_simplices(1), 0); // 0 edges
+        Ok(())
     }
 
     #[test]
-    fn test_vietoris_rips_three_points_medium_radius() {
+    fn test_vietoris_rips_three_points_medium_radius() -> Result<(), Box<dyn std::error::Error>> {
         let points = vec![
             Point2D::new(0.0, 0.0),
             Point2D::new(1.0, 0.0),
             Point2D::new(0.0, 1.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         // Medium radius: vertices and 2 edges
-        let complex = vietoris_rips_complex(&cloud, 1.0).unwrap();
+        let complex = vietoris_rips_complex(&cloud, 1.0)?;
         assert_eq!(complex.count_simplices(0), 3); // 3 vertices
         assert_eq!(complex.count_simplices(1), 2); // 2 edges (sides of length 1)
         assert_eq!(complex.count_simplices(2), 0); // 0 triangles
+        Ok(())
     }
 
     #[test]
-    fn test_vietoris_rips_three_points_large_radius() {
+    fn test_vietoris_rips_three_points_large_radius() -> Result<(), Box<dyn std::error::Error>> {
         let points = vec![
             Point2D::new(0.0, 0.0),
             Point2D::new(1.0, 0.0),
             Point2D::new(0.0, 1.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         // Large radius: complete complex
-        let complex = vietoris_rips_complex(&cloud, 2.0).unwrap();
+        let complex = vietoris_rips_complex(&cloud, 2.0)?;
         assert_eq!(complex.count_simplices(0), 3); // 3 vertices
         assert_eq!(complex.count_simplices(1), 3); // 3 edges
         assert_eq!(complex.count_simplices(2), 1); // 1 triangle
+        Ok(())
     }
 
     #[test]
-    fn test_vietoris_rips_invalid_radius() {
+    fn test_vietoris_rips_invalid_radius() -> Result<(), Box<dyn std::error::Error>> {
         let points = vec![Point2D::new(0.0, 0.0), Point2D::new(1.0, 0.0)];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         assert!(vietoris_rips_complex(&cloud, -1.0).is_err());
         assert!(vietoris_rips_complex(&cloud, f64::NAN).is_err());
+        Ok(())
     }
 
     #[test]
-    fn test_vietoris_rips_square() {
+    fn test_vietoris_rips_square() -> Result<(), Box<dyn std::error::Error>> {
         // Four points forming a square
         let points = vec![
             Point2D::new(0.0, 0.0),
@@ -300,18 +307,19 @@ mod tests {
             Point2D::new(1.0, 1.0),
             Point2D::new(0.0, 1.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         // Radius = 1.0: should have edges around the square
-        let complex = vietoris_rips_complex(&cloud, 1.0).unwrap();
+        let complex = vietoris_rips_complex(&cloud, 1.0)?;
         assert_eq!(complex.count_simplices(0), 4); // 4 vertices
         assert_eq!(complex.count_simplices(1), 4); // 4 edges (sides)
         assert_eq!(complex.count_simplices(2), 0); // 0 triangles
 
         // Radius = sqrt(2): should have diagonals too
-        let complex = vietoris_rips_complex(&cloud, 1.5).unwrap();
+        let complex = vietoris_rips_complex(&cloud, 1.5)?;
         assert_eq!(complex.count_simplices(0), 4); // 4 vertices
         assert_eq!(complex.count_simplices(1), 6); // 4 sides + 2 diagonals
         assert_eq!(complex.count_simplices(2), 4); // 4 triangles
+        Ok(())
     }
 }

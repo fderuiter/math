@@ -149,7 +149,11 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             0
         };
 
-        let scale = T::from_f64(2.0).unwrap().powi(s);
+        let scale = T::from_f64(2.0)
+            .ok_or_else(|| MarkovError::NumericalError {
+                reason: "Float conversion failed".to_string(),
+            })?
+            .powi(s);
         let a_scaled = a / scale;
 
         // Padé approximation of order 6
@@ -159,12 +163,24 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
 
         // Coefficients for Padé(6,6)
         let c0 = T::one();
-        let c1 = T::from_f64(0.5).unwrap();
-        let c2 = T::from_f64(1.0 / 9.0).unwrap();
-        let c3 = T::from_f64(1.0 / 72.0).unwrap();
-        let c4 = T::from_f64(1.0 / 1008.0).unwrap();
-        let c5 = T::from_f64(1.0 / 30240.0).unwrap();
-        let c6 = T::from_f64(1.0 / 1814400.0).unwrap();
+        let c1 = T::from_f64(0.5).ok_or_else(|| MarkovError::NumericalError {
+            reason: "Float conversion failed".to_string(),
+        })?;
+        let c2 = T::from_f64(1.0 / 9.0).ok_or_else(|| MarkovError::NumericalError {
+            reason: "Float conversion failed".to_string(),
+        })?;
+        let c3 = T::from_f64(1.0 / 72.0).ok_or_else(|| MarkovError::NumericalError {
+            reason: "Float conversion failed".to_string(),
+        })?;
+        let c4 = T::from_f64(1.0 / 1008.0).ok_or_else(|| MarkovError::NumericalError {
+            reason: "Float conversion failed".to_string(),
+        })?;
+        let c5 = T::from_f64(1.0 / 30240.0).ok_or_else(|| MarkovError::NumericalError {
+            reason: "Float conversion failed".to_string(),
+        })?;
+        let c6 = T::from_f64(1.0 / 1814400.0).ok_or_else(|| MarkovError::NumericalError {
+            reason: "Float conversion failed".to_string(),
+        })?;
 
         let id = DMatrix::identity(n, n);
 
@@ -226,26 +242,26 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
         // Alternative approach: simulate for a long time
         // π ≈ e^T·P(t) for large t, where e^T is any initial distribution
 
-        let long_time = T::from_f64(100.0).unwrap();
+        let long_time = T::from_f64(100.0)?;
         const MAX_ATTEMPTS: usize = 5;
 
         for attempt in 0..MAX_ATTEMPTS {
-            let t = long_time * T::from_usize(1 + attempt).unwrap();
+            let t = long_time * T::from_usize(1 + attempt)?;
 
             if let Ok(p_t) = self.transition_probabilities(t) {
                 // Use uniform initial distribution
                 let mut pi = DVector::from_element(
                     self.num_states,
-                    T::one() / T::from_usize(self.num_states).unwrap(),
+                    T::one() / T::from_usize(self.num_states)?,
                 );
                 pi = p_t.transpose() * pi;
 
                 // Check if it's approximately stationary
                 let pi_next = self.generator.transpose() * &pi;
-                if pi_next.norm() < T::from_f64(1e-6).unwrap() {
+                if pi_next.norm() < T::from_f64(1e-6)? {
                     // Normalize to ensure exact sum to 1
                     let sum = pi.iter().fold(T::zero(), |acc, &x| acc + x);
-                    if sum > T::from_f64(1e-10).unwrap() {
+                    if sum > T::from_f64(1e-10).unwrap_or_else(T::zero) {
                         pi /= sum;
                         return Some(pi);
                     }
@@ -364,7 +380,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             // Get rate out of current state
             let rate = -self.generator[(current_state, current_state)];
 
-            if rate < T::from_f64(1e-10).unwrap() {
+            if rate < T::from_f64(1e-10).unwrap_or_else(T::zero) {
                 // Absorbing state or very slow rate
                 break;
             }
@@ -379,7 +395,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
                 }
             })?;
             let holding_time: f64 = exp_dist.sample(rng);
-            current_time += T::from_f64(holding_time).unwrap();
+            current_time += T::from_f64(holding_time).unwrap_or_else(T::zero);
 
             if current_time >= max_time {
                 break;
@@ -391,7 +407,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             for j in 0..self.num_states {
                 if j != current_state {
                     let transition_rate = self.generator[(current_state, j)];
-                    if transition_rate > T::from_f64(1e-10).unwrap() {
+                    if transition_rate > T::from_f64(1e-10).unwrap_or_else(T::zero) {
                         weights.push(transition_rate.to_f64().unwrap_or(0.0));
                         next_states.push(j);
                     }

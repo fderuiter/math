@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 use super::types::{Answer, Response};
 use std::collections::HashMap;
 

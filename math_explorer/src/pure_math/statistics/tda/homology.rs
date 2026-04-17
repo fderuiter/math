@@ -228,96 +228,91 @@ mod tests {
     use crate::pure_math::statistics::tda::core::{Point2D, PointCloud, Simplex};
 
     #[test]
-    fn test_betti_number_0_single_vertex() {
+    fn test_betti_number_0_single_vertex() -> Result<(), Box<dyn std::error::Error>> {
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0]).unwrap()).unwrap();
+        complex.add_simplex(Simplex::new(vec![0])?)?;
 
-        let beta0 = betti_number_0(&complex).unwrap();
+        let beta0 = betti_number_0(&complex)?;
         assert_eq!(beta0, 1);
+        Ok(())
     }
 
     #[test]
-    fn test_betti_number_0_two_components() {
+    fn test_betti_number_0_two_components() -> Result<(), Box<dyn std::error::Error>> {
         let mut complex = SimplicialComplex::new();
-        complex.add_simplex(Simplex::new(vec![0]).unwrap()).unwrap();
-        complex.add_simplex(Simplex::new(vec![1]).unwrap()).unwrap();
+        complex.add_simplex(Simplex::new(vec![0])?)?;
+        complex.add_simplex(Simplex::new(vec![1])?)?;
         // No edge connecting them
 
-        let beta0 = betti_number_0(&complex).unwrap();
+        let beta0 = betti_number_0(&complex)?;
         assert_eq!(beta0, 2);
+        Ok(())
     }
 
     #[test]
-    fn test_betti_number_0_connected() {
+    fn test_betti_number_0_connected() -> Result<(), Box<dyn std::error::Error>> {
         let mut complex = SimplicialComplex::new();
-        complex
-            .add_simplex(Simplex::new(vec![0, 1]).unwrap())
-            .unwrap();
+        complex.add_simplex(Simplex::new(vec![0, 1])?)?;
 
-        let beta0 = betti_number_0(&complex).unwrap();
+        let beta0 = betti_number_0(&complex)?;
         assert_eq!(beta0, 1);
+        Ok(())
     }
 
     #[test]
-    fn test_betti_number_1_no_cycle() {
+    fn test_betti_number_1_no_cycle() -> Result<(), Box<dyn std::error::Error>> {
         // Simple edge: no cycle
         let mut complex = SimplicialComplex::new();
-        complex
-            .add_simplex(Simplex::new(vec![0, 1]).unwrap())
-            .unwrap();
+        complex.add_simplex(Simplex::new(vec![0, 1])?)?;
 
-        let beta1 = betti_number_1(&complex).unwrap();
+        let beta1 = betti_number_1(&complex)?;
         assert_eq!(beta1, 0);
+        Ok(())
     }
 
     #[test]
-    fn test_betti_number_1_triangle_hollow() {
+    fn test_betti_number_1_triangle_hollow() -> Result<(), Box<dyn std::error::Error>> {
         // Three edges forming a triangle (hollow - one cycle)
         let mut complex = SimplicialComplex::new();
-        complex
-            .add_simplex(Simplex::new(vec![0, 1]).unwrap())
-            .unwrap();
-        complex
-            .add_simplex(Simplex::new(vec![1, 2]).unwrap())
-            .unwrap();
-        complex
-            .add_simplex(Simplex::new(vec![2, 0]).unwrap())
-            .unwrap();
+        complex.add_simplex(Simplex::new(vec![0, 1])?)?;
+        complex.add_simplex(Simplex::new(vec![1, 2])?)?;
+        complex.add_simplex(Simplex::new(vec![2, 0])?)?;
 
-        let beta1 = betti_number_1(&complex).unwrap();
+        let beta1 = betti_number_1(&complex)?;
         assert_eq!(beta1, 1); // One hole
+        Ok(())
     }
 
     #[test]
-    fn test_betti_number_1_triangle_filled() {
+    fn test_betti_number_1_triangle_filled() -> Result<(), Box<dyn std::error::Error>> {
         // Filled triangle (no hole)
         let mut complex = SimplicialComplex::new();
-        complex
-            .add_simplex(Simplex::new(vec![0, 1, 2]).unwrap())
-            .unwrap();
+        complex.add_simplex(Simplex::new(vec![0, 1, 2])?)?;
 
-        let beta1 = betti_number_1(&complex).unwrap();
+        let beta1 = betti_number_1(&complex)?;
         assert_eq!(beta1, 0); // No holes
+        Ok(())
     }
 
     #[test]
-    fn test_betti_numbers_two_clusters() {
+    fn test_betti_numbers_two_clusters() -> Result<(), Box<dyn std::error::Error>> {
         let points = vec![
             Point2D::new(0.0, 0.0),
             Point2D::new(1.0, 0.0),
             Point2D::new(10.0, 0.0),
             Point2D::new(11.0, 0.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
-        let complex = vietoris_rips_complex(&cloud, 1.5).unwrap();
+        let cloud = PointCloud::new(points)?;
+        let complex = vietoris_rips_complex(&cloud, 1.5)?;
 
-        let (beta0, beta1) = betti_numbers(&complex).unwrap();
+        let (beta0, beta1) = betti_numbers(&complex)?;
         assert_eq!(beta0, 2); // Two components
         assert_eq!(beta1, 0); // No holes
+        Ok(())
     }
 
     #[test]
-    fn test_betti_numbers_circle() {
+    fn test_betti_numbers_circle() -> Result<(), Box<dyn std::error::Error>> {
         // Points arranged in a circle
         let n = 8;
         let points: Vec<Point2D> = (0..n)
@@ -327,18 +322,19 @@ mod tests {
             })
             .collect();
 
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         // Small radius: forms a cycle around the circle
-        let complex = vietoris_rips_complex(&cloud, 0.8).unwrap();
-        let (beta0, beta1) = betti_numbers(&complex).unwrap();
+        let complex = vietoris_rips_complex(&cloud, 0.8)?;
+        let (beta0, beta1) = betti_numbers(&complex)?;
 
         assert_eq!(beta0, 1); // Connected
         assert_eq!(beta1, 1); // One hole in the middle
+        Ok(())
     }
 
     #[test]
-    fn test_betti_numbers_line() {
+    fn test_betti_numbers_line() -> Result<(), Box<dyn std::error::Error>> {
         // Points on a line
         let points = vec![
             Point2D::new(0.0, 0.0),
@@ -346,11 +342,12 @@ mod tests {
             Point2D::new(2.0, 0.0),
             Point2D::new(3.0, 0.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
-        let complex = vietoris_rips_complex(&cloud, 1.5).unwrap();
+        let cloud = PointCloud::new(points)?;
+        let complex = vietoris_rips_complex(&cloud, 1.5)?;
 
-        let (beta0, beta1) = betti_numbers(&complex).unwrap();
+        let (beta0, beta1) = betti_numbers(&complex)?;
         assert_eq!(beta0, 1); // Connected
         assert_eq!(beta1, 0); // No holes
+        Ok(())
     }
 }

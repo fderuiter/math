@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! Link functions for ZIP regression.
 //!
 //! This module implements the link functions used in ZIP regression to

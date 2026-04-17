@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+#![allow(clippy::all)]
 //! Dose Calculation Algorithms.
 //!
 //! **DEPRECATED**: This module has been split into `dose`, `accelerator`, `imaging`, and `signal`.

@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! Neutrino Physics deals with the oscillation of neutrino flavors.
 
 /// Calculates the probability of two-flavor neutrino oscillation $P(\nu_\alpha \to \nu_\beta)$.

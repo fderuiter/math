@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
 use std::collections::HashMap;

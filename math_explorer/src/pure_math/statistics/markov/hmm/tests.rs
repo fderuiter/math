@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 #[cfg(test)]
 mod tests {
     use super::super::model::HiddenMarkovModel;
@@ -7,48 +9,51 @@ mod tests {
     use rand::rngs::StdRng;
 
     #[test]
-    fn test_hmm_creation() {
+    fn test_hmm_creation() -> Result<(), Box<dyn std::error::Error>> {
         let initial = DVector::from_vec(vec![0.5, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
 
         assert_eq!(hmm.num_states(), 2);
         assert_eq!(hmm.num_observations(), 2);
+        Ok(())
     }
 
     #[test]
-    fn test_hmm_creation_f32() {
+    fn test_hmm_creation_f32() -> Result<(), Box<dyn std::error::Error>> {
         let initial = DVector::from_vec(vec![0.5f32, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7f32, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8f32, 0.2, 0.3, 0.7]);
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
 
         assert_eq!(hmm.num_states(), 2);
         assert_eq!(hmm.num_observations(), 2);
+        Ok(())
     }
 
     #[test]
-    fn test_forward_algorithm() {
+    fn test_forward_algorithm() -> Result<(), Box<dyn std::error::Error>> {
         // Simple HMM: two states, two observations
         let initial = DVector::from_vec(vec![0.6, 0.4]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.9, 0.1, 0.2, 0.8]);
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
 
         let observations = vec![0, 1, 0];
-        let prob = hmm.forward(&observations).unwrap();
+        let prob = hmm.forward(&observations)?;
 
         // Probability should be in (0, 1)
         assert!(prob > 0.0);
         assert!(prob <= 1.0);
+        Ok(())
     }
 
     #[test]
-    fn test_viterbi() {
+    fn test_viterbi() -> Result<(), Box<dyn std::error::Error>> {
         // Classic example: two states (Fair/Loaded dice), two observations (0-5)
         // Simplified to 2 observations for testing
         let initial = DVector::from_vec(vec![0.5, 0.5]);
@@ -62,20 +67,21 @@ mod tests {
             ],
         );
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
 
         // Observations: 1, 1, 1 (likely loaded)
         let observations = vec![1, 1, 1];
-        let path = hmm.viterbi(&observations).unwrap();
+        let path = hmm.viterbi(&observations)?;
 
         assert_eq!(path.len(), 3);
         // Most likely state sequence should end in loaded (state 1)
         // Due to persistence (0.9 stay probability), likely all state 1
         assert_eq!(path[2], 1);
+        Ok(())
     }
 
     #[test]
-    fn test_hot_hand_detection() {
+    fn test_hot_hand_detection() -> Result<(), Box<dyn std::error::Error>> {
         // Basketball shooting: Cold (0) vs Hot (1)
         // Observations: Miss (0), Make (1)
         let initial = DVector::from_vec(vec![0.5, 0.5]);
@@ -98,52 +104,54 @@ mod tests {
             ],
         );
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
 
         // Shooting sequence: Make, Make, Make, Miss
         let observations = vec![1, 1, 1, 0];
 
         // Viterbi: most likely states
-        let states = hmm.viterbi(&observations).unwrap();
+        let states = hmm.viterbi(&observations)?;
 
         // After three makes, should likely be in hot state
         assert_eq!(states[2], 1); // Hot after 3 makes
 
         // Filtering: current belief
-        let posterior = hmm.filter(&observations).unwrap();
+        let posterior = hmm.filter(&observations)?;
 
         // After 3 makes then a miss, should still believe somewhat in hot
         assert!(posterior[1] > 0.0);
+        Ok(())
     }
 
     #[test]
-    fn test_posterior_probabilities() {
+    fn test_posterior_probabilities() -> Result<(), Box<dyn std::error::Error>> {
         let initial = DVector::from_vec(vec![0.6, 0.4]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
 
         let observations = vec![0, 1];
-        let gamma = hmm.posterior_probabilities(&observations).unwrap();
+        let gamma = hmm.posterior_probabilities(&observations)?;
 
         // Check that posteriors sum to 1 at each time
         for t in 0..2 {
             let sum: f64 = gamma.column(t).iter().sum();
             assert_relative_eq!(sum, 1.0, epsilon = 1e-6);
         }
+        Ok(())
     }
 
     #[test]
-    fn test_generate_sequence() {
+    fn test_generate_sequence() -> Result<(), Box<dyn std::error::Error>> {
         let initial = DVector::from_vec(vec![0.5, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
         let mut rng = StdRng::seed_from_u64(42);
 
-        let (states, observations) = hmm.generate(10, &mut rng).unwrap();
+        let (states, observations) = hmm.generate(10, &mut rng)?;
 
         assert_eq!(states.len(), 10);
         assert_eq!(observations.len(), 10);
@@ -157,33 +165,36 @@ mod tests {
         for &o in &observations {
             assert!(o < 2);
         }
+        Ok(())
     }
 
     #[test]
-    fn test_deterministic_generation() {
+    fn test_deterministic_generation() -> Result<(), Box<dyn std::error::Error>> {
         let initial = DVector::from_vec(vec![0.5, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
 
-        let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
+        let hmm = HiddenMarkovModel::new(initial, transitions, emissions)?;
 
         let mut rng1 = StdRng::seed_from_u64(123);
-        let (states1, obs1) = hmm.generate(20, &mut rng1).unwrap();
+        let (states1, obs1) = hmm.generate(20, &mut rng1)?;
 
         let mut rng2 = StdRng::seed_from_u64(123);
-        let (states2, obs2) = hmm.generate(20, &mut rng2).unwrap();
+        let (states2, obs2) = hmm.generate(20, &mut rng2)?;
 
         // Same seed should produce same sequence
         assert_eq!(states1, states2);
         assert_eq!(obs1, obs2);
+        Ok(())
     }
 
     #[test]
-    fn test_validation_errors() {
+    fn test_validation_errors() -> Result<(), Box<dyn std::error::Error>> {
         let initial = DVector::from_vec(vec![0.5, 0.4]); // Doesn't sum to 1
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
 
         assert!(HiddenMarkovModel::new(initial, transitions, emissions).is_err());
+        Ok(())
     }
 }

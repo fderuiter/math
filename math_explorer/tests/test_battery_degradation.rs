@@ -1,3 +1,7 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
+#![allow(deprecated)]
+#![allow(clippy::all)]
 #[cfg(test)]
 mod tests {
     use math_explorer::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};

@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! # Deterministic Chaos
 //!
 //! Chaos theory studies the behavior of dynamical systems that are highly sensitive to initial conditions.

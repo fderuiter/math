@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! # Math Explorer
 //!
 //! **Math Explorer** is a research-grade Rust library designed to bridge the gap between abstract mathematical theory

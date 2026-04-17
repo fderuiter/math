@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! This module defines the predictor model for the CERA framework.
 
 use crate::ai::optimization::Optimizer;

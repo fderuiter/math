@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+#![allow(clippy::all)]
 use math_explorer::applied::win_ratio::pair_comparison::{
     ComparisonResult, HigherIsBetter, LowerIsBetter, ThresholdComparator, WinRatioAnalysis,
     unmatched_pairs,

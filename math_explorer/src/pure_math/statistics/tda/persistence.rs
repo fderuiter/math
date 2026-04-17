@@ -300,75 +300,81 @@ mod tests {
     use crate::pure_math::statistics::tda::core::Point2D;
 
     #[test]
-    fn test_persistence_interval() {
-        let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
+    fn test_persistence_interval() -> Result<(), Box<dyn std::error::Error>> {
+        let interval = PersistenceInterval::new(0.5, 2.0, 1)?;
         assert_eq!(interval.birth, 0.5);
         assert_eq!(interval.death, 2.0);
         assert_eq!(interval.dimension, 1);
         assert!((interval.persistence() - 1.5).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
-    fn test_persistence_interval_invalid() {
+    fn test_persistence_interval_invalid() -> Result<(), Box<dyn std::error::Error>> {
         assert!(PersistenceInterval::new(2.0, 1.0, 0).is_err()); // birth > death
         assert!(PersistenceInterval::new(-1.0, 1.0, 0).is_err()); // negative birth
+        Ok(())
     }
 
     #[test]
-    fn test_persistence_interval_is_significant() {
-        let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
+    fn test_persistence_interval_is_significant() -> Result<(), Box<dyn std::error::Error>> {
+        let interval = PersistenceInterval::new(0.5, 2.0, 1)?;
         assert!(interval.is_significant(1.0));
         assert!(!interval.is_significant(2.0));
+        Ok(())
     }
 
     #[test]
-    fn test_barcode_filter_by_dimension() {
+    fn test_barcode_filter_by_dimension() -> Result<(), Box<dyn std::error::Error>> {
         let mut barcode = PersistenceBarcode::new();
-        barcode.add_interval(PersistenceInterval::new(0.0, 1.0, 0).unwrap());
-        barcode.add_interval(PersistenceInterval::new(0.5, 2.0, 1).unwrap());
-        barcode.add_interval(PersistenceInterval::new(1.0, 3.0, 1).unwrap());
+        barcode.add_interval(PersistenceInterval::new(0.0, 1.0, 0)?);
+        barcode.add_interval(PersistenceInterval::new(0.5, 2.0, 1)?);
+        barcode.add_interval(PersistenceInterval::new(1.0, 3.0, 1)?);
 
         let dim0 = barcode.filter_by_dimension(0);
         assert_eq!(dim0.len(), 1);
 
         let dim1 = barcode.filter_by_dimension(1);
         assert_eq!(dim1.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn test_barcode_filter_by_persistence() {
+    fn test_barcode_filter_by_persistence() -> Result<(), Box<dyn std::error::Error>> {
         let mut barcode = PersistenceBarcode::new();
-        barcode.add_interval(PersistenceInterval::new(0.0, 0.5, 0).unwrap()); // persistence 0.5
-        barcode.add_interval(PersistenceInterval::new(0.5, 2.0, 1).unwrap()); // persistence 1.5
+        barcode.add_interval(PersistenceInterval::new(0.0, 0.5, 0)?); // persistence 0.5
+        barcode.add_interval(PersistenceInterval::new(0.5, 2.0, 1)?); // persistence 1.5
 
         let significant = barcode.filter_by_persistence(1.0);
         assert_eq!(significant.len(), 1);
         assert_eq!(significant[0].dimension, 1);
+        Ok(())
     }
 
     #[test]
-    fn test_barcode_most_persistent() {
+    fn test_barcode_most_persistent() -> Result<(), Box<dyn std::error::Error>> {
         let mut barcode = PersistenceBarcode::new();
-        barcode.add_interval(PersistenceInterval::new(0.0, 1.0, 1).unwrap()); // persistence 1.0
-        barcode.add_interval(PersistenceInterval::new(0.5, 3.0, 1).unwrap()); // persistence 2.5
-        barcode.add_interval(PersistenceInterval::new(1.0, 2.0, 1).unwrap()); // persistence 1.0
+        barcode.add_interval(PersistenceInterval::new(0.0, 1.0, 1)?); // persistence 1.0
+        barcode.add_interval(PersistenceInterval::new(0.5, 3.0, 1)?); // persistence 2.5
+        barcode.add_interval(PersistenceInterval::new(1.0, 2.0, 1)?); // persistence 1.0
 
         let most_persistent = barcode.most_persistent(1).unwrap();
         assert!((most_persistent.persistence() - 2.5).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
-    fn test_compute_persistence_line() {
+    fn test_compute_persistence_line() -> Result<(), Box<dyn std::error::Error>> {
         // Points on a line
         let points = vec![
             Point2D::new(0.0, 0.0),
             Point2D::new(1.0, 0.0),
             Point2D::new(2.0, 0.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         let radii: Vec<f64> = (0..30).map(|i| i as f64 * 0.1).collect();
-        let barcode = compute_persistence(&cloud, &radii).unwrap();
+        let barcode = compute_persistence(&cloud, &radii)?;
 
         // Should have components merging but no persistent holes
         assert!(!barcode.is_empty());
@@ -377,10 +383,11 @@ mod tests {
         // A line should not have significant holes
         let significant_holes: Vec<_> = holes.iter().filter(|h| h.is_significant(0.5)).collect();
         assert_eq!(significant_holes.len(), 0);
+        Ok(())
     }
 
     #[test]
-    fn test_compute_persistence_triangle() {
+    fn test_compute_persistence_triangle() -> Result<(), Box<dyn std::error::Error>> {
         // Equilateral triangle - this will form a hollow triangle at some radius
         // but might fill in at larger radii
         let points = vec![
@@ -388,19 +395,20 @@ mod tests {
             Point2D::new(2.0, 0.0),
             Point2D::new(1.0, 1.732),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         let radii: Vec<f64> = (0..30).map(|i| i as f64 * 0.15).collect();
-        let barcode = compute_persistence(&cloud, &radii).unwrap();
+        let barcode = compute_persistence(&cloud, &radii)?;
 
         // The barcode should contain some features
         // Note: With only 3 points, we may not detect persistent holes
         // depending on the filtration
         assert!(!barcode.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn test_compute_persistence_two_clusters() {
+    fn test_compute_persistence_two_clusters() -> Result<(), Box<dyn std::error::Error>> {
         // Two well-separated clusters
         let points = vec![
             Point2D::new(0.0, 0.0),
@@ -408,10 +416,10 @@ mod tests {
             Point2D::new(10.0, 0.0),
             Point2D::new(11.0, 0.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
 
         let radii: Vec<f64> = (0..50).map(|i| i as f64 * 0.3).collect();
-        let barcode = compute_persistence(&cloud, &radii).unwrap();
+        let barcode = compute_persistence(&cloud, &radii)?;
 
         // Should have components that persist for a while
         let components = barcode.filter_by_dimension(0);
@@ -422,5 +430,6 @@ mod tests {
 
         // At least one component should have significant persistence
         assert!(!significant_components.is_empty());
+        Ok(())
     }
 }

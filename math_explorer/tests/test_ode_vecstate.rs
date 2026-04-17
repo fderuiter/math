@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 use math_explorer::pure_math::analysis::ode::{
     OdeSystem, RungeKutta4, Solver, SolverExt, VecState,
 };

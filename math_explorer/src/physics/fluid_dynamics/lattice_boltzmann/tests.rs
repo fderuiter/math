@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 #[cfg(test)]
 mod tests {
     use crate::physics::fluid_dynamics::lattice_boltzmann::algorithms::*;

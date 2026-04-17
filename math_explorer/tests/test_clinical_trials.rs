@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+#![allow(clippy::all)]
 use math_explorer::applied::clinical_trials::types::{ContingencyTable, GroupData, SurvivalTime};
 use math_explorer::applied::clinical_trials::{
     analysis, design, hypothesis_testing, sample_size, survival_analysis,

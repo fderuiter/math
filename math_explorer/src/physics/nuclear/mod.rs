@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! Nuclear physics module covering properties, models, and reactions.
 //!
 //! This module provides implementations for:

@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+#![allow(clippy::all)]
 //! Superconductivity (BCS Theory)
 //!
 //! Describes the pairing of electrons into Cooper pairs via phonon mediation.

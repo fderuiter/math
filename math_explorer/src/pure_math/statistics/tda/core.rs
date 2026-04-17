@@ -234,28 +234,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_point2d_distance() {
+    fn test_point2d_distance() -> Result<(), Box<dyn std::error::Error>> {
         let p1 = Point2D::new(0.0, 0.0);
         let p2 = Point2D::new(3.0, 4.0);
 
         let d = p1.distance(&p2);
         assert!((d - 5.0).abs() < 1e-6);
+        Ok(())
     }
 
     #[test]
-    fn test_point_cloud_empty() {
+    fn test_point_cloud_empty() -> Result<(), Box<dyn std::error::Error>> {
         let result = PointCloud::new(vec![]);
         assert!(result.is_err());
+        Ok(())
     }
 
     #[test]
-    fn test_point_cloud_distance_matrix() {
+    fn test_point_cloud_distance_matrix() -> Result<(), Box<dyn std::error::Error>> {
         let points = vec![
             Point2D::new(0.0, 0.0),
             Point2D::new(1.0, 0.0),
             Point2D::new(0.0, 1.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
         let dist = cloud.distance_matrix();
 
         assert_eq!(dist.len(), 3);
@@ -265,63 +267,70 @@ mod tests {
 
         // Symmetry
         assert_eq!(dist[0][1], dist[1][0]);
+        Ok(())
     }
 
     #[test]
-    fn test_simplex_vertex() {
-        let s = Simplex::new(vec![0]).unwrap();
+    fn test_simplex_vertex() -> Result<(), Box<dyn std::error::Error>> {
+        let s = Simplex::new(vec![0])?;
         assert_eq!(s.dimension(), 0);
-        assert_eq!(s.faces().unwrap().len(), 0);
+        assert_eq!(s.faces()?.len(), 0);
+        Ok(())
     }
 
     #[test]
-    fn test_simplex_edge() {
-        let s = Simplex::new(vec![0, 1]).unwrap();
+    fn test_simplex_edge() -> Result<(), Box<dyn std::error::Error>> {
+        let s = Simplex::new(vec![0, 1])?;
         assert_eq!(s.dimension(), 1);
-        assert_eq!(s.faces().unwrap().len(), 2);
+        assert_eq!(s.faces()?.len(), 2);
+        Ok(())
     }
 
     #[test]
-    fn test_simplex_triangle() {
-        let s = Simplex::new(vec![0, 1, 2]).unwrap();
+    fn test_simplex_triangle() -> Result<(), Box<dyn std::error::Error>> {
+        let s = Simplex::new(vec![0, 1, 2])?;
         assert_eq!(s.dimension(), 2);
-        assert_eq!(s.faces().unwrap().len(), 3);
+        assert_eq!(s.faces()?.len(), 3);
 
         // All faces should be edges
-        for face in s.faces().unwrap() {
+        for face in s.faces()? {
             assert_eq!(face.dimension(), 1);
         }
+        Ok(())
     }
 
     #[test]
-    fn test_simplex_sorted() {
-        let s1 = Simplex::new(vec![2, 0, 1]).unwrap();
-        let s2 = Simplex::new(vec![0, 1, 2]).unwrap();
+    fn test_simplex_sorted() -> Result<(), Box<dyn std::error::Error>> {
+        let s1 = Simplex::new(vec![2, 0, 1])?;
+        let s2 = Simplex::new(vec![0, 1, 2])?;
 
         // Should be equal after sorting
         assert_eq!(s1, s2);
+        Ok(())
     }
 
     #[test]
-    fn test_simplex_duplicate_vertices() {
+    fn test_simplex_duplicate_vertices() -> Result<(), Box<dyn std::error::Error>> {
         let result = Simplex::new(vec![0, 1, 1]);
         assert!(result.is_err());
+        Ok(())
     }
 
     #[test]
-    fn test_simplex_diameter() {
+    fn test_simplex_diameter() -> Result<(), Box<dyn std::error::Error>> {
         let points = vec![
             Point2D::new(0.0, 0.0),
             Point2D::new(1.0, 0.0),
             Point2D::new(0.0, 1.0),
         ];
-        let cloud = PointCloud::new(points).unwrap();
+        let cloud = PointCloud::new(points)?;
         let dist = cloud.distance_matrix();
 
-        let triangle = Simplex::new(vec![0, 1, 2]).unwrap();
+        let triangle = Simplex::new(vec![0, 1, 2])?;
         let diameter = triangle.diameter(&dist);
 
         // Maximum distance is between points 1 and 2
         assert!((diameter - 2.0_f64.sqrt()).abs() < 1e-6);
+        Ok(())
     }
 }

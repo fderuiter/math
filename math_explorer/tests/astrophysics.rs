@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+#![allow(clippy::unnecessary_literal_unwrap)]
 use math_explorer::physics::astrophysics::galaxies::{
     GalaxyType, calculate_apparent_magnitude_from_distance,
     calculate_log_mass_from_absolute_magnitude, calculate_log_mass_from_distance,

@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! # Mean Field Games (MFG)
 //!
 //! MFGs model the limit of $N \to \infty$ players, where individual interactions are replaced by

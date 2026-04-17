@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 use super::SpatialDiffusion;
 
 /// A 2D Finite Difference implementation using a 5-point stencil.

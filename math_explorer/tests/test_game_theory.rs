@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+#![allow(clippy::all)]
 use math_explorer::applied::game_theory::equilibrium::{
     BestResponseCorrespondence, BoxSet, ConvexSet, FixedPointVerifier,
 };

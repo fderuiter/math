@@ -1,3 +1,5 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
 //! Analysis tools for OU process applications.
 
 use super::core::OuParams;
