@@ -13,6 +13,7 @@ fn get_test_data() -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
 #[test]
 fn test_matched_pairs() {
     let (group1, group2) = get_test_data();
+    #[allow(deprecated)]
     let (wins, losses) = pair_comparison::matched_pairs(&group1, &group2);
 
     // Let's trace the comparisons:
@@ -53,6 +54,7 @@ fn test_matched_pairs() {
 #[test]
 fn test_unmatched_pairs() {
     let (group1, group2) = get_test_data();
+    #[allow(deprecated)]
     let (wins, losses) = pair_comparison::unmatched_pairs(&group1, &group2);
 
     // After re-tracing, wins=8, losses=1.
