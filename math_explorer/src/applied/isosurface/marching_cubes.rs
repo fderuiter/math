@@ -130,6 +130,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     // The maximum index accessed is `(depth-2)*stride_z + (height-2)*stride_y + (width-2) + stride_y + stride_z + 1`
                     // which equals `(depth-1)*stride_z + (height-1)*stride_y + (width-1)`.
                     // This is strictly less than `width * height * depth`, which is validated by `validate_grid` to be `<= data.len()`.
+                    // SAFETY: `get_cube_values_unchecked` requires the base_idx to be in bounds up to stride offsets, which is checked here.
                     let (values, index) = unsafe {
                         self.get_cube_values_unchecked(base_idx, stride_y, stride_z, threshold)
                     };
@@ -149,6 +150,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     // The gradient calculation uses `index - 1` and `index + 1` in all 3 dimensions.
                     // Since `x,y,z >= 1`, we never underflow. Since `x,y,z <= max-2`, adding the offsets never overflows
                     // the total bounds `width * height * depth`, matching the guarantees checked by `validate_grid`.
+                    // SAFETY: `compute_gradients_unchecked` relies on bounds being valid, which is explicitly guaranteed above.
                     let (normals, right_face) = unsafe {
                         self.compute_gradients_unchecked(
                             (x, y, z),
@@ -212,6 +214,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// such that `x < width - 1`, `y < height - 1`, and `z < depth - 1`. Specifically,
     /// `base_idx + stride_y + stride_z + 1` must be strictly less than the length of `self.grid.data`.
     /// Failure to uphold this invariant will result in undefined behavior via out-of-bounds memory access.
+    ///
     #[inline(always)]
     unsafe fn get_cube_values_unchecked(
         &self,
@@ -286,6 +289,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// 3. If the fast path is taken, `base_idx` and `base_idx + 1` (along with their ±1 offsets
     ///    in all dimensions) must be within the bounds of `self.grid.data`. This means `x, y, z`
     ///    must be at least 1 and at most their respective `dimension - 2`.
+    ///
     #[inline(always)]
     unsafe fn compute_gradients_unchecked(
         &self,
