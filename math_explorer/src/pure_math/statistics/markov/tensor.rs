@@ -27,10 +27,6 @@ impl<T: RealField + Copy + ToPrimitive> TimeIndex<T> {
     /// # Returns
     ///
     /// A new `TimeIndex` or an error if the time is invalid.
-    ///
-    /// # Errors
-    ///
-    /// Returns `MarkovError::InvalidState` if `time` is not finite.
     pub fn new(time: T) -> Result<Self> {
         if !time.is_finite() {
             return Err(MarkovError::InvalidState {
@@ -135,10 +131,6 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     /// - `TimeIndexOutOfBounds`: If time is outside [min_time, max_time]
     /// - `DimensionMismatch`: If matrix size doesn't match num_states
     /// - `NotStochastic`: If matrix rows don't sum to 1
-    ///
-    /// # Panics
-    ///
-    /// Panics if `time.value()` or any slice's time value is NaN during binary search (`partial_cmp().unwrap()`).
     pub fn add_time_slice(&mut self, time: TimeIndex<T>, matrix: DMatrix<T>) -> Result<()> {
         // Validate time bounds
         if time.value() < self.min_time.value() || time.value() > self.max_time.value() {
@@ -191,15 +183,6 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     /// - If time < first slice time: return first slice
     /// - If time > last slice time: return last slice
     /// - Otherwise: linear interpolation between adjacent slices
-    ///
-    /// # Errors
-    ///
-    /// - `MarkovError::InvalidState`: If no time slices have been added.
-    /// - `MarkovError::TimeIndexOutOfBounds`: If `time` is outside [min_time, max_time].
-    ///
-    /// # Panics
-    ///
-    /// Panics if `time.value()` or any slice's time value is NaN during binary search (`partial_cmp().unwrap()`).
     pub fn transition_matrix_at(&self, time: TimeIndex<T>) -> Result<DMatrix<T>> {
         if self.time_slices.is_empty() {
             return Err(MarkovError::InvalidState {
@@ -275,15 +258,6 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     ///
     /// An averaged transition matrix representing the expected transition
     /// over the time interval.
-    ///
-    /// # Errors
-    ///
-    /// - `MarkovError::InvalidState`: If `num_samples` is 0.
-    /// - Errors propagated from `TransitionTensor::transition_matrix_at`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `T::from_usize()` fails and returns `None` for the number of samples or indices.
     pub fn average_transition(
         &self,
         start_time: TimeIndex<T>,
