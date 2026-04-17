@@ -358,7 +358,9 @@ impl<R, D, S> Default for ReactionDiffusionSystemBuilder<R, D, S> {
     }
 }
 
-impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>> {
+impl<R: ReactionModel, D: DiffusionModel>
+    ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>>
+{
     /// Starts a new builder with default type parameters.
     pub fn new() -> Self {
         Self::default()
