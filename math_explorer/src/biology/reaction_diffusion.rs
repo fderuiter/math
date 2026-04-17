@@ -61,7 +61,14 @@
 //! // 2. Setup the generic system (1 species, 10 grid points)
 //! let kinetics = DecayKinetics { rate: 0.1 };
 //! let diffusion = FiniteDifference1D::new(1.0);
-//! let mut system = ReactionDiffusionSystem::new(1, 10, kinetics, diffusion, vec![0.5]);
+//! let mut system = ReactionDiffusionSystem::builder()
+//!     .num_species(1)
+//!     .grid_size(10)
+//!     .reaction(kinetics)
+//!     .diffusion(diffusion)
+//!     .diffusion_coeffs(vec![0.5])
+//!     .build()
+//!     .unwrap();
 //!
 //! // 3. Initialize state and run
 //! system.state.species_mut(0)[5] = 100.0; // Spike in the middle
@@ -73,6 +80,19 @@
 use crate::pure_math::analysis::ode::solvers::Euler;
 use crate::pure_math::analysis::ode::traits::{OdeSystem, Solver, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
+
+/// Errors related to Reaction-Diffusion systems.
+#[derive(Debug, thiserror::Error, PartialEq)]
+pub enum ReactionDiffusionError {
+    #[error("Dimension mismatch: expected {expected} diffusion coefficients, but got {got}")]
+    DimensionMismatch { expected: usize, got: usize },
+    #[error("System requires at least one species")]
+    ZeroSpecies,
+    #[error("Grid size cannot be zero")]
+    ZeroGridSize,
+    #[error("Missing parameter: {0}")]
+    MissingParameter(&'static str),
+}
 
 /// Represents the state of a multi-species chemical system.
 ///
@@ -312,19 +332,130 @@ pub struct ReactionDiffusionSystem<
     pub solver: S,
 }
 
-impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D, Euler<ChemicalState>> {
-    /// Creates a new Reaction-Diffusion system with the default Euler solver.
-    pub fn new(
-        num_species: usize,
-        grid_size: usize,
-        reaction: R,
-        diffusion: D,
-        diffusion_coeffs: Vec<f64>,
-    ) -> Self {
-        assert_eq!(diffusion_coeffs.len(), num_species);
+/// Builder for `ReactionDiffusionSystem`.
+///
+/// Ensures that parameters are physically valid before creating the system.
+#[derive(Debug, Clone)]
+pub struct ReactionDiffusionSystemBuilder<R, D, S> {
+    num_species: Option<usize>,
+    grid_size: Option<usize>,
+    reaction: Option<R>,
+    diffusion: Option<D>,
+    diffusion_coeffs: Option<Vec<f64>>,
+    solver: Option<S>,
+}
+
+impl<R, D, S> Default for ReactionDiffusionSystemBuilder<R, D, S> {
+    fn default() -> Self {
+        Self {
+            num_species: None,
+            grid_size: None,
+            reaction: None,
+            diffusion: None,
+            diffusion_coeffs: None,
+            solver: None,
+        }
+    }
+}
+
+impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>> {
+    /// Starts a new builder with default type parameters.
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
+    ReactionDiffusionSystemBuilder<R, D, S>
+{
+    /// Sets the number of chemical species.
+    pub fn num_species(mut self, num_species: usize) -> Self {
+        self.num_species = Some(num_species);
+        self
+    }
+
+    /// Sets the spatial grid size.
+    pub fn grid_size(mut self, grid_size: usize) -> Self {
+        self.grid_size = Some(grid_size);
+        self
+    }
+
+    /// Sets the reaction kinetics model.
+    pub fn reaction(mut self, reaction: R) -> Self {
+        self.reaction = Some(reaction);
+        self
+    }
+
+    /// Sets the spatial diffusion model.
+    pub fn diffusion(mut self, diffusion: D) -> Self {
+        self.diffusion = Some(diffusion);
+        self
+    }
+
+    /// Sets the diffusion coefficients for each species.
+    pub fn diffusion_coeffs(mut self, coeffs: Vec<f64>) -> Self {
+        self.diffusion_coeffs = Some(coeffs);
+        self
+    }
+
+    /// Sets a custom solver strategy.
+    pub fn solver<NewS: Solver<ChemicalState>>(
+        self,
+        solver: NewS,
+    ) -> ReactionDiffusionSystemBuilder<R, D, NewS> {
+        ReactionDiffusionSystemBuilder {
+            num_species: self.num_species,
+            grid_size: self.grid_size,
+            reaction: self.reaction,
+            diffusion: self.diffusion,
+            diffusion_coeffs: self.diffusion_coeffs,
+            solver: Some(solver),
+        }
+    }
+}
+
+impl<R: ReactionModel, D: DiffusionModel>
+    ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>>
+{
+    /// Builds the `ReactionDiffusionSystem` with the default Euler solver.
+    pub fn build(
+        self,
+    ) -> Result<ReactionDiffusionSystem<R, D, Euler<ChemicalState>>, ReactionDiffusionError> {
+        let num_species = self
+            .num_species
+            .ok_or(ReactionDiffusionError::MissingParameter("num_species"))?;
+        let grid_size = self
+            .grid_size
+            .ok_or(ReactionDiffusionError::MissingParameter("grid_size"))?;
+        let reaction = self
+            .reaction
+            .ok_or(ReactionDiffusionError::MissingParameter("reaction"))?;
+        let diffusion = self
+            .diffusion
+            .ok_or(ReactionDiffusionError::MissingParameter("diffusion"))?;
+        let diffusion_coeffs = self
+            .diffusion_coeffs
+            .ok_or(ReactionDiffusionError::MissingParameter("diffusion_coeffs"))?;
+
+        if num_species == 0 {
+            return Err(ReactionDiffusionError::ZeroSpecies);
+        }
+
+        if grid_size == 0 {
+            return Err(ReactionDiffusionError::ZeroGridSize);
+        }
+
+        if diffusion_coeffs.len() != num_species {
+            return Err(ReactionDiffusionError::DimensionMismatch {
+                expected: num_species,
+                got: diffusion_coeffs.len(),
+            });
+        }
+
         let state = ChemicalState::new(num_species, grid_size);
         let solver = Euler::new(&state);
-        Self {
+
+        Ok(ReactionDiffusionSystem {
             model: ReactionDiffusionModel {
                 reaction,
                 diffusion,
@@ -332,24 +463,52 @@ impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D, Euler<Ch
             },
             state,
             solver,
-        }
+        })
     }
 }
 
 impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
-    ReactionDiffusionSystem<R, D, S>
+    ReactionDiffusionSystemBuilder<R, D, S>
 {
-    /// Creates a new Reaction-Diffusion system with a custom solver.
-    pub fn new_with_solver(
-        num_species: usize,
-        grid_size: usize,
-        reaction: R,
-        diffusion: D,
-        diffusion_coeffs: Vec<f64>,
-        solver: S,
-    ) -> Self {
-        assert_eq!(diffusion_coeffs.len(), num_species);
-        Self {
+    /// Builds the `ReactionDiffusionSystem` with a custom solver.
+    pub fn build_with_solver(
+        self,
+    ) -> Result<ReactionDiffusionSystem<R, D, S>, ReactionDiffusionError> {
+        let num_species = self
+            .num_species
+            .ok_or(ReactionDiffusionError::MissingParameter("num_species"))?;
+        let grid_size = self
+            .grid_size
+            .ok_or(ReactionDiffusionError::MissingParameter("grid_size"))?;
+        let reaction = self
+            .reaction
+            .ok_or(ReactionDiffusionError::MissingParameter("reaction"))?;
+        let diffusion = self
+            .diffusion
+            .ok_or(ReactionDiffusionError::MissingParameter("diffusion"))?;
+        let diffusion_coeffs = self
+            .diffusion_coeffs
+            .ok_or(ReactionDiffusionError::MissingParameter("diffusion_coeffs"))?;
+        let solver = self
+            .solver
+            .ok_or(ReactionDiffusionError::MissingParameter("solver"))?;
+
+        if num_species == 0 {
+            return Err(ReactionDiffusionError::ZeroSpecies);
+        }
+
+        if grid_size == 0 {
+            return Err(ReactionDiffusionError::ZeroGridSize);
+        }
+
+        if diffusion_coeffs.len() != num_species {
+            return Err(ReactionDiffusionError::DimensionMismatch {
+                expected: num_species,
+                got: diffusion_coeffs.len(),
+            });
+        }
+
+        Ok(ReactionDiffusionSystem {
             model: ReactionDiffusionModel {
                 reaction,
                 diffusion,
@@ -357,9 +516,20 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
             },
             state: ChemicalState::new(num_species, grid_size),
             solver,
-        }
+        })
     }
+}
 
+impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D, Euler<ChemicalState>> {
+    /// Creates a new builder for a Reaction-Diffusion system.
+    pub fn builder() -> ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>> {
+        ReactionDiffusionSystemBuilder::new()
+    }
+}
+
+impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
+    ReactionDiffusionSystem<R, D, S>
+{
     /// Advances the system by a time step `dt` using the configured solver.
     pub fn step(&mut self, dt: f64) {
         // The solver manages the integration logic.
@@ -401,14 +571,15 @@ mod tests {
         let dummy_state = ChemicalState::new(2, n);
         let solver = RungeKutta4::new(&dummy_state);
 
-        let mut system = ReactionDiffusionSystem::new_with_solver(
-            2,
-            n,
-            kinetics,
-            diffusion,
-            diffusion_coeffs,
-            solver,
-        );
+        let mut system = ReactionDiffusionSystem::builder()
+            .num_species(2)
+            .grid_size(n)
+            .reaction(kinetics)
+            .diffusion(diffusion)
+            .diffusion_coeffs(diffusion_coeffs)
+            .solver(solver)
+            .build_with_solver()
+            .unwrap();
 
         // Initialize with same pattern
         for i in 0..n {
@@ -440,7 +611,14 @@ mod tests {
         let diffusion = FiniteDifference1D::new(dx);
         let diffusion_coeffs = vec![d_u, d_v];
 
-        let mut system = ReactionDiffusionSystem::new(2, n, kinetics, diffusion, diffusion_coeffs);
+        let mut system = ReactionDiffusionSystem::builder()
+            .num_species(2)
+            .grid_size(n)
+            .reaction(kinetics)
+            .diffusion(diffusion)
+            .diffusion_coeffs(diffusion_coeffs)
+            .build()
+            .unwrap();
 
         // Initialize with same pattern as in morphogenesis test
         // u = 1.0 + 0.1 * i
