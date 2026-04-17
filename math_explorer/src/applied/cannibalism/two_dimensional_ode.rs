@@ -93,30 +93,60 @@ impl CannibalismModelBuilder {
     /// Returns a `CannibalismError` if any required parameter is missing,
     /// or if any parameter is negative (all physical rates must be non-negative).
     pub fn build(self) -> Result<CannibalismModel, CannibalismError> {
-        let beta_n = self.beta_n.ok_or_else(|| CannibalismError::MissingParameter("beta_n".into()))?;
-        let beta_c = self.beta_c.ok_or_else(|| CannibalismError::MissingParameter("beta_c".into()))?;
-        let k_n = self.k_n.ok_or_else(|| CannibalismError::MissingParameter("k_n".into()))?;
-        let phi_n_c = self.phi_n_c.ok_or_else(|| CannibalismError::MissingParameter("phi_n_c".into()))?;
-        let mu_n = self.mu_n.ok_or_else(|| CannibalismError::MissingParameter("mu_n".into()))?;
-        let mu_c = self.mu_c.ok_or_else(|| CannibalismError::MissingParameter("mu_c".into()))?;
+        let beta_n = self
+            .beta_n
+            .ok_or_else(|| CannibalismError::MissingParameter("beta_n".into()))?;
+        let beta_c = self
+            .beta_c
+            .ok_or_else(|| CannibalismError::MissingParameter("beta_c".into()))?;
+        let k_n = self
+            .k_n
+            .ok_or_else(|| CannibalismError::MissingParameter("k_n".into()))?;
+        let phi_n_c = self
+            .phi_n_c
+            .ok_or_else(|| CannibalismError::MissingParameter("phi_n_c".into()))?;
+        let mu_n = self
+            .mu_n
+            .ok_or_else(|| CannibalismError::MissingParameter("mu_n".into()))?;
+        let mu_c = self
+            .mu_c
+            .ok_or_else(|| CannibalismError::MissingParameter("mu_c".into()))?;
 
         if beta_n < 0.0 {
-            return Err(CannibalismError::InvalidParameter { name: "beta_n".into(), value: beta_n });
+            return Err(CannibalismError::InvalidParameter {
+                name: "beta_n".into(),
+                value: beta_n,
+            });
         }
         if beta_c < 0.0 {
-            return Err(CannibalismError::InvalidParameter { name: "beta_c".into(), value: beta_c });
+            return Err(CannibalismError::InvalidParameter {
+                name: "beta_c".into(),
+                value: beta_c,
+            });
         }
         if k_n < 0.0 {
-            return Err(CannibalismError::InvalidParameter { name: "k_n".into(), value: k_n });
+            return Err(CannibalismError::InvalidParameter {
+                name: "k_n".into(),
+                value: k_n,
+            });
         }
         if phi_n_c < 0.0 {
-            return Err(CannibalismError::InvalidParameter { name: "phi_n_c".into(), value: phi_n_c });
+            return Err(CannibalismError::InvalidParameter {
+                name: "phi_n_c".into(),
+                value: phi_n_c,
+            });
         }
         if mu_n < 0.0 {
-            return Err(CannibalismError::InvalidParameter { name: "mu_n".into(), value: mu_n });
+            return Err(CannibalismError::InvalidParameter {
+                name: "mu_n".into(),
+                value: mu_n,
+            });
         }
         if mu_c < 0.0 {
-            return Err(CannibalismError::InvalidParameter { name: "mu_c".into(), value: mu_c });
+            return Err(CannibalismError::InvalidParameter {
+                name: "mu_c".into(),
+                value: mu_c,
+            });
         }
 
         Ok(CannibalismModel {
