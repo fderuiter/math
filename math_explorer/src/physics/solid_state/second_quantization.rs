@@ -114,10 +114,12 @@ impl ParticleStatistics for Fermion {
         // {c_i, c_j^\dagger} = delta_{ij}
         match (op1.op_type, op2.op_type) {
             (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation)
-            | (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
-                if op1.index == op2.index { 1.0 } else { 0.0 }
+            | (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation)
+                if op1.index == op2.index =>
+            {
+                1.0
             }
-            _ => 0.0, // {c, c} = 0, {c^\dagger, c^\dagger} = 0
+            _ => 0.0, // {c, c} = 0, {c^\dagger, c^\dagger} = 0, or i != j
         }
     }
 }
@@ -139,13 +141,17 @@ impl ParticleStatistics for Boson {
         // [a_i, a_j^\dagger] = delta_{ij}
         // [a_i^\dagger, a_j] = -delta_{ij}
         match (op1.op_type, op2.op_type) {
-            (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation) => {
-                if op1.index == op2.index { 1.0 } else { 0.0 }
+            (QuantumOperatorType::Annihilation, QuantumOperatorType::Creation)
+                if op1.index == op2.index =>
+            {
+                1.0
             }
-            (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation) => {
-                if op1.index == op2.index { -1.0 } else { 0.0 }
+            (QuantumOperatorType::Creation, QuantumOperatorType::Annihilation)
+                if op1.index == op2.index =>
+            {
+                -1.0
             }
-            _ => 0.0, // [a, a] = 0, [a^\dagger, a^\dagger] = 0
+            _ => 0.0, // [a, a] = 0, [a^\dagger, a^\dagger] = 0, or i != j
         }
     }
 }
