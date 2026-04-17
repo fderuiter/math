@@ -15,7 +15,15 @@ mod tests {
         let mu_n = 0.3;
         let mu_c = 0.4;
 
-        let model = CannibalismModel::new(beta_n, beta_c, k_n, phi_n_c, mu_n, mu_c);
+        let model = CannibalismModel::builder()
+            .beta_n(beta_n)
+            .beta_c(beta_c)
+            .k_n(k_n)
+            .phi_n_c(phi_n_c)
+            .mu_n(mu_n)
+            .mu_c(mu_c)
+            .build()
+            .unwrap();
         let state = Vector2::new(n, c);
 
         // Time t is unused in this autonomous system
