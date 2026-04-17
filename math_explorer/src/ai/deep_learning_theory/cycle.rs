@@ -60,6 +60,26 @@ impl<M: Trainable> TrainingLoop<M> {
     ///
     /// # Returns
     /// The scalar loss value.
+    ///
+    /// # Errors
+    /// Returns an `OptimizationError` if the underlying optimizer fails to update the model parameters (e.g., due to dimension mismatch).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use nalgebra::DVector;
+    /// use math_explorer::ai::optimization::SGD;
+    /// use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
+    ///
+    /// let x = DVector::from_vec(vec![1.0, 0.5]);
+    /// let y_true = DVector::from_vec(vec![1.0, 0.0]);
+    ///
+    /// let optimizer = Box::new(SGD::new(0.01));
+    /// let mut trainer = TrainingLoop::new(2, 4, 2, optimizer);
+    ///
+    /// let loss = trainer.train_step(&x, &y_true).unwrap();
+    /// assert!(loss > 0.0);
+    /// ```
     pub fn train_step(
         &mut self,
         x: &Vector,
