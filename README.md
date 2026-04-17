@@ -11,15 +11,24 @@
 
 ---
 
-## Quickstart
+## Install
 
 ```bash
 git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer
 
-# Build the core library
+# Check prerequisites, build the core library, and run tests
+./setup.sh
+```
+
+Alternatively, you can manually build the library using Cargo:
+
+```bash
+# Build the core library manually
 cargo build --release --package math_explorer
 ```
+
+## Usage
 
 ### 1. The Interactive GUI (Recommended)
 We provide a native eframe/egui application to explore simulations (Physics, Biology, Chaos Theory, etc.) interactively.
@@ -134,162 +143,73 @@ classDiagram
 #### Competitive Statistics: Glicko-2
 Implement the same rating system used by professional esports leagues.
 
-```rust
-use math_explorer::pure_math::statistics::glicko2::{
-    GlickoPlayer, Rating, RatingDeviation, Volatility, MatchResult, update_rating, SystemConstant
-};
-
-fn main() {
-    // Player wins against a 1700-rated opponent
-    let player = GlickoPlayer::default(); // 1500 rating
-    let opponent = GlickoPlayer::new(
-        Rating::new(1700.0).unwrap(),
-        RatingDeviation::new(300.0).unwrap(),
-        Volatility::default()
-    );
-
-    let result = MatchResult::new(opponent, 1.0).unwrap(); // Win
-    let tau = SystemConstant::new(0.5).unwrap();
-
-    let new_player = update_rating(&player, &[result], &tau).unwrap();
-    println!("New Rating: {:.0}", new_player.rating.value());
-}
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example glicko2_demo
 ```
+
+*(See `math_explorer/examples/glicko2_demo.rs` for implementation details)*
 
 #### Biology & Neuroscience
 Simulate the electrical characteristics of excitable cells using the Hodgkin-Huxley model.
 
-```rust
-use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
-
-fn main() {
-    // Initialize a neuron at resting potential (-65.0 mV)
-    let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
-    let dt = 0.01; // 0.01 ms time step
-
-    // Simulate for 10ms with 10 uA/cm^2 current injection
-    for _ in 0..1000 {
-        neuron.update(dt, 10.0);
-        if neuron.v() > 0.0 {
-            println!("Action Potential Generated!");
-            break;
-        }
-    }
-}
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example hodgkin_huxley_demo
 ```
+
+*(See `math_explorer/examples/hodgkin_huxley_demo.rs` for implementation details)*
 
 #### Artificial Intelligence
 Implement state-of-the-art architectures from scratch.
 
 **Example: Transformer Encoder**
-```rust
-use math_explorer::ai::transformer::Encoder;
-use nalgebra::DMatrix;
-
-fn main() {
-    // Initialize an Encoder stack: 2 layers, 512 embedding dim, 8 heads, 2048 FF dim
-    let encoder = Encoder::new(2, 512, 8, 2048);
-
-    // Dummy input: Sequence length 10
-    let input = DMatrix::zeros(10, 512);
-    let _encoded = encoder.forward(input, None);
-}
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example transformer_demo
 ```
+
+*(See `math_explorer/examples/transformer_demo.rs` for implementation details)*
 
 #### Climate Modeling: CERA Framework
 Train a model to learn climate-invariant representations using the CERA architecture.
 
-```rust
-use math_explorer::climate::cera::Cera;
-use math_explorer::climate::config::CeraConfig;
-use math_explorer::climate::training::CeraTrainer;
-use nalgebra::DMatrix;
-
-fn main() {
-    // 1. Configure the architecture
-    let config = CeraConfig {
-        in_channels: 2,         // e.g., Temp, Humidity
-        latent_channels: 4,     // Compressed state
-        aligned_channels: 2,    // Invariant state
-        num_levels: 10,         // Atmospheric levels
-        output_size: 5,         // Prediction target
-        epochs: 1,
-        batch_size: 2,
-        learning_rate: 0.01,
-        lambda_pred: 1.0,
-        lambda_emd: 0.1,
-    };
-
-    // 2. Initialize Model & Trainer
-    let mut model = Cera::new(config).expect("Invalid config");
-    let mut trainer = CeraTrainer::new(&mut model);
-
-    // 3. Train on synthetic data (Batch Size * Num Levels, Channels)
-    let inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
-    let targets = DMatrix::<f32>::from_fn(2, 5, |_, _| rand::random());
-    let warm_inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
-
-    trainer.train(&inputs, &targets, &warm_inputs);
-}
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example cera_demo
 ```
+
+*(See `math_explorer/examples/cera_demo.rs` for implementation details)*
 
 #### Applied Mathematics: Favoritism
 A mathematical model to determine who the favorite child is.
 
-```rust
-use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
-
-fn main() {
-    let mut inputs = FavoritismInputs::default();
-    inputs.personality.wealth = 10.0;          // High wealth factor
-    inputs.social.helped_during_crisis = true; // High social utility
-
-    let score = calculate_favoritism_score(&inputs);
-    println!("Favoritism Score: {}", score); // Higher is better
-}
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example favoritism_demo
 ```
+
+*(See `math_explorer/examples/favoritism_demo.rs` for implementation details)*
 
 #### Pure Math: Abstract Algebra
 Construct Finite Fields ($\mathbb{F}_p$) and perform polynomial arithmetic.
 
-```rust
-use math_explorer::pure_math::algebra::{Fp, Polynomial};
-
-fn main() {
-    // 1. Arithmetic in Finite Field F_7
-    let a = Fp::<7>::new(3);
-    let b = Fp::<7>::new(5);
-    // (3 * 5) % 7 = 15 % 7 = 1
-    assert_eq!(a * b, Fp::<7>::new(1));
-
-    // 2. Polynomials over F_7: P(x) = 3x^2 + 5
-    let _p = Polynomial::new(vec![b, Fp::<7>::new(0), a]);
-}
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example algebra_demo
 ```
+
+*(See `math_explorer/examples/algebra_demo.rs` for implementation details)*
 
 #### Pure Math: Tensor Calculus
 Compute Christoffel symbols for a curved manifold (e.g., a sphere).
 
-```rust
-use math_explorer::pure_math::tensor::{christoffel_symbols, RiemannianMetric};
-use nalgebra::{DMatrix, DVector};
-
-fn main() {
-    // Metric for a 2D sphere (Radius = 1.0)
-    let metric = RiemannianMetric::new(|p: &DVector<f64>| {
-        let theta = p[0];
-        let g11 = 1.0;
-        let g22 = theta.sin().powi(2);
-        DMatrix::from_vec(2, 2, vec![g11, 0.0, 0.0, g22])
-    });
-
-    // Compute symbols at theta = 45 degrees
-    let point = DVector::from_vec(vec![std::f64::consts::FRAC_PI_4, 0.0]);
-    let gammas = christoffel_symbols(&metric, &point).expect("Singular metric");
-
-    println!("Gamma^theta_phi_phi: {:.4}", gammas[0][(1, 1)]); // -0.5000
-}
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example tensor_demo
 ```
+
+*(See `math_explorer/examples/tensor_demo.rs` for implementation details)*
 
 #### Physics: Chaos Theory
 Explore the Lorenz System and Lyapunov exponents.

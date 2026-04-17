@@ -269,7 +269,5 @@ pub fn calculate_log_mass_from_absolute_magnitude(
 /// The calculated redshift.
 #[deprecated(note = "Use GalaxyModel::redshift_from_log_mass with strong types instead")]
 pub fn calculate_redshift_from_log_mass(log_mass_solar: f64, model: &impl GalaxyModel) -> f64 {
-    model
-        .redshift_from_log_mass(SolarMassLog(log_mass_solar))
-        .0
+    model.redshift_from_log_mass(SolarMassLog(log_mass_solar)).0
 }
