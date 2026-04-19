@@ -67,7 +67,7 @@ const VOLATILITY_TOLERANCE: f64 = 1e-6;
 /// # References
 ///
 /// Glickman, M. E. (2012). "Example of the Glicko-2 system."
-/// http://www.glicko.net/glicko/glicko2.pdf
+/// <http://www.glicko.net/glicko/glicko2.pdf>
 pub fn update_rating(
     player: &GlickoPlayer,
     results: &[MatchResult],

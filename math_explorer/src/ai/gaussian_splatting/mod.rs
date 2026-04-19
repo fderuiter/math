@@ -83,10 +83,10 @@
 //!
 //! ## Modules
 //!
-//! *   **[structs](structs)**: Core data structures (`Gaussian3D`, `Gaussian2D`, `Scene`).
-//! *   **[projection](projection)**: Math for projecting 3D covariance to 2D using the Jacobian of the view transform.
-//! *   **[rendering](rendering)**: Alpha blending and opacity evaluation logic.
-//! *   **[optimization](optimization)**: Adaptive density control strategies (Split vs Clone).
+//! *   **[structs]**: Core data structures (`Gaussian3D`, `Gaussian2D`, `Scene`).
+//! *   **[projection]**: Math for projecting 3D covariance to 2D using the Jacobian of the view transform.
+//! *   **[rendering]**: Alpha blending and opacity evaluation logic.
+//! *   **[optimization]**: Adaptive density control strategies (Split vs Clone).
 
 pub mod optimization;
 pub mod projection;
