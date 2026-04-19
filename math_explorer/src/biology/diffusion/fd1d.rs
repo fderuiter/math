@@ -27,11 +27,11 @@ impl FiniteDifference1D {
     }
 }
 
-impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
+impl crate::biology::reaction_diffusion::model::DiffusionModel for FiniteDifference1D {
     fn apply(
         &self,
-        state: &crate::biology::reaction_diffusion::ChemicalState,
-        out: &mut crate::biology::reaction_diffusion::ChemicalState,
+        state: &crate::biology::reaction_diffusion::model::ChemicalState,
+        out: &mut crate::biology::reaction_diffusion::model::ChemicalState,
         coeffs: &[f64],
     ) {
         let n_species = state.num_species();

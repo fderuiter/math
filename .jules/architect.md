@@ -1,0 +1,1 @@
+## 2024-04-19 - Module Extraction: Reaction Diffusion | Problem: `reaction_diffusion.rs` was approaching 700 lines, violating the 'No God Files' policy | Decision: Extracted to `reaction_diffusion/` module | Consequence: Separated tests from model logic, improving modularity without changing logic.

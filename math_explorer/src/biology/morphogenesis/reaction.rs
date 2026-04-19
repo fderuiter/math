@@ -1,4 +1,4 @@
-use crate::biology::reaction_diffusion::ReactionModel;
+use crate::biology::reaction_diffusion::model::ReactionModel;
 
 /// Defines the reaction kinetics for an N-component reaction-diffusion system.
 pub trait ReactionKinetics<const N: usize = 2> {
@@ -71,8 +71,8 @@ impl ReactionModel for SchnakenbergKinetics {
 
     fn add_reaction_batch(
         &self,
-        state: &crate::biology::reaction_diffusion::ChemicalState,
-        rates: &mut crate::biology::reaction_diffusion::ChemicalState,
+        state: &crate::biology::reaction_diffusion::model::ChemicalState,
+        rates: &mut crate::biology::reaction_diffusion::model::ChemicalState,
     ) {
         if state.num_species() < 2 {
             return;

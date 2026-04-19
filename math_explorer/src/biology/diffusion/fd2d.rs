@@ -74,11 +74,11 @@ impl FiniteDifference2D {
     }
 }
 
-impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
+impl crate::biology::reaction_diffusion::model::DiffusionModel for FiniteDifference2D {
     fn apply(
         &self,
-        state: &crate::biology::reaction_diffusion::ChemicalState,
-        out: &mut crate::biology::reaction_diffusion::ChemicalState,
+        state: &crate::biology::reaction_diffusion::model::ChemicalState,
+        out: &mut crate::biology::reaction_diffusion::model::ChemicalState,
         coeffs: &[f64],
     ) {
         let n_species = state.num_species();
@@ -316,7 +316,7 @@ mod tests_2d {
 
     #[test]
     fn test_diffusion_model_2d() {
-        use crate::biology::reaction_diffusion::{ChemicalState, DiffusionModel};
+        use crate::biology::reaction_diffusion::model::{ChemicalState, DiffusionModel};
 
         let width = 5;
         let height = 5;
