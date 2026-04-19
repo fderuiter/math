@@ -8,7 +8,12 @@ pub struct MergeSorter;
 impl<T: Ord + Clone> Sorter<T> for MergeSorter {
     fn sort(&self, data: &[T]) -> SortingResult<T> {
         let mut stats = SortingStats::default();
-        let sorted_data = merge_sort_recursive(data, &mut stats);
+        let mut sorted_data = data.to_vec();
+        if !sorted_data.is_empty() {
+            let mut temp = sorted_data.clone();
+            let n = sorted_data.len();
+            merge_sort_recursive(&mut sorted_data, &mut temp, 0, n, &mut stats);
+        }
         SortingResult { sorted_data, stats }
     }
 }
@@ -34,48 +39,62 @@ pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     MergeSorter.sort(data)
 }
 
-fn merge_sort_recursive<T: Ord + Clone>(data: &[T], stats: &mut SortingStats) -> Vec<T> {
-    let n = data.len();
-    if n <= 1 {
-        return data.to_vec();
+fn merge_sort_recursive<T: Ord + Clone>(
+    arr: &mut [T],
+    temp: &mut [T],
+    left: usize,
+    right: usize,
+    stats: &mut SortingStats,
+) {
+    if right - left <= 1 {
+        return;
     }
 
-    let mid = n / 2;
-    let left = merge_sort_recursive(&data[0..mid], stats);
-    let right = merge_sort_recursive(&data[mid..n], stats);
+    let mid = left + (right - left) / 2;
+    merge_sort_recursive(temp, arr, left, mid, stats);
+    merge_sort_recursive(temp, arr, mid, right, stats);
 
-    merge(&left, &right, stats)
+    merge(arr, temp, left, mid, right, stats);
 }
 
-fn merge<T: Ord + Clone>(left: &[T], right: &[T], stats: &mut SortingStats) -> Vec<T> {
-    let mut result = Vec::with_capacity(left.len() + right.len());
-    let (mut i, mut j) = (0, 0);
+fn merge<T: Ord + Clone>(
+    arr: &mut [T],
+    temp: &[T],
+    left: usize,
+    mid: usize,
+    right: usize,
+    stats: &mut SortingStats,
+) {
+    let mut i = left;
+    let mut j = mid;
+    let mut k = left;
 
-    while i < left.len() && j < right.len() {
+    while i < mid && j < right {
         stats.comparisons += 1;
-        if left[i] <= right[j] {
-            result.push(left[i].clone());
-            stats.assignments += 1; // Logic push
+        if temp[i] <= temp[j] {
+            arr[k] = temp[i].clone();
+            stats.assignments += 1;
             i += 1;
         } else {
-            result.push(right[j].clone());
+            arr[k] = temp[j].clone();
             stats.assignments += 1;
             j += 1;
         }
+        k += 1;
     }
 
-    while i < left.len() {
-        result.push(left[i].clone());
+    while i < mid {
+        arr[k] = temp[i].clone();
         stats.assignments += 1;
         i += 1;
+        k += 1;
     }
-    while j < right.len() {
-        result.push(right[j].clone());
+    while j < right {
+        arr[k] = temp[j].clone();
         stats.assignments += 1;
         j += 1;
+        k += 1;
     }
-
-    result
 }
 
 /// Strategy implementation for Quick Sort.
@@ -130,7 +149,12 @@ fn partition<T: Ord + Clone>(
     high: usize,
     stats: &mut SortingStats,
 ) -> usize {
-    // We choose the last element as pivot (Lomuto partition scheme)
+    // To prevent O(n^2) behavior on sorted/reverse-sorted data,
+    // we swap the middle element to the end and use it as pivot (Lomuto scheme).
+    let mid = low + (high - low) / 2;
+    arr.swap(mid, high);
+    stats.swaps += 1;
+
     let pivot_index = high;
     let mut i = low;
     for j in low..high {
