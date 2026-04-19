@@ -8,7 +8,7 @@ pub struct NeuralNetworkVizTool {
     neurons: Vec<HodgkinHuxleyNeuron>,
     /// Positions for drawing the nodes in a circle
     positions: Vec<[f32; 2]>,
-    /// Adjacency matrix: weights[i][j] is the weight of connection from j to i
+    /// Adjacency matrix: `weights[i][j]` is the weight of connection from j to i
     weights: Vec<Vec<f64>>,
     /// Current external input injected to each neuron
     external_input: Vec<f64>,
