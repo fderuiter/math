@@ -101,6 +101,10 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// - `DimensionMismatch`: If matrix size doesn't match state_types length
     /// - `NotStochastic`: If matrix rows don't sum to 1
+    ///
+    /// # Panics
+    ///
+    /// Panics if the generic real field `T` fails to instantiate from the `f64` value `1e-10`.
     pub fn new(transition_matrix: DMatrix<T>, state_types: Vec<StateType>) -> Result<Self> {
         let n = transition_matrix.nrows();
 
@@ -366,6 +370,32 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// The stationary distribution as a probability vector, or None if it
     /// doesn't exist or convergence fails.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the generic real field `T` fails to instantiate from a `usize` (number of absorbing states or number of total states) or an `f64` (`1e-12`).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use math_explorer::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
+    /// use nalgebra::DMatrix;
+    ///
+    /// // A simple 2-state ergodic chain
+    /// let transition_matrix = DMatrix::from_row_slice(2, 2, &[
+    ///     0.8, 0.2,
+    ///     0.4, 0.6,
+    /// ]);
+    /// let state_types = vec![StateType::Transient, StateType::Transient];
+    /// let chain = MarkovChain::<f64>::new(transition_matrix, state_types).unwrap();
+    ///
+    /// let pi = chain.stationary_distribution().unwrap();
+    /// // The stationary distribution solves πP = π.
+    /// // Solving the system: 0.8*π0 + 0.4*π1 = π0 => 0.4*π1 = 0.2*π0 => π0 = 2*π1.
+    /// // Since π0 + π1 = 1, we get π0 ≈ 0.666... and π1 ≈ 0.333...
+    /// assert!((pi[0] - 2.0 / 3.0).abs() < 1e-10);
+    /// assert!((pi[1] - 1.0 / 3.0).abs() < 1e-10);
+    /// ```
     pub fn stationary_distribution(&self) -> Option<DVector<T>> {
         // For chains with absorbing states, only absorbing states have non-zero
         // stationary probability
