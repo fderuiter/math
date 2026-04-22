@@ -5,8 +5,8 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 ## Phase 1: Workspace Foundation & Safe Migration
 *Goal: Establish the physical folder boundaries without breaking Git history or compilation paths.*
 
-- [ ] **1.1 Directory Setup**
-  - [ ] Run `mkdir crates apps` at the repository root.
+- [x] **1.1 Directory Setup**
+  - [x] Run `mkdir crates apps` at the repository root.
 - [ ] **1.2 Git-Aware File Moves** (CRITICAL: Use `git mv` to preserve history)
   - [ ] Run `git mv math_explorer crates/`
   - [ ] Run `git mv math_explorer_gui apps/`
