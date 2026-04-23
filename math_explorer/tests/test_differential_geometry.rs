@@ -4,9 +4,7 @@ use math_explorer::pure_math::differential_geometry::mean_curvature_flow::{
     DiscreteSurface, MeanCurvatureFlow,
 };
 use math_explorer::pure_math::differential_geometry::operators::laplace_beltrami;
-use math_explorer::pure_math::differential_geometry::surface::{
-    ParametricSurface, Sphere, SurfaceAnalysis, Torus,
-};
+use math_explorer::pure_math::differential_geometry::surface::{Sphere, SurfaceAnalysis, Torus};
 use nalgebra::Point3;
 use std::f64::consts::PI;
 
@@ -141,7 +139,9 @@ fn test_mean_curvature_flow_shrinkage() {
 
     let mut points = vec![vec![Point3::origin(); nv]; nu];
 
+    #[allow(clippy::needless_range_loop)]
     for i in 0..nu {
+        #[allow(clippy::needless_range_loop)]
         for j in 0..nv {
             let u = 2.0 * PI * i as f64 / nu as f64;
             // Avoid exact 0 and PI to prevent singularities in parameterization derivatives

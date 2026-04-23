@@ -146,7 +146,6 @@ impl<S: FitnessStrategy> OdeSystem<DVector<f64>> for ReplicatorDynamics<S> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pure_math::analysis::ode::Euler;
 
     #[test]
     fn test_rock_paper_scissors() {

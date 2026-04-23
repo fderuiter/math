@@ -72,7 +72,11 @@ impl ExplorerTab for FavoritismTab {
                     {
                         self.selected_child_index = Some(i);
                     }
-                    if ui.small_button("❌").clicked() {
+                    if ui
+                        .small_button("❌")
+                        .on_hover_text("Remove family member")
+                        .clicked()
+                    {
                         to_remove = Some(i);
                     }
                 });
