@@ -88,7 +88,7 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
         param: &mut DVector<T>,
         grad: &DVector<T>,
     ) -> Result<(), OptimizationError> {
-        *param -= grad.clone() * self.learning_rate;
+        *param -= grad * self.learning_rate;
         Ok(())
     }
 
@@ -98,7 +98,7 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
         param: &mut DMatrix<T>,
         grad: &DMatrix<T>,
     ) -> Result<(), OptimizationError> {
-        *param -= grad.clone() * self.learning_rate;
+        *param -= grad * self.learning_rate;
         Ok(())
     }
 }
@@ -171,12 +171,12 @@ where
 
         // Update biased first moment estimate
         // m = beta1 * m + (1 - beta1) * grad
-        state.m = state.m.clone() * beta1 + grad.clone() * (one - beta1);
+        state.m = &state.m * beta1 + grad * (one - beta1);
 
         // Update biased second raw moment estimate
         // v = beta2 * v + (1 - beta2) * grad^2
         let grad_sq = grad.map(|g| g * g);
-        state.v = state.v.clone() * beta2 + grad_sq * (one - beta2);
+        state.v = &state.v * beta2 + grad_sq * (one - beta2);
 
         // Compute bias-corrected first moment estimate
         // m_hat = m / (1 - beta1^t)
@@ -216,10 +216,10 @@ where
         // Convert grad to DMatrix for consistent operations with state
         let grad_mat = DMatrix::from_column_slice(rows, cols, grad.as_slice());
 
-        state.m = state.m.clone() * beta1 + grad_mat.clone() * (one - beta1);
+        state.m = &state.m * beta1 + &grad_mat * (one - beta1);
 
         let grad_sq = grad_mat.map(|g| g * g);
-        state.v = state.v.clone() * beta2 + grad_sq * (one - beta2);
+        state.v = &state.v * beta2 + grad_sq * (one - beta2);
 
         let m_hat = &state.m / (one - beta1.powf(t_val));
         let v_hat = &state.v / (one - beta2.powf(t_val));
