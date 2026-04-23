@@ -1,0 +1,84 @@
+use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
+use std::time::Instant;
+
+fn main() {
+    println!("⏱️  Profiler Benchmark Starting...");
+
+    // 1. Micro-benchmark: Point3D::normalize
+    println!("\n[Micro-benchmark] Point3D::normalize");
+    let count = 50_000_000;
+    let mut vectors = Vec::with_capacity(count);
+
+    // Generate deterministic vectors
+    let mut seed: u64 = 0xDEADBEEF;
+    for _ in 0..count {
+        seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+        let x = ((seed >> 16) & 0xFFFF) as f32 / 65536.0;
+        seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+        let y = ((seed >> 16) & 0xFFFF) as f32 / 65536.0;
+        seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+        let z = ((seed >> 16) & 0xFFFF) as f32 / 65536.0;
+        vectors.push(Point3D::new(x, y, z));
+    }
+
+    let start_micro = Instant::now();
+    let mut checksum = 0.0; // Prevent optimization
+    for v in &vectors {
+        let n = v.normalize();
+        checksum += n.x + n.y + n.z;
+    }
+    let duration_micro = start_micro.elapsed();
+    println!("Processed {} vectors in {:?}", count, duration_micro);
+    println!(
+        "Average time per vector: {:.4} ns",
+        (duration_micro.as_nanos() as f64) / (count as f64)
+    );
+    println!("Checksum: {}", checksum); // Ensure result is used
+
+    // 2. Macro-benchmark: extract_isosurface
+    println!("\n[Macro-benchmark] extract_isosurface (Sphere SDF)");
+
+    let size = 128; // 128^3 = ~2 million voxels
+    println!("Grid size: {}x{}x{}", size, size, size);
+
+    let mut data = Vec::with_capacity(size * size * size);
+    let center = size as f32 / 2.0;
+    let radius = size as f32 / 3.0;
+    let radius_sq = radius * radius;
+
+    // Generate Sphere SDF
+    for z in 0..size {
+        for y in 0..size {
+            for x in 0..size {
+                let dx = x as f32 - center;
+                let dy = y as f32 - center;
+                let dz = z as f32 - center;
+                let dist_sq = dx * dx + dy * dy + dz * dz;
+                // Value is negative inside, positive outside (or vice versa, just needs to cross 0)
+                data.push(dist_sq - radius_sq);
+            }
+        }
+    }
+
+    let grid = VoxelGrid {
+        width: size,
+        height: size,
+        depth: size,
+        data,
+        voxel_size: Point3D::new(1.0, 1.0, 1.0),
+        origin: Point3D::new(0.0, 0.0, 0.0),
+    };
+
+    // Warmup
+    let _ = extract_isosurface(&grid, 0.0);
+
+    let start_macro = Instant::now();
+    let mesh = extract_isosurface(&grid, 0.0).expect("Failed to extract surface");
+    let duration_macro = start_macro.elapsed();
+
+    println!(
+        "Extracted {} triangles in {:?}",
+        mesh.triangles.len(),
+        duration_macro
+    );
+}
