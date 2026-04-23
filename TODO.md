@@ -7,9 +7,9 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 
 - [x] **1.1 Directory Setup**
   - [x] Run `mkdir crates apps` at the repository root.
-- [x] **1.2 Git-Aware File Moves** (CRITICAL: Use `git mv` to preserve history)
-  - [x] Run `git mv math_explorer crates/`
-  - [x] Run `git mv math_explorer_gui apps/`
+- [ ] **1.2 Git-Aware File Moves** (CRITICAL: Use `git mv` to preserve history)
+  - [ ] Run `git mv math_explorer crates/`
+  - [ ] Run `git mv math_explorer_gui apps/`
 - [ ] **1.3 Root Workspace Configuration**
   - [ ] Create/Update `Cargo.toml` at the repository root.
   - [ ] Add `[workspace]` section.
