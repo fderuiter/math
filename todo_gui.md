@@ -9,7 +9,7 @@ This document outlines the planned roadmap for `math_explorer_gui`, aiming to co
   - Ensure `math_explorer_gui` relies on `eframe` (egui).
   - Create `index.html` in `apps/math_explorer_gui/`.
   - Install Trunk (`cargo install trunk`).
-- [ ] **1.2 Link the Engine**
+- [x] **1.2 Link the Engine**
   - Add `math_explorer` to the GUI's `Cargo.toml` with specific features enabled (e.g., `features = ["physics", "math"]`).
 - [ ] **1.3 Implement First Trait**
   - Choose a simple model (e.g., Lorenz Attractor in `oxidize_physics`).
