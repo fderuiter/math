@@ -10,7 +10,7 @@ mod tests {
         solver::FluidParticleSystem,
         types::{FlowState, FluidProperties, SpatialGradients},
     };
-    use crate::pure_math::analysis::ode::{Euler as OdeEuler, Solver, SolverExt};
+    use crate::pure_math::analysis::ode::{Euler as OdeEuler, SolverExt};
     use nalgebra::{Matrix3, Vector3};
 
     #[test]
