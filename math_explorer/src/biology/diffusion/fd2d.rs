@@ -86,8 +86,12 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
             return;
         }
 
-        // Ensure grid size matches
-        let n_grid = self.width * self.height;
+        // Security Check: Use checked multiplication to avoid integer overflow
+        let n_grid = self
+            .width
+            .checked_mul(self.height)
+            .expect("Grid dimensions overflow usize");
+
         // In release mode, these checks are cheap. In debug, they catch errors.
         // We use assert! because dimension mismatch is a critical bug.
         assert_eq!(
@@ -120,12 +124,19 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
         if N == 0 {
             return;
         }
-        let n = self.width * self.height;
+
+        // Security Check: Use checked multiplication to avoid integer overflow
+        let n = self
+            .width
+            .checked_mul(self.height)
+            .expect("Grid dimensions overflow usize");
+
         if n == 0 {
             return;
         }
+
         // Basic check for one buffer length to ensure safety
-        if state[0].len() != n {
+        if state[0].len() < n {
             panic!("Buffer size mismatch in FiniteDifference2D");
         }
 
@@ -142,7 +153,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
             c_center[s] = -2.0 * (cx[s] + cy[s]);
         }
 
-        // Verify all buffers are large enough to avoid UB in unsafe block
+        // Verify all buffers are large enough to avoid UB or panics
         for (s, buffer) in state.iter().enumerate().take(N) {
             assert!(
                 buffer.len() >= n,
@@ -162,18 +173,17 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
                     let u = state[s];
                     // SAFETY: All indices are guaranteed valid by iter_stencil_2d logic
                     // and we explicitly asserted lengths above.
-                    unsafe {
-                        let u_curr = *u.get_unchecked(idx);
-                        let u_l = *u.get_unchecked(idx_l);
-                        let u_r = *u.get_unchecked(idx_r);
-                        let u_u = *u.get_unchecked(idx_u);
-                        let u_d = *u.get_unchecked(idx_d);
+                    // We transition to safe indexing to guarantee no UB.
+                    let u_curr = u[idx];
+                    let u_l = u[idx_l];
+                    let u_r = u[idx_r];
+                    let u_u = u[idx_u];
+                    let u_d = u[idx_d];
 
-                        let diff = (u_r + u_l) * cx[s] + (u_d + u_u) * cy[s] + u_curr * c_center[s];
+                    let diff = (u_r + u_l) * cx[s] + (u_d + u_u) * cy[s] + u_curr * c_center[s];
 
-                        current_vals[s] = u_curr;
-                        diff_vals[s] = diff;
-                    }
+                    current_vals[s] = u_curr;
+                    diff_vals[s] = diff;
                 }
                 op(idx, current_vals, diff_vals);
             },
@@ -388,7 +398,11 @@ fn apply_2d_stencil_optimized(
     dst: &mut [f64],
     coeff: f64,
 ) {
-    let n = width * height;
+    // Security Check: Use checked multiplication to avoid integer overflow
+    let n = width
+        .checked_mul(height)
+        .expect("Grid dimensions overflow usize");
+
     if src.len() < n || dst.len() < n {
         // In a real system this might panic, but for a helper we just return
         return;
@@ -403,16 +417,15 @@ fn apply_2d_stencil_optimized(
     iter_stencil_2d(width, height, |idx, idx_l, idx_r, idx_u, idx_d| {
         // SAFETY: iter_stencil_2d guarantees indices are within 0..width*height
         // and we checked src/dst lengths >= n.
-        unsafe {
-            let u_curr = *src.get_unchecked(idx);
-            let u_l = *src.get_unchecked(idx_l);
-            let u_r = *src.get_unchecked(idx_r);
-            let u_u = *src.get_unchecked(idx_u);
-            let u_d = *src.get_unchecked(idx_d);
+        // We transition to safe indexing to guarantee no UB.
+        let u_curr = src[idx];
+        let u_l = src[idx_l];
+        let u_r = src[idx_r];
+        let u_u = src[idx_u];
+        let u_d = src[idx_d];
 
-            let diff = (u_r + u_l) * cx + (u_d + u_u) * cy + u_curr * c_center;
-            *dst.get_unchecked_mut(idx) = diff;
-        }
+        let diff = (u_r + u_l) * cx + (u_d + u_u) * cy + u_curr * c_center;
+        dst[idx] = diff;
     });
 }
 
