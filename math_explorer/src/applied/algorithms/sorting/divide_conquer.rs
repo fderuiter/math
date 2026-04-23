@@ -9,11 +9,36 @@ impl<T: Ord + Clone> Sorter<T> for MergeSorter {
     fn sort(&self, data: &[T]) -> SortingResult<T> {
         let mut stats = SortingStats::default();
         let mut sorted_data = data.to_vec();
-        if !sorted_data.is_empty() {
+        let n = sorted_data.len();
+
+        if n > 1 {
             let mut temp = sorted_data.clone();
-            let n = sorted_data.len();
-            merge_sort_recursive(&mut sorted_data, &mut temp, 0, n, &mut stats);
+            let mut width = 1;
+            let mut in_temp = false;
+
+            while width < n {
+                let mut i = 0;
+                while i < n {
+                    let left = i;
+                    let mid = std::cmp::min(i + width, n);
+                    let right = std::cmp::min(i + 2 * width, n);
+
+                    if in_temp {
+                        merge(&mut sorted_data, &mut temp, left, mid, right, &mut stats);
+                    } else {
+                        merge(&mut temp, &mut sorted_data, left, mid, right, &mut stats);
+                    }
+                    i += 2 * width;
+                }
+                width *= 2;
+                in_temp = !in_temp;
+            }
+
+            if in_temp {
+                sorted_data = temp;
+            }
         }
+
         SortingResult { sorted_data, stats }
     }
 }
@@ -39,27 +64,9 @@ pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     MergeSorter.sort(data)
 }
 
-fn merge_sort_recursive<T: Ord + Clone>(
-    arr: &mut [T],
-    temp: &mut [T],
-    left: usize,
-    right: usize,
-    stats: &mut SortingStats,
-) {
-    if right - left <= 1 {
-        return;
-    }
-
-    let mid = left + (right - left) / 2;
-    merge_sort_recursive(temp, arr, left, mid, stats);
-    merge_sort_recursive(temp, arr, mid, right, stats);
-
-    merge(arr, temp, left, mid, right, stats);
-}
-
 fn merge<T: Ord + Clone>(
     arr: &mut [T],
-    temp: &[T],
+    temp: &mut [T],
     left: usize,
     mid: usize,
     right: usize,
@@ -72,11 +79,11 @@ fn merge<T: Ord + Clone>(
     while i < mid && j < right {
         stats.comparisons += 1;
         if temp[i] <= temp[j] {
-            arr[k] = temp[i].clone();
+            std::mem::swap(&mut arr[k], &mut temp[i]);
             stats.assignments += 1;
             i += 1;
         } else {
-            arr[k] = temp[j].clone();
+            std::mem::swap(&mut arr[k], &mut temp[j]);
             stats.assignments += 1;
             j += 1;
         }
@@ -84,13 +91,13 @@ fn merge<T: Ord + Clone>(
     }
 
     while i < mid {
-        arr[k] = temp[i].clone();
+        std::mem::swap(&mut arr[k], &mut temp[i]);
         stats.assignments += 1;
         i += 1;
         k += 1;
     }
     while j < right {
-        arr[k] = temp[j].clone();
+        std::mem::swap(&mut arr[k], &mut temp[j]);
         stats.assignments += 1;
         j += 1;
         k += 1;
