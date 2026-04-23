@@ -1,3 +1,84 @@
+//! # Physics
+//!
+//! The physics module contains implementations of physical formulas and concepts,
+//! ranging from the quantum scale to the astrophysical scale.
+//!
+//! ## Quick Start: The Butterfly Effect
+//!
+//! Simulate the Lorenz Attractor to observe deterministic chaos and the exponential divergence of nearby trajectories.
+//!
+//! ```rust
+//! use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
+//!
+//! // 1. Initialize the system state close to the attractor
+//! let state = LorenzState::new(10.0, 10.0, 10.0);
+//!
+//! // 2. Build the system with standard chaotic parameters
+//! let mut lorenz = LorenzBuilder::new()
+//!     .sigma(10.0)
+//!     .rho(28.0)
+//!     .beta(8.0 / 3.0)
+//!     .build(state);
+//!
+//! // 3. Step forward in time (dt = 0.01)
+//! lorenz.step(0.01);
+//!
+//! let new_state = lorenz.state.vec;
+//! println!("New State: ({:.2}, {:.2}, {:.2})", new_state.x, new_state.y, new_state.z);
+//! ```
+//!
+//! ## Architecture
+//!
+//! The domains within physics are categorized as follows:
+//!
+//! ```mermaid
+//! graph TD
+//!     Phys[Physics]
+//!
+//!     subgraph "Micro Scales"
+//!     Quant[quantum]
+//!     Nucl[nuclear]
+//!     HE[high_energy]
+//!     SM[standard_model]
+//!     end
+//!
+//!     subgraph "Macro Scales"
+//!     Astro[astrophysics]
+//!     Fluid[fluid_dynamics]
+//!     Chaos[chaos]
+//!     end
+//!
+//!     subgraph "Applied & Materials"
+//!     Solid[solid_state]
+//!     Optics[optics]
+//!     MRI[mri]
+//!     Med[medical]
+//!     end
+//!
+//!     subgraph "Statistical"
+//!     StatMech[stat_mech]
+//!     end
+//!
+//!     Phys --> Quant
+//!     Phys --> Astro
+//!     Phys --> Solid
+//!     Phys --> StatMech
+//! ```
+//!
+//! ## Submodules
+//! - **[astrophysics](astrophysics)**: Galaxy properties, orbital mechanics.
+//! - **[chaos](chaos)**: Non-linear dynamics, Lorenz attractors, Lyapunov exponents.
+//! - **[fluid_dynamics](fluid_dynamics)**: Lattice Boltzmann, potential flow.
+//! - **[high_energy](high_energy)**: Particle physics interactions.
+//! - **[medical](medical)**: Dose calculation and radiation modeling.
+//! - **[mri](mri)**: Bloch simulators, spin dynamics.
+//! - **[nuclear](nuclear)**: Liquid drop model, decays, shell model.
+//! - **[optics](optics)**: Ray tracing, diffraction.
+//! - **[quantum](quantum)**: Clebsch-Gordan coefficients, Schrödinger solvers.
+//! - **[solid_state](solid_state)**: Crystal lattices, band structures.
+//! - **[standard_model](standard_model)**: Elementary particles and interactions.
+//! - **[stat_mech](stat_mech)**: Ising models, partition functions.
+
 pub mod astrophysics;
 pub mod chaos;
 pub mod fluid_dynamics;
@@ -6,15 +87,6 @@ pub mod medical;
 pub mod mri;
 pub mod nuclear;
 pub mod optics;
-/// The physics module contains implementations of physical formulas and concepts.
-///
-/// It currently includes:
-/// - Astrophysics (galaxy properties).
-/// - Quantum mechanics (angular momentum coupling).
-/// - Fluid Dynamics (conservation laws, turbulence).
-/// - Nuclear Physics (properties, liquid drop, shell model, decay, reactions).
-/// - Solid State Physics (Many-Body Physics, Phonons, BCS).
-/// - MRI (Magnetic Resonance Imaging) simulation.
 pub mod quantum;
 pub mod solid_state;
 pub mod standard_model;

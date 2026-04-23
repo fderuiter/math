@@ -123,7 +123,7 @@ mod tests {
         let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
         let init_dist = |p: Position| -> f64 { (-p.0 * p.0 * 5.0).exp() };
 
-        let (u, m) = mfg.solve(cost_fn, term_fn, init_dist, 5);
+        let (u, _m) = mfg.solve(cost_fn, term_fn, init_dist, 5);
 
         assert_eq!(u.nrows(), 50);
         assert_eq!(u.ncols(), 101);
@@ -149,7 +149,7 @@ mod tests {
         let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
         let init_dist = |p: Position| -> f64 { (-p.0 * p.0 * 5.0).exp() };
 
-        let (u, m) = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
+        let (u, _m) = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
 
         assert_eq!(u.nrows(), 50);
         assert_eq!(u.ncols(), 101);
