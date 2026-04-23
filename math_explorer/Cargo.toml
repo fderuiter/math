@@ -35,3 +35,13 @@ version = "0.5.1"
 [[bench]]
 name = "sorting_benchmark"
 harness = false
+
+[features]
+default = []
+ai = []
+applied = []
+biology = []
+climate = []
+epidemiology = []
+physics = []
+pure_math = []
