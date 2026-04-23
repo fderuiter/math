@@ -76,18 +76,15 @@ impl PrimeSpiralWidget {
             is_prime_lookup[p as usize] = true;
         }
 
+        let half_size = (size / 2) as i32;
+
         for (i, &is_prime) in is_prime_lookup
             .iter()
             .enumerate()
             .take(num_pixels + 1)
             .skip(1)
         {
-            // Fix unary negation on usize by casting to i32 first
-            if (-(size as i32) / 2 <= x)
-                && (x <= size as i32 / 2)
-                && (-(size as i32) / 2 <= y)
-                && (y <= size as i32 / 2)
-            {
+            if (-half_size <= x) && (x <= half_size) && (-half_size <= y) && (y <= half_size) {
                 let px = (center_x + x) as usize;
                 let py = (center_y + y) as usize;
 
