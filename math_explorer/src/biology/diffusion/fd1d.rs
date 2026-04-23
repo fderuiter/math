@@ -108,15 +108,14 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
                     let u = state[s];
                     // SAFETY: i is in 1..n-1, so i-1, i, i+1 are in 0..n.
                     // We asserted buffer.len() >= n above.
-                    unsafe {
-                        let u_curr = *u.get_unchecked(i);
-                        let u_prev = *u.get_unchecked(i - 1);
-                        let u_next = *u.get_unchecked(i + 1);
+                    // Transitioning to safe indexing.
+                    let u_curr = u[i];
+                    let u_prev = u[i - 1];
+                    let u_next = u[i + 1];
 
-                        let lap = (u_next - 2.0 * u_curr + u_prev) * d_inv_dx_sq[s];
-                        current_vals[s] = u_curr;
-                        diff_vals[s] = lap;
-                    }
+                    let lap = (u_next - 2.0 * u_curr + u_prev) * d_inv_dx_sq[s];
+                    current_vals[s] = u_curr;
+                    diff_vals[s] = lap;
                 }
                 op(i, current_vals, diff_vals);
             }
