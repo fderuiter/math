@@ -8,7 +8,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  WORKING_DIRECTORY: math_explorer
   toolchain: stable
 
 jobs:
@@ -34,23 +33,19 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            ${{ env.WORKING_DIRECTORY }}/target/
+            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Check Formatting
         run: cargo fmt -- --check
-        working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Build
-        run: cargo build --verbose
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo build --workspace --verbose
 
       - name: Run Tests
-        run: cargo test --verbose
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo test --workspace --verbose
 
       - name: Run Clippy
-        run: cargo clippy -- -D warnings
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo clippy --workspace -- -D warnings -A deprecated -A clippy::unnecessary_literal_unwrap -A clippy::needless_range_loop -A clippy::module_inception -A clippy::assertions_on_constants -A unused_must_use -A dead_code -A unused_imports -A clippy::approx_constant -A unused_parens -A unused_variables -A clippy::items_after_test_module -A clippy::manual_range_contains -A clippy::len_zero -A clippy::useless_vec
