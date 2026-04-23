@@ -5,7 +5,7 @@ This document outlines the planned roadmap for `math_explorer_gui`, aiming to co
 ## Phase 1: Web GUI Integration
 *Goal: Connect the frontend to the WASM-compiled core engine.*
 
-- [ ] **1.1 Web Build Setup**
+- [x] **1.1 Web Build Setup**
   - Ensure `math_explorer_gui` relies on `eframe` (egui).
   - Create `index.html` in `apps/math_explorer_gui/`.
   - Install Trunk (`cargo install trunk`).
