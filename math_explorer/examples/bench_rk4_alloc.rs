@@ -8,6 +8,7 @@ struct SimpleState {
 }
 
 impl SimpleState {
+    #[allow(dead_code)]
     fn new(size: usize) -> Self {
         Self {
             data: vec![0.0; size],

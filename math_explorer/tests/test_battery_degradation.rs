@@ -1,9 +1,11 @@
 #[cfg(test)]
 mod tests {
     use math_explorer::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
+    #[allow(deprecated)]
     use math_explorer::applied::battery_degradation::{capacity, cycles_to_capacity, n70};
 
     #[test]
+    #[allow(deprecated)]
     fn test_legacy_functions() {
         // Test values from the docstring to verify behavior
         let d = 60.0; // 60% DoD
@@ -49,19 +51,19 @@ mod tests {
         // Create a fictional better battery that lasts twice as long
         let standard = PowerLawModel::standard();
         // alpha * d^beta. Doubling alpha should double cycles if beta stays same
-        let improved = PowerLawModel::new(
+        let _improved = PowerLawModel::new(
             standard.n70(DepthOfDischarge::new(100.0).unwrap()).as_f64() * 2.0
                 / 100.0_f64.powf(-1.2639),
             -1.2639,
         );
 
         // A simpler test: just make a new model manually
-        let improved = PowerLawModel::new(2.0e5, -1.2);
+        let improved2 = PowerLawModel::new(2.0e5, -1.2);
         let dod = DepthOfDischarge::new(50.0);
 
         let cycles_std = standard.n70(dod.unwrap()).as_f64();
         let dod2 = DepthOfDischarge::new(50.0).unwrap();
-        let cycles_imp = improved.n70(dod2).as_f64();
+        let cycles_imp = improved2.n70(dod2).as_f64();
 
         assert!(cycles_imp != cycles_std);
     }

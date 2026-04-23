@@ -1,19 +1,28 @@
 # Math Explorer GUI
 
-The graphical front-end for the `math_explorer` library, built using `eframe` (egui framework).
-
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![Framework](https://img.shields.io/badge/framework-egui-blue)
 
-##  Quickstart
+The graphical front-end for the `math_explorer` library, built using `eframe` (egui framework).
 
-To run the application:
+##  Install
+
+Ensure you have the Rust toolchain installed. This crate is part of the `math_explorer` workspace.
+
+```bash
+git clone https://github.com/fderuiter/math-explorer.git
+cd math-explorer
+```
+
+##  Usage
+
+To run the interactive application:
 
 ```bash
 cargo run --release --package math_explorer_gui
 ```
 
-##  Architecture
+##  Config (Architecture)
 
 The GUI follows a modular architecture based on the `ExplorerTab` trait. The main application `MathExplorerApp` manages a list of these tabs and handles navigation.
 
@@ -52,7 +61,7 @@ classDiagram
 *   **`ExplorerTab`**: The trait that all visualization modules must implement. It provides a standard interface for the app to interact with different simulations.
 *   **`math_explorer` Dependency**: All heavy mathematical logic (physics, biology, etc.) resides in the core `math_explorer` crate. The GUI crate should focus **only** on visualization and input handling.
 
-##  Contributing: Adding a New Tab
+##  Contributing
 
 Follow these steps to add a new visualization module (e.g., for `fluid_dynamics`).
 
@@ -104,7 +113,7 @@ In `src/app.rs` (or wherever the tabs are initialized, likely in `MathExplorerAp
 Box::new(FluidDynamicsTab::default()),
 ```
 
-##  Design Principles
+### Design Principles
 
 1.  **Separation of Concerns**: Keep simulation logic in `math_explorer`. If you need a new simulation model, add it to the core library first, then visualize it here.
 2.  **Immediate Mode**: `egui` is an immediate mode GUI. This means the `show()` function is called every frame. Avoid heavy computations directly in `show()`. Use a separate thread or perform small updates per frame.
