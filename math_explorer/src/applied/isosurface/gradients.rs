@@ -60,21 +60,10 @@ pub trait GradientEstimator {
     ///
     /// A [`Point3D`] representing the gradient vector.
     ///
-    /// # Safety
+    /// # Panics
     ///
-    /// This method performs unchecked pointer arithmetic and array indexing.
-    /// The caller must guarantee that:
-    /// 1. `idx` is strictly greater than or equal to `stride_z`.
-    /// 2. `idx + stride_z` is strictly less than `data.len()`.
-    /// 3. The points `idx ± 1`, `idx ± stride_y`, and `idx ± stride_z` all lie
-    ///    within the allocated bounds of `data`.
-    unsafe fn gradient_unchecked(
-        &self,
-        data: &[f32],
-        idx: usize,
-        stride_y: usize,
-        stride_z: usize,
-    ) -> Point3D;
+    /// This method will panic if the bounds check fails.
+    fn gradient_fast(&self, data: &[f32], idx: usize, stride_y: usize, stride_z: usize) -> Point3D;
 }
 
 /// Estimates gradients using the Central Difference method.
@@ -113,21 +102,10 @@ impl GradientEstimator for CentralDifferenceEstimator {
     }
 
     #[inline(always)]
-    unsafe fn gradient_unchecked(
-        &self,
-        data: &[f32],
-        idx: usize,
-        stride_y: usize,
-        stride_z: usize,
-    ) -> Point3D {
-        // SAFETY: The caller guarantees idx is valid and has sufficient padding.
-        unsafe {
-            let dx = (*data.get_unchecked(idx + 1) - *data.get_unchecked(idx - 1)) * 0.5;
-            let dy =
-                (*data.get_unchecked(idx + stride_y) - *data.get_unchecked(idx - stride_y)) * 0.5;
-            let dz =
-                (*data.get_unchecked(idx + stride_z) - *data.get_unchecked(idx - stride_z)) * 0.5;
-            Point3D::new(dx, dy, dz)
-        }
+    fn gradient_fast(&self, data: &[f32], idx: usize, stride_y: usize, stride_z: usize) -> Point3D {
+        let dx = (data[idx + 1] - data[idx - 1]) * 0.5;
+        let dy = (data[idx + stride_y] - data[idx - stride_y]) * 0.5;
+        let dz = (data[idx + stride_z] - data[idx - stride_z]) * 0.5;
+        Point3D::new(dx, dy, dz)
     }
 }
