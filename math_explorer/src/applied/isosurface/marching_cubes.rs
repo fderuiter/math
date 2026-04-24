@@ -126,14 +126,12 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 
                     // 1. Get Values & Index
                     // SAFETY: `base_idx` is computed from `x,y,z` which are strictly less than `width-1`, `height-1`, `depth-1`.
-                    // The offsets applied in `get_cube_values_unchecked` are at most `stride_y + stride_z + 1`.
+                    // The offsets applied in `get_cube_values_fast` are at most `stride_y + stride_z + 1`.
                     // The maximum index accessed is `(depth-2)*stride_z + (height-2)*stride_y + (width-2) + stride_y + stride_z + 1`
                     // which equals `(depth-1)*stride_z + (height-1)*stride_y + (width-1)`.
                     // This is strictly less than `width * height * depth`, which is validated by `validate_grid` to be `<= data.len()`.
-                    // SAFETY: `get_cube_values_unchecked` requires the base_idx to be in bounds up to stride offsets, which is checked here.
-                    let (values, index) = unsafe {
-                        self.get_cube_values_unchecked(base_idx, stride_y, stride_z, threshold)
-                    };
+                    let (values, index) =
+                        self.get_cube_values_fast(base_idx, stride_y, stride_z, threshold);
 
                     // 2. Early Exit if cube doesn't intersect surface
                     if CUBE_EDGE_FLAGS[index] == 0 {
@@ -145,21 +143,13 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     let positions = self.get_cube_positions(x, y, z);
 
                     // 4. Get Normals (with caching)
-                    // SAFETY: `compute_gradients_unchecked` only uses the fast path (calling `gradient_unchecked`)
-                    // when `row_is_interior` and `x_interior` are true. This means `x,y,z` are at least 1 and at most max-2.
-                    // The gradient calculation uses `index - 1` and `index + 1` in all 3 dimensions.
-                    // Since `x,y,z >= 1`, we never underflow. Since `x,y,z <= max-2`, adding the offsets never overflows
-                    // the total bounds `width * height * depth`, matching the guarantees checked by `validate_grid`.
-                    // SAFETY: `compute_gradients_unchecked` relies on bounds being valid, which is explicitly guaranteed above.
-                    let (normals, right_face) = unsafe {
-                        self.compute_gradients_unchecked(
-                            (x, y, z),
-                            base_idx,
-                            (stride_y, stride_z),
-                            row_is_interior,
-                            cached_gradients,
-                        )
-                    };
+                    let (normals, right_face) = self.compute_gradients_fast(
+                        (x, y, z),
+                        base_idx,
+                        (stride_y, stride_z),
+                        row_is_interior,
+                        cached_gradients,
+                    );
                     cached_gradients = Some(right_face);
 
                     let cube_data = CubeData {
@@ -208,15 +198,8 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// This method is highly optimized for the inner loop of the marching cubes algorithm.
     /// It uses unchecked indexing and bitwise operations to compute the active edges.
     ///
-    /// # Safety
-    ///
-    /// The caller must ensure that `base_idx` corresponds to a valid `(x, y, z)` coordinate
-    /// such that `x < width - 1`, `y < height - 1`, and `z < depth - 1`. Specifically,
-    /// `base_idx + stride_y + stride_z + 1` must be strictly less than the length of `self.grid.data`.
-    /// Failure to uphold this invariant will result in undefined behavior via out-of-bounds memory access.
-    ///
     #[inline(always)]
-    unsafe fn get_cube_values_unchecked(
+    fn get_cube_values_fast(
         &self,
         base_idx: usize,
         stride_y: usize,
@@ -230,10 +213,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         // Helper macro to fetch and update index
         macro_rules! fetch {
             ($i:expr, $offset:expr, $bit:expr) => {
-                // SAFETY: Caller guarantees that `base_idx + $offset` is within bounds
-                // of `self.grid.data` by virtue of loop bounds in `extract` and
-                // capacity checks in `validate_grid`.
-                let v = unsafe { *data.get_unchecked(base_idx + $offset) };
+                let v = data[base_idx + $offset];
                 values[$i] = v;
                 if v < threshold {
                     index |= $bit;
@@ -280,18 +260,8 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// This method implements a fast path for interior points where boundary conditions
     /// do not apply, avoiding branch predictions and bounds checks.
     ///
-    /// # Safety
-    ///
-    /// The caller must guarantee the following invariants to prevent undefined behavior:
-    /// 1. If `row_is_interior` is `true`, then `coords.1` (y) and `coords.2` (z) must be strictly
-    ///    greater than `0` and less than `height - 2` and `depth - 2` respectively.
-    /// 2. `coords.0` (x) must not cause an overflow when evaluating bounds logic.
-    /// 3. If the fast path is taken, `base_idx` and `base_idx + 1` (along with their ±1 offsets
-    ///    in all dimensions) must be within the bounds of `self.grid.data`. This means `x, y, z`
-    ///    must be at least 1 and at most their respective `dimension - 2`.
-    ///
     #[inline(always)]
-    unsafe fn compute_gradients_unchecked(
+    fn compute_gradients_fast(
         &self,
         coords: (usize, usize, usize),
         base_idx: usize,
@@ -315,37 +285,21 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
             normals[4] = grads[2];
             normals[7] = grads[3];
         } else if can_use_fast_path {
-            // SAFETY: `can_use_fast_path` ensures that the current coordinates (x, y, z)
-            // are interior nodes (strictly greater than 0 and less than width-2, height-2, depth-2).
-            // Therefore, `base_idx` and its immediate neighbors (±1, ±stride_y, ±stride_z)
-            // are guaranteed to be within the allocated bounds of the `data` slice, fulfilling
-            // the preconditions of `gradient_unchecked`.
-            normals[0] = unsafe {
+            normals[0] = self
+                .estimator
+                .gradient_fast(data, base_idx, stride_y, stride_z);
+            normals[3] =
                 self.estimator
-                    .gradient_unchecked(data, base_idx, stride_y, stride_z)
-            };
-            // SAFETY: Same as above, `can_use_fast_path` ensures `base_idx + stride_y`
-            // and its required offsets remain within the valid interior bounds of `data`.
-            normals[3] = unsafe {
+                    .gradient_fast(data, base_idx + stride_y, stride_y, stride_z);
+            normals[4] =
                 self.estimator
-                    .gradient_unchecked(data, base_idx + stride_y, stride_y, stride_z)
-            };
-            // SAFETY: Same as above, `can_use_fast_path` ensures `base_idx + stride_z`
-            // and its required offsets remain within the valid interior bounds of `data`.
-            normals[4] = unsafe {
-                self.estimator
-                    .gradient_unchecked(data, base_idx + stride_z, stride_y, stride_z)
-            };
-            // SAFETY: Same as above, `can_use_fast_path` ensures `base_idx + stride_y + stride_z`
-            // and its required offsets remain within the valid interior bounds of `data`.
-            normals[7] = unsafe {
-                self.estimator.gradient_unchecked(
-                    data,
-                    base_idx + stride_y + stride_z,
-                    stride_y,
-                    stride_z,
-                )
-            };
+                    .gradient_fast(data, base_idx + stride_z, stride_y, stride_z);
+            normals[7] = self.estimator.gradient_fast(
+                data,
+                base_idx + stride_y + stride_z,
+                stride_y,
+                stride_z,
+            );
         } else {
             normals[0] = self.estimator.gradient(self.grid, x, y, z);
             normals[3] = self.estimator.gradient(self.grid, x, y + 1, z);
@@ -357,36 +311,21 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         // These are always computed anew as they become the next Left Face
         let right_face = if can_use_fast_path {
             let next_x_idx = base_idx + 1;
-            // SAFETY: Similar to the left face, `can_use_fast_path` guarantees that `next_x_idx`
-            // and its required offsets are within the bounds of `data`. Since `x < width - 2`,
-            // `x + 1` is also an interior node (`< width - 1`), meaning `next_x_idx` will have
-            // valid neighbors.
-            let n1 = unsafe {
-                self.estimator
-                    .gradient_unchecked(data, next_x_idx, stride_y, stride_z)
-            };
-            // SAFETY: Same as above, `can_use_fast_path` guarantees `next_x_idx + stride_y`
-            // is interior, so its neighbor offsets are within the bounds of `data`.
-            let n2 = unsafe {
-                self.estimator
-                    .gradient_unchecked(data, next_x_idx + stride_y, stride_y, stride_z)
-            };
-            // SAFETY: Same as above, `can_use_fast_path` guarantees `next_x_idx + stride_z`
-            // is interior, so its neighbor offsets are within the bounds of `data`.
-            let n5 = unsafe {
-                self.estimator
-                    .gradient_unchecked(data, next_x_idx + stride_z, stride_y, stride_z)
-            };
-            // SAFETY: Same as above, `can_use_fast_path` guarantees `next_x_idx + stride_y + stride_z`
-            // is interior, so its neighbor offsets are within the bounds of `data`.
-            let n6 = unsafe {
-                self.estimator.gradient_unchecked(
-                    data,
-                    next_x_idx + stride_y + stride_z,
-                    stride_y,
-                    stride_z,
-                )
-            };
+            let n1 = self
+                .estimator
+                .gradient_fast(data, next_x_idx, stride_y, stride_z);
+            let n2 = self
+                .estimator
+                .gradient_fast(data, next_x_idx + stride_y, stride_y, stride_z);
+            let n5 = self
+                .estimator
+                .gradient_fast(data, next_x_idx + stride_z, stride_y, stride_z);
+            let n6 = self.estimator.gradient_fast(
+                data,
+                next_x_idx + stride_y + stride_z,
+                stride_y,
+                stride_z,
+            );
             [n1, n2, n5, n6]
         } else {
             let n1 = self.estimator.gradient(self.grid, x + 1, y, z);

@@ -169,20 +169,15 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
             offsets[k] = -((cx[k] as isize) + (cy[k] as isize) * (width as isize));
         }
 
-        // 1. Interior (Hot Path) - Loop Splitting & Unsafe optimizations
-        // Avoid bounds checks for x, y, and array access in the bulk of the simulation.
+        // 1. Interior (Hot Path) - Loop Splitting & optimizations
+        // Uses safe indexing
         if width > 2 && height > 2 {
             for y in 1..height - 1 {
                 let idx_row = y * width;
                 for x in 1..width - 1 {
                     let idx = idx_row + x;
 
-                    // SAFETY: `idx` is calculated as `y * width + x`.
-                    // The loops constrain `y` to `1..height - 1` and `x` to `1..width - 1`.
-                    // Therefore, the maximum `idx` is `(height - 2) * width + (width - 2)`,
-                    // which is `< width * height`. We previously asserted that
-                    // `obstacles.len() == width * height`, guaranteeing this access is within bounds.
-                    let is_obstacle = unsafe { *self.state.obstacles.get_unchecked(idx) };
+                    let is_obstacle = self.state.obstacles[idx];
                     if is_obstacle {
                         continue;
                     }
@@ -194,29 +189,16 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                         // So idx + offset >= 0.
                         let prev_idx = (idx as isize + offsets[k]) as usize;
 
-                        // SAFETY: `prev_idx` is calculated by applying a directional offset to `idx`.
-                        // The offsets correspond to the lattice directions (0, ±1) scaled by `width` for y.
-                        // Because `x` and `y` are strictly in the interior (`1..width-1`, `1..height-1`),
-                        // `x + dx` is in `0..width` and `y + dy` is in `0..height`.
-                        // Thus `prev_idx` is strictly `< width * height`. We asserted that `obstacles`, `f`,
-                        // and `f_new` all have length `width * height`.
-                        // Furthermore, `k` and `opp[k]` are both `< Q` by construction of the lattice model.
-                        unsafe {
-                            let source_is_obstacle = *self.state.obstacles.get_unchecked(prev_idx);
+                        let source_is_obstacle = self.state.obstacles[prev_idx];
 
-                            if source_is_obstacle {
-                                // Bounce-back
-                                let bounce_val =
-                                    *self.state.f.get_unchecked(idx).get_unchecked(opp[k]);
-                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
-                                    bounce_val;
-                            } else {
-                                // Stream
-                                let stream_val =
-                                    *self.state.f.get_unchecked(prev_idx).get_unchecked(k);
-                                *self.state.f_new.get_unchecked_mut(idx).get_unchecked_mut(k) =
-                                    stream_val;
-                            }
+                        if source_is_obstacle {
+                            // Bounce-back
+                            let bounce_val = self.state.f[idx][opp[k]];
+                            self.state.f_new[idx][k] = bounce_val;
+                        } else {
+                            // Stream
+                            let stream_val = self.state.f[prev_idx][k];
+                            self.state.f_new[idx][k] = stream_val;
                         }
                     }
                 }
