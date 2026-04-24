@@ -45,7 +45,8 @@ impl QuantumState {
         }
         Self {
             // Need to divide by complex or scale by 1/norm
-            vector: self.vector.clone() / Complex::new(norm, 0.0),
+            // Using a reference avoids an unnecessary heap allocation of the intermediate vector
+            vector: &self.vector / Complex::new(norm, 0.0),
         }
     }
 
@@ -94,7 +95,8 @@ impl QuantumOperator {
     /// \hat{A} = \hat{A}^\dagger
     pub fn is_hermitian(&self, tolerance: f64) -> bool {
         let adjoint = self.matrix.adjoint();
-        (self.matrix.clone() - adjoint).norm() < tolerance
+        // Using a reference avoids an unnecessary heap allocation of the intermediate matrix
+        (&self.matrix - adjoint).norm() < tolerance
     }
 
     /// Calculates the expectation value of the operator for a given state.
