@@ -8,7 +8,16 @@ The core library for the **Math Explorer** project. This crate provides a collec
 
 > **Note:** This is the inner library crate. For the full repository context, see the [Project Root README](../README.md).
 
-##  Modules
+## Install
+
+Add this crate to your dependencies:
+
+```toml
+[dependencies]
+math_explorer = { path = "path/to/math_explorer" }
+```
+
+## Usage
 
 The library is organized into high-level domains:
 
@@ -20,84 +29,52 @@ The library is organized into high-level domains:
 - **`physics`**: Simulations of physical systems, including **Quantum Mechanics**, **Fluid Dynamics**, **Chaos Theory** (Lorenz System), and **MRI Physics**.
 - **`pure_math`**: Foundational mathematics, covering **Algebra**, **Number Theory** (Partitions, Q-Series), **Graph Theory**, and **Differential Geometry**.
 
-##  Usage
-
-Add this crate to your dependencies:
-
-```toml
-[dependencies]
-math_explorer = { path = "path/to/math_explorer" }
-```
-
 ### Example: Computational Biology (Neuroscience)
 
 Simulate a neuron's membrane potential using the Hodgkin-Huxley model:
 
-```rust
-use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
-
-fn main() {
-    // Initialize a neuron at resting potential (-65.0 mV)
-    let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
-    let dt = 0.01; // 0.01 ms time step
-
-    // Simulate for 10ms with 10 uA/cm^2 current injection
-    for step in 0..1000 {
-        neuron.update(dt, 10.0);
-        if step % 100 == 0 {
-            println!("t={:.2}ms, V={:.2}mV", step as f64 * dt, neuron.v);
-        }
-    }
-}
+```bash
+# Run the simulation
+cargo run --example hodgkin_huxley_demo
 ```
+
+*(See `examples/hodgkin_huxley_demo.rs` for implementation details)*
 
 ### Example: Chaos Theory
 
 Calculate the Lyapunov exponent for a Lorenz System:
 
-```rust
-use math_explorer::physics::chaos::lorenz::{LorenzSystem, LorenzState};
-use math_explorer::physics::chaos::metrics::lorenz_lyapunov;
-use math_explorer::pure_math::analysis::ode::RungeKutta4;
-
-fn main() {
-    let initial_state = LorenzState::new(10.0, 10.0, 10.0);
-    let system = LorenzSystem::default_chaotic(initial_state);
-    let solver = RungeKutta4;
-
-    // Calculate the maximal Lyapunov exponent
-    // Args: System, Solver, Initial Vec, Time Step, Iterations, Evolution Time
-    let lambda = lorenz_lyapunov(&system, &solver, initial_state.vec, 0.01, 1000, 1.0).unwrap();
-    println!("Lyapunov Exponent: {:.4}", lambda);
-}
+```bash
+# Run the simulation
+cargo run --example lorenz_chaos
 ```
+
+*(See `examples/lorenz_chaos.rs` for implementation details)*
 
 ### Example: AI Transformer
 
 Initialize a Transformer Encoder stack:
 
-```rust
-use math_explorer::ai::transformer::Encoder;
-use nalgebra::DMatrix;
-
-fn main() {
-    // 6 layers, 512 embedding dim, 8 heads, 2048 feed-forward dim
-    let encoder = Encoder::new(6, 512, 8, 2048);
-
-    // Dummy input: Sequence length 10, Embedding dim 512
-    let input = DMatrix::zeros(10, 512);
-    let output = encoder.forward(input, None);
-}
+```bash
+# Run the simulation
+cargo run --example transformer_demo
 ```
 
-##  Testing
+*(See `examples/transformer_demo.rs` for implementation details)*
 
-To run the comprehensive test suite for all modules:
+## Config
+
+Some modules are intentionally excluded from the default compilation to reduce build times or avoid heavy external dependencies (like LibTorch). These are called "Ghost Modules."
+
+### Generative Turbulence
+A deep learning-based module for generating turbulent flow fields using `tch-rs`. It is excluded by default because it requires a local LibTorch installation.
+
+To learn how to enable it and explore the code, see the [Generative Turbulence Documentation](src/applied/generative_turbulence/README.md).
+
+## Contributing
+
+Please refer to [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root. To run the comprehensive test suite for all modules:
 
 ```bash
 cargo test
 ```
-
-##  Contributing
-
-Please refer to [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root.
