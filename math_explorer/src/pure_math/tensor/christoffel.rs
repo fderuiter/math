@@ -63,14 +63,20 @@ pub fn christoffel_symbols(
     // Precompute metric derivatives: partial_g[k][i, j] = d(g_ij)/dx^k
     let mut partial_g = vec![DMatrix::zeros(dim, dim); dim];
 
-    for k in 0..dim {
-        let mut point_plus = point.clone();
-        point_plus[k] += h;
-        let mut point_minus = point.clone();
-        point_minus[k] -= h;
+    // Bolt Optimization: Allocate point buffer once to prevent 2*dim heap allocations
+    let mut p_eval = point.clone();
 
-        let g_plus = metric.metric_at(&point_plus)?;
-        let g_minus = metric.metric_at(&point_minus)?;
+    for k in 0..dim {
+        // Forward shift
+        p_eval[k] += h;
+        let g_plus = metric.metric_at(&p_eval)?;
+
+        // Backward shift
+        p_eval[k] -= 2.0 * h;
+        let g_minus = metric.metric_at(&p_eval)?;
+
+        // Restore point buffer
+        p_eval[k] += h;
 
         partial_g[k] = (g_plus - g_minus) / (2.0 * h);
     }
