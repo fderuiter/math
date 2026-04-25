@@ -61,22 +61,20 @@ impl<T: Ord + Clone> Sorter<T> for InsertionSorter {
 
         for i in 1..n {
             let mut j = i;
-            let temp = sorted_data[i].clone();
-            stats.assignments += 1; // temp = ...
 
+            // ⚡ Bolt Optimization:
+            // Replaced the `.clone()` based shift with `swap`.
+            // For heap-allocated types (e.g. String), cloning inside this hot loop causes severe allocation overhead.
+            // Using swap fulfills the 'ping-pong' memory strategy, ensuring zero allocations.
             while j > 0 {
                 stats.comparisons += 1;
-                if sorted_data[j - 1] > temp {
-                    sorted_data[j] = sorted_data[j - 1].clone(); // Shift
-                    stats.assignments += 1;
+                if sorted_data[j - 1] > sorted_data[j] {
+                    sorted_data.swap(j - 1, j);
+                    stats.swaps += 1;
                     j -= 1;
                 } else {
                     break;
                 }
-            }
-            if j != i {
-                sorted_data[j] = temp;
-                stats.assignments += 1;
             }
         }
 
