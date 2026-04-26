@@ -64,12 +64,15 @@ impl SolidStateTool for IsingModelTool {
                 ui.separator();
 
                 ui.horizontal(|ui| {
-                    if self.running {
-                        if ui.button("Pause").clicked() {
-                            self.running = false;
-                        }
-                    } else if ui.button("Play").clicked() {
-                        self.running = true;
+                    if ui
+                        .button(if self.running {
+                            "⏸ Pause"
+                        } else {
+                            "▶ Play"
+                        })
+                        .clicked()
+                    {
+                        self.running = !self.running;
                     }
 
                     if ui.button("Reset").clicked() {
