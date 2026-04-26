@@ -85,24 +85,36 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
             ui.heading("Lattice Boltzmann");
             ui.separator();
 
-            if self.running {
-                if ui.button("Pause").clicked() {
-                    self.running = false;
+            ui.horizontal(|ui| {
+                let play_pause_label = if self.running { "⏸ Pause" } else { "▶ Run" };
+                if ui
+                    .button(play_pause_label)
+                    .on_hover_text("Toggle fluid simulation playback")
+                    .clicked()
+                {
+                    self.running = !self.running;
                 }
-            } else if ui.button("Run").clicked() {
-                self.running = true;
-            }
 
-            if ui.button("Reset").clicked() {
-                let width = self.solver.width();
-                let height = self.solver.height();
-                self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.viscosity + 0.5);
-                self.solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
-            }
+                if ui
+                    .button("↺ Reset")
+                    .on_hover_text("Reset the simulation to its initial state")
+                    .clicked()
+                {
+                    let width = self.solver.width();
+                    let height = self.solver.height();
+                    self.solver =
+                        LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.viscosity + 0.5);
+                    self.solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
+                }
 
-            if ui.button("Clear Obstacles").clicked() {
-                self.solver.clear_obstacles();
-            }
+                if ui
+                    .button("Clear Obstacles")
+                    .on_hover_text("Remove all obstacles from the field")
+                    .clicked()
+                {
+                    self.solver.clear_obstacles();
+                }
+            });
 
             ui.separator();
             ui.label("Simulation Parameters");

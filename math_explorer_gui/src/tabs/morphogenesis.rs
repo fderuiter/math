@@ -163,13 +163,24 @@ impl ExplorerTab for MorphogenesisTab {
             ui.separator();
             ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=50).text("Speed (steps/frame)"));
 
-            if ui.button(if self.paused { "Resume" } else { "Pause" }).clicked() {
-                self.paused = !self.paused;
-            }
+            ui.horizontal(|ui| {
+                let play_pause_label = if self.paused { "▶ Resume" } else { "⏸ Pause" };
+                if ui
+                    .button(play_pause_label)
+                    .on_hover_text("Toggle pattern generation playback")
+                    .clicked()
+                {
+                    self.paused = !self.paused;
+                }
 
-            if ui.button("Reset / Randomize").clicked() {
-                 initialize_system(&mut self.system, self.width, self.height);
-            }
+                if ui
+                    .button("↺ Reset / Randomize")
+                    .on_hover_text("Re-initialize the simulation with new random noise")
+                    .clicked()
+                {
+                    initialize_system(&mut self.system, self.width, self.height);
+                }
+            });
 
             ui.separator();
             ui.label("Description:");
