@@ -70,14 +70,17 @@ where
 
     // Compute partial derivatives \partial A^i / \partial u^j
     let mut partial_derivatives = DMatrix::zeros(dim, dim);
-    for j in 0..dim {
-        let mut point_plus = point.clone();
-        point_plus[j] += h;
-        let mut point_minus = point.clone();
-        point_minus[j] -= h;
 
-        let vec_plus = field(&point_plus);
-        let vec_minus = field(&point_minus);
+    // Bolt Optimization: Allocate a single mutable point and shift its coordinate
+    // rather than cloning the point twice per dimension.
+    let mut point_mut = point.clone();
+    for j in 0..dim {
+        point_mut[j] += h;
+        let vec_plus = field(&point_mut);
+
+        point_mut[j] -= 2.0 * h;
+        let vec_minus = field(&point_mut);
+        point_mut[j] += h; // Restore original value
 
         let derivative_vec = (vec_plus.0 - vec_minus.0) / (2.0 * h);
         for i in 0..dim {
@@ -165,14 +168,14 @@ where
 
     // Compute partial derivatives \partial A_i / \partial u^j
     let mut partial_derivatives = DMatrix::zeros(dim, dim);
+    let mut point_mut = point.clone();
     for j in 0..dim {
-        let mut point_plus = point.clone();
-        point_plus[j] += h;
-        let mut point_minus = point.clone();
-        point_minus[j] -= h;
+        point_mut[j] += h;
+        let vec_plus = field(&point_mut);
 
-        let vec_plus = field(&point_plus);
-        let vec_minus = field(&point_minus);
+        point_mut[j] -= 2.0 * h;
+        let vec_minus = field(&point_mut);
+        point_mut[j] += h; // Restore original value
 
         let derivative_vec = (vec_plus.0 - vec_minus.0) / (2.0 * h);
         for i in 0..dim {
