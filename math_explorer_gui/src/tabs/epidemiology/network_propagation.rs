@@ -43,12 +43,16 @@ impl EpidemiologyTool for NetworkPropagationTool {
                 ui.separator();
 
                 if ui
-                    .button(if self.is_running { "Pause" } else { "Start" })
+                    .button(if self.is_running {
+                        "⏸ Pause"
+                    } else {
+                        "▶ Start"
+                    })
                     .clicked()
                 {
                     self.is_running = !self.is_running;
                 }
-                if ui.button("Reset Network").clicked() {
+                if ui.button("↺ Reset Network").clicked() {
                     self.reset_network();
                 }
 

@@ -116,16 +116,16 @@ impl AiTool for TrainingMonitorTool {
 
             if ui
                 .button(if self.is_training {
-                    "Stop Training"
+                    "⏹ Stop Training"
                 } else {
-                    "Start Training"
+                    "▶ Start Training"
                 })
                 .clicked()
             {
                 self.is_training = !self.is_training;
             }
 
-            if ui.button("Reset Model").clicked() {
+            if ui.button("↺ Reset Model").clicked() {
                 self.reset();
             }
 

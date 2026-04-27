@@ -138,7 +138,7 @@ impl ChaosTool for FractalViewer {
             }
 
             ui.separator();
-            if ui.button("Reset View").clicked() {
+            if ui.button("↺ Reset View").clicked() {
                 match self.mode {
                     FractalMode::Mandelbrot => {
                         self.center = Complex::new(-0.75, 0.0);

@@ -163,11 +163,11 @@ impl ExplorerTab for MorphogenesisTab {
             ui.separator();
             ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=50).text("Speed (steps/frame)"));
 
-            if ui.button(if self.paused { "Resume" } else { "Pause" }).clicked() {
+            if ui.button(if self.paused { "▶ Resume" } else { "⏸ Pause" }).clicked() {
                 self.paused = !self.paused;
             }
 
-            if ui.button("Reset / Randomize").clicked() {
+            if ui.button("↺ Reset / Randomize").clicked() {
                  initialize_system(&mut self.system, self.width, self.height);
             }
 

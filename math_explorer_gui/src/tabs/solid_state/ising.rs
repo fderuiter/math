@@ -65,14 +65,14 @@ impl SolidStateTool for IsingModelTool {
 
                 ui.horizontal(|ui| {
                     if self.running {
-                        if ui.button("Pause").clicked() {
+                        if ui.button("⏸ Pause").clicked() {
                             self.running = false;
                         }
-                    } else if ui.button("Play").clicked() {
+                    } else if ui.button("▶ Play").clicked() {
                         self.running = true;
                     }
 
-                    if ui.button("Reset").clicked() {
+                    if ui.button("↺ Reset").clicked() {
                         self.lattice = SpinLattice::new(100, 100);
                         self.texture = None; // Force texture recreation
                     }

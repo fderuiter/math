@@ -106,13 +106,13 @@ impl NeuroscienceTool for NeuralNetworkVizTool {
             ui.separator();
 
             if ui
-                .button(if self.is_running { "Pause" } else { "Start" })
+                .button(if self.is_running { "⏸ Pause" } else { "▶ Start" })
                 .clicked()
             {
                 self.is_running = !self.is_running;
             }
 
-            if ui.button("Reset").clicked() {
+            if ui.button("↺ Reset").clicked() {
                 self.reset();
             }
 

@@ -109,7 +109,7 @@ impl AiTool for QTableInspectorTool {
             if ui.button("Train 1000 Episodes").clicked() {
                 self.train(1000);
             }
-            if ui.button("Reset Agent").clicked() {
+            if ui.button("↺ Reset Agent").clicked() {
                 self.agent = TabularQAgent::new(0.1, 0.9, 0.1);
                 self.episodes_trained = 0;
             }

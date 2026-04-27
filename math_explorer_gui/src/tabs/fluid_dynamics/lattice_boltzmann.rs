@@ -86,14 +86,14 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
             ui.separator();
 
             if self.running {
-                if ui.button("Pause").clicked() {
+                if ui.button("⏸ Pause").clicked() {
                     self.running = false;
                 }
-            } else if ui.button("Run").clicked() {
+            } else if ui.button("▶ Run").clicked() {
                 self.running = true;
             }
 
-            if ui.button("Reset").clicked() {
+            if ui.button("↺ Reset").clicked() {
                 let width = self.solver.width();
                 let height = self.solver.height();
                 self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.viscosity + 0.5);

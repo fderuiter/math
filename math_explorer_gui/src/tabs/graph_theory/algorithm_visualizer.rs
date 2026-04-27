@@ -197,7 +197,7 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
                 ));
 
                 ui.horizontal(|ui| {
-                    if ui.button("Reset").clicked() {
+                    if ui.button("↺ Reset").clicked() {
                         self.animation_step = 0;
                     }
                     if ui.button("Step").clicked() && self.animation_step < self.visit_order.len() {
