@@ -8,19 +8,7 @@ The core library for the **Math Explorer** project. This crate provides a collec
 
 > **Note:** This is the inner library crate. For the full repository context, see the [Project Root README](../README.md).
 
-##  Modules
-
-The library is organized into high-level domains:
-
-- **`ai`**: Artificial Intelligence primitives, including Transformer components (Attention, Encoder/Decoder), NeRF-Diffusion, and Self-Calibration loops.
-- **`applied`**: Mathematical models applied to specific domains like **Clinical Trials** (Win Ratio), **Game Theory**, **Favoritism** (Satire), and **Isosurface Extraction**.
-- **`biology`**: Biological modeling, including **Neuroscience** (Hodgkin-Huxley) and **Morphogenesis**.
-- **`climate`**: Climate modeling tools, featuring the **CERA** autoencoder framework.
-- **`epidemiology`**: Disease modeling, from standard **SIR/SEIR** compartmental models to stochastic network dynamics.
-- **`physics`**: Simulations of physical systems, including **Quantum Mechanics**, **Fluid Dynamics**, **Chaos Theory** (Lorenz System), and **MRI Physics**.
-- **`pure_math`**: Foundational mathematics, covering **Algebra**, **Number Theory** (Partitions, Q-Series), **Graph Theory**, and **Differential Geometry**.
-
-##  Usage
+##  Install
 
 Add this crate to your dependencies:
 
@@ -28,6 +16,8 @@ Add this crate to your dependencies:
 [dependencies]
 math_explorer = { path = "path/to/math_explorer" }
 ```
+
+##  Usage
 
 ### Example: Computational Biology (Neuroscience)
 
@@ -90,14 +80,24 @@ fn main() {
 }
 ```
 
-##  Testing
+##  Config
+
+The library is organized into high-level domains:
+
+- **`ai`**: Artificial Intelligence primitives, including Transformer components (Attention, Encoder/Decoder), NeRF-Diffusion, and Self-Calibration loops.
+- **`applied`**: Mathematical models applied to specific domains like **Clinical Trials** (Win Ratio), **Game Theory**, **Favoritism** (Satire), and **Isosurface Extraction**.
+- **`biology`**: Biological modeling, including **Neuroscience** (Hodgkin-Huxley) and **Morphogenesis**.
+- **`climate`**: Climate modeling tools, featuring the **CERA** autoencoder framework.
+- **`epidemiology`**: Disease modeling, from standard **SIR/SEIR** compartmental models to stochastic network dynamics.
+- **`physics`**: Simulations of physical systems, including **Quantum Mechanics**, **Fluid Dynamics**, **Chaos Theory** (Lorenz System), and **MRI Physics**.
+- **`pure_math`**: Foundational mathematics, covering **Algebra**, **Number Theory** (Partitions, Q-Series), **Graph Theory**, and **Differential Geometry**.
+
+##  Contributing
+
+Please refer to [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root.
 
 To run the comprehensive test suite for all modules:
 
 ```bash
 cargo test
 ```
-
-##  Contributing
-
-Please refer to [CONTRIBUTING.md](../CONTRIBUTING.md) in the project root.
