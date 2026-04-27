@@ -70,14 +70,16 @@ where
 
     // Compute partial derivatives \partial A^i / \partial u^j
     let mut partial_derivatives = DMatrix::zeros(dim, dim);
-    for j in 0..dim {
-        let mut point_plus = point.clone();
-        point_plus[j] += h;
-        let mut point_minus = point.clone();
-        point_minus[j] -= h;
+    let mut current_point = point.clone();
 
-        let vec_plus = field(&point_plus);
-        let vec_minus = field(&point_minus);
+    for j in 0..dim {
+        current_point[j] += h;
+        let vec_plus = field(&current_point);
+
+        current_point[j] -= 2.0 * h;
+        let vec_minus = field(&current_point);
+
+        current_point[j] += h;
 
         let derivative_vec = (vec_plus.0 - vec_minus.0) / (2.0 * h);
         for i in 0..dim {
@@ -165,14 +167,16 @@ where
 
     // Compute partial derivatives \partial A_i / \partial u^j
     let mut partial_derivatives = DMatrix::zeros(dim, dim);
-    for j in 0..dim {
-        let mut point_plus = point.clone();
-        point_plus[j] += h;
-        let mut point_minus = point.clone();
-        point_minus[j] -= h;
+    let mut current_point = point.clone();
 
-        let vec_plus = field(&point_plus);
-        let vec_minus = field(&point_minus);
+    for j in 0..dim {
+        current_point[j] += h;
+        let vec_plus = field(&current_point);
+
+        current_point[j] -= 2.0 * h;
+        let vec_minus = field(&current_point);
+
+        current_point[j] += h;
 
         let derivative_vec = (vec_plus.0 - vec_minus.0) / (2.0 * h);
         for i in 0..dim {
