@@ -191,6 +191,173 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
     }
 }
 
+/// Applies a 2D Finite Difference stencil to a single array.
+///
+/// This helper implements a loop-splitting optimization to separate the hot interior path
+/// from the boundary handling, eliminating conditional checks for the majority of grid points.
+///
+/// # Arguments
+/// * `width` - Grid width.
+/// * `height` - Grid height.
+/// * `dx` - Grid spacing x.
+/// * `dy` - Grid spacing y.
+/// * `src` - Input concentration slice.
+/// * `dst` - Output buffer for Laplacian.
+/// * `coeff` - Diffusion coefficient.
+fn apply_2d_stencil_optimized(
+    width: usize,
+    height: usize,
+    dx: f64,
+    dy: f64,
+    src: &[f64],
+    dst: &mut [f64],
+    coeff: f64,
+) {
+    // Security Check: Use checked multiplication to avoid integer overflow
+    let n = width
+        .checked_mul(height)
+        .expect("Grid dimensions overflow usize");
+
+    if src.len() < n || dst.len() < n {
+        // In a real system this might panic, but for a helper we just return
+        return;
+    }
+
+    let inv_dx_sq = 1.0 / (dx * dx);
+    let inv_dy_sq = 1.0 / (dy * dy);
+    let cx = coeff * inv_dx_sq;
+    let cy = coeff * inv_dy_sq;
+    let c_center = -2.0 * (cx + cy);
+
+    iter_stencil_2d(width, height, |idx, idx_l, idx_r, idx_u, idx_d| {
+        // SAFETY: iter_stencil_2d guarantees indices are within 0..width*height
+        // and we checked src/dst lengths >= n.
+        // We transition to safe indexing to guarantee no UB.
+        let u_curr = src[idx];
+        let u_l = src[idx_l];
+        let u_r = src[idx_r];
+        let u_u = src[idx_u];
+        let u_d = src[idx_d];
+
+        let diff = (u_r + u_l) * cx + (u_d + u_u) * cy + u_curr * c_center;
+        dst[idx] = diff;
+    });
+}
+
+/// Iterates over a 2D grid, providing indices for the center and its 4 neighbors (Neumann BC).
+///
+/// This helper implements loop splitting to optimize interior access.
+///
+/// # Arguments
+/// * `width` - Grid width.
+/// * `height` - Grid height.
+/// * `op` - Closure called with (center_idx, left_idx, right_idx, up_idx, down_idx).
+#[inline(always)]
+fn iter_stencil_2d<F>(width: usize, height: usize, mut op: F)
+where
+    F: FnMut(usize, usize, usize, usize, usize),
+{
+    // Fallback for small grids
+    if width < 3 || height < 3 {
+        for y in 0..height {
+            for x in 0..width {
+                let idx = y * width + x;
+                let x_prev = if x > 0 { x - 1 } else { x };
+                let x_next = if x < width - 1 { x + 1 } else { x };
+                let y_prev = if y > 0 { y - 1 } else { y };
+                let y_next = if y < height - 1 { y + 1 } else { y };
+
+                let idx_l = y * width + x_prev;
+                let idx_r = y * width + x_next;
+                let idx_u = y_prev * width + x;
+                let idx_d = y_next * width + x;
+
+                op(idx, idx_l, idx_r, idx_u, idx_d);
+            }
+        }
+        return;
+    }
+
+    // 1. Top Row (y=0)
+    {
+        let y = 0;
+        let y_prev = 0;
+        let y_next = 1;
+        for x in 0..width {
+            let idx = x;
+            let x_prev = if x > 0 { x - 1 } else { x };
+            let x_next = if x < width - 1 { x + 1 } else { x };
+
+            let idx_l = y * width + x_prev;
+            let idx_r = y * width + x_next;
+            let idx_u = y_prev * width + x;
+            let idx_d = y_next * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+    }
+
+    // 2. Interior Rows
+    for y in 1..height - 1 {
+        let row_offset = y * width;
+
+        // Left Col
+        {
+            let x = 0;
+            let idx = row_offset;
+            let x_prev = 0;
+            let x_next = 1;
+
+            let idx_l = row_offset + x_prev;
+            let idx_r = row_offset + x_next;
+            let idx_u = (y - 1) * width + x;
+            let idx_d = (y + 1) * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+
+        // Interior
+        for x in 1..width - 1 {
+            let idx = row_offset + x;
+            let idx_l = idx - 1;
+            let idx_r = idx + 1;
+            let idx_u = idx - width;
+            let idx_d = idx + width;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+
+        // Right Col
+        {
+            let x = width - 1;
+            let idx = row_offset + x;
+            let x_prev = x - 1;
+            let x_next = x;
+
+            let idx_l = row_offset + x_prev;
+            let idx_r = row_offset + x_next;
+            let idx_u = (y - 1) * width + x;
+            let idx_d = (y + 1) * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+    }
+
+    // 3. Bottom Row
+    {
+        let y = height - 1;
+        let y_prev = y - 1;
+        let y_next = y;
+        for x in 0..width {
+            let idx = y * width + x;
+            let x_prev = if x > 0 { x - 1 } else { x };
+            let x_next = if x < width - 1 { x + 1 } else { x };
+
+            let idx_l = y * width + x_prev;
+            let idx_r = y * width + x_next;
+            let idx_u = y_prev * width + x;
+            let idx_d = y_next * width + x;
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests_2d {
     use super::*;
@@ -373,172 +540,5 @@ mod tests_2d {
 
         // Verify 2nd species works independently
         assert_eq!(out.species(1)[center_idx], 0.0);
-    }
-}
-
-/// Applies a 2D Finite Difference stencil to a single array.
-///
-/// This helper implements a loop-splitting optimization to separate the hot interior path
-/// from the boundary handling, eliminating conditional checks for the majority of grid points.
-///
-/// # Arguments
-/// * `width` - Grid width.
-/// * `height` - Grid height.
-/// * `dx` - Grid spacing x.
-/// * `dy` - Grid spacing y.
-/// * `src` - Input concentration slice.
-/// * `dst` - Output buffer for Laplacian.
-/// * `coeff` - Diffusion coefficient.
-fn apply_2d_stencil_optimized(
-    width: usize,
-    height: usize,
-    dx: f64,
-    dy: f64,
-    src: &[f64],
-    dst: &mut [f64],
-    coeff: f64,
-) {
-    // Security Check: Use checked multiplication to avoid integer overflow
-    let n = width
-        .checked_mul(height)
-        .expect("Grid dimensions overflow usize");
-
-    if src.len() < n || dst.len() < n {
-        // In a real system this might panic, but for a helper we just return
-        return;
-    }
-
-    let inv_dx_sq = 1.0 / (dx * dx);
-    let inv_dy_sq = 1.0 / (dy * dy);
-    let cx = coeff * inv_dx_sq;
-    let cy = coeff * inv_dy_sq;
-    let c_center = -2.0 * (cx + cy);
-
-    iter_stencil_2d(width, height, |idx, idx_l, idx_r, idx_u, idx_d| {
-        // SAFETY: iter_stencil_2d guarantees indices are within 0..width*height
-        // and we checked src/dst lengths >= n.
-        // We transition to safe indexing to guarantee no UB.
-        let u_curr = src[idx];
-        let u_l = src[idx_l];
-        let u_r = src[idx_r];
-        let u_u = src[idx_u];
-        let u_d = src[idx_d];
-
-        let diff = (u_r + u_l) * cx + (u_d + u_u) * cy + u_curr * c_center;
-        dst[idx] = diff;
-    });
-}
-
-/// Iterates over a 2D grid, providing indices for the center and its 4 neighbors (Neumann BC).
-///
-/// This helper implements loop splitting to optimize interior access.
-///
-/// # Arguments
-/// * `width` - Grid width.
-/// * `height` - Grid height.
-/// * `op` - Closure called with (center_idx, left_idx, right_idx, up_idx, down_idx).
-#[inline(always)]
-fn iter_stencil_2d<F>(width: usize, height: usize, mut op: F)
-where
-    F: FnMut(usize, usize, usize, usize, usize),
-{
-    // Fallback for small grids
-    if width < 3 || height < 3 {
-        for y in 0..height {
-            for x in 0..width {
-                let idx = y * width + x;
-                let x_prev = if x > 0 { x - 1 } else { x };
-                let x_next = if x < width - 1 { x + 1 } else { x };
-                let y_prev = if y > 0 { y - 1 } else { y };
-                let y_next = if y < height - 1 { y + 1 } else { y };
-
-                let idx_l = y * width + x_prev;
-                let idx_r = y * width + x_next;
-                let idx_u = y_prev * width + x;
-                let idx_d = y_next * width + x;
-
-                op(idx, idx_l, idx_r, idx_u, idx_d);
-            }
-        }
-        return;
-    }
-
-    // 1. Top Row (y=0)
-    {
-        let y = 0;
-        let y_prev = 0;
-        let y_next = 1;
-        for x in 0..width {
-            let idx = x;
-            let x_prev = if x > 0 { x - 1 } else { x };
-            let x_next = if x < width - 1 { x + 1 } else { x };
-
-            let idx_l = y * width + x_prev;
-            let idx_r = y * width + x_next;
-            let idx_u = y_prev * width + x;
-            let idx_d = y_next * width + x;
-            op(idx, idx_l, idx_r, idx_u, idx_d);
-        }
-    }
-
-    // 2. Interior Rows
-    for y in 1..height - 1 {
-        let row_offset = y * width;
-
-        // Left Col
-        {
-            let x = 0;
-            let idx = row_offset;
-            let x_prev = 0;
-            let x_next = 1;
-
-            let idx_l = row_offset + x_prev;
-            let idx_r = row_offset + x_next;
-            let idx_u = (y - 1) * width + x;
-            let idx_d = (y + 1) * width + x;
-            op(idx, idx_l, idx_r, idx_u, idx_d);
-        }
-
-        // Interior
-        for x in 1..width - 1 {
-            let idx = row_offset + x;
-            let idx_l = idx - 1;
-            let idx_r = idx + 1;
-            let idx_u = idx - width;
-            let idx_d = idx + width;
-            op(idx, idx_l, idx_r, idx_u, idx_d);
-        }
-
-        // Right Col
-        {
-            let x = width - 1;
-            let idx = row_offset + x;
-            let x_prev = x - 1;
-            let x_next = x;
-
-            let idx_l = row_offset + x_prev;
-            let idx_r = row_offset + x_next;
-            let idx_u = (y - 1) * width + x;
-            let idx_d = (y + 1) * width + x;
-            op(idx, idx_l, idx_r, idx_u, idx_d);
-        }
-    }
-
-    // 3. Bottom Row
-    {
-        let y = height - 1;
-        let y_prev = y - 1;
-        let y_next = y;
-        for x in 0..width {
-            let idx = y * width + x;
-            let x_prev = if x > 0 { x - 1 } else { x };
-            let x_next = if x < width - 1 { x + 1 } else { x };
-
-            let idx_l = y * width + x_prev;
-            let idx_r = y * width + x_next;
-            let idx_u = y_prev * width + x;
-            let idx_d = y_next * width + x;
-            op(idx, idx_l, idx_r, idx_u, idx_d);
-        }
     }
 }

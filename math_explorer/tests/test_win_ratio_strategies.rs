@@ -1,6 +1,5 @@
 use math_explorer::applied::win_ratio::pair_comparison::{
     ComparisonResult, HigherIsBetter, LowerIsBetter, ThresholdComparator, WinRatioAnalysis,
-    unmatched_pairs,
 };
 
 #[test]
@@ -78,7 +77,7 @@ fn test_backward_compatibility() {
     let group2 = vec![vec![5.0]];
 
     #[allow(deprecated)]
-    let (wins, losses) = unmatched_pairs(&group1, &group2);
+    let (wins, losses) = math_explorer::applied::win_ratio::pair_comparison::unmatched_pairs(&group1, &group2);
     assert_eq!(wins, 1);
     assert_eq!(losses, 0);
 }
