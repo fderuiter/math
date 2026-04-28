@@ -20,9 +20,16 @@ impl Sorter<u64> for RadixSorter {
         // We'll count them for rigorousness.
         stats.comparisons += sorted_data.len() as u64 - 1;
 
+        let n = sorted_data.len();
+        // ⚡ Bolt Optimization:
+        // Hoisted the `output` buffer allocation outside of the digit-processing loop.
+        // Previously, `vec![0; n]` was called in `counting_sort_for_radix` per digit pass.
+        // Reusing a single buffer avoids multiple large heap allocations during sort.
+        let mut output = vec![0; n];
+
         let mut exp = 1;
         while max_val / exp > 0 {
-            counting_sort_for_radix(&mut sorted_data, exp, &mut stats);
+            counting_sort_for_radix(&mut sorted_data, &mut output, exp, &mut stats);
             exp *= 10;
         }
 
@@ -49,9 +56,13 @@ pub fn radix_sort(data: &[u64]) -> SortingResult<u64> {
     RadixSorter.sort(data)
 }
 
-fn counting_sort_for_radix(arr: &mut [u64], exp: u64, stats: &mut SortingStats) {
+fn counting_sort_for_radix(
+    arr: &mut [u64],
+    output: &mut [u64],
+    exp: u64,
+    stats: &mut SortingStats,
+) {
     let n = arr.len();
-    let mut output = vec![0; n];
     let mut count = [0; 10];
 
     // Store count of occurrences in count[]
@@ -78,6 +89,6 @@ fn counting_sort_for_radix(arr: &mut [u64], exp: u64, stats: &mut SortingStats) 
 
     // Copy the output array to arr[], so that arr[] now
     // contains sorted numbers according to current digit
-    arr.copy_from_slice(&output);
+    arr.copy_from_slice(output);
     stats.assignments += n as u64;
 }
