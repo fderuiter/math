@@ -26,6 +26,12 @@ math_explorer = { path = "path/to/math_explorer" }
 
 Create a standard Transformer Encoder stack to process sequential data.
 
+```bash
+cargo run --release --package math_explorer --example transformer_demo
+```
+
+*(See `math_explorer/examples/transformer_demo.rs` for implementation details)*
+
 ```rust
 use math_explorer::ai::transformer::Encoder;
 use nalgebra::DMatrix;
@@ -52,7 +58,9 @@ println!("Output shape: ({}, {})", output.nrows(), output.ncols());
 
 ---
 
-## Deep Dive (Architecture)
+## Config
+
+### Architecture Deep Dive
 
 The AI module is organized into four foundational pillars:
 
@@ -91,9 +99,7 @@ graph TD
     Theory --> Activations
 ```
 
----
-
-## Config (Submodules)
+### Submodules
 
 ### 1. `transformer`
 The backbone of modern NLP. We implement:

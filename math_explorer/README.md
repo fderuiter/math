@@ -23,6 +23,12 @@ math_explorer = { path = "path/to/math_explorer" }
 
 Simulate a neuron's membrane potential using the Hodgkin-Huxley model:
 
+```bash
+cargo run --release --package math_explorer --example hodgkin_huxley_demo
+```
+
+*(See `math_explorer/examples/hodgkin_huxley_demo.rs` for implementation details)*
+
 ```rust
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
 
@@ -45,6 +51,12 @@ fn main() {
 
 Calculate the Lyapunov exponent for a Lorenz System:
 
+```bash
+cargo run --release --package math_explorer --example lorenz_chaos
+```
+
+*(See `math_explorer/examples/lorenz_chaos.rs` for implementation details)*
+
 ```rust
 use math_explorer::physics::chaos::lorenz::{LorenzSystem, LorenzState};
 use math_explorer::physics::chaos::metrics::lorenz_lyapunov;
@@ -65,6 +77,12 @@ fn main() {
 ### Example: AI Transformer
 
 Initialize a Transformer Encoder stack:
+
+```bash
+cargo run --release --package math_explorer --example transformer_demo
+```
+
+*(See `math_explorer/examples/transformer_demo.rs` for implementation details)*
 
 ```rust
 use math_explorer::ai::transformer::Encoder;
