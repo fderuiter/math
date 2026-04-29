@@ -23,14 +23,18 @@ impl Sorter<u64> for RadixSorter {
         let n = sorted_data.len();
         // ⚡ Bolt Optimization:
         // Hoisted the `output` buffer allocation outside of the digit-processing loop.
-        // Previously, `vec![0; n]` was called in `counting_sort_for_radix` per digit pass.
         // Reusing a single buffer avoids multiple large heap allocations during sort.
         let mut output = vec![0; n];
 
-        let mut exp = 1;
-        while max_val / exp > 0 {
-            counting_sort_for_radix(&mut sorted_data, &mut output, exp, &mut stats);
-            exp *= 10;
+        // ⚡ Bolt Optimization:
+        // Switched Radix Sort from Base-10 (division/modulo) to Base-256 (bitwise ops).
+        // This reduces the number of passes required from 20 (for u64) to 8,
+        // and replaces expensive division with fast bit shifts.
+        let mut shift = 0;
+        // Check `shift < 64` to avoid `max_val >> 64` which causes panic or infinite loop in Rust.
+        while shift < 64 && (max_val >> shift) > 0 {
+            counting_sort_for_radix(&mut sorted_data, &mut output, shift, &mut stats);
+            shift += 8;
         }
 
         SortingResult { sorted_data, stats }
@@ -44,7 +48,7 @@ impl Sorter<u64> for RadixSorter {
 /// # Mathematical Analysis
 ///
 /// * $n$ = number of elements.
-/// * $b$ = base (10).
+/// * $b$ = base (256).
 /// * $d$ = number of digits (max value width).
 ///
 /// Time: $d \times O(n + b)$.
@@ -59,29 +63,29 @@ pub fn radix_sort(data: &[u64]) -> SortingResult<u64> {
 fn counting_sort_for_radix(
     arr: &mut [u64],
     output: &mut [u64],
-    exp: u64,
+    shift: u32,
     stats: &mut SortingStats,
 ) {
     let n = arr.len();
-    let mut count = [0; 10];
+    let mut count = [0; 256];
 
     // Store count of occurrences in count[]
     for &x in arr.iter() {
-        let idx = ((x / exp) % 10) as usize;
+        let idx = ((x >> shift) & 0xFF) as usize;
         count[idx] += 1;
         stats.assignments += 1; // Read/Inc
     }
 
     // Change count[i] so that count[i] now contains actual
     // position of this digit in output[]
-    for i in 1..10 {
+    for i in 1..256 {
         count[i] += count[i - 1];
     }
 
     // Build the output array
     for i in (0..n).rev() {
         let x = arr[i];
-        let idx = ((x / exp) % 10) as usize;
+        let idx = ((x >> shift) & 0xFF) as usize;
         output[count[idx] - 1] = x;
         count[idx] -= 1;
         stats.assignments += 1; // Move to output
