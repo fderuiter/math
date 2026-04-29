@@ -144,7 +144,7 @@ mod tests {
         let initial_kernel = predictor.layers[0].kernel.clone();
 
         // Update weights
-        predictor.update_weights(&mut optimizer);
+        let _ = predictor.update_weights(&mut optimizer);
 
         // Check that weights have changed
         let new_kernel = &predictor.layers[0].kernel;

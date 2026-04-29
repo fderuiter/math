@@ -27,7 +27,6 @@
 pub mod accelerator;
 pub mod calibration;
 pub mod dose;
-#[deprecated(note = "Use 'dose', 'accelerator', 'imaging', or 'signal' modules instead.")]
 pub mod dose_calculation;
 pub mod evaluation;
 pub mod imaging;

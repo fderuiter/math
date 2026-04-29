@@ -131,7 +131,9 @@ mod tests {
 
     #[test]
     fn test_constants() {
-        assert!(constants::PROTON_MASS > 900.0);
+        const {
+            assert!(constants::PROTON_MASS > 900.0);
+        }
     }
 
     #[test]

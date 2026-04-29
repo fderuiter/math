@@ -1,5 +1,5 @@
 use math_explorer::physics::astrophysics::galaxies::{
-    GeneralIrregular, TypeCode10, TypeCode95To99, GalaxyModel, Mpc, Magnitude, SolarMassLog
+    GalaxyModel, GeneralIrregular, Magnitude, Mpc, SolarMassLog, TypeCode10, TypeCode95To99,
 };
 
 const F64_TOLERANCE: f64 = 1e-9;
@@ -31,12 +31,18 @@ fn test_calculate_apparent_magnitude_from_distance() {
 
     // Test case for GeneralIrregular
     let expected = 0.0206 * distance + 16.0010;
-    let result = GeneralIrregular.apparent_magnitude_from_distance(dist).unwrap().as_f64();
+    let result = GeneralIrregular
+        .apparent_magnitude_from_distance(dist)
+        .unwrap()
+        .as_f64();
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for TypeCode10
     let expected = 0.0140 * distance + 16.575;
-    let result = TypeCode10.apparent_magnitude_from_distance(dist).unwrap().as_f64();
+    let result = TypeCode10
+        .apparent_magnitude_from_distance(dist)
+        .unwrap()
+        .as_f64();
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for TypeCode95To99 (should be None)
@@ -51,16 +57,22 @@ fn test_calculate_log_mass_from_absolute_magnitude() {
 
     // Test case for GeneralIrregular
     let expected = -0.6670 * absolute_magnitude_v - 1.4975;
-    let result = GeneralIrregular.log_mass_from_absolute_magnitude(abs_mag).as_f64();
+    let result = GeneralIrregular
+        .log_mass_from_absolute_magnitude(abs_mag)
+        .as_f64();
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for TypeCode10
-    let result = TypeCode10.log_mass_from_absolute_magnitude(abs_mag).as_f64();
+    let result = TypeCode10
+        .log_mass_from_absolute_magnitude(abs_mag)
+        .as_f64();
     assert!((result - expected).abs() < F64_TOLERANCE);
 
     // Test case for TypeCode95To99
     let expected = -0.3837 * absolute_magnitude_v - 2.2864;
-    let result = TypeCode95To99.log_mass_from_absolute_magnitude(abs_mag).as_f64();
+    let result = TypeCode95To99
+        .log_mass_from_absolute_magnitude(abs_mag)
+        .as_f64();
     assert!((result - expected).abs() < F64_TOLERANCE);
 }
 
