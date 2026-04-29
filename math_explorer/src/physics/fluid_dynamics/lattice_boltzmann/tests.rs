@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod tests {
 
     use crate::physics::fluid_dynamics::lattice_boltzmann::model::*;

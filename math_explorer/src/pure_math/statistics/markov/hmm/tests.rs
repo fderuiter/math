@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod tests {
     use super::super::model::HiddenMarkovModel;
     use approx::assert_relative_eq;

@@ -1,9 +1,8 @@
+#![allow(deprecated)]
 //! Dose Calculation Algorithms.
 //!
 //! **DEPRECATED**: This module has been split into `dose`, `accelerator`, `imaging`, and `signal`.
 //! Please migrate to the new modules.
-
-#![allow(deprecated)]
 
 pub use super::accelerator::beam_loading_energy;
 pub use super::imaging::tracking_error;
@@ -27,18 +26,21 @@ pub fn point_kernel(radius: f64, amplitude: f64, beta: f64) -> Result<f64, Strin
 }
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_terma_calculation_legacy() {
+    #[allow(deprecated)]
+    fn dose_calc_test_terma() {
         assert_eq!(calculate_terma(100.0, 0.0, 10.0), 0.0);
         let t0 = calculate_terma(100.0, 0.1, 0.0);
         assert!((t0 - 10.0).abs() < 1e-6);
     }
 
     #[test]
-    fn test_point_kernel_legacy() {
+    #[allow(deprecated)]
+    fn dose_calc_test_point_kernel() {
         assert!(point_kernel(0.0, 1.0, 1.0).is_err());
         let k = point_kernel(2.0, 4.0, 0.5).unwrap();
         assert!((k - (-1.0_f64).exp()).abs() < 1e-5);

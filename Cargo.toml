@@ -4,3 +4,4 @@ members = [
     "apps/math_explorer_gui",
 ]
 resolver = "2"
+# OxidizeMath Workspace Configuration

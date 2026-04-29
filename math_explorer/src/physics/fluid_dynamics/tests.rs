@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
