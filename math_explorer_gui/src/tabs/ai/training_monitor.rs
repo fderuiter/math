@@ -114,18 +114,28 @@ impl AiTool for TrainingMonitorTool {
             ui.heading("Controls");
             ui.separator();
 
-            if ui
-                .button(if self.is_training {
-                    "Stop Training"
+            let training_btn = ui.button(if self.is_training {
+                "⏹ Stop Training"
+            } else {
+                "▶ Start Training"
+            });
+
+            if training_btn
+                .on_hover_text(if self.is_training {
+                    "Stop the continuous training loop"
                 } else {
-                    "Start Training"
+                    "Start the continuous training loop"
                 })
                 .clicked()
             {
                 self.is_training = !self.is_training;
             }
 
-            if ui.button("Reset Model").clicked() {
+            if ui
+                .button("↻ Reset Model")
+                .on_hover_text("Re-initialize the neural network weights and clear metrics")
+                .clicked()
+            {
                 self.reset();
             }
 
