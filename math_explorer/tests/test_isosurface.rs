@@ -68,6 +68,6 @@ mod tests {
             origin: Point3D::new(0.0, 0.0, 0.0),
         };
         let mesh = extract_isosurface(&grid, 5.0).unwrap();
-        assert!(mesh.triangles.len() > 0);
+        assert!(!mesh.triangles.is_empty());
     }
 }
