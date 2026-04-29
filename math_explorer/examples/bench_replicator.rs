@@ -15,7 +15,7 @@ fn main() {
     let mut data = Vec::with_capacity(size * size);
     for i in 0..size {
         for j in 0..size {
-            let val = (i as f64 * 3.14159 + j as f64 * 2.71828).sin() ;
+            let val = (i as f64 * 3.14159 + j as f64 * 2.71828).sin();
             data.push(val);
         }
     }
