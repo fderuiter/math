@@ -186,7 +186,7 @@ mod tests {
         // Should always return values in [0, 1]
         for gamma in [-10.0, -5.0, -1.0, 0.0, 1.0, 5.0, 10.0] {
             let rho = LogitLink::link(gamma);
-            assert!(rho >= 0.0 && rho <= 1.0);
+            assert!((0.0..=1.0).contains(&rho));
         }
     }
 

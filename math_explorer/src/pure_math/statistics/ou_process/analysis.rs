@@ -335,7 +335,7 @@ mod tests {
         let prob = analyzer.comeback_probability(0.3, 0.5, 1.0, 1000, &mut rng);
 
         // Should be between 0 and 1
-        assert!(prob >= 0.0 && prob <= 1.0);
+        assert!((0.0..=1.0).contains(&prob));
         // Should be non-zero since 0.5 is the mean
         assert!(prob > 0.0);
     }

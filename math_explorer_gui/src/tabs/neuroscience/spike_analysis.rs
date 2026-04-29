@@ -64,12 +64,16 @@ impl NeuroscienceTool for SpikeAnalysisTool {
             ui.separator();
             ui.horizontal(|ui| {
                 if ui
-                    .button(if self.is_running { "Pause" } else { "Run" })
+                    .button(if self.is_running {
+                        "⏸ Pause"
+                    } else {
+                        "▶ Run"
+                    })
                     .clicked()
                 {
                     self.is_running = !self.is_running;
                 }
-                if ui.button("Reset").clicked() {
+                if ui.button("↻ Reset").clicked() {
                     self.reset();
                 }
             });

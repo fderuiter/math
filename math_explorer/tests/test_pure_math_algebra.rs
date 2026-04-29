@@ -24,18 +24,18 @@ fn test_cyclic_group_z5() {
 fn test_subgroups_z6() {
     // Z6 = {0, 1, 2, 3, 4, 5}
     // H = {0, 2, 4} should be a subgroup
-    let h_vals = vec![0, 2, 4];
+    let h_vals = [0, 2, 4];
     let h: Vec<Zn<6>> = h_vals.iter().map(|&x| Zn::new(x)).collect();
 
     assert!(is_subgroup(&h));
 
     // K = {0, 3} should be a subgroup
-    let k_vals = vec![0, 3];
+    let k_vals = [0, 3];
     let k: Vec<Zn<6>> = k_vals.iter().map(|&x| Zn::new(x)).collect();
     assert!(is_subgroup(&k));
 
     // L = {0, 1} is NOT a subgroup (1+1=2 not in L)
-    let l_vals = vec![0, 1];
+    let l_vals = [0, 1];
     let l: Vec<Zn<6>> = l_vals.iter().map(|&x| Zn::new(x)).collect();
     assert!(!is_subgroup(&l));
 }
@@ -109,7 +109,7 @@ fn test_lagrange_theorem_check() {
     // Subgroup {0, 2, 4} has order 3. 3 divides 6.
     // Subgroup {0, 3} has order 2. 2 divides 6.
 
-    let h_vals = vec![0, 2, 4];
+    let h_vals = [0, 2, 4];
     let h: Vec<Zn<6>> = h_vals.iter().map(|&x| Zn::new(x)).collect();
 
     assert!(is_subgroup(&h));
@@ -131,9 +131,9 @@ fn test_lagrange_theorem_check() {
 #[test]
 fn test_normal_subgroup_check() {
     // In Z6 (abelian), all subgroups are normal.
-    let h_vals = vec![0, 2, 4];
+    let h_vals = [0, 2, 4];
     let h: Vec<Zn<6>> = h_vals.iter().map(|&x| Zn::new(x)).collect();
-    let g_vals = vec![0, 1, 2, 3, 4, 5];
+    let g_vals = [0, 1, 2, 3, 4, 5];
     let g: Vec<Zn<6>> = g_vals.iter().map(|&x| Zn::new(x)).collect();
 
     assert!(is_normal_subgroup(&g, &h));
