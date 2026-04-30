@@ -12,7 +12,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
   - [x] Run `git mv math_explorer_gui apps/`
 - [ ] **1.3 Root Workspace Configuration**
   - [x] Create/Update `Cargo.toml` at the repository root.
-  - [ ] Add `[workspace]` section.
+  - [x] Add `[workspace]` section.
   - [ ] Add `members = ["crates/math_explorer", "apps/math_explorer_gui"]`.
   - [ ] Set `resolver = "2"`.
 - [ ] **1.4 Verification**
