@@ -197,26 +197,13 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
                 ));
 
                 ui.horizontal(|ui| {
-                    if ui
-                        .button("↻ Reset")
-                        .on_hover_text("Restart the algorithm visualization")
-                        .clicked()
-                    {
+                    if ui.button("Reset").clicked() {
                         self.animation_step = 0;
                     }
-                    let can_step = self.animation_step < self.visit_order.len();
-                    if ui
-                        .add_enabled(can_step, eframe::egui::Button::new("▶ Step"))
-                        .on_hover_text("Advance visualization by one step")
-                        .clicked()
-                    {
+                    if ui.button("Step").clicked() && self.animation_step < self.visit_order.len() {
                         self.animation_step += 1;
                     }
-                    if ui
-                        .add_enabled(can_step, eframe::egui::Button::new("⏹ Finish"))
-                        .on_hover_text("Skip to the end of the visualization")
-                        .clicked()
-                    {
+                    if ui.button("Finish").clicked() {
                         self.animation_step = self.visit_order.len();
                     }
                 });
