@@ -33,7 +33,8 @@ impl Sorter<u64> for RadixSorter {
         let mut shift = 0;
         // Check `shift < 64` to avoid `max_val >> 64` which causes panic or infinite loop in Rust.
         while shift < 64 && (max_val >> shift) > 0 {
-            counting_sort_for_radix(&mut sorted_data, &mut output, shift, &mut stats);
+            counting_sort_for_radix(&sorted_data, &mut output, shift, &mut stats);
+            std::mem::swap(&mut sorted_data, &mut output);
             shift += 8;
         }
 
@@ -60,12 +61,7 @@ pub fn radix_sort(data: &[u64]) -> SortingResult<u64> {
     RadixSorter.sort(data)
 }
 
-fn counting_sort_for_radix(
-    arr: &mut [u64],
-    output: &mut [u64],
-    shift: u32,
-    stats: &mut SortingStats,
-) {
+fn counting_sort_for_radix(arr: &[u64], output: &mut [u64], shift: u32, stats: &mut SortingStats) {
     let n = arr.len();
     let mut count = [0; 256];
 
@@ -93,6 +89,4 @@ fn counting_sort_for_radix(
 
     // Copy the output array to arr[], so that arr[] now
     // contains sorted numbers according to current digit
-    arr.copy_from_slice(output);
-    stats.assignments += n as u64;
 }
