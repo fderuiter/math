@@ -1,7 +1,6 @@
 use math_explorer::biology::diffusion::FiniteDifference1D;
 use math_explorer::biology::morphogenesis::SchnakenbergKinetics;
 use math_explorer::biology::reaction_diffusion::ReactionDiffusionSystem;
-use math_explorer::pure_math::analysis::ode::TimeStepper;
 use std::time::Instant;
 
 fn main() {

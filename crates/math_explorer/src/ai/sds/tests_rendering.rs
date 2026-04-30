@@ -37,6 +37,7 @@ fn test_stratified_sampling() {
     let samples = stratified_sampling(t_near, t_far, n_samples);
     assert_eq!(samples.len(), n_samples);
 
+    #[allow(clippy::needless_range_loop)]
     for i in 0..n_samples {
         let t = samples[i];
         let bin_start = t_near + i as f64;

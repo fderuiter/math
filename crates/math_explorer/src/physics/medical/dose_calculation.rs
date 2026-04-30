@@ -31,6 +31,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[allow(deprecated)]
     fn test_terma_calculation_legacy() {
         assert_eq!(calculate_terma(100.0, 0.0, 10.0), 0.0);
         let t0 = calculate_terma(100.0, 0.1, 0.0);
@@ -38,6 +39,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_point_kernel_legacy() {
         assert!(point_kernel(0.0, 1.0, 1.0).is_err());
         let k = point_kernel(2.0, 4.0, 0.5).unwrap();
