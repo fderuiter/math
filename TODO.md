@@ -13,7 +13,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 - [ ] **1.3 Root Workspace Configuration**
   - [x] Create/Update `Cargo.toml` at the repository root.
   - [x] Add `[workspace]` section.
-  - [ ] Add `members = ["crates/math_explorer", "apps/math_explorer_gui"]`.
+  - [x] Add `members = ["crates/math_explorer", "apps/math_explorer_gui"]`.
   - [ ] Set `resolver = "2"`.
 - [ ] **1.4 Verification**
   - [ ] Run `cargo check --workspace`. Ensure zero errors before proceeding.
