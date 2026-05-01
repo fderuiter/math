@@ -180,10 +180,18 @@ impl AiTool for GridWorldTool {
     fn show(&mut self, ctx: &egui::Context) {
         egui::Window::new("Grid World Navigation (Q-Learning)").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if ui.button("Step").clicked() {
+                if ui
+                    .button("▶ Step")
+                    .on_hover_text("Advance the agent by one step")
+                    .clicked()
+                {
                     self.step_agent();
                 }
-                if ui.button("Train (100 Episodes)").clicked() {
+                if ui
+                    .button("▶ Train (100 Episodes)")
+                    .on_hover_text("Train the agent for 100 episodes instantly")
+                    .clicked()
+                {
                     for _ in 0..100 {
                         let mut temp_steps = 0;
                         while !self.env.is_terminal(&self.current_state) && temp_steps < 100 {
@@ -193,7 +201,11 @@ impl AiTool for GridWorldTool {
                         self.reset_episode();
                     }
                 }
-                if ui.button("Reset Agent").clicked() {
+                if ui
+                    .button("↻ Reset Agent")
+                    .on_hover_text("Clear the Q-table and reset the agent's knowledge")
+                    .clicked()
+                {
                     self.agent = TabularQAgent::new(0.1, 0.9, 0.1);
                     self.reset_episode();
                     self.episodes = 0;
