@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 extern crate math_explorer;
 
 use math_explorer::applied::battery_degradation;
