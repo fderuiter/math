@@ -84,13 +84,20 @@ impl AiTool for RewardPlotsTool {
             );
 
             if ui
-                .button(format!("Train {} Episodes", self.training_steps))
+                .button(format!("▶ Train {} Episodes", self.training_steps))
+                .on_hover_text("Train the agent for the specified number of episodes")
                 .clicked()
             {
                 self.train_episodes(self.training_steps);
             }
 
-            if ui.button("Reset Agent").clicked() {
+            if ui
+                .button("↻ Reset Agent")
+                .on_hover_text(
+                    "Clear the Q-table and reset the agent's knowledge and reward history",
+                )
+                .clicked()
+            {
                 self.agent = TabularQAgent::new(0.1, 0.9, 0.1);
                 self.rewards_per_episode.clear();
                 self.episodes_trained = 0;
