@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "math_explorer",
+    "crates/math_explorer",
     "apps/math_explorer_gui",
 ]
 resolver = "2"
