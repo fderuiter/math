@@ -103,13 +103,25 @@ impl AiTool for QTableInspectorTool {
 
             ui.label(format!("Episodes Trained: {}", self.episodes_trained));
 
-            if ui.button("Train 100 Episodes").clicked() {
+            if ui
+                .button("▶ Train 100 Episodes")
+                .on_hover_text("Train the agent for 100 episodes")
+                .clicked()
+            {
                 self.train(100);
             }
-            if ui.button("Train 1000 Episodes").clicked() {
+            if ui
+                .button("▶ Train 1000 Episodes")
+                .on_hover_text("Train the agent for 1000 episodes")
+                .clicked()
+            {
                 self.train(1000);
             }
-            if ui.button("Reset Agent").clicked() {
+            if ui
+                .button("↻ Reset Agent")
+                .on_hover_text("Clear the Q-table and reset the agent's knowledge")
+                .clicked()
+            {
                 self.agent = TabularQAgent::new(0.1, 0.9, 0.1);
                 self.episodes_trained = 0;
             }
