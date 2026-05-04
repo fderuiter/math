@@ -5,6 +5,7 @@ use math_explorer::applied::battery_degradation;
 const TOLERANCE: f64 = 0.3;
 
 #[test]
+#[allow(deprecated)]
 fn test_n70() {
     let n70_60 = battery_degradation::n70(60.0);
     assert!(
@@ -29,6 +30,7 @@ fn test_n70() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_cycles_to_capacity_dod_60() {
     let dod = 60.0;
     let to_90 = battery_degradation::cycles_to_capacity(0.90, dod);
@@ -54,6 +56,7 @@ fn test_cycles_to_capacity_dod_60() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_cycles_to_capacity_dod_80() {
     let dod = 80.0;
     let to_90 = battery_degradation::cycles_to_capacity(0.90, dod);
@@ -79,6 +82,7 @@ fn test_cycles_to_capacity_dod_80() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_cycles_to_capacity_dod_100() {
     let dod = 100.0;
     let to_90 = battery_degradation::cycles_to_capacity(0.90, dod);

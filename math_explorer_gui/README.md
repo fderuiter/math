@@ -16,10 +16,26 @@ cd math-explorer
 
 ##  Usage
 
-To run the interactive application:
+### Desktop (Native)
+
+To run the interactive application natively:
 
 ```bash
 cargo run --release --package math_explorer_gui
+```
+
+### Web (WASM)
+
+To compile and run the application in your browser (requires Trunk):
+
+```bash
+# 1. Install Trunk and WASM target
+cargo install trunk
+rustup target add wasm32-unknown-unknown
+
+# 2. Serve the application locally
+cd math_explorer_gui
+trunk serve
 ```
 
 ##  Config (Architecture)

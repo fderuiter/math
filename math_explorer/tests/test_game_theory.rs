@@ -1,13 +1,16 @@
+#[allow(deprecated)]
 use math_explorer::applied::game_theory::equilibrium::{
     BestResponseCorrespondence, BoxSet, ConvexSet, FixedPointVerifier,
 };
 use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
 use math_explorer::applied::game_theory::mean_field::{Density, MeanFieldGame1D, Position};
+#[allow(deprecated)]
 use math_explorer::applied::game_theory::mechanism_design::MechanismDesign;
 use nalgebra::{DMatrix, DVector};
 use statrs::distribution::Uniform;
 
 #[test]
+#[allow(deprecated)]
 fn test_equilibrium_integration() {
     let box_set = BoxSet::new(vec![0.0], vec![1.0]);
     assert!(box_set.contains(&DVector::from_vec(vec![0.5])));
@@ -44,6 +47,7 @@ fn test_evolutionary_integration() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_mechanism_integration() {
     let dist = Uniform::new(0.0, 1.0).unwrap();
     let r = MechanismDesign::optimal_reserve_price(&dist, 0.0, 1.0);

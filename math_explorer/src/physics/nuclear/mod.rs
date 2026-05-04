@@ -130,6 +130,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn test_constants() {
         assert!(constants::PROTON_MASS > 900.0);
     }
