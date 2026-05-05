@@ -193,6 +193,16 @@ cargo run --release --package math_explorer --example favoritism_demo
 
 *(See `math_explorer/examples/favoritism_demo.rs` for implementation details)*
 
+#### Applied Mathematics: GRPO
+Group Relative Policy Optimization (GRPO) for reasoning tasks.
+
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example grpo_demo
+```
+
+*(See `math_explorer/examples/grpo_demo.rs` for implementation details)*
+
 #### Pure Math: Abstract Algebra
 Construct Finite Fields ($\mathbb{F}_p$) and perform polynomial arithmetic.
 
