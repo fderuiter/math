@@ -86,11 +86,20 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                     } else {
                         "▶ Start"
                     })
+                    .on_hover_text(if self.is_running {
+                        "Pause the Hodgkin-Huxley simulation"
+                    } else {
+                        "Start the Hodgkin-Huxley simulation"
+                    })
                     .clicked()
                 {
                     self.is_running = !self.is_running;
                 }
-                if ui.button("↻ Reset").clicked() {
+                if ui
+                    .button("↻ Reset")
+                    .on_hover_text("Reset the simulation to its initial state")
+                    .clicked()
+                {
                     self.reset();
                 }
             });
