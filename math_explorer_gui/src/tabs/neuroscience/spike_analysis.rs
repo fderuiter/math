@@ -69,11 +69,20 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                     } else {
                         "▶ Run"
                     })
+                    .on_hover_text(if self.is_running {
+                        "Pause the spike analysis simulation"
+                    } else {
+                        "Start the spike analysis simulation"
+                    })
                     .clicked()
                 {
                     self.is_running = !self.is_running;
                 }
-                if ui.button("↻ Reset").clicked() {
+                if ui
+                    .button("↻ Reset")
+                    .on_hover_text("Reset the simulation to its initial state")
+                    .clicked()
+                {
                     self.reset();
                 }
             });
