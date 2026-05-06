@@ -47,14 +47,25 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
 
     let mut total_emd = 0.0;
 
+    // ⚡ Bolt Optimization:
+    // 1. Allocate buffers outside the loop to prevent repeated heap allocations.
+    // 2. Use `copied()` instead of `cloned()` for primitives (f32).
+    // 3. Use `sort_unstable_by` instead of `sort_by` since relative order of
+    //    equal f32 elements doesn't matter, saving CPU cycles.
+    let mut col1 = Vec::with_capacity(z1.nrows());
+    let mut col2 = Vec::with_capacity(z2.nrows());
+
     for i in 0..z1.ncols() {
-        let mut col1: Vec<f32> = z1.column(i).iter().cloned().collect();
-        let mut col2: Vec<f32> = z2.column(i).iter().cloned().collect();
+        col1.clear();
+        col1.extend(z1.column(i).iter().copied());
+
+        col2.clear();
+        col2.extend(z2.column(i).iter().copied());
 
         // The EMD for 1D distributions is the L1 norm of the difference
         // between the sorted samples.
-        col1.sort_by(|a, b| a.total_cmp(b));
-        col2.sort_by(|a, b| a.total_cmp(b));
+        col1.sort_unstable_by(|a, b| a.total_cmp(b));
+        col2.sort_unstable_by(|a, b| a.total_cmp(b));
 
         let emd_i: f32 = col1
             .iter()
