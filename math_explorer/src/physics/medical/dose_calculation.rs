@@ -25,4 +25,3 @@ pub fn point_kernel(radius: f64, amplitude: f64, beta: f64) -> Result<f64, Strin
     let kernel = ExponentialKernel::new(amplitude, beta);
     kernel.value_at(radius).map_err(|e| e.to_string())
 }
-
