@@ -264,6 +264,7 @@ mod tests {
         let debye = 5.0;
 
         // Legacy function should still work
+        #[allow(deprecated)]
         let res = solve_gap_equation(&energies, potential, debye, 1000);
         assert!(res.is_ok());
         assert!(res.unwrap() > 0.0);
