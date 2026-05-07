@@ -72,7 +72,11 @@ impl ClinicalTrialsTool for RandomizationTool {
 
             ui.add_space(10.0);
 
-            if ui.button("Allocate Subjects").clicked() {
+            if ui
+                .button("▶ Allocate Subjects")
+                .on_hover_text("Randomly assign subjects to treatment and control groups")
+                .clicked()
+            {
                 self.error_message = None;
                 self.assignments.clear();
 

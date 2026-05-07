@@ -64,7 +64,11 @@ impl ClimateTool for CeraTool {
             ui.add(egui::Slider::new(&mut self.output_size, 1..=20));
         });
 
-        if ui.button("Run Prediction").clicked() {
+        if ui
+            .button("▶ Run Prediction")
+            .on_hover_text("Execute the CERA model with random inputs")
+            .clicked()
+        {
             let config = CeraConfig {
                 in_channels: self.in_channels,
                 latent_channels: self.latent_channels,
