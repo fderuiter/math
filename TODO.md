@@ -15,8 +15,8 @@ This document outlines the step-by-step, granular process for migrating the Oxid
   - [x] Add `[workspace]` section.
   - [x] Add `members = ["crates/math_explorer", "apps/math_explorer_gui"]`.
   - [x] Set `resolver = "2"`.
-- [ ] **1.4 Verification**
-  - [ ] Run `cargo check --workspace`. Ensure zero errors before proceeding.
+- [x] **1.4 Verification**
+  - [x] Run `cargo check --workspace`. Ensure zero errors before proceeding.
 
 ## Phase 2: The Core Engine Contract (`oxidize_core`)
 *Goal: Create the dependency-free law of the land that allows the GUI to interact with mathematical models agnostically.*
