@@ -6,6 +6,7 @@ pub struct HeatEquationSolver<'a, S: ParametricSurface> {
     pub surface: &'a S,
     pub alpha: f64,               // Thermal diffusivity
     pub u_grid: Vec<Vec<f64>>,    // Current temperature state
+    pub next_grid: Vec<Vec<f64>>, // Bolt Optimization: Buffer to avoid allocations in step
     pub grid_res: (usize, usize), // (n_u, n_v)
     pub range_u: (f64, f64),
     pub range_v: (f64, f64),
@@ -92,7 +93,8 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
         Self {
             surface,
             alpha,
-            u_grid: grid,
+            u_grid: grid.clone(),
+            next_grid: grid,
             grid_res,
             range_u,
             range_v,
@@ -106,7 +108,7 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
         let du = (self.range_u.1 - self.range_u.0) / (nu as f64 - 1.0);
         let dv = (self.range_v.1 - self.range_v.0) / (nv as f64 - 1.0);
 
-        let mut new_grid = self.u_grid.clone();
+        // Bolt Optimization: Use pre-allocated buffer instead of cloning the grid every step
 
         // Safe getter with wrapping for periodicity (assuming closed surface or periodic domain like torus)
         // For general surfaces, Neumann conditions (replicate boundary) are often safer,
@@ -200,10 +202,10 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
                 let area = self.surface.area_element(u, v);
                 let laplacian = (1.0 / area) * (term1 + term2);
 
-                new_grid[i][j] += dt * self.alpha * laplacian;
+                self.next_grid[i][j] = self.u_grid[i][j] + dt * self.alpha * laplacian;
             }
         }
 
-        self.u_grid = new_grid;
+        std::mem::swap(&mut self.u_grid, &mut self.next_grid);
     }
 }
