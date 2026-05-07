@@ -127,11 +127,20 @@ impl ExplorerTab for MriTab {
             ui.horizontal(|ui| {
                 if ui
                     .button(if self.paused { "▶ Play" } else { "⏸ Pause" })
+                    .on_hover_text(if self.paused {
+                        "Start the simulation"
+                    } else {
+                        "Pause the simulation"
+                    })
                     .clicked()
                 {
                     self.paused = !self.paused;
                 }
-                if ui.button("↺ Reset (90° Pulse)").clicked() {
+                if ui
+                    .button("↺ Reset (90° Pulse)")
+                    .on_hover_text("Reset to the initial state with a 90° tip pulse")
+                    .clicked()
+                {
                     self.reset();
                 }
             });
