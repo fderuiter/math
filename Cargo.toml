@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "crates/math_explorer",
-    "apps/math_explorer_gui",
+    "apps/math_explorer_gui", "crates/oxidize_core",
 ]
 resolver = "2"
 # OxidizeMath Workspace Configuration
