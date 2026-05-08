@@ -22,7 +22,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 *Goal: Create the dependency-free law of the land that allows the GUI to interact with mathematical models agnostically.*
 
 - [ ] **2.1 Initialize Crate**
-  - [ ] Run `cd crates && cargo new oxidize_core --lib`.
+  - [x] Run `cd crates && cargo new oxidize_core --lib`.
   - [ ] Add `"crates/oxidize_core"` to the root `Cargo.toml` workspace members.
 - [ ] **2.2 Configure Dependencies** (In `crates/oxidize_core/Cargo.toml`)
   - [ ] Add `serde = { version = "1.0", features = ["derive"] }` (Required for GUI to save/load configs).
