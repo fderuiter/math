@@ -103,9 +103,33 @@ impl GradientEstimator for CentralDifferenceEstimator {
 
     #[inline(always)]
     fn gradient_fast(&self, data: &[f32], idx: usize, stride_y: usize, stride_z: usize) -> Point3D {
-        let dx = (data[idx + 1] - data[idx - 1]) * 0.5;
-        let dy = (data[idx + stride_y] - data[idx - stride_y]) * 0.5;
-        let dz = (data[idx + stride_z] - data[idx - stride_z]) * 0.5;
+        let dx = (data
+            .get(idx.checked_add(1).unwrap_or(idx))
+            .copied()
+            .unwrap_or(0.0)
+            - data
+                .get(idx.checked_sub(1).unwrap_or(idx))
+                .copied()
+                .unwrap_or(0.0))
+            * 0.5;
+        let dy = (data
+            .get(idx.checked_add(stride_y).unwrap_or(idx))
+            .copied()
+            .unwrap_or(0.0)
+            - data
+                .get(idx.checked_sub(stride_y).unwrap_or(idx))
+                .copied()
+                .unwrap_or(0.0))
+            * 0.5;
+        let dz = (data
+            .get(idx.checked_add(stride_z).unwrap_or(idx))
+            .copied()
+            .unwrap_or(0.0)
+            - data
+                .get(idx.checked_sub(stride_z).unwrap_or(idx))
+                .copied()
+                .unwrap_or(0.0))
+            * 0.5;
         Point3D::new(dx, dy, dz)
     }
 }
