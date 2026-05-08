@@ -21,9 +21,9 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 ## Phase 2: The Core Engine Contract (`oxidize_core`)
 *Goal: Create the dependency-free law of the land that allows the GUI to interact with mathematical models agnostically.*
 
-- [ ] **2.1 Initialize Crate**
+- [x] **2.1 Initialize Crate**
   - [x] Run `cd crates && cargo new oxidize_core --lib`.
-  - [ ] Add `"crates/oxidize_core"` to the root `Cargo.toml` workspace members.
+  - [x] Add `"crates/oxidize_core"` to the root `Cargo.toml` workspace members.
 - [ ] **2.2 Configure Dependencies** (In `crates/oxidize_core/Cargo.toml`)
   - [ ] Add `serde = { version = "1.0", features = ["derive"] }` (Required for GUI to save/load configs).
   - [ ] Add `thiserror = "1.0"` (For standardizing engine errors).
