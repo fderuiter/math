@@ -1,7 +1,7 @@
 use super::strategies::MatrixPayoff;
 use super::traits::FitnessStrategy;
 use crate::applied::game_theory::error::GameTheoryError;
-use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, SolverExt};
+use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
 use nalgebra::{DMatrix, DVector};
 
 /// Represents an Evolutionary Game solved via **Replicator Dynamics**.
@@ -103,7 +103,8 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
         trajectory.push((current_t, current_x.clone()));
 
         for _ in 0..steps {
-            current_x = solver.solve(self, current_t, &current_x, dt);
+            // ⚡ Bolt Optimization: Use `step` for in-place mutation to eliminate per-step DVector allocation.
+            solver.step(self, current_t, &mut current_x, dt);
             current_t += dt;
 
             // Normalize to prevent numerical drift from simplex
