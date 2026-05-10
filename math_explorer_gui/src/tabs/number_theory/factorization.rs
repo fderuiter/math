@@ -24,9 +24,12 @@ impl NumberTheoryTool for FactorizationTool {
 
             ui.horizontal(|ui| {
                 ui.label("Number:");
-                ui.text_edit_singleline(&mut self.input_text);
+                let response = ui.text_edit_singleline(&mut self.input_text);
 
-                if ui.button("Analyze").clicked() {
+                let enter_pressed =
+                    response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+
+                if ui.button("Analyze").clicked() || enter_pressed {
                     self.results = Some(match self.input_text.trim().parse::<u64>() {
                         Ok(num) => {
                             if num < 2 {
