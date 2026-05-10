@@ -25,7 +25,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
   - [x] Run `cd crates && cargo new oxidize_core --lib`.
   - [x] Add `"crates/oxidize_core"` to the root `Cargo.toml` workspace members.
 - [ ] **2.2 Configure Dependencies** (In `crates/oxidize_core/Cargo.toml`)
-  - [ ] Add `serde = { version = "1.0", features = ["derive"] }` (Required for GUI to save/load configs).
+  - [x] Add `serde = { version = "1.0", features = ["derive"] }` (Required for GUI to save/load configs).
   - [ ] Add `thiserror = "1.0"` (For standardizing engine errors).
 - [ ] **2.3 Define Architectural Traits** (In `crates/oxidize_core/src/lib.rs`)
   - [ ] Define `pub trait ModelConfig: Clone + serde::Serialize + serde::Deserialize<'static> {}`
