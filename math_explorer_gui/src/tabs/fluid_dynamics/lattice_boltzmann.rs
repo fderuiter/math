@@ -87,19 +87,32 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
 
             if ui
                 .button(if self.running { "⏸ Pause" } else { "▶ Run" })
+                .on_hover_text(if self.running {
+                    "Pause the fluid simulation"
+                } else {
+                    "Start the fluid simulation"
+                })
                 .clicked()
             {
                 self.running = !self.running;
             }
 
-            if ui.button("↺ Reset").clicked() {
+            if ui
+                .button("↻ Reset")
+                .on_hover_text("Reset the fluid field and re-initialize the simulation")
+                .clicked()
+            {
                 let width = self.solver.width();
                 let height = self.solver.height();
                 self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.viscosity + 0.5);
                 self.solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
             }
 
-            if ui.button("Clear Obstacles").clicked() {
+            if ui
+                .button("Clear Obstacles")
+                .on_hover_text("Remove all obstacles from the fluid field")
+                .clicked()
+            {
                 self.solver.clear_obstacles();
             }
 
