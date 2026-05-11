@@ -98,14 +98,22 @@ impl DiscreteSurface {
 
 pub struct MeanCurvatureFlow {
     pub surface: DiscreteSurface,
+    /// Bolt Optimization: Buffer to avoid allocations in step
+    pub next_points: Vec<Vec<Point3<f64>>>,
 }
 
 impl MeanCurvatureFlow {
+    pub fn new(surface: DiscreteSurface) -> Self {
+        let next_points = surface.points.clone();
+        Self {
+            surface,
+            next_points,
+        }
+    }
+
     pub fn step(&mut self, dt: f64) {
         let nu = self.surface.points.len();
         let nv = self.surface.points[0].len();
-
-        let mut new_points = self.surface.points.clone();
 
         #[allow(clippy::needless_range_loop)]
         for i in 0..nu {
@@ -131,10 +139,10 @@ impl MeanCurvatureFlow {
                 // Update
                 // Flow by mean curvature vector: dr/dt = H_vec
                 // H_vec points in the direction of steepest area descent (curvature vector).
-                new_points[i][j] += h_vec * dt;
+                self.next_points[i][j] = self.surface.points[i][j] + h_vec * dt;
             }
         }
 
-        self.surface.points = new_points;
+        std::mem::swap(&mut self.surface.points, &mut self.next_points);
     }
 }

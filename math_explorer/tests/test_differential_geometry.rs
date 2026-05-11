@@ -156,9 +156,7 @@ fn test_mean_curvature_flow_shrinkage() {
     }
 
     let discrete_sphere = DiscreteSurface::new(points, true, false);
-    let mut flow = MeanCurvatureFlow {
-        surface: discrete_sphere,
-    };
+    let mut flow = MeanCurvatureFlow::new(discrete_sphere);
 
     // Compute initial average radius
     let avg_radius = |surf: &DiscreteSurface| -> f64 {
