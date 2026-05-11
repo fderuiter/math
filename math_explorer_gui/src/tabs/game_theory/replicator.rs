@@ -170,7 +170,13 @@ impl ReplicatorDynamicsTool {
         ui.add(egui::Slider::new(&mut self.time_horizon, 10.0..=200.0).text("Duration"));
         ui.add(egui::Slider::new(&mut self.dt, 0.01..=0.5).text("Time Step"));
 
-        if ui.button("Run Simulation").clicked() {
+        if ui
+            .button("▶ Run Simulation")
+            .on_hover_text(
+                "Execute the simulation with the current payoff matrix and initial population",
+            )
+            .clicked()
+        {
             self.run_simulation();
         }
     }

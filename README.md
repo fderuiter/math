@@ -193,6 +193,16 @@ cargo run --release --package math_explorer --example favoritism_demo
 
 *(See `math_explorer/examples/favoritism_demo.rs` for implementation details)*
 
+#### Applied Mathematics: Battery Degradation
+Model battery health and capacity fade over time.
+
+```bash
+# Run the simulation
+cargo run --release --package math_explorer --example battery_degradation_demo
+```
+
+*(See `math_explorer/examples/battery_degradation_demo.rs` for implementation details)*
+
 #### Applied Mathematics: GRPO
 Group Relative Policy Optimization (GRPO) for reasoning tasks.
 
