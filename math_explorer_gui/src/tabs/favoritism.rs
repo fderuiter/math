@@ -95,8 +95,10 @@ impl ExplorerTab for FavoritismTab {
 
             ui.separator();
             ui.horizontal(|ui| {
-                ui.text_edit_singleline(&mut self.new_child_name);
-                if ui.button("Add").clicked() {
+                let response = ui.text_edit_singleline(&mut self.new_child_name);
+                let enter_pressed =
+                    response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+                if ui.button("Add").clicked() || enter_pressed {
                     self.children.push(Child::new(
                         self.new_child_name.clone(),
                         FavoritismInputs::default(),
