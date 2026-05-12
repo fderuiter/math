@@ -70,8 +70,12 @@ impl AttentionMapsTool {
     fn draw_heatmap(ui: &mut egui::Ui, name: &str, matrix: &DMatrix<f64>) {
         ui.label(name);
 
-        let min_val = matrix.iter().cloned().fold(f64::INFINITY, f64::min);
-        let max_val = matrix.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let (min_val, max_val) = matrix
+            .iter()
+            .copied()
+            .fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), val| {
+                (min.min(val), max.max(val))
+            });
 
         egui::Grid::new(format!("{}_heatmap_grid", name))
             .num_columns(matrix.ncols())
