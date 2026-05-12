@@ -159,7 +159,8 @@ impl OuAnalyzer {
 
         // Extract final values
         let mut final_values: Vec<f64> = paths.iter().map(|p| *p.last().unwrap()).collect();
-        final_values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        // Optimization: Use sort_unstable_by instead of sort_by for primitive f64s to avoid O(N) allocation overhead
+        final_values.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
 
         // Compute statistics
         let mean_final = final_values.iter().sum::<f64>() / n_paths as f64;
