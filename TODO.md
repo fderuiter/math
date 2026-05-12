@@ -28,7 +28,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
   - [x] Add `serde = { version = "1.0", features = ["derive"] }` (Required for GUI to save/load configs).
   - [x] Add `thiserror = "1.0"` (For standardizing engine errors).
 - [ ] **2.3 Define Architectural Traits** (In `crates/oxidize_core/src/lib.rs`)
-  - [ ] Define `pub trait ModelConfig: Clone + serde::Serialize + serde::Deserialize<'static> {}`
+  - [x] Define `pub trait ModelConfig: Clone + serde::Serialize + serde::Deserialize<'static> {}`
   - [ ] Define `pub trait ModelState: Clone {}`
   - [ ] Define `pub trait SimulationModel`.
   - [ ] Add method: `fn initialize(config: Self::Config) -> Result<Self, Self::Error> where Self: Sized;`
