@@ -127,7 +127,7 @@ impl ChaosTool for AttractorPlotter {
                     {
                         self.paused = !self.paused;
                     }
-                    if ui.button("↺ Reset").clicked() {
+                    if ui.button("↻ Reset").clicked() {
                         self.reset();
                     }
                 });
