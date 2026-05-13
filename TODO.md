@@ -30,7 +30,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 - [ ] **2.3 Define Architectural Traits** (In `crates/oxidize_core/src/lib.rs`)
   - [x] Define `pub trait ModelConfig: Clone + serde::Serialize + serde::Deserialize<'static> {}`
   - [x] Define `pub trait ModelState: Clone {}`
-  - [ ] Define `pub trait SimulationModel`.
+  - [x] Define `pub trait SimulationModel`.
   - [ ] Add method: `fn initialize(config: Self::Config) -> Result<Self, Self::Error> where Self: Sized;`
   - [ ] Add method: `fn step(&mut self) -> Result<(), Self::Error>;`
   - [ ] Add method: `fn get_state(&self) -> Self::State;`
