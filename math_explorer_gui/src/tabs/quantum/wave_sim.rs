@@ -148,7 +148,7 @@ impl QuantumTool for WaveSimulator {
                 {
                     self.paused = !self.paused;
                 }
-                if ui.button("↺ Reset").clicked() {
+                if ui.button("↻ Reset").clicked() {
                     self.init_system();
                 }
             });

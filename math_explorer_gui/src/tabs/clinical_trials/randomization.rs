@@ -72,10 +72,12 @@ impl ClinicalTrialsTool for RandomizationTool {
 
             ui.add_space(10.0);
 
+            let enter_pressed = ui.input(|i| i.key_pressed(egui::Key::Enter));
             if ui
                 .button("▶ Allocate Subjects")
                 .on_hover_text("Randomly assign subjects to treatment and control groups")
                 .clicked()
+                || enter_pressed
             {
                 self.error_message = None;
                 self.assignments.clear();
@@ -104,7 +106,22 @@ impl ClinicalTrialsTool for RandomizationTool {
 
             if let Some(ref err) = self.error_message {
                 ui.colored_label(egui::Color32::RED, format!("Error: {}", err));
-            } else if !self.assignments.is_empty() {
+            } else if self.assignments.is_empty() {
+                ui.vertical_centered(|ui| {
+                    ui.add_space(20.0);
+                    ui.label(
+                        egui::RichText::new("No subjects allocated yet.")
+                            .strong()
+                            .color(egui::Color32::DARK_GRAY),
+                    );
+                    ui.label(
+                        egui::RichText::new(
+                            "Configure parameters and click 'Allocate Subjects' to begin.",
+                        )
+                        .color(egui::Color32::GRAY),
+                    );
+                });
+            } else {
                 ui.heading("Assignments:");
 
                 let mut treatment_count = 0;
