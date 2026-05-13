@@ -2,6 +2,8 @@ pub trait ModelConfig: Clone + serde::Serialize + serde::Deserialize<'static> {}
 
 pub trait ModelState: Clone {}
 
+pub trait SimulationModel {}
+
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }
