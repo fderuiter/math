@@ -225,8 +225,12 @@ impl SpikeAnalysisTool {
             return Vec::new();
         }
 
-        let min_isi = self.isis.iter().fold(f64::INFINITY, |a, &b| a.min(b));
-        let max_isi = self.isis.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+        let (min_isi, max_isi) = self
+            .isis
+            .iter()
+            .fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), &val| {
+                (min.min(val), max.max(val))
+            });
 
         if (max_isi - min_isi).abs() < 1e-6 {
             // All ISIs are the same (perfect periodicity)
