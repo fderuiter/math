@@ -29,7 +29,14 @@ impl NumberTheoryTool for FactorizationTool {
                 let enter_pressed =
                     response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
 
-                if ui.button("Analyze").clicked() || enter_pressed {
+                if ui
+                    .button("Analyze")
+                    .on_hover_text(
+                        "Analyze the number for primality and calculate its prime factors",
+                    )
+                    .clicked()
+                    || enter_pressed
+                {
                     self.results = Some(match self.input_text.trim().parse::<u64>() {
                         Ok(num) => {
                             if num < 2 {
