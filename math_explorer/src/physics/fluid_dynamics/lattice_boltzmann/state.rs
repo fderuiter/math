@@ -51,7 +51,9 @@ impl<const Q: usize> LatticeState<Q> {
     /// Does not check bounds (use with caution or check bounds externally).
     #[inline]
     pub fn index(&self, x: usize, y: usize) -> usize {
-        y * self.width + x
+        y.checked_mul(self.width)
+            .and_then(|val| val.checked_add(x))
+            .expect("Index calculation overflow")
     }
 
     /// Checks if the coordinates are within the grid.
