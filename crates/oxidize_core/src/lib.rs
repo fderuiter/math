@@ -2,7 +2,14 @@ pub trait ModelConfig: Clone + serde::Serialize + serde::Deserialize<'static> {}
 
 pub trait ModelState: Clone {}
 
-pub trait SimulationModel {}
+pub trait SimulationModel {
+    type Config;
+    type Error;
+
+    fn initialize(config: Self::Config) -> Result<Self, Self::Error>
+    where
+        Self: Sized;
+}
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
