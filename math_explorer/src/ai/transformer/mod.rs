@@ -25,6 +25,21 @@
 //!     end
 //! ```
 //!
+//! ### Multi-Head Attention Tensor Flow
+//! ```mermaid
+//! sequenceDiagram
+//!     participant Input
+//!     participant QKV as Q, K, V Projections
+//!     participant SDPA as Scaled Dot-Product
+//!     participant OutProj as Output Projection
+//!
+//!     Input->>QKV: X (seq_len, d_model)
+//!     QKV->>SDPA: Queries, Keys, Values (heads, seq_len, d_k)
+//!     Note over SDPA: Softmax(Q * K^T / sqrt(d_k)) * V
+//!     SDPA->>OutProj: Concatenated Heads (seq_len, d_model)
+//!     OutProj->>Input: Contextualized Output (seq_len, d_model)
+//! ```
+//!
 //! ## Components
 //!
 //! - **Attention**: Scaled Dot-Product Attention and Multi-Head Attention.
