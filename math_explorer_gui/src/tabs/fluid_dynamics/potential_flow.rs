@@ -106,14 +106,22 @@ impl FluidDynamicsTool for PotentialFlowTool {
                     }
                 }
 
-                if ui.button("Add Element").clicked() {
+                if ui
+                    .button("➕ Add Element")
+                    .on_hover_text("Add the selected flow element to the field")
+                    .clicked()
+                {
                     self.add_element();
                 }
             });
 
             ui.separator();
 
-            if ui.button("Clear All").clicked() {
+            if ui
+                .button("🔄 Clear All")
+                .on_hover_text("Remove all potential flow elements and reset the field")
+                .clicked()
+            {
                 self.clear();
             }
 
