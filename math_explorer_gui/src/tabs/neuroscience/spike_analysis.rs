@@ -2,17 +2,18 @@ use super::NeuroscienceTool;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Line, Plot, PlotPoints};
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+use std::collections::VecDeque;
 
 pub struct SpikeAnalysisTool {
     // Simulation State
     neuron: HodgkinHuxleyNeuron,
     time: f64,
     is_running: bool,
-    history: Vec<[f64; 2]>, // [time, voltage]
+    history: VecDeque<[f64; 2]>, // [time, voltage]
 
     // Analysis State
     spike_times: Vec<f64>,
-    isis: Vec<f64>, // Inter-Spike Intervals (ms)
+    isis: VecDeque<f64>, // Inter-Spike Intervals (ms)
     last_voltage: f64,
 
     // UI Controls
@@ -29,9 +30,9 @@ impl Default for SpikeAnalysisTool {
             neuron,
             time: 0.0,
             is_running: false,
-            history: Vec::new(),
+            history: VecDeque::new(),
             spike_times: Vec::new(),
-            isis: Vec::new(),
+            isis: VecDeque::new(),
             last_voltage: -65.0,
             input_current: 10.0,
             spike_threshold: 0.0,
@@ -90,7 +91,7 @@ impl NeuroscienceTool for SpikeAnalysisTool {
             ui.separator();
             ui.label(format!("Time: {:.2} ms", self.time));
             ui.label(format!("Spikes Detected: {}", self.spike_times.len()));
-            if let Some(last_isi) = self.isis.last() {
+            if let Some(last_isi) = self.isis.back() {
                 ui.label(format!("Last ISI: {:.2} ms", last_isi));
             }
             if !self.isis.is_empty() {
@@ -117,7 +118,10 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                     .y_axis_label("Membrane Potential (mV)")
                     .show(ui, |plot_ui| {
                         // Voltage Line
-                        plot_ui.line(Line::new("Voltage", PlotPoints::new(self.history.clone())));
+                        plot_ui.line(Line::new(
+                            "Voltage",
+                            PlotPoints::new(self.history.iter().copied().collect::<Vec<_>>()),
+                        ));
 
                         // Threshold Line
                         plot_ui.hline(
@@ -180,14 +184,14 @@ impl SpikeAnalysisTool {
             // Recording every 10th step = 0.1ms resolution
             // Or just check time % 0.1 < dt
             if (self.time * 10.0).round() % 1.0 == 0.0 {
-                self.history.push([self.time, v]);
+                self.history.push_back([self.time, v]);
             }
 
             // Manage History Size (keep last 5000 points = 500ms window approx if subsampled)
             // But for analysis we might want longer history. Let's keep last 2000ms.
             // 2000ms / 0.1ms = 20,000 points.
             if self.history.len() > 20_000 {
-                self.history.remove(0);
+                self.history.pop_front();
             }
 
             self.last_voltage = v;
@@ -197,13 +201,13 @@ impl SpikeAnalysisTool {
     fn record_spike(&mut self, time: f64) {
         if let Some(&last_spike_time) = self.spike_times.last() {
             let isi = time - last_spike_time;
-            self.isis.push(isi);
+            self.isis.push_back(isi);
         }
         self.spike_times.push(time);
 
         // Keep ISI history manageable? Maybe last 1000 intervals.
         if self.isis.len() > 1000 {
-            self.isis.remove(0);
+            self.isis.pop_front();
         }
         // Keep spike times aligned with view?
         // If we clear history, we might lose context.
