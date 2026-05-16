@@ -60,7 +60,11 @@ impl GraphTheoryTool for GraphEditorTool {
 
             ui.separator();
 
-            if ui.button("Clear Graph").clicked() {
+            if ui
+                .button("🔄 Clear Graph")
+                .on_hover_text("Remove all nodes and edges from the graph")
+                .clicked()
+            {
                 self.graph = Graph::new();
                 self.node_indices.clear();
                 self.node_positions.clear();
