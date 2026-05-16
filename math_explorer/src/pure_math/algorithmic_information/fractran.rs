@@ -157,6 +157,26 @@ impl MinskyMachine {
 }
 
 /// A FRACTRAN program represented by a list of rational numbers.
+///
+/// # Example
+///
+/// ```
+/// use math_explorer::pure_math::algorithmic_information::fractran::FractranProgram;
+/// use rug::{Integer, Rational};
+///
+/// // A simple program to add two numbers: r0 and r1
+/// // r0 is represented by p=2, r1 by q=3.
+/// // FRACTRAN fraction: 3/2.
+/// // State N = 2^a * 3^b -> N * (3/2)^a = 3^(a+b)
+/// let prog = FractranProgram::new(vec![Rational::from((3, 2))]);
+///
+/// use rug::ops::Pow;
+/// let initial_n = Integer::from(2).pow(5) * Integer::from(3).pow(7);
+/// let (final_n, steps) = prog.execute(initial_n, 100);
+///
+/// assert_eq!(steps, 5); // It takes exactly 5 steps to move 'a' into 'b'
+/// assert_eq!(final_n, Integer::from(3).pow(12)); // 5 + 7 = 12
+/// ```
 #[derive(Debug, Clone)]
 pub struct FractranProgram {
     pub fractions: Vec<Rational>,
