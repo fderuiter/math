@@ -18,6 +18,7 @@ git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer
 
 # Check prerequisites, build the core library, and run tests
+# Note: To compile academic papers, ensure pdflatex (e.g., via TeX Live) is installed.
 ./setup.sh
 ```
 
