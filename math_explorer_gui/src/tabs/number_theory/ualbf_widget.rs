@@ -56,7 +56,7 @@ impl NumberTheoryTool for UalbfWidget {
                         .text("Stop threshold (10^x)"),
                 );
 
-                if ui.button("Run UALBF Pipeline").clicked() {
+                if ui.button("▶ Run UALBF Pipeline").on_hover_text("Execute the UALBF search algorithm").clicked() {
                     let threshold_str = format!("{:.0}", 10f64.powf(self.stop_threshold_log));
                     let target_max = "1000000000000";
                     match ualbf_search(self.limit_p, self.max_exponent, &threshold_str, target_max) {
