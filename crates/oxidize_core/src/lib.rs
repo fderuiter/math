@@ -9,6 +9,8 @@ pub trait SimulationModel {
     fn initialize(config: Self::Config) -> Result<Self, Self::Error>
     where
         Self: Sized;
+
+    fn step(&mut self) -> Result<(), Self::Error>;
 }
 
 pub fn add(left: u64, right: u64) -> u64 {
