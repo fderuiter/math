@@ -122,7 +122,11 @@ impl NumberTheoryTool for PartitionsWidget {
 
                     ui.separator();
 
-                    if ui.button("Calculate").clicked() {
+                    if ui
+                        .button("▶ Calculate")
+                        .on_hover_text("Compute partition function Q-Series")
+                        .clicked()
+                    {
                         self.calculate();
                     }
 
