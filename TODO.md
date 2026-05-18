@@ -32,7 +32,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
   - [x] Define `pub trait ModelState: Clone {}`
   - [x] Define `pub trait SimulationModel`.
   - [x] Add method: `fn initialize(config: Self::Config) -> Result<Self, Self::Error> where Self: Sized;`
-  - [ ] Add method: `fn step(&mut self) -> Result<(), Self::Error>;`
+  - [x] Add method: `fn step(&mut self) -> Result<(), Self::Error>;`
   - [ ] Add method: `fn get_state(&self) -> Self::State;`
 - [ ] **2.4 Link to Facade**
   - [ ] In `crates/math_explorer/Cargo.toml`, add `oxidize_core = { path = "../oxidize_core" }`.
