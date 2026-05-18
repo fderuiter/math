@@ -5,3 +5,6 @@
 ## 2024-05-18 - Optimize multiple iterators via fold
 **Learning:** Found separate `.min()` and `.max()` folds on the same dataset (`isis` array) in per-frame rendering code, causing redundant double iteration.
 **Action:** Use a single `.fold((min, max), ...)` operation with a tuple accumulator to compute both min and max simultaneously, halving the iteration overhead.
+## 2024-05-24 - Cache Matrix Transpose in Iterative Loops
+**Learning:** In nalgebra, methods like `.transpose()` allocate and return a new matrix. Calling this inside an iterative loop (like a power iteration method) causes unnecessary reallocations every iteration, severely degrading performance.
+**Action:** Always extract static matrix transformations (like transpose) out of iterative loops.
