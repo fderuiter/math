@@ -57,12 +57,14 @@ impl eframe::App for MathExplorerApp {
             ui.horizontal(|ui| {
                 ui.heading("Math Explorer");
                 ui.separator();
-                for (i, tab) in self.tabs.iter().enumerate() {
-                    let name = tab.name();
-                    if ui.selectable_label(self.selected_tab == i, name).clicked() {
-                        self.selected_tab = i;
+                egui::ScrollArea::horizontal().show(ui, |ui| {
+                    for (i, tab) in self.tabs.iter().enumerate() {
+                        let name = tab.name();
+                        if ui.selectable_label(self.selected_tab == i, name).clicked() {
+                            self.selected_tab = i;
+                        }
                     }
-                }
+                });
             });
         });
 
