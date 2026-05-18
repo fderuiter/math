@@ -191,11 +191,15 @@ impl FractranProgram {
     /// Execute a single step of the FRACTRAN program.
     /// Returns `Some(new_n)` if a step was taken, or `None` if the program halted.
     pub fn step(&self, n: &Integer) -> Option<Integer> {
-        let n_rational = Rational::from(n.clone());
+        // Bolt Optimization: Replace rational arithmetic with integer operations
         for fraction in &self.fractions {
-            let product = n_rational.clone() * fraction;
-            if product.is_integer() {
-                return Some(product.numer().clone());
+            let num = fraction.numer();
+            let den = fraction.denom();
+            if n.is_divisible(den) {
+                let mut next_n = n.clone();
+                next_n *= num;
+                next_n /= den;
+                return Some(next_n);
             }
         }
         None
