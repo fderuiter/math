@@ -420,8 +420,11 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
             T::one() / T::from_usize(self.num_states()).unwrap(),
         );
 
+        // OPTIMIZATION: Cache transpose outside the loop to avoid O(N^2) allocations per iteration
+        let transition_matrix_t = self.transition_matrix.transpose();
+
         for _ in 0..MAX_ITERS {
-            let pi_next = self.transition_matrix.transpose() * &pi;
+            let pi_next = &transition_matrix_t * &pi;
 
             // Check convergence
             let diff = (&pi_next - &pi).norm();

@@ -9,3 +9,6 @@
 ## 2024-05-20 - Optimize FRACTRAN iteration memory usage
 **Learning:** FRACTRAN simulation evaluates `$N \leftarrow N \cdot \frac{a}{b}$` heavily in a loop. Converting `N` (rug::Integer) to `rug::Rational` for the product inside the loop was causing expensive heap allocations (`Rational::from(n.clone())` + cloning).
 **Action:** Replace `Rational` arithmetic in the iteration loop with in-place `Integer` operations (`is_divisible`, `*=`, `/=`) to avoid allocating new rationals at every step. This simple change yielded a ~57% reduction in execution time for `FractranProgram::execute`.
+## 2024-05-24 - Cache Matrix Transpose in Iterative Loops
+**Learning:** In nalgebra, methods like `.transpose()` allocate and return a new matrix. Calling this inside an iterative loop (like a power iteration method) causes unnecessary reallocations every iteration, severely degrading performance.
+**Action:** Always extract static matrix transformations (like transpose) out of iterative loops.
