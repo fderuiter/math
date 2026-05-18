@@ -1,4 +1,0 @@
-💡 What: Replaced rational arithmetic with in-place integer operations in FRACTRAN iteration loop.
-🎯 Why: Converting `N` to `rug::Rational` inside the loop was causing expensive heap allocations.
-📊 Impact: Reduces FRACTRAN simulation execution time by ~57%.
-🔬 Measurement: Run `cargo bench --workspace --bench fractran_benchmark` to verify the improvement.
