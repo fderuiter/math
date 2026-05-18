@@ -27,13 +27,13 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 - [x] **2.2 Configure Dependencies** (In `crates/oxidize_core/Cargo.toml`)
   - [x] Add `serde = { version = "1.0", features = ["derive"] }` (Required for GUI to save/load configs).
   - [x] Add `thiserror = "1.0"` (For standardizing engine errors).
-- [ ] **2.3 Define Architectural Traits** (In `crates/oxidize_core/src/lib.rs`)
+- [x] **2.3 Define Architectural Traits** (In `crates/oxidize_core/src/lib.rs`)
   - [x] Define `pub trait ModelConfig: Clone + serde::Serialize + serde::Deserialize<'static> {}`
   - [x] Define `pub trait ModelState: Clone {}`
   - [x] Define `pub trait SimulationModel`.
   - [x] Add method: `fn initialize(config: Self::Config) -> Result<Self, Self::Error> where Self: Sized;`
   - [x] Add method: `fn step(&mut self) -> Result<(), Self::Error>;`
-  - [ ] Add method: `fn get_state(&self) -> Self::State;`
+  - [x] Add method: `fn get_state(&self) -> Self::State;`
 - [ ] **2.4 Link to Facade**
   - [ ] In `crates/math_explorer/Cargo.toml`, add `oxidize_core = { path = "../oxidize_core" }`.
 
