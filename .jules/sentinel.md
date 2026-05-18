@@ -1,0 +1,4 @@
+## 2025-02-14 - Fix Out of Bounds Panic in Marching Cubes
+**Vulnerability:** Direct slice/array indexing (`data[base_idx + $offset]`) in the central `fetch!` macro used by the Marching Cubes algorithm lacked boundary checks. This could cause unhandled panics and lead to Denial of Service (DoS) if malformed data buffers or dimensions were passed.
+**Learning:** High-performance inner loops using macros (like `fetch!`) can easily obscure unsafe/unchecked memory access patterns. In `math_explorer`, replacing direct indexing with `.get(...).copied().unwrap_or(0.0)` gracefully provides a safe fallback without significant performance degradation and completely removes the DoS vector.
+**Prevention:** Always audit inner loops and macros for direct slice indexing. Use safe `.get()` methods with a safe fallback value (`unwrap_or`) when out-of-bounds conditions represent non-critical data omissions (like empty space padding in voxel grids).

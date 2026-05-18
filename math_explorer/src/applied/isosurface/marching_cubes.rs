@@ -213,7 +213,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         // Helper macro to fetch and update index
         macro_rules! fetch {
             ($i:expr, $offset:expr, $bit:expr) => {
-                let v = data[base_idx + $offset];
+                let v = data.get(base_idx + $offset).copied().unwrap_or(0.0);
                 values[$i] = v;
                 if v < threshold {
                     index |= $bit;
