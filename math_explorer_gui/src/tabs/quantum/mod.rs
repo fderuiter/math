@@ -45,14 +45,16 @@ impl ExplorerTab for QuantumTab {
         egui::TopBottomPanel::top("quantum_tool_selector").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.label("Tool:");
-                for (i, tool) in self.tools.iter().enumerate() {
-                    if ui
-                        .selectable_label(self.selected_tool_index == i, tool.name())
-                        .clicked()
-                    {
-                        self.selected_tool_index = i;
+                egui::ScrollArea::horizontal().show(ui, |ui| {
+                    for (i, tool) in self.tools.iter().enumerate() {
+                        if ui
+                            .selectable_label(self.selected_tool_index == i, tool.name())
+                            .clicked()
+                        {
+                            self.selected_tool_index = i;
+                        }
                     }
-                }
+                });
             });
         });
 
