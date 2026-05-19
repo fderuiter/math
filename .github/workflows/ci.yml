@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  WORKING_DIRECTORY: math_explorer
+  WORKING_DIRECTORY: .
   toolchain: stable
 
 jobs:
@@ -44,13 +44,13 @@ jobs:
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Build
-        run: cargo build --verbose
+        run: cargo build --workspace --all-features --verbose
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Run Tests
-        run: cargo test --verbose
+        run: cargo test --workspace --all-features --verbose
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
       - name: Run Clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --workspace --all-features -- -D warnings
         working-directory: ${{ env.WORKING_DIRECTORY }}
