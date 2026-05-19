@@ -57,7 +57,6 @@ If you add new functionality, **you must add tests**.
 
 The `math_explorer_gui` crate is built with **egui** and **eframe**.
 
-*   **Roadmap:** Please consult [todo_gui.md](todo_gui.md) before starting a new GUI feature to ensure alignment with the project goals.
 *   **Structure:**
     *   UI code resides in `math_explorer_gui/src`.
     *   The GUI should primarily visualize and control logic defined in the core `math_explorer` library. Avoid implementing heavy mathematical logic directly in the GUI crate.
