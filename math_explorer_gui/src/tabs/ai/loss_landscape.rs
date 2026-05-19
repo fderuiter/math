@@ -2,7 +2,6 @@ use super::AiTool;
 use eframe::egui;
 use egui::Color32;
 use egui_plot::{Plot, Points};
-use math_explorer::ai::optimization::mean_squared_error;
 use nalgebra::DVector;
 
 pub struct LossLandscapeTool {
@@ -96,14 +95,21 @@ impl AiTool for LossLandscapeTool {
             let mut max_loss = f64::MIN;
             let mut loss_grid = Vec::new();
 
+            let n = self.x_data.len() as f64;
+
             for i in 0..self.resolution {
                 for j in 0..self.resolution {
                     let w = self.w_min + i as f64 * w_step;
                     let b = self.b_min + j as f64 * b_step;
 
-                    // Calculate predictions: y_pred = w*x + b
-                    let y_pred = self.x_data.map(|x| w * x + b);
-                    let loss = mean_squared_error(&y_pred, &self.y_data).unwrap_or(0.0);
+                    // Calculate predictions and MSE manually to avoid inner-loop allocation overhead
+                    let mut sum_sq_error = 0.0;
+                    for k in 0..self.x_data.len() {
+                        let y_pred = w * self.x_data[k] + b;
+                        let err = y_pred - self.y_data[k];
+                        sum_sq_error += err * err;
+                    }
+                    let loss = sum_sq_error / n;
 
                     if loss < min_loss {
                         min_loss = loss;
