@@ -69,7 +69,6 @@ fn main() {
 *   **Physics / Quantum:** Schrödinger Solver, Wavefunction Evolution, and Clebsch-Gordan Calculator.
 *   **Physics / Solid State:** Crystal Lattice Viewer (FCC, BCC, SC).
 
-*See [todo_gui.md](todo_gui.md) for the development roadmap.*
 
 ### Deep Dive: Modules
 
