@@ -143,12 +143,17 @@ impl ZipRegression {
     /// The log-likelihood value
     pub fn log_likelihood(&self, beta: &DVector<f64>, alpha: &DVector<f64>) -> f64 {
         let mut ll = 0.0;
+        let beta_t = beta.transpose();
+        let alpha_t = alpha.transpose();
 
         for i in 0..self.counts.len() {
-            let x_row = self.x_matrix.row(i).transpose();
-            let z_row = self.z_matrix.row(i).transpose();
+            let eta = self.x_matrix.row(i).dot(&beta_t);
+            let gamma = self.z_matrix.row(i).dot(&alpha_t);
 
-            let params = match Self::predict(&x_row, &z_row, beta, alpha) {
+            let lambda = LogLink::link(eta);
+            let rho = LogitLink::link(gamma);
+
+            let params = match ZipParams::from_values(rho, lambda) {
                 Ok(p) => p,
                 Err(_) => return f64::NEG_INFINITY,
             };
