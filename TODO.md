@@ -34,8 +34,8 @@ This document outlines the step-by-step, granular process for migrating the Oxid
   - [x] Add method: `fn initialize(config: Self::Config) -> Result<Self, Self::Error> where Self: Sized;`
   - [x] Add method: `fn step(&mut self) -> Result<(), Self::Error>;`
   - [x] Add method: `fn get_state(&self) -> Self::State;`
-- [ ] **2.4 Link to Facade**
-  - [ ] In `crates/math_explorer/Cargo.toml`, add `oxidize_core = { path = "../oxidize_core" }`.
+- [x] **2.4 Link to Facade**
+  - [x] In `crates/math_explorer/Cargo.toml`, add `oxidize_core = { path = "../oxidize_core" }`.
 
 ## Phase 3: Facade Purge & Test Relocation
 *Goal: Strip `math_explorer/src/lib.rs` down to a pure router. Tests belong in their respective modules or the `tests/` directory.*
