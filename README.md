@@ -152,12 +152,17 @@ Explore 20+ specialized, runnable examples spanning Physics, AI, Biology, and Pu
 
 ## Config
 
-Some modules are intentionally excluded from the default compilation to reduce build times or avoid heavy external dependencies (like LibTorch). These are called "Ghost Modules."
+Math Explorer uses standard Cargo features to manage compilation of its extensive domain modules. By default, no specific domain features are enabled.
 
-### Generative Turbulence
-A deep learning-based module for generating turbulent flow fields using `tch-rs`. It is excluded by default because it requires a local LibTorch installation.
+To selectively compile domains (e.g., `physics` and `ai`), update your `Cargo.toml`:
 
-To learn how to enable it and explore the code, see the [Generative Turbulence Documentation](math_explorer/src/applied/generative_turbulence/README.md).
+```toml
+[dependencies]
+math_explorer = { version = "0.4.0", features = ["physics", "ai"] }
+```
+
+Available feature flags include: `ai`, `applied`, `biology`, `climate`, `epidemiology`, `physics`, and `pure_math`.
+
 
 ---
 
