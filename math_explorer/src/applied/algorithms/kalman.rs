@@ -233,8 +233,11 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilter<T, M> {
         // Innovation
         let y = measurement - z_pred;
 
+        // Cache transpose outside the expression
+        let h_t = h.transpose();
+
         // Innovation Covariance S = H P H^T + R
-        let s = &h * &self.covariance * h.transpose() + r;
+        let s = &h * &self.covariance * &h_t + r;
 
         // Invert S.
         // For 1D measurements, this is trivial. For nD, we need matrix inversion.
@@ -242,7 +245,7 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilter<T, M> {
         let s_inv = s.try_inverse().ok_or(KalmanError::MatrixInversionError)?;
 
         // Kalman Gain K = P H^T S^-1
-        let k = &self.covariance * h.transpose() * s_inv;
+        let k = &self.covariance * &h_t * s_inv;
 
         // Update State
         self.state = &self.state + &k * y;
