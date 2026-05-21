@@ -56,7 +56,12 @@ impl ChaosTool for BifurcationDiagram {
                 .add(egui::Slider::new(&mut self.steps, 100..=2000))
                 .changed();
 
-            if ui.button("Recompute").clicked() || changed {
+            if ui
+                .button("▶ Recompute")
+                .on_hover_text("Regenerate the bifurcation diagram with the current parameters")
+                .clicked()
+                || changed
+            {
                 self.recompute();
             }
 
