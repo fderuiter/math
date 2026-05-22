@@ -2,11 +2,12 @@ use super::NeuroscienceTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::biology::neuroscience::{HodgkinHuxleyNeuron, HodgkinHuxleyParameters};
+use std::collections::VecDeque;
 
 pub struct HodgkinHuxleyTool {
     neuron: HodgkinHuxleyNeuron,
     params: HodgkinHuxleyParameters,
-    history: Vec<[f64; 2]>, // [time, voltage]
+    history: VecDeque<[f64; 2]>, // [time, voltage]
     time: f64,
     is_running: bool,
 
@@ -28,7 +29,7 @@ impl Default for HodgkinHuxleyTool {
             g_k: params.g_k,
             g_l: params.g_l,
             params, // Keep a copy
-            history: Vec::new(),
+            history: VecDeque::new(),
             time: 0.0,
             is_running: false,
             i_ext: 10.0, // Default injection
@@ -127,12 +128,12 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                     // Record history (every step or subsample?)
                     // Subsample to avoid memory explosion, or use a ring buffer.
                     // For now, just append. Maybe limit size.
-                    self.history.push([self.time, self.neuron.v()]);
+                    self.history.push_back([self.time, self.neuron.v()]);
                 }
 
                 // Limit history size to keep UI responsive
-                if self.history.len() > 10_000 {
-                    self.history.drain(0..100);
+                while self.history.len() > 10_000 {
+                    self.history.pop_front();
                 }
 
                 // Request repaint to animate
@@ -144,7 +145,7 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
             // Plotting
             let line = Line::new(
                 "Membrane Potential (V)",
-                PlotPoints::new(self.history.clone()),
+                PlotPoints::from_iter(self.history.iter().copied()),
             )
             .color(egui::Color32::from_rgb(100, 200, 255));
 
