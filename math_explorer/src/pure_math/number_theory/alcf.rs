@@ -150,10 +150,11 @@ impl FloatMatrix {
 
     pub fn swap_columns(&mut self, col1: usize, col2: usize) {
         for r in 0..self.rows {
-            let temp = self.get(r, col1).clone();
-            let val2 = self.get(r, col2).clone();
-            self.set(r, col1, val2);
-            self.set(r, col2, temp);
+            let idx1 = r * self.cols + col1;
+            let idx2 = r * self.cols + col2;
+            // Bolt Optimization: Use slice::swap directly on the 1D backing vector to
+            // eliminate O(N) intermediate allocations, bounds-checks and `clone()` overhead.
+            self.data.swap(idx1, idx2);
         }
     }
 }
