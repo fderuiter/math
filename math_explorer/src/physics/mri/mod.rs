@@ -36,6 +36,36 @@
 //!     style Image fill:#e8f5e9,stroke:#1b5e20
 //! ```
 //!
+//! ##  Example
+//!
+//! Simulating Transverse Relaxation (T2 Decay) using the `BlochSimulator`:
+//!
+//! ```rust
+//! use math_explorer::physics::mri::BlochSimulator;
+//! use math_explorer::pure_math::analysis::ode::TimeStepper;
+//! use nalgebra::Vector3;
+//!
+//! // 1. Initialize magnetization vector (M) flipped 90 degrees into the transverse plane
+//! let initial_m = Vector3::new(0.0, 1.0, 0.0);
+//! let m0 = 1.0; // Equilibrium magnetization
+//! let mut bloch = BlochSimulator::new(initial_m, m0);
+//!
+//! // 2. Set tissue relaxation parameters
+//! let t1 = 1.0;  // Longitudinal relaxation time (seconds)
+//! let t2 = 0.1;  // Transverse relaxation time (seconds)
+//! bloch.set_relaxation(t1, t2);
+//!
+//! // 3. Evolve the system forward in time (dt = 0.01s) for one T2 period (0.1s)
+//! let dt = 0.01;
+//! for _ in 0..10 {
+//!     <BlochSimulator as TimeStepper<Vector3<f64>>>::step(&mut bloch, dt);
+//! }
+//!
+//! // The transverse magnetization (My) should decay to ~36.8% (1/e) of its initial value
+//! let my = bloch.magnetization.y;
+//! assert!((my - 0.3678).abs() < 0.01, "Expected ~0.3678, got {}", my);
+//! ```
+//!
 //! ##  Domains
 //!
 //! *   **Quantum Foundations** (`proton`): Constants and properties for Hydrogen nuclei (gyromagnetic ratio $\gamma$).
