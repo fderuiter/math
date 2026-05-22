@@ -126,7 +126,11 @@ impl QuantumTool for SpinVisualizer {
                 {
                     self.paused = !self.paused;
                 }
-                if ui.button("↻ Reset").clicked() {
+                if ui
+                    .button("🔄 Reset")
+                    .on_hover_text("Reset to |0> spin state")
+                    .clicked()
+                {
                     self.reset();
                 }
             });
