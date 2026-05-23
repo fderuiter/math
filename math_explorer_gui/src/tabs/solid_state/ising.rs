@@ -64,18 +64,27 @@ impl SolidStateTool for IsingModelTool {
                 ui.separator();
 
                 ui.horizontal(|ui| {
-                    if ui
-                        .button(if self.running {
-                            "⏸ Pause"
+                    let play_pause_btn = ui.button(if self.running {
+                        "⏸ Pause"
+                    } else {
+                        "▶ Play"
+                    });
+                    if play_pause_btn
+                        .on_hover_text(if self.running {
+                            "Pause the Ising model simulation"
                         } else {
-                            "▶ Play"
+                            "Resume the Ising model simulation"
                         })
                         .clicked()
                     {
                         self.running = !self.running;
                     }
 
-                    if ui.button("↻ Reset").clicked() {
+                    if ui
+                        .button("🔄 Reset")
+                        .on_hover_text("Re-initialize the spin lattice and reset simulation")
+                        .clicked()
+                    {
                         self.lattice = SpinLattice::new(100, 100);
                         self.texture = None; // Force texture recreation
                     }
