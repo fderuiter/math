@@ -98,10 +98,18 @@ impl ReplicatorDynamicsTool {
 
         ui.label("Presets:");
         ui.horizontal(|ui| {
-            if ui.button("Hawk-Dove").clicked() {
+            if ui
+                .button("🦅🕊️ Hawk-Dove")
+                .on_hover_text("Load classic Hawk-Dove payoff matrix")
+                .clicked()
+            {
                 self.load_preset_hawk_dove();
             }
-            if ui.button("RPS").clicked() {
+            if ui
+                .button("🪨📄✂️ RPS")
+                .on_hover_text("Load Rock-Paper-Scissors payoff matrix")
+                .clicked()
+            {
                 self.load_preset_rps();
             }
         });
