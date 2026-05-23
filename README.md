@@ -31,6 +31,13 @@ cargo build --release --package math_explorer
 
 ## Usage
 
+### Quickstart: "Hello World"
+Experience the library in action by running our pre-built Quantum Mechanics example within 30 seconds of installation:
+
+```bash
+cargo run --package math_explorer --example hello_world
+```
+
 ### 1. The Interactive GUI (Recommended)
 We provide a native eframe/egui application to explore simulations (Physics, Biology, Chaos Theory, etc.) interactively.
 
@@ -38,27 +45,6 @@ We provide a native eframe/egui application to explore simulations (Physics, Bio
 
 ```bash
 cargo run --release --package math_explorer_gui
-```
-
-### 2. Command Line "Hello World"
-Experience the library in action by running our pre-built Quantum Mechanics example:
-
-```bash
-cargo run --package math_explorer --example hello_world
-```
-
-This will calculate Clebsch-Gordan coefficients with a stylized terminal output. *(See `math_explorer/examples/hello_world.rs` for implementation details)*
-
-Alternatively, you can use the API directly in your own code:
-
-```rust
-use math_explorer::physics::quantum::clebsch_gordan;
-
-fn main() {
-    // Coupling j1=1.5, m1=-0.5 with j2=1.0, m2=1.0 to J=2.5, M=0.5
-    let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
-    println!("Clebsch-Gordan Coefficient: {:.4}", coeff);
-}
 ```
 
 #### Current Capabilities
