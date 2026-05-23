@@ -42,8 +42,9 @@ pub fn t_statistic<T: RealField + Copy>(
 
     let numerator = c.dot(beta);
 
-    let variance_term = c.transpose() * xtx_inv * c;
-    let denominator = (residual_variance * variance_term[(0, 0)]).sqrt();
+    // Use dot product instead of matrix multiplication for c^T * xtx_inv * c
+    let variance_term = c.dot(&(&xtx_inv * c));
+    let denominator = (residual_variance * variance_term).sqrt();
 
     if denominator == T::zero() {
         return Err("Denominator is zero, t-statistic is undefined.");

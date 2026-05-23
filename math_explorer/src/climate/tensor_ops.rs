@@ -30,12 +30,12 @@ pub fn conv1d(input: &DMatrix<f32>, kernel: &DMatrix<f32>, bias: &DVector<f32>) 
     );
 
     // The core operation is `output = input * kernel^T + bias`
-    let mut output = input * kernel.transpose();
+    let kernel_t = kernel.transpose();
+    let mut output = input * kernel_t;
 
     // Add bias to each row
-    output
-        .row_iter_mut()
-        .for_each(|mut row| row += bias.transpose());
+    let bias_t = bias.transpose();
+    output.row_iter_mut().for_each(|mut row| row += &bias_t);
 
     output
 }
@@ -76,9 +76,8 @@ pub fn conv_transpose1d(
     let mut output = input * kernel;
 
     // Add bias to each row
-    output
-        .row_iter_mut()
-        .for_each(|mut row| row += bias.transpose());
+    let bias_t = bias.transpose();
+    output.row_iter_mut().for_each(|mut row| row += &bias_t);
 
     output
 }
