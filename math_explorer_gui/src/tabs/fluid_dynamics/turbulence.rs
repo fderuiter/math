@@ -124,21 +124,33 @@ impl FluidDynamicsTool for TurbulenceTool {
 
             ui.separator();
             ui.label("Presets:");
-            if ui.button("Water in Pipe").clicked() {
+            if ui
+                .button("💧 Water in Pipe")
+                .on_hover_text("Load preset for water flowing in a pipe")
+                .clicked()
+            {
                 self.density = 1000.0;
                 self.dynamic_viscosity = 0.001;
                 self.geometry = Geometry::Pipe;
                 self.length = 0.1;
                 self.velocity = 0.5;
             }
-            if ui.button("Air over Wing").clicked() {
+            if ui
+                .button("💨 Air over Wing")
+                .on_hover_text("Load preset for air flowing over a flat plate")
+                .clicked()
+            {
                 self.density = 1.225;
                 self.dynamic_viscosity = 1.81e-5;
                 self.geometry = Geometry::FlatPlate;
                 self.length = 1.0;
                 self.velocity = 50.0;
             }
-            if ui.button("Honey").clicked() {
+            if ui
+                .button("🍯 Honey")
+                .on_hover_text("Load preset for highly viscous honey")
+                .clicked()
+            {
                 self.density = 1420.0;
                 self.dynamic_viscosity = 10.0;
                 self.velocity = 0.1;
