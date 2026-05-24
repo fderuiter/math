@@ -75,7 +75,11 @@ impl SolidStateTool for IsingModelTool {
                         self.running = !self.running;
                     }
 
-                    if ui.button("↻ Reset").clicked() {
+                    if ui
+                        .button("↻ Reset")
+                        .on_hover_text("Reset the simulation to its initial state")
+                        .clicked()
+                    {
                         self.lattice = SpinLattice::new(100, 100);
                         self.texture = None; // Force texture recreation
                     }

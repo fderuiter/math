@@ -138,7 +138,11 @@ impl ChaosTool for FractalViewer {
             }
 
             ui.separator();
-            if ui.button("↻ Reset View").clicked() {
+            if ui
+                .button("↻ Reset View")
+                .on_hover_text("Reset the fractal view to its initial state")
+                .clicked()
+            {
                 match self.mode {
                     FractalMode::Mandelbrot => {
                         self.center = Complex::new(-0.75, 0.0);

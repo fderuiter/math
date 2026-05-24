@@ -69,7 +69,11 @@ impl GeometryTopologyTool for VietorisRipsTool {
             ui.heading("Vietoris-Rips Complex (TDA)");
 
             ui.horizontal(|ui| {
-                if ui.button("Generate Random Points").clicked() {
+                if ui
+                    .button("Generate Random Points")
+                    .on_hover_text("Generate a new set of random points")
+                    .clicked()
+                {
                     let now = std::time::SystemTime::now()
                         .duration_since(std::time::UNIX_EPOCH)
                         .unwrap_or_default()

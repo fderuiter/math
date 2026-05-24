@@ -98,10 +98,14 @@ impl ReplicatorDynamicsTool {
 
         ui.label("Presets:");
         ui.horizontal(|ui| {
-            if ui.button("Hawk-Dove").clicked() {
+            if ui
+                .button("Hawk-Dove")
+                .on_hover_text("Load Hawk-Dove preset")
+                .clicked()
+            {
                 self.load_preset_hawk_dove();
             }
-            if ui.button("RPS").clicked() {
+            if ui.button("RPS").on_hover_text("Load RPS preset").clicked() {
                 self.load_preset_rps();
             }
         });

@@ -133,7 +133,11 @@ impl FinancialMathTool for BankrollGrowthTool {
                 .add(egui::Slider::new(&mut self.num_bets, 10..=1000).text("Number of Bets"))
                 .changed();
 
-            if ui.button("Rerun Simulation").clicked() {
+            if ui
+                .button("Rerun Simulation")
+                .on_hover_text("Rerun the simulation with the current settings")
+                .clicked()
+            {
                 changed = true;
             }
 

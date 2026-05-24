@@ -100,7 +100,12 @@ impl ExplorerTab for FavoritismTab {
                 );
                 let enter_pressed =
                     response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
-                if ui.button("➕ Add").clicked() || enter_pressed {
+                if ui
+                    .button("➕ Add")
+                    .on_hover_text("Add family member")
+                    .clicked()
+                    || enter_pressed
+                {
                     self.children.push(Child::new(
                         self.new_child_name.clone(),
                         FavoritismInputs::default(),
