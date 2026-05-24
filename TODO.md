@@ -40,8 +40,8 @@ This document outlines the step-by-step, granular process for migrating the Oxid
 ## Phase 3: Facade Purge & Test Relocation
 *Goal: Strip `math_explorer/src/lib.rs` down to a pure router. Tests belong in their respective modules or the `tests/` directory.*
 
-- [ ] **3.1 Relocate Pure Math Tests**
-  - [ ] Move `test_number_theory_is_prime` to `crates/math_explorer/src/pure_math/number_theory/primes.rs`.
+- [x] **3.1 Relocate Pure Math Tests**
+  - [x] Move `test_number_theory_is_prime` to `crates/math_explorer/src/pure_math/number_theory/primes.rs`.
 - [ ] **3.2 Relocate Quantum Tests**
   - [ ] Move `test_clebsch_gordan_*` tests to `crates/math_explorer/tests/test_quantum.rs`.
 - [ ] **3.3 Relocate Applied Math Tests**
