@@ -118,7 +118,7 @@ impl AiTool for QTableInspectorTool {
                 self.train(1000);
             }
             if ui
-                .button("↻ Reset Agent")
+                .button("🔄 Reset Agent")
                 .on_hover_text("Clear the Q-table and reset the agent's knowledge")
                 .clicked()
             {

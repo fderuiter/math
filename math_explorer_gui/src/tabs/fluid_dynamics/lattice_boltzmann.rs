@@ -98,7 +98,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
             }
 
             if ui
-                .button("↻ Reset")
+                .button("🔄 Reset")
                 .on_hover_text("Reset the fluid field and re-initialize the simulation")
                 .clicked()
             {

@@ -198,7 +198,7 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
 
                 ui.horizontal(|ui| {
                     if ui
-                        .button("↻ Reset")
+                        .button("🔄 Reset")
                         .on_hover_text("Restart the algorithm visualization")
                         .clicked()
                     {

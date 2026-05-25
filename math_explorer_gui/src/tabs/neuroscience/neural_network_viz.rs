@@ -118,7 +118,7 @@ impl NeuroscienceTool for NeuralNetworkVizTool {
             }
 
             if ui
-                .button("↻ Reset")
+                .button("🔄 Reset")
                 .on_hover_text("Reset the simulation to its initial state")
                 .clicked()
             {

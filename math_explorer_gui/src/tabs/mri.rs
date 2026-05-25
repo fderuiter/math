@@ -137,7 +137,7 @@ impl ExplorerTab for MriTab {
                     self.paused = !self.paused;
                 }
                 if ui
-                    .button("↻ Reset (90° Pulse)")
+                    .button("🔄 Reset (90° Pulse)")
                     .on_hover_text("Reset to the initial state with a 90° tip pulse")
                     .clicked()
                 {

@@ -168,7 +168,7 @@ impl ExplorerTab for MorphogenesisTab {
                 self.paused = !self.paused;
             }
 
-            if ui.button("↻ Reset / Randomize").on_hover_text("Re-initialize the simulation grid with random noise").clicked() {
+            if ui.button("🔄 Reset / Randomize").on_hover_text("Re-initialize the simulation grid with random noise").clicked() {
                  initialize_system(&mut self.system, self.width, self.height);
             }
 

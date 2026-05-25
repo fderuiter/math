@@ -123,11 +123,20 @@ impl ChaosTool for AttractorPlotter {
                 ui.horizontal(|ui| {
                     if ui
                         .button(if self.paused { "▶ Play" } else { "⏸ Pause" })
+                        .on_hover_text(if self.paused {
+                            "Resume the simulation"
+                        } else {
+                            "Pause the simulation"
+                        })
                         .clicked()
                     {
                         self.paused = !self.paused;
                     }
-                    if ui.button("↻ Reset").clicked() {
+                    if ui
+                        .button("🔄 Reset")
+                        .on_hover_text("Reset the simulation to its initial state")
+                        .clicked()
+                    {
                         self.reset();
                     }
                 });

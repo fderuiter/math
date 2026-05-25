@@ -132,7 +132,7 @@ impl AiTool for TrainingMonitorTool {
             }
 
             if ui
-                .button("↻ Reset Model")
+                .button("🔄 Reset Model")
                 .on_hover_text("Re-initialize the neural network weights and clear metrics")
                 .clicked()
             {

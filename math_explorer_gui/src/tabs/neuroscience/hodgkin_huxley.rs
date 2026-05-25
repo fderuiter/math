@@ -96,7 +96,7 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                     self.is_running = !self.is_running;
                 }
                 if ui
-                    .button("↻ Reset")
+                    .button("🔄 Reset")
                     .on_hover_text("Reset the simulation to its initial state")
                     .clicked()
                 {

@@ -52,7 +52,11 @@ impl EpidemiologyTool for NetworkPropagationTool {
                 {
                     self.is_running = !self.is_running;
                 }
-                if ui.button("↻ Reset Network").clicked() {
+                if ui
+                    .button("🔄 Reset Network")
+                    .on_hover_text("Reset the network to its initial state")
+                    .clicked()
+                {
                     self.reset_network();
                 }
 
