@@ -109,7 +109,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
             }
 
             if ui
-                .button("Clear Obstacles")
+                .button("🔄 Clear Obstacles")
                 .on_hover_text("Remove all obstacles from the fluid field")
                 .clicked()
             {
