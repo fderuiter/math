@@ -30,7 +30,7 @@ impl NumberTheoryTool for FactorizationTool {
                     response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
 
                 if ui
-                    .button("Analyze")
+                    .button("▶ Analyze")
                     .on_hover_text(
                         "Analyze the number for primality and calculate its prime factors",
                     )
