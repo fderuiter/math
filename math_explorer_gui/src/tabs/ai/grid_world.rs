@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::{
@@ -182,14 +183,14 @@ impl AiTool for GridWorldTool {
             ui.horizontal(|ui| {
                 if ui
                     .button("▶ Step")
-                    .on_hover_text("Advance the agent by one step")
+                    .accessible_hover_text("Advance the agent by one step")
                     .clicked()
                 {
                     self.step_agent();
                 }
                 if ui
                     .button("▶ Train (100 Episodes)")
-                    .on_hover_text("Train the agent for 100 episodes instantly")
+                    .accessible_hover_text("Train the agent for 100 episodes instantly")
                     .clicked()
                 {
                     for _ in 0..100 {
@@ -203,7 +204,7 @@ impl AiTool for GridWorldTool {
                 }
                 if ui
                     .button("↻ Reset Agent")
-                    .on_hover_text("Clear the Q-table and reset the agent's knowledge")
+                    .accessible_hover_text("Clear the Q-table and reset the agent's knowledge")
                     .clicked()
                 {
                     self.agent = TabularQAgent::new(0.1, 0.9, 0.1);
@@ -225,6 +226,9 @@ impl AiTool for GridWorldTool {
             );
 
             let (response, painter) = ui.allocate_painter(grid_size, egui::Sense::hover());
+            let _ = response
+                .clone()
+                .accessible_hover_text("Grid World Visualization");
             let rect = response.rect;
 
             for x in 0..self.env.width {

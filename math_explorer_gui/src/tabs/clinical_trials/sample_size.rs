@@ -1,4 +1,5 @@
 use super::ClinicalTrialsTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::applied::clinical_trials::sample_size::{
     calculate_sample_size_means, calculate_sample_size_proportions,
@@ -104,14 +105,14 @@ impl ClinicalTrialsTool for SampleSizeCalculatorTool {
                     ui.label("Type I Error Rate (α):");
                     changed |= ui
                         .add(egui::Slider::new(&mut self.alpha, 0.001..=0.20).text("Alpha"))
-                        .on_hover_text("Significance level (e.g., 0.05 for 5%)")
+                        .accessible_hover_text("Significance level (e.g., 0.05 for 5%)")
                         .changed();
                     ui.end_row();
 
                     ui.label("Statistical Power (1-β):");
                     changed |= ui
                         .add(egui::Slider::new(&mut self.power, 0.5..=0.999).text("Power"))
-                        .on_hover_text(
+                        .accessible_hover_text(
                             "Probability of detecting an effect if it exists (e.g., 0.80)",
                         )
                         .changed();
@@ -129,14 +130,14 @@ impl ClinicalTrialsTool for SampleSizeCalculatorTool {
                         ui.label("Effect Size (δ):");
                         changed |= ui
                             .add(egui::Slider::new(&mut self.delta, 0.01..=5.0).text("Delta"))
-                            .on_hover_text("Minimum difference to detect between groups")
+                            .accessible_hover_text("Minimum difference to detect between groups")
                             .changed();
                         ui.end_row();
 
                         ui.label("Standard Deviation (σ):");
                         changed |= ui
                             .add(egui::Slider::new(&mut self.sigma, 0.1..=10.0).text("Sigma"))
-                            .on_hover_text("Assumed standard deviation of the population")
+                            .accessible_hover_text("Assumed standard deviation of the population")
                             .changed();
                         ui.end_row();
                     });
@@ -147,14 +148,14 @@ impl ClinicalTrialsTool for SampleSizeCalculatorTool {
                         ui.label("Group 1 Proportion (p1):");
                         changed |= ui
                             .add(egui::Slider::new(&mut self.p1, 0.01..=0.99).text("p1"))
-                            .on_hover_text("Expected proportion in Control group")
+                            .accessible_hover_text("Expected proportion in Control group")
                             .changed();
                         ui.end_row();
 
                         ui.label("Group 2 Proportion (p2):");
                         changed |= ui
                             .add(egui::Slider::new(&mut self.p2, 0.01..=0.99).text("p2"))
-                            .on_hover_text("Expected proportion in Treatment group")
+                            .accessible_hover_text("Expected proportion in Treatment group")
                             .changed();
                         ui.end_row();
                     });

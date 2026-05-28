@@ -1,4 +1,5 @@
 use super::NumberTheoryTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
 use math_explorer::pure_math::number_theory::partitions;
@@ -124,7 +125,7 @@ impl NumberTheoryTool for PartitionsWidget {
 
                     if ui
                         .button("▶ Calculate")
-                        .on_hover_text(
+                        .accessible_hover_text(
                             "Calculate the Q-series coefficients up to the given precision",
                         )
                         .clicked()

@@ -1,4 +1,5 @@
 use super::EpidemiologyTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui::Color32;
 use math_explorer::epidemiology::networks::{NetworkEpidemicModel, NodeState};
@@ -107,6 +108,9 @@ impl EpidemiologyTool for NetworkPropagationTool {
                 ui.heading("Network Visualization");
                 let (response, painter) =
                     ui.allocate_painter(ui.available_size(), egui::Sense::hover());
+                let _ = response
+                    .clone()
+                    .accessible_hover_text("Network Propagation Visualization");
                 let rect = response.rect;
                 let center = rect.center();
 

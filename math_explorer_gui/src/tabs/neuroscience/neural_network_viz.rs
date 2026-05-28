@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::neuroscience::NeuroscienceTool;
 use eframe::egui;
 use egui::Color32;
@@ -107,7 +108,7 @@ impl NeuroscienceTool for NeuralNetworkVizTool {
 
             if ui
                 .button(if self.is_running { "⏸ Pause" } else { "▶ Start" })
-                .on_hover_text(if self.is_running {
+                .accessible_hover_text(if self.is_running {
                     "Pause the Neural Network simulation"
                 } else {
                     "Start the Neural Network simulation"
@@ -119,7 +120,7 @@ impl NeuroscienceTool for NeuralNetworkVizTool {
 
             if ui
                 .button("↻ Reset")
-                .on_hover_text("Reset the simulation to its initial state")
+                .accessible_hover_text("Reset the simulation to its initial state")
                 .clicked()
             {
                 self.reset();
@@ -144,6 +145,9 @@ impl NeuroscienceTool for NeuralNetworkVizTool {
             // Draw custom graph
             let (response, painter) =
                 ui.allocate_painter(ui.available_size(), egui::Sense::hover());
+            let _ = response.clone().accessible_hover_text(
+                "Neural Network Visualization: Showing interconnected neurons",
+            );
 
             let rect = response.rect;
             let center = rect.center();

@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
@@ -74,7 +75,7 @@ impl ExplorerTab for FavoritismTab {
                     }
                     if ui
                         .small_button("❌")
-                        .on_hover_text("Remove family member")
+                        .accessible_hover_text("Remove family member")
                         .clicked()
                     {
                         to_remove = Some(i);

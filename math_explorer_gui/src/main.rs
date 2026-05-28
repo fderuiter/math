@@ -1,3 +1,4 @@
+pub mod accessibility;
 mod app;
 pub mod async_sim;
 mod tabs;
@@ -5,7 +6,9 @@ mod tabs;
 use app::MathExplorerApp;
 use eframe::egui;
 
+#[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
+    accessibility::init_accessibility_bridge();
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1200.0, 800.0])
@@ -17,6 +20,30 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Math Explorer",
         native_options,
-        Box::new(|cc| Ok(Box::new(MathExplorerApp::new(cc)))),
+        Box::new(|cc| {
+            cc.egui_ctx.options_mut(|o| o.screen_reader = true);
+            Ok(Box::new(MathExplorerApp::new(cc)))
+        }),
     )
+}
+
+#[cfg(target_arch = "wasm32")]
+fn main() {
+    console_error_panic_hook::set_once();
+    accessibility::init_accessibility_bridge();
+    wasm_bindgen_futures::spawn_local(async {
+        let runner = eframe::WebRunner::new();
+        let web_options = eframe::WebOptions::default();
+        runner
+            .start(
+                "the_canvas_id",
+                web_options,
+                Box::new(|cc| {
+                    cc.egui_ctx.options_mut(|o| o.screen_reader = true);
+                    Ok(Box::new(MathExplorerApp::new(cc)))
+                }),
+            )
+            .await
+            .expect("failed to start eframe");
+    });
 }

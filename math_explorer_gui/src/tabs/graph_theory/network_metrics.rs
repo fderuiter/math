@@ -1,4 +1,5 @@
 use super::GraphTheoryTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use eframe::egui::Pos2;
 use math_explorer::pure_math::graph_theory::graph::Graph;
@@ -156,6 +157,9 @@ impl GraphTheoryTool for NetworkMetricsTool {
         egui::CentralPanel::default().show(ctx, |ui| {
             let (response, painter) =
                 ui.allocate_painter(ui.available_size(), egui::Sense::hover());
+            let _ = response
+                .clone()
+                .accessible_hover_text("Network Metrics Visualization");
 
             let to_screen = eframe::egui::emath::RectTransform::from_to(
                 eframe::egui::Rect::from_min_size(Pos2::ZERO, response.rect.size()),

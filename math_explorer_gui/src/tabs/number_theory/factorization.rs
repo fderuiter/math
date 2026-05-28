@@ -1,4 +1,5 @@
 use super::NumberTheoryTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::pure_math::number_theory::ambs::prime_factors;
 use math_explorer::pure_math::number_theory::primes::is_prime;
@@ -31,7 +32,7 @@ impl NumberTheoryTool for FactorizationTool {
 
                 if ui
                     .button("▶ Analyze")
-                    .on_hover_text(
+                    .accessible_hover_text(
                         "Analyze the number for primality and calculate its prime factors",
                     )
                     .clicked()

@@ -14,6 +14,8 @@ pub mod climate;
 pub mod clinical_trials;
 #[cfg(feature = "epidemiology")]
 pub mod epidemiology;
+#[cfg(feature = "strict-opt-in-experimental")]
+pub mod experimental_tab;
 #[cfg(feature = "applied")]
 pub mod favoritism;
 #[cfg(feature = "pure_math")]
@@ -41,8 +43,6 @@ pub mod quantum;
 #[cfg(feature = "physics")]
 pub mod solid_state;
 pub mod traceability;
-#[cfg(feature = "strict-opt-in-experimental")]
-pub mod experimental_tab;
 
 #[cfg(feature = "pure_math")]
 pub use geometry_topology::GeometryTopologyTab;

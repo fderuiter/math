@@ -1,11 +1,10 @@
-use eframe::egui;
 use crate::tabs::ExplorerTab;
+use eframe::egui;
 
 #[allow(unused_imports)]
 use generative_turbulence_experimental;
 
-pub struct ExperimentalTab {
-}
+pub struct ExperimentalTab {}
 
 impl Default for ExperimentalTab {
     fn default() -> Self {
@@ -22,7 +21,7 @@ impl ExplorerTab for ExperimentalTab {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Generative Turbulence");
             ui.add_space(10.0);
-            
+
             ui.horizontal(|ui| {
                 ui.label(
                     egui::RichText::new("⚠️ Unstable / Experimental Feature")
@@ -31,8 +30,10 @@ impl ExplorerTab for ExperimentalTab {
                 );
             });
             ui.add_space(20.0);
-            
-            ui.label("This feature is currently experimental and may produce unstable results or crash.");
+
+            ui.label(
+                "This feature is currently experimental and may produce unstable results or crash.",
+            );
             ui.label("Generative Turbulence module is loaded from the experimental subspace.");
         });
     }

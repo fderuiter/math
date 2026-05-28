@@ -1,4 +1,5 @@
 use super::grid_world::{GridState, GridWorldEnv, Move};
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::{algorithms::TabularQAgent, MarkovDecisionProcess};
@@ -105,21 +106,21 @@ impl AiTool for QTableInspectorTool {
 
             if ui
                 .button("▶ Train 100 Episodes")
-                .on_hover_text("Train the agent for 100 episodes instantly")
+                .accessible_hover_text("Train the agent for 100 episodes instantly")
                 .clicked()
             {
                 self.train(100);
             }
             if ui
                 .button("▶ Train 1000 Episodes")
-                .on_hover_text("Train the agent for 1000 episodes instantly")
+                .accessible_hover_text("Train the agent for 1000 episodes instantly")
                 .clicked()
             {
                 self.train(1000);
             }
             if ui
                 .button("↻ Reset Agent")
-                .on_hover_text("Clear the Q-table and reset the agent's knowledge")
+                .accessible_hover_text("Clear the Q-table and reset the agent's knowledge")
                 .clicked()
             {
                 self.agent = TabularQAgent::new(0.1, 0.9, 0.1);
@@ -160,6 +161,9 @@ impl AiTool for QTableInspectorTool {
             );
 
             let (response, painter) = ui.allocate_painter(grid_size, egui::Sense::hover());
+            let _ = response
+                .clone()
+                .accessible_hover_text("Q-Table Heatmap Visualization");
             let rect = response.rect;
 
             // Determine min and max Q-values across the board for current view to normalize colors

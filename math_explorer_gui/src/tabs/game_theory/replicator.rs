@@ -1,4 +1,5 @@
 use super::GameTheoryTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Legend, Line, Plot, PlotPoints, VLine};
 use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
@@ -100,14 +101,14 @@ impl ReplicatorDynamicsTool {
         ui.horizontal(|ui| {
             if ui
                 .button("🦅 Hawk-Dove")
-                .on_hover_text("Load Hawk-Dove preset payoff matrix")
+                .accessible_hover_text("Load Hawk-Dove preset payoff matrix")
                 .clicked()
             {
                 self.load_preset_hawk_dove();
             }
             if ui
                 .button("✂️ RPS")
-                .on_hover_text("Load Rock-Paper-Scissors preset payoff matrix")
+                .accessible_hover_text("Load Rock-Paper-Scissors preset payoff matrix")
                 .clicked()
             {
                 self.load_preset_rps();
@@ -180,7 +181,7 @@ impl ReplicatorDynamicsTool {
 
         if ui
             .button("▶ Run Simulation")
-            .on_hover_text(
+            .accessible_hover_text(
                 "Execute the simulation with the current payoff matrix and initial population",
             )
             .clicked()

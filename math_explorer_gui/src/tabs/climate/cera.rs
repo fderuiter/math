@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::climate::ClimateTool;
 use eframe::egui;
 use math_explorer::climate::cera::Cera;
@@ -66,7 +67,7 @@ impl ClimateTool for CeraTool {
 
         if ui
             .button("▶ Run Prediction")
-            .on_hover_text("Execute the CERA model with random inputs")
+            .accessible_hover_text("Execute the CERA model with random inputs")
             .clicked()
         {
             let config = CeraConfig {

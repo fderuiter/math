@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::clinical_trials::ClinicalTrialsTool;
 use eframe::egui;
 use math_explorer::applied::clinical_trials::design::{
@@ -75,7 +76,7 @@ impl ClinicalTrialsTool for RandomizationTool {
             let enter_pressed = ui.input(|i| i.key_pressed(egui::Key::Enter));
             if ui
                 .button("▶ Allocate Subjects")
-                .on_hover_text("Randomly assign subjects to treatment and control groups")
+                .accessible_hover_text("Randomly assign subjects to treatment and control groups")
                 .clicked()
                 || enter_pressed
             {

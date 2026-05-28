@@ -1,4 +1,5 @@
 use super::ChaosTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Plot, PlotPoints, Points};
 use math_explorer::physics::chaos::logistic;
@@ -58,7 +59,9 @@ impl ChaosTool for BifurcationDiagram {
 
             if ui
                 .button("▶ Recompute")
-                .on_hover_text("Regenerate the bifurcation diagram with the current parameters")
+                .accessible_hover_text(
+                    "Regenerate the bifurcation diagram with the current parameters",
+                )
                 .clicked()
                 || changed
             {

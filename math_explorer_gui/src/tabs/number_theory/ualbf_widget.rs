@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::pure_math::number_theory::ualbf::{ualbf_search, UalbfSearchResult};
 
@@ -58,7 +59,7 @@ impl NumberTheoryTool for UalbfWidget {
 
                 if ui
                     .button("▶ Run UALBF Pipeline")
-                    .on_hover_text("Execute the Unified Algebraic-Lattice Bipartition Framework search pipeline")
+                    .accessible_hover_text("Execute the Unified Algebraic-Lattice Bipartition Framework search pipeline")
                     .clicked()
                 {
                     let threshold_str = format!("{:.0}", 10f64.powf(self.stop_threshold_log));

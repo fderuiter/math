@@ -1,4 +1,5 @@
 use super::grid_world::{GridState, GridWorldEnv, Move};
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -85,7 +86,7 @@ impl AiTool for RewardPlotsTool {
 
             if ui
                 .button(format!("▶ Train {} Episodes", self.training_steps))
-                .on_hover_text("Train the agent for the specified number of episodes")
+                .accessible_hover_text("Train the agent for the specified number of episodes")
                 .clicked()
             {
                 self.train_episodes(self.training_steps);
@@ -93,7 +94,7 @@ impl AiTool for RewardPlotsTool {
 
             if ui
                 .button("↻ Reset Agent")
-                .on_hover_text(
+                .accessible_hover_text(
                     "Clear the Q-table and reset the agent's knowledge and reward history",
                 )
                 .clicked()

@@ -1,4 +1,5 @@
 use super::NeuroscienceTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Line, Plot, PlotPoints};
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
@@ -70,7 +71,7 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                     } else {
                         "▶ Run"
                     })
-                    .on_hover_text(if self.is_running {
+                    .accessible_hover_text(if self.is_running {
                         "Pause the spike analysis simulation"
                     } else {
                         "Start the spike analysis simulation"
@@ -81,7 +82,7 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                 }
                 if ui
                     .button("↻ Reset")
-                    .on_hover_text("Reset the simulation to its initial state")
+                    .accessible_hover_text("Reset the simulation to its initial state")
                     .clicked()
                 {
                     self.reset();
