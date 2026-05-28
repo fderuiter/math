@@ -56,3 +56,5 @@ impl MedicalTool for BeamProfilingTool {
         });
     }
 }
+
+// [cite:dwarf_galaxy_empirical_dependencies]

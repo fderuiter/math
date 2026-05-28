@@ -112,3 +112,5 @@ impl BatteryDegradationTool for CapacityFadeTool {
         });
     }
 }
+
+// [cite:mmwave_radiotherapy_setup]

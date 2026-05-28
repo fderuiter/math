@@ -51,3 +51,5 @@ pub mod special_functions;
 pub mod statistics;
 pub mod tensor;
 pub mod vector_calculus;
+
+// [cite:graph_parameters_rust]

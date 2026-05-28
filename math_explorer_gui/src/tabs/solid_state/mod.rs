@@ -67,3 +67,5 @@ impl ExplorerTab for SolidStateTab {
         }
     }
 }
+
+// [cite:graph_parameters_rust]

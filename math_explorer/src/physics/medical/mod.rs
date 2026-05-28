@@ -36,3 +36,5 @@ pub mod optimization;
 pub mod radar_gating;
 pub mod signal;
 pub mod thermodynamics;
+
+// [cite:favorite_child]

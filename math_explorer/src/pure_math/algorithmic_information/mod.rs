@@ -63,3 +63,5 @@ pub mod combinatorics;
 pub mod fractran;
 pub mod geometry;
 pub mod kolmogorov;
+
+// [cite:algorithmic_information_rust]

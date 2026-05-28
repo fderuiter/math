@@ -178,3 +178,5 @@ impl NumberTheoryTool for PartitionsWidget {
         });
     }
 }
+
+// [cite:partitions_implementation]

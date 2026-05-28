@@ -119,3 +119,5 @@ impl ClimateTool for CeraTool {
         }
     }
 }
+
+// [cite:cera_framework]

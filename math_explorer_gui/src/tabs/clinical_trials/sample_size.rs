@@ -194,3 +194,5 @@ impl ClinicalTrialsTool for SampleSizeCalculatorTool {
         });
     }
 }
+
+// [cite:clinical_trials_statistics]

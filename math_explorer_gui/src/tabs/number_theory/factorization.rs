@@ -99,3 +99,5 @@ impl NumberTheoryTool for FactorizationTool {
         });
     }
 }
+
+// [cite:algorithmic_information_rust]

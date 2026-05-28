@@ -123,3 +123,5 @@ pub mod types;
 
 #[cfg(test)]
 mod tests;
+
+// [cite:dwarf_galaxy_empirical_dependencies]

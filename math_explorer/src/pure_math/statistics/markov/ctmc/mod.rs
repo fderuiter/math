@@ -418,3 +418,5 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
 
 #[cfg(test)]
 mod tests;
+
+// [cite:clinical_trials_statistics]

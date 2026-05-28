@@ -144,3 +144,5 @@ impl AiTool for ActivationFunctionsTool {
         });
     }
 }
+
+// [cite:algorithmic_information_rust]

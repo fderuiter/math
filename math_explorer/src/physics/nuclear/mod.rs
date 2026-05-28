@@ -154,3 +154,5 @@ mod tests {
         assert!(be > 0.0);
     }
 }
+
+// [cite:favorite_child]

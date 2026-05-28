@@ -12,3 +12,5 @@ pub mod ensembles;
 pub mod error;
 pub mod ising;
 pub mod quantum_stats;
+
+// [cite:graph_parameters_rust]

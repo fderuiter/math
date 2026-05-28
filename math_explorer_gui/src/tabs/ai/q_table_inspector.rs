@@ -234,3 +234,5 @@ impl AiTool for QTableInspectorTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

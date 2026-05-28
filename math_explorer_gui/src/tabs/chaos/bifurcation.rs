@@ -85,3 +85,5 @@ impl ChaosTool for BifurcationDiagram {
         });
     }
 }
+
+// [cite:algorithmic_information_rust]

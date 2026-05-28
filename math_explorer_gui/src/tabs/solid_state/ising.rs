@@ -165,3 +165,5 @@ impl SolidStateTool for IsingModelTool {
         });
     }
 }
+
+// [cite:clinical_trials_statistics]

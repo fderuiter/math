@@ -87,3 +87,5 @@ pub use algorithms::QLearningAgent;
 pub use q_function::TabularQFunction;
 pub use strategies::{EpsilonGreedy, ExplorationStrategy};
 pub use types::{Action, MarkovDecisionProcess, Policy, QFunction, State};
+
+// [cite:algorithmic_information_rust]

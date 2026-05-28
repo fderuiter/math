@@ -202,3 +202,5 @@ impl TurbulenceTool {
         self.time += dt;
     }
 }
+
+// [cite:generative_turbulence]

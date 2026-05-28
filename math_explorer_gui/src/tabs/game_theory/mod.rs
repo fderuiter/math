@@ -59,3 +59,5 @@ impl ExplorerTab for GameTheoryTab {
         }
     }
 }
+
+// [cite:graph_parameters_rust]

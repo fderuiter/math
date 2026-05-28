@@ -107,3 +107,5 @@ pub use error::AIError;
 pub use transformer::attention;
 pub use transformer::feed_forward;
 pub use transformer::positional_encoding;
+
+// [cite:graph_parameters_rust]

@@ -66,3 +66,5 @@ pub mod mechanism_design;
 
 /// Errors for Game Theory calculations.
 pub mod error;
+
+// [cite:graph_parameters_rust]

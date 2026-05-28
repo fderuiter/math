@@ -35,3 +35,5 @@ impl ClimateTool for TemperatureAnomaliesTool {
         });
     }
 }
+
+// [cite:dwarf_galaxy_empirical_dependencies]

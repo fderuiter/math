@@ -5,3 +5,5 @@ pub mod kernel;
 pub use algorithm::calculate_terma;
 pub use error::DoseFluenceError;
 pub use kernel::{DoseKernel, ExponentialKernel};
+
+// [cite:mmwave_radiotherapy_setup]

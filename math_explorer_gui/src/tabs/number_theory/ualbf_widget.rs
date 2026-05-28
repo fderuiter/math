@@ -109,3 +109,5 @@ impl NumberTheoryTool for UalbfWidget {
         });
     }
 }
+
+// [cite:ualbf_quasiperfect]

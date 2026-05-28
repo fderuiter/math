@@ -69,3 +69,5 @@ impl ExplorerTab for NumberTheoryTab {
         }
     }
 }
+
+// [cite:graph_parameters_rust]

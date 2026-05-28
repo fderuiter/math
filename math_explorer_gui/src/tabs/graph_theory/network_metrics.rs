@@ -217,3 +217,5 @@ impl GraphTheoryTool for NetworkMetricsTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

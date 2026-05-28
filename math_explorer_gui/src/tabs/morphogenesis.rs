@@ -278,3 +278,5 @@ impl SimpleRng {
         min + self.next_f64() * (max - min)
     }
 }
+
+// [cite:graph_parameters_rust]

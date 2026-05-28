@@ -262,3 +262,5 @@ impl SpikeAnalysisTool {
             .collect()
     }
 }
+
+// [cite:dwarf_galaxy_empirical_dependencies]

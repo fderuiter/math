@@ -8,3 +8,5 @@ pub mod types;
 pub use ensemble::LoraEnsemble;
 pub use error::LoraError;
 pub use types::LoraStateDict;
+
+// [cite:lorahub]

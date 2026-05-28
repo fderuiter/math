@@ -66,3 +66,5 @@ pub use tracking::{ConstantVelocityModel, TrackingFilter};
 
 // Re-export the core KalmanModel so users can implement their own models if needed
 pub use crate::applied::algorithms::kalman::KalmanModel;
+
+// [cite:clinical_trials_statistics]

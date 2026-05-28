@@ -96,3 +96,5 @@ pub mod cycle;
 pub mod linear_algebra;
 pub mod model;
 pub mod probability;
+
+// [cite:dwarf_galaxy_empirical_dependencies]

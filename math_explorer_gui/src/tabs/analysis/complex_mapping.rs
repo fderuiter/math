@@ -252,3 +252,5 @@ impl AnalysisTool for ComplexMappingTool {
         });
     }
 }
+
+// [cite:partitions_implementation]

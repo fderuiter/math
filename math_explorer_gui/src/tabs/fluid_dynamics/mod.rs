@@ -71,3 +71,5 @@ impl ExplorerTab for FluidDynamicsTab {
         }
     }
 }
+
+// [cite:graph_parameters_rust]

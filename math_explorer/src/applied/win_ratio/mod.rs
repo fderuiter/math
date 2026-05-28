@@ -88,3 +88,5 @@ pub mod pair_comparison;
 pub mod probability_win_ratio;
 pub mod sample_win_ratio;
 pub mod simulation;
+
+// [cite:win_ratio]

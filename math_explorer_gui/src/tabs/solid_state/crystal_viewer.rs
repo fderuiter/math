@@ -182,3 +182,5 @@ impl SolidStateTool for CrystalViewer {
         });
     }
 }
+
+// [cite:modular_polynomials_review]

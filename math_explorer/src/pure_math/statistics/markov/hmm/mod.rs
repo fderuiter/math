@@ -7,3 +7,5 @@ pub mod viterbi;
 mod tests;
 
 pub use model::HiddenMarkovModel;
+
+// [cite:clinical_trials_statistics]

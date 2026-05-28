@@ -179,3 +179,5 @@ impl FinancialMathTool for BankrollGrowthTool {
         });
     }
 }
+
+// [cite:clinical_trials_statistics]

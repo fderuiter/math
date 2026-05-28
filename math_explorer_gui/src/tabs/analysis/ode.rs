@@ -366,3 +366,5 @@ impl AnalysisTool for OdeSolverTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

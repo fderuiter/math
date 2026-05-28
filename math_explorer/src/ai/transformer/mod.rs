@@ -106,3 +106,5 @@ pub use feed_forward::FeedForward;
 pub use layer_norm::LayerNorm;
 pub use model::Transformer;
 pub use traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
+
+// [cite:algorithmic_information_rust]

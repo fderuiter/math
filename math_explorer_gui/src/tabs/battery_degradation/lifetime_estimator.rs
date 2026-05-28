@@ -106,3 +106,5 @@ impl BatteryDegradationTool for LifetimeEstimatorTool {
         });
     }
 }
+
+// [cite:algorithmic_information_rust]

@@ -76,3 +76,5 @@ pub mod stochastic;
 pub use error::EpidemiologyError;
 // Re-exports for easier access
 pub use compartmental::{SEIRModel, SEIRState, SIRModel, SIRState};
+
+// [cite:graph_parameters_rust]

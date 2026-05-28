@@ -66,3 +66,5 @@ pub mod greens;
 pub mod heat;
 pub mod laplace;
 pub mod wave;
+
+// [cite:graph_parameters_rust]

@@ -52,3 +52,5 @@ pub use linear::{RadixSorter, radix_sort};
 pub use stats::{SortingResult, SortingStats};
 pub use strategy::Sorter;
 pub use theory::{information_theoretic_bound, stirling_approximation_ln_factorial};
+
+// [cite:algorithmic_information_rust]

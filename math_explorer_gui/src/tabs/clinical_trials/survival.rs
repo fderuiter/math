@@ -159,3 +159,5 @@ impl ClinicalTrialsTool for SurvivalAnalysisTool {
         });
     }
 }
+
+// [cite:clinical_trials_statistics]

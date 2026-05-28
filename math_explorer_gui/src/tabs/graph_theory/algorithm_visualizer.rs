@@ -350,3 +350,5 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

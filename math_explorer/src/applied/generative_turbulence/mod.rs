@@ -21,3 +21,5 @@ pub mod losses;
 pub mod models;
 pub mod networks;
 pub mod training;
+
+// [cite:generative_turbulence]

@@ -310,3 +310,5 @@ impl GeometryTopologyTool for CurvatureHeatmap {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

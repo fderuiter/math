@@ -67,3 +67,5 @@ impl ExplorerTab for ChaosTab {
         }
     }
 }
+
+// [cite:graph_parameters_rust]

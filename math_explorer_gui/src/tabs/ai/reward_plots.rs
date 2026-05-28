@@ -126,3 +126,5 @@ impl AiTool for RewardPlotsTool {
         });
     }
 }
+
+// [cite:modular_polynomials_review]
