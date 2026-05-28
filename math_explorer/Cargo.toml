@@ -18,6 +18,8 @@ num-complex = "0.4.6"
 thiserror = "2.0.18"
 num-traits = "0.2.19"
 oxidize_core = { path = "../crates/oxidize_core" }
+verified_engine = { version = "0.1.0", path = "../crates/verified_engine" }
+serde_json = "1.0.150"
 
 [[test]]
 name = "elliptic_curves"
