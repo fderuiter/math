@@ -4,15 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = ["domain_logic"]
+default = ["domain_logic", "biology"]
 domain_logic = ["dep:math_explorer"]
+biology = ["math_explorer?/biology"]
 
 [dependencies]
+math_explorer_core = { path = "../crates/math_explorer_core" }
 eframe = "0.33.3"
 egui_plot = "0.34.1"
 
 nalgebra = "0.34.0"
-math_explorer = { path = "../math_explorer", features = ["ai", "applied", "biology", "climate", "epidemiology", "physics", "pure_math"], optional = true }
+math_explorer = { path = "../math_explorer", features = ["ai", "applied", "climate", "epidemiology", "physics", "pure_math"], optional = true }
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"

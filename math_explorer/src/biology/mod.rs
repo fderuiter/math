@@ -76,3 +76,13 @@ pub mod evolution;
 
 /// Generic reaction-diffusion framework.
 pub mod reaction_diffusion;
+pub mod cellular_automata;
+
+use math_explorer_core::discovery::GenericSimulation;
+
+pub fn get_simulations() -> Vec<Box<dyn GenericSimulation>> {
+    vec![
+        Box::new(neuroscience::HodgkinHuxleyNeuron::new(-65.0)),
+        Box::new(cellular_automata::GameOfLifeSim::new(50, 50)),
+    ]
+}

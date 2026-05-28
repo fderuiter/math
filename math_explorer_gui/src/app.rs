@@ -1,11 +1,11 @@
 #[cfg(feature = "domain_logic")]
 use crate::tabs::{
+    biology::BiologyTab,
     ai::AiTab, analysis::AnalysisTab, battery_degradation::BatteryDegradationTab, chaos::ChaosTab,
     climate::ClimateTab, clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab,
     favoritism::FavoritismTab, financial_math::FinancialMathTab, fluid_dynamics::FluidDynamicsTab,
     game_theory::GameTheoryTab, graph_theory::GraphTheoryTab, medical::MedicalTab,
-    morphogenesis::MorphogenesisTab, mri::MriTab, neuroscience::NeuroscienceTab,
-    number_theory::NumberTheoryTab, quantum::QuantumTab, solid_state::SolidStateTab,
+    mri::MriTab,     number_theory::NumberTheoryTab, quantum::QuantumTab, solid_state::SolidStateTab,
     GeometryTopologyTab,
 };
 use crate::tabs::ExplorerTab;
@@ -29,16 +29,18 @@ impl Default for MathExplorerApp {
             tabs.push(Box::new(ChaosTab::default()));
             tabs.push(Box::new(SolidStateTab::default()));
             tabs.push(Box::new(MedicalTab::default()));
-            tabs.push(Box::new(NeuroscienceTab::default()));
-            tabs.push(Box::new(NumberTheoryTab::default()));
+
+        #[cfg(feature = "biology")]
+        tabs.push(Box::new(BiologyTab::default()));
+
+                        tabs.push(Box::new(NumberTheoryTab::default()));
             tabs.push(Box::new(GraphTheoryTab::default()));
             tabs.push(Box::new(GeometryTopologyTab::default()));
             tabs.push(Box::new(AnalysisTab::default()));
             tabs.push(Box::new(ClimateTab::default()));
             tabs.push(Box::new(EpidemiologyTab::default()));
             tabs.push(Box::new(GameTheoryTab::default()));
-            tabs.push(Box::new(MorphogenesisTab::default()));
-            tabs.push(Box::new(ClinicalTrialsTab::default()));
+                        tabs.push(Box::new(ClinicalTrialsTab::default()));
             tabs.push(Box::new(BatteryDegradationTab::default()));
             tabs.push(Box::new(AiTab::default()));
             tabs.push(Box::new(FavoritismTab::default()));

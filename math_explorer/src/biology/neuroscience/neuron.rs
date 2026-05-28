@@ -272,3 +272,66 @@ impl HodgkinHuxleyNeuron {
         self.h = new_state.h.clamp(0.0, 1.0);
     }
 }
+
+use math_explorer_core::discovery::{GenericSimulation, Parameter, ParameterValue};
+use math_explorer_core::state::StateData;
+
+impl GenericSimulation for HodgkinHuxleyNeuron {
+    fn name(&self) -> &str {
+        "Hodgkin-Huxley Model"
+    }
+
+    fn description(&self) -> &str {
+        "Continuous ODE model of a neuron action potential."
+    }
+
+    fn get_parameters(&self) -> Vec<Parameter> {
+        vec![
+            Parameter {
+                name: "g_na".to_string(),
+                description: "Sodium Conductance".to_string(),
+                value: ParameterValue::Float(self.params.g_na),
+                min: Some(ParameterValue::Float(0.0)),
+                max: Some(ParameterValue::Float(200.0)),
+            },
+            Parameter {
+                name: "g_k".to_string(),
+                description: "Potassium Conductance".to_string(),
+                value: ParameterValue::Float(self.params.g_k),
+                min: Some(ParameterValue::Float(0.0)),
+                max: Some(ParameterValue::Float(100.0)),
+            },
+            Parameter {
+                name: "g_l".to_string(),
+                description: "Leak Conductance".to_string(),
+                value: ParameterValue::Float(self.params.g_l),
+                min: Some(ParameterValue::Float(0.0)),
+                max: Some(ParameterValue::Float(5.0)),
+            },
+        ]
+    }
+
+    fn set_parameter(&mut self, name: &str, value: ParameterValue) {
+        if let ParameterValue::Float(v) = value {
+            match name {
+                "g_na" => self.params.g_na = v,
+                "g_k" => self.params.g_k = v,
+                "g_l" => self.params.g_l = v,
+                _ => {}
+            }
+        }
+    }
+
+    fn reset(&mut self) {
+        *self = Self::try_new_with_params(-65.0, self.params.clone()).unwrap_or_else(|_| Self::new(-65.0));
+    }
+
+    fn step(&mut self, dt: f64, input: Option<f64>) {
+        self.update(dt, input.unwrap_or(10.0));
+    }
+
+    fn get_state(&self) -> StateData {
+        // Here we just return the current voltage. Time series tracking can be handled by the caller.
+        StateData::TimeSeries { time: 0.0, values: vec![self.v] }
+    }
+}

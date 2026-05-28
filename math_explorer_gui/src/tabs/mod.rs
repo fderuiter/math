@@ -1,3 +1,6 @@
+
+#[cfg(feature = "biology")]
+pub mod biology;
 use eframe::egui;
 
 #[cfg(feature = "domain_logic")]
@@ -29,11 +32,11 @@ pub mod graph_theory;
 #[cfg(feature = "domain_logic")]
 pub mod medical;
 #[cfg(feature = "domain_logic")]
-pub mod morphogenesis;
+
 #[cfg(feature = "domain_logic")]
 pub mod mri;
 #[cfg(feature = "domain_logic")]
-pub mod neuroscience;
+
 #[cfg(feature = "domain_logic")]
 pub mod number_theory;
 #[cfg(feature = "domain_logic")]

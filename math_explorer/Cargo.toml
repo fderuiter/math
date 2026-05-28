@@ -5,6 +5,7 @@ edition = "2024"
 license = "AGPL-3.0-or-later"
 
 [dependencies]
+math_explorer_core = { path = "../crates/math_explorer_core" }
 rustfft = "6.2.0"
 nalgebra = "0.34.0"
 quadrature = "0.1.2"
@@ -46,3 +47,4 @@ climate = []
 epidemiology = []
 physics = []
 pure_math = []
+
