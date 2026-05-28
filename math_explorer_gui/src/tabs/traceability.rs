@@ -9,6 +9,7 @@ pub struct TraceabilityTab {
     orphaned_papers: Vec<String>,
     unlinked_code: Vec<String>,
     invalid_links: Vec<(String, String)>, // code_file, paper_name
+    executed_runs: HashMap<String, usize>, // paper_name -> count
 }
 
 #[derive(Clone)]
@@ -16,6 +17,7 @@ struct PaperStatus {
     name: String,
     linked_code: Vec<String>,
     is_wip: bool,
+    executions: usize,
 }
 
 impl Default for TraceabilityTab {
@@ -25,6 +27,7 @@ impl Default for TraceabilityTab {
             orphaned_papers: Vec::new(),
             unlinked_code: Vec::new(),
             invalid_links: Vec::new(),
+            executed_runs: HashMap::new(),
         };
         tab.refresh();
         tab
@@ -37,6 +40,7 @@ impl TraceabilityTab {
         self.orphaned_papers.clear();
         self.unlinked_code.clear();
         self.invalid_links.clear();
+        self.executed_runs.clear();
 
         // 1. Scan papers
         let papers_dir = PathBuf::from("papers");
@@ -53,6 +57,7 @@ impl TraceabilityTab {
                                 name: paper_name,
                                 linked_code: Vec::new(),
                                 is_wip: false,
+                                executions: 0,
                             },
                         );
                     }
@@ -101,7 +106,29 @@ impl TraceabilityTab {
             }
         }
 
-        // 3. Find orphans
+        // 3. Scan Audit Logs
+        let audit_dir = PathBuf::from("audit_logs");
+        if let Ok(entries) = fs::read_dir(&audit_dir) {
+            for entry in entries.flatten() {
+                if let Ok(content) = fs::read_to_string(entry.path()) {
+                    for line in content.lines() {
+                        if let Ok(json) = serde_json::from_str::<serde_json::Value>(line) {
+                            if let Some(link) = json.get("theory_link").and_then(|v| v.as_str()) {
+                                *self.executed_runs.entry(link.to_string()).or_insert(0) += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        for (link, count) in &self.executed_runs {
+            if let Some(status) = self.papers.get_mut(link) {
+                status.executions += count;
+            }
+        }
+
+        // 4. Find orphans
         for (name, status) in &self.papers {
             if status.linked_code.is_empty() {
                 self.orphaned_papers.push(name.clone());
@@ -196,7 +223,7 @@ impl ExplorerTab for TraceabilityTab {
                 papers.sort_by(|a, b| a.name.cmp(&b.name));
 
                 for p in papers {
-                    ui.collapsing(&p.name, |ui| {
+                    ui.collapsing(format!("{} (Executions: {})", p.name, p.executions), |ui| {
                         if p.linked_code.is_empty() {
                             ui.label(
                                 egui::RichText::new("No implementation found")
