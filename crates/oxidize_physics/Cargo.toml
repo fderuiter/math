@@ -1,0 +1,26 @@
+[package]
+name = "oxidize_physics"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nalgebra = "0.34.0"
+quadrature = "0.1.2"
+rand = "0.8.6"
+rug = "1.28.0"
+rustfft = "6.2.0"
+wigner-symbols = "0.5.0"
+num-complex = "0.4.6"
+num-traits = "0.2.19"
+thiserror = "2.0.18"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.150"
+inventory = "0.3.24"
+oxidize_core = { path = "../oxidize_core" }
+oxidize_applied = { path = "../oxidize_applied" }
+oxidize_pure_math = { path = "../oxidize_pure_math" }
+verified_engine = { path = "../verified_engine" }
+verified_engine_macros = { path = "../verified_engine_macros" }
+[dev-dependencies]
+approx = "0.5.1"
+rand = "0.8.6"

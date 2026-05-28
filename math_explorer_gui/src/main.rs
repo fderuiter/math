@@ -1,6 +1,5 @@
 mod app;
 pub mod async_sim;
-mod tabs;
 
 use app::MathExplorerApp;
 use eframe::egui;

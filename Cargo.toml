@@ -6,5 +6,5 @@ members = [
     "math_explorer",
     "math_explorer_gui",
     "experimental/generative-turbulence-experimental"
-]
+, "crates/oxidize_pure_math", "crates/oxidize_physics", "crates/oxidize_ai", "crates/oxidize_biology", "crates/oxidize_climate", "crates/oxidize_epidemiology", "crates/oxidize_applied"]
 resolver = "2"

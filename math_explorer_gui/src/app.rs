@@ -1,109 +1,29 @@
-#[cfg(feature = "pure_math")]
-#[cfg(feature = "ai")]
-use crate::tabs::ai::AiTab;
-#[cfg(feature = "pure_math")]
-use crate::tabs::analysis::AnalysisTab;
-#[cfg(feature = "applied")]
-use crate::tabs::battery_degradation::BatteryDegradationTab;
-#[cfg(feature = "physics")]
-use crate::tabs::chaos::ChaosTab;
-#[cfg(feature = "climate")]
-use crate::tabs::climate::ClimateTab;
-#[cfg(feature = "applied")]
-use crate::tabs::clinical_trials::ClinicalTrialsTab;
-#[cfg(feature = "epidemiology")]
-use crate::tabs::epidemiology::EpidemiologyTab;
-#[cfg(feature = "applied")]
-use crate::tabs::favoritism::FavoritismTab;
-#[cfg(feature = "pure_math")]
-use crate::tabs::financial_math::FinancialMathTab;
-#[cfg(feature = "physics")]
-use crate::tabs::fluid_dynamics::FluidDynamicsTab;
-#[cfg(feature = "applied")]
-use crate::tabs::game_theory::GameTheoryTab;
-#[cfg(feature = "pure_math")]
-use crate::tabs::graph_theory::GraphTheoryTab;
-#[cfg(feature = "physics")]
-use crate::tabs::medical::MedicalTab;
-#[cfg(feature = "biology")]
-use crate::tabs::morphogenesis::MorphogenesisTab;
-#[cfg(feature = "physics")]
-use crate::tabs::mri::MriTab;
-#[cfg(feature = "biology")]
-use crate::tabs::neuroscience::NeuroscienceTab;
-#[cfg(feature = "pure_math")]
-use crate::tabs::number_theory::NumberTheoryTab;
-#[cfg(feature = "physics")]
-use crate::tabs::quantum::QuantumTab;
-#[cfg(feature = "physics")]
-use crate::tabs::solid_state::SolidStateTab;
-use crate::tabs::ExplorerTab;
-#[cfg(feature = "pure_math")]
-#[cfg(feature = "pure_math")]
-use crate::tabs::GeometryTopologyTab;
-#[cfg(feature = "strict-opt-in-experimental")]
-use crate::tabs::experimental_tab::ExperimentalTab;
 use eframe::egui;
+use oxidize_core::plugin::{Plugin, DynamicSimulation};
 
 pub struct MathExplorerApp {
-    tabs: Vec<Box<dyn ExplorerTab>>,
-    selected_tab: usize,
+    plugins: Vec<&'static dyn Plugin>,
+    selected_plugin: usize,
+    active_sim: Option<Box<dyn DynamicSimulation>>,
+    config_json: String,
+    state_json: String,
+    error_msg: Option<String>,
 }
 
 impl Default for MathExplorerApp {
     fn default() -> Self {
-        #[allow(unused_mut)]
-        let mut tabs: Vec<Box<dyn ExplorerTab>> = vec![];
-
-        #[cfg(feature = "physics")]
-        tabs.push(Box::new(MriTab::default()));
-        #[cfg(feature = "physics")]
-        tabs.push(Box::new(QuantumTab::default()));
-        #[cfg(feature = "physics")]
-        tabs.push(Box::new(FluidDynamicsTab::default()));
-        #[cfg(feature = "physics")]
-        tabs.push(Box::new(ChaosTab::default()));
-        #[cfg(feature = "physics")]
-        tabs.push(Box::new(SolidStateTab::default()));
-        #[cfg(feature = "physics")]
-        tabs.push(Box::new(MedicalTab::default()));
-        #[cfg(feature = "biology")]
-        tabs.push(Box::new(NeuroscienceTab::default()));
-        #[cfg(feature = "pure_math")]
-        tabs.push(Box::new(NumberTheoryTab::default()));
-        #[cfg(feature = "pure_math")]
-        tabs.push(Box::new(GraphTheoryTab::default()));
-        #[cfg(feature = "pure_math")]
-        tabs.push(Box::new(GeometryTopologyTab::default()));
-        #[cfg(feature = "pure_math")]
-        tabs.push(Box::new(AnalysisTab::default()));
-        #[cfg(feature = "climate")]
-        tabs.push(Box::new(ClimateTab::default()));
-        #[cfg(feature = "epidemiology")]
-        tabs.push(Box::new(EpidemiologyTab::default()));
-        #[cfg(feature = "applied")]
-        tabs.push(Box::new(GameTheoryTab::default()));
-        #[cfg(feature = "biology")]
-        tabs.push(Box::new(MorphogenesisTab::default()));
-        #[cfg(feature = "applied")]
-        tabs.push(Box::new(ClinicalTrialsTab::default()));
-        #[cfg(feature = "applied")]
-        tabs.push(Box::new(BatteryDegradationTab::default()));
-        #[cfg(feature = "ai")]
-        tabs.push(Box::new(AiTab::default()));
-        #[cfg(feature = "applied")]
-        tabs.push(Box::new(FavoritismTab::default()));
-        #[cfg(feature = "pure_math")]
-        tabs.push(Box::new(FinancialMathTab::default()));
-
-        tabs.push(Box::new(crate::tabs::TraceabilityTab::default()));
-
-        #[cfg(feature = "strict-opt-in-experimental")]
-        tabs.push(Box::new(ExperimentalTab::default()));
+        let mut plugins = vec![];
+        for plugin in inventory::iter::<&'static dyn Plugin> {
+            plugins.push(*plugin);
+        }
 
         Self {
-            tabs,
-            selected_tab: 0,
+            plugins,
+            selected_plugin: 0,
+            active_sim: None,
+            config_json: String::new(),
+            state_json: String::new(),
+            error_msg: None,
         }
     }
 }
@@ -115,32 +35,81 @@ impl MathExplorerApp {
 }
 
 impl eframe::App for MathExplorerApp {
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        // Render Tab Bar
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::TopBottomPanel::top("main_menu").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.heading("Math Explorer");
+                ui.heading("Math Explorer (Dynamic)");
                 ui.separator();
                 egui::ScrollArea::horizontal().show(ui, |ui| {
-                    for (i, tab) in self.tabs.iter().enumerate() {
-                        let name = tab.name();
-                        if ui.selectable_label(self.selected_tab == i, name).clicked() {
-                            self.selected_tab = i;
+                    for (i, plugin) in self.plugins.iter().enumerate() {
+                        if ui.selectable_label(self.selected_plugin == i, plugin.name()).clicked() {
+                            if self.selected_plugin != i {
+                                self.selected_plugin = i;
+                                self.active_sim = None;
+                                self.config_json = plugin.get_default_config_json();
+                                self.state_json = String::new();
+                                self.error_msg = None;
+                            }
                         }
                     }
                 });
             });
         });
 
-        // Render Active Tab
-        if let Some(tab) = self.tabs.get_mut(self.selected_tab) {
-            tab.show(ctx, frame);
-        } else {
-            egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            if self.plugins.is_empty() {
                 ui.centered_and_justified(|ui| {
-                    ui.label("No module selected.");
+                    ui.label("No plugins discovered.");
                 });
-            });
-        }
+                return;
+            }
+
+            let plugin = self.plugins[self.selected_plugin];
+            ui.heading(plugin.name());
+            ui.label(plugin.description());
+            ui.separator();
+
+            if self.active_sim.is_none() {
+                ui.label("Configuration (JSON):");
+                if self.config_json.is_empty() {
+                    self.config_json = plugin.get_default_config_json();
+                }
+                ui.text_edit_multiline(&mut self.config_json);
+                if ui.button("Initialize Simulation").clicked() {
+                    match plugin.initialize_from_json(&self.config_json) {
+                        Ok(sim) => {
+                            self.active_sim = Some(sim);
+                            self.error_msg = None;
+                        }
+                        Err(e) => {
+                            self.error_msg = Some(e);
+                        }
+                    }
+                }
+            } else {
+                ui.horizontal(|ui| {
+                    if ui.button("Step Simulation").clicked() {
+                        if let Some(sim) = &mut self.active_sim {
+                            if let Err(e) = sim.step() {
+                                self.error_msg = Some(e);
+                            } else {
+                                self.state_json = sim.get_state_json();
+                            }
+                        }
+                    }
+                    if ui.button("Stop Simulation").clicked() {
+                        self.active_sim = None;
+                    }
+                });
+
+                ui.separator();
+                ui.label("State (JSON):");
+                ui.text_edit_multiline(&mut self.state_json);
+            }
+
+            if let Some(err) = &self.error_msg {
+                ui.colored_label(egui::Color32::RED, err);
+            }
+        });
     }
 }

@@ -1,0 +1,19 @@
+[package]
+name = "oxidize_ai"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+nalgebra = "0.34.0"
+rand = "0.8.6"
+rand_distr = "0.4.3"
+num-traits = "0.2.19"
+thiserror = "2.0.18"
+serde = { version = "1.0", features = ["derive"] }
+oxidize_core = { path = "../oxidize_core" }
+oxidize_pure_math = { path = "../oxidize_pure_math" }
+verified_engine = { path = "../verified_engine" }
+verified_engine_macros = { path = "../verified_engine_macros" }
+[dev-dependencies]
+approx = "0.5.1"
+rand = "0.8.6"

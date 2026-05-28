@@ -92,3 +92,5 @@ mod tests {
         assert!(sim.get_state().grid.iter().all(|&x| x));
     }
 }
+pub mod plugin;
+pub mod theory_macro;

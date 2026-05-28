@@ -5,29 +5,25 @@ edition = "2024"
 license = "AGPL-3.0-or-later"
 
 [dependencies]
-rustfft = "6.2.0"
-nalgebra = "0.34.0"
-quadrature = "0.1.2"
-rand = "0.8.6"
-wigner-symbols = "0.5.0"
-rug = "1.28.0"
-statrs = "0.17.0"
-petgraph = "0.6.4"
-rand_distr = "0.4.3"
-num-complex = "0.4.6"
-thiserror = "2.0.18"
-num-traits = "0.2.19"
 oxidize_core = { path = "../crates/oxidize_core" }
 verified_engine = { version = "0.1.0", path = "../crates/verified_engine" }
 serde_json = "1.0.150"
 
-[[test]]
-name = "elliptic_curves"
-path = "tests/elliptic_curves.rs"
-
-[[test]]
-name = "algorithmic_information"
-path = "tests/algorithmic_information.rs"
+oxidize_pure_math = { path = "../crates/oxidize_pure_math", optional = true }
+oxidize_applied = { path = "../crates/oxidize_applied", optional = true }
+oxidize_ai = { path = "../crates/oxidize_ai", optional = true }
+oxidize_biology = { path = "../crates/oxidize_biology", optional = true }
+oxidize_climate = { path = "../crates/oxidize_climate", optional = true }
+oxidize_epidemiology = { path = "../crates/oxidize_epidemiology", optional = true }
+oxidize_physics = { path = "../crates/oxidize_physics", optional = true }
+nalgebra = "0.34.0"
+rand = "0.8.6"
+num-complex = "0.4.6"
+wigner-symbols = "0.5.0"
+rustfft = "6.2.0"
+petgraph = "0.6.4"
+rug = "1.28.0"
+statrs = "0.17.0"
 
 [dev-dependencies]
 approx = "0.5.1"
@@ -36,16 +32,13 @@ rand = "0.8.6"
 [dev-dependencies.criterion]
 version = "0.5.1"
 
-[[bench]]
-name = "sorting_benchmark"
-harness = false
-
 [features]
 default = []
-pure_math = []
-applied = ["pure_math"]
-ai = ["pure_math"]
-biology = ["applied", "pure_math"]
-climate = ["ai"]
-epidemiology = ["pure_math"]
-physics = ["applied", "pure_math"]
+pure_math = ["oxidize_pure_math"]
+applied = ["oxidize_applied", "pure_math"]
+ai = ["oxidize_ai", "pure_math"]
+biology = ["oxidize_biology", "applied", "pure_math"]
+climate = ["oxidize_climate", "ai"]
+epidemiology = ["oxidize_epidemiology", "pure_math"]
+physics = ["oxidize_physics", "applied", "pure_math"]
+full = ["pure_math", "applied", "ai", "biology", "climate", "epidemiology", "physics"]

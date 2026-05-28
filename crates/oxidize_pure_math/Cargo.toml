@@ -1,0 +1,24 @@
+[package]
+name = "oxidize_pure_math"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+oxidize_core = { version = "0.1.0", path = "../oxidize_core" }
+nalgebra = "0.34.0"
+petgraph = "0.6.4"
+quadrature = "0.1.2"
+rand = "0.8.6"
+rand_distr = "0.4.3"
+rug = "1.28.0"
+rustfft = "6.2.0"
+statrs = "0.17.0"
+num-complex = "0.4.6"
+num-traits = "0.2.19"
+thiserror = "2.0.18"
+serde = { version = "1.0", features = ["derive"] }
+verified_engine = { path = "../verified_engine" }
+verified_engine_macros = { path = "../verified_engine_macros" }
+[dev-dependencies]
+approx = "0.5.1"
+rand = "0.8.6"
