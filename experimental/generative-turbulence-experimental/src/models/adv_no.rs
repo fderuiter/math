@@ -5,7 +5,7 @@
 //! adversarially to mitigate spectral bias.
 
 use tch::nn::VarStore;
-use crate::applied::generative_turbulence::networks::unet::{UNet, UNetBuilder};
+use crate::networks::unet::{UNet, UNetBuilder};
 
 /// Represents the Adversarially Trained Neural Operator (adv-NO).
 pub struct AdvNO {

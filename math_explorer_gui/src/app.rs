@@ -41,6 +41,8 @@ use crate::tabs::ExplorerTab;
 #[cfg(feature = "pure_math")]
 #[cfg(feature = "pure_math")]
 use crate::tabs::GeometryTopologyTab;
+#[cfg(feature = "strict-opt-in-experimental")]
+use crate::tabs::experimental_tab::ExperimentalTab;
 use eframe::egui;
 
 pub struct MathExplorerApp {
@@ -95,6 +97,9 @@ impl Default for MathExplorerApp {
         tabs.push(Box::new(FinancialMathTab::default()));
 
         tabs.push(Box::new(crate::tabs::TraceabilityTab::default()));
+
+        #[cfg(feature = "strict-opt-in-experimental")]
+        tabs.push(Box::new(ExperimentalTab::default()));
 
         Self {
             tabs,
