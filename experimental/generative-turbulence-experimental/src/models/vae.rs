@@ -4,7 +4,7 @@
 //! It features a discrete latent space (codebook) and skip connections.
 
 use tch::nn::VarStore;
-use crate::applied::generative_turbulence::networks::unet::{UNet, UNetBuilder};
+use crate::networks::unet::{UNet, UNetBuilder};
 
 /// Represents the VQ-VAE model.
 pub struct VqVae {

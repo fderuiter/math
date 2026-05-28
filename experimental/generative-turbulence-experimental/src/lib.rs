@@ -24,7 +24,7 @@ pub mod training;
 
 // [cite:generative_turbulence]
 
-use crate::theory_verification;
+use math_explorer::theory_verification;
 
 theory_verification!(
     module = "generative_turbulence",

@@ -1,0 +1,8 @@
+[package]
+name = "generative-turbulence-experimental"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tch = "0.15.0"
+math_explorer = { path = "../../math_explorer" }

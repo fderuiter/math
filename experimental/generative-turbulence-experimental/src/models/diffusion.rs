@@ -4,7 +4,7 @@
 //! reconstructing turbulent flow fields from sparse observations.
 
 use tch::nn::VarStore;
-use crate::applied::generative_turbulence::networks::unet::{UNet, UNetBuilder};
+use crate::networks::unet::{UNet, UNetBuilder};
 
 /// Represents the conditional diffusion model.
 pub struct DiffusionModel {

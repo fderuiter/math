@@ -1,6 +1,10 @@
 [workspace]
-members = ["crates/oxidize_core", "crates/verified_engine", "crates/verified_engine_macros",
+members = [
+    "crates/oxidize_core",
+    "crates/verified_engine",
+    "crates/verified_engine_macros",
     "math_explorer",
     "math_explorer_gui",
+    "experimental/generative-turbulence-experimental"
 ]
 resolver = "2"
