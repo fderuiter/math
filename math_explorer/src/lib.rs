@@ -40,14 +40,28 @@
 //!
 //! *(Note: This crate is typically part of a workspace or cloned locally.)*
 
+#[cfg(feature = "ai")]
 pub mod ai;
+
+#[cfg(feature = "applied")]
 pub mod applied;
+
+#[cfg(feature = "biology")]
 pub mod biology;
+
+#[cfg(feature = "climate")]
 pub mod climate;
+
+#[cfg(feature = "epidemiology")]
 pub mod epidemiology;
+
+#[cfg(feature = "physics")]
 pub mod physics;
+
+#[cfg(feature = "pure_math")]
 pub mod pure_math;
 
+#[cfg(feature = "ai")]
 /// The self-calibration module.
 pub use ai::self_calibration;
 
