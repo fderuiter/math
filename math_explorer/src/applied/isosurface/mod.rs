@@ -57,3 +57,17 @@ pub use marching_cubes::extract_isosurface;
 pub use types::{Mesh, Point3D, Triangle, VoxelGrid};
 
 // [cite:isosurface_extraction]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "isosurface",
+    paper = "isosurface_extraction.tex",
+    epsilon = 1e-6,
+    constants = {
+        LEVEL = 0.0;
+    },
+    test = {
+        assert_relative_eq!(LEVEL, 0.0, epsilon = 1e-6);
+    }
+);

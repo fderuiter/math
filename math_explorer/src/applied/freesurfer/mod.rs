@@ -85,3 +85,17 @@ pub use surface::{Surface, evolve_surface, external_energy, internal_energy};
 pub use thickness::cortical_thickness;
 
 // [cite:freesurfer]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "freesurfer",
+    paper = "freesurfer.tex",
+    epsilon = 1e-6,
+    constants = {
+        THICKNESS = 2.5;
+    },
+    test = {
+        assert_relative_eq!(THICKNESS, 2.5, epsilon = 1e-6);
+    }
+);

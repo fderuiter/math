@@ -62,7 +62,12 @@ impl SimulationRunner for LbmRunner {
                     self.solver.collision_model.tau = 3.0 * self.viscosity + 0.5;
                 }
             }
-            SimCommand::ApplyBrush { cx, cy, r, is_obstacle } => {
+            SimCommand::ApplyBrush {
+                cx,
+                cy,
+                r,
+                is_obstacle,
+            } => {
                 let width = self.solver.width() as i32;
                 let height = self.solver.height() as i32;
                 for y in (cy - r)..=(cy + r) {
@@ -73,7 +78,8 @@ impl SimulationRunner for LbmRunner {
                             && y < height
                             && (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r
                         {
-                            self.solver.set_obstacle(x as usize, y as usize, is_obstacle);
+                            self.solver
+                                .set_obstacle(x as usize, y as usize, is_obstacle);
                         }
                     }
                 }
@@ -92,7 +98,8 @@ impl SimulationRunner for LbmRunner {
     }
 
     fn step(&mut self) {
-        self.solver.set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
+        self.solver
+            .set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
         self.solver.step();
     }
 
@@ -132,14 +139,14 @@ impl SimulationRunner for LbmRunner {
 
 pub struct LatticeBoltzmannTool {
     controller: SimulationController,
-    
+
     // UI State
     texture: Option<egui::TextureHandle>,
     draw_mode: DrawMode,
     viscosity: f64,
     draw_radius: usize,
     steps_per_frame: usize,
-    
+
     // Cached snapshot info for rendering
     last_width: usize,
     last_height: usize,
@@ -230,12 +237,20 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
                 .add(egui::Slider::new(&mut self.viscosity, 0.005..=0.2).text("Viscosity"))
                 .changed()
             {
-                self.controller.send_command(SimCommand::UpdateParam("viscosity".to_string(), self.viscosity));
+                self.controller.send_command(SimCommand::UpdateParam(
+                    "viscosity".to_string(),
+                    self.viscosity,
+                ));
             }
-            if ui.add(
-                egui::Slider::new(&mut self.steps_per_frame, 1..=20).text("Speed (Steps/Frame)"),
-            ).changed() {
-                self.controller.send_command(SimCommand::SetSpeed(self.steps_per_frame));
+            if ui
+                .add(
+                    egui::Slider::new(&mut self.steps_per_frame, 1..=20)
+                        .text("Speed (Steps/Frame)"),
+                )
+                .changed()
+            {
+                self.controller
+                    .send_command(SimCommand::SetSpeed(self.steps_per_frame));
             }
 
             ui.separator();
@@ -254,7 +269,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
         egui::CentralPanel::default().show(ctx, |ui| {
             let width = self.last_width;
             let height = self.last_height;
-            
+
             if let Some(pixels) = &self.last_pixels {
                 // Update texture if we have new pixels
                 let image = ColorImage::new([width, height], pixels.as_ref().clone());

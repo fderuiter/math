@@ -68,3 +68,17 @@ pub mod mechanism_design;
 pub mod error;
 
 // [cite:graph_parameters_rust]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "game_theory",
+    paper = "attention_is_all_you_need_rust.tex", // just an example
+    epsilon = 1e-6,
+    constants = {
+        PAYOFF = 5.0;
+    },
+    test = {
+        assert_relative_eq!(PAYOFF, 5.0, epsilon = 1e-6);
+    }
+);

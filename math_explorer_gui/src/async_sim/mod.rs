@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::Arc;
 use std::thread;
 
 pub enum SimCommand {
@@ -9,7 +9,12 @@ pub enum SimCommand {
     SetSpeed(usize),
     UpdateParam(String, f64),
     // For grid interactions like brushing obstacles
-    ApplyBrush { cx: i32, cy: i32, r: i32, is_obstacle: bool },
+    ApplyBrush {
+        cx: i32,
+        cy: i32,
+        r: i32,
+        is_obstacle: bool,
+    },
     ClearObstacles,
 }
 

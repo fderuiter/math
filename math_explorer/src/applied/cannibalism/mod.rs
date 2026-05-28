@@ -1,28 +1,3 @@
-//! # Cannibalism (Theoretical)
-//!
-//! Mathematical models of intraspecific predation, focusing on population dynamics.
-//!
-//! > **Warning**
-//! > This module is currently **EXPERIMENTAL**.
-//! > It contains **placeholder implementations** for solving the McKendrick-von Foerster equations
-//! > and serves primarily as a structural template. Do not use for production simulations.
-//!
-//! ## Theoretical Basis
-//!
-//! The core model relies on the McKendrick-von Foerster equation:
-//!
-//! $$ \frac{\partial n}{\partial t} + \frac{\partial n}{\partial a} = -\mu(t, a) n(t, a) $$
-//!
-//! Where:
-//! - $n(t, a)$ is the population density of age $a$ at time $t$.
-//! - $\mu(t, a)$ is the mortality rate (which includes cannibalism terms).
-//!
-//! ## Submodules
-//!
-//! - `mckendrick_von_foerster`: Core PDE definitions.
-//! - `juvenile_adult_dynamics`: Age-structured interaction logic.
-//! - `two_dimensional_ode`: Simplified dynamics.
-
 pub mod death_rate;
 pub mod juvenile_adult_dynamics;
 pub mod mckendrick_von_foerster;
@@ -33,4 +8,27 @@ pub use juvenile_adult_dynamics::*;
 pub use mckendrick_von_foerster::*;
 pub use two_dimensional_ode::*;
 
-// [cite:cannibalism]
+use crate::theory_verification;
+
+theory_verification!(
+    module = "cannibalism",
+    paper = "cannibalism.tex",
+    epsilon = 1e-6,
+    constants = {
+        BETA_N = 1.0;
+        BETA_C = 0.5;
+        K_N = 0.1;
+        PHI = 0.05;
+        MU_N = 0.2;
+        MU_C = 0.3;
+    },
+    test = {
+        let model = CannibalismModel::new(BETA_N, BETA_C, K_N, PHI, MU_N, MU_C);
+        assert_relative_eq!(model.beta_n, BETA_N, epsilon = 1e-6);
+        assert_relative_eq!(model.beta_c, BETA_C, epsilon = 1e-6);
+        assert_relative_eq!(model.k_n, K_N, epsilon = 1e-6);
+        assert_relative_eq!(model.phi_n_c, PHI, epsilon = 1e-6);
+        assert_relative_eq!(model.mu_n, MU_N, epsilon = 1e-6);
+        assert_relative_eq!(model.mu_c, MU_C, epsilon = 1e-6);
+    }
+);

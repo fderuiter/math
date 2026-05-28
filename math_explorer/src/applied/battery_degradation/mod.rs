@@ -48,3 +48,27 @@ pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
 pub use error::BatteryError;
 
 // [cite:algorithmic_information_rust]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "battery_degradation",
+    paper = "algorithmic_information_rust.tex",
+    epsilon = 1e-6,
+    constants = {
+        TARGET_CAP = 0.8;
+    },
+    test = {
+        let model = model::PowerLawModel::standard();
+        assert_relative_eq!(
+            model
+                .capacity(
+                    types::Cycles::new_clamped(0.0),
+                    types::DepthOfDischarge::new_clamped(1.0)
+                )
+                .as_f64(),
+            1.0,
+            epsilon = 1e-6
+        );
+    }
+);

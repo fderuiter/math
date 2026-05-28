@@ -76,15 +76,18 @@ mod tests {
 
     #[test]
     fn test_boolean_mask_simulation() {
-        let config = BooleanMaskConfig { width: 10, height: 10 };
+        let config = BooleanMaskConfig {
+            width: 10,
+            height: 10,
+        };
         let mut sim = BooleanMaskSimulation::initialize(config).unwrap();
-        
+
         // Initial state should be all false
         assert!(sim.get_state().grid.iter().all(|&x| !x));
-        
+
         // Step
         sim.step().unwrap();
-        
+
         // State should be all true
         assert!(sim.get_state().grid.iter().all(|&x| x));
     }

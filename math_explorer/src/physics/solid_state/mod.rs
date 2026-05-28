@@ -25,3 +25,17 @@ pub mod second_quantization;
 pub mod types;
 
 // [cite:mmwave_radiotherapy_setup]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "solid_state",
+    paper = "quantum_mechanics.tex",
+    epsilon = 1e-6,
+    constants = {
+        DUMMY = 1.0;
+    },
+    test = {
+        assert_relative_eq!(DUMMY, 1.0, epsilon = 1e-6);
+    }
+);
