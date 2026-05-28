@@ -3,12 +3,16 @@ name = "math_explorer_gui"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["domain_logic"]
+domain_logic = ["dep:math_explorer"]
+
 [dependencies]
 eframe = "0.33.3"
 egui_plot = "0.34.1"
 
 nalgebra = "0.34.0"
-math_explorer = { path = "../math_explorer", features = ["ai", "applied", "biology", "climate", "epidemiology", "physics", "pure_math"] }
+math_explorer = { path = "../math_explorer", features = ["ai", "applied", "biology", "climate", "epidemiology", "physics", "pure_math"], optional = true }
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"
