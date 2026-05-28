@@ -1,4 +1,5 @@
 use super::SolidStateTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::physics::stat_mech::ising::SpinLattice;
 use math_explorer::physics::stat_mech::KB;
@@ -70,7 +71,7 @@ impl SolidStateTool for IsingModelTool {
                         } else {
                             "▶ Play"
                         })
-                        .on_hover_text(if self.running {
+                        .accessible_hover_text(if self.running {
                             "Pause the Ising model simulation"
                         } else {
                             "Resume the Ising model simulation"
@@ -82,7 +83,7 @@ impl SolidStateTool for IsingModelTool {
 
                     if ui
                         .button("🔄 Reset")
-                        .on_hover_text("Reset the lattice spin state")
+                        .accessible_hover_text("Reset the lattice spin state")
                         .clicked()
                     {
                         self.lattice = SpinLattice::new(100, 100);

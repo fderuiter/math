@@ -1,4 +1,5 @@
 use super::GraphTheoryTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use eframe::egui::Pos2;
 use math_explorer::pure_math::graph_theory::dijkstra::dijkstra;
@@ -199,7 +200,7 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
                 ui.horizontal(|ui| {
                     if ui
                         .button("↻ Reset")
-                        .on_hover_text("Restart the algorithm visualization")
+                        .accessible_hover_text("Restart the algorithm visualization")
                         .clicked()
                     {
                         self.animation_step = 0;
@@ -207,14 +208,14 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
                     let can_step = self.animation_step < self.visit_order.len();
                     if ui
                         .add_enabled(can_step, eframe::egui::Button::new("▶ Step"))
-                        .on_hover_text("Advance visualization by one step")
+                        .accessible_hover_text("Advance visualization by one step")
                         .clicked()
                     {
                         self.animation_step += 1;
                     }
                     if ui
                         .add_enabled(can_step, eframe::egui::Button::new("⏹ Finish"))
-                        .on_hover_text("Skip to the end of the visualization")
+                        .accessible_hover_text("Skip to the end of the visualization")
                         .clicked()
                     {
                         self.animation_step = self.visit_order.len();
@@ -234,6 +235,9 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
         egui::CentralPanel::default().show(ctx, |ui| {
             let (response, painter) =
                 ui.allocate_painter(ui.available_size(), egui::Sense::click());
+            let _ = response
+                .clone()
+                .accessible_hover_text("Graph Theory Algorithm Visualization");
             let pointer_pos = response.interact_pointer_pos();
             let node_radius = 15.0;
 

@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use crate::tabs::ExplorerTab;
 use eframe::egui;
@@ -225,7 +226,7 @@ impl ExplorerTab for MorphogenesisTab {
             }
 
             let pause_btn = ui.button(if !self.controller.running { "▶ Resume" } else { "⏸ Pause" });
-            if pause_btn.on_hover_text(if !self.controller.running { "Resume the Turing pattern simulation" } else { "Pause the Turing pattern simulation" }).clicked() {
+            if pause_btn.accessible_hover_text(if !self.controller.running { "Resume the Turing pattern simulation" } else { "Pause the Turing pattern simulation" }).clicked() {
                 if self.controller.running {
                     self.controller.send_command(SimCommand::Pause);
                 } else {
@@ -233,7 +234,7 @@ impl ExplorerTab for MorphogenesisTab {
                 }
             }
 
-            if ui.button("↻ Reset / Randomize").on_hover_text("Re-initialize the simulation grid with random noise").clicked() {
+            if ui.button("↻ Reset / Randomize").accessible_hover_text("Re-initialize the simulation grid with random noise").clicked() {
                  self.controller.send_command(SimCommand::Reset);
             }
 

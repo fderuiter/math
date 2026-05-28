@@ -1,4 +1,5 @@
 use super::GraphTheoryTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use eframe::egui::Pos2;
 use math_explorer::pure_math::graph_theory::graph::Graph;
@@ -62,7 +63,7 @@ impl GraphTheoryTool for GraphEditorTool {
 
             if ui
                 .button("🔄 Clear Graph")
-                .on_hover_text("Remove all nodes and edges and start with a fresh graph")
+                .accessible_hover_text("Remove all nodes and edges and start with a fresh graph")
                 .clicked()
             {
                 self.graph = Graph::new();
@@ -81,6 +82,9 @@ impl GraphTheoryTool for GraphEditorTool {
         egui::CentralPanel::default().show(ctx, |ui| {
             let (response, painter) =
                 ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
+            let _ = response
+                .clone()
+                .accessible_hover_text("Interactive Graph Editor Canvas");
 
             let pointer_pos = response.interact_pointer_pos();
             let node_radius = 15.0;

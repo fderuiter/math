@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use math_explorer::ai::transformer::tokenization::{
@@ -138,7 +139,7 @@ impl AiTool for TokenizationTool {
                                 ui.label(egui::RichText::new(&token.text).monospace().color(ui.visuals().strong_text_color()));
                             });
 
-                        rect.response.on_hover_text(format!("Token ID: Hash of '{}'", token.text));
+                        rect.response.accessible_hover_text(format!("Token ID: Hash of '{}'", token.text));
                     }
                 });
             });

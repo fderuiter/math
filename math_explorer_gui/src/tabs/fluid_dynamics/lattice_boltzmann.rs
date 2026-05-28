@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
@@ -202,7 +203,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
 
             if ui
                 .button(if is_running { "⏸ Pause" } else { "▶ Run" })
-                .on_hover_text(if is_running {
+                .accessible_hover_text(if is_running {
                     "Pause the fluid simulation"
                 } else {
                     "Start the fluid simulation"
@@ -218,7 +219,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
 
             if ui
                 .button("↻ Reset")
-                .on_hover_text("Reset the fluid field and re-initialize the simulation")
+                .accessible_hover_text("Reset the fluid field and re-initialize the simulation")
                 .clicked()
             {
                 self.controller.send_command(SimCommand::Reset);
@@ -226,7 +227,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
 
             if ui
                 .button("🔄 Clear Obstacles")
-                .on_hover_text("Remove all obstacles from the fluid field")
+                .accessible_hover_text("Remove all obstacles from the fluid field")
                 .clicked()
             {
                 self.controller.send_command(SimCommand::ClearObstacles);

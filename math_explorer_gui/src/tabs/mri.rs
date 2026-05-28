@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
@@ -127,7 +128,7 @@ impl ExplorerTab for MriTab {
             ui.horizontal(|ui| {
                 if ui
                     .button(if self.paused { "▶ Play" } else { "⏸ Pause" })
-                    .on_hover_text(if self.paused {
+                    .accessible_hover_text(if self.paused {
                         "Start the simulation"
                     } else {
                         "Pause the simulation"
@@ -138,7 +139,7 @@ impl ExplorerTab for MriTab {
                 }
                 if ui
                     .button("↻ Reset (90° Pulse)")
-                    .on_hover_text("Reset to the initial state with a 90° tip pulse")
+                    .accessible_hover_text("Reset to the initial state with a 90° tip pulse")
                     .clicked()
                 {
                     self.reset();

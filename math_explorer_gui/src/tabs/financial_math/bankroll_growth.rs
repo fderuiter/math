@@ -1,4 +1,5 @@
 use super::FinancialMathTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::statistics::kelly::{
@@ -127,7 +128,9 @@ impl FinancialMathTool for BankrollGrowthTool {
                 .changed();
             changed |= ui
                 .add(egui::Slider::new(&mut self.odds, 0.1..=10.0).text("Net Odds (b)"))
-                .on_hover_text("Net profit multiplier. E.g., for +100 / even money, b = 1.0.")
+                .accessible_hover_text(
+                    "Net profit multiplier. E.g., for +100 / even money, b = 1.0.",
+                )
                 .changed();
             changed |= ui
                 .add(egui::Slider::new(&mut self.num_bets, 10..=1000).text("Number of Bets"))

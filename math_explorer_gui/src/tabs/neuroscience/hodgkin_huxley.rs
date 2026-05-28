@@ -1,4 +1,5 @@
 use super::NeuroscienceTool;
+use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -174,7 +175,7 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                 let is_running = self.controller.running;
                 if ui
                     .button(if is_running { "⏸ Pause" } else { "▶ Start" })
-                    .on_hover_text(if is_running {
+                    .accessible_hover_text(if is_running {
                         "Pause the Hodgkin-Huxley simulation"
                     } else {
                         "Start the Hodgkin-Huxley simulation"
@@ -189,7 +190,7 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                 }
                 if ui
                     .button("↻ Reset")
-                    .on_hover_text("Reset the simulation to its initial state")
+                    .accessible_hover_text("Reset the simulation to its initial state")
                     .clicked()
                 {
                     self.controller.send_command(SimCommand::Reset);

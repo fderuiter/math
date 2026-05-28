@@ -13,6 +13,8 @@ use crate::tabs::climate::ClimateTab;
 use crate::tabs::clinical_trials::ClinicalTrialsTab;
 #[cfg(feature = "epidemiology")]
 use crate::tabs::epidemiology::EpidemiologyTab;
+#[cfg(feature = "strict-opt-in-experimental")]
+use crate::tabs::experimental_tab::ExperimentalTab;
 #[cfg(feature = "applied")]
 use crate::tabs::favoritism::FavoritismTab;
 #[cfg(feature = "pure_math")]
@@ -41,8 +43,6 @@ use crate::tabs::ExplorerTab;
 #[cfg(feature = "pure_math")]
 #[cfg(feature = "pure_math")]
 use crate::tabs::GeometryTopologyTab;
-#[cfg(feature = "strict-opt-in-experimental")]
-use crate::tabs::experimental_tab::ExperimentalTab;
 use eframe::egui;
 
 pub struct MathExplorerApp {

@@ -1,4 +1,5 @@
 use super::BatteryDegradationTool;
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
 
@@ -39,17 +40,19 @@ impl BatteryDegradationTool for LifetimeEstimatorTool {
                 egui::Grid::new("lifetime_params_grid").show(ui, |ui| {
                     ui.label("Depth of Discharge (DoD):");
                     ui.add(egui::Slider::new(&mut self.dod, 0.1..=100.0).text("%"))
-                        .on_hover_text("Percentage of battery capacity used per cycle.");
+                        .accessible_hover_text("Percentage of battery capacity used per cycle.");
                     ui.end_row();
 
                     ui.label("Target Capacity (End of Life):");
                     ui.add(egui::Slider::new(&mut self.target_capacity, 10.0..=99.0).text("%"))
-                        .on_hover_text("The threshold capacity to be considered 'end of life'.");
+                        .accessible_hover_text(
+                            "The threshold capacity to be considered 'end of life'.",
+                        );
                     ui.end_row();
 
                     ui.label("Cycles per Day:");
                     ui.add(egui::Slider::new(&mut self.cycles_per_day, 0.1..=10.0).text("cycles"))
-                        .on_hover_text("How many charge/discharge cycles happen per day.");
+                        .accessible_hover_text("How many charge/discharge cycles happen per day.");
                     ui.end_row();
                 });
             });

@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Arrows, Plot};
 use math_explorer::physics::fluid_dynamics::potential_flow::{
@@ -108,7 +109,7 @@ impl FluidDynamicsTool for PotentialFlowTool {
 
                 if ui
                     .button("➕ Add Element")
-                    .on_hover_text("Add the selected flow element to the field")
+                    .accessible_hover_text("Add the selected flow element to the field")
                     .clicked()
                 {
                     self.add_element();
@@ -119,7 +120,7 @@ impl FluidDynamicsTool for PotentialFlowTool {
 
             if ui
                 .button("🔄 Clear All")
-                .on_hover_text("Remove all potential flow elements and reset the field")
+                .accessible_hover_text("Remove all potential flow elements and reset the field")
                 .clicked()
             {
                 self.clear();

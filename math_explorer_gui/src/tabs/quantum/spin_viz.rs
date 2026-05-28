@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
 use math_explorer::physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};
@@ -128,7 +129,7 @@ impl QuantumTool for SpinVisualizer {
                 }
                 if ui
                     .button("🔄 Reset")
-                    .on_hover_text("Reset to |0> spin state")
+                    .accessible_hover_text("Reset to |0> spin state")
                     .clicked()
                 {
                     self.reset();

@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use egui::Color32;
@@ -121,7 +122,7 @@ impl AiTool for TrainingMonitorTool {
             });
 
             if training_btn
-                .on_hover_text(if self.is_training {
+                .accessible_hover_text(if self.is_training {
                     "Stop the continuous training loop"
                 } else {
                     "Start the continuous training loop"
@@ -133,7 +134,7 @@ impl AiTool for TrainingMonitorTool {
 
             if ui
                 .button("↻ Reset Model")
-                .on_hover_text("Re-initialize the neural network weights and clear metrics")
+                .accessible_hover_text("Re-initialize the neural network weights and clear metrics")
                 .clicked()
             {
                 self.reset();
