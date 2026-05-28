@@ -1,15 +1,94 @@
 use super::NeuroscienceTool;
+use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::biology::neuroscience::{HodgkinHuxleyNeuron, HodgkinHuxleyParameters};
 use std::collections::VecDeque;
+use std::sync::Arc;
 
-pub struct HodgkinHuxleyTool {
+struct HodgkinHuxleyRunner {
     neuron: HodgkinHuxleyNeuron,
     params: HodgkinHuxleyParameters,
-    history: VecDeque<[f64; 2]>, // [time, voltage]
+    history: VecDeque<[f64; 2]>,
     time: f64,
-    is_running: bool,
+    i_ext: f64,
+    dt: f64,
+    steps_per_frame: usize,
+}
+
+impl SimulationRunner for HodgkinHuxleyRunner {
+    fn process_command(&mut self, cmd: SimCommand) {
+        match cmd {
+            SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
+            SimCommand::UpdateParam(ref name, val) => match name.as_str() {
+                "g_na" => self.params.g_na = val,
+                "g_k" => self.params.g_k = val,
+                "g_l" => self.params.g_l = val,
+                "i_ext" => self.i_ext = val,
+                _ => {}
+            },
+            SimCommand::Reset => {
+                self.neuron = HodgkinHuxleyNeuron::new(-65.0);
+                self.time = 0.0;
+                self.history.clear();
+            }
+            _ => {}
+        }
+
+        // Reconstruct neuron if parameters changed
+        if let SimCommand::UpdateParam(name, _) = cmd {
+            if name != "i_ext" {
+                let builder = HodgkinHuxleyNeuron::builder()
+                    .with_initial_v(self.neuron.v())
+                    .with_n(self.neuron.n())
+                    .with_m(self.neuron.m())
+                    .with_h(self.neuron.h())
+                    .with_params(self.params.clone());
+
+                if let Ok(new_neuron) = builder.build() {
+                    self.neuron = new_neuron;
+                }
+            }
+        }
+    }
+
+    fn step(&mut self) {
+        self.neuron.update(self.dt, self.i_ext);
+        self.time += self.dt;
+        self.history.push_back([self.time, self.neuron.v()]);
+        while self.history.len() > 10_000 {
+            self.history.pop_front();
+        }
+    }
+
+    fn get_snapshot(&self) -> StateSnapshot {
+        // Flatten history and push current time/voltage as the last two elements
+        let mut custom_data = Vec::with_capacity(self.history.len() * 2 + 2);
+        for &[t, v] in &self.history {
+            custom_data.push(t);
+            custom_data.push(v);
+        }
+        custom_data.push(self.time);
+        custom_data.push(self.neuron.v());
+
+        StateSnapshot {
+            width: 0,
+            height: 0,
+            pixels: Arc::new(Vec::new()),
+            custom_data,
+        }
+    }
+
+    fn get_steps_per_frame(&self) -> usize {
+        self.steps_per_frame
+    }
+}
+
+pub struct HodgkinHuxleyTool {
+    controller: SimulationController,
+    history: VecDeque<[f64; 2]>, // Local cache for plotting
+    time: f64,
+    voltage: f64,
 
     // UI State for sliders (to avoid modifying params directly every frame)
     g_na: f64,
@@ -23,15 +102,24 @@ impl Default for HodgkinHuxleyTool {
         let params = HodgkinHuxleyParameters::default();
         let neuron = HodgkinHuxleyNeuron::new(-65.0);
 
-        Self {
+        let runner = HodgkinHuxleyRunner {
             neuron,
+            params: params.clone(),
+            history: VecDeque::new(),
+            time: 0.0,
+            i_ext: 10.0,
+            dt: 0.01,
+            steps_per_frame: 10,
+        };
+
+        Self {
+            controller: SimulationController::new(runner),
             g_na: params.g_na,
             g_k: params.g_k,
             g_l: params.g_l,
-            params, // Keep a copy
             history: VecDeque::new(),
             time: 0.0,
-            is_running: false,
+            voltage: -65.0,
             i_ext: 10.0, // Default injection
         }
     }
@@ -43,8 +131,6 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
     }
 
     fn show(&mut self, ctx: &egui::Context) {
-        let mut params_changed = false;
-
         egui::SidePanel::left("hh_controls").show(ctx, |ui| {
             ui.heading("Parameters");
             ui.separator();
@@ -54,19 +140,22 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                 .add(egui::Slider::new(&mut self.g_na, 0.0..=200.0).text("Na+ (Sodium)"))
                 .changed()
             {
-                params_changed = true;
+                self.controller
+                    .send_command(SimCommand::UpdateParam("g_na".to_string(), self.g_na));
             }
             if ui
                 .add(egui::Slider::new(&mut self.g_k, 0.0..=100.0).text("K+ (Potassium)"))
                 .changed()
             {
-                params_changed = true;
+                self.controller
+                    .send_command(SimCommand::UpdateParam("g_k".to_string(), self.g_k));
             }
             if ui
                 .add(egui::Slider::new(&mut self.g_l, 0.0..=5.0).text("Leak"))
                 .changed()
             {
-                params_changed = true;
+                self.controller
+                    .send_command(SimCommand::UpdateParam("g_l".to_string(), self.g_l));
             }
 
             ui.separator();
@@ -75,71 +164,74 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                 .add(egui::Slider::new(&mut self.i_ext, 0.0..=50.0).text("I_ext (Current)"))
                 .changed()
             {
-                // I_ext is passed to update(), so we don't need to rebuild neuron
+                self.controller
+                    .send_command(SimCommand::UpdateParam("i_ext".to_string(), self.i_ext));
             }
 
             ui.separator();
             ui.heading("Simulation");
             ui.horizontal(|ui| {
+                let is_running = self.controller.running;
                 if ui
-                    .button(if self.is_running {
-                        "⏸ Pause"
-                    } else {
-                        "▶ Start"
-                    })
-                    .on_hover_text(if self.is_running {
+                    .button(if is_running { "⏸ Pause" } else { "▶ Start" })
+                    .on_hover_text(if is_running {
                         "Pause the Hodgkin-Huxley simulation"
                     } else {
                         "Start the Hodgkin-Huxley simulation"
                     })
                     .clicked()
                 {
-                    self.is_running = !self.is_running;
+                    if is_running {
+                        self.controller.send_command(SimCommand::Pause);
+                    } else {
+                        self.controller.send_command(SimCommand::Start);
+                    }
                 }
                 if ui
                     .button("↻ Reset")
                     .on_hover_text("Reset the simulation to its initial state")
                     .clicked()
                 {
-                    self.reset();
+                    self.controller.send_command(SimCommand::Reset);
+                    self.time = 0.0;
+                    self.voltage = -65.0;
+                    self.history.clear();
+
+                    // Re-apply current slider values
+                    self.controller
+                        .send_command(SimCommand::UpdateParam("g_na".to_string(), self.g_na));
+                    self.controller
+                        .send_command(SimCommand::UpdateParam("g_k".to_string(), self.g_k));
+                    self.controller
+                        .send_command(SimCommand::UpdateParam("g_l".to_string(), self.g_l));
+                    self.controller
+                        .send_command(SimCommand::UpdateParam("i_ext".to_string(), self.i_ext));
                 }
             });
 
             ui.label(format!("Time: {:.2} ms", self.time));
-            ui.label(format!("Voltage: {:.2} mV", self.neuron.v()));
+            ui.label(format!("Voltage: {:.2} mV", self.voltage));
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Simulation Step
-            if self.is_running {
-                // If params changed via slider, update them
-                if params_changed {
-                    self.update_params();
+            // Update from background thread
+            if let Some(snapshot) = self.controller.update() {
+                if snapshot.custom_data.len() >= 2 {
+                    self.voltage = *snapshot.custom_data.last().unwrap();
+                    self.time = snapshot.custom_data[snapshot.custom_data.len() - 2];
+
+                    // Reconstruct history
+                    self.history.clear();
+                    for i in (0..snapshot.custom_data.len() - 2).step_by(2) {
+                        self.history
+                            .push_back([snapshot.custom_data[i], snapshot.custom_data[i + 1]]);
+                    }
                 }
+            }
 
-                // Run multiple steps per frame for smooth animation
-                let dt = 0.01;
-                let steps_per_frame = 10;
-
-                for _ in 0..steps_per_frame {
-                    self.neuron.update(dt, self.i_ext);
-                    self.time += dt;
-
-                    // Record history (every step or subsample?)
-                    // Subsample to avoid memory explosion, or use a ring buffer.
-                    // For now, just append. Maybe limit size.
-                    self.history.push_back([self.time, self.neuron.v()]);
-                }
-
-                // Limit history size to keep UI responsive
-                while self.history.len() > 10_000 {
-                    self.history.pop_front();
-                }
-
+            if self.controller.running {
                 // Request repaint to animate
                 ctx.request_repaint();
-            } else if params_changed {
-                self.update_params();
             }
 
             // Plotting
@@ -160,48 +252,6 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
     }
 }
 
-impl HodgkinHuxleyTool {
-    fn reset(&mut self) {
-        self.neuron = HodgkinHuxleyNeuron::new(-65.0);
-        self.time = 0.0;
-        self.history.clear();
-        self.is_running = false;
-        // Keep current slider values and apply them to the new neuron
-        self.update_params();
-    }
-
-    fn update_params(&mut self) {
-        // Update local params struct
-        self.params.g_na = self.g_na;
-        self.params.g_k = self.g_k;
-        self.params.g_l = self.g_l;
-
-        // Reconstruct neuron with new params but OLD state
-        // We need to use the builder to inject current state + new params
-        let v = self.neuron.v();
-        let n = self.neuron.n();
-        let m = self.neuron.m();
-        let h = self.neuron.h();
-
-        // Note: We use try_new_with_params or builder.
-        // But builder allows setting initial state.
-
-        let builder = HodgkinHuxleyNeuron::builder()
-            .with_initial_v(v)
-            .with_n(n)
-            .with_m(m)
-            .with_h(h)
-            .with_params(self.params.clone());
-
-        if let Ok(new_neuron) = builder.build() {
-            self.neuron = new_neuron;
-        } else {
-            // If parameters are invalid (e.g. negative), we might fail.
-            // But sliders are clamped to positive ranges.
-            // Log error or ignore?
-            eprintln!("Failed to rebuild neuron with new parameters");
-        }
-    }
-}
+// Removed local reset and update_params logic.
 
 // [cite:advanced_linear_algebra]
