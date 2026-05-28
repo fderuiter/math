@@ -1,5 +1,5 @@
 [workspace]
-members = [
+members = ["crates/oxidize_core",
     "math_explorer",
     "math_explorer_gui",
 ]

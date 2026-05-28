@@ -1,13 +1,26 @@
-#[cfg(feature = "domain_logic")]
-use crate::tabs::{
-    ai::AiTab, analysis::AnalysisTab, battery_degradation::BatteryDegradationTab, chaos::ChaosTab,
-    climate::ClimateTab, clinical_trials::ClinicalTrialsTab, epidemiology::EpidemiologyTab,
-    favoritism::FavoritismTab, financial_math::FinancialMathTab, fluid_dynamics::FluidDynamicsTab,
-    game_theory::GameTheoryTab, graph_theory::GraphTheoryTab, medical::MedicalTab,
-    morphogenesis::MorphogenesisTab, mri::MriTab, neuroscience::NeuroscienceTab,
-    number_theory::NumberTheoryTab, quantum::QuantumTab, solid_state::SolidStateTab,
-    GeometryTopologyTab,
-};
+#[cfg(feature = "pure_math")]
+
+#[cfg(feature = "ai")] use crate::tabs::ai::AiTab;
+#[cfg(feature = "pure_math")] use crate::tabs::analysis::AnalysisTab;
+#[cfg(feature = "applied")] use crate::tabs::battery_degradation::BatteryDegradationTab;
+#[cfg(feature = "physics")] use crate::tabs::chaos::ChaosTab;
+#[cfg(feature = "climate")] use crate::tabs::climate::ClimateTab;
+#[cfg(feature = "applied")] use crate::tabs::clinical_trials::ClinicalTrialsTab;
+#[cfg(feature = "epidemiology")] use crate::tabs::epidemiology::EpidemiologyTab;
+#[cfg(feature = "applied")] use crate::tabs::favoritism::FavoritismTab;
+#[cfg(feature = "pure_math")] use crate::tabs::financial_math::FinancialMathTab;
+#[cfg(feature = "physics")] use crate::tabs::fluid_dynamics::FluidDynamicsTab;
+#[cfg(feature = "applied")] use crate::tabs::game_theory::GameTheoryTab;
+#[cfg(feature = "pure_math")] use crate::tabs::graph_theory::GraphTheoryTab;
+#[cfg(feature = "physics")] use crate::tabs::medical::MedicalTab;
+#[cfg(feature = "biology")] use crate::tabs::morphogenesis::MorphogenesisTab;
+#[cfg(feature = "physics")] use crate::tabs::mri::MriTab;
+#[cfg(feature = "biology")] use crate::tabs::neuroscience::NeuroscienceTab;
+#[cfg(feature = "pure_math")] use crate::tabs::number_theory::NumberTheoryTab;
+#[cfg(feature = "physics")] use crate::tabs::quantum::QuantumTab;
+#[cfg(feature = "physics")] use crate::tabs::solid_state::SolidStateTab;
+#[cfg(feature = "pure_math")] 
+#[cfg(feature = "pure_math")] use crate::tabs::GeometryTopologyTab;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
@@ -21,29 +34,46 @@ impl Default for MathExplorerApp {
         #[allow(unused_mut)]
         let mut tabs: Vec<Box<dyn ExplorerTab>> = vec![];
         
-        #[cfg(feature = "domain_logic")]
-        {
+        #[cfg(feature = "physics")]
             tabs.push(Box::new(MriTab::default()));
+        #[cfg(feature = "physics")]
             tabs.push(Box::new(QuantumTab::default()));
+        #[cfg(feature = "physics")]
             tabs.push(Box::new(FluidDynamicsTab::default()));
+        #[cfg(feature = "physics")]
             tabs.push(Box::new(ChaosTab::default()));
+        #[cfg(feature = "physics")]
             tabs.push(Box::new(SolidStateTab::default()));
+        #[cfg(feature = "physics")]
             tabs.push(Box::new(MedicalTab::default()));
+        #[cfg(feature = "biology")]
             tabs.push(Box::new(NeuroscienceTab::default()));
+        #[cfg(feature = "pure_math")]
             tabs.push(Box::new(NumberTheoryTab::default()));
+        #[cfg(feature = "pure_math")]
             tabs.push(Box::new(GraphTheoryTab::default()));
+        #[cfg(feature = "pure_math")]
             tabs.push(Box::new(GeometryTopologyTab::default()));
+        #[cfg(feature = "pure_math")]
             tabs.push(Box::new(AnalysisTab::default()));
+        #[cfg(feature = "climate")]
             tabs.push(Box::new(ClimateTab::default()));
+        #[cfg(feature = "epidemiology")]
             tabs.push(Box::new(EpidemiologyTab::default()));
+        #[cfg(feature = "applied")]
             tabs.push(Box::new(GameTheoryTab::default()));
+        #[cfg(feature = "biology")]
             tabs.push(Box::new(MorphogenesisTab::default()));
+        #[cfg(feature = "applied")]
             tabs.push(Box::new(ClinicalTrialsTab::default()));
+        #[cfg(feature = "applied")]
             tabs.push(Box::new(BatteryDegradationTab::default()));
+        #[cfg(feature = "ai")]
             tabs.push(Box::new(AiTab::default()));
+        #[cfg(feature = "applied")]
             tabs.push(Box::new(FavoritismTab::default()));
+        #[cfg(feature = "pure_math")]
             tabs.push(Box::new(FinancialMathTab::default()));
-        }
 
         Self {
             tabs,

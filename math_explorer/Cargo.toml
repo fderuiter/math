@@ -17,6 +17,7 @@ rand_distr = "0.4.3"
 num-complex = "0.4.6"
 thiserror = "2.0.18"
 num-traits = "0.2.19"
+oxidize_core = { path = "../crates/oxidize_core" }
 
 [[test]]
 name = "elliptic_curves"
@@ -39,10 +40,10 @@ harness = false
 
 [features]
 default = []
-ai = []
-applied = []
-biology = []
-climate = []
-epidemiology = []
-physics = []
 pure_math = []
+applied = ["pure_math"]
+ai = ["pure_math"]
+biology = ["applied", "pure_math"]
+climate = ["ai"]
+epidemiology = ["pure_math"]
+physics = ["applied", "pure_math"]
