@@ -8,3 +8,5 @@ pub mod bessel;
 pub mod gamma_beta;
 pub mod legendre;
 pub mod polynomials;
+
+// [cite:attention_is_all_you_need_rust]

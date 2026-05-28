@@ -341,3 +341,5 @@ impl GameTheoryTool for ReplicatorDynamicsTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

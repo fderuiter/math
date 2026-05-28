@@ -39,6 +39,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: Check Traceability
+        run: python3 scripts/traceability.py
+        working-directory: .
+
       - name: Check Formatting
         run: cargo fmt -- --check
         working-directory: ${{ env.WORKING_DIRECTORY }}

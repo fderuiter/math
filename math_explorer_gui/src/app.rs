@@ -75,6 +75,8 @@ impl Default for MathExplorerApp {
         #[cfg(feature = "pure_math")]
             tabs.push(Box::new(FinancialMathTab::default()));
 
+        tabs.push(Box::new(crate::tabs::TraceabilityTab::default()));
+
         Self {
             tabs,
             selected_tab: 0,

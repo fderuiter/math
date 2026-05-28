@@ -299,3 +299,5 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

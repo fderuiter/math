@@ -146,3 +146,5 @@ fn map_value_to_color(t: f64) -> Color32 {
 
     Color32::from_rgb(r, g, b)
 }
+
+// [cite:graph_parameters_rust]

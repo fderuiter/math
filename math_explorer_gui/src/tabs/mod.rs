@@ -40,9 +40,11 @@ pub mod number_theory;
 pub mod quantum;
 #[cfg(feature = "physics")]
 pub mod solid_state;
+pub mod traceability;
 
 #[cfg(feature = "pure_math")]
 pub use geometry_topology::GeometryTopologyTab;
+pub use traceability::TraceabilityTab;
 
 /// A trait for defining a tab in the Math Explorer application.
 ///
@@ -90,3 +92,5 @@ pub trait ExplorerTab {
     /// * `frame` - The eframe Frame, used for window management (e.g., resizing, closing).
     fn show(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame);
 }
+
+// [cite:graph_parameters_rust]

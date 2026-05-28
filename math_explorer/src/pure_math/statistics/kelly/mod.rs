@@ -202,3 +202,5 @@ pub use criterion::{
     expected_growth_rate, expected_value, fractional_kelly, kelly_fraction, variants,
 };
 pub use error::KellyError;
+
+// [cite:clinical_trials_statistics]

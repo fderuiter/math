@@ -3,3 +3,5 @@
 pub mod formulas;
 pub mod metrics;
 pub mod rewards;
+
+// [cite:grpo]

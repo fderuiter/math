@@ -71,3 +71,5 @@ impl ExplorerTab for NeuroscienceTab {
         }
     }
 }
+
+// [cite:graph_parameters_rust]

@@ -16,3 +16,5 @@ pub mod neutrinos;
 pub mod qcd;
 
 pub use error::StandardModelError;
+
+// [cite:graph_parameters_rust]

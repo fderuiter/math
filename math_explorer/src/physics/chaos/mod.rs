@@ -226,3 +226,5 @@ mod tests {
         assert!(running_system.state.vec.x.is_finite());
     }
 }
+
+// [cite:graph_parameters_rust]

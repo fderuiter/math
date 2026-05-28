@@ -13,3 +13,5 @@ pub use continuous::*;
 // Re-export discrete transform and traits for convenience.
 pub use discrete::FastFourierTransform;
 pub use traits::{SpectralTransform, TransformError};
+
+// [cite:attention_is_all_you_need_rust]

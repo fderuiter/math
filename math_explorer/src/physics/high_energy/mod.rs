@@ -96,3 +96,5 @@ pub use general_relativity::SchwarzschildBlackHole;
 
 // Re-export Error type
 pub use error::HighEnergyError;
+
+// [cite:dwarf_galaxy_empirical_dependencies]

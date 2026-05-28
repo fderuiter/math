@@ -119,3 +119,5 @@ impl EpidemiologyTool for SirTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

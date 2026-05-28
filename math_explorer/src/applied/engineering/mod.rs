@@ -12,3 +12,5 @@ pub mod uart;
 pub use cnc::*;
 pub use error::*;
 pub use uart::*;
+
+// [cite:graph_parameters_rust]

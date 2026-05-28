@@ -107,3 +107,5 @@ pub fn concentration_superposition(params: &PKParameters, dose_times: &[f64], t:
     let model = SuperpositionModel::new(base_model, dose_times.to_vec());
     model.concentration(t)
 }
+
+// [cite:quantum_mechanics]

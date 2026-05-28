@@ -145,3 +145,5 @@ impl EpidemiologyTool for NetworkPropagationTool {
         });
     }
 }
+
+// [cite:algorithmic_information_rust]

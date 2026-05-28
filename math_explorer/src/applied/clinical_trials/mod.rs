@@ -73,3 +73,5 @@ pub mod hypothesis_testing;
 pub mod sample_size;
 pub mod survival_analysis;
 pub mod types;
+
+// [cite:clinical_trials_statistics]

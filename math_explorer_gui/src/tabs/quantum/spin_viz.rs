@@ -236,3 +236,5 @@ impl QuantumTool for SpinVisualizer {
         });
     }
 }
+
+// [cite:quantum_mechanics]

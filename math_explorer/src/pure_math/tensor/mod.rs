@@ -43,3 +43,6 @@ pub mod types;
 pub use christoffel::christoffel_symbols;
 pub use metric::{Metric, RiemannianMetric};
 pub use types::{ContravariantVector, CovariantVector, TensorError};
+
+// [cite:graph_parameters_rust]
+// [cite:tensors]

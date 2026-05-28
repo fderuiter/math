@@ -155,3 +155,5 @@ mod tests {
         assert_eq!(u.ncols(), 101);
     }
 }
+
+// [cite:graph_parameters_rust]

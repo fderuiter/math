@@ -319,3 +319,5 @@ pub use dtmc::{MarkovChain, StateType};
 pub use error::{MarkovError, Result};
 pub use hmm::HiddenMarkovModel;
 pub use tensor::{TimeIndex, TransitionTensor};
+
+// [cite:clinical_trials_statistics]

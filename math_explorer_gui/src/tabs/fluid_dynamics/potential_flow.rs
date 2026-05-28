@@ -210,3 +210,5 @@ impl PotentialFlowTool {
         self.field.clear();
     }
 }
+
+// [cite:modular_polynomials_review]

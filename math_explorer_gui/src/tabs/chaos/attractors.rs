@@ -176,3 +176,5 @@ impl ChaosTool for AttractorPlotter {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

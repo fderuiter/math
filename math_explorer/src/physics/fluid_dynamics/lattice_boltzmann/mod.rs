@@ -13,3 +13,5 @@ mod tests;
 
 pub use model::*;
 pub use state::*;
+
+// [cite:gaussian_splatting]

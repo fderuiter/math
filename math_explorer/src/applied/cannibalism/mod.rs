@@ -32,3 +32,5 @@ pub use death_rate::*;
 pub use juvenile_adult_dynamics::*;
 pub use mckendrick_von_foerster::*;
 pub use two_dimensional_ode::*;
+
+// [cite:cannibalism]

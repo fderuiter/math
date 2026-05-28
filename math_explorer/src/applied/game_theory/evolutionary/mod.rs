@@ -22,3 +22,5 @@ mod traits;
 pub use replicator::ReplicatorDynamics;
 pub use strategies::MatrixPayoff;
 pub use traits::FitnessStrategy;
+
+// [cite:graph_parameters_rust]

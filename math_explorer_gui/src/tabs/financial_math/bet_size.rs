@@ -212,3 +212,5 @@ impl FinancialMathTool for BetSizeCalculatorTool {
         }
     }
 }
+
+// [cite:modular_polynomials_review]

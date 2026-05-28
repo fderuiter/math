@@ -151,3 +151,5 @@ impl ClinicalTrialsTool for RandomizationTool {
         });
     }
 }
+
+// [cite:clinical_trials_statistics]

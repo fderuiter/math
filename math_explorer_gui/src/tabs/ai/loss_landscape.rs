@@ -165,3 +165,5 @@ impl AiTool for LossLandscapeTool {
         });
     }
 }
+
+// [cite:modular_polynomials_review]

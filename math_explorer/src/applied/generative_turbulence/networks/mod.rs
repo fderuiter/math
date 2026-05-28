@@ -7,3 +7,5 @@ pub mod common_layers;
 pub mod rrdb;
 pub mod time_embedding;
 pub mod unet;
+
+// [cite:generative_turbulence]

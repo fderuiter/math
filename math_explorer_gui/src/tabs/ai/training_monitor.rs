@@ -276,3 +276,5 @@ fn argmax(v: &Vector) -> usize {
     }
     max_idx
 }
+
+// [cite:graph_parameters_rust]

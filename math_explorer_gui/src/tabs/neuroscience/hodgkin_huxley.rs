@@ -203,3 +203,5 @@ impl HodgkinHuxleyTool {
         }
     }
 }
+
+// [cite:advanced_linear_algebra]

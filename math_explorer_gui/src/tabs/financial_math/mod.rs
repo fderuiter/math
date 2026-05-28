@@ -60,3 +60,5 @@ impl ExplorerTab for FinancialMathTab {
         });
     }
 }
+
+// [cite:clinical_trials_statistics]

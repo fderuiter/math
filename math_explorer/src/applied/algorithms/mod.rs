@@ -98,3 +98,5 @@
 
 pub mod kalman;
 pub mod sorting;
+
+// [cite:algorithmic_information_rust]

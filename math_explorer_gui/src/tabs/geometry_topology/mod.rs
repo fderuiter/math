@@ -67,3 +67,5 @@ impl ExplorerTab for GeometryTopologyTab {
         }
     }
 }
+
+// [cite:graph_parameters_rust]

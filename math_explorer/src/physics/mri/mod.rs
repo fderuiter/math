@@ -188,3 +188,5 @@ mod tests {
         assert_relative_eq!(bloch.magnetization.y, expected_y, epsilon = 1e-5);
     }
 }
+
+// [cite:favorite_child]

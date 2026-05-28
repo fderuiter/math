@@ -196,3 +196,5 @@ impl AiTool for TokenizationTool {
         });
     }
 }
+
+// [cite:algorithmic_information_rust]

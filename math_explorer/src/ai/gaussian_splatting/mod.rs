@@ -94,3 +94,5 @@ pub mod rendering;
 pub mod structs;
 
 pub use structs::{Gaussian2D, Gaussian3D, Scene};
+
+// [cite:gaussian_splatting]

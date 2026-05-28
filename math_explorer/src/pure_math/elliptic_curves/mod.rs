@@ -222,3 +222,5 @@ pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Result<Theorem12Bounds, Ell
         v7_bound: v7,
     })
 }
+
+// [cite:graph_parameters_rust]

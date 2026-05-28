@@ -91,3 +91,5 @@ pub use types::{
     ComplimentParams, ContactParams, FamilyParams, FavoritismInputs, GiftParams, PersonalityParams,
     SocialParams, TimeParams,
 };
+
+// [cite:favorite_child]

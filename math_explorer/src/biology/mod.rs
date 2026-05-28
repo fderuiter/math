@@ -76,3 +76,5 @@ pub mod evolution;
 
 /// Generic reaction-diffusion framework.
 pub mod reaction_diffusion;
+
+// [cite:favorite_child]

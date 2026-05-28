@@ -178,3 +178,5 @@ impl QuantumTool for ClebschGordanTool {
         });
     }
 }
+
+// [cite:quantum_mechanics]

@@ -168,3 +168,5 @@ impl GeometryTopologyTool for VietorisRipsTool {
         });
     }
 }
+
+// [cite:graph_parameters_rust]

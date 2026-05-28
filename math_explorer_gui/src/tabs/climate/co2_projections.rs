@@ -48,3 +48,5 @@ impl ClimateTool for Co2ProjectionsTool {
         });
     }
 }
+
+// [cite:isosurface_extraction]

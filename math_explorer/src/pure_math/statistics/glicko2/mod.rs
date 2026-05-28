@@ -198,3 +198,5 @@ pub use core::{
 };
 pub use error::Glicko2Error;
 pub use rating::{increase_rd_for_inactivity, update_rating};
+
+// [cite:clinical_trials_statistics]
