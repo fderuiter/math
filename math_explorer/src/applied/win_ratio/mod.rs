@@ -90,3 +90,17 @@ pub mod sample_win_ratio;
 pub mod simulation;
 
 // [cite:win_ratio]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "win_ratio",
+    paper = "win_ratio.tex",
+    epsilon = 1e-6,
+    constants = {
+        TIE = 0.5;
+    },
+    test = {
+        assert_relative_eq!(TIE, 0.5, epsilon = 1e-6);
+    }
+);

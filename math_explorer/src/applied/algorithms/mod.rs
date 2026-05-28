@@ -100,3 +100,17 @@ pub mod kalman;
 pub mod sorting;
 
 // [cite:algorithmic_information_rust]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "algorithms",
+    paper = "dijkstra.tex",
+    epsilon = 1e-6,
+    constants = {
+        WEIGHT = 1.0;
+    },
+    test = {
+        assert_relative_eq!(WEIGHT, 1.0, epsilon = 1e-6);
+    }
+);

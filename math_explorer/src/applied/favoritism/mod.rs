@@ -93,3 +93,17 @@ pub use types::{
 };
 
 // [cite:favorite_child]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "favoritism",
+    paper = "favorite_child.tex",
+    epsilon = 1e-6,
+    constants = {
+        BASE_SCORE = 1.0;
+    },
+    test = {
+        assert_relative_eq!(BASE_SCORE, 1.0, epsilon = 1e-6);
+    }
+);

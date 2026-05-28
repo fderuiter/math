@@ -1,8 +1,8 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 pub struct TraceabilityTab {
     papers: HashMap<String, PaperStatus>,
@@ -47,11 +47,14 @@ impl TraceabilityTab {
                     if name.ends_with(".tex") {
                         let paper_name = name.trim_end_matches(".tex").to_string();
                         valid_papers.insert(paper_name.clone());
-                        self.papers.insert(paper_name.clone(), PaperStatus {
-                            name: paper_name,
-                            linked_code: Vec::new(),
-                            is_wip: false,
-                        });
+                        self.papers.insert(
+                            paper_name.clone(),
+                            PaperStatus {
+                                name: paper_name,
+                                linked_code: Vec::new(),
+                                is_wip: false,
+                            },
+                        );
                     }
                 }
             }
@@ -63,15 +66,16 @@ impl TraceabilityTab {
         self.scan_dir(PathBuf::from("math_explorer_gui/src/tabs"), &mut code_files);
 
         for file in code_files {
-            let is_module = file.ends_with("mod.rs") || file.contains("math_explorer_gui/src/tabs/");
-            
+            let is_module =
+                file.ends_with("mod.rs") || file.contains("math_explorer_gui/src/tabs/");
+
             if !is_module {
                 continue;
             }
 
             if let Ok(content) = fs::read_to_string(&file) {
                 let mut found_cite = false;
-                
+
                 let mut search_idx = 0;
                 while let Some(start) = content[search_idx..].find("[cite:") {
                     found_cite = true;
@@ -138,17 +142,26 @@ impl ExplorerTab for TraceabilityTab {
 
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.collapsing("System Health & Alignment", |ui| {
-                    if self.orphaned_papers.is_empty() && self.unlinked_code.is_empty() && self.invalid_links.is_empty() {
-                        ui.label(egui::RichText::new("100% Parity Achieved").color(egui::Color32::GREEN));
+                    if self.orphaned_papers.is_empty()
+                        && self.unlinked_code.is_empty()
+                        && self.invalid_links.is_empty()
+                    {
+                        ui.label(
+                            egui::RichText::new("100% Parity Achieved").color(egui::Color32::GREEN),
+                        );
                     } else {
-                        ui.label(egui::RichText::new("Partial Alignment").color(egui::Color32::YELLOW));
+                        ui.label(
+                            egui::RichText::new("Partial Alignment").color(egui::Color32::YELLOW),
+                        );
                     }
                     ui.label(format!("Total Papers: {}", self.papers.len()));
                 });
 
                 if !self.orphaned_papers.is_empty() {
                     ui.add_space(10.0);
-                    ui.heading(egui::RichText::new("Orphaned Papers (No Code)").color(egui::Color32::RED));
+                    ui.heading(
+                        egui::RichText::new("Orphaned Papers (No Code)").color(egui::Color32::RED),
+                    );
                     for p in &self.orphaned_papers {
                         ui.label(p);
                     }
@@ -156,7 +169,10 @@ impl ExplorerTab for TraceabilityTab {
 
                 if !self.unlinked_code.is_empty() {
                     ui.add_space(10.0);
-                    ui.heading(egui::RichText::new("Unlinked Code Modules (No Paper)").color(egui::Color32::RED));
+                    ui.heading(
+                        egui::RichText::new("Unlinked Code Modules (No Paper)")
+                            .color(egui::Color32::RED),
+                    );
                     for c in &self.unlinked_code {
                         ui.label(c);
                     }
@@ -164,7 +180,10 @@ impl ExplorerTab for TraceabilityTab {
 
                 if !self.invalid_links.is_empty() {
                     ui.add_space(10.0);
-                    ui.heading(egui::RichText::new("Naming Mismatches / Invalid Cites").color(egui::Color32::RED));
+                    ui.heading(
+                        egui::RichText::new("Naming Mismatches / Invalid Cites")
+                            .color(egui::Color32::RED),
+                    );
                     for (c, p) in &self.invalid_links {
                         ui.label(format!("{} cites invalid paper: {}", c, p));
                     }
@@ -172,14 +191,17 @@ impl ExplorerTab for TraceabilityTab {
 
                 ui.add_space(10.0);
                 ui.heading("Traceability Matrix");
-                
+
                 let mut papers: Vec<_> = self.papers.values().collect();
                 papers.sort_by(|a, b| a.name.cmp(&b.name));
 
                 for p in papers {
                     ui.collapsing(&p.name, |ui| {
                         if p.linked_code.is_empty() {
-                            ui.label(egui::RichText::new("No implementation found").color(egui::Color32::RED));
+                            ui.label(
+                                egui::RichText::new("No implementation found")
+                                    .color(egui::Color32::RED),
+                            );
                         } else {
                             for code in &p.linked_code {
                                 ui.label(code);

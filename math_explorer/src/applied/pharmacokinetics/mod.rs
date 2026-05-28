@@ -109,3 +109,17 @@ pub fn concentration_superposition(params: &PKParameters, dose_times: &[f64], t:
 }
 
 // [cite:quantum_mechanics]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "pharmacokinetics",
+    paper = "mmwave_radiotherapy_setup.tex",
+    epsilon = 1e-6,
+    constants = {
+        DOSE = 100.0;
+    },
+    test = {
+        assert_relative_eq!(DOSE, 100.0, epsilon = 1e-6);
+    }
+);

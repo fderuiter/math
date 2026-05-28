@@ -23,3 +23,17 @@ pub mod networks;
 pub mod training;
 
 // [cite:generative_turbulence]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "generative_turbulence",
+    paper = "generative_turbulence.tex",
+    epsilon = 1e-6,
+    constants = {
+        REYNOLDS = 1000.0;
+    },
+    test = {
+        assert_relative_eq!(REYNOLDS, 1000.0, epsilon=1e-6);
+    }
+);

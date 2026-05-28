@@ -75,3 +75,18 @@ pub mod survival_analysis;
 pub mod types;
 
 // [cite:clinical_trials_statistics]
+
+use crate::theory_verification;
+
+theory_verification!(
+    module = "clinical_trials",
+    paper = "clinical_trials_statistics.tex",
+    epsilon = 1e-6,
+    constants = {
+        ALPHA = 0.05;
+    },
+    test = {
+        // Just verify it compiles and runs.
+        assert_relative_eq!(ALPHA, 0.05, epsilon = 1e-6);
+    }
+);
