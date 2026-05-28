@@ -1,8 +1,10 @@
+use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui::ColorImage;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
+use std::sync::Arc;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PatternPreset {
@@ -34,8 +36,58 @@ impl PatternPreset {
     }
 }
 
-pub struct MorphogenesisTab {
+struct MorphogenesisRunner {
     system: TuringSystem<2, SchnakenbergKinetics, FiniteDifference2D>,
+    dt: f64,
+    width: usize,
+    height: usize,
+    steps_per_frame: usize,
+}
+
+impl SimulationRunner for MorphogenesisRunner {
+    fn process_command(&mut self, cmd: SimCommand) {
+        match cmd {
+            SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
+            SimCommand::UpdateParam(name, val) => match name.as_str() {
+                "a" => self.system.kinetics.a = val,
+                "b" => self.system.kinetics.b = val,
+                "d_u" => self.system.diffusion_coeffs[0] = val,
+                "d_v" => self.system.diffusion_coeffs[1] = val,
+                _ => {}
+            },
+            SimCommand::Reset => initialize_system(&mut self.system, self.width, self.height),
+            _ => {}
+        }
+    }
+
+    fn step(&mut self) {
+        self.system.step(self.dt);
+    }
+
+    fn get_snapshot(&self) -> StateSnapshot {
+        let image = plot_concentration(self.system.u(), self.width, self.height);
+        let pixels = Arc::new(
+            image
+                .pixels
+                .iter()
+                .map(|c| eframe::egui::Color32::from_rgba_unmultiplied(c[0], c[1], c[2], c[3]))
+                .collect(),
+        );
+        StateSnapshot {
+            width: self.width,
+            height: self.height,
+            pixels,
+            custom_data: Vec::new(),
+        }
+    }
+
+    fn get_steps_per_frame(&self) -> usize {
+        self.steps_per_frame
+    }
+}
+
+pub struct MorphogenesisTab {
+    controller: SimulationController,
     texture: Option<egui::TextureHandle>,
     // Simulation parameters
     a: f64,
@@ -43,7 +95,6 @@ pub struct MorphogenesisTab {
     d_u: f64,
     d_v: f64,
     dt: f64,
-    paused: bool,
     width: usize,
     height: usize,
     simulation_speed: usize,
@@ -65,15 +116,23 @@ impl Default for MorphogenesisTab {
         // Initialize with noise
         initialize_system(&mut system, width, height);
 
-        Self {
+        let runner = MorphogenesisRunner {
             system,
+            dt: 0.05,
+            width,
+            height,
+            steps_per_frame: 10,
+        };
+        let controller = SimulationController::new(runner);
+
+        Self {
+            controller,
             texture: None,
             a: 0.1,
             b: 0.9,
             d_u,
             d_v,
             dt: 0.05,
-            paused: false,
             width,
             height,
             simulation_speed: 10,
@@ -130,12 +189,12 @@ impl ExplorerTab for MorphogenesisTab {
                         self.d_u = d_u;
                         self.d_v = d_v;
 
-                        self.system.kinetics.a = a;
-                        self.system.kinetics.b = b;
-                        self.system.diffusion_coeffs[0] = d_u;
-                        self.system.diffusion_coeffs[1] = d_v;
+                        self.controller.send_command(SimCommand::UpdateParam("a".to_string(), a));
+                        self.controller.send_command(SimCommand::UpdateParam("b".to_string(), b));
+                        self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), d_u));
+                        self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), d_v));
 
-                        initialize_system(&mut self.system, self.width, self.height);
+                        self.controller.send_command(SimCommand::Reset);
                         self.selected_preset = Some(preset);
                     }
                 }
@@ -152,24 +211,30 @@ impl ExplorerTab for MorphogenesisTab {
                 changed |= ui.add(egui::Slider::new(&mut self.d_v, 10.0..=200.0).text("D_v (Inhibitor)")).changed();
 
                 if changed {
-                    self.system.kinetics.a = self.a;
-                    self.system.kinetics.b = self.b;
-                    self.system.diffusion_coeffs[0] = self.d_u;
-                    self.system.diffusion_coeffs[1] = self.d_v;
+                    self.controller.send_command(SimCommand::UpdateParam("a".to_string(), self.a));
+                    self.controller.send_command(SimCommand::UpdateParam("b".to_string(), self.b));
+                    self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), self.d_u));
+                    self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), self.d_v));
                     self.selected_preset = None;
                 }
             });
 
             ui.separator();
-            ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=50).text("Speed (steps/frame)"));
+            if ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=50).text("Speed (steps/frame)")).changed() {
+                self.controller.send_command(SimCommand::SetSpeed(self.simulation_speed));
+            }
 
-            let pause_btn = ui.button(if self.paused { "▶ Resume" } else { "⏸ Pause" });
-            if pause_btn.on_hover_text(if self.paused { "Resume the Turing pattern simulation" } else { "Pause the Turing pattern simulation" }).clicked() {
-                self.paused = !self.paused;
+            let pause_btn = ui.button(if !self.controller.running { "▶ Resume" } else { "⏸ Pause" });
+            if pause_btn.on_hover_text(if !self.controller.running { "Resume the Turing pattern simulation" } else { "Pause the Turing pattern simulation" }).clicked() {
+                if self.controller.running {
+                    self.controller.send_command(SimCommand::Pause);
+                } else {
+                    self.controller.send_command(SimCommand::Start);
+                }
             }
 
             if ui.button("↻ Reset / Randomize").on_hover_text("Re-initialize the simulation grid with random noise").clicked() {
-                 initialize_system(&mut self.system, self.width, self.height);
+                 self.controller.send_command(SimCommand::Reset);
             }
 
             ui.separator();
@@ -178,24 +243,27 @@ impl ExplorerTab for MorphogenesisTab {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            if !self.paused {
-                for _ in 0..self.simulation_speed {
-                    self.system.step(self.dt);
-                }
+            if self.controller.running {
                 // Request repaint to keep animation going
                 ui.ctx().request_repaint();
             }
 
             // Update texture
-            let image = plot_concentration(self.system.u(), self.width, self.height);
-            let texture = self.texture.get_or_insert_with(|| {
-                ui.ctx()
-                    .load_texture("morphogenesis_plot", image.clone(), Default::default())
-            });
-            texture.set(image, Default::default());
+            if let Some(snapshot) = self.controller.update() {
+                let mut image = ColorImage::default();
+                image.size = [snapshot.width, snapshot.height];
+                image.pixels = snapshot.pixels.as_ref().clone();
+                let texture = self.texture.get_or_insert_with(|| {
+                    ui.ctx()
+                        .load_texture("morphogenesis_plot", image.clone(), Default::default())
+                });
+                texture.set(image, Default::default());
+            }
 
             // Draw
-            ui.image((texture.id(), texture.size_vec2()));
+            if let Some(texture) = &self.texture {
+                ui.image((texture.id(), texture.size_vec2()));
+            }
         });
     }
 }

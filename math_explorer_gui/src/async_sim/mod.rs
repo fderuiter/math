@@ -1,6 +1,11 @@
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::thread;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_thread as thread;
 
 pub enum SimCommand {
     Start,
@@ -22,6 +27,7 @@ pub struct StateSnapshot {
     pub width: usize,
     pub height: usize,
     pub pixels: Arc<Vec<eframe::egui::Color32>>, // Immutable snapshot of colors
+    pub custom_data: Vec<f64>,                   // For 1D plots
 }
 
 pub enum SimStateUpdate {
