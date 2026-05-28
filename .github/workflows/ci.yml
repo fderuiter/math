@@ -51,6 +51,10 @@ jobs:
         run: cargo build --verbose
         working-directory: ${{ env.WORKING_DIRECTORY }}
 
+      - name: Run Verified Performance Benchmarks
+        run: cargo run --example bench_stochastic --all-features
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
       - name: Run Tests
         run: cargo test --verbose
         working-directory: ${{ env.WORKING_DIRECTORY }}

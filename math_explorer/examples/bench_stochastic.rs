@@ -2,7 +2,10 @@ use math_explorer::epidemiology::compartmental::SIRModel;
 use math_explorer::epidemiology::stochastic::GillespieSolver;
 use rand::SeedableRng;
 use rand::rngs::StdRng;
-use std::time::Instant;
+use verified_engine::engine::VerifiedEngine;
+
+#[global_allocator]
+static ALLOCATOR: verified_engine::allocator::VerifiedAllocator = verified_engine::allocator::VerifiedAllocator;
 
 fn main() {
     let steps = 500_000;
@@ -28,17 +31,16 @@ fn main() {
     let rng = StdRng::seed_from_u64(42);
     solver = GillespieSolver::new(rng);
 
-    let start = Instant::now();
-
-    for _ in 0..steps {
-        let dt = solver.step(&model, &mut state).unwrap();
-        if dt.is_infinite() {
-            println!("Simulation ended early (extinction)!");
-            break;
+    let (_, metrics) = VerifiedEngine::run_verified(|| {
+        for _ in 0..steps {
+            let dt = solver.step(&model, &mut state).unwrap();
+            if dt.is_infinite() {
+                println!("Simulation ended early (extinction)!");
+                break;
+            }
         }
-    }
+    });
 
-    let duration = start.elapsed();
-    println!("Time elapsed: {:.2?}", duration);
-    println!("Time per step: {:.2?}", duration / steps as u32);
+    println!("Deterministic Metrics:");
+    println!("{}", serde_json::to_string_pretty(&metrics).unwrap());
 }
