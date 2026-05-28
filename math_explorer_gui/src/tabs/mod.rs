@@ -1,26 +1,47 @@
 use eframe::egui;
 
+#[cfg(feature = "domain_logic")]
 pub mod ai;
+#[cfg(feature = "domain_logic")]
 pub mod analysis;
+#[cfg(feature = "domain_logic")]
 pub mod battery_degradation;
+#[cfg(feature = "domain_logic")]
 pub mod chaos;
+#[cfg(feature = "domain_logic")]
 pub mod climate;
+#[cfg(feature = "domain_logic")]
 pub mod clinical_trials;
+#[cfg(feature = "domain_logic")]
 pub mod epidemiology;
+#[cfg(feature = "domain_logic")]
 pub mod favoritism;
+#[cfg(feature = "domain_logic")]
 pub mod financial_math;
+#[cfg(feature = "domain_logic")]
 pub mod fluid_dynamics;
+#[cfg(feature = "domain_logic")]
 pub mod game_theory;
+#[cfg(feature = "domain_logic")]
 pub mod geometry_topology;
+#[cfg(feature = "domain_logic")]
 pub mod graph_theory;
+#[cfg(feature = "domain_logic")]
 pub mod medical;
+#[cfg(feature = "domain_logic")]
 pub mod morphogenesis;
+#[cfg(feature = "domain_logic")]
 pub mod mri;
+#[cfg(feature = "domain_logic")]
 pub mod neuroscience;
+#[cfg(feature = "domain_logic")]
 pub mod number_theory;
+#[cfg(feature = "domain_logic")]
 pub mod quantum;
+#[cfg(feature = "domain_logic")]
 pub mod solid_state;
 
+#[cfg(feature = "domain_logic")]
 pub use geometry_topology::GeometryTopologyTab;
 
 /// A trait for defining a tab in the Math Explorer application.
