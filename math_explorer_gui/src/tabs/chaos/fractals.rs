@@ -38,6 +38,7 @@ impl ChaosTool for FractalViewer {
         "Fractal Viewer"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("fractal_settings").show(ctx, |ui| {
             ui.heading("Settings");

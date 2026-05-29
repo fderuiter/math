@@ -47,6 +47,7 @@ impl NeuroscienceTool for SpikeAnalysisTool {
         "Spike Train Analysis"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // --- Controls Panel ---
         egui::SidePanel::left("spike_analysis_controls").show(ctx, |ui| {
@@ -140,7 +141,7 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                             .collect();
                         plot_ui.points(
                             egui_plot::Points::new("Spikes", PlotPoints::new(spike_points))
-                                .radius(3.0)
+                                .radius(3.0_f32)
                                 .color(egui::Color32::GREEN),
                         );
                     });

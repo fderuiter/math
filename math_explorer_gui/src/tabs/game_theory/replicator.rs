@@ -93,6 +93,7 @@ impl ReplicatorDynamicsTool {
         self.run_simulation();
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show_settings_panel(&mut self, ui: &mut egui::Ui) {
         ui.heading("Settings");
         ui.separator();

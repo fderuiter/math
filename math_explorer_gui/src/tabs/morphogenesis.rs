@@ -87,6 +87,7 @@ impl SimulationRunner for MorphogenesisRunner {
     }
 }
 
+#[allow(dead_code)]
 pub struct MorphogenesisTab {
     controller: SimulationController,
     texture: Option<egui::TextureHandle>,
@@ -168,6 +169,8 @@ impl ExplorerTab for MorphogenesisTab {
         "Morphogenesis"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[allow(clippy::field_reassign_with_default)]
     fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("morphogenesis_controls").show(ctx, |ui| {
             ui.heading("Turing Patterns");

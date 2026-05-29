@@ -42,6 +42,7 @@ impl AiTool for LossLandscapeTool {
         "Loss Landscape"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("loss_landscape_controls").show(ctx, |ui| {
             ui.heading("Parameters");
@@ -141,7 +142,7 @@ impl AiTool for LossLandscapeTool {
                 points.push(
                     egui_plot::Points::new(format!("Loss: {:.4}", loss), vec![[w, b]])
                         .color(Color32::from_rgb(r, g, b_col))
-                        .radius(3.0),
+                        .radius(3.0_f32),
                 );
             }
 
@@ -158,7 +159,7 @@ impl AiTool for LossLandscapeTool {
                     plot_ui.points(
                         Points::new("Global Minima (True Solution)", vec![[2.0, 1.0]])
                             .color(Color32::GREEN)
-                            .radius(6.0)
+                            .radius(6.0_f32)
                             .shape(egui_plot::MarkerShape::Circle),
                     );
                 });

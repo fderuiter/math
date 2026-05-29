@@ -8,8 +8,8 @@ use tch::nn::{VarStore, Optimizer, OptimizerConfig};
 
 /// A generic trainer for a given model.
 pub struct Trainer {
-    vs: VarStore,
-    optimizer: Optimizer,
+    _vs: VarStore,
+    _optimizer: Optimizer,
     // Other training-related fields
 }
 
@@ -17,7 +17,7 @@ impl Trainer {
     /// Creates a new trainer.
     pub fn new(vs: VarStore) -> Result<Self, tch::TchError> {
         let optimizer = tch::nn::Adam::default().build(&vs, 1e-4)?;
-        Ok(Trainer { vs, optimizer })
+        Ok(Trainer { _vs: vs, _optimizer: optimizer })
     }
 
     /// Runs the training loop for the adversarially trained Neural Operator (adv-NO).

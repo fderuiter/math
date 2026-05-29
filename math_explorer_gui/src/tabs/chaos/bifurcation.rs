@@ -81,7 +81,7 @@ impl ChaosTool for BifurcationDiagram {
                 .show(ui, |plot_ui| {
                     plot_ui.points(
                         Points::new("Attractor", PlotPoints::new(self.points.clone()))
-                            .radius(1.0)
+                            .radius(1.0_f32)
                             .color(egui::Color32::from_rgb(100, 200, 255)),
                     );
                 });

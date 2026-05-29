@@ -109,6 +109,7 @@ impl FinancialMathTool for BankrollGrowthTool {
         "Bankroll Growth"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             ui.heading("Parameters");

@@ -40,6 +40,7 @@ impl FinancialMathTool for BetSizeCalculatorTool {
         "Bet Size Calculator"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ui: &mut egui::Ui) {
         ui.heading("Kelly Criterion Bet Size Calculator");
         ui.label("Calculate optimal bet sizing based on your edge and odds.");

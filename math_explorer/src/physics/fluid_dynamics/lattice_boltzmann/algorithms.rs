@@ -135,6 +135,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     }
 
     /// Streaming step: Move particles to neighboring cells.
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn stream(&mut self) {
         let width = self.state.width;
         let height = self.state.height;

@@ -5,6 +5,13 @@ members = [
     "crates/verified_engine_macros",
     "math_explorer",
     "math_explorer_gui",
-    "experimental/generative-turbulence-experimental"
-, "crates/rug_mock", "crates/wigner_mock"]
+    "experimental/generative-turbulence-experimental",
+    "crates/rug_mock",
+    "crates/wigner_mock"
+]
 resolver = "2"
+
+[workspace.lints.clippy]
+too_many_lines = "deny"
+cognitive_complexity = "deny"
+

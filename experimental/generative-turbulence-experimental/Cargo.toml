@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 tch = "0.15.0"
 math_explorer = { path = "../../math_explorer" }
+approx = "0.5.1"

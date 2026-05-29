@@ -58,6 +58,7 @@ impl ExplorerTab for FavoritismTab {
         "Favoritism"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("favoritism_left_panel").show(ctx, |ui| {
             ui.heading("Family Members");

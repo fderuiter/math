@@ -33,6 +33,7 @@ impl SolidStateTool for IsingModelTool {
         "Ising Model"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // Controls
         egui::SidePanel::left("ising_controls")

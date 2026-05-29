@@ -20,8 +20,8 @@ pub fn compute_energy_spectrum(velocity_field: &Tensor) -> Result<Tensor, &'stat
     let v = velocity_field.select(0, 1);
 
     // Perform 2D FFT on both components
-    let u_fft = u.fft_fft2(Option::<&[i64]>::None, &[1, 2], "ortho");
-    let v_fft = v.fft_fft2(Option::<&[i64]>::None, &[1, 2], "ortho");
+    let u_fft = u.fft_fft2(Option::<&[i64]>::None, [1, 2], "ortho");
+    let v_fft = v.fft_fft2(Option::<&[i64]>::None, [1, 2], "ortho");
 
     // Compute the power spectral density (PSD) for each component
     let u_psd = u_fft.abs().pow_tensor_scalar(2);
@@ -85,7 +85,7 @@ pub fn compute_q_invariant_2d(velocity_field: &Tensor) -> Result<Tensor, &'stati
 }
 
 /// Computes the Q-R invariants of the velocity gradient tensor.
-pub fn compute_qr_invariants(velocity_field: &Tensor) -> Result<(Tensor, Tensor), &'static str> {
+pub fn compute_qr_invariants(_velocity_field: &Tensor) -> Result<(Tensor, Tensor), &'static str> {
     // Placeholder implementation for 3D
     Err("Not yet implemented for 3D")
 }

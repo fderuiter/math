@@ -1,4 +1,3 @@
-use crate::math_types::Integer;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

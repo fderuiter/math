@@ -129,6 +129,7 @@ impl MusicEstimator {
     ///
     /// assert_eq!(spectrum.len(), 11); // 0.0 to 1.0 with 0.1 step inclusive
     /// ```
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     pub fn compute_spectrum(
         &self,
         start_range: f64,

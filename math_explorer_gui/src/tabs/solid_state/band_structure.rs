@@ -31,6 +31,7 @@ impl SolidStateTool for BandStructureTool {
         "Band Structure"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::right("band_structure_controls")
             .resizable(false)

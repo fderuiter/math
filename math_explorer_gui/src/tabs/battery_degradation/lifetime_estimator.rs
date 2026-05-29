@@ -24,6 +24,7 @@ impl BatteryDegradationTool for LifetimeEstimatorTool {
         "Lifetime Estimator"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // Enforce valid ranges
         self.target_capacity = self.target_capacity.clamp(0.1, 99.9);

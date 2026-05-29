@@ -78,6 +78,7 @@ impl AnalysisTool for ComplexMappingTool {
         "Complex Mapping"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("complex_mapping_controls").show(ctx, |ui| {
             ui.heading("Mapping Controls");
@@ -187,7 +188,7 @@ impl AnalysisTool for ComplexMappingTool {
                                 PlotPoints::new(vec![self.inspection_point]),
                             )
                             .color(egui::Color32::RED)
-                            .radius(5.0),
+                            .radius(5.0_f32),
                         );
                     });
 
@@ -245,7 +246,7 @@ impl AnalysisTool for ComplexMappingTool {
                         plot_ui.points(
                             egui_plot::Points::new("", PlotPoints::new(vec![[w0.re, w0.im]]))
                                 .color(egui::Color32::RED)
-                                .radius(5.0),
+                                .radius(5.0_f32),
                         );
                     });
             });

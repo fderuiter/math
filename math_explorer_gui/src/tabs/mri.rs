@@ -64,6 +64,7 @@ impl ExplorerTab for MriTab {
         "MRI Physics"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         // --- Simulation Step ---
         if !self.paused {

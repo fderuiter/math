@@ -105,6 +105,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Panics
     ///
     /// Panics if the generic real field `T` fails to instantiate from the `f64` value `1e-10`.
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     pub fn new(transition_matrix: DMatrix<T>, state_types: Vec<StateType>) -> Result<Self> {
         let n = transition_matrix.nrows();
 

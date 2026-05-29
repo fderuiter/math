@@ -5,7 +5,6 @@
 //! which are used to build the larger network architectures.
 
 use tch::nn::{Module, Path};
-use tch::Tensor;
 
 /// A standard convolutional block with Conv -> Norm -> Activation.
 pub fn conv_block(p: &Path, c_in: i64, c_out: i64) -> impl Module {

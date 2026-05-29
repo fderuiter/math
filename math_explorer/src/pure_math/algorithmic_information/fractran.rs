@@ -1,4 +1,4 @@
-use crate::math_types::{Integer, Rational};
+use crate::math_types::Rational;
 
 pub struct FractranProgram {
     pub fractions: Vec<Rational>,

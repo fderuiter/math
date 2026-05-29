@@ -253,6 +253,7 @@ fn apply_2d_stencil_optimized(
 /// * `height` - Grid height.
 /// * `op` - Closure called with (center_idx, left_idx, right_idx, up_idx, down_idx).
 #[inline(always)]
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 fn iter_stencil_2d<F>(width: usize, height: usize, mut op: F)
 where
     F: FnMut(usize, usize, usize, usize, usize),

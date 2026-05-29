@@ -93,6 +93,7 @@ impl NeuroscienceTool for NeuralNetworkVizTool {
         "Neural Network Viz"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         if self.is_running {
             for _ in 0..10 {

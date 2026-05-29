@@ -30,7 +30,7 @@ impl ClimateTool for TemperatureAnomaliesTool {
 
         plot.show(ui, |plot_ui| {
             let points = PlotPoints::new(self.time_series.clone());
-            let line = Line::new("Temperature Anomaly", points).width(2.0);
+            let line = Line::new("Temperature Anomaly", points).width(2.0_f32);
             plot_ui.line(line);
         });
     }

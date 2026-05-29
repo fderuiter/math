@@ -37,12 +37,12 @@ impl ClimateTool for Co2ProjectionsTool {
 
         plot.show(ui, |plot_ui| {
             let hist_points = PlotPoints::new(historical);
-            let hist_line = Line::new("Historical CO2", hist_points).width(2.0);
+            let hist_line = Line::new("Historical CO2", hist_points).width(2.0_f32);
             plot_ui.line(hist_line);
 
             let proj_points = PlotPoints::new(projected);
             let proj_line = Line::new("Projected CO2", proj_points)
-                .width(2.0)
+                .width(2.0_f32)
                 .color(egui::Color32::RED);
             plot_ui.line(proj_line);
         });

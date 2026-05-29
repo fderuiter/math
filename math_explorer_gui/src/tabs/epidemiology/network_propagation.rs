@@ -31,6 +31,7 @@ impl EpidemiologyTool for NetworkPropagationTool {
         "Network Propagation"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ui: &mut egui::Ui) {
         if self.is_running {
             let mut rng = rand::thread_rng();

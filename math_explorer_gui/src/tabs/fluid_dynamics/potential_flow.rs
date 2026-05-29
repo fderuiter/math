@@ -58,6 +58,7 @@ impl FluidDynamicsTool for PotentialFlowTool {
         "Potential Flow"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("potential_flow_controls").show(ctx, |ui| {
             ui.heading("Potential Flow Controls");

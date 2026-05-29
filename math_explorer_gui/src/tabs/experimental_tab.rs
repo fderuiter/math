@@ -4,13 +4,9 @@ use eframe::egui;
 #[allow(unused_imports)]
 use generative_turbulence_experimental;
 
+#[derive(Default)]
 pub struct ExperimentalTab {}
 
-impl Default for ExperimentalTab {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 impl ExplorerTab for ExperimentalTab {
     fn name(&self) -> &'static str {

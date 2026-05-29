@@ -48,6 +48,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
 }
 
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)
     where
         F: FnMut(usize, [f64; N], [f64; N]),

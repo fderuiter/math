@@ -1,7 +1,6 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
 use oxidize_core::vfs::VirtualFileSystem;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -18,6 +17,7 @@ pub struct TraceabilityTab {
 }
 
 #[derive(Clone)]
+#[allow(dead_code)]
 struct PaperStatus {
     name: String,
     linked_code: Vec<String>,
@@ -38,6 +38,7 @@ impl Default for TraceabilityTab {
 }
 
 impl TraceabilityTab {
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn refresh(&mut self) {
         self.papers.clear();
         self.orphaned_papers.clear();
@@ -52,7 +53,7 @@ impl TraceabilityTab {
         // 1. Scan papers
         let papers_dir = "papers";
         let mut valid_papers = HashSet::new();
-        if let Ok(entries) = vfs.list_dir(&papers_dir) {
+        if let Ok(entries) = vfs.list_dir(papers_dir) {
             for name in entries {
                 if name.ends_with(".tex") {
                     let paper_name = name.trim_end_matches(".tex").to_string();
@@ -141,6 +142,7 @@ impl ExplorerTab for TraceabilityTab {
         "Traceability Portal"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {

@@ -42,6 +42,7 @@ impl FluidDynamicsTool for TurbulenceTool {
         "Turbulence / Reynolds Analysis"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         let dt = ctx.input(|i| i.stable_dt).min(0.1) as f64;
         self.update(dt);

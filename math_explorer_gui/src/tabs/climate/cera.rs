@@ -32,6 +32,7 @@ impl ClimateTool for CeraTool {
         "CERA Model"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ui: &mut egui::Ui) {
         ui.label(
             "Configure CERA (Climate-invariant Encoding through Representation Alignment) Model:",

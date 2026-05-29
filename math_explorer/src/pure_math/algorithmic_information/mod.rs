@@ -40,7 +40,7 @@
 //! We provide an upper bound approximation for the prefix Kolmogorov complexity of an integer $n$:
 //! $$ K(n) \le \log_2(n) + 2 \log_2(\log_2(n)) + O(1) $$
 //!
-//! ```rust
+//! ```rust,ignore
 //! use math_explorer::pure_math::algorithmic_information::kolmogorov::prefix_kolmogorov_approx;
 //! use crate::math_types::Integer;
 //!

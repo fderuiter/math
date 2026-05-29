@@ -51,6 +51,7 @@ pub struct MathExplorerApp {
 }
 
 impl Default for MathExplorerApp {
+    #[allow(clippy::vec_init_then_push)]
     fn default() -> Self {
         #[allow(unused_mut)]
         let mut tabs: Vec<Box<dyn ExplorerTab>> = vec![];
@@ -109,6 +110,7 @@ impl Default for MathExplorerApp {
 }
 
 impl MathExplorerApp {
+    #[allow(clippy::vec_init_then_push)]
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         Self::default()
     }

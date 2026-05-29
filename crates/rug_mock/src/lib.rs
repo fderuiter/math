@@ -1,10 +1,16 @@
 use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign, Rem, RemAssign};
-use num_bigint::{BigInt, Sign};
+use num_bigint::BigInt;
 use num_traits::{Zero, One, ToPrimitive};
 use num_integer::Integer as NumInteger;
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Integer(pub BigInt);
+
+impl Default for Integer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl Integer {
     pub fn new() -> Self { Integer(BigInt::zero()) }
@@ -14,14 +20,18 @@ impl Integer {
     pub fn to_usize(&self) -> Option<usize> { self.0.to_usize() }
     pub fn to_u64(&self) -> Option<u64> { self.0.to_u64() }
     pub fn assign(&mut self, v: i128) { self.0 = BigInt::from(v); }
+    #[allow(clippy::result_unit_err)]
     pub fn parse(s: &str) -> Result<Self, ()> { s.parse::<BigInt>().map(Integer).map_err(|_| ()) }
+    #[allow(clippy::result_unit_err)]
     pub fn from_str_radix(s: &str, radix: u32) -> Result<Self, ()> { BigInt::parse_bytes(s.as_bytes(), radix).map(Integer).ok_or(()) }
     pub fn is_even(&self) -> bool { self.0.is_even() }
     pub fn is_divisible(&self, other: &Integer) -> bool { self.0.is_multiple_of(&other.0) }
     pub fn sqrt(&self) -> Self { Integer(self.0.sqrt()) }
+    #[allow(clippy::result_unit_err)]
     pub fn pow_mod(&self, exp: &Integer, m: &Integer) -> Result<Self, ()> {
         Ok(Integer(self.0.modpow(&exp.0, &m.0)))
     }
+    #[allow(clippy::result_unit_err)]
     pub fn invert(&self, m: &Integer) -> Result<Self, ()> {
         // Extended Euclidean
         let ext = self.0.extended_gcd(&m.0);
@@ -77,10 +87,10 @@ impl Div for Float { type Output = Self; fn div(self, rhs: Self) -> Self { Float
 impl<'a> Add<&'a Float> for Float { type Output = Float; fn add(self, rhs: &'a Float) -> Float { Float(self.0 + rhs.0) } }
 impl<'a> Sub<&'a Float> for Float { type Output = Float; fn sub(self, rhs: &'a Float) -> Float { Float(self.0 - rhs.0) } }
 impl<'a> Mul<&'a Float> for Float { type Output = Float; fn mul(self, rhs: &'a Float) -> Float { Float(self.0 * rhs.0) } }
-impl<'a, 'b> Add<&'b Float> for &'a Float { type Output = Float; fn add(self, rhs: &'b Float) -> Float { Float(self.0 + rhs.0) } }
-impl<'a, 'b> Sub<&'b Float> for &'a Float { type Output = Float; fn sub(self, rhs: &'b Float) -> Float { Float(self.0 - rhs.0) } }
-impl<'a, 'b> Mul<&'b Float> for &'a Float { type Output = Float; fn mul(self, rhs: &'b Float) -> Float { Float(self.0 * rhs.0) } }
-impl<'a, 'b> Div<&'b Float> for &'a Float { type Output = Float; fn div(self, rhs: &'b Float) -> Float { Float(self.0 / rhs.0) } }
+impl<'b> Add<&'b Float> for &Float { type Output = Float; fn add(self, rhs: &'b Float) -> Float { Float(self.0 + rhs.0) } }
+impl<'b> Sub<&'b Float> for &Float { type Output = Float; fn sub(self, rhs: &'b Float) -> Float { Float(self.0 - rhs.0) } }
+impl<'b> Mul<&'b Float> for &Float { type Output = Float; fn mul(self, rhs: &'b Float) -> Float { Float(self.0 * rhs.0) } }
+impl<'b> Div<&'b Float> for &Float { type Output = Float; fn div(self, rhs: &'b Float) -> Float { Float(self.0 / rhs.0) } }
 impl AddAssign for Float { fn add_assign(&mut self, rhs: Self) { self.0 += rhs.0; } }
 impl SubAssign for Float { fn sub_assign(&mut self, rhs: Self) { self.0 -= rhs.0; } }
 impl PartialEq<f64> for Float { fn eq(&self, other: &f64) -> bool { self.0 == *other } }
@@ -89,6 +99,12 @@ impl PartialOrd<f64> for Float { fn partial_cmp(&self, other: &f64) -> Option<st
 // Mock Rational with f64
 #[derive(Clone, Debug, PartialEq)]
 pub struct Rational(pub f64);
+impl Default for Rational {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Rational {
     pub fn new() -> Self { Rational(0.0) }
     pub fn from(v: (i128, i128)) -> Self { Rational(v.0 as f64 / v.1 as f64) }
@@ -99,10 +115,10 @@ impl Add for Rational { type Output = Self; fn add(self, rhs: Self) -> Self { Ra
 impl Sub for Rational { type Output = Self; fn sub(self, rhs: Self) -> Self { Rational(self.0 - rhs.0) } }
 impl Mul for Rational { type Output = Self; fn mul(self, rhs: Self) -> Self { Rational(self.0 * rhs.0) } }
 impl Div for Rational { type Output = Self; fn div(self, rhs: Self) -> Self { Rational(self.0 / rhs.0) } }
-impl<'a, 'b> Mul<&'b Rational> for &'a Rational { type Output = Rational; fn mul(self, rhs: &'b Rational) -> Rational { Rational(self.0 * rhs.0) } }
-impl<'a, 'b> Add<&'b Rational> for &'a Rational { type Output = Rational; fn add(self, rhs: &'b Rational) -> Rational { Rational(self.0 + rhs.0) } }
-impl<'a> Mul<Rational> for &'a Rational { type Output = Rational; fn mul(self, rhs: Rational) -> Rational { Rational(self.0 * rhs.0) } }
-impl<'a> Add<Rational> for &'a Rational { type Output = Rational; fn add(self, rhs: Rational) -> Rational { Rational(self.0 + rhs.0) } }
+impl<'b> Mul<&'b Rational> for &Rational { type Output = Rational; fn mul(self, rhs: &'b Rational) -> Rational { Rational(self.0 * rhs.0) } }
+impl<'b> Add<&'b Rational> for &Rational { type Output = Rational; fn add(self, rhs: &'b Rational) -> Rational { Rational(self.0 + rhs.0) } }
+impl Mul<Rational> for &Rational { type Output = Rational; fn mul(self, rhs: Rational) -> Rational { Rational(self.0 * rhs.0) } }
+impl Add<Rational> for &Rational { type Output = Rational; fn add(self, rhs: Rational) -> Rational { Rational(self.0 + rhs.0) } }
 
 pub mod ops {
     pub trait Pow<Rhs> {
