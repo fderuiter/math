@@ -42,7 +42,6 @@
 
 pub mod clutter;
 pub mod czt;
-pub mod error;
 pub mod gating;
 pub mod geometry;
 pub mod mimo;

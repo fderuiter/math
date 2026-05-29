@@ -1,7 +1,7 @@
 //! Euler-Maruyama numerical solver for the Ornstein-Uhlenbeck process.
 
 use super::core::OuParams;
-use super::error::OuError;
+use crate::error::OuError;
 use rand::Rng;
 use rand_distr::{Distribution, Normal};
 

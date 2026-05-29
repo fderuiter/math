@@ -44,6 +44,8 @@
 pub mod ai;
 
 pub mod math_types;
+pub mod diagnostics;
+pub mod error;
 
 #[cfg(feature = "applied")]
 pub mod applied;

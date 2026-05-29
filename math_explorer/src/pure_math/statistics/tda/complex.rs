@@ -1,7 +1,7 @@
 //! Simplicial complex construction and management.
 
 use super::core::{PointCloud, Simplex};
-use super::error::TdaError;
+use crate::error::TdaError;
 use std::collections::HashSet;
 
 /// A simplicial complex is a collection of simplices with the property

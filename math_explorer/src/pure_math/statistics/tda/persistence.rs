@@ -2,7 +2,7 @@
 
 use super::complex::vietoris_rips_complex;
 use super::core::PointCloud;
-use super::error::TdaError;
+use crate::error::TdaError;
 use super::homology::{betti_number_0, betti_number_1};
 
 /// A persistence interval representing the lifetime of a topological feature.

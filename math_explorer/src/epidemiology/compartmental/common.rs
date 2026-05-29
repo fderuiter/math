@@ -1,4 +1,4 @@
-use crate::epidemiology::error::EpidemiologyError;
+use crate::error::EpidemiologyError;
 
 /// Validates that a population count is strictly positive.
 pub fn validate_population(n: f64) -> Result<(), EpidemiologyError> {

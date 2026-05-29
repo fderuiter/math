@@ -1,4 +1,4 @@
-use super::error::DoseFluenceError;
+use crate::error::DoseFluenceError;
 
 /// Calculates the Total Energy Released per Mass (TERMA) for a ray segment.
 ///

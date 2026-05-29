@@ -81,7 +81,6 @@
 //! - **`statistics`**: Significance calculations (Li & Ma) for signal detection.
 
 pub mod constants;
-pub mod error;
 pub mod fluid_dynamics;
 pub mod general_relativity;
 pub mod observer;
@@ -95,7 +94,6 @@ pub use constants::{C, G, SIGMA_T, SOLAR_MASS};
 pub use general_relativity::SchwarzschildBlackHole;
 
 // Re-export Error type
-pub use error::HighEnergyError;
 
 // [cite:dwarf_galaxy_empirical_dependencies]
 

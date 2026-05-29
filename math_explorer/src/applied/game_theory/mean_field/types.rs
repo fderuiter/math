@@ -1,4 +1,4 @@
-use crate::applied::game_theory::error::GameTheoryError;
+use crate::error::GameTheoryError;
 use std::num::NonZeroUsize;
 
 /// Represents a 1D spatial position.

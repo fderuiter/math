@@ -1,4 +1,4 @@
-use super::error::HighEnergyError;
+use crate::error::HighEnergyError;
 
 /// Calculates the Li & Ma Significance (sigma).
 ///

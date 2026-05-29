@@ -1,5 +1,5 @@
 use super::common::{validate_initial_infected, validate_population, validate_rate};
-use crate::epidemiology::error::EpidemiologyError;
+use crate::error::EpidemiologyError;
 use crate::impl_compartmental_ops;
 use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, TimeStepper};
 

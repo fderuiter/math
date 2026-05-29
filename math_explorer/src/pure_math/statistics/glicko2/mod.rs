@@ -188,7 +188,6 @@
 //!   Journal of the Royal Statistical Society: Series C, 48(3), 377-394.
 
 pub mod core;
-pub mod error;
 pub mod rating;
 
 // Re-export main types
@@ -196,7 +195,6 @@ pub use core::{
     GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
     expected_outcome, g_function,
 };
-pub use error::Glicko2Error;
 pub use rating::{increase_rd_for_inactivity, update_rating};
 
 // [cite:clinical_trials_statistics]

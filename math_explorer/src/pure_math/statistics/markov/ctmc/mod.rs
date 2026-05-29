@@ -3,7 +3,8 @@
 //! This module implements continuous-time Markov chains, where transitions
 //! can occur at any continuous time point rather than discrete steps.
 
-use crate::pure_math::statistics::markov::error::{MarkovError, Result};
+use crate::error::MarkovError;
+pub type Result<T> = std::result::Result<T, MarkovError>;
 use nalgebra::{DMatrix, DVector, RealField};
 use num_traits::ToPrimitive;
 

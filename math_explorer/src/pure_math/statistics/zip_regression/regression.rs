@@ -2,7 +2,7 @@
 
 use super::core::{Count, ZipParams};
 use super::distribution::ZipDistribution;
-use super::error::ZipError;
+use crate::error::ZipError;
 use super::link_functions::{LogLink, LogitLink};
 use nalgebra::{DMatrix, DVector};
 

@@ -4,7 +4,7 @@ use super::core::{
     GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
     expected_outcome, g_function,
 };
-use super::error::Glicko2Error;
+use crate::error::Glicko2Error;
 
 /// Maximum iterations for volatility convergence.
 const MAX_VOLATILITY_ITERATIONS: usize = 100;

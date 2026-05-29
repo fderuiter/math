@@ -1,7 +1,7 @@
 //! Probability integral transform for copula operations.
 
 use super::core::Probability;
-use super::error::CopulaError;
+use crate::error::CopulaError;
 use statrs::distribution::{ContinuousCDF, Normal};
 
 /// Transforms a value from its original distribution to a uniform \[0,1\] distribution.

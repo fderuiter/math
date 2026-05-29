@@ -5,7 +5,7 @@
 //! physical range resolution limit ($\Delta R = c/2B$) by exploiting the eigen-structure of the
 //! signal covariance matrix.
 
-use super::error::RadarError;
+use crate::error::RadarError;
 use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;
 use std::collections::VecDeque;

@@ -68,13 +68,11 @@
 //! assert!(system.state.vec.norm() < 100.0); // Simple boundedness check
 //! ```
 
-pub mod error;
 pub mod fractals;
 pub mod logistic;
 pub mod lorenz;
 pub mod metrics;
 
-pub use error::ChaosError;
 
 #[cfg(test)]
 mod tests {

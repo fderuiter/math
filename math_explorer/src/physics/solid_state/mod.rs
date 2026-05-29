@@ -15,7 +15,6 @@
 
 pub mod band_theory;
 pub mod bcs;
-pub mod error;
 pub mod interactions;
 pub mod lattice;
 pub mod magnetism;

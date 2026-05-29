@@ -1,6 +1,6 @@
 //! Quantum Chromodynamics (QCD) focuses on the strong interaction and asymptotic freedom.
 
-use crate::physics::standard_model::StandardModelError;
+use crate::error::StandardModelError;
 
 /// Calculates the 1-loop running of the strong coupling constant $\alpha_s(Q^2)$.
 ///

@@ -1,4 +1,4 @@
-use super::error::DoseFluenceError;
+use crate::error::DoseFluenceError;
 
 /// Defines a Point Spread Function (Kernel) for dose calculation.
 pub trait DoseKernel {

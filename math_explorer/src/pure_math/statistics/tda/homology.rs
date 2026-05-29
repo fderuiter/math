@@ -1,7 +1,7 @@
 //! Homology computations and Betti numbers.
 
 use super::complex::SimplicialComplex;
-use super::error::TdaError;
+use crate::error::TdaError;
 use std::collections::{HashMap, HashSet};
 
 /// Union-Find data structure for connected component tracking.

@@ -1,6 +1,6 @@
 //! Public facade for the Hodgkin-Huxley neuron.
 
-use super::error::HodgkinHuxleyError;
+use crate::error::HodgkinHuxleyError;
 use super::model::HodgkinHuxleyModel;
 use super::types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
 use crate::pure_math::analysis::ode::{Euler, Solver, SolverExt};

@@ -1,4 +1,4 @@
-use super::error::LoraError;
+use crate::error::LoraError;
 use super::strategies::{
     CombinationStrategy, L1RegularizationStrategy, LinearCombinationStrategy, ObjectiveStrategy,
 };

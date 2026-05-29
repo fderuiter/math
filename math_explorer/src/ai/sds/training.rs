@@ -1,4 +1,4 @@
-use crate::ai::AIError;
+use crate::error::AIError;
 use crate::ai::sds::rendering::{NeRFModel, RayBundle};
 use nalgebra::DMatrix;
 

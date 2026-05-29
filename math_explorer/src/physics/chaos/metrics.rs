@@ -1,6 +1,6 @@
 //! Quantifying Chaos (Lyapunov Exponents)
 
-use super::error::ChaosError;
+use crate::error::ChaosError;
 use super::logistic::LogisticMap;
 use crate::pure_math::analysis::ode::{OdeSystem, Solver, SolverExt};
 use nalgebra::Vector3;

@@ -68,7 +68,6 @@
 
 pub mod bateman;
 pub mod enantiomer;
-pub mod error;
 pub mod parameters;
 pub mod superposition;
 pub mod traits;
@@ -76,7 +75,6 @@ pub mod two_pulse;
 
 pub use bateman::{BatemanModel, half_life, solve_ka, t_max};
 pub use enantiomer::EnantiomerModel;
-pub use error::PharmacokineticsError;
 pub use parameters::{PKParameters, PKParametersBuilder};
 pub use superposition::SuperpositionModel;
 pub use traits::PharmacokineticModel;

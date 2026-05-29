@@ -1,7 +1,7 @@
 //! Kelly Criterion calculations for optimal bet sizing.
 
 use super::core::{BankrollFraction, EdgeProbability, Odds};
-use super::error::KellyError;
+use crate::error::KellyError;
 
 /// Computes the optimal Kelly fraction for a bet.
 ///

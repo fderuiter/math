@@ -308,7 +308,6 @@
 
 pub mod ctmc;
 pub mod dtmc;
-pub mod error;
 pub mod hmm;
 pub mod tensor;
 pub mod validation;
@@ -316,7 +315,8 @@ pub mod validation;
 // Re-export commonly used types
 pub use ctmc::ContinuousMarkovChain;
 pub use dtmc::{MarkovChain, StateType};
-pub use error::{MarkovError, Result};
+pub use crate::error::MarkovError;
+pub type Result<T> = std::result::Result<T, MarkovError>;
 pub use hmm::HiddenMarkovModel;
 pub use tensor::{TimeIndex, TransitionTensor};
 

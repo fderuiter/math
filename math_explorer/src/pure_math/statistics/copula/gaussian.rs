@@ -1,7 +1,7 @@
 //! Gaussian copula implementation.
 
 use super::core::{Correlation, CorrelationMatrix, Probability};
-use super::error::CopulaError;
+use crate::error::CopulaError;
 use super::transforms::{inverse_standard_normal, standard_normal_cdf};
 use nalgebra::DVector;
 use statrs::distribution::MultivariateNormal;

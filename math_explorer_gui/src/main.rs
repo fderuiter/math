@@ -8,6 +8,7 @@ use eframe::egui;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
+    math_explorer::diagnostics::init_panic_hook();
     accessibility::init_accessibility_bridge();
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()

@@ -1,6 +1,5 @@
 #![doc = include_str!("README.md")]
 
-pub mod error;
 pub mod model;
 pub mod types;
 
@@ -45,7 +44,6 @@ pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
         .as_f64()
 }
 
-pub use error::BatteryError;
 
 // [cite:algorithmic_information_rust]
 

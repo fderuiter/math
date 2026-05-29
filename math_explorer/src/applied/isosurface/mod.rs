@@ -45,13 +45,11 @@
 //! cargo run --example isosurface_torus
 //! ```
 
-pub mod error;
 pub mod gradients;
 pub mod marching_cubes;
 pub mod tables;
 pub mod types;
 
-pub use error::IsosurfaceError;
 pub use gradients::{CentralDifferenceEstimator, GradientEstimator};
 pub use marching_cubes::extract_isosurface;
 pub use types::{Mesh, Point3D, Triangle, VoxelGrid};

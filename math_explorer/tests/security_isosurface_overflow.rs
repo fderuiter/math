@@ -26,7 +26,7 @@ fn test_security_buffer_overflow_prevention() {
     );
     let err = result.err().unwrap();
     match err {
-        math_explorer::applied::isosurface::IsosurfaceError::DataMismatch { expected, actual } => {
+        math_explorer::error::IsosurfaceError::DataMismatch { expected, actual } => {
             assert_eq!(expected, 1000);
             assert_eq!(actual, 10);
         }
