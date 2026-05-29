@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 #[allow(deprecated)]
 use math_explorer::physics::astrophysics::galaxies::{
     GeneralIrregular, TypeCode10, TypeCode95To99, calculate_apparent_magnitude_from_distance,

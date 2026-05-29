@@ -1,3 +1,5 @@
+#![cfg(all(feature = "ai"))]
+
 use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
 use math_explorer::ai::deep_learning_theory::model::TwoLayerMLP;
 use math_explorer::ai::optimization::SGD;

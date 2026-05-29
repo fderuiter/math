@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 use math_explorer::pure_math::number_theory::partitions::*;
 
 #[test]

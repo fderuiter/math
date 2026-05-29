@@ -1,3 +1,5 @@
+#![cfg(all(feature = "climate"))]
+
 use math_explorer::climate::cera::{Cera, CeraConfig};
 use math_explorer::climate::training::CeraTrainer;
 use nalgebra::DMatrix;

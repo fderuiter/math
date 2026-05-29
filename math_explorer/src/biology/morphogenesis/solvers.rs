@@ -136,7 +136,7 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
 /// let state = TuringState::new(n);
 /// let mut next_state = TuringState::new(n);
 /// let kinetics = SchnakenbergKinetics::default();
-/// let diffusion = FiniteDifference1D::new(1.0);
+/// let diffusion = FiniteDifference1D::new(math_explorer::math_kernel::types::StepSize(1.0));
 /// let dynamics = TuringDynamics {
 ///    kinetics: &kinetics,
 ///    diffusion: &diffusion,

@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 use math_explorer::applied::algorithms::sorting::*;
 
 // Helper to test strategy composition

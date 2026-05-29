@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 use math_explorer::physics::medical::radar_gating::{
     clutter::EllipticalFilter, czt::SpatialCztConfig, mimo::Beamformer, phase::PhaseUnwrapper,
     super_resolution::MusicEstimator,

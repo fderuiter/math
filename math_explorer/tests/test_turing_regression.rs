@@ -1,3 +1,5 @@
+#![cfg(all(feature = "biology"))]
+
 use math_explorer::biology::diffusion::FiniteDifference1D;
 use math_explorer::biology::morphogenesis::{ReactionKinetics, TuringSystem};
 

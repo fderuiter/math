@@ -14,11 +14,14 @@
 //! **Calculate Clebsch-Gordan Coefficients (Quantum Physics):**
 //!
 //! ```rust
+//! # #[cfg(feature = "physics")]
+//! # {
 //! use math_explorer::physics::quantum::clebsch_gordan;
 //!
 //! // Coupling j1=1.5, m1=-0.5 with j2=1.0, m2=1.0 to J=2.5, M=0.5
 //! let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
 //! assert!((coeff - 0.5477).abs() < 1e-3);
+//! # }
 //! ```
 //!
 //! ##  Core Domains
@@ -70,7 +73,7 @@ pub mod pure_math;
 /// The self-calibration module.
 pub use ai::self_calibration;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "applied", feature = "physics", feature = "pure_math"))]
 mod tests {
     use super::applied::favoritism::{self, FavoritismInputs};
     use super::applied::lorahub;

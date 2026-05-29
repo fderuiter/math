@@ -234,7 +234,7 @@ impl AmbsDsp {
                 }
             }
 
-            let check = (&x_n * &x_n).rem_euc(&p_k);
+            let check = Integer::from(&x_n * &x_n).rem_euc(&p_k);
             let a_mod = a.clone().rem_euc(&p_k);
             if check == a_mod {
                 final_roots.push(x_n);
@@ -364,8 +364,8 @@ impl AmbsDsp {
 
                 for (c, &is_valid) in c_valid.iter().enumerate().take(c_max) {
                     if is_valid {
-                        let z = &r_i + &(Integer::from(c) * &s_l);
-                        let z_sq = &z * &z;
+                        let z = Integer::from(&r_i + &Integer::from(Integer::from(c) * &s_l));
+                        let z_sq = Integer::from(&z * &z);
                         let _target_sigma = (Integer::from(2) * &n_l_int * &z_sq + Integer::from(1)) / &s_l;
                     }
                 }

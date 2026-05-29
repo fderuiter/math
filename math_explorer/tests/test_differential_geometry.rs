@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 use math_explorer::pure_math::analysis::pde::{PdeClassification, SecondOrderLinearPde2D};
 use math_explorer::pure_math::differential_geometry::heat_equation::HeatEquationSolver;
 use math_explorer::pure_math::differential_geometry::mean_curvature_flow::{

@@ -32,7 +32,8 @@ impl PersistenceInterval {
     /// # Example
     ///
     /// ```
-    /// use math_explorer::pure_math::statistics::tda::{PersistenceInterval, TdaError};
+    /// use math_explorer::pure_math::statistics::tda::PersistenceInterval;
+/// use math_explorer::error::TdaError;
     ///
     /// let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
     /// assert_eq!(interval.persistence(), 1.5);
@@ -179,8 +180,9 @@ impl Default for PersistenceBarcode {
 ///
 /// ```
 /// use math_explorer::pure_math::statistics::tda::{
-///     PointCloud, Point2D, compute_persistence, TdaError
+///     PointCloud, Point2D, compute_persistence
 /// };
+/// use math_explorer::error::TdaError;
 ///
 /// let points = vec![
 ///     Point2D::new(0.0, 0.0),

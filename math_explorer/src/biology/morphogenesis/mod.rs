@@ -41,7 +41,7 @@
 //! // 1. System Configuration
 //! // Activator diffuses slowly (1.0), Inhibitor diffuses fast (40.0)
 //! let n = 100;
-//! let mut system = TuringSystem::new(n, 1.0, 40.0, 1.0);
+//! let mut system = TuringSystem::new(math_explorer::math_kernel::types::Dimension(n), math_explorer::math_kernel::types::DiffusionCoeff(1.0), math_explorer::math_kernel::types::DiffusionCoeff(40.0), math_explorer::math_kernel::types::StepSize(1.0));
 //!
 //! // 2. Initialize with Random Noise
 //! // A uniform state would be stable without noise

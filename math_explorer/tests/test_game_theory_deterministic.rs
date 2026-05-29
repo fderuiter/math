@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 use math_explorer::applied::game_theory::mechanism_design::simulate_optimal_revenue_with_rng;
 use rand::SeedableRng;
 use rand::rngs::StdRng;

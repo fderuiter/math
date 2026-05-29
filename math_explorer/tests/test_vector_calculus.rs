@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 use math_explorer::pure_math::vector_calculus::coordinates::Cartesian;
 use math_explorer::pure_math::vector_calculus::theorems::{Domain, verify_divergence_theorem};
 use nalgebra::Vector3;

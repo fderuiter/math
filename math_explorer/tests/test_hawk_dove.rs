@@ -1,3 +1,5 @@
+#![cfg(all(feature = "biology", feature = "pure_math"))]
+
 #[cfg(test)]
 mod tests {
     use math_explorer::biology::evolution::HawkDovePopulation;

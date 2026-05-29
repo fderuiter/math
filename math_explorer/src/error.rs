@@ -2,10 +2,13 @@ use thiserror::Error;
 use crate::diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use std::fmt;
+#[cfg(feature = "physics")]
 use crate::physics::solid_state::types::ElectronVolts;
+#[cfg(feature = "pure_math")]
 use crate::pure_math::analysis::roots::AnalysisError;
 
 
+#[cfg(feature = "ai")]
 /// Errors related to AI/Machine Learning calculations.
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum AIError {
@@ -35,6 +38,7 @@ pub enum AIError {
 }
 
 
+#[cfg(feature = "pure_math")]
 /// Number Theory module errors
 #[derive(Debug, Error)]
 pub enum NumberTheoryError {
@@ -57,6 +61,7 @@ pub enum NumberTheoryError {
 /// Error types for Kelly Criterion calculations.
 
 
+#[cfg(feature = "pure_math")]
 /// Errors that can occur in Kelly Criterion calculations.
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum KellyError {
@@ -80,6 +85,7 @@ pub enum KellyError {
 /// Error types for Markov chain operations.
 
 
+#[cfg(feature = "pure_math")]
 /// Errors that can occur during Markov chain operations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum MarkovError {
@@ -142,6 +148,7 @@ pub enum MarkovError {
     },
 }
 
+#[cfg(feature = "pure_math")]
 impl fmt::Display for MarkovError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -188,14 +195,17 @@ impl fmt::Display for MarkovError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl std::error::Error for MarkovError {}
 
 /// Type alias for Results with MarkovError.
+#[cfg(feature = "pure_math")]
 pub type Result<T> = std::result::Result<T, MarkovError>;
 
 /// Error types for Ornstein-Uhlenbeck process.
 
 
+#[cfg(feature = "pure_math")]
 /// Errors that can occur during OU process simulation.
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum OuError {
@@ -219,6 +229,7 @@ pub enum OuError {
 /// Error types for Zero-Inflated Poisson regression.
 
 
+#[cfg(feature = "pure_math")]
 /// Errors that can occur during ZIP regression analysis.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ZipError {
@@ -236,6 +247,7 @@ pub enum ZipError {
     InvalidDimensions { expected: String, actual: String },
 }
 
+#[cfg(feature = "pure_math")]
 impl fmt::Display for ZipError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -281,11 +293,13 @@ impl fmt::Display for ZipError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl std::error::Error for ZipError {}
 
 /// Error types for Topological Data Analysis.
 
 
+#[cfg(feature = "pure_math")]
 /// Errors that can occur in TDA computations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TdaError {
@@ -303,6 +317,7 @@ pub enum TdaError {
     MatrixError { reason: String },
 }
 
+#[cfg(feature = "pure_math")]
 impl fmt::Display for TdaError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -336,11 +351,13 @@ impl fmt::Display for TdaError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl std::error::Error for TdaError {}
 
 /// Error types for copula operations.
 
 
+#[cfg(feature = "pure_math")]
 /// Errors that can occur during copula operations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum CopulaError {
@@ -358,6 +375,7 @@ pub enum CopulaError {
     NumericalError { reason: String },
 }
 
+#[cfg(feature = "pure_math")]
 impl fmt::Display for CopulaError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -387,11 +405,13 @@ impl fmt::Display for CopulaError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl std::error::Error for CopulaError {}
 
 /// Error types for Glicko-2 rating system.
 
 
+#[cfg(feature = "pure_math")]
 /// Errors that can occur in Glicko-2 rating calculations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Glicko2Error {
@@ -413,6 +433,7 @@ pub enum Glicko2Error {
     EmptyMatchResults,
 }
 
+#[cfg(feature = "pure_math")]
 impl fmt::Display for Glicko2Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -460,9 +481,11 @@ impl fmt::Display for Glicko2Error {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl std::error::Error for Glicko2Error {}
 
 
+#[cfg(feature = "biology")]
 /// Errors related to Hodgkin-Huxley neuron modeling.
 #[derive(Error, Debug, PartialEq)]
 pub enum HodgkinHuxleyError {
@@ -473,6 +496,7 @@ pub enum HodgkinHuxleyError {
 }
 
 
+#[cfg(feature = "physics")]
 /// Errors that can occur during chaos analysis.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ChaosError {
@@ -482,6 +506,7 @@ pub enum ChaosError {
     CalculationError(String),
 }
 
+#[cfg(feature = "physics")]
 impl fmt::Display for ChaosError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -491,9 +516,11 @@ impl fmt::Display for ChaosError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl std::error::Error for ChaosError {}
 
 
+#[cfg(feature = "physics")]
 /// Errors related to Standard Model calculations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum StandardModelError {
@@ -507,6 +534,7 @@ pub enum StandardModelError {
     InvalidFlavors { nf: f64 },
 }
 
+#[cfg(feature = "physics")]
 impl fmt::Display for StandardModelError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -530,9 +558,11 @@ impl fmt::Display for StandardModelError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl std::error::Error for StandardModelError {}
 
 
+#[cfg(feature = "physics")]
 /// Errors that can occur during Solid State Physics calculations.
 #[derive(Error, Debug, PartialEq)]
 pub enum SolidStateError {
@@ -550,6 +580,7 @@ pub enum SolidStateError {
 }
 
 
+#[cfg(feature = "physics")]
 #[derive(Error, Debug, PartialEq)]
 pub enum DoseFluenceError {
     #[error("Radius cannot be zero (singularity at r=0)")]
@@ -561,6 +592,7 @@ pub enum DoseFluenceError {
 }
 
 
+#[cfg(feature = "physics")]
 /// Errors for Radar Gating processing.
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum RadarError {
@@ -586,6 +618,7 @@ pub enum RadarError {
 }
 
 
+#[cfg(feature = "physics")]
 /// Errors related to High Energy Physics calculations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum HighEnergyError {
@@ -615,6 +648,7 @@ pub enum HighEnergyError {
     CalculationError { reason: String },
 }
 
+#[cfg(feature = "physics")]
 impl fmt::Display for HighEnergyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -646,11 +680,13 @@ impl fmt::Display for HighEnergyError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl std::error::Error for HighEnergyError {}
 
 /// Errors for Fluid Dynamics.
 
 
+#[cfg(feature = "physics")]
 /// Errors related to fluid properties and dynamics.
 #[derive(Debug, Clone, PartialEq)]
 pub enum FluidError {
@@ -660,6 +696,7 @@ pub enum FluidError {
     InvalidViscosity { value: f64 },
 }
 
+#[cfg(feature = "physics")]
 impl fmt::Display for FluidError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -673,9 +710,11 @@ impl fmt::Display for FluidError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl std::error::Error for FluidError {}
 
 
+#[cfg(feature = "physics")]
 /// Errors related to Statistical Mechanics calculations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum StatMechError {
@@ -691,6 +730,7 @@ pub enum StatMechError {
     NumericalInstability(String),
 }
 
+#[cfg(feature = "physics")]
 impl fmt::Display for StatMechError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -709,9 +749,11 @@ impl fmt::Display for StatMechError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl std::error::Error for StatMechError {}
 
 
+#[cfg(feature = "applied")]
 /// Errors that can occur in pharmacokinetic modeling.
 #[derive(Debug, Error)]
 pub enum PharmacokineticsError {
@@ -727,6 +769,7 @@ pub enum PharmacokineticsError {
 /// Error types for battery degradation modeling.
 
 
+#[cfg(feature = "applied")]
 /// Errors that can occur when instantiating battery parameters.
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum BatteryError {
@@ -742,6 +785,7 @@ pub enum BatteryError {
 }
 
 
+#[cfg(feature = "applied")]
 /// Errors for Game Theory calculations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum GameTheoryError {
@@ -751,6 +795,7 @@ pub enum GameTheoryError {
     InvalidParameter { name: String, value: f64 },
 }
 
+#[cfg(feature = "applied")]
 impl fmt::Display for GameTheoryError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -766,9 +811,11 @@ impl fmt::Display for GameTheoryError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl std::error::Error for GameTheoryError {}
 
 
+#[cfg(feature = "applied")]
 /// Errors related to Engineering Calculations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum EngineeringError {
@@ -776,6 +823,7 @@ pub enum EngineeringError {
     InvalidParameter { name: String, value: f64 },
 }
 
+#[cfg(feature = "applied")]
 impl fmt::Display for EngineeringError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -786,9 +834,11 @@ impl fmt::Display for EngineeringError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl std::error::Error for EngineeringError {}
 
 
+#[cfg(feature = "applied")]
 /// Errors that can occur during LoRA ensemble combination.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum LoraError {
@@ -805,6 +855,7 @@ pub enum LoraError {
 }
 
 
+#[cfg(feature = "applied")]
 /// Errors that can occur during isosurface extraction.
 #[derive(Debug, Clone, PartialEq)]
 pub enum IsosurfaceError {
@@ -814,6 +865,7 @@ pub enum IsosurfaceError {
     DataMismatch { expected: usize, actual: usize },
 }
 
+#[cfg(feature = "applied")]
 impl fmt::Display for IsosurfaceError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -825,9 +877,11 @@ impl fmt::Display for IsosurfaceError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl std::error::Error for IsosurfaceError {}
 
 
+#[cfg(feature = "epidemiology")]
 /// Errors related to Epidemiology calculations.
 #[derive(Debug, Clone, PartialEq)]
 pub enum EpidemiologyError {
@@ -846,6 +900,7 @@ pub enum EpidemiologyError {
     },
 }
 
+#[cfg(feature = "epidemiology")]
 impl fmt::Display for EpidemiologyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -873,9 +928,11 @@ impl fmt::Display for EpidemiologyError {
     }
 }
 
+#[cfg(feature = "epidemiology")]
 impl std::error::Error for EpidemiologyError {}
 
 
+#[cfg(feature = "ai")]
 impl Diagnostic for AIError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -886,6 +943,7 @@ impl Diagnostic for AIError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for NumberTheoryError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -896,6 +954,7 @@ impl Diagnostic for NumberTheoryError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for KellyError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -906,6 +965,7 @@ impl Diagnostic for KellyError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for MarkovError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -916,6 +976,7 @@ impl Diagnostic for MarkovError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for OuError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -926,6 +987,7 @@ impl Diagnostic for OuError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for ZipError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -936,6 +998,7 @@ impl Diagnostic for ZipError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for TdaError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -946,6 +1009,7 @@ impl Diagnostic for TdaError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for CopulaError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -956,6 +1020,7 @@ impl Diagnostic for CopulaError {
     }
 }
 
+#[cfg(feature = "pure_math")]
 impl Diagnostic for Glicko2Error {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -966,6 +1031,7 @@ impl Diagnostic for Glicko2Error {
     }
 }
 
+#[cfg(feature = "biology")]
 impl Diagnostic for HodgkinHuxleyError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -976,6 +1042,7 @@ impl Diagnostic for HodgkinHuxleyError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for ChaosError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -986,6 +1053,7 @@ impl Diagnostic for ChaosError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for StandardModelError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -996,6 +1064,7 @@ impl Diagnostic for StandardModelError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for SolidStateError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1006,6 +1075,7 @@ impl Diagnostic for SolidStateError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for DoseFluenceError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1016,6 +1086,7 @@ impl Diagnostic for DoseFluenceError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for RadarError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1026,6 +1097,7 @@ impl Diagnostic for RadarError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for HighEnergyError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1036,6 +1108,7 @@ impl Diagnostic for HighEnergyError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for FluidError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1046,6 +1119,7 @@ impl Diagnostic for FluidError {
     }
 }
 
+#[cfg(feature = "physics")]
 impl Diagnostic for StatMechError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1056,6 +1130,7 @@ impl Diagnostic for StatMechError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl Diagnostic for PharmacokineticsError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1066,6 +1141,7 @@ impl Diagnostic for PharmacokineticsError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl Diagnostic for BatteryError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1076,6 +1152,7 @@ impl Diagnostic for BatteryError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl Diagnostic for GameTheoryError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1086,6 +1163,7 @@ impl Diagnostic for GameTheoryError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl Diagnostic for EngineeringError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1096,6 +1174,7 @@ impl Diagnostic for EngineeringError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl Diagnostic for LoraError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1106,6 +1185,7 @@ impl Diagnostic for LoraError {
     }
 }
 
+#[cfg(feature = "applied")]
 impl Diagnostic for IsosurfaceError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {
@@ -1116,6 +1196,7 @@ impl Diagnostic for IsosurfaceError {
     }
 }
 
+#[cfg(feature = "epidemiology")]
 impl Diagnostic for EpidemiologyError {
     fn severity(&self) -> Severity { Severity::Error }
     fn metadata(&self) -> HashMap<String, String> {

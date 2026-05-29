@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 use math_explorer::applied::freesurfer::*;
 use nalgebra::{DMatrix, DVector};
 

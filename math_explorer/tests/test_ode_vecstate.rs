@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 use math_explorer::pure_math::analysis::ode::{OdeSystem, RungeKutta4, SolverExt, VecState};
 
 /// A simple decay model: dy/dt = -y
