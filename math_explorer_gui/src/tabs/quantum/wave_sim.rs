@@ -1,10 +1,12 @@
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
+use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use math_explorer::physics::quantum::{
     construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
 };
 use nalgebra::DVector;
 use num_complex::Complex;
+use std::any::Any;
 
 use super::QuantumTool;
 
@@ -14,78 +16,95 @@ enum PotentialType {
     HarmonicOscillator,
 }
 
-pub struct WaveSimulator {
+pub struct WaveData {
+    pub time: f64,
+    pub x_axis: Vec<f64>,
+    pub prob_density: Vec<f64>,
+    pub potential: Vec<f64>,
+}
+
+struct WaveRunner {
     psi: QuantumState,
     hamiltonian: QuantumOperator,
     potential_type: PotentialType,
     potential: DVector<f64>,
     x_axis: Vec<f64>,
     time: f64,
-    paused: bool,
-
-    // Simulation parameters
     n_points: usize,
     x_min: f64,
     x_max: f64,
+    steps_per_frame: usize,
 }
 
-impl Default for WaveSimulator {
-    fn default() -> Self {
-        let n_points = 200;
-        let x_min = -5.0;
-        let x_max = 5.0;
-        let dx = (x_max - x_min) / (n_points as f64 - 1.0);
+impl SimulationRunner for WaveRunner {
+    fn process_command(&mut self, cmd: SimCommand) {
+        match cmd {
+            SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
+            SimCommand::UpdateParam(name, val) => match name.as_str() {
+                "potential_type" => {
+                    self.potential_type = if val == 0.0 {
+                        PotentialType::InfiniteWell
+                    } else {
+                        PotentialType::HarmonicOscillator
+                    };
+                    self.init_system();
+                }
+                _ => {}
+            },
+            SimCommand::Reset => self.init_system(),
+            _ => {}
+        }
+    }
 
-        // Initial dummies to satisfy struct initialization
-        // They will be overwritten by init_system immediately
-        let potential = DVector::zeros(n_points);
-        let hamiltonian = construct_1d_hamiltonian(&potential, dx, 1.0, 1.0);
-        let psi = QuantumState::new(DVector::from_element(n_points, Complex::new(0.0, 0.0)));
+    fn step(&mut self) {
+        let dt = 0.05;
+        self.psi = evolve_state(&self.psi, &self.hamiltonian, dt, 1.0);
+        self.time += dt;
+        self.psi = self.psi.normalize();
+    }
 
-        let mut tab = Self {
-            psi,
-            hamiltonian,
-            potential_type: PotentialType::InfiniteWell,
-            potential,
-            x_axis: Vec::new(),
-            time: 0.0,
-            paused: true,
-            n_points,
-            x_min,
-            x_max,
-        };
+    fn get_snapshot(&self) -> StateSnapshot {
+        let prob_density = self.psi.probability_density();
+        
+        let structured_data = Box::new(WaveData {
+            time: self.time,
+            x_axis: self.x_axis.clone(),
+            prob_density: prob_density.iter().copied().collect(),
+            potential: self.potential.iter().copied().collect(),
+        }) as Box<dyn Any + Send>;
 
-        tab.init_system();
-        tab
+        StateSnapshot {
+            width: 0,
+            height: 0,
+            pixels: std::sync::Arc::new(Vec::new()),
+            custom_data: Vec::new(),
+            structured_data: Some(structured_data),
+        }
+    }
+
+    fn get_steps_per_frame(&self) -> usize {
+        self.steps_per_frame
     }
 }
 
-impl WaveSimulator {
+impl WaveRunner {
     fn init_system(&mut self) {
         let dx = (self.x_max - self.x_min) / (self.n_points as f64 - 1.0);
         self.x_axis = (0..self.n_points)
             .map(|i| self.x_min + i as f64 * dx)
             .collect();
 
-        // 1. Initialize Potential
         self.potential = DVector::zeros(self.n_points);
         for (i, &x) in self.x_axis.iter().enumerate() {
             let v = match self.potential_type {
-                PotentialType::InfiniteWell => {
-                    // Inside the box (-5 to 5) V=0. The boundaries are the simulation limits.
-                    0.0
-                }
+                PotentialType::InfiniteWell => 0.0,
                 PotentialType::HarmonicOscillator => 0.5 * x * x,
             };
             self.potential[i] = v;
         }
 
-        // 2. Construct Hamiltonian H = T + V
-        // Using mass = 1.0, h_bar = 1.0
         self.hamiltonian = construct_1d_hamiltonian(&self.potential, dx, 1.0, 1.0);
 
-        // 3. Initialize Wavefunction (Gaussian Packet)
-        // Start at x0 = -2.0, moving right with k0 = 5.0
         let x0 = -2.0;
         let k0 = 5.0;
         let sigma = 0.5;
@@ -93,13 +112,51 @@ impl WaveSimulator {
         self.psi = gaussian_wavepacket(&self.x_axis, x0, k0, sigma);
         self.time = 0.0;
     }
+}
 
-    fn step(&mut self, dt: f64) {
-        // Evolve state
-        self.psi = evolve_state(&self.psi, &self.hamiltonian, dt, 1.0);
-        self.time += dt;
-        // Re-normalize to prevent drift
-        self.psi = self.psi.normalize();
+pub struct WaveSimulator {
+    controller: SimulationController,
+    potential_type: PotentialType,
+    cached_x: Vec<f64>,
+    cached_prob: Vec<f64>,
+    cached_pot: Vec<f64>,
+    cached_time: f64,
+}
+
+impl Default for WaveSimulator {
+    fn default() -> Self {
+        let n_points = 200;
+        let x_min = -5.0;
+        let x_max = 5.0;
+
+        let potential = DVector::zeros(n_points);
+        let hamiltonian = construct_1d_hamiltonian(&potential, 1.0, 1.0, 1.0);
+        let psi = QuantumState::new(DVector::from_element(n_points, Complex::new(0.0, 0.0)));
+
+        let mut runner = WaveRunner {
+            psi,
+            hamiltonian,
+            potential_type: PotentialType::InfiniteWell,
+            potential,
+            x_axis: Vec::new(),
+            time: 0.0,
+            n_points,
+            x_min,
+            x_max,
+            steps_per_frame: 1,
+        };
+        runner.init_system();
+        
+        let controller = SimulationController::new(runner);
+
+        Self {
+            controller,
+            potential_type: PotentialType::InfiniteWell,
+            cached_x: Vec::new(),
+            cached_prob: Vec::new(),
+            cached_pot: Vec::new(),
+            cached_time: 0.0,
+        }
     }
 }
 
@@ -110,10 +167,19 @@ impl QuantumTool for WaveSimulator {
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
-        // --- Simulation Control ---
-        if !self.paused {
-            self.step(0.05); // Fixed time step per frame
+        if self.controller.running {
             ctx.request_repaint();
+        }
+        
+        if let Some(snap) = self.controller.update() {
+            if let Some(any_data) = &snap.structured_data {
+                if let Some(wave_data) = any_data.downcast_ref::<WaveData>() {
+                    self.cached_time = wave_data.time;
+                    self.cached_x = wave_data.x_axis.clone();
+                    self.cached_prob = wave_data.prob_density.clone();
+                    self.cached_pot = wave_data.potential.clone();
+                }
+            }
         }
 
         egui::SidePanel::left("quantum_controls").show(ctx, |ui| {
@@ -138,24 +204,30 @@ impl QuantumTool for WaveSimulator {
                 .clicked();
 
             if changed {
-                self.init_system();
+                let val = if self.potential_type == PotentialType::InfiniteWell { 0.0 } else { 1.0 };
+                self.controller.send_command(SimCommand::UpdateParam("potential_type".to_string(), val));
+                self.controller.send_command(SimCommand::Reset);
             }
 
             ui.separator();
             ui.horizontal(|ui| {
                 if ui
-                    .button(if self.paused { "▶ Play" } else { "⏸ Pause" })
+                    .button(if !self.controller.running { "▶ Play" } else { "⏸ Pause" })
                     .clicked()
                 {
-                    self.paused = !self.paused;
+                    if self.controller.running {
+                        self.controller.send_command(SimCommand::Pause);
+                    } else {
+                        self.controller.send_command(SimCommand::Start);
+                    }
                 }
                 if ui.button("↻ Reset").clicked() {
-                    self.init_system();
+                    self.controller.send_command(SimCommand::Reset);
                 }
             });
 
             ui.separator();
-            ui.label(format!("Time: {:.2}", self.time));
+            ui.label(format!("Time: {:.2}", self.cached_time));
             ui.label("White: |ψ(x)|² (Probability)");
             ui.colored_label(
                 egui::Color32::from_rgb(100, 100, 255),
@@ -164,26 +236,16 @@ impl QuantumTool for WaveSimulator {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            let prob_density = self.psi.probability_density();
-
-            // Plot data
-            let psi_points: Vec<[f64; 2]> = self
-                .x_axis
-                .iter()
-                .zip(prob_density.iter())
-                .map(|(&x, &p)| [x, p])
-                .collect();
-
-            // Scale potential for visualization (e.g. max potential matches max prob)
-            // Or just plot raw. V can be large. Let's scale it to fit roughly in 0-1 range if needed.
-            // But V depends on x.
-            // Let's just plot V scaled by 0.2 to not overwhelm.
-            let v_points: Vec<[f64; 2]> = self
-                .x_axis
-                .iter()
-                .zip(self.potential.iter())
-                .map(|(&x, &v)| [x, v * 0.2])
-                .collect();
+            let mut psi_points = Vec::new();
+            let mut v_points = Vec::new();
+            
+            for i in 0..self.cached_x.len() {
+                let x = self.cached_x[i];
+                let p = self.cached_prob[i];
+                let v = self.cached_pot[i];
+                psi_points.push([x, p]);
+                v_points.push([x, v * 0.2]);
+            }
 
             Plot::new("quantum_plot")
                 .legend(Legend::default())
@@ -204,5 +266,3 @@ impl QuantumTool for WaveSimulator {
         });
     }
 }
-
-// [cite:quantum_mechanics]

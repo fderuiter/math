@@ -76,7 +76,7 @@ impl SimulationRunner for HodgkinHuxleyRunner {
             width: 0,
             height: 0,
             pixels: Arc::new(Vec::new()),
-            custom_data,
+            custom_data, structured_data: None,
         }
     }
 
