@@ -1,4 +1,4 @@
-use super::error::LoraError;
+use crate::error::LoraError;
 use super::types::LoraStateDict;
 
 /// Strategy for combining multiple LoRA state dictionaries.

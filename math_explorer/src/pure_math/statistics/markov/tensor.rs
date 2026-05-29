@@ -3,7 +3,8 @@
 //! This module supports Markov chains where transition probabilities vary with time,
 //! such as modeling basketball possessions with shot clock urgency effects.
 
-use crate::pure_math::statistics::markov::error::{MarkovError, Result};
+use crate::error::MarkovError;
+pub type Result<T> = std::result::Result<T, MarkovError>;
 use nalgebra::{DMatrix, RealField};
 
 use num_traits::ToPrimitive;

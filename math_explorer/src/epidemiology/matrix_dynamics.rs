@@ -1,4 +1,4 @@
-use crate::epidemiology::EpidemiologyError;
+use crate::error::EpidemiologyError;
 use nalgebra::DMatrix;
 
 /// Calculates the Spectral Radius (R0) from Transmission (F) and Transition (V) matrices.

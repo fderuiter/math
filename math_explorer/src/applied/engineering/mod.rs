@@ -6,11 +6,9 @@
 //! but are essential for "back-of-the-napkin" estimation in embedded systems and manufacturing.
 
 pub mod cnc;
-pub mod error;
 pub mod uart;
 
 pub use cnc::*;
-pub use error::*;
 pub use uart::*;
 
 // [cite:graph_parameters_rust]

@@ -1,6 +1,6 @@
 //! Core types for Glicko-2 rating system.
 
-use super::error::Glicko2Error;
+use crate::error::Glicko2Error;
 use std::f64::consts::PI;
 
 /// Player rating (r) on the Glicko-2 scale.

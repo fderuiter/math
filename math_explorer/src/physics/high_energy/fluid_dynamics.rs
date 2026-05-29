@@ -1,5 +1,5 @@
 use super::constants::C;
-use super::error::HighEnergyError;
+use crate::error::HighEnergyError;
 
 /// Calculates the density compression ratio r for a strong relativistic shock.
 /// Formula: r = (gamma_hat + 1) / (gamma_hat - 1)

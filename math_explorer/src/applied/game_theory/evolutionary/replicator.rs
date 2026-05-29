@@ -1,6 +1,6 @@
 use super::strategies::MatrixPayoff;
 use super::traits::FitnessStrategy;
-use crate::applied::game_theory::error::GameTheoryError;
+use crate::error::GameTheoryError;
 use crate::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver};
 use nalgebra::{DMatrix, DVector};
 

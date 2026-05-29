@@ -55,6 +55,6 @@ pub mod clinical_trials;
 pub mod algorithms;
 pub mod engineering;
 
-pub use engineering::error as engineering_error;
+
 
 // [cite:graph_parameters_rust]

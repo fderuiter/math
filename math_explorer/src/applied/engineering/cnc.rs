@@ -1,4 +1,4 @@
-use super::error::EngineeringError;
+use crate::error::EngineeringError;
 
 /// The cutting speed ($V$) in meters per minute (m/min).
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]

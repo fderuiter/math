@@ -121,13 +121,11 @@
 
 pub mod core;
 pub mod distribution;
-pub mod error;
 pub mod link_functions;
 pub mod regression;
 
 pub use core::{Count, PoissonRate, ZeroInflation, ZipParams};
 pub use distribution::ZipDistribution;
-pub use error::ZipError;
 pub use link_functions::{LogLink, LogitLink};
 pub use regression::{ZipRegression, simple_zip_fit};
 

@@ -25,7 +25,7 @@ pub type Adam<T> = GenericAdam<T, (usize, ParamType)>;
 /// Used primarily for Regression.
 ///
 /// J(\theta) = \frac{1}{n} \sum_{i=1}^{n} (y^{(i)} - \hat{y}^{(i)})^2
-use crate::ai::AIError;
+use crate::error::AIError;
 
 pub fn mean_squared_error<T: RealField + Copy>(
     y_pred: &DVector<T>,

@@ -1,6 +1,6 @@
 //! Core types for Kelly Criterion.
 
-use super::error::KellyError;
+use crate::error::KellyError;
 
 /// Win probability p (must be between 0 and 1).
 ///

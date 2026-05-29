@@ -1,5 +1,5 @@
 use super::traits::FitnessStrategy;
-use crate::applied::game_theory::error::GameTheoryError;
+use crate::error::GameTheoryError;
 use nalgebra::{DMatrix, DVector};
 
 /// A standard linear fitness landscape defined by a Payoff Matrix.

@@ -1,7 +1,7 @@
 //! Analysis tools for OU process applications.
 
 use super::core::OuParams;
-use super::error::OuError;
+use crate::error::OuError;
 use super::solver::{EulerMaruyama, TimeStep};
 use rand::Rng;
 

@@ -1,4 +1,4 @@
-use super::error::PharmacokineticsError;
+use crate::error::PharmacokineticsError;
 
 /// Validated pharmacokinetic parameters for a one-compartment model.
 ///

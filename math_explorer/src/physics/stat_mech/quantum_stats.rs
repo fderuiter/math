@@ -1,5 +1,5 @@
 use super::KB;
-use super::error::StatMechError;
+use crate::error::StatMechError;
 
 /// Type of particle for statistical distribution.
 #[derive(Debug, Clone, Copy, PartialEq)]

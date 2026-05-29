@@ -1,6 +1,6 @@
 //! Types for Fluid Dynamics.
 
-use super::error::FluidError;
+use crate::error::FluidError;
 use crate::pure_math::analysis::ode::VectorOperations;
 use nalgebra::{Matrix3, Vector3};
 use std::ops::{Add, AddAssign, Mul, MulAssign};

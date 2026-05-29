@@ -44,10 +44,15 @@ use crate::tabs::ExplorerTab;
 #[cfg(feature = "pure_math")]
 use crate::tabs::GeometryTopologyTab;
 use eframe::egui;
+use math_explorer::diagnostics::{global_bus, DiagnosticEvent, Severity};
 
 pub struct MathExplorerApp {
     tabs: Vec<Box<dyn ExplorerTab>>,
     selected_tab: usize,
+    diagnostic_events: Vec<DiagnosticEvent>,
+    show_info: bool,
+    show_warnings: bool,
+    show_errors: bool,
 }
 
 impl Default for MathExplorerApp {
@@ -105,6 +110,10 @@ impl Default for MathExplorerApp {
         Self {
             tabs,
             selected_tab: 0,
+            diagnostic_events: Vec::new(),
+            show_info: true,
+            show_warnings: true,
+            show_errors: true,
         }
     }
 }
@@ -118,6 +127,64 @@ impl MathExplorerApp {
 
 impl eframe::App for MathExplorerApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        // Fetch new events
+        self.diagnostic_events.extend(global_bus().try_recv_all());
+
+        // Issues & Diagnostics Panel
+        egui::TopBottomPanel::bottom("issues_panel")
+            .resizable(true)
+            .min_height(100.0)
+            .show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.heading("Issues & Diagnostics");
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button("Clear").clicked() {
+                            self.diagnostic_events.clear();
+                        }
+                        ui.checkbox(&mut self.show_errors, "Errors/Fatal");
+                        ui.checkbox(&mut self.show_warnings, "Warnings");
+                        ui.checkbox(&mut self.show_info, "Info");
+                    });
+                });
+                ui.separator();
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    for event in &self.diagnostic_events {
+                        let show = match event.severity {
+                            Severity::Info => self.show_info,
+                            Severity::Warning => self.show_warnings,
+                            Severity::Error | Severity::Fatal => self.show_errors,
+                        };
+                        if !show {
+                            continue;
+                        }
+
+                        let color = match event.severity {
+                            Severity::Info => egui::Color32::LIGHT_BLUE,
+                            Severity::Warning => egui::Color32::YELLOW,
+                            Severity::Error => egui::Color32::RED,
+                            Severity::Fatal => egui::Color32::DARK_RED,
+                        };
+
+                        ui.group(|ui| {
+                            ui.horizontal(|ui| {
+                                ui.label(egui::RichText::new(format!("[{}]", event.severity)).color(color).strong());
+                                if let Some(thread) = &event.thread_name {
+                                    ui.label(egui::RichText::new(format!("(Thread: {})", thread)).italics());
+                                }
+                                ui.label(&event.message);
+                            });
+                            if !event.metadata.is_empty() {
+                                ui.horizontal_wrapped(|ui| {
+                                    for (k, v) in &event.metadata {
+                                        ui.label(egui::RichText::new(format!("{}: {}", k, v)).monospace().size(10.0));
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
         // Render Tab Bar
         egui::TopBottomPanel::top("main_menu").show(ctx, |ui| {
             ui.horizontal(|ui| {

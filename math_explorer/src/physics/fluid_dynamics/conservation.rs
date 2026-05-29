@@ -2,7 +2,7 @@
 //!
 //! Implements the core Partial Differential Equations (PDEs) of Fluid Dynamics.
 
-use super::error::FluidError;
+use crate::error::FluidError;
 use super::types::{FlowState, FluidProperties, SpatialGradients};
 use nalgebra::Vector3;
 

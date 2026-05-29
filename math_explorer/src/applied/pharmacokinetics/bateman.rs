@@ -1,4 +1,4 @@
-use super::error::PharmacokineticsError;
+use crate::error::PharmacokineticsError;
 use super::parameters::PKParameters;
 use super::traits::PharmacokineticModel;
 use crate::pure_math::analysis::roots::NewtonRaphson;

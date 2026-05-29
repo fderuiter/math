@@ -92,7 +92,6 @@
 
 pub mod activations;
 pub mod deep_learning_theory;
-pub mod error;
 pub mod gaussian_splatting;
 pub mod optimization;
 pub mod reinforcement_learning;
@@ -101,7 +100,6 @@ pub mod self_calibration;
 pub mod transformer;
 pub mod utils;
 
-pub use error::AIError;
 
 // Re-export transformer components for backward compatibility.
 pub use transformer::attention;

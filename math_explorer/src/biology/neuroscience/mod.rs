@@ -1,12 +1,10 @@
 #![doc = include_str!("README.md")]
 
-pub mod error;
 pub mod kinetics;
 pub mod model;
 pub mod neuron;
 pub mod types;
 
-pub use error::HodgkinHuxleyError;
 // Re-export the public facade to maintain backward compatibility
 pub use neuron::HodgkinHuxleyNeuron;
 

@@ -47,7 +47,7 @@
 //! assert!((hawk_freq - 0.2).abs() < 0.05);
 //! ```
 
-use crate::applied::game_theory::error::GameTheoryError;
+use crate::error::GameTheoryError;
 use crate::applied::game_theory::evolutionary::ReplicatorDynamics;
 use crate::pure_math::analysis::ode::{ArrayState, Euler, OdeSystem, Solver, SolverExt};
 use nalgebra::{DMatrix, DVector};

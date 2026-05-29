@@ -1,6 +1,6 @@
 //! Core types for Ornstein-Uhlenbeck process.
 
-use super::error::OuError;
+use crate::error::OuError;
 
 /// The mean reversion rate θ (theta).
 ///

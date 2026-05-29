@@ -1,4 +1,4 @@
-use super::error::EngineeringError;
+use crate::error::EngineeringError;
 
 /// A baud rate in symbols per second.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

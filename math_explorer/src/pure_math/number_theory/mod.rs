@@ -29,7 +29,6 @@
 pub mod alcf;
 pub mod ambs;
 pub mod class_number;
-pub mod error;
 pub mod hurwitz_kronecker;
 pub mod partitions;
 pub mod primes;
@@ -37,7 +36,6 @@ pub mod q_series;
 pub mod ualbf;
 
 // Re-exports for convenience
-pub use error::NumberTheoryError;
 pub use primes::{is_prime, primes_up_to};
 
 // [cite:mmwave_radiotherapy_setup]

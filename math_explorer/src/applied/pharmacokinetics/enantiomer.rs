@@ -4,7 +4,7 @@ use super::superposition::SuperpositionModel;
 use super::traits::PharmacokineticModel;
 use super::two_pulse::TwoPulseModel;
 
-use super::error::PharmacokineticsError;
+use crate::error::PharmacokineticsError;
 
 /// A model for a drug composed of two enantiomers (e.g., d- and l-amphetamine).
 ///

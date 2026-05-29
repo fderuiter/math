@@ -1,6 +1,6 @@
 //! Core types for Topological Data Analysis.
 
-use super::error::TdaError;
+use crate::error::TdaError;
 
 /// A point in 2D space.
 #[derive(Debug, Clone, Copy, PartialEq)]

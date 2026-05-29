@@ -1,6 +1,6 @@
 //! Core types for Zero-Inflated Poisson regression.
 
-use super::error::ZipError;
+use crate::error::ZipError;
 
 /// The rate parameter λ (lambda) for the Poisson process.
 ///

@@ -53,7 +53,7 @@ fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
 /// # Returns
 ///
 /// The KL divergence loss.
-use crate::ai::AIError;
+use crate::error::AIError;
 
 pub fn calculate_kl_divergence_loss(
     responses: &[Response],
@@ -83,7 +83,7 @@ mod tests {
     use super::*;
     use crate::ai::self_calibration::types::Response;
     #[test]
-    fn test_kl_divergence_calculation() -> Result<(), crate::ai::AIError> {
+    fn test_kl_divergence_calculation() -> Result<(), crate::error::AIError> {
         let responses = vec![
             Response {
                 text: "A".to_string(),

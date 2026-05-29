@@ -1,5 +1,5 @@
 use super::constants::{C, G};
-use super::error::HighEnergyError;
+use crate::error::HighEnergyError;
 
 /// Struct representing a Schwarzschild Black Hole.
 pub struct SchwarzschildBlackHole {

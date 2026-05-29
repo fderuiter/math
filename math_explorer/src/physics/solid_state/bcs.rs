@@ -1,12 +1,10 @@
-//! Superconductivity (BCS Theory)
-//!
-//! Describes the pairing of electrons into Cooper pairs via phonon mediation.
-//!
-//! # Refactoring Note
-//! This module has been refactored to use the **Strategy Pattern** for Gap Equation models
-//! and **Strong Types** for physical quantities. Legacy functions are preserved but deprecated.
-
-use super::error::SolidStateError;
+use crate::error::SolidStateError;
+/// Superconductivity (BCS Theory)
+///
+/// Describes the pairing of electrons into Cooper pairs via phonon mediation.
+///
+/// # Refactoring Note
+/// This module has been refactored to use crate::error::SolidStateError;
 use super::types::ElectronVolts;
 
 // --- Traits ---

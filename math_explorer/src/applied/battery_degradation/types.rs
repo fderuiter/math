@@ -1,4 +1,4 @@
-use super::error::BatteryError;
+use crate::error::BatteryError;
 // Strong types for battery degradation modeling.
 //
 // These types ensure physical validity of parameters (e.g., depth of discharge cannot be negative).

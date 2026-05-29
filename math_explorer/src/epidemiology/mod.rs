@@ -68,12 +68,10 @@
 
 pub mod analytics;
 pub mod compartmental;
-pub mod error;
 pub mod matrix_dynamics;
 pub mod networks;
 pub mod stochastic;
 
-pub use error::EpidemiologyError;
 // Re-exports for easier access
 pub use compartmental::{SEIRModel, SEIRState, SIRModel, SIRState};
 

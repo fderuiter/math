@@ -1,4 +1,4 @@
-use super::error::IsosurfaceError;
+use crate::error::IsosurfaceError;
 use super::gradients::{CentralDifferenceEstimator, GradientEstimator};
 use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE};
 use super::types::{Mesh, Point3D, Triangle, VoxelGrid};

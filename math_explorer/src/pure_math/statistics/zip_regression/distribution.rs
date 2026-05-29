@@ -4,7 +4,7 @@
 //! properties of the Zero-Inflated Poisson (ZIP) distribution.
 
 use super::core::{Count, ZipParams};
-use super::error::ZipError;
+use crate::error::ZipError;
 use statrs::function::gamma::ln_gamma;
 
 /// Zero-Inflated Poisson distribution.

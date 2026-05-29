@@ -1,6 +1,6 @@
 //! Core types for copula operations.
 
-use super::error::CopulaError;
+use crate::error::CopulaError;
 use nalgebra::DMatrix;
 
 /// A probability value in [0, 1].
