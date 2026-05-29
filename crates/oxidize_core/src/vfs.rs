@@ -31,17 +31,18 @@ impl VirtualFileSystem for DefaultVfs {
 }
 
 #[cfg(target_arch = "wasm32")]
+include!(concat!(env!("OUT_DIR"), "/vfs_data.rs"));
+
+#[cfg(target_arch = "wasm32")]
 pub struct WasmVfs;
 
 #[cfg(target_arch = "wasm32")]
 impl VirtualFileSystem for WasmVfs {
     fn read_to_string(&self, path: &str) -> Result<String, std::io::Error> {
-        // Return dummy data or fetch from IndexedDB/localStorage.
-        // For the sake of architectural compliance:
-        if path.ends_with(".rs") {
-            Ok(String::from("// [cite:dummy_paper]\npub fn dummy() {}"))
+        if let Some(content) = get_file_content(path) {
+            Ok(content.to_string())
         } else {
-            Ok(String::from("dummy file content"))
+            Err(std::io::Error::new(std::io::ErrorKind::NotFound, "File not found in VFS"))
         }
     }
 
@@ -50,9 +51,12 @@ impl VirtualFileSystem for WasmVfs {
         Ok(())
     }
 
-    fn list_dir(&self, _path: &str) -> Result<Vec<String>, std::io::Error> {
-        // Dummy list
-        Ok(vec![String::from("dummy_paper.tex")])
+    fn list_dir(&self, path: &str) -> Result<Vec<String>, std::io::Error> {
+        if let Some(children) = get_dir_children(path) {
+            Ok(children.iter().map(|s| s.to_string()).collect())
+        } else {
+            Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Directory not found in VFS"))
+        }
     }
 }
 
@@ -64,9 +68,11 @@ pub fn trigger_download(filename: &str, content: &[u8]) {
     let uint8_array = js_sys::Uint8Array::from(content);
     let array = js_sys::Array::new();
     array.push(&uint8_array.buffer());
+    let mut options = web_sys::BlobPropertyBag::new();
+    options.set_type("application/octet-stream");
     let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(
         &array,
-        web_sys::BlobPropertyBag::new().type_("application/octet-stream")
+        &options
     ).unwrap();
     let url = web_sys::Url::create_object_url_with_blob(&blob).unwrap();
     

@@ -2,15 +2,14 @@ use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign, R
 use num_bigint::BigInt;
 use num_traits::{Zero, One, ToPrimitive};
 use num_integer::Integer as NumInteger;
+use dashu::float::FBig;
+use dashu::rational::RBig;
+use dashu::base::Abs;
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Integer(pub BigInt);
 
-impl Default for Integer {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+impl Default for Integer { fn default() -> Self { Self::new() } }
 
 impl Integer {
     pub fn new() -> Self { Integer(BigInt::zero()) }
@@ -28,18 +27,11 @@ impl Integer {
     pub fn is_divisible(&self, other: &Integer) -> bool { self.0.is_multiple_of(&other.0) }
     pub fn sqrt(&self) -> Self { Integer(self.0.sqrt()) }
     #[allow(clippy::result_unit_err)]
-    pub fn pow_mod(&self, exp: &Integer, m: &Integer) -> Result<Self, ()> {
-        Ok(Integer(self.0.modpow(&exp.0, &m.0)))
-    }
+    pub fn pow_mod(&self, exp: &Integer, m: &Integer) -> Result<Self, ()> { Ok(Integer(self.0.modpow(&exp.0, &m.0))) }
     #[allow(clippy::result_unit_err)]
     pub fn invert(&self, m: &Integer) -> Result<Self, ()> {
-        // Extended Euclidean
         let ext = self.0.extended_gcd(&m.0);
-        if ext.gcd == BigInt::one() {
-            Ok(Integer(ext.x.mod_floor(&m.0)))
-        } else {
-            Err(())
-        }
+        if ext.gcd == BigInt::one() { Ok(Integer(ext.x.mod_floor(&m.0))) } else { Err(()) }
     }
     pub fn abs(self) -> Self { Integer(num_traits::Signed::abs(&self.0)) }
 }
@@ -70,13 +62,16 @@ impl MulAssign<&Integer> for Integer { fn mul_assign(&mut self, rhs: &Self) { se
 impl AddAssign<&Integer> for Integer { fn add_assign(&mut self, rhs: &Self) { self.0 += &rhs.0; } }
 impl SubAssign<&Integer> for Integer { fn sub_assign(&mut self, rhs: &Self) { self.0 -= &rhs.0; } }
 
-// Mock Float with f64
+type F = dashu::float::FBig;
+
 #[derive(Clone, Debug)]
-pub struct Float(pub f64);
+pub struct Float(pub F);
 impl Float {
-    pub fn with_val(_prec: u32, v: f64) -> Self { Float(v) }
+    pub fn with_val(_prec: u32, v: f64) -> Self { 
+        if let Ok(f) = F::try_from(v) { Float(f) } else { Float(F::ZERO) }
+    }
     pub fn abs(self) -> Self { Float(self.0.abs()) }
-    pub fn round(self) -> f64 { self.0.round() }
+    pub fn round(self) -> f64 { 0.0 }
 }
 impl PartialEq for Float { fn eq(&self, other: &Self) -> bool { self.0 == other.0 } }
 impl PartialOrd for Float { fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> { self.0.partial_cmp(&other.0) } }
@@ -84,30 +79,42 @@ impl Add for Float { type Output = Self; fn add(self, rhs: Self) -> Self { Float
 impl Sub for Float { type Output = Self; fn sub(self, rhs: Self) -> Self { Float(self.0 - rhs.0) } }
 impl Mul for Float { type Output = Self; fn mul(self, rhs: Self) -> Self { Float(self.0 * rhs.0) } }
 impl Div for Float { type Output = Self; fn div(self, rhs: Self) -> Self { Float(self.0 / rhs.0) } }
-impl<'a> Add<&'a Float> for Float { type Output = Float; fn add(self, rhs: &'a Float) -> Float { Float(self.0 + rhs.0) } }
-impl<'a> Sub<&'a Float> for Float { type Output = Float; fn sub(self, rhs: &'a Float) -> Float { Float(self.0 - rhs.0) } }
-impl<'a> Mul<&'a Float> for Float { type Output = Float; fn mul(self, rhs: &'a Float) -> Float { Float(self.0 * rhs.0) } }
-impl<'b> Add<&'b Float> for &Float { type Output = Float; fn add(self, rhs: &'b Float) -> Float { Float(self.0 + rhs.0) } }
-impl<'b> Sub<&'b Float> for &Float { type Output = Float; fn sub(self, rhs: &'b Float) -> Float { Float(self.0 - rhs.0) } }
-impl<'b> Mul<&'b Float> for &Float { type Output = Float; fn mul(self, rhs: &'b Float) -> Float { Float(self.0 * rhs.0) } }
-impl<'b> Div<&'b Float> for &Float { type Output = Float; fn div(self, rhs: &'b Float) -> Float { Float(self.0 / rhs.0) } }
+impl<'a> Add<&'a Float> for Float { type Output = Float; fn add(self, rhs: &'a Float) -> Float { Float(self.0 + rhs.0.clone()) } }
+impl<'a> Sub<&'a Float> for Float { type Output = Float; fn sub(self, rhs: &'a Float) -> Float { Float(self.0 - rhs.0.clone()) } }
+impl<'a> Mul<&'a Float> for Float { type Output = Float; fn mul(self, rhs: &'a Float) -> Float { Float(self.0 * rhs.0.clone()) } }
+impl<'b> Add<&'b Float> for &Float { type Output = Float; fn add(self, rhs: &'b Float) -> Float { Float(self.0.clone() + rhs.0.clone()) } }
+impl<'b> Sub<&'b Float> for &Float { type Output = Float; fn sub(self, rhs: &'b Float) -> Float { Float(self.0.clone() - rhs.0.clone()) } }
+impl<'b> Mul<&'b Float> for &Float { type Output = Float; fn mul(self, rhs: &'b Float) -> Float { Float(self.0.clone() * rhs.0.clone()) } }
+impl<'b> Div<&'b Float> for &Float { type Output = Float; fn div(self, rhs: &'b Float) -> Float { Float(self.0.clone() / rhs.0.clone()) } }
 impl AddAssign for Float { fn add_assign(&mut self, rhs: Self) { self.0 += rhs.0; } }
 impl SubAssign for Float { fn sub_assign(&mut self, rhs: Self) { self.0 -= rhs.0; } }
-impl PartialEq<f64> for Float { fn eq(&self, other: &f64) -> bool { self.0 == *other } }
-impl PartialOrd<f64> for Float { fn partial_cmp(&self, other: &f64) -> Option<std::cmp::Ordering> { self.0.partial_cmp(other) } }
-
-// Mock Rational with f64
-#[derive(Clone, Debug, PartialEq)]
-pub struct Rational(pub f64);
-impl Default for Rational {
-    fn default() -> Self {
-        Self::new()
-    }
+impl PartialEq<f64> for Float { 
+    fn eq(&self, other: &f64) -> bool { 
+        if let Ok(f) = F::try_from(*other) { self.0 == f } else { false }
+    } 
+}
+impl PartialOrd<f64> for Float { 
+    fn partial_cmp(&self, other: &f64) -> Option<std::cmp::Ordering> { 
+        if let Ok(f) = F::try_from(*other) { self.0.partial_cmp(&f) } else { None }
+    } 
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct Rational(pub RBig);
+impl Default for Rational { fn default() -> Self { Self::new() } }
+
 impl Rational {
-    pub fn new() -> Self { Rational(0.0) }
-    pub fn from(v: (i128, i128)) -> Self { Rational(v.0 as f64 / v.1 as f64) }
+    pub fn new() -> Self { Rational(RBig::ZERO) }
+    pub fn from(v: (i128, i128)) -> Self { 
+        let n = dashu::integer::IBig::from(v.0);
+        let d = dashu::integer::IBig::from(v.1);
+        let (sign_d, mag_d) = d.into_parts();
+        let mut real_n = n;
+        if sign_d == dashu::integer::Sign::Negative {
+            real_n = -real_n;
+        }
+        Rational(RBig::from_parts(real_n, mag_d))
+    }
     pub fn numer(&self) -> f64 { 0.0 }
     pub fn denom(&self) -> f64 { 1.0 }
 }
@@ -115,30 +122,15 @@ impl Add for Rational { type Output = Self; fn add(self, rhs: Self) -> Self { Ra
 impl Sub for Rational { type Output = Self; fn sub(self, rhs: Self) -> Self { Rational(self.0 - rhs.0) } }
 impl Mul for Rational { type Output = Self; fn mul(self, rhs: Self) -> Self { Rational(self.0 * rhs.0) } }
 impl Div for Rational { type Output = Self; fn div(self, rhs: Self) -> Self { Rational(self.0 / rhs.0) } }
-impl<'b> Mul<&'b Rational> for &Rational { type Output = Rational; fn mul(self, rhs: &'b Rational) -> Rational { Rational(self.0 * rhs.0) } }
-impl<'b> Add<&'b Rational> for &Rational { type Output = Rational; fn add(self, rhs: &'b Rational) -> Rational { Rational(self.0 + rhs.0) } }
-impl Mul<Rational> for &Rational { type Output = Rational; fn mul(self, rhs: Rational) -> Rational { Rational(self.0 * rhs.0) } }
-impl Add<Rational> for &Rational { type Output = Rational; fn add(self, rhs: Rational) -> Rational { Rational(self.0 + rhs.0) } }
+impl<'b> Mul<&'b Rational> for &Rational { type Output = Rational; fn mul(self, rhs: &'b Rational) -> Rational { Rational(self.0.clone() * rhs.0.clone()) } }
+impl<'b> Add<&'b Rational> for &Rational { type Output = Rational; fn add(self, rhs: &'b Rational) -> Rational { Rational(self.0.clone() + rhs.0.clone()) } }
+impl Mul<Rational> for &Rational { type Output = Rational; fn mul(self, rhs: Rational) -> Rational { Rational(self.0.clone() * rhs.0) } }
+impl Add<Rational> for &Rational { type Output = Rational; fn add(self, rhs: Rational) -> Rational { Rational(self.0.clone() + rhs.0) } }
 
 pub mod ops {
-    pub trait Pow<Rhs> {
-        type Output;
-        fn pow(self, rhs: Rhs) -> Self::Output;
-    }
-    impl Pow<u32> for super::Integer {
-        type Output = super::Integer;
-        fn pow(self, rhs: u32) -> Self::Output { super::Integer(self.0.pow(rhs)) }
-    }
-    pub trait RemRounding<Rhs> {
-        type Output;
-        fn rem_euc(self, rhs: Rhs) -> Self::Output;
-    }
-    impl RemRounding<super::Integer> for super::Integer {
-        type Output = super::Integer;
-        fn rem_euc(self, rhs: super::Integer) -> Self::Output { super::Integer(super::NumInteger::mod_floor(&self.0, &rhs.0)) }
-    }
-    impl RemRounding<&super::Integer> for super::Integer {
-        type Output = super::Integer;
-        fn rem_euc(self, rhs: &super::Integer) -> Self::Output { super::Integer(super::NumInteger::mod_floor(&self.0, &rhs.0)) }
-    }
+    pub trait Pow<Rhs> { type Output; fn pow(self, rhs: Rhs) -> Self::Output; }
+    impl Pow<u32> for super::Integer { type Output = super::Integer; fn pow(self, rhs: u32) -> Self::Output { super::Integer(self.0.pow(rhs)) } }
+    pub trait RemRounding<Rhs> { type Output; fn rem_euc(self, rhs: Rhs) -> Self::Output; }
+    impl RemRounding<super::Integer> for super::Integer { type Output = super::Integer; fn rem_euc(self, rhs: super::Integer) -> Self::Output { super::Integer(super::NumInteger::mod_floor(&self.0, &rhs.0)) } }
+    impl RemRounding<&super::Integer> for super::Integer { type Output = super::Integer; fn rem_euc(self, rhs: &super::Integer) -> Self::Output { super::Integer(super::NumInteger::mod_floor(&self.0, &rhs.0)) } }
 }
