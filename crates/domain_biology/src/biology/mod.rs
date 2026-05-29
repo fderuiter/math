@@ -78,3 +78,12 @@ pub mod evolution;
 pub mod reaction_diffusion;
 
 // [cite:favorite_child]
+
+use pure_math::theory_verification;
+theory_verification!(
+    module = "biology",
+    paper = "advanced_linear_algebra.tex",
+    epsilon = 1e-6,
+    constants = { TEST = 1.0; },
+    test = {}
+);

@@ -113,7 +113,7 @@ impl Default for MorphogenesisTab {
         let diffusion = FiniteDifference2D::new(math_explorer::math_kernel::types::Dimension(width), math_explorer::math_kernel::types::Dimension(height), math_explorer::math_kernel::types::StepSize(1.0), math_explorer::math_kernel::types::StepSize(1.0));
 
         let mut system =
-            TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::math_kernel::types::DiffusionCoeff(d_u), math_explorer::math_kernel::types::DiffusionCoeff(d_v), kinetics, diffusion);
+            TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::biology::morphogenesis::DiffusionCoeff(d_u), math_explorer::biology::morphogenesis::DiffusionCoeff(d_v), kinetics, diffusion);
 
         // Initialize with noise
         initialize_system(&mut system, width, height);

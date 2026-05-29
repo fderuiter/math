@@ -109,3 +109,12 @@ pub mod tensor_ops;
 pub mod training;
 
 // [cite:graph_parameters_rust]
+
+use pure_math::theory_verification;
+theory_verification!(
+    module = "climate",
+    paper = "advanced_linear_algebra.tex",
+    epsilon = 1e-6,
+    constants = { TEST = 1.0; },
+    test = {}
+);

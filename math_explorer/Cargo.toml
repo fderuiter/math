@@ -28,7 +28,10 @@ physics = ["applied", "pure_math", "dep:domain_physics"]
 
 [dev-dependencies]
 approx = "0.5.1"
+num-complex = "0.4"
+petgraph = "0.6"
 rand = "0.8.6"
+statrs = "0.17"
 
 [dev-dependencies.criterion]
 version = "0.5.1"

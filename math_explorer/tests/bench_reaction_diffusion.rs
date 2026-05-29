@@ -12,7 +12,7 @@ fn bench_turing_2d_step() {
     let kinetics = SchnakenbergKinetics::default();
 
     // Create system with 90k elements
-    let mut system = TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::math_kernel::types::DiffusionCoeff(1.0), math_explorer::math_kernel::types::DiffusionCoeff(40.0), kinetics, diff);
+    let mut system = TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::biology::morphogenesis::DiffusionCoeff(1.0), math_explorer::biology::morphogenesis::DiffusionCoeff(40.0), kinetics, diff);
 
     // Initialize with some values
     for i in 0..width * height {
