@@ -1,8 +1,14 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use std::collections::{HashMap, HashSet};
-use std::fs;
 use std::path::PathBuf;
+use oxidize_core::vfs::VirtualFileSystem;
+
+#[cfg(not(target_arch = "wasm32"))]
+type VfsImpl = oxidize_core::vfs::DefaultVfs;
+
+#[cfg(target_arch = "wasm32")]
+type VfsImpl = oxidize_core::vfs::WasmVfs;
 
 pub struct TraceabilityTab {
     papers: HashMap<String, PaperStatus>,
@@ -38,32 +44,35 @@ impl TraceabilityTab {
         self.unlinked_code.clear();
         self.invalid_links.clear();
 
+        #[cfg(not(target_arch = "wasm32"))]
+        let vfs = oxidize_core::vfs::DefaultVfs;
+        #[cfg(target_arch = "wasm32")]
+        let vfs = oxidize_core::vfs::WasmVfs;
+
         // 1. Scan papers
-        let papers_dir = PathBuf::from("papers");
+        let papers_dir = "papers";
         let mut valid_papers = HashSet::new();
-        if let Ok(entries) = fs::read_dir(&papers_dir) {
-            for entry in entries.flatten() {
-                if let Some(name) = entry.file_name().to_str() {
-                    if name.ends_with(".tex") {
-                        let paper_name = name.trim_end_matches(".tex").to_string();
-                        valid_papers.insert(paper_name.clone());
-                        self.papers.insert(
-                            paper_name.clone(),
-                            PaperStatus {
-                                name: paper_name,
-                                linked_code: Vec::new(),
-                                is_wip: false,
-                            },
-                        );
-                    }
+        if let Ok(entries) = vfs.list_dir(&papers_dir) {
+            for name in entries {
+                if name.ends_with(".tex") {
+                    let paper_name = name.trim_end_matches(".tex").to_string();
+                    valid_papers.insert(paper_name.clone());
+                    self.papers.insert(
+                        paper_name.clone(),
+                        PaperStatus {
+                            name: paper_name,
+                            linked_code: Vec::new(),
+                            is_wip: false,
+                        },
+                    );
                 }
             }
         }
 
         // 2. Scan code files
         let mut code_files = Vec::new();
-        self.scan_dir(PathBuf::from("math_explorer/src"), &mut code_files);
-        self.scan_dir(PathBuf::from("math_explorer_gui/src/tabs"), &mut code_files);
+        self.scan_dir(&vfs, "math_explorer/src", &mut code_files);
+        self.scan_dir(&vfs, "math_explorer_gui/src/tabs", &mut code_files);
 
         for file in code_files {
             let is_module =
@@ -73,7 +82,7 @@ impl TraceabilityTab {
                 continue;
             }
 
-            if let Ok(content) = fs::read_to_string(&file) {
+            if let Ok(content) = vfs.read_to_string(&file) {
                 let mut found_cite = false;
 
                 let mut search_idx = 0;
@@ -111,14 +120,16 @@ impl TraceabilityTab {
         self.unlinked_code.sort();
     }
 
-    fn scan_dir(&self, dir: PathBuf, files: &mut Vec<String>) {
-        if let Ok(entries) = fs::read_dir(&dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    self.scan_dir(path, files);
-                } else if path.extension().map_or(false, |e| e == "rs") {
-                    files.push(path.to_string_lossy().into_owned());
+    fn scan_dir(&self, vfs: &VfsImpl, dir: &str, files: &mut Vec<String>) {
+        if let Ok(entries) = vfs.list_dir(dir) {
+            for entry in entries {
+                let path = format!("{}/{}", dir, entry);
+                if entry.contains('.') { // simple heuristic for file vs dir
+                    if path.ends_with(".rs") {
+                        files.push(path.clone());
+                    }
+                } else {
+                    self.scan_dir(vfs, &path, files);
                 }
             }
         }

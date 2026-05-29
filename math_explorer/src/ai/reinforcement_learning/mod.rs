@@ -89,3 +89,5 @@ pub use strategies::{EpsilonGreedy, ExplorationStrategy};
 pub use types::{Action, MarkovDecisionProcess, Policy, QFunction, State};
 
 // [cite:algorithmic_information_rust]
+pub mod grid_world;
+pub use grid_world::*;

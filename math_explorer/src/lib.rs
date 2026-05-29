@@ -43,6 +43,8 @@
 #[cfg(feature = "ai")]
 pub mod ai;
 
+pub mod math_types;
+
 #[cfg(feature = "applied")]
 pub mod applied;
 

@@ -25,12 +25,14 @@ generative-turbulence-experimental = { path = "../experimental/generative-turbul
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"
+oxidize_core = { version = "0.1.0", path = "../crates/oxidize_core" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.7"
 getrandom = { version = "0.2.17", features = ["js"] }
 wasm-bindgen = "0.2.100"
-wasm_thread = "0.3.3"
+js-sys = "0.3.60"
+web-sys = { version = "0.3.60", features = ["Window", "Document", "HtmlCanvasElement", "Element", "Node"] }
 
 [target.wasm32-unknown-unknown.dependencies]
 wasm-bindgen-futures = "0.4.72"

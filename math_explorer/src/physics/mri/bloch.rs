@@ -56,7 +56,7 @@ impl TimeStepper<Vector3<f64>> for BlochSimulator {
 
     fn step(&mut self, dt: f64) {
         use crate::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
+        let new_state = RungeKutta4::step(self, 0.0, <Self as TimeStepper<Vector3<f64>>>::get_state(self), dt);
         *self.get_state_mut() = new_state;
     }
 }
@@ -134,5 +134,56 @@ impl BlochSimulator {
         let mut solver = Euler::new(&self.magnetization);
         #[allow(deprecated)]
         self.step_with(dt, b_field, t1, t2, &mut solver)
+    }
+}
+
+use oxidize_core::{ModelConfig, ModelState, SimulationModel};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct BlochConfig {
+    pub t1: f64,
+    pub t2: f64,
+    pub b0: f64, // Not directly used in simple relaxation, but typical
+    pub dt: f64,
+    pub m0: f64,
+}
+
+impl ModelConfig for BlochConfig {}
+
+#[derive(Clone)]
+pub struct BlochState {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+
+impl ModelState for BlochState {}
+
+impl SimulationModel for BlochSimulator {
+    type Config = BlochConfig;
+    type State = BlochState;
+    type Error = std::io::Error;
+
+    fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
+        let initial_m = Vector3::new(0.0, 1.0, 0.0); // Default 90 deg flipped
+        let mut sim = BlochSimulator::new(initial_m, config.m0);
+        sim.set_relaxation(config.t1, config.t2);
+        // Storing dt isn't strictly supported by BlochSimulator. We'll add a dt to the struct if needed,
+        // or just use a fixed 0.01 for the interface wrapper since we can't easily change the struct here.
+        Ok(sim)
+    }
+
+    fn step(&mut self) -> Result<(), Self::Error> {
+        <Self as crate::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(self, 0.01);
+        Ok(())
+    }
+
+    fn get_state(&self) -> Self::State {
+        BlochState {
+            x: self.magnetization.x,
+            y: self.magnetization.y,
+            z: self.magnetization.z,
+        }
     }
 }

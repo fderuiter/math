@@ -4,16 +4,12 @@ use std::sync::Arc;
 #[cfg(not(target_arch = "wasm32"))]
 use std::thread;
 
-#[cfg(target_arch = "wasm32")]
-use wasm_thread as thread;
-
 pub enum SimCommand {
     Start,
     Pause,
     Reset,
     SetSpeed(usize),
     UpdateParam(String, f64),
-    // For grid interactions like brushing obstacles
     ApplyBrush {
         cx: i32,
         cy: i32,
@@ -26,8 +22,8 @@ pub enum SimCommand {
 pub struct StateSnapshot {
     pub width: usize,
     pub height: usize,
-    pub pixels: Arc<Vec<eframe::egui::Color32>>, // Immutable snapshot of colors
-    pub custom_data: Vec<f64>,                   // For 1D plots
+    pub pixels: Arc<Vec<eframe::egui::Color32>>,
+    pub custom_data: Vec<f64>,
 }
 
 pub enum SimStateUpdate {
@@ -50,6 +46,7 @@ pub struct SimulationController {
 }
 
 impl SimulationController {
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn new<T: SimulationRunner>(mut runner: T) -> Self {
         let (cmd_tx, cmd_rx) = mpsc::channel::<SimCommand>();
         let (state_tx, state_rx) = mpsc::channel::<SimStateUpdate>();
@@ -68,7 +65,7 @@ impl SimulationController {
                     if let Ok(c) = cmd_rx.recv() {
                         cmd_opt = Some(c);
                     } else {
-                        break; // Channel closed
+                        break;
                     }
                 }
 
@@ -103,10 +100,63 @@ impl SimulationController {
                     for _ in 0..steps_per_frame {
                         runner.step();
                     }
-                    // Emit state update
                     let snapshot = runner.get_snapshot();
                     if state_tx.send(SimStateUpdate::Snapshot(snapshot)).is_err() {
-                        break; // Channel closed
+                        break;
+                    }
+                }
+            }
+        });
+
+        Self {
+            cmd_tx,
+            state_rx,
+            latest_snapshot: None,
+            running: false,
+        }
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn new<T: SimulationRunner>(mut runner: T) -> Self {
+        let (cmd_tx, cmd_rx) = mpsc::channel::<SimCommand>();
+        let (state_tx, state_rx) = mpsc::channel::<SimStateUpdate>();
+
+        wasm_bindgen_futures::spawn_local(async move {
+            let mut running = false;
+            let mut steps_per_frame = runner.get_steps_per_frame();
+
+            loop {
+                // Yield to event loop
+                let promise = js_sys::Promise::resolve(&wasm_bindgen::JsValue::NULL);
+                let _ = wasm_bindgen_futures::JsFuture::from(promise).await;
+
+                while let Ok(cmd) = cmd_rx.try_recv() {
+                    match cmd {
+                        SimCommand::Start => {
+                            running = true;
+                            let _ = state_tx.send(SimStateUpdate::Status { running: true });
+                        }
+                        SimCommand::Pause => {
+                            running = false;
+                            let _ = state_tx.send(SimStateUpdate::Status { running: false });
+                        }
+                        SimCommand::SetSpeed(speed) => {
+                            steps_per_frame = speed;
+                            runner.process_command(SimCommand::SetSpeed(speed));
+                        }
+                        _ => {
+                            runner.process_command(cmd);
+                        }
+                    }
+                }
+
+                if running {
+                    for _ in 0..steps_per_frame {
+                        runner.step();
+                    }
+                    let snapshot = runner.get_snapshot();
+                    if state_tx.send(SimStateUpdate::Snapshot(snapshot)).is_err() {
+                        break;
                     }
                 }
             }
