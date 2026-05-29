@@ -64,3 +64,87 @@ pub enum IsosurfaceError {
     DataMismatch { expected: usize, actual: usize },
 }
 
+
+impl Diagnostic for PharmacokineticsError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "PharmacokineticsError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for BatteryError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "BatteryError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for GameTheoryError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "GameTheoryError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for EngineeringError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "EngineeringError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for LoraError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "LoraError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for IsosurfaceError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "IsosurfaceError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl std::fmt::Display for GameTheoryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for GameTheoryError {}
+
+impl std::fmt::Display for EngineeringError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for EngineeringError {}
+
+impl std::fmt::Display for IsosurfaceError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for IsosurfaceError {}

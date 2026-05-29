@@ -31,3 +31,5 @@ rug_mock = { path = "../rug_mock" }
 wigner_mock = { path = "../wigner_mock" }
 getrandom = { version = "0.2.17", features = ["js"] }
 
+[dev-dependencies]
+approx = "0.5.1"

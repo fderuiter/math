@@ -1,6 +1,6 @@
 #![cfg(all(feature = "physics"))]
 
-use math_explorer::error::RadarError;
+use domain_physics::error::RadarError;
 use math_explorer::physics::medical::radar_gating::super_resolution::MusicEstimator;
 use num_complex::Complex;
 
