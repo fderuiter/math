@@ -2,7 +2,7 @@ use super::NeuroscienceTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Line, Plot, PlotPoints};
-use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+use biology::neuroscience::HodgkinHuxleyNeuron;
 use std::collections::VecDeque;
 
 pub struct SpikeAnalysisTool {

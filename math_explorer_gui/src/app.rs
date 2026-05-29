@@ -44,7 +44,7 @@ use crate::tabs::ExplorerTab;
 #[cfg(feature = "pure_math")]
 use crate::tabs::GeometryTopologyTab;
 use eframe::egui;
-use math_explorer::diagnostics::{global_bus, DiagnosticEvent, Severity};
+use math_core::diagnostics::{global_bus, DiagnosticEvent, Severity};
 
 pub struct MathExplorerApp {
     tabs: Vec<Box<dyn ExplorerTab>>,

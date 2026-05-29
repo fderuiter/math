@@ -5,5 +5,7 @@ edition = "2024"
 
 [dependencies]
 tch = "0.15.0"
-math_explorer = { path = "../../math_explorer" }
+math_core = { path = "../../crates/math_core" }
+ai = { path = "../../crates/ai" }
+pure_math = { path = "../../crates/pure_math" }
 approx = "0.5.1"

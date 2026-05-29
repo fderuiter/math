@@ -3,10 +3,10 @@ use crate::tabs::ai::AiTool;
 use eframe::egui;
 use egui::Color32;
 use egui_plot::{Line, Plot, Points};
-use math_explorer::ai::deep_learning_theory::cycle::TrainingLoop;
-use math_explorer::ai::deep_learning_theory::linear_algebra::Vector;
-use math_explorer::ai::deep_learning_theory::model::TwoLayerMLP;
-use math_explorer::ai::optimization::Adam;
+use ai::deep_learning_theory::cycle::TrainingLoop;
+use ai::deep_learning_theory::linear_algebra::Vector;
+use ai::deep_learning_theory::model::TwoLayerMLP;
+use ai::optimization::Adam;
 use std::f64::consts::PI;
 
 pub struct TrainingMonitorTool {
@@ -34,10 +34,10 @@ impl Default for TrainingMonitorTool {
         let learning_rate = 0.01;
 
         // Fallback to SGD if Adam fails (though it shouldn't for f64 constants).
-        let optimizer: Box<dyn math_explorer::ai::optimization::Optimizer<f64>> =
+        let optimizer: Box<dyn ai::optimization::Optimizer<f64>> =
             match Adam::new(learning_rate) {
                 Ok(adam) => Box::new(adam),
-                Err(_) => Box::new(math_explorer::ai::optimization::SGD::new(learning_rate)),
+                Err(_) => Box::new(ai::optimization::SGD::new(learning_rate)),
             };
 
         let training_loop = TrainingLoop::new(2, hidden_dim, 2, optimizer);

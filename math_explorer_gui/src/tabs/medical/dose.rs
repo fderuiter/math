@@ -2,7 +2,7 @@ use super::MedicalTool;
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};
-use math_explorer::physics::medical::dose::kernel::{DoseKernel, ExponentialKernel};
+use physics::medical::dose::kernel::{DoseKernel, ExponentialKernel};
 
 pub struct DoseCalculationTool {
     amplitude: f64,

@@ -1,7 +1,7 @@
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
-use math_explorer::ai::transformer::tokenization::{
+use ai::transformer::tokenization::{
     CharTokenizer, PseudoEmbedding, Tokenizer, WordTokenizer,
 };
 

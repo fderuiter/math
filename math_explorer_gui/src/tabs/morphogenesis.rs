@@ -3,8 +3,8 @@ use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, State
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui::ColorImage;
-use math_explorer::biology::diffusion::FiniteDifference2D;
-use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
+use biology::diffusion::FiniteDifference2D;
+use biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use std::sync::Arc;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -110,10 +110,10 @@ impl Default for MorphogenesisTab {
         let d_u = 1.0;
         let d_v = 100.0; // Needs significant difference for Turing patterns
         let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 }; // Classic spot/stripe params
-        let diffusion = FiniteDifference2D::new(math_explorer::math_kernel::types::Dimension(width), math_explorer::math_kernel::types::Dimension(height), math_explorer::math_kernel::types::StepSize(1.0), math_explorer::math_kernel::types::StepSize(1.0));
+        let diffusion = FiniteDifference2D::new(math_core::math_kernel::types::Dimension(width), math_core::math_kernel::types::Dimension(height), math_core::math_kernel::types::StepSize(1.0), math_core::math_kernel::types::StepSize(1.0));
 
         let mut system =
-            TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::math_kernel::types::DiffusionCoeff(d_u), math_explorer::math_kernel::types::DiffusionCoeff(d_v), kinetics, diffusion);
+            TuringSystem::new_with_kinetics(math_core::math_kernel::types::Dimension(width * height), math_core::math_kernel::types::DiffusionCoeff(d_u), math_core::math_kernel::types::DiffusionCoeff(d_v), kinetics, diffusion);
 
         // Initialize with noise
         initialize_system(&mut system, width, height);

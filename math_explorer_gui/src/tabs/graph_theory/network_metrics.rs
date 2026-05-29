@@ -2,8 +2,8 @@ use super::GraphTheoryTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use eframe::egui::Pos2;
-use math_explorer::pure_math::graph_theory::graph::Graph;
-use math_explorer::pure_math::graph_theory::parameters::network_metrics::{
+use pure_math::graph_theory::graph::Graph;
+use pure_math::graph_theory::parameters::network_metrics::{
     average_clustering_coefficient, closeness_centrality, clustering_coefficients,
     degree_centrality, diameter,
 };

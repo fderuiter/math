@@ -2,7 +2,7 @@ use super::FinancialMathTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::pure_math::statistics::kelly::{
+use pure_math::statistics::kelly::{
     kelly_fraction, variants, BankrollFraction, EdgeProbability, Odds,
 };
 use rand::Rng;

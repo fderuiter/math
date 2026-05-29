@@ -1,6 +1,6 @@
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
-use math_explorer::physics::quantum::clebsch_gordan;
+use physics::quantum::clebsch_gordan;
 
 use super::QuantumTool;
 

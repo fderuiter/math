@@ -1,7 +1,7 @@
 use super::EpidemiologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::epidemiology::compartmental::SIRModel;
+use epidemiology::compartmental::SIRModel;
 
 pub struct SirTool {
     n: f64,

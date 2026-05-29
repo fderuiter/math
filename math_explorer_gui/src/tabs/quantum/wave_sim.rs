@@ -1,7 +1,7 @@
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
-use math_explorer::physics::quantum::{
+use physics::quantum::{
     construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
 };
 use nalgebra::DVector;

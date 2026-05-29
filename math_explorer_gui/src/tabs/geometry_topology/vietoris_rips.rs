@@ -1,7 +1,7 @@
 use crate::tabs::geometry_topology::GeometryTopologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points, Polygon};
-use math_explorer::pure_math::statistics::tda::{
+use pure_math::statistics::tda::{
     core::{Point2D, PointCloud},
     vietoris_rips_complex, SimplicialComplex,
 };

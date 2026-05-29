@@ -1,7 +1,7 @@
 use super::BatteryDegradationTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
-use math_explorer::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
+use applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
 
 pub struct LifetimeEstimatorTool {
     target_capacity: f64,

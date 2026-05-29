@@ -1,7 +1,7 @@
 use super::ChaosTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState, LorenzSystem};
+use physics::chaos::lorenz::{LorenzBuilder, LorenzState, LorenzSystem};
 use nalgebra::Vector3;
 use std::collections::VecDeque;
 

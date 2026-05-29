@@ -3,7 +3,7 @@ use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::biology::neuroscience::{HodgkinHuxleyNeuron, HodgkinHuxleyParameters};
+use biology::neuroscience::{HodgkinHuxleyNeuron, HodgkinHuxleyParameters};
 use std::collections::VecDeque;
 use std::sync::Arc;
 

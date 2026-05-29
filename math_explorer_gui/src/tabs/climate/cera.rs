@@ -1,8 +1,8 @@
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::climate::ClimateTool;
 use eframe::egui;
-use math_explorer::climate::cera::Cera;
-use math_explorer::climate::config::CeraConfig;
+use climate::cera::Cera;
+use climate::config::CeraConfig;
 use nalgebra::DMatrix;
 
 pub struct CeraTool {

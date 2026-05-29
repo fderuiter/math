@@ -9,7 +9,7 @@ pub struct TemperatureAnomaliesTool {
 impl Default for TemperatureAnomaliesTool {
     fn default() -> Self {
         Self {
-            time_series: math_explorer::climate::dataset::get_temperature_anomalies(),
+            time_series: climate::dataset::get_temperature_anomalies(),
         }
     }
 }

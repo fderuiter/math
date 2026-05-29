@@ -1,0 +1,16 @@
+[package]
+name = "applied"
+version = "0.4.0"
+edition = "2024"
+
+[dependencies]
+thiserror = "2.0.18"
+rand = "0.8.6"
+rand_distr = "0.4.3"
+statrs = "0.17.0"
+rustfft = "6.2.0"
+approx = "0.5.1"
+math_core = { path = "../math_core" }
+pure_math = { path = "../pure_math" }
+nalgebra = "0.34.0"
+verified_engine = { version = "0.1.0", path = "../verified_engine" }

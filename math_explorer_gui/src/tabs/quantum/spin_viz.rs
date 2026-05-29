@@ -1,7 +1,7 @@
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
-use math_explorer::physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};
+use physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};
 use nalgebra::DVector;
 use num_complex::Complex;
 

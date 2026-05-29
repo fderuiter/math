@@ -1,6 +1,6 @@
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::physics::fluid_dynamics::regimes::{
+use physics::fluid_dynamics::regimes::{
     FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier,
 };
 

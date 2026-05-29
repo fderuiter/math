@@ -2,7 +2,7 @@ use super::NumberTheoryTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
-use math_explorer::pure_math::number_theory::partitions;
+use pure_math::number_theory::partitions;
 
 #[derive(PartialEq, Clone, Copy)]
 enum PartitionFunctionType {

@@ -1,7 +1,7 @@
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::clinical_trials::ClinicalTrialsTool;
 use eframe::egui;
-use math_explorer::applied::clinical_trials::design::{
+use applied::clinical_trials::design::{
     AllocationStrategy, BlockRandomizer, Group, SimpleRandomizer,
 };
 use rand::thread_rng;

@@ -2,7 +2,7 @@ use crate::accessibility::AccessibleHoverText;
 use crate::tabs::neuroscience::NeuroscienceTool;
 use eframe::egui;
 use egui::Color32;
-use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
+use biology::neuroscience::HodgkinHuxleyNeuron;
 use std::f32::consts::TAU;
 
 pub struct NeuralNetworkVizTool {

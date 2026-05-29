@@ -1,7 +1,7 @@
 use super::SolidStateTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::physics::solid_state::band_theory::{free_electron_1d, tight_binding_1d};
+use physics::solid_state::band_theory::{free_electron_1d, tight_binding_1d};
 use std::f64::consts::PI;
 
 pub struct BandStructureTool {

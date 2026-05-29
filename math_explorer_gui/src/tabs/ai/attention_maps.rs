@@ -30,7 +30,7 @@ impl Default for AttentionMapsTool {
 impl AttentionMapsTool {
     fn recalculate(&mut self) {
         let (output, weights) =
-            math_explorer::ai::transformer::attention::scaled_dot_product_attention(
+            ai::transformer::attention::scaled_dot_product_attention(
                 &self.q_matrix,
                 &self.k_matrix,
                 &self.v_matrix,

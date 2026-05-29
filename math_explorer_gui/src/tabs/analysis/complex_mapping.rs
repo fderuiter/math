@@ -1,7 +1,7 @@
 use super::AnalysisTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::pure_math::analysis::complex::mapping::conformal_scale_factor;
+use pure_math::analysis::complex::mapping::conformal_scale_factor;
 use num_complex::Complex64;
 
 #[derive(PartialEq, Clone, Copy)]

@@ -3,9 +3,15 @@ members = [
     "crates/oxidize_core",
     "crates/verified_engine",
     "crates/verified_engine_macros",
-    "math_explorer",
+    "crates/math_core",
+    "crates/ai",
+    "crates/applied",
+    "crates/biology",
+    "crates/climate",
+    "crates/epidemiology",
+    "crates/physics",
+    "crates/pure_math",
     "math_explorer_gui",
-    "experimental/generative-turbulence-experimental",
     "crates/rug_mock",
     "crates/wigner_mock"
 ]

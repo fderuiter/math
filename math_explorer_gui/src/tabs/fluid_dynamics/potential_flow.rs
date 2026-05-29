@@ -1,7 +1,7 @@
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Arrows, Plot};
-use math_explorer::physics::fluid_dynamics::potential_flow::{
+use physics::fluid_dynamics::potential_flow::{
     Doublet, FlowElement, PotentialFlowField, Source, UniformFlow, Vortex,
 };
 use std::f64::consts::PI;

@@ -1,7 +1,7 @@
 use crate::tabs::medical::MedicalTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::physics::medical::dose::algorithm::calculate_terma;
+use physics::medical::dose::algorithm::calculate_terma;
 
 pub struct BeamProfilingTool {
     incident_fluence: f64,

@@ -2,7 +2,7 @@ use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
-use math_explorer::applied::favoritism::{calculate_favoritism_score, FavoritismInputs};
+use applied::favoritism::{calculate_favoritism_score, FavoritismInputs};
 
 #[derive(Clone)]
 struct Child {

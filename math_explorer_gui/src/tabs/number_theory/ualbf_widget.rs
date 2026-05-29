@@ -1,6 +1,6 @@
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
-use math_explorer::pure_math::number_theory::ualbf::{ualbf_search, UalbfSearchResult};
+use pure_math::number_theory::ualbf::{ualbf_search, UalbfSearchResult};
 
 pub struct UalbfWidget {
     limit_p: u64,

@@ -1,7 +1,7 @@
 use super::SolidStateTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
-use math_explorer::physics::solid_state::lattice::{
+use physics::solid_state::lattice::{
     BodyCenteredCubic, CrystalSystem, FaceCenteredCubic, SimpleCubic, UnitCell,
 };
 use nalgebra::Vector3;

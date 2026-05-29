@@ -1,10 +1,10 @@
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
-use math_explorer::ai::deep_learning_theory::calculus::{
+use ai::deep_learning_theory::calculus::{
     gelu, gelu_prime, relu, relu_prime, sigmoid, sigmoid_prime, tanh, tanh_prime,
 };
-use math_explorer::ai::deep_learning_theory::linear_algebra::Vector;
+use ai::deep_learning_theory::linear_algebra::Vector;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ActivationFunction {

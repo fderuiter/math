@@ -2,7 +2,7 @@ use super::ChaosTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Plot, PlotPoints, Points};
-use math_explorer::physics::chaos::logistic;
+use physics::chaos::logistic;
 
 pub struct BifurcationDiagram {
     r_min: f64,

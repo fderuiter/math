@@ -1,7 +1,7 @@
 use super::ClinicalTrialsTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
-use math_explorer::applied::clinical_trials::sample_size::{
+use applied::clinical_trials::sample_size::{
     calculate_sample_size_means, calculate_sample_size_proportions,
 };
 

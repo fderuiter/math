@@ -1,7 +1,7 @@
 use super::BatteryDegradationTool;
 use eframe::egui;
 use egui_plot::{HLine, Line, Plot, PlotPoints};
-use math_explorer::applied::battery_degradation::{Cycles, DepthOfDischarge, PowerLawModel};
+use applied::battery_degradation::{Cycles, DepthOfDischarge, PowerLawModel};
 
 pub struct CapacityFadeTool {
     dod: f64,

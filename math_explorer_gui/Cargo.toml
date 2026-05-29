@@ -5,23 +5,28 @@ edition = "2021"
 
 [features]
 default = ["domain_logic", "ai", "applied", "biology", "climate", "epidemiology", "physics", "pure_math"]
-domain_logic = ["dep:math_explorer"]
-pure_math = ["math_explorer/pure_math"]
-applied = ["math_explorer/applied", "pure_math"]
-ai = ["math_explorer/ai", "pure_math"]
-biology = ["math_explorer/biology", "applied", "pure_math"]
-climate = ["math_explorer/climate", "ai"]
-epidemiology = ["math_explorer/epidemiology", "pure_math"]
-physics = ["math_explorer/physics", "applied", "pure_math"]
-strict-opt-in-experimental = ["generative-turbulence-experimental"]
+domain_logic = ["dep:math_core", "dep:pure_math", "dep:applied", "dep:ai", "dep:biology", "dep:climate", "dep:epidemiology", "dep:physics"]
+pure_math = ["dep:pure_math"]
+applied = ["dep:applied", "pure_math"]
+ai = ["dep:ai", "pure_math"]
+biology = ["dep:biology", "applied", "pure_math"]
+climate = ["dep:climate", "ai"]
+epidemiology = ["dep:epidemiology", "pure_math"]
+physics = ["dep:physics", "applied", "pure_math"]
 
 [dependencies]
 eframe = "0.33.3"
 egui_plot = "0.34.1"
 
 nalgebra = "0.34.0"
-math_explorer = { path = "../math_explorer", optional = true }
-generative-turbulence-experimental = { path = "../experimental/generative-turbulence-experimental", optional = true }
+math_core = { path = "../crates/math_core", optional = true }
+pure_math = { path = "../crates/pure_math", optional = true }
+applied = { path = "../crates/applied", optional = true }
+ai = { path = "../crates/ai", optional = true }
+biology = { path = "../crates/biology", optional = true }
+climate = { path = "../crates/climate", optional = true }
+epidemiology = { path = "../crates/epidemiology", optional = true }
+physics = { path = "../crates/physics", optional = true }
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"

@@ -27,7 +27,7 @@ impl ClimateTool for Co2ProjectionsTool {
         );
 
         let (historical, projected) =
-            math_explorer::climate::dataset::get_co2_projections(self.reduction_scenario);
+            climate::dataset::get_co2_projections(self.reduction_scenario);
 
         let plot = Plot::new("co2_projections_plot")
             .view_aspect(2.0)

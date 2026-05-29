@@ -2,7 +2,7 @@ use super::GameTheoryTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Legend, Line, Plot, PlotPoints, VLine};
-use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
+use applied::game_theory::evolutionary::ReplicatorDynamics;
 use nalgebra::{DMatrix, DVector};
 
 pub struct ReplicatorDynamicsTool {

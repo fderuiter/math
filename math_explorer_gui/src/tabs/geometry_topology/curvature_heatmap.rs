@@ -1,7 +1,7 @@
 use super::GeometryTopologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::pure_math::differential_geometry::surface::{
+use pure_math::differential_geometry::surface::{
     KleinBottle, ParametricSurface, Sphere, SurfaceAnalysis, Torus,
 };
 use nalgebra::Point3;

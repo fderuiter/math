@@ -1,0 +1,17 @@
+pub mod sensing;
+
+// [cite:graph_parameters_rust]
+
+use math_core::theory_verification;
+
+theory_verification!(
+    module = "optics",
+    paper = "quantum_mechanics.tex",
+    epsilon = 1e-6,
+    constants = {
+        DUMMY = 1.0;
+    },
+    test = {
+        assert_relative_eq!(DUMMY, 1.0, epsilon = 1e-6);
+    }
+);

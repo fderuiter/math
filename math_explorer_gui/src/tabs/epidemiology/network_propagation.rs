@@ -2,7 +2,7 @@ use super::EpidemiologyTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui::Color32;
-use math_explorer::epidemiology::networks::{NetworkEpidemicModel, NodeState};
+use epidemiology::networks::{NetworkEpidemicModel, NodeState};
 
 pub struct NetworkPropagationTool {
     model: NetworkEpidemicModel,

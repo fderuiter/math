@@ -2,8 +2,8 @@ use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
-use math_explorer::physics::mri::bloch::BlochSimulator;
-use math_explorer::pure_math::analysis::ode::{RungeKutta4, TimeStepper};
+use physics::mri::bloch::BlochSimulator;
+use math_core::ode::{RungeKutta4, TimeStepper};
 use nalgebra::Vector3;
 use std::collections::VecDeque;
 

@@ -1,7 +1,7 @@
 use super::AnalysisTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Polygon};
-use math_explorer::pure_math::analysis::integration::{Integrator, Trapezoidal};
+use math_core::integration::{Integrator, Trapezoidal};
 
 #[derive(PartialEq, Clone, Copy)]
 enum FunctionPreset {

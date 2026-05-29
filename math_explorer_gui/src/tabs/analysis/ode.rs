@@ -1,7 +1,7 @@
 use super::AnalysisTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::pure_math::analysis::ode::{
+use math_core::ode::{
     OdeModel, OdeSystem, RungeKutta4, TimeStepper, VecState,
 };
 

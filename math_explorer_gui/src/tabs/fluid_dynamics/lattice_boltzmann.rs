@@ -3,7 +3,7 @@ use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, State
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};
-use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
+use physics::fluid_dynamics::lattice_boltzmann::{
     BgkCollision, LatticeBoltzmannD2Q9,
 };
 use std::sync::Arc;

@@ -1,8 +1,8 @@
 use super::NumberTheoryTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
-use math_explorer::pure_math::number_theory::ambs::prime_factors;
-use math_explorer::pure_math::number_theory::primes::is_prime;
+use pure_math::number_theory::ambs::prime_factors;
+use pure_math::number_theory::primes::is_prime;
 
 type FactorizationResult = Result<(u64, bool, Vec<(u64, u32)>), String>;
 

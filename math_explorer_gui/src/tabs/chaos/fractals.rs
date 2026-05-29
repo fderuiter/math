@@ -1,6 +1,6 @@
 use crate::tabs::chaos::ChaosTool;
 use eframe::egui;
-use math_explorer::physics::chaos::fractals::{escape_time_julia, escape_time_mandelbrot};
+use physics::chaos::fractals::{escape_time_julia, escape_time_mandelbrot};
 use num_complex::Complex;
 
 #[derive(PartialEq, Clone, Copy, Debug)]

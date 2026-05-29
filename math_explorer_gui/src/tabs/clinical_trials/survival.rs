@@ -1,10 +1,10 @@
 use super::ClinicalTrialsTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::applied::clinical_trials::survival_analysis::{
+use applied::clinical_trials::survival_analysis::{
     kaplan_meier, Observation, TimePoint,
 };
-use math_explorer::applied::clinical_trials::types::SurvivalTime;
+use applied::clinical_trials::types::SurvivalTime;
 
 pub struct SurvivalAnalysisTool {
     input_text: String,

@@ -1,8 +1,8 @@
 use super::SolidStateTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
-use math_explorer::physics::stat_mech::ising::SpinLattice;
-use math_explorer::physics::stat_mech::KB;
+use physics::stat_mech::ising::SpinLattice;
+use physics::stat_mech::KB;
 
 pub struct IsingModelTool {
     lattice: SpinLattice,

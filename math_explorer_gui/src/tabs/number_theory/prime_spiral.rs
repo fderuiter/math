@@ -1,5 +1,5 @@
 use eframe::egui::{self, Color32, ColorImage, TextureHandle, TextureOptions};
-use math_explorer::pure_math::number_theory::primes::primes_up_to;
+use pure_math::number_theory::primes::primes_up_to;
 
 pub struct PrimeSpiralWidget {
     grid_size: usize,

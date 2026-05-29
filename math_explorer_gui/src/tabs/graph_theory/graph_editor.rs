@@ -2,7 +2,7 @@ use super::GraphTheoryTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use eframe::egui::Pos2;
-use math_explorer::pure_math::graph_theory::graph::Graph;
+use pure_math::graph_theory::graph::Graph;
 use petgraph::graph::NodeIndex;
 use std::collections::HashMap;
 

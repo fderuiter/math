@@ -1,0 +1,21 @@
+[package]
+name = "physics"
+version = "0.4.0"
+edition = "2024"
+
+[dependencies]
+thiserror = "2.0.18"
+rand = "0.8.6"
+rand_distr = "0.4.3"
+statrs = "0.17.0"
+rustfft = "6.2.0"
+approx = "0.5.1"
+math_core = { path = "../math_core" }
+applied = { path = "../applied" }
+pure_math = { path = "../pure_math" }
+nalgebra = "0.34.0"
+verified_engine = { version = "0.1.0", path = "../verified_engine" }
+num-complex = "0.4.6"
+wigner-symbols = "0.5.0"
+oxidize_core = { path = "../oxidize_core" }
+serde = { version = "1.0", features = ["derive"] }
