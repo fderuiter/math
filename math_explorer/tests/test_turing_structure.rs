@@ -18,11 +18,11 @@ mod tests {
         let rk4 = RungeKutta4::new(&dummy_state);
         let adapter = StandardSolverAdapter::new(rk4);
 
-        let mut system = TuringSystem::new_with_solver(
-            size,
-            [d_u, d_v],
+        let mut system = TuringSystem::new_with_solver(math_explorer::math_kernel::types::Dimension(
+            size),
+            [math_explorer::math_kernel::types::DiffusionCoeff(d_u), math_explorer::math_kernel::types::DiffusionCoeff(d_v)],
             SchnakenbergKinetics::default(),
-            math_explorer::biology::diffusion::FiniteDifference1D::new(dx),
+            math_explorer::biology::diffusion::FiniteDifference1D::new(math_explorer::math_kernel::types::StepSize(dx)),
             adapter,
         );
 

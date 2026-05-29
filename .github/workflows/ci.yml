@@ -63,6 +63,25 @@ jobs:
         if: matrix.target == 'x86_64-unknown-linux-gnu'
         run: cargo fmt --all -- --check
 
+      - name: Check File Lengths (500 lines limit)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          echo "Checking for files exceeding 500 lines in core math directories..."
+          # Define the directories to check
+          DIRS_TO_CHECK="math_explorer/src/physics math_explorer/src/biology math_explorer/src/pure_math"
+          
+          # Find files exceeding 500 lines
+          EXCEEDING_FILES=$(find $DIRS_TO_CHECK -name "*.rs" -type f -exec wc -l {} + | awk '$1 > 500 && $2 != "total" {print $0}')
+          
+          if [ -n "$EXCEEDING_FILES" ]; then
+            echo "Error: The following files exceed the 500-line limit:"
+            echo "$EXCEEDING_FILES"
+            echo "Please split these files using the Strategy pattern."
+            exit 1
+          else
+            echo "All checked files are within the 500-line limit."
+          fi
+
       - name: Build (Native)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
         run: cargo build --workspace --verbose --all-features

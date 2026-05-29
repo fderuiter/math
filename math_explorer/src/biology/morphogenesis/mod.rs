@@ -101,14 +101,16 @@ pub struct TuringSystem<
     pub solver: S,
 }
 
+use crate::math_kernel::types::{Dimension, StepSize, DiffusionCoeff};
+
 // Convenience implementation for the standard 2-species case
 impl TuringSystem<2, SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver> {
     /// Creates a new Turing System with default Schnakenberg kinetics, 1D Finite Difference, and Fused Euler Solver.
-    pub fn new(size: usize, d_u: f64, d_v: f64, dx: f64) -> Self {
+    pub fn new(size: Dimension, d_u: DiffusionCoeff, d_v: DiffusionCoeff, dx: StepSize) -> Self {
         Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            diffusion_coeffs: [d_u, d_v],
+            state: TuringState::new(*size),
+            next_state: TuringState::new(*size),
+            diffusion_coeffs: [*d_u, *d_v],
             kinetics: SchnakenbergKinetics::default(),
             diffusion: FiniteDifference1D::new(dx),
             solver: FusedEulerSolver::new(),
@@ -119,11 +121,11 @@ impl TuringSystem<2, SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver>
 // Convenience implementation for custom kinetics/diffusion in 2-species case
 impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>> TuringSystem<2, K, D, FusedEulerSolver> {
     /// Creates a new Turing System with custom kinetics and diffusion strategy, using the default Fused Euler solver.
-    pub fn new_with_kinetics(size: usize, d_u: f64, d_v: f64, kinetics: K, diffusion: D) -> Self {
+    pub fn new_with_kinetics(size: Dimension, d_u: DiffusionCoeff, d_v: DiffusionCoeff, kinetics: K, diffusion: D) -> Self {
         Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            diffusion_coeffs: [d_u, d_v],
+            state: TuringState::new(*size),
+            next_state: TuringState::new(*size),
+            diffusion_coeffs: [*d_u, *d_v],
             kinetics,
             diffusion,
             solver: FusedEulerSolver::new(),
@@ -137,16 +139,20 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
 {
     /// Creates a new Turing System with custom kinetics, diffusion strategy, and solver.
     pub fn new_with_solver(
-        size: usize,
-        diffusion_coeffs: [f64; N],
+        size: Dimension,
+        diffusion_coeffs: [DiffusionCoeff; N],
         kinetics: K,
         diffusion: D,
         solver: S,
     ) -> Self {
+        let mut coeffs = [0.0; N];
+        for i in 0..N {
+            coeffs[i] = *diffusion_coeffs[i];
+        }
         Self {
-            state: TuringState::new(size),
-            next_state: TuringState::new(size),
-            diffusion_coeffs,
+            state: TuringState::new(*size),
+            next_state: TuringState::new(*size),
+            diffusion_coeffs: coeffs,
             kinetics,
             diffusion,
             solver,
@@ -249,7 +255,7 @@ mod tests {
     #[should_panic(expected = "State vector 1 length mismatch")]
     fn test_derivative_in_place_safety_check() {
         let n = 10;
-        let system = TuringSystem::new(n, 1.0, 1.0, 1.0);
+        let system = TuringSystem::new(crate::math_kernel::types::Dimension(n), crate::math_kernel::types::DiffusionCoeff(1.0), crate::math_kernel::types::DiffusionCoeff(1.0), crate::math_kernel::types::StepSize(1.0));
         let mut state = TuringState::new(n);
 
         // Corrupt the state (simulate internal bug or misuse)
@@ -268,7 +274,7 @@ mod tests {
         let d_u = 1.0;
         let d_v = 0.5;
         let dx = 1.0;
-        let mut system = TuringSystem::new(n, d_u, d_v, dx);
+        let mut system = TuringSystem::new(crate::math_kernel::types::Dimension(n), crate::math_kernel::types::DiffusionCoeff(d_u), crate::math_kernel::types::DiffusionCoeff(d_v), crate::math_kernel::types::StepSize(dx));
 
         // Initialize with some pattern
         for i in 0..n {

@@ -6,11 +6,11 @@ use std::time::Instant;
 fn bench_turing_2d_step() {
     let width = 300;
     let height = 300;
-    let diff = FiniteDifference2D::new(width, height, 1.0, 1.0);
+    let diff = FiniteDifference2D::new(math_explorer::math_kernel::types::Dimension(width), math_explorer::math_kernel::types::Dimension(height), math_explorer::math_kernel::types::StepSize(1.0), math_explorer::math_kernel::types::StepSize(1.0));
     let kinetics = SchnakenbergKinetics::default();
 
     // Create system with 90k elements
-    let mut system = TuringSystem::new_with_kinetics(width * height, 1.0, 40.0, kinetics, diff);
+    let mut system = TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::math_kernel::types::DiffusionCoeff(1.0), math_explorer::math_kernel::types::DiffusionCoeff(40.0), kinetics, diff);
 
     // Initialize with some values
     for i in 0..width * height {

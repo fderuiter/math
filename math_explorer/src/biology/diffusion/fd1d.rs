@@ -1,4 +1,5 @@
 use super::SpatialDiffusion;
+use crate::math_kernel::types::StepSize;
 
 /// A 1D Finite Difference implementation using a 3-point stencil.
 ///
@@ -17,12 +18,12 @@ use super::SpatialDiffusion;
 #[derive(Debug, Clone, Copy)]
 pub struct FiniteDifference1D {
     /// Grid spacing.
-    pub dx: f64,
+    pub dx: StepSize,
 }
 
 impl FiniteDifference1D {
     /// Creates a new 1D finite difference strategy.
-    pub fn new(dx: f64) -> Self {
+    pub fn new(dx: StepSize) -> Self {
         Self { dx }
     }
 }
@@ -35,7 +36,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
         coeffs: &[f64],
     ) {
         let n_species = state.num_species();
-        let dx_sq = self.dx * self.dx;
+        let dx_sq = *self.dx * *self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
         for (s, d) in coeffs.iter().enumerate().take(n_species) {
@@ -61,7 +62,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
             return;
         }
 
-        let dx_sq = self.dx * self.dx;
+        let dx_sq = *self.dx * *self.dx;
         let inv_dx_sq = 1.0 / dx_sq;
 
         // Precompute coefficients
