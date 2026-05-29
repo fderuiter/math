@@ -20,3 +20,21 @@ pub enum EpidemiologyError {
     },
 }
 
+
+impl Diagnostic for EpidemiologyError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "EpidemiologyError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl std::fmt::Display for EpidemiologyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for EpidemiologyError {}

@@ -123,3 +123,123 @@ pub enum StatMechError {
     NumericalInstability(String),
 }
 
+
+impl Diagnostic for ChaosError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "ChaosError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for StandardModelError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "StandardModelError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for SolidStateError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "SolidStateError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for DoseFluenceError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "DoseFluenceError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for RadarError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "RadarError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for HighEnergyError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "HighEnergyError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for FluidError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "FluidError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl Diagnostic for StatMechError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "StatMechError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
+
+impl std::fmt::Display for ChaosError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for ChaosError {}
+
+impl std::fmt::Display for StandardModelError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for StandardModelError {}
+
+impl std::fmt::Display for HighEnergyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for HighEnergyError {}
+
+impl std::fmt::Display for FluidError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for FluidError {}
+
+impl std::fmt::Display for StatMechError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::error::Error for StatMechError {}

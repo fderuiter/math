@@ -23,4 +23,3 @@ pub use math_commons::math_kernel;
 pub use math_commons::diagnostics;
 
 // math_explorer/src/error.rs could just export the individual errors, but it's simpler to keep it as it was if possible, or just let users import from specific crates.
-pub mod error;

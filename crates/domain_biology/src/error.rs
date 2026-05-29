@@ -11,3 +11,13 @@ pub enum HodgkinHuxleyError {
     InvalidConductance(f64),
 }
 
+
+impl Diagnostic for HodgkinHuxleyError {
+    fn severity(&self) -> Severity { Severity::Error }
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "HodgkinHuxleyError".to_string());
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
+}
