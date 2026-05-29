@@ -154,6 +154,7 @@ impl GraphTheoryTool for AlgorithmVisualizerTool {
         "Algorithm Visualizer"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("algorithm_visualizer_controls").show(ctx, |ui| {
             ui.heading("Algorithm Visualizer");

@@ -1,4 +1,3 @@
-use crate::math_types::{Integer, Rational};
 
 pub struct DyadicRational {
     pub m: i64,

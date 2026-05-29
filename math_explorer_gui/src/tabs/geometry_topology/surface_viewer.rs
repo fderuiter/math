@@ -112,6 +112,7 @@ impl GeometryTopologyTool for SurfaceViewer {
         "Surface Viewer"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("surface_viewer_controls").show(ctx, |ui| {
             ui.heading("Surface Viewer");

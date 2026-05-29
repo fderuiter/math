@@ -34,14 +34,9 @@ struct DownBlock {
 impl DownBlock {
     fn new(p: &Path, c_in: i64, c_out: i64, time_emb_dim: Option<i64>) -> Self {
         let conv = conv_block(p, c_in, c_out);
-        let time_mlp = if let Some(emb_dim) = time_emb_dim {
-            Some(nn::seq()
+        let time_mlp = time_emb_dim.map(|emb_dim| nn::seq()
                 .add_fn(|xs| xs.silu())
-                .add(nn::linear(&(p / "t_mlp"), emb_dim, c_out, Default::default()))
-            )
-        } else {
-            None
-        };
+                .add(nn::linear(&(p / "t_mlp"), emb_dim, c_out, Default::default())));
         DownBlock { conv, time_mlp }
     }
 
@@ -49,9 +44,9 @@ impl DownBlock {
         let mut features = self.conv.forward(xs);
         if let (Some(t_emb), Some(mlp)) = (t, &self.time_mlp) {
             let t_emb = mlp.forward(t_emb);
-            features = features + t_emb.unsqueeze(-1).unsqueeze(-1);
+            features += t_emb.unsqueeze(-1).unsqueeze(-1);
         }
-        let pooled = features.max_pool2d(&[2, 2], &[2, 2], &[0, 0], &[1, 1], false);
+        let pooled = features.max_pool2d([2, 2], [2, 2], [0, 0], [1, 1], false);
         (features, pooled)
     }
 }
@@ -66,14 +61,9 @@ struct UpBlock {
 impl UpBlock {
     fn new(p: &Path, c_in: i64, c_out: i64, time_emb_dim: Option<i64>) -> Self {
         let conv = conv_block(&(p / "conv"), c_in, c_out);
-        let time_mlp = if let Some(emb_dim) = time_emb_dim {
-            Some(nn::seq()
+        let time_mlp = time_emb_dim.map(|emb_dim| nn::seq()
                 .add_fn(|xs| xs.silu())
-                .add(nn::linear(&(p / "t_mlp"), emb_dim, c_out, Default::default()))
-            )
-        } else {
-            None
-        };
+                .add(nn::linear(&(p / "t_mlp"), emb_dim, c_out, Default::default())));
         UpBlock { conv, time_mlp }
     }
 
@@ -84,12 +74,12 @@ impl UpBlock {
         }
         let h = size[2];
         let w = size[3];
-        let upsampled = xs.upsample_nearest2d(&[h, w], None, None);
+        let upsampled = xs.upsample_nearest2d([h, w], None, None);
         let combined = Tensor::cat(&[skip, &upsampled], 1);
         let mut features = self.conv.forward(&combined);
         if let (Some(t_emb), Some(mlp)) = (t, &self.time_mlp) {
             let t_emb = mlp.forward(t_emb);
-            features = features + t_emb.unsqueeze(-1).unsqueeze(-1);
+            features += t_emb.unsqueeze(-1).unsqueeze(-1);
         }
         features
     }

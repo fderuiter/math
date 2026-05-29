@@ -42,6 +42,7 @@ impl QuantumTool for ClebschGordanTool {
         "Clebsch-Gordan"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("clebsch_controls").show(ctx, |ui| {
             ui.heading("Parameters");

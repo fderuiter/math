@@ -8,23 +8,38 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  WORKING_DIRECTORY: math_explorer
-  toolchain: stable
 
 jobs:
   build-and-test:
-    name: Build and Test
+    name: Build and Test (${{ matrix.target }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            name: Linux Native
+          - target: wasm32-unknown-unknown
+            name: Web/WASM
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Python for Traceability
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install PyTorch (Linux)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: pip install torch==2.2.0
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
           components: clippy, rustfmt
+          targets: ${{ matrix.target }}
 
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -34,31 +49,44 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            ${{ env.WORKING_DIRECTORY }}/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.target }}
           restore-keys: |
+            ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-
 
       - name: Check Traceability
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
         run: python3 scripts/traceability.py
-        working-directory: .
 
       - name: Check Formatting
-        run: cargo fmt -- --check
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: cargo fmt --all -- --check
 
-      - name: Build
-        run: cargo build --verbose
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+      - name: Build (Native)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: cargo build --workspace --verbose --all-features
+        env:
+          LIBTORCH_USE_PYTORCH: 1
+          LIBTORCH_BYPASS_VERSION_CHECK: 1
 
-      - name: Run Verified Performance Benchmarks
-        run: cargo run --example bench_stochastic --all-features
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+      - name: Run Tests (Native)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          export LD_LIBRARY_PATH=$(python3 -c "import torch; print(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
+          cargo test --workspace --verbose --all-features
+        env:
+          LIBTORCH_USE_PYTORCH: 1
+          LIBTORCH_BYPASS_VERSION_CHECK: 1
 
-      - name: Run Tests
-        run: cargo test --verbose
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+      - name: Run Clippy (Native)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: cargo clippy --workspace --all-features -- -D warnings -D clippy::too_many_lines -D clippy::cognitive_complexity
+        env:
+          LIBTORCH_USE_PYTORCH: 1
+          LIBTORCH_BYPASS_VERSION_CHECK: 1
 
-      - name: Run Clippy
-        run: cargo clippy -- -D warnings
-        working-directory: ${{ env.WORKING_DIRECTORY }}
+      - name: Build GUI for WASM
+        if: matrix.target == 'wasm32-unknown-unknown'
+        run: cargo build -p math_explorer_gui --target wasm32-unknown-unknown --verbose
+

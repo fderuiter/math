@@ -13,14 +13,14 @@ pub struct TurbulenceDataset {
 
 impl TurbulenceDataset {
     /// Loads a dataset from a given file path.
-    pub fn load(path: &str) -> Result<Self, &'static str> {
+    pub fn load(_path: &str) -> Result<Self, &'static str> {
         // Placeholder implementation
         Err("Not yet implemented. HDF5 loading logic will be here.")
     }
 }
 
 /// Creates a data loader that provides batches of data for training.
-pub fn create_dataloader(dataset: &TurbulenceDataset, batch_size: usize) {
+pub fn create_dataloader(_dataset: &TurbulenceDataset, batch_size: usize) {
     // Placeholder implementation
     println!("Dataloader created for batch size {}", batch_size);
 }

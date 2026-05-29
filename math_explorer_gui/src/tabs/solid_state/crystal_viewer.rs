@@ -107,7 +107,7 @@ impl CrystalViewer {
             ui.line(
                 Line::new("Edge", PlotPoints::new(vec![start, end]))
                     .color(egui::Color32::GRAY)
-                    .width(1.0),
+                    .width(1.0_f32),
             );
         }
     }
@@ -174,7 +174,7 @@ impl SolidStateTool for CrystalViewer {
 
                     plot_ui.points(
                         Points::new("Atoms", points)
-                            .radius(5.0)
+                            .radius(5.0_f32)
                             .color(egui::Color32::RED),
                     );
                 });

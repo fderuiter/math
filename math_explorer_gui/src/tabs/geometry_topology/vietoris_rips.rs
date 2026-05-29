@@ -64,6 +64,7 @@ impl GeometryTopologyTool for VietorisRipsTool {
         "Vietoris-Rips Complex"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Vietoris-Rips Complex (TDA)");
@@ -134,7 +135,7 @@ impl GeometryTopologyTool for VietorisRipsTool {
                     plot_ui.polygon(
                         Polygon::new("Triangle", PlotPoints::new(points))
                             .fill_color(egui::Color32::from_rgba_unmultiplied(100, 150, 250, 50))
-                            .stroke(egui::Stroke::new(0.0, egui::Color32::TRANSPARENT)),
+                            .stroke(egui::Stroke::new(0.0_f32, egui::Color32::TRANSPARENT)),
                     );
                 }
 
@@ -149,7 +150,7 @@ impl GeometryTopologyTool for VietorisRipsTool {
                     plot_ui.line(
                         Line::new("Edge", PlotPoints::new(points))
                             .color(egui::Color32::from_rgb(150, 150, 150))
-                            .width(1.5),
+                            .width(1.5_f32),
                     );
                 }
 
@@ -162,7 +163,7 @@ impl GeometryTopologyTool for VietorisRipsTool {
                 plot_ui.points(
                     Points::new("Vertices", PlotPoints::new(vertex_coords))
                         .color(egui::Color32::from_rgb(50, 50, 200))
-                        .radius(4.0),
+                        .radius(4.0_f32),
                 );
             });
         });

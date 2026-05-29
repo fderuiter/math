@@ -2,10 +2,9 @@ use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::{
-    algorithms::TabularQAgent, Action, MarkovDecisionProcess, State,
+    algorithms::TabularQAgent, MarkovDecisionProcess,
     grid_world::{GridState, Move, GridWorldEnv},
 };
-use std::hash::Hash;
 
 pub struct GridWorldTool {
     env: GridWorldEnv,
@@ -82,6 +81,7 @@ impl AiTool for GridWorldTool {
         "Grid World (RL)"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::Window::new("Grid World Navigation (Q-Learning)").show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -159,7 +159,7 @@ impl AiTool for GridWorldTool {
                     painter.rect_stroke(
                         cell_rect,
                         0.0,
-                        egui::Stroke::new(1.0, egui::Color32::BLACK),
+                        egui::Stroke::new(1.0_f32, egui::Color32::BLACK),
                         egui::StrokeKind::Middle,
                     );
                 }

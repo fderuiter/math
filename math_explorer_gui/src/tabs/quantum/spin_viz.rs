@@ -102,6 +102,7 @@ impl QuantumTool for SpinVisualizer {
         "Spin Dynamics (Bloch Sphere)"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         if !self.paused {
             self.step(0.05);
@@ -224,13 +225,13 @@ impl QuantumTool for SpinVisualizer {
                     plot_ui.line(
                         Line::new("State", PlotPoints::new(vec_line))
                             .color(egui::Color32::YELLOW)
-                            .width(3.0),
+                            .width(3.0_f32),
                     );
 
                     // Draw point at tip
                     plot_ui.points(
                         Points::new("State Tip", PlotPoints::new(vec![end]))
-                            .radius(5.0)
+                            .radius(5.0_f32)
                             .color(egui::Color32::YELLOW),
                     );
                 });

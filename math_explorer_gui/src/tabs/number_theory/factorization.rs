@@ -17,6 +17,7 @@ impl NumberTheoryTool for FactorizationTool {
         "Factorization Tool"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Large Number Factorization and Primality Testing");

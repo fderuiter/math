@@ -4,7 +4,7 @@
 //! the models described in the paper. This includes adversarial losses,
 //! perceptual losses, and the score-matching loss for diffusion models.
 
-use tch::{Tensor, nn::{self, Module, Path}, Kind};
+use tch::{Tensor, nn::{self, Path}, Kind};
 
 /// A helper struct to extract features from a VGG19 model.
 /// We manually define the layers to easily access intermediate features.
@@ -73,12 +73,12 @@ pub fn perceptual_loss(pred: &Tensor, target: &Tensor, vgg_features: &Vgg19Featu
     // The input to VGG must have 3 channels.
     // If grayscale, repeat. If more than 3 channels, take the first 3.
     let pred_3ch = match pred.size()[1] {
-        1 => pred.repeat(&[1, 3, 1, 1]),
+        1 => pred.repeat([1, 3, 1, 1]),
         3 => pred.copy(),
         _ => pred.slice(1, 0, 3, 1),
     };
     let target_3ch = match target.size()[1] {
-        1 => target.repeat(&[1, 3, 1, 1]),
+        1 => target.repeat([1, 3, 1, 1]),
         3 => target.copy(),
         _ => target.slice(1, 0, 3, 1),
     };

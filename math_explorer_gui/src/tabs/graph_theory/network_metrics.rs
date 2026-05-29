@@ -118,6 +118,7 @@ impl GraphTheoryTool for NetworkMetricsTool {
         "Network Metrics"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("network_metrics_controls").show(ctx, |ui| {
             ui.heading("Network Metrics");

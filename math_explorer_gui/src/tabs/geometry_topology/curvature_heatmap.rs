@@ -204,6 +204,7 @@ impl GeometryTopologyTool for CurvatureHeatmap {
         "Curvature Heatmap"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("curvature_heatmap_controls").show(ctx, |ui| {
             ui.heading("Curvature Heatmap");

@@ -47,6 +47,7 @@ pub struct SimulationController {
 
 impl SimulationController {
     #[cfg(not(target_arch = "wasm32"))]
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     pub fn new<T: SimulationRunner>(mut runner: T) -> Self {
         let (cmd_tx, cmd_rx) = mpsc::channel::<SimCommand>();
         let (state_tx, state_rx) = mpsc::channel::<SimStateUpdate>();

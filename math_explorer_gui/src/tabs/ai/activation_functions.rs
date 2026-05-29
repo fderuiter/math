@@ -37,6 +37,7 @@ impl AiTool for ActivationFunctionsTool {
         "Activation Functions"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::right("activation_functions_controls").show(ctx, |ui| {
             ui.heading("Controls");
@@ -132,8 +133,8 @@ impl AiTool for ActivationFunctionsTool {
                 .map(|(x, y)| [*x, *y])
                 .collect();
 
-            let line = Line::new("f(x)", plot_points).width(2.0);
-            let deriv_line = Line::new("f'(x)", deriv_points).width(1.5);
+            let line = Line::new("f(x)", plot_points).width(2.0_f32);
+            let deriv_line = Line::new("f'(x)", deriv_points).width(1.5_f32);
 
             Plot::new("activation_function_plot")
                 .legend(Legend::default())

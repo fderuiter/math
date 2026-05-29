@@ -6,7 +6,7 @@
 
 use tch::{
     nn::{self, Module, Path, Sequential},
-    Kind, Tensor, Device,
+    Kind, Tensor,
 };
 
 /// A sinusoidal time embedding module.

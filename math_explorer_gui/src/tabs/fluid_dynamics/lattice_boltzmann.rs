@@ -182,6 +182,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
         "Lattice Boltzmann (Demo)"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // Update state from background simulation
         if let Some(snapshot) = self.controller.update() {

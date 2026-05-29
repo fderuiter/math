@@ -1,4 +1,3 @@
-use crate::math_types::Integer;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -12,12 +11,12 @@ pub enum AmbsError {
 pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     let mut factors = Vec::new();
     let mut count = 0;
-    while n % 2 == 0 { count += 1; n /= 2; }
+    while n.is_multiple_of(2) { count += 1; n /= 2; }
     if count > 0 { factors.push((2, count)); }
     let mut i = 3;
     while i * i <= n {
         count = 0;
-        while n % i == 0 { count += 1; n /= i; }
+        while n.is_multiple_of(i) { count += 1; n /= i; }
         if count > 0 { factors.push((i, count)); }
         i += 2;
     }

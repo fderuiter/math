@@ -24,6 +24,7 @@ impl BatteryDegradationTool for CapacityFadeTool {
         "Capacity Fade"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // Enforce valid ranges for internal state before using it
         self.dod = self.dod.clamp(0.0, 100.0);

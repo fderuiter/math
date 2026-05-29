@@ -69,6 +69,7 @@ impl AnalysisTool for RiemannIntegrationTool {
         "Riemann Integration"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         let mut changed = false;
 

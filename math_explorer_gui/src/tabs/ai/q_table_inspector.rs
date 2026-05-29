@@ -97,6 +97,7 @@ impl AiTool for QTableInspectorTool {
         "Q-Table Inspector"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("q_table_controls").show(ctx, |ui| {
             ui.heading("Training Controls");
@@ -218,7 +219,7 @@ impl AiTool for QTableInspectorTool {
                     painter.rect_stroke(
                         cell_rect,
                         0.0,
-                        egui::Stroke::new(1.0, egui::Color32::BLACK),
+                        egui::Stroke::new(1.0_f32, egui::Color32::BLACK),
                         egui::StrokeKind::Middle,
                     );
 

@@ -103,6 +103,7 @@ impl AiTool for TrainingMonitorTool {
         "Training Monitor"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // Run training step if active
         if self.is_training {
@@ -216,12 +217,12 @@ impl AiTool for TrainingMonitorTool {
                 plot_ui.points(
                     Points::new("Class 0", class_0_points)
                         .color(Color32::RED)
-                        .radius(4.0),
+                        .radius(4.0_f32),
                 );
                 plot_ui.points(
                     Points::new("Class 1", class_1_points)
                         .color(Color32::BLUE)
-                        .radius(4.0),
+                        .radius(4.0_f32),
                 );
 
                 // Optionally draw prediction grid (expensive, maybe skip for now or low res)

@@ -108,6 +108,7 @@ impl QuantumTool for WaveSimulator {
         "Wave Simulator"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // --- Simulation Control ---
         if !self.paused {
@@ -193,7 +194,7 @@ impl QuantumTool for WaveSimulator {
                     plot_ui.line(
                         Line::new("Probability |ψ|²", PlotPoints::new(psi_points))
                             .color(egui::Color32::WHITE)
-                            .width(2.0),
+                            .width(2.0_f32),
                     );
                     plot_ui.line(
                         Line::new("Potential V(x) (scaled)", PlotPoints::new(v_points))

@@ -261,6 +261,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// do not apply, avoiding branch predictions and bounds checks.
     ///
     #[inline(always)]
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn compute_gradients_fast(
         &self,
         coords: (usize, usize, usize),

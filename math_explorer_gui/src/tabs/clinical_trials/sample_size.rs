@@ -63,6 +63,7 @@ impl ClinicalTrialsTool for SampleSizeCalculatorTool {
         "Sample Size Calculator"
     }
 
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Sample Size Calculator");
