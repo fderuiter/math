@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 use math_explorer::applied::clinical_trials::survival_analysis::{
     Observation, try_estimate_hazard_ratio,
 };

@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
 

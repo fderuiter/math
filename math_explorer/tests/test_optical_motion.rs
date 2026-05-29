@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 use math_explorer::physics::medical::optical_motion::{
     calibration::LinearCalibrator,
     physics::{

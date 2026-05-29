@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 use math_explorer::applied::win_ratio::pair_comparison::{
     ComparisonResult, HigherIsBetter, LowerIsBetter, ThresholdComparator, WinRatioAnalysis,
 };

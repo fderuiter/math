@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 #[allow(deprecated)]
 use math_explorer::applied::game_theory::equilibrium::{
     BestResponseCorrespondence, BoxSet, ConvexSet, FixedPointVerifier,

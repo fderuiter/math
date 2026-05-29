@@ -116,3 +116,64 @@ jobs:
       - name: Build GUI for WASM
         if: matrix.target == 'wasm32-unknown-unknown'
         run: cargo build -p math_explorer_gui --target wasm32-unknown-unknown --verbose
+
+  feature-matrix:
+    name: Domain Tests (${{ matrix.feature || 'core-only' }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        feature:
+          - pure_math
+          - applied
+          - ai
+          - biology
+          - climate
+          - epidemiology
+          - physics
+          - '' # This tests --no-default-features
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install PyTorch (AI only)
+        if: matrix.feature == 'ai'
+        run: pip install torch==2.2.0
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-features-${{ matrix.feature }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-features-${{ matrix.feature }}-
+
+      - name: Run Tests
+        run: |
+          if [ "${{ matrix.feature }}" = "ai" ]; then
+            export LD_LIBRARY_PATH=$(python3 -c "import torch; print(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
+            export LIBTORCH_USE_PYTORCH=1
+            export LIBTORCH_BYPASS_VERSION_CHECK=1
+          fi
+          
+          if [ -n "${{ matrix.feature }}" ]; then
+            cargo test -p math_explorer --no-default-features --features ${{ matrix.feature }}
+          else
+            cargo test -p math_explorer --no-default-features
+          fi

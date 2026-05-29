@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 #[cfg(test)]
 mod tests {
     use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};

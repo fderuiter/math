@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 use approx::assert_abs_diff_eq;
 use math_explorer::pure_math::analysis::pde::{
     greens::GreenFunctionSolver1D, heat::HeatEquation1D, laplace::LaplaceEquation2D,

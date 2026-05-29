@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 use math_explorer::pure_math::graph_theory::{
     graph::Graph,
     parameters::{degree::degeneracy, modulator::vertex_cover, treewidth::treewidth},

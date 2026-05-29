@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied"))]
+
 #[cfg(test)]
 mod tests {
     use math_explorer::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};

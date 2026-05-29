@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 use math_explorer::pure_math::algorithmic_information::{
     combinatorics::*,
 };

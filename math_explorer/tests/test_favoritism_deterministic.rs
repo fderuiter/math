@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied", feature = "pure_math"))]
+
 use math_explorer::applied::favoritism::{
     FavoritismInputs, calculate_favoritism_score_full, calculate_favoritism_score_with_rng,
 };

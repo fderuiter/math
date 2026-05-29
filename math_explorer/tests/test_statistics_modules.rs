@@ -1,3 +1,5 @@
+#![cfg(all(feature = "pure_math"))]
+
 //! Integration tests for new statistics modules
 
 #[cfg(test)]

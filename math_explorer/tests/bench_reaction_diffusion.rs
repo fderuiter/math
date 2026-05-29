@@ -1,3 +1,5 @@
+#![cfg(all(feature = "biology"))]
+
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use std::time::Instant;

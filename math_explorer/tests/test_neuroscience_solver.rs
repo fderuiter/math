@@ -1,3 +1,5 @@
+#![cfg(all(feature = "biology", feature = "pure_math"))]
+
 use math_explorer::biology::neuroscience::neuron::HodgkinHuxleyNeuron;
 use math_explorer::biology::neuroscience::types::HodgkinHuxleyState;
 use math_explorer::pure_math::analysis::ode::RungeKutta4;

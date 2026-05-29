@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 use math_explorer::error::RadarError;
 use math_explorer::physics::medical::radar_gating::super_resolution::MusicEstimator;
 use num_complex::Complex;

@@ -60,7 +60,7 @@
 //!
 //! // 2. Setup the generic system (1 species, 10 grid points)
 //! let kinetics = DecayKinetics { rate: 0.1 };
-//! let diffusion = FiniteDifference1D::new(1.0);
+//! let diffusion = FiniteDifference1D::new(math_explorer::math_kernel::types::StepSize(1.0));
 //! let mut system = ReactionDiffusionSystem::builder()
 //!     .num_species(1)
 //!     .grid_size(10)

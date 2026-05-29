@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 use math_explorer::physics::fluid_dynamics::lattice_boltzmann::state::LatticeState;
 
 #[test]

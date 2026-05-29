@@ -1,3 +1,5 @@
+#![cfg(all(feature = "applied", feature = "pure_math"))]
+
 #[cfg(test)]
 mod tests {
     use math_explorer::applied::cannibalism::two_dimensional_ode::CannibalismModel;

@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 use approx::assert_relative_eq;
 use math_explorer::physics::quantum::{
     QuantumOperator, QuantumState, dft_operator, sigma_x, sigma_y, sigma_z,

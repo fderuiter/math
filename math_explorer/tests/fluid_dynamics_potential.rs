@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 use math_explorer::physics::fluid_dynamics::potential_flow::{
     Doublet, FlowElement, PotentialFlowField, UniformFlow,
 };

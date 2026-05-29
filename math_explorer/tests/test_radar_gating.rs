@@ -1,3 +1,5 @@
+#![cfg(all(feature = "physics"))]
+
 use approx::assert_relative_eq;
 use math_explorer::physics::medical::radar_gating::{
     gating::GatingLogic,

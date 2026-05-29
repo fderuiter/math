@@ -1,3 +1,5 @@
+#![cfg(all(feature = "ai"))]
+
 #[cfg(test)]
 mod tests {
     use math_explorer::ai::reinforcement_learning::algorithms::TabularQAgent;

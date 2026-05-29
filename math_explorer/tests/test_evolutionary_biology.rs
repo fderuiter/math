@@ -1,3 +1,5 @@
+#![cfg(all(feature = "biology"))]
+
 use math_explorer::biology::evolution::HawkDovePopulation;
 
 #[test]

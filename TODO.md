@@ -139,7 +139,7 @@ This document outlines the step-by-step, granular process for migrating the Oxid
   - [ ] Verify 60FPS execution in the browser via `trunk serve`.
 
 ## Phase 8: Final Polish & CI/CD
-- [ ] Update `.github/workflows/ci.yml` to run tests across the workspace (`cargo test --workspace --all-features`).
-- [ ] Add a CI step to verify WASM compilation: `cargo check --workspace --target wasm32-unknown-unknown`.
-- [ ] Run `cargo fmt --all`.
-- [ ] Run `cargo clippy --workspace --all-features -- -D warnings`.
+- [x] Update `.github/workflows/ci.yml` to run tests across the workspace (`cargo test --workspace --all-features`).
+- [x] Add a CI step to verify WASM compilation: `cargo check --workspace --target wasm32-unknown-unknown`.
+- [x] Run `cargo fmt --all`.
+- [x] Run `cargo clippy --workspace --all-features -- -D warnings`.
