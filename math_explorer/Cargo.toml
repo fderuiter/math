@@ -5,37 +5,26 @@ edition = "2024"
 license = "AGPL-3.0-or-later"
 
 [dependencies]
-rustfft = "6.2.0"
-nalgebra = "0.34.0"
-quadrature = "0.1.2"
-rand = "0.8.6"
-statrs = "0.17.0"
-petgraph = "0.6.4"
-rand_distr = "0.4.3"
-num-complex = "0.4.6"
+math_commons = { path = "../crates/math_commons" }
+pure_math = { path = "../crates/pure_math" }
+domain_applied = { path = "../crates/domain_applied", optional = true }
+domain_ai = { path = "../crates/domain_ai", optional = true }
+domain_physics = { path = "../crates/domain_physics", optional = true }
+domain_biology = { path = "../crates/domain_biology", optional = true }
+domain_climate = { path = "../crates/domain_climate", optional = true }
+domain_epidemiology = { path = "../crates/domain_epidemiology", optional = true }
 thiserror = "2.0.18"
-num-traits = "0.2.19"
-oxidize_core = { path = "../crates/oxidize_core" }
-verified_engine = { version = "0.1.0", path = "../crates/verified_engine" }
-serde_json = "1.0.150"
-serde = { version = "1.0.228", features = ["derive"] }
+nalgebra = "0.34.0"
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rug = "1.28.0"
-wigner-symbols = "0.5.0"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-rug_mock = { path = "../crates/rug_mock" }
-wigner_mock = { path = "../crates/wigner_mock" }
-getrandom = { version = "0.2.17", features = ["js"] }
-
-[[test]]
-name = "elliptic_curves"
-path = "tests/elliptic_curves.rs"
-
-[[test]]
-name = "algorithmic_information"
-path = "tests/algorithmic_information.rs"
+[features]
+default = []
+pure_math = []
+applied = ["pure_math", "dep:domain_applied"]
+ai = ["pure_math", "dep:domain_ai"]
+biology = ["applied", "pure_math", "dep:domain_biology"]
+climate = ["ai", "dep:domain_climate"]
+epidemiology = ["pure_math", "dep:domain_epidemiology"]
+physics = ["applied", "pure_math", "dep:domain_physics"]
 
 [dev-dependencies]
 approx = "0.5.1"
@@ -49,16 +38,6 @@ features = ["html_reports"]
 [[bench]]
 name = "sorting_benchmark"
 harness = false
-
-[features]
-default = []
-pure_math = []
-applied = ["pure_math"]
-ai = ["pure_math"]
-biology = ["applied", "pure_math"]
-climate = ["ai"]
-epidemiology = ["pure_math"]
-physics = ["applied", "pure_math"]
 
 [[example]]
 name = "bench_morphogenesis"

@@ -1,0 +1,146 @@
+//! # Schrödinger Equation
+//!
+//! This module provides tools for solving the time-dependent Schrödinger equation,
+//! which describes how the quantum state of a physical system changes over time.
+//!
+//! $$ i\hbar \frac{\partial}{\partial t}|\psi(t)\rangle = \hat{H}|\psi(t)\rangle $$
+//!
+//! For a time-independent Hamiltonian $\hat{H}$, the solution is given by the unitary time-evolution operator:
+//!
+//! $$ |\psi(t)\rangle = e^{-i\hat{H}t/\hbar} |\psi(0)\rangle $$
+//!
+//! ## Usage
+//!
+//! The core function `evolve_state` computes the state at time $t$ given an initial state and a Hamiltonian.
+
+use crate::physics::quantum::types::{QuantumOperator, QuantumState};
+use num_complex::Complex;
+
+/// Calculates the time evolution operator $U(t) = e^{-i\hat{H}t/\hbar}$.
+///
+/// This implementation assumes the Hamiltonian $\hat{H}$ is time-independent.
+/// The operator is computed using matrix exponentiation.
+///
+/// $$ U(t) = \exp\left(-\frac{i}{\hbar} \hat{H} t\right) $$
+///
+/// # Arguments
+/// * `hamiltonian` - The Hamiltonian operator $\hat{H}$ (must be a square matrix).
+/// * `t` - The time duration $t$ to evolve the system.
+/// * `h_bar` - The reduced Planck constant $\hbar$.
+///
+/// # Returns
+/// The unitary operator U(t).
+///
+/// # Examples
+///
+/// Calculate the time evolution operator for a spin-1/2 system with Hamiltonian H = \sigma_z.
+///
+/// ```
+/// use crate::physics::quantum::{time_evolution_operator, sigma_z};
+/// use std::f64::consts::PI;
+/// use num_complex::Complex;
+///
+/// // 1. Define Hamiltonian H = sigma_z (Spin-1/2 Z-operator)
+/// // \sigma_z = |0><0| - |1><1| = diag(1, -1)
+/// let h_hat = sigma_z();
+///
+/// // 2. Calculate U(t) for t = PI, h_bar = 1.0
+/// // U(t) = exp(-i * H * t / h_bar)
+/// // U(PI) = exp(-i * diag(1, -1) * PI) = diag(exp(-i*PI), exp(i*PI))
+/// //       = diag(-1, -1) = -I
+/// let t = PI;
+/// let h_bar = 1.0;
+/// let u_op = time_evolution_operator(&h_hat, t, h_bar);
+///
+/// // 3. Verify result is approximately -I
+/// let u_matrix = u_op.matrix;
+/// let expected_diag = Complex::new(-1.0, 0.0);
+///
+/// // Check diagonal elements
+/// assert!((u_matrix[(0, 0)] - expected_diag).norm() < 1e-9, "U(0,0) incorrect");
+/// assert!((u_matrix[(1, 1)] - expected_diag).norm() < 1e-9, "U(1,1) incorrect");
+///
+/// // Check off-diagonal elements are zero
+/// assert!(u_matrix[(0, 1)].norm() < 1e-9, "U(0,1) should be 0");
+/// assert!(u_matrix[(1, 0)].norm() < 1e-9, "U(1,0) should be 0");
+/// ```
+pub fn time_evolution_operator(
+    hamiltonian: &QuantumOperator,
+    t: f64,
+    h_bar: f64,
+) -> QuantumOperator {
+    // U(t) = exp(-i * H * t / h_bar)
+    let i = Complex::new(0.0, 1.0);
+    // Avoid division by zero if h_bar is 0 (though physical h_bar is non-zero)
+    let factor = -i * t / h_bar;
+
+    // Scale the Hamiltonian matrix by -it/hbar
+    let scaled_h = &hamiltonian.matrix * factor;
+
+    // Compute the matrix exponential: e^A
+    // nalgebra's exp() is for square matrices.
+    let u_matrix = scaled_h.exp();
+
+    QuantumOperator::new(u_matrix)
+}
+
+/// Evolves a quantum state over time using the Schrödinger equation.
+///
+/// Computes the new state vector $|\psi(t)\rangle$ by applying the time evolution operator to the initial state $|\psi(0)\rangle$.
+///
+/// $$ |\psi(t)\rangle = e^{-i\hat{H}t/\hbar} |\psi(0)\rangle $$
+///
+/// # Arguments
+/// * `state` - The initial quantum state $|\psi(0)\rangle$.
+/// * `hamiltonian` - The time-independent Hamiltonian operator $\hat{H}$.
+/// * `t` - The time duration $t$.
+/// * `h_bar` - The reduced Planck constant $\hbar$.
+///
+/// # Returns
+/// The evolved quantum state $|\psi(t)\rangle$.
+///
+/// # Example
+///
+/// Simulating a 2-level system (Qubit) undergoing Rabi oscillations.
+///
+/// ```
+/// use crate::physics::quantum::schrodinger::evolve_state;
+/// use crate::physics::quantum::types::{QuantumState, QuantumOperator};
+/// use nalgebra::{DMatrix, DVector};
+/// use num_complex::Complex;
+///
+/// // 1. Define the Hamiltonian for a spin in a magnetic field (Pauli X)
+/// // H = \hbar * omega * sigma_x / 2
+/// let h_bar = 1.0;
+/// let omega = 2.0;
+/// let factor = Complex::new(h_bar * omega / 2.0, 0.0);
+/// let hamiltonian_matrix = DMatrix::from_row_slice(2, 2, &[
+///     Complex::new(0.0, 0.0), Complex::new(1.0, 0.0), // 0  1
+///     Complex::new(1.0, 0.0), Complex::new(0.0, 0.0), // 1  0
+/// ]) * factor;
+/// let hamiltonian = QuantumOperator::new(hamiltonian_matrix);
+///
+/// // 2. Initialize state in |0> (Up)
+/// let initial_vector = DVector::from_vec(vec![
+///     Complex::new(1.0, 0.0),
+///     Complex::new(0.0, 0.0)
+/// ]);
+/// let initial_state = QuantumState::new(initial_vector);
+///
+/// // 3. Evolve for time t = pi / omega (Should flip to |1>)
+/// let t = std::f64::consts::PI / omega;
+/// let final_state = evolve_state(&initial_state, &hamiltonian, t, h_bar);
+///
+/// // 4. Check probability of being in |1> (Down)
+/// let prob_down = final_state.probability_density()[1];
+/// assert!((prob_down - 1.0).abs() < 1e-4);
+/// ```
+pub fn evolve_state(
+    state: &QuantumState,
+    hamiltonian: &QuantumOperator,
+    t: f64,
+    h_bar: f64,
+) -> QuantumState {
+    let u = time_evolution_operator(hamiltonian, t, h_bar);
+    QuantumState::new(&u.matrix * &state.vector)
+}
