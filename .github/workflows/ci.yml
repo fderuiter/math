@@ -105,6 +105,14 @@ jobs:
           LIBTORCH_USE_PYTORCH: 1
           LIBTORCH_BYPASS_VERSION_CHECK: 1
 
+      - name: Install cargo-llvm-cov
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Run Integrity Verified Suite
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: python3 scripts/verify_suite.py
+
       - name: Check Workspace (WASM)
         if: matrix.target == 'wasm32-unknown-unknown'
         run: cargo check --workspace --target wasm32-unknown-unknown --all-features --verbose

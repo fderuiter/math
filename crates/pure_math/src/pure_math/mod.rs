@@ -53,3 +53,11 @@ pub mod tensor;
 pub mod vector_calculus;
 
 // [cite:graph_parameters_rust]
+
+crate::theory_verification!(
+    module = "pure_math",
+    paper = "advanced_linear_algebra.tex",
+    epsilon = 1e-6,
+    constants = { TEST = 1.0; },
+    test = {}
+);

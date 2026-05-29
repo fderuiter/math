@@ -22,7 +22,7 @@ mod tests {
 
         let mut system = TuringSystem::new_with_solver(math_explorer::math_kernel::types::Dimension(
             size),
-            [math_explorer::math_kernel::types::DiffusionCoeff(d_u), math_explorer::math_kernel::types::DiffusionCoeff(d_v)],
+            [math_explorer::biology::morphogenesis::DiffusionCoeff(d_u), math_explorer::biology::morphogenesis::DiffusionCoeff(d_v)],
             SchnakenbergKinetics::default(),
             math_explorer::biology::diffusion::FiniteDifference1D::new(math_explorer::math_kernel::types::StepSize(dx)),
             adapter,

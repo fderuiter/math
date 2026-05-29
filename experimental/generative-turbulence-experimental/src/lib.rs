@@ -30,7 +30,7 @@ pub mod training;
 
 // [cite:generative_turbulence]
 
-use math_explorer::theory_verification;
+use pure_math::theory_verification;
 
 theory_verification!(
     module = "generative_turbulence",

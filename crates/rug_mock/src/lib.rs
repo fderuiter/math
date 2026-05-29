@@ -9,6 +9,12 @@ use dashu::base::Abs;
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Integer(pub BigInt);
 
+impl From<Integer> for BigInt {
+    fn from(i: Integer) -> Self {
+        i.0
+    }
+}
+
 impl Default for Integer { fn default() -> Self { Self::new() } }
 
 impl Integer {
