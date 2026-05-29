@@ -44,6 +44,7 @@
 pub mod ai;
 
 pub mod math_types;
+pub mod math_kernel;
 pub mod diagnostics;
 pub mod error;
 

@@ -8,7 +8,7 @@ fn main() {
     let iterations = 100;
 
     let kinetics = SchnakenbergKinetics::default();
-    let diffusion = FiniteDifference1D::new(1.0);
+    let diffusion = FiniteDifference1D::new(math_explorer::math_kernel::types::StepSize(1.0));
     let diffusion_coeffs = vec![1.0, 40.0]; // u, v
 
     let mut system = ReactionDiffusionSystem::builder()

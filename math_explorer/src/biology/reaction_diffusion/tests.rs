@@ -12,7 +12,7 @@ fn test_reaction_diffusion_system_rk4() {
     let dx = 1.0;
 
     let kinetics = SchnakenbergKinetics::default();
-    let diffusion = FiniteDifference1D::new(dx);
+    let diffusion = FiniteDifference1D::new(crate::math_kernel::types::StepSize(dx));
     let diffusion_coeffs = vec![d_u, d_v];
 
     // Explicitly use RK4
@@ -56,7 +56,7 @@ fn test_reaction_diffusion_system_equivalence() {
     let dx = 1.0;
 
     let kinetics = SchnakenbergKinetics::default();
-    let diffusion = FiniteDifference1D::new(dx);
+    let diffusion = FiniteDifference1D::new(crate::math_kernel::types::StepSize(dx));
     let diffusion_coeffs = vec![d_u, d_v];
 
     let mut system = ReactionDiffusionSystem::builder()

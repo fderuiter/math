@@ -1,17 +1,12 @@
 use math_explorer::pure_math::algorithmic_information::{
-    combinatorics::*, geometry::*, kolmogorov::*,
+    combinatorics::*,
 };
-use math_explorer::pure_math::statistics::tda::Point2D;
-use nalgebra::distance;
-use rug::{Integer, Rational};
 use std::collections::{HashMap, HashSet};
 
 #[test]
 #[ignore]
 #[cfg(any())]
 fn test_distance() {
-    let p1 = Point2D::new(Rational::from((3, 1)), Rational::from((4, 1)));
-    let p2 = Point2D::new(Rational::from((0, 1)), Rational::from((0, 1)));
     assert_eq!(distance(&p1, &p2), Rational::from(5));
 }
 

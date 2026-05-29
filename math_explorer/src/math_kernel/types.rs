@@ -1,0 +1,86 @@
+use std::ops::{Deref, DerefMut};
+
+/// A physical step size, typically used for grid spacing.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
+pub struct StepSize(pub f64);
+
+impl Deref for StepSize {
+    type Target = f64;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for StepSize {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+/// A grid index, representing a coordinate or an offset in a flattened array.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
+pub struct GridIndex(pub usize);
+
+impl Deref for GridIndex {
+    type Target = usize;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for GridIndex {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+/// A concentration value for a chemical species or generic substance.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
+pub struct Concentration(pub f64);
+
+impl Deref for Concentration {
+    type Target = f64;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Concentration {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+/// Diffusion coefficient
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
+pub struct DiffusionCoeff(pub f64);
+
+impl Deref for DiffusionCoeff {
+    type Target = f64;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for DiffusionCoeff {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+/// A dimension representing width or height.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
+pub struct Dimension(pub usize);
+
+impl Deref for Dimension {
+    type Target = usize;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Dimension {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}

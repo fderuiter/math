@@ -4,7 +4,7 @@ use std::time::Instant;
 fn main() {
     let size = 100_000;
     let iterations = 1000;
-    let mut system = TuringSystem::new(size, 0.1, 0.05, 1.0);
+    let mut system = TuringSystem::new(math_explorer::math_kernel::types::Dimension(size), math_explorer::math_kernel::types::DiffusionCoeff(0.1), math_explorer::math_kernel::types::DiffusionCoeff(0.05), math_explorer::math_kernel::types::StepSize(1.0));
 
     // Warmup
     for _ in 0..100 {
