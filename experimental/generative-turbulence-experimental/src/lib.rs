@@ -15,11 +15,17 @@
 //! - `data`: Data loading and preprocessing utilities.
 //! - `analysis`: Tools for analyzing results (e.g., energy spectra).
 
+#[cfg(not(target_arch = "wasm32"))]
 pub mod analysis;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod data;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod losses;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod models;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod networks;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod training;
 
 // [cite:generative_turbulence]

@@ -43,6 +43,8 @@ rand = "0.8.6"
 
 [dev-dependencies.criterion]
 version = "0.5.1"
+default-features = false
+features = ["html_reports"]
 
 [[bench]]
 name = "sorting_benchmark"
