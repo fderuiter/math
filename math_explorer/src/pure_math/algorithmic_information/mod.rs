@@ -42,7 +42,7 @@
 //!
 //! ```rust
 //! use math_explorer::pure_math::algorithmic_information::kolmogorov::prefix_kolmogorov_approx;
-//! use rug::Integer;
+//! use crate::math_types::Integer;
 //!
 //! // Calculate complexity of a large number
 //! let n = Integer::from(1000000);

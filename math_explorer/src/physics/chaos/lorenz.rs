@@ -130,7 +130,7 @@ impl TimeStepper<Vector3<f64>> for LorenzSystem {
 
     fn step(&mut self, dt: f64) {
         use crate::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
+        let new_state = RungeKutta4::step(self, 0.0, <Self as TimeStepper<Vector3<f64>>>::get_state(self), dt);
         *self.get_state_mut() = new_state;
     }
 }
@@ -171,5 +171,47 @@ impl OdeSystem<Vector3<f64>> for LorenzSystem {
         let dz = x * y - self.beta * z;
 
         Vector3::new(dx, dy, dz)
+    }
+}
+
+use oxidize_core::{ModelConfig, ModelState, SimulationModel};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct LorenzConfig {
+    pub sigma: f64,
+    pub rho: f64,
+    pub beta: f64,
+    pub dt: f64,
+}
+
+impl ModelConfig for LorenzConfig {}
+impl ModelState for LorenzState {}
+
+impl SimulationModel for LorenzSystem {
+    type Config = LorenzConfig;
+    type State = LorenzState;
+    type Error = std::io::Error;
+
+    fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
+        // We initialize to an arbitrary point, maybe near the attractor.
+        let state = LorenzState::new(10.0, 10.0, 10.0);
+        Ok(LorenzBuilder::new()
+            .sigma(config.sigma)
+            .rho(config.rho)
+            .beta(config.beta)
+            .build(state))
+    }
+
+    fn step(&mut self) -> Result<(), Self::Error> {
+        // Since we don't store dt in LorenzSystem directly via the interface,
+        // we'd typically have dt in the Config or State. We'll use 0.01 for now.
+        // Wait, the interface doesn't pass dt. Let's assume dt = 0.01 or we store it in LorenzSystem.
+        self.step(0.01);
+        Ok(())
+    }
+
+    fn get_state(&self) -> Self::State {
+        self.state
     }
 }

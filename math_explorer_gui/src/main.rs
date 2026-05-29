@@ -32,11 +32,14 @@ fn main() {
     console_error_panic_hook::set_once();
     accessibility::init_accessibility_bridge();
     wasm_bindgen_futures::spawn_local(async {
+        use wasm_bindgen::JsCast;
+        let document = web_sys::window().unwrap().document().unwrap();
+        let canvas = document.get_element_by_id("the_canvas_id").unwrap().dyn_into::<web_sys::HtmlCanvasElement>().unwrap();
         let runner = eframe::WebRunner::new();
         let web_options = eframe::WebOptions::default();
         runner
             .start(
-                "the_canvas_id",
+                canvas,
                 web_options,
                 Box::new(|cc| {
                     cc.egui_ctx.options_mut(|o| o.screen_reader = true);

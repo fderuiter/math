@@ -402,3 +402,36 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         }
     }
 }
+
+use oxidize_core::{ModelConfig, ModelState, SimulationModel};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct LbmConfig {
+    pub width: usize,
+    pub height: usize,
+    pub tau: f64,
+}
+
+impl ModelConfig for LbmConfig {}
+
+impl<const Q: usize> ModelState for LatticeState<Q> {}
+
+impl SimulationModel for LatticeBoltzmannD2Q9<BgkCollision> {
+    type Config = LbmConfig;
+    type State = LatticeState<9>;
+    type Error = std::io::Error;
+
+    fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
+        Ok(Self::new(config.width, config.height, config.tau))
+    }
+
+    fn step(&mut self) -> Result<(), Self::Error> {
+        self.step();
+        Ok(())
+    }
+
+    fn get_state(&self) -> Self::State {
+        self.state.clone()
+    }
+}

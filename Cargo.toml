@@ -6,5 +6,5 @@ members = [
     "math_explorer",
     "math_explorer_gui",
     "experimental/generative-turbulence-experimental"
-]
+, "crates/rug_mock", "crates/wigner_mock"]
 resolver = "2"
