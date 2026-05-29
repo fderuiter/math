@@ -130,7 +130,7 @@ impl SimulationRunner for LbmRunner {
             width,
             height,
             pixels: Arc::new(pixels),
-            custom_data: Vec::new(),
+            custom_data: Vec::new(), structured_data: None,
         }
     }
 

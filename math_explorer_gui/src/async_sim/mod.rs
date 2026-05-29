@@ -24,6 +24,7 @@ pub struct StateSnapshot {
     pub height: usize,
     pub pixels: Arc<Vec<eframe::egui::Color32>>,
     pub custom_data: Vec<f64>,
+    pub structured_data: Option<Box<dyn std::any::Any + Send>>,
 }
 
 pub enum SimStateUpdate {
