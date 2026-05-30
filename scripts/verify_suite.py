@@ -45,6 +45,18 @@ def main():
     native_lines_total = 0
     native_lines_covered = 0
     
+    total_funcs = 0
+    total_asserts = 0
+    verified_funcs = 0
+    verified_asserts = 0
+    unverified_funcs = 0
+    unverified_asserts = 0
+    opt_outs = []
+    
+    assert_re = re.compile(r'\b(assert|assert_eq|assert_ne|debug_assert)!\s*\(')
+    fn_re = re.compile(r'\bfn\s+\w+\s*(?:<[^>]*>)?\s*\(')
+    opt_out_re = re.compile(r'#\[(?:verified_engine::)?verified\(opt_out\s*=\s*"([^"]+)"\)\]')
+    
     for f in cov_data['data'][0]['files']:
         filename = f['filename']
         summary = f['summary']['lines']
@@ -54,6 +66,25 @@ def main():
     for filepath in rs_files:
         with open(filepath, 'r', encoding='utf-8') as file:
             content = file.read()
+            
+        # Assertion Density Metrics
+        is_verified_module = bool(re.search(r'#\[(?:verified_engine::)?verified', content))
+        
+        funcs = len(fn_re.findall(content))
+        asserts = len(assert_re.findall(content))
+        
+        for match in opt_out_re.finditer(content):
+            opt_outs.append({"file": filepath, "reason": match.group(1)})
+            
+        total_funcs += funcs
+        total_asserts += asserts
+        
+        if is_verified_module:
+            verified_funcs += funcs
+            verified_asserts += asserts
+        else:
+            unverified_funcs += funcs
+            unverified_asserts += asserts
             
         # Check Theory Parity for mathematical modules
         # We define a mathematical module as one in pure_math, applied, physics, etc.
@@ -90,10 +121,24 @@ def main():
     native_cov_pct = (native_lines_covered / native_lines_total * 100) if native_lines_total > 0 else 0
     wasm_cov_pct = (wasm_covered / wasm_paths * 100) if wasm_paths > 0 else 100
     
+    total_density = (total_asserts / total_funcs) if total_funcs > 0 else 0
+    verified_density = (verified_asserts / verified_funcs) if verified_funcs > 0 else 0
+    unverified_density = (unverified_asserts / unverified_funcs) if unverified_funcs > 0 else 0
+    
     print(f"\n--- Integrity Report ---")
     print(f"Native Execution Coverage: {native_cov_pct:.2f}%")
     print(f"WASM Path Coverage: {wasm_cov_pct:.2f}%")
     
+    print(f"\n--- High-Integrity Dashboard ---")
+    print(f"Total Assertion Density: {total_density:.2f} asserts/fn")
+    print(f"Verified Modules Density: {verified_density:.2f} asserts/fn")
+    print(f"Unverified Modules Density: {unverified_density:.2f} asserts/fn")
+    
+    if opt_outs:
+        print("\n--- High-Integrity Debt ---")
+        for idx, out in enumerate(opt_outs):
+            print(f"[{idx+1}] {out['file']} bypassed: '{out['reason']}'")
+            
     if unverified_modules:
         print("\n[!] Unverified Modules (Missing theory_verification!):")
         for m in unverified_modules:
