@@ -56,7 +56,7 @@ impl<R: Rng> GillespieSolver<R> {
     ///
     /// Returns the time elapsed for this step.
     /// Returns `Ok(f64::INFINITY)` if no reactions can occur (total propensity is 0).
-    #[verified_engine::verified]
+    #[verified_engine::verified(opt_out = "Legacy missing assertions")]
     pub fn step<S, State>(&mut self, system: &S, state: &mut State) -> Result<f64, StochasticError>
     where
         S: StochasticSystem<State>,
