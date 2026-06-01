@@ -26,7 +26,7 @@
 /// ```
 /// let weight = 70.0; // kg
 /// let height = 1.75; // m
-/// use crate::applied::win_ratio::bmi::calculate_bmi;
+/// use domain_applied::applied::win_ratio::bmi::calculate_bmi;
 /// let bmi = calculate_bmi(weight, height);
 /// assert!((bmi - 22.857).abs() < 1e-3);
 /// ```

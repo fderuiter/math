@@ -77,21 +77,17 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// # Examples
     ///
     /// ```rust
-    /// use crate::applied::isosurface::{CentralDifferenceEstimator, VoxelGrid, Point3D};
-    /// use crate::applied::isosurface::marching_cubes::MarchingCubes;
+    /// use domain_applied::applied::isosurface::{CentralDifferenceEstimator, VoxelGrid, Point3D};
+    /// use domain_applied::applied::isosurface::marching_cubes::MarchingCubes;
     ///
     /// // Define a minimal 2x2x2 grid.
-    /// let grid = VoxelGrid {
-    ///     width: 2, height: 2, depth: 2,
-    ///     data: vec![
-    ///         -1.0, -1.0,  // z=0, y=0
-    ///         -1.0, -1.0,  // z=0, y=1
-    ///          1.0,  1.0,  // z=1, y=0
-    ///          1.0,  1.0   // z=1, y=1
-    ///     ],
-    ///     voxel_size: Point3D::new(1.0, 1.0, 1.0),
-    ///     origin: Point3D::new(0.0, 0.0, 0.0),
-    /// };
+    /// let grid = VoxelGrid::builder()
+    /// .dimensions(2, 2, 2)
+    /// .data(vec![-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0])
+    /// .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+    /// .origin(Point3D::new(0.0, 0.0, 0.0))
+    /// .build()
+    /// .unwrap();
     ///
     /// // Instantiate the custom extractor.
     /// let extractor = MarchingCubes::new(&grid, CentralDifferenceEstimator);
@@ -104,24 +100,24 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         self.validate_grid()?;
 
         // Estimate capacity
-        let estimated_triangles = self.grid.width * self.grid.height * 5;
+        let estimated_triangles = self.grid.width() * self.grid.height() * 5;
         let mut triangles = Vec::with_capacity(estimated_triangles);
 
-        let stride_y = self.grid.width;
-        let stride_z = self.grid.width * self.grid.height;
+        let stride_y = self.grid.width();
+        let stride_z = self.grid.width() * self.grid.height();
 
         // Iterate over each cube in the grid
-        for z in 0..self.grid.depth - 1 {
-            let z_interior = z > 0 && z < self.grid.depth - 2;
+        for z in 0..self.grid.depth() - 1 {
+            let z_interior = z > 0 && z < self.grid.depth() - 2;
 
-            for y in 0..self.grid.height - 1 {
-                let y_interior = y > 0 && y < self.grid.height - 2;
+            for y in 0..self.grid.height() - 1 {
+                let y_interior = y > 0 && y < self.grid.height() - 2;
                 let row_is_interior = z_interior && y_interior;
 
                 // Cache for the "Right Face" gradients of the previous iteration (x-1).
                 let mut cached_gradients: Option<[Point3D; 4]> = None;
 
-                for x in 0..self.grid.width - 1 {
+                for x in 0..self.grid.width() - 1 {
                     let base_idx = z * stride_z + y * stride_y + x;
 
                     // 1. Get Values & Index
@@ -169,7 +165,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     }
 
     fn validate_grid(&self) -> Result<(), IsosurfaceError> {
-        if self.grid.width < 2 || self.grid.height < 2 || self.grid.depth < 2 {
+        if self.grid.width() < 2 || self.grid.height() < 2 || self.grid.depth() < 2 {
             return Err(IsosurfaceError::InvalidGrid(
                 "Grid dimensions must be at least 2x2x2".to_string(),
             ));
@@ -177,17 +173,17 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 
         let expected_len = self
             .grid
-            .width
-            .checked_mul(self.grid.height)
-            .and_then(|wh| wh.checked_mul(self.grid.depth))
+            .width()
+            .checked_mul(self.grid.height())
+            .and_then(|wh| wh.checked_mul(self.grid.depth()))
             .ok_or_else(|| {
                 IsosurfaceError::InvalidGrid("Grid dimensions cause integer overflow".to_string())
             })?;
 
-        if self.grid.data.len() < expected_len {
+        if self.grid.data().len() < expected_len {
             return Err(IsosurfaceError::DataMismatch {
                 expected: expected_len,
-                actual: self.grid.data.len(),
+                actual: self.grid.data().len(),
             });
         }
         Ok(())
@@ -206,7 +202,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         stride_z: usize,
         threshold: f32,
     ) -> ([f32; 8], usize) {
-        let data = &self.grid.data;
+        let data = &self.grid.data();
         let mut values = [0.0; 8];
         let mut index = 0;
 
@@ -235,13 +231,13 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 
     #[inline]
     fn get_cube_positions(&self, x: usize, y: usize, z: usize) -> [Point3D; 8] {
-        let x_pos = self.grid.origin.x + (x as f32) * self.grid.voxel_size.x;
-        let y_pos = self.grid.origin.y + (y as f32) * self.grid.voxel_size.y;
-        let z_pos = self.grid.origin.z + (z as f32) * self.grid.voxel_size.z;
+        let x_pos = self.grid.origin().x + (x as f32) * self.grid.voxel_size().x;
+        let y_pos = self.grid.origin().y + (y as f32) * self.grid.voxel_size().y;
+        let z_pos = self.grid.origin().z + (z as f32) * self.grid.voxel_size().z;
 
-        let next_x = x_pos + self.grid.voxel_size.x;
-        let next_y = y_pos + self.grid.voxel_size.y;
-        let next_z = z_pos + self.grid.voxel_size.z;
+        let next_x = x_pos + self.grid.voxel_size().x;
+        let next_y = y_pos + self.grid.voxel_size().y;
+        let next_z = z_pos + self.grid.voxel_size().z;
 
         [
             Point3D::new(x_pos, y_pos, z_pos),    // 0
@@ -273,10 +269,10 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         let (x, y, z) = coords;
         let (stride_y, stride_z) = strides;
         let mut normals = [Point3D::new(0.0, 0.0, 0.0); 8];
-        let data = &self.grid.data;
+        let data = &self.grid.data();
 
         // Check if X is interior (safe for fast path)
-        let x_interior = x > 0 && x < self.grid.width - 2;
+        let x_interior = x > 0 && x < self.grid.width() - 2;
         let can_use_fast_path = row_is_interior && x_interior;
 
         // 1. Fill Left Face (0, 3, 4, 7)
@@ -420,20 +416,16 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 /// # Examples
 ///
 /// ```
-/// use crate::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
+/// use domain_applied::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
 ///
 /// // Create a tiny 2x2x2 grid representing a corner
-/// let grid = VoxelGrid {
-///     width: 2, height: 2, depth: 2,
-///     data: vec![
-///         -1.0, -1.0,  // z=0, y=0
-///         -1.0, -1.0,  // z=0, y=1
-///          1.0,  1.0,  // z=1, y=0
-///          1.0,  1.0   // z=1, y=1
-///     ],
-///     voxel_size: Point3D::new(1.0, 1.0, 1.0),
-///     origin: Point3D::new(0.0, 0.0, 0.0),
-/// };
+/// let grid = VoxelGrid::builder()
+    /// .dimensions(2, 2, 2)
+    /// .data(vec![-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0])
+    /// .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+    /// .origin(Point3D::new(0.0, 0.0, 0.0))
+    /// .build()
+    /// .unwrap();
 ///
 /// // Extract the surface where value == 0.0
 /// let mesh = extract_isosurface(&grid, 0.0).expect("Failed to extract isosurface");

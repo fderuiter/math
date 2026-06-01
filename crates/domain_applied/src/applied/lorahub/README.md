@@ -37,7 +37,7 @@ cargo run --release --package math_explorer --example bench_lorahub
 ### Quick Start: Merging LoRAs
 
 ```rust
-use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
+use domain_applied::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
 
 // 1. Create Dummy LoRA Modules (usually loaded from disk)

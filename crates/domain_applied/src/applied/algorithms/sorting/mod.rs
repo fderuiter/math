@@ -23,7 +23,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use crate::applied::algorithms::sorting::{merge_sort, SortingResult};
+//! use domain_applied::applied::algorithms::sorting::{merge_sort, SortingResult};
 //!
 //! let data = vec![5, 2, 9, 1, 5, 6];
 //!

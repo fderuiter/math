@@ -34,7 +34,7 @@
 //! Simulate the concentration of a single oral dose of a drug (e.g., Caffeine) over time.
 //!
 //! ```rust
-//! use crate::applied::pharmacokinetics::{BatemanModel, PKParameters, PharmacokineticModel};
+//! use domain_applied::applied::pharmacokinetics::{BatemanModel, PKParameters, PharmacokineticModel};
 //!
 //! fn main() {
 //!     // 1. Define Drug Parameters (e.g., Caffeine ~100mg)

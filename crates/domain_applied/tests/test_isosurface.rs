@@ -2,7 +2,7 @@
 
 #[cfg(test)]
 mod tests {
-    use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
+    use domain_applied::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 
     #[test]
     fn test_sphere_extraction() {
@@ -25,14 +25,13 @@ mod tests {
             }
         }
 
-        let grid = VoxelGrid {
-            width: size,
-            height: size,
-            depth: size,
-            data,
-            voxel_size: Point3D::new(1.0, 1.0, 1.0),
-            origin: Point3D::new(0.0, 0.0, 0.0),
-        };
+        let grid = VoxelGrid::builder()
+            .dimensions(size, size, size)
+            .data(data)
+            .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+            .origin(Point3D::new(0.0, 0.0, 0.0))
+            .build()
+            .unwrap();
 
         // Extract at radius 6.0
         let mesh = extract_isosurface(&grid, radius).unwrap();
@@ -61,14 +60,13 @@ mod tests {
 
     #[test]
     fn test_small_grid() {
-        let grid = VoxelGrid {
-            width: 2,
-            height: 2,
-            depth: 2,
-            data: vec![0.0, 10.0, 0.0, 10.0, 0.0, 10.0, 0.0, 10.0], // Alternating values
-            voxel_size: Point3D::new(1.0, 1.0, 1.0),
-            origin: Point3D::new(0.0, 0.0, 0.0),
-        };
+        let grid = VoxelGrid::builder()
+            .dimensions(2, 2, 2)
+            .data(vec![0.0, 10.0, 0.0, 10.0, 0.0, 10.0, 0.0, 10.0])
+            .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+            .origin(Point3D::new(0.0, 0.0, 0.0))
+            .build()
+            .unwrap();
         let mesh = extract_isosurface(&grid, 5.0).unwrap();
         assert!(!mesh.triangles.is_empty());
     }

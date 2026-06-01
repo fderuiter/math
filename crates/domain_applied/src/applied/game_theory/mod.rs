@@ -37,7 +37,7 @@
 //! According to Myerson's Lemma, this is where the virtual valuation $J(v) = 0$.
 //!
 //! ```rust
-//! use crate::applied::game_theory::mechanism_design::optimal_reserve_price;
+//! use domain_applied::applied::game_theory::mechanism_design::optimal_reserve_price;
 //! use statrs::distribution::Uniform;
 //!
 //! fn main() {
