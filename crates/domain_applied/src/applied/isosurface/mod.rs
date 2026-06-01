@@ -12,20 +12,16 @@
 //! ## Quick Usage
 //!
 //! ```rust
-//! use crate::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
+//! use domain_applied::applied::isosurface::{extract_isosurface, VoxelGrid, Point3D};
 //!
 //! // 1. Create a tiny 2x2x2 grid
-//! let grid = VoxelGrid {
-//!     width: 2, height: 2, depth: 2,
-//!     data: vec![
-//!         -1.0, -1.0,  // z=0, y=0
-//!         -1.0, -1.0,  // z=0, y=1
-//!          1.0,  1.0,  // z=1, y=0
-//!          1.0,  1.0   // z=1, y=1
-//!     ],
-//!     voxel_size: Point3D::new(1.0, 1.0, 1.0),
-//!     origin: Point3D::new(0.0, 0.0, 0.0),
-//! };
+//! let grid = VoxelGrid::builder()
+    //! .dimensions(2, 2, 2)
+    //! .data(vec![0.0, 10.0, 0.0, 10.0, 0.0, 10.0, 0.0, 10.0])
+    //! .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+    //! .origin(Point3D::new(0.0, 0.0, 0.0))
+    //! .build()
+    //! .unwrap();
 //!
 //! // 2. Extract the surface where value == 0.0
 //! let mesh = extract_isosurface(&grid, 0.0).unwrap();

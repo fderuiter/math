@@ -31,7 +31,7 @@
 //! Track a moving object in 1D space using a Constant Velocity model.
 //!
 //! ```rust
-//! use crate::applied::algorithms::kalman::{KalmanFilter, KalmanModel};
+//! use domain_applied::applied::algorithms::kalman::{KalmanFilter, KalmanModel};
 //! use nalgebra::{DMatrix, DVector};
 //!
 //! // Define a Constant Velocity Model (Position + Velocity)

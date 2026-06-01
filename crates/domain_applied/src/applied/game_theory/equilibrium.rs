@@ -40,7 +40,7 @@ impl BoxSet {
     /// # Examples
     ///
     /// ```
-    /// use crate::applied::game_theory::equilibrium::{BoxSet, ConvexSet};
+    /// use domain_applied::applied::game_theory::equilibrium::{BoxSet, ConvexSet};
     /// use nalgebra::DVector;
     ///
     /// let box_set = BoxSet::new(vec![0.0, -1.0], vec![1.0, 1.0]);

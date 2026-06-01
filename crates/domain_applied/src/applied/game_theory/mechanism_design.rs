@@ -56,7 +56,7 @@ impl<D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + Ran
 ///
 /// # Example
 /// ```
-/// use crate::applied::game_theory::mechanism_design::optimal_reserve_price;
+/// use domain_applied::applied::game_theory::mechanism_design::optimal_reserve_price;
 /// use statrs::distribution::Uniform;
 ///
 /// // For Uniform(0, 100), J(v) = 2v - 100.

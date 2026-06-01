@@ -90,7 +90,7 @@ impl AllocationStrategy for BlockRandomizer {
     /// # Examples
     ///
     /// ```
-    /// use crate::applied::clinical_trials::design::{BlockRandomizer, AllocationStrategy, Group};
+    /// use domain_applied::applied::clinical_trials::design::{BlockRandomizer, AllocationStrategy, Group};
     /// use rand::SeedableRng;
     /// use rand::rngs::StdRng;
     ///

@@ -43,7 +43,7 @@ Where:
 This implies that **shallower discharges drastically increase cycle life**.
 
 ```rust
-use math_explorer::applied::battery_degradation::{PowerLawModel, DepthOfDischarge, Cycles};
+use domain_applied::applied::battery_degradation::{PowerLawModel, DepthOfDischarge, Cycles};
 
 fn main() {
     // 1. Initialize the standard model

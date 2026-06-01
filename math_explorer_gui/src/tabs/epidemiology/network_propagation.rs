@@ -60,36 +60,44 @@ impl EpidemiologyTool for NetworkPropagationTool {
 
                 ui.separator();
                 let mut changed = false;
+                let mut num_nodes = self.model.num_nodes();
                 changed |= ui
-                    .add(egui::Slider::new(&mut self.model.num_nodes, 10..=200).text("Nodes"))
+                    .add(egui::Slider::new(&mut num_nodes, 10..=200).text("Nodes"))
                     .changed();
                 if changed {
+                    let _ = self.model.set_num_nodes(num_nodes);
                     self.reset_network();
                 }
+                
+                let mut beta = self.model.beta();
                 ui.add(
-                    egui::Slider::new(&mut self.model.beta, 0.0..=1.0).text("Transmission (beta)"),
+                    egui::Slider::new(&mut beta, 0.0..=1.0).text("Transmission (beta)"),
                 );
+                let _ = self.model.set_beta(beta);
+                
+                let mut gamma = self.model.gamma();
                 ui.add(
-                    egui::Slider::new(&mut self.model.gamma, 0.0..=1.0).text("Recovery (gamma)"),
+                    egui::Slider::new(&mut gamma, 0.0..=1.0).text("Recovery (gamma)"),
                 );
+                let _ = self.model.set_gamma(gamma);
 
                 ui.separator();
                 // Statistics
                 let s_count = self
                     .model
-                    .states
+                    .states()
                     .iter()
                     .filter(|&&s| s == NodeState::Susceptible)
                     .count();
                 let i_count = self
                     .model
-                    .states
+                    .states()
                     .iter()
                     .filter(|&&s| s == NodeState::Infected)
                     .count();
                 let r_count = self
                     .model
-                    .states
+                    .states()
                     .iter()
                     .filter(|&&s| s == NodeState::Recovered)
                     .count();
@@ -116,18 +124,18 @@ impl EpidemiologyTool for NetworkPropagationTool {
                 let center = rect.center();
 
                 // Draw edges
-                for i in 0..self.model.num_nodes {
-                    for &j in &self.model.adjacency[i] {
+                for i in 0..self.model.num_nodes() {
+                    for &j in &self.model.adjacency()[i] {
                         if i < j {
                             let p1 = center
                                 + egui::vec2(
-                                    self.model.positions[i][0],
-                                    self.model.positions[i][1],
+                                    self.model.positions()[i][0],
+                                    self.model.positions()[i][1],
                                 );
                             let p2 = center
                                 + egui::vec2(
-                                    self.model.positions[j][0],
-                                    self.model.positions[j][1],
+                                    self.model.positions()[j][0],
+                                    self.model.positions()[j][1],
                                 );
                             painter.line_segment([p1, p2], (1.0, Color32::from_gray(100)));
                         }
@@ -135,10 +143,10 @@ impl EpidemiologyTool for NetworkPropagationTool {
                 }
 
                 // Draw nodes
-                for i in 0..self.model.num_nodes {
+                for i in 0..self.model.num_nodes() {
                     let p =
-                        center + egui::vec2(self.model.positions[i][0], self.model.positions[i][1]);
-                    let color = match self.model.states[i] {
+                        center + egui::vec2(self.model.positions()[i][0], self.model.positions()[i][1]);
+                    let color = match self.model.states()[i] {
                         NodeState::Susceptible => Color32::BLUE,
                         NodeState::Infected => Color32::RED,
                         NodeState::Recovered => Color32::GREEN,

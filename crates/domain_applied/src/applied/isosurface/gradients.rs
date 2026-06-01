@@ -22,18 +22,17 @@ pub trait GradientEstimator {
     /// # Examples
     ///
     /// ```
-    /// use crate::applied::isosurface::types::{VoxelGrid, Point3D};
-    /// use crate::applied::isosurface::gradients::{GradientEstimator, CentralDifferenceEstimator};
+    /// use domain_applied::applied::isosurface::types::{VoxelGrid, Point3D};
+    /// use domain_applied::applied::isosurface::gradients::{GradientEstimator, CentralDifferenceEstimator};
     ///
     /// let data = vec![0.0, 1.0, 2.0, 1.0, 2.0, 3.0, 2.0, 3.0, 4.0];
-    /// let grid = VoxelGrid {
-    ///     width: 3,
-    ///     height: 3,
-    ///     depth: 1,
-    ///     data,
-    ///     voxel_size: Point3D::new(1.0, 1.0, 1.0),
-    ///     origin: Point3D::new(0.0, 0.0, 0.0),
-    /// };
+    /// let grid = VoxelGrid::builder()
+    ///     .dimensions(3, 3, 1)
+    ///     .data(data)
+    ///     .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+    ///     .origin(Point3D::new(0.0, 0.0, 0.0))
+    ///     .build()
+    ///     .unwrap();
     /// let estimator = CentralDifferenceEstimator;
     ///
     /// let grad = estimator.gradient(&grid, 1, 1, 0);
@@ -76,7 +75,7 @@ impl GradientEstimator for CentralDifferenceEstimator {
     fn gradient(&self, grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
         let dx = if x == 0 {
             grid.get(x + 1, y, z) - grid.get(x, y, z)
-        } else if x == grid.width - 1 {
+        } else if x == grid.width() - 1 {
             grid.get(x, y, z) - grid.get(x - 1, y, z)
         } else {
             (grid.get(x + 1, y, z) - grid.get(x - 1, y, z)) / 2.0
@@ -84,7 +83,7 @@ impl GradientEstimator for CentralDifferenceEstimator {
 
         let dy = if y == 0 {
             grid.get(x, y + 1, z) - grid.get(x, y, z)
-        } else if y == grid.height - 1 {
+        } else if y == grid.height() - 1 {
             grid.get(x, y, z) - grid.get(x, y - 1, z)
         } else {
             (grid.get(x, y + 1, z) - grid.get(x, y - 1, z)) / 2.0
@@ -92,7 +91,7 @@ impl GradientEstimator for CentralDifferenceEstimator {
 
         let dz = if z == 0 {
             grid.get(x, y, z + 1) - grid.get(x, y, z)
-        } else if z == grid.depth - 1 {
+        } else if z == grid.depth() - 1 {
             grid.get(x, y, z) - grid.get(x, y, z - 1)
         } else {
             (grid.get(x, y, z + 1) - grid.get(x, y, z - 1)) / 2.0

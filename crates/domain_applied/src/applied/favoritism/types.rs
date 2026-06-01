@@ -181,7 +181,7 @@ impl Default for FamilyParams {
 /// # Example
 ///
 /// ```rust
-/// use crate::applied::favoritism::FavoritismInputs;
+/// use domain_applied::applied::favoritism::FavoritismInputs;
 ///
 /// let mut inputs = FavoritismInputs::default();
 /// inputs.personality.wealth = 10.0; // The "Golden Child" strategy

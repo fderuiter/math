@@ -9,7 +9,7 @@
 //! ##  Quick Start: Simulating an Outbreak
 //!
 //! ```rust
-//! use math_explorer::epidemiology::{SIRModel, SIRState};
+//! use domain_epidemiology::epidemiology::{SIRModel, SIRState};
 //!
 //! // 1. Initialize the model
 //! // Population: 1000, Initial Infected: 10

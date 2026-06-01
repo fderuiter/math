@@ -77,7 +77,7 @@ impl TotalBits {
 /// # Example
 ///
 /// ```
-/// use crate::applied::engineering::{calculate_uart_throughput, BaudRate, DataBits, TotalBits};
+/// use domain_applied::applied::engineering::{calculate_uart_throughput, BaudRate, DataBits, TotalBits};
 ///
 /// // Standard 9600 8N1
 /// let throughput = calculate_uart_throughput(
@@ -115,7 +115,7 @@ pub fn calculate_uart_throughput(
 /// # Example
 ///
 /// ```
-/// use crate::applied::engineering::uart_effective_throughput;
+/// use domain_applied::applied::engineering::uart_effective_throughput;
 ///
 /// // Standard 9600 8N1
 /// #[allow(deprecated)]

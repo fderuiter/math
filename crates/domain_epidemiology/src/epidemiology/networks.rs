@@ -26,15 +26,166 @@ pub enum NodeState {
 }
 
 pub struct NetworkEpidemicModel {
-    pub num_nodes: usize,
-    pub states: Vec<NodeState>,
-    pub positions: Vec<[f32; 2]>,
-    pub adjacency: Vec<Vec<usize>>,
-    pub beta: f64,
-    pub gamma: f64,
+    num_nodes: usize,
+    states: Vec<NodeState>,
+    positions: Vec<[f32; 2]>,
+    adjacency: Vec<Vec<usize>>,
+    beta: f64,
+    gamma: f64,
+}
+
+#[derive(Debug)]
+pub enum NetworkModelError {
+    InvalidNodeCount,
+    InvalidParameters,
+    StateMismatch,
+    PositionMismatch,
+    AdjacencyMismatch,
+}
+
+impl std::fmt::Display for NetworkModelError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidNodeCount => write!(f, "Number of nodes must be greater than zero"),
+            Self::InvalidParameters => write!(f, "Beta and gamma parameters must be non-negative"),
+            Self::StateMismatch => write!(f, "States vector length must match num_nodes"),
+            Self::PositionMismatch => write!(f, "Positions vector length must match num_nodes"),
+            Self::AdjacencyMismatch => write!(f, "Adjacency list length must match num_nodes"),
+        }
+    }
+}
+
+impl std::error::Error for NetworkModelError {}
+
+pub struct NetworkEpidemicModelBuilder {
+    num_nodes: Option<usize>,
+    beta: Option<f64>,
+    gamma: Option<f64>,
+    states: Option<Vec<NodeState>>,
+    positions: Option<Vec<[f32; 2]>>,
+    adjacency: Option<Vec<Vec<usize>>>,
+}
+
+impl Default for NetworkEpidemicModelBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl NetworkEpidemicModelBuilder {
+    pub fn new() -> Self {
+        Self {
+            num_nodes: None,
+            beta: None,
+            gamma: None,
+            states: None,
+            positions: None,
+            adjacency: None,
+        }
+    }
+
+    pub fn num_nodes(mut self, num: usize) -> Self {
+        self.num_nodes = Some(num);
+        self
+    }
+
+    pub fn parameters(mut self, beta: f64, gamma: f64) -> Self {
+        self.beta = Some(beta);
+        self.gamma = Some(gamma);
+        self
+    }
+
+    pub fn states(mut self, states: Vec<NodeState>) -> Self {
+        self.states = Some(states);
+        self
+    }
+
+    pub fn positions(mut self, positions: Vec<[f32; 2]>) -> Self {
+        self.positions = Some(positions);
+        self
+    }
+
+    pub fn adjacency(mut self, adjacency: Vec<Vec<usize>>) -> Self {
+        self.adjacency = Some(adjacency);
+        self
+    }
+
+    pub fn build(self) -> Result<NetworkEpidemicModel, NetworkModelError> {
+        let num_nodes = self.num_nodes.ok_or(NetworkModelError::InvalidNodeCount)?;
+        let beta = self.beta.unwrap_or(0.0);
+        let gamma = self.gamma.unwrap_or(0.0);
+
+        if num_nodes == 0 {
+            return Err(NetworkModelError::InvalidNodeCount);
+        }
+
+        if beta < 0.0 || gamma < 0.0 {
+            return Err(NetworkModelError::InvalidParameters);
+        }
+
+        let states = self.states.unwrap_or_else(|| vec![NodeState::Susceptible; num_nodes]);
+        if states.len() != num_nodes {
+            return Err(NetworkModelError::StateMismatch);
+        }
+
+        let positions = self.positions.unwrap_or_else(|| vec![[0.0, 0.0]; num_nodes]);
+        if positions.len() != num_nodes {
+            return Err(NetworkModelError::PositionMismatch);
+        }
+
+        let adjacency = self.adjacency.unwrap_or_else(|| vec![vec![]; num_nodes]);
+        if adjacency.len() != num_nodes {
+            return Err(NetworkModelError::AdjacencyMismatch);
+        }
+
+        Ok(NetworkEpidemicModel {
+            num_nodes,
+            states,
+            positions,
+            adjacency,
+            beta,
+            gamma,
+        })
+    }
 }
 
 impl NetworkEpidemicModel {
+    pub fn builder() -> NetworkEpidemicModelBuilder {
+        NetworkEpidemicModelBuilder::new()
+    }
+
+    pub fn num_nodes(&self) -> usize { self.num_nodes }
+    pub fn states(&self) -> &[NodeState] { &self.states }
+    pub fn states_mut(&mut self) -> &mut Vec<NodeState> { &mut self.states }
+    pub fn positions(&self) -> &[[f32; 2]] { &self.positions }
+    pub fn adjacency(&self) -> &[Vec<usize>] { &self.adjacency }
+    pub fn beta(&self) -> f64 { self.beta }
+    pub fn gamma(&self) -> f64 { self.gamma }
+
+    pub fn set_num_nodes(&mut self, num: usize) -> Result<(), NetworkModelError> {
+        if num == 0 {
+            return Err(NetworkModelError::InvalidNodeCount);
+        }
+        self.num_nodes = num;
+        Ok(())
+    }
+
+    pub fn set_beta(&mut self, beta: f64) -> Result<(), NetworkModelError> {
+        if beta < 0.0 {
+            return Err(NetworkModelError::InvalidParameters);
+        }
+        self.beta = beta;
+        Ok(())
+    }
+
+    pub fn set_gamma(&mut self, gamma: f64) -> Result<(), NetworkModelError> {
+        if gamma < 0.0 {
+            return Err(NetworkModelError::InvalidParameters);
+        }
+        self.gamma = gamma;
+        Ok(())
+    }
+
     /// Creates a new network epidemic model and initializes it with a geometric graph.
     ///
     /// This method uses the default thread-local RNG. For deterministic behavior,

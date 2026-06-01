@@ -34,10 +34,10 @@
 //! ## Example: Full Trial Simulation
 //!
 //! ```rust
-//! use crate::applied::clinical_trials::design::{simple_randomization, Group};
-//! use crate::applied::clinical_trials::sample_size::calculate_sample_size_means;
-//! use crate::applied::clinical_trials::analysis::calculate_risk_metrics;
-//! use crate::applied::clinical_trials::types::ContingencyTable;
+//! use domain_applied::applied::clinical_trials::design::{simple_randomization, Group};
+//! use domain_applied::applied::clinical_trials::sample_size::calculate_sample_size_means;
+//! use domain_applied::applied::clinical_trials::analysis::calculate_risk_metrics;
+//! use domain_applied::applied::clinical_trials::types::ContingencyTable;
 //!
 //! fn main() {
 //!     // 1. Plan: We want to detect a mean difference of 5.0 with SD=10.0

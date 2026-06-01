@@ -58,7 +58,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use crate::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
+//! use domain_applied::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 //!
 //! // 1. Configure the child's strategy
 //! let mut inputs = FavoritismInputs::default();

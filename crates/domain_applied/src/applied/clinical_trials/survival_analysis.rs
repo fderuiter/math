@@ -50,8 +50,8 @@ pub struct TimePoint {
 /// # Examples
 ///
 /// ```
-/// use crate::applied::clinical_trials::survival_analysis::{kaplan_meier, Observation, TimePoint};
-/// use crate::applied::clinical_trials::types::SurvivalTime;
+/// use domain_applied::applied::clinical_trials::survival_analysis::{kaplan_meier, Observation, TimePoint};
+/// use domain_applied::applied::clinical_trials::types::SurvivalTime;
 ///
 /// // Create a small dataset:
 /// // 1. Event at t=2.0
