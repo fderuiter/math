@@ -62,9 +62,9 @@
 //! ## Usage
 //!
 //! ```rust
-//! use math_explorer::climate::cera::Cera;
-//! use math_explorer::climate::config::CeraConfig;
-//! use math_explorer::climate::training::CeraTrainer;
+//! use domain_climate::climate::cera::Cera;
+//! use domain_climate::climate::config::CeraConfig;
+//! use domain_climate::climate::training::CeraTrainer;
 //! use nalgebra::DMatrix;
 //!
 //! // 1. Configure the model

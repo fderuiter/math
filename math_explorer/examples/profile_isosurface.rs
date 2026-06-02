@@ -60,14 +60,13 @@ fn main() {
         }
     }
 
-    let grid = VoxelGrid {
-        width: size,
-        height: size,
-        depth: size,
-        data,
-        voxel_size: Point3D::new(1.0, 1.0, 1.0),
-        origin: Point3D::new(0.0, 0.0, 0.0),
-    };
+    let grid = VoxelGrid::builder()
+        .dimensions(size, size, size)
+        .data(data)
+        .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+        .origin(Point3D::new(0.0, 0.0, 0.0))
+        .build()
+        .unwrap();
 
     // Warmup
     let _ = extract_isosurface(&grid, 0.0);

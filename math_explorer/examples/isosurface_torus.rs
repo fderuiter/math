@@ -98,14 +98,13 @@ fn main() -> std::io::Result<()> {
         }
     }
 
-    let grid = VoxelGrid {
-        width,
-        height,
-        depth,
-        data,
-        voxel_size: Point3D::new(step, step, step),
-        origin: Point3D::new(min_bound, min_bound, min_bound),
-    };
+    let grid = VoxelGrid::builder()
+        .dimensions(width, height, depth)
+        .data(data)
+        .voxel_size(Point3D::new(step, step, step))
+        .origin(Point3D::new(min_bound, min_bound, min_bound))
+        .build()
+        .unwrap();
 
     println!(
         "{}⛏️  Extracting Isosurface using Marching Cubes...{}",
