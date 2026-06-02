@@ -5,7 +5,7 @@ use std::path::Path;
 #[test]
 fn test_theory_verification_coverage_and_parity() {
     let papers_dir = Path::new("/app/papers");
-    let _applied_dir = Path::new("/app/math_explorer/src/applied");
+    let _applied_dir = Path::new("/app/crates/domain_applied/src/applied");
 
     // 1. Get all papers
     let mut papers = vec![];
@@ -23,8 +23,8 @@ fn test_theory_verification_coverage_and_parity() {
     // 2. Get all applied and physics modules
     let mut target_modules = vec![];
     for dir in &[
-        Path::new("/app/math_explorer/src/applied"),
-        Path::new("/app/math_explorer/src/physics"),
+        Path::new("/app/crates/domain_applied/src/applied"),
+        Path::new("/app/crates/domain_physics/src/physics"),
     ] {
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
