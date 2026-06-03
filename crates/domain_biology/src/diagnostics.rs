@@ -10,7 +10,7 @@
 //!
 //! ## Example
 //! ```rust
-//! use math_commons::diagnostics::{Diagnostic, Severity};
+//! use domain_biology::diagnostics::{Diagnostic, Severity};
 //! use std::collections::HashMap;
 //! use thiserror::Error;
 //!
