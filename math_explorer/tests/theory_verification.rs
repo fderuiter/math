@@ -4,8 +4,24 @@ use std::path::Path;
 
 #[test]
 fn test_theory_verification_coverage_and_parity() {
-    let papers_dir = Path::new("/app/papers");
-    let _applied_dir = Path::new("/app/crates/domain_applied/src/applied");
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("math_explorer should have a workspace parent");
+    let papers_dir = workspace_root.join("papers");
+    let applied_dir = workspace_root.join("crates/domain_applied/src/applied");
+    let physics_dir = workspace_root.join("crates/domain_physics/src/physics");
+
+    assert!(papers_dir.is_dir(), "missing papers dir: {}", papers_dir.display());
+    assert!(
+        applied_dir.is_dir(),
+        "missing applied dir: {}",
+        applied_dir.display()
+    );
+    assert!(
+        physics_dir.is_dir(),
+        "missing physics dir: {}",
+        physics_dir.display()
+    );
 
     // 1. Get all papers
     let mut papers = vec![];
@@ -22,10 +38,7 @@ fn test_theory_verification_coverage_and_parity() {
 
     // 2. Get all applied and physics modules
     let mut target_modules = vec![];
-    for dir in &[
-        Path::new("/app/crates/domain_applied/src/applied"),
-        Path::new("/app/crates/domain_physics/src/physics"),
-    ] {
+    for dir in &[applied_dir.as_path(), physics_dir.as_path()] {
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
