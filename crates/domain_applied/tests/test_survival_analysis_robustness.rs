@@ -1,5 +1,5 @@
 use domain_applied::applied::clinical_trials::survival_analysis::{
-    try_estimate_hazard_ratio, Observation,
+    Observation, try_estimate_hazard_ratio,
 };
 use domain_applied::applied::clinical_trials::types::{ClinicalTrialError, SurvivalTime};
 

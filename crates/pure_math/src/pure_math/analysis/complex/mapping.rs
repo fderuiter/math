@@ -86,7 +86,7 @@ mod tests {
         // w = z^2 => w' = 2z
         let derivative = |z: Complex64| 2.0 * z;
         let z0 = Complex64::new(1.0, 1.0); // 1+i
-                                           // |2(1+i)| = |2+2i| = sqrt(4+4) = sqrt(8) approx 2.828
+        // |2(1+i)| = |2+2i| = sqrt(4+4) = sqrt(8) approx 2.828
         let scale = conformal_scale_factor(derivative, z0);
         assert_relative_eq!(scale, 8.0f64.sqrt(), epsilon = 1e-4);
 

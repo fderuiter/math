@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use math_explorer::applied::algorithms::sorting::divide_conquer::{merge_sort, quick_sort};
 use math_explorer::applied::algorithms::sorting::linear::radix_sort;
 use rand::Rng;

@@ -192,8 +192,8 @@ pub mod rating;
 
 // Re-export main types
 pub use core::{
-    expected_outcome, g_function, GlickoPlayer, MatchResult, Rating, RatingDeviation,
-    SystemConstant, Volatility,
+    GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
+    expected_outcome, g_function,
 };
 pub use rating::{increase_rd_for_inactivity, update_rating};
 

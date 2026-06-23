@@ -106,8 +106,8 @@ impl<R: Rng> GillespieSolver<R> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::rngs::StdRng;
     use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     // Simple Decay Model: X -> nothing
     // Rate: k * X

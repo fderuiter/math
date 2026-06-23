@@ -1,6 +1,6 @@
 use crate::allocator::{lock_allocations, unlock_allocations};
 use crate::metrics::{
-    disable_verification, enable_verification, get_metrics, reset_metrics, ComplexityMetrics,
+    ComplexityMetrics, disable_verification, enable_verification, get_metrics, reset_metrics,
 };
 
 pub struct VerifiedEngine;

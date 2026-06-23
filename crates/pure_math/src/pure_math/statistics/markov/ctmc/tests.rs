@@ -1,8 +1,8 @@
 use super::*;
 use approx::assert_relative_eq;
 use nalgebra::DMatrix;
-use rand::rngs::StdRng;
 use rand::SeedableRng;
+use rand::rngs::StdRng;
 
 #[test]
 fn test_two_state_birth_death() {

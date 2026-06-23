@@ -53,11 +53,7 @@ impl BivariateWeibullModel {
     pub fn conditional_survival_x_given_t(&self, x: f64, c: f64) -> f64 {
         let s_c_x = self.joint_survival(c, x);
         let s_c_0 = self.marginal_survival_t(c);
-        if s_c_0 == 0.0 {
-            0.0
-        } else {
-            s_c_x / s_c_0
-        }
+        if s_c_0 == 0.0 { 0.0 } else { s_c_x / s_c_0 }
     }
 
     /// Conditional PDF for X given T > c, f(x|c).

@@ -42,7 +42,7 @@
 //! Emit the error to the bus using `diagnostics::emit_error(&my_error)`.
 
 use std::collections::HashMap;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex, OnceLock};
 
 #[derive(Debug, Clone, PartialEq, Eq)]

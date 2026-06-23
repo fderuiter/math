@@ -1,4 +1,4 @@
-use crate::ai::sds::diffusion::{inject_noise, NoiseSchedule};
+use crate::ai::sds::diffusion::{NoiseSchedule, inject_noise};
 use approx::assert_relative_eq;
 use nalgebra::DMatrix;
 

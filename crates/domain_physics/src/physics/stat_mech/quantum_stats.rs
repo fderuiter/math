@@ -195,8 +195,8 @@ mod tests {
         // E < mu -> prob 1
         // E > mu -> prob 0
         let t = 1e-9; // effectively 0
-                      // Actually, formulas use raw Joules.
-                      // Let's use E in Joules.
+        // Actually, formulas use raw Joules.
+        // Let's use E in Joules.
         let mu_j = 1.0e-20;
         let e_below = 0.5e-20;
         let e_above = 1.5e-20;

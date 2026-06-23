@@ -226,8 +226,8 @@ impl EulerMaruyama {
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
-    use rand::rngs::StdRng;
     use rand::SeedableRng;
+    use rand::rngs::StdRng;
 
     #[test]
     fn test_time_step_valid() {

@@ -1,4 +1,4 @@
-use super::{calculate_favoritism_score, FavoritismInputs};
+use super::{FavoritismInputs, calculate_favoritism_score};
 
 /// Represents a child with a name and a set of attributes for favoritism calculation.
 #[derive(Debug, Clone)]

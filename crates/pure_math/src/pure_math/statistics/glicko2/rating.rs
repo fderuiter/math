@@ -1,8 +1,8 @@
 //! Rating update algorithms for Glicko-2.
 
 use super::core::{
-    expected_outcome, g_function, GlickoPlayer, MatchResult, Rating, RatingDeviation,
-    SystemConstant, Volatility,
+    GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
+    expected_outcome, g_function,
 };
 use crate::error::Glicko2Error;
 

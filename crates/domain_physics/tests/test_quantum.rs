@@ -1,6 +1,6 @@
 use approx::assert_relative_eq;
 use domain_physics::physics::quantum::{
-    dft_operator, sigma_x, sigma_y, sigma_z, QuantumOperator, QuantumState,
+    QuantumOperator, QuantumState, dft_operator, sigma_x, sigma_y, sigma_z,
 };
 use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;

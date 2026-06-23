@@ -1,5 +1,5 @@
-use math_explorer::physics::stat_mech::ising::SpinLattice;
 use math_explorer::physics::stat_mech::KB;
+use math_explorer::physics::stat_mech::ising::SpinLattice;
 use std::time::Instant;
 
 fn main() {

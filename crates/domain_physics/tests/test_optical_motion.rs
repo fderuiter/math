@@ -5,7 +5,7 @@ use domain_physics::physics::medical::optical_motion::{
         calculate_tia_output,
     },
     processing::{
-        calculate_time_delay, snr_improvement_factor, weighted_average_height, LockInAmplifier,
+        LockInAmplifier, calculate_time_delay, snr_improvement_factor, weighted_average_height,
     },
     validation::{
         dice_similarity_coefficient, pearson_correlation, percentage_error, root_mean_square_error,
@@ -30,9 +30,9 @@ fn test_physical_principles() {
     let phi = 0.0; // 0 degrees
     let theta = 0.0; // 0 degrees
     let gamma = 2.0; // free space
-                     // n = 1.
-                     // Pd = (2 * A * Pt) / (2 * pi * 1) * 1 * 1 = (A * Pt) / pi
-                     // Pd = 1e-5 / pi
+    // n = 1.
+    // Pd = (2 * A * Pt) / (2 * pi * 1) * 1 * 1 = (A * Pt) / pi
+    // Pd = 1e-5 / pi
     let pd = calculate_received_power(n, a, p_t, d, phi, theta, gamma);
     let expected_pd = (a * p_t) / PI;
     assert!((pd - expected_pd).abs() < 1e-9);
