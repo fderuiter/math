@@ -32,3 +32,4 @@ theory_verification!(
         assert_relative_eq!(model.mu_c, MU_C, epsilon = 1e-6);
     }
 );
+// [cite:cannibalism]

@@ -266,3 +266,4 @@ impl QuantumTool for WaveSimulator {
         });
     }
 }
+// [cite:quantum_mechanics]

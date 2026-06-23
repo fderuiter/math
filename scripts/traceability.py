@@ -4,6 +4,7 @@ paper_files = glob.glob('papers/*.tex')
 papers = set(os.path.basename(f).replace('.tex', '') for f in paper_files)
 
 rs_files = glob.glob('math_explorer/src/**/mod.rs', recursive=True) + \
+           glob.glob('crates/*/src/**/mod.rs', recursive=True) + \
            glob.glob('math_explorer_gui/src/tabs/**/*.rs', recursive=True)
 
 cite_regex = re.compile(r'\[cite:([a-zA-Z0-9_.-]+)\]')

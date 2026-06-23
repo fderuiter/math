@@ -74,6 +74,14 @@ impl TraceabilityTab {
         let mut code_files = Vec::new();
         self.scan_dir(&vfs, "math_explorer/src", &mut code_files);
         self.scan_dir(&vfs, "math_explorer_gui/src/tabs", &mut code_files);
+        
+        // Scan inside individual crates
+        if let Ok(crates) = vfs.list_dir("crates") {
+            for crate_name in crates {
+                let path = format!("crates/{}/src", crate_name);
+                self.scan_dir(&vfs, &path, &mut code_files);
+            }
+        }
 
         for file in code_files {
             let is_module =
@@ -226,3 +234,4 @@ impl ExplorerTab for TraceabilityTab {
         });
     }
 }
+// [cite:essay]
