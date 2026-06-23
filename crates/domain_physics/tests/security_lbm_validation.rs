@@ -1,5 +1,3 @@
-
-
 use domain_physics::physics::fluid_dynamics::lattice_boltzmann::{
     CollisionModel, Lattice2D, LatticeBoltzmann,
 };

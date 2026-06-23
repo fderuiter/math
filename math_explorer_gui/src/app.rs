@@ -102,7 +102,6 @@ impl Default for MathExplorerApp {
 
         tabs.push(Box::new(crate::tabs::TraceabilityTab::default()));
 
-
         Self {
             tabs,
             selected_tab: 0,

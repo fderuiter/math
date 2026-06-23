@@ -1,5 +1,3 @@
-
-
 #[allow(deprecated)]
 use domain_physics::physics::astrophysics::galaxies::{
     GeneralIrregular, TypeCode10, TypeCode95To99, calculate_apparent_magnitude_from_distance,

@@ -1,5 +1,3 @@
-
-
 #[cfg(test)]
 mod tests {
     use domain_applied::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};

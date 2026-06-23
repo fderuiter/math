@@ -1,5 +1,3 @@
-
-
 #[cfg(test)]
 mod tests {
     use domain_applied::applied::cannibalism::two_dimensional_ode::CannibalismModel;

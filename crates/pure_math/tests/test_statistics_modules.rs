@@ -1,5 +1,3 @@
-
-
 //! Integration tests for new statistics modules
 
 #[cfg(test)]

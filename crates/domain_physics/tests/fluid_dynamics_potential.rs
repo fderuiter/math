@@ -1,5 +1,3 @@
-
-
 use domain_physics::physics::fluid_dynamics::potential_flow::{
     Doublet, FlowElement, PotentialFlowField, UniformFlow,
 };

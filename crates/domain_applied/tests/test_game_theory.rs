@@ -1,5 +1,3 @@
-
-
 #[allow(deprecated)]
 use domain_applied::applied::game_theory::equilibrium::{
     BestResponseCorrespondence, BoxSet, ConvexSet, FixedPointVerifier,
