@@ -4,7 +4,6 @@ pub mod async_sim;
 mod tabs;
 
 use app::MathExplorerApp;
-use eframe::egui;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
