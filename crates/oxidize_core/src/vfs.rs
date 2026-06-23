@@ -32,6 +32,7 @@ impl VirtualFileSystem for DefaultVfs {
 
 #[cfg(target_arch = "wasm32")]
 // theory_verification!
+#[rustfmt::skip]
 include!(concat!(env!("OUT_DIR"), "/vfs_data.rs"));
 
 #[cfg(target_arch = "wasm32")]
