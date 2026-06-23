@@ -310,6 +310,7 @@ pub mod ctmc;
 pub mod dtmc;
 pub mod hmm;
 pub mod tensor;
+pub mod time_index;
 pub mod validation;
 
 // Re-export commonly used types
@@ -318,6 +319,7 @@ pub use ctmc::ContinuousMarkovChain;
 pub use dtmc::{MarkovChain, StateType};
 pub type Result<T> = std::result::Result<T, MarkovError>;
 pub use hmm::HiddenMarkovModel;
-pub use tensor::{TimeIndex, TransitionTensor};
+pub use tensor::TransitionTensor;
+pub use time_index::TimeIndex;
 
 // [cite:clinical_trials_statistics]
