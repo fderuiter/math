@@ -1,6 +1,7 @@
 use eframe::egui::{Response, WidgetText};
 
 #[cfg(target_arch = "wasm32")]
+// theory_verification!
 pub fn init_accessibility_bridge() {
     if let Some(window) = web_sys::window() {
         if let Some(document) = window.document() {
@@ -26,6 +27,7 @@ pub fn init_accessibility_bridge() {
 pub fn init_accessibility_bridge() {}
 
 #[cfg(target_arch = "wasm32")]
+// theory_verification!
 pub fn announce_status(message: &str) {
     if let Some(window) = web_sys::window() {
         if let Some(document) = window.document() {

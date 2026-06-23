@@ -7,6 +7,7 @@ use std::collections::{HashMap, HashSet};
 type VfsImpl = oxidize_core::vfs::DefaultVfs;
 
 #[cfg(target_arch = "wasm32")]
+// theory_verification!
 type VfsImpl = oxidize_core::vfs::WasmVfs;
 
 pub struct TraceabilityTab {
@@ -48,6 +49,7 @@ impl TraceabilityTab {
         #[cfg(not(target_arch = "wasm32"))]
         let vfs = oxidize_core::vfs::DefaultVfs;
         #[cfg(target_arch = "wasm32")]
+// theory_verification!
         let vfs = oxidize_core::vfs::WasmVfs;
 
         // 1. Scan papers
