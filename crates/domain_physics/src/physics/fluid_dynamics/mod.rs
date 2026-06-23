@@ -14,8 +14,8 @@
 //! due to pressure gradients and viscosity.
 //!
 //! ```rust
-//! use crate::physics::fluid_dynamics::types::{FluidProperties, FlowState, SpatialGradients};
-//! use crate::physics::fluid_dynamics::conservation::{NavierStokes, MomentumEquation};
+//! use domain_physics::physics::fluid_dynamics::types::{FluidProperties, FlowState, SpatialGradients};
+//! use domain_physics::physics::fluid_dynamics::conservation::{NavierStokes, MomentumEquation};
 //! use nalgebra::{Vector3, Matrix3};
 //!
 //! // 1. Setup Fluid (Water @ 20°C)

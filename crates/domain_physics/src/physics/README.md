@@ -28,7 +28,7 @@ math_explorer = { path = "path/to/math_explorer" }
 Simulate the Lorenz Attractor to observe deterministic chaos and the exponential divergence of nearby trajectories.
 
 ```rust
-use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
+use domain_physics::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
 
 // 1. Initialize the system state close to the attractor
 let state = LorenzState::new(10.0, 10.0, 10.0);

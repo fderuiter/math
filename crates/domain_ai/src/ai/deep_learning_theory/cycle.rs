@@ -68,8 +68,8 @@ impl<M: Trainable> TrainingLoop<M> {
     ///
     /// ```rust
     /// use nalgebra::DVector;
-    /// use crate::ai::optimization::SGD;
-    /// use crate::ai::deep_learning_theory::cycle::TrainingLoop;
+    /// use domain_ai::ai::optimization::SGD;
+    /// use domain_ai::ai::deep_learning_theory::cycle::TrainingLoop;
     ///
     /// let x = DVector::from_vec(vec![1.0, 0.5]);
     /// let y_true = DVector::from_vec(vec![1.0, 0.0]);

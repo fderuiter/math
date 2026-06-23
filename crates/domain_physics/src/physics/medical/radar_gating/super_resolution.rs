@@ -109,7 +109,7 @@ impl MusicEstimator {
     /// # Examples
     ///
     /// ```rust
-    /// use crate::physics::medical::radar_gating::super_resolution::MusicEstimator;
+    /// use domain_physics::physics::medical::radar_gating::super_resolution::MusicEstimator;
     /// use num_complex::Complex;
     ///
     /// // Initialize estimator for 1 target with 4 samples per chirp and 2 snapshots smoothing.

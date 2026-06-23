@@ -41,7 +41,7 @@
 //! Simulating Transverse Relaxation (T2 Decay) using the `BlochSimulator`:
 //!
 //! ```rust
-//! use crate::physics::mri::BlochSimulator;
+//! use domain_physics::physics::mri::BlochSimulator;
 //! use pure_math::pure_math::analysis::ode::TimeStepper;
 //! use nalgebra::Vector3;
 //!

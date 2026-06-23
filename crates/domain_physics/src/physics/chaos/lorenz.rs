@@ -88,7 +88,7 @@ impl LorenzBuilder {
 /// # Example
 ///
 /// ```
-/// use crate::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
+/// use domain_physics::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
 /// use pure_math::pure_math::analysis::ode::TimeStepper;
 ///
 /// // 1. Initialize the system state close to the attractor
