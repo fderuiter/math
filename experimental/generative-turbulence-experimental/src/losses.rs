@@ -5,8 +5,8 @@
 //! perceptual losses, and the score-matching loss for diffusion models.
 
 use tch::{
-    Kind, Tensor,
     nn::{self, Path},
+    Kind, Tensor,
 };
 
 /// A helper struct to extract features from a VGG19 model.

@@ -5,8 +5,8 @@
 //! connections and dense blocks.
 
 use tch::{
-    Tensor,
     nn::{self, Module, Path},
+    Tensor,
 };
 
 const BETA: f64 = 0.2; // Scaling factor for residual connections
