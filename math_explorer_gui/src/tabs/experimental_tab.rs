@@ -2,7 +2,6 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 #[allow(unused_imports)]
-
 #[derive(Default)]
 pub struct ExperimentalTab {}
 
