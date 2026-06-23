@@ -61,7 +61,11 @@ impl MarkovDecisionProcess for GridWorldEnv {
         action: &Self::A,
     ) -> f64 {
         let actual_next = self.step(current_state, action);
-        if *next_state == actual_next { 1.0 } else { 0.0 }
+        if *next_state == actual_next {
+            1.0
+        } else {
+            0.0
+        }
     }
 
     fn reward(&self, _current_state: &Self::S, _action: &Self::A, next_state: &Self::S) -> f64 {

@@ -52,13 +52,13 @@ pub mod surface;
 pub mod tracking;
 
 pub use clutter::EllipticalFilter;
-pub use czt::SpatialCztConfig;
 pub use czt::chirp_z_transform;
+pub use czt::SpatialCztConfig;
 pub use gating::GatingLogic;
 pub use geometry::{AngleFftConfig, SensorToPatientTransform, SphericalPoint};
 pub use mimo::Beamformer;
 pub use phase::PhaseUnwrapper;
-pub use physics::{C, FmcwConfig};
+pub use physics::{FmcwConfig, C};
 pub use super_resolution::MusicEstimator;
 pub use surface::BiQuadraticSurface;
 pub use tracking::{ConstantVelocityModel, TrackingFilter};

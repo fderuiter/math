@@ -1,4 +1,4 @@
-use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
+use math_explorer::applied::isosurface::{extract_isosurface, Point3D, VoxelGrid};
 use std::time::Instant;
 
 fn main() {

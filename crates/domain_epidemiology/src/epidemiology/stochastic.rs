@@ -51,8 +51,8 @@ pub fn probability_of_extinction(r0: f64, initial_cases: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::SeedableRng;
     use rand::rngs::StdRng;
+    use rand::SeedableRng;
     use std::error::Error;
 
     #[test]

@@ -1,6 +1,6 @@
 //! This module defines the predictor model for the CERA framework.
 
-use crate::climate::autoencoder::{ConvLayer, leaky_relu};
+use crate::climate::autoencoder::{leaky_relu, ConvLayer};
 use domain_ai::ai::optimization::Optimizer;
 use nalgebra::{DMatrix, DVector};
 

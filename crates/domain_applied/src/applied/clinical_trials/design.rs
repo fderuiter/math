@@ -1,6 +1,6 @@
 use super::types::ClinicalTrialError;
 use rand::seq::SliceRandom;
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 
 /// Represents the group assignment for a patient in a clinical trial.

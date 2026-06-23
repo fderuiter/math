@@ -158,8 +158,12 @@ impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>> TuringSystem<2, K, D, Fused
 }
 
 // Generic implementation
-impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
-    TuringSystem<N, K, D, S>
+impl<
+        const N: usize,
+        K: ReactionKinetics<N>,
+        D: SpatialDiffusion<N>,
+        S: TuringSolverStrategy<N>,
+    > TuringSystem<N, K, D, S>
 {
     /// Creates a new Turing System with custom kinetics, diffusion strategy, and solver.
     pub fn new_with_solver(
@@ -235,8 +239,12 @@ impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>, S: TuringSolverStrategy<2>>
     }
 }
 
-impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
-    OdeSystem<TuringState<N>> for TuringSystem<N, K, D, S>
+impl<
+        const N: usize,
+        K: ReactionKinetics<N>,
+        D: SpatialDiffusion<N>,
+        S: TuringSolverStrategy<N>,
+    > OdeSystem<TuringState<N>> for TuringSystem<N, K, D, S>
 {
     fn derivative(&self, t: f64, state: &TuringState<N>) -> TuringState<N> {
         let mut out = TuringState::new(state.len());
@@ -254,8 +262,12 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
     }
 }
 
-impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
-    TimeStepper<TuringState<N>> for TuringSystem<N, K, D, S>
+impl<
+        const N: usize,
+        K: ReactionKinetics<N>,
+        D: SpatialDiffusion<N>,
+        S: TuringSolverStrategy<N>,
+    > TimeStepper<TuringState<N>> for TuringSystem<N, K, D, S>
 {
     fn get_state(&self) -> &TuringState<N> {
         &self.state

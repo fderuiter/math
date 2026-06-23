@@ -13,7 +13,11 @@ pub fn schwarz_reflect<F>(f: F, z: Complex64) -> Complex64
 where
     F: Fn(Complex64) -> Complex64,
 {
-    if z.im < 0.0 { f(z.conj()).conj() } else { f(z) }
+    if z.im < 0.0 {
+        f(z.conj()).conj()
+    } else {
+        f(z)
+    }
 }
 
 #[cfg(test)]

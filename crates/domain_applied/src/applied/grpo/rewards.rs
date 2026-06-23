@@ -50,5 +50,9 @@ pub fn composite_reward(uncertainty_reward: f64, repetition_penalty: f64) -> f64
 ///
 /// 1 if the check is satisfied, 0 otherwise.
 pub fn binary_reward(satisfies_check: bool) -> i32 {
-    if satisfies_check { 1 } else { 0 }
+    if satisfies_check {
+        1
+    } else {
+        0
+    }
 }

@@ -4,8 +4,8 @@ mod tests {
     use crate::physics::fluid_dynamics::{
         analysis::{bernoulli_constant, reynolds_number, shear_stress},
         conservation::{
-            Euler as FluidEuler, MomentumEquation, NavierStokes, continuity_divergence,
-            material_derivative_scalar, navier_stokes_time_derivative,
+            continuity_divergence, material_derivative_scalar, navier_stokes_time_derivative,
+            Euler as FluidEuler, MomentumEquation, NavierStokes,
         },
         regimes::{FlatPlateClassifier, FlowClassifier, FlowRegime, PipeFlowClassifier},
         solver::FluidParticleSystem,

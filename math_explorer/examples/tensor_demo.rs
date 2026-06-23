@@ -1,4 +1,4 @@
-use math_explorer::pure_math::tensor::{RiemannianMetric, christoffel_symbols};
+use math_explorer::pure_math::tensor::{christoffel_symbols, RiemannianMetric};
 use nalgebra::{DMatrix, DVector};
 
 fn main() {

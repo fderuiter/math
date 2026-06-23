@@ -9,7 +9,7 @@ const TOLERANCE: f64 = 1e-6;
 fn get_d_amphetamine_params() -> PKParameters {
     // From prompt: d-amphetamine t_1/2 = 10h -> ke = ln(2)/10
     let ke_d = std::f64::consts::LN_2 / 10.0; // approx 0.0693
-    // From prompt: IR T_max = 3h. We solve for ka.
+                                              // From prompt: IR T_max = 3h. We solve for ka.
     let t_max_target = 3.0;
     // The user prompt suggests ka ~ 1.0, which is a good initial guess.
     let ka_d = solve_ka(t_max_target, ke_d, 1.0, 100, TOLERANCE).expect("Failed to solve for ka_d");
@@ -28,7 +28,7 @@ fn get_d_amphetamine_params() -> PKParameters {
 fn get_l_amphetamine_params() -> PKParameters {
     // From prompt: l-amphetamine t_1/2 = 13h -> ke = ln(2)/13
     let ke_l = std::f64::consts::LN_2 / 13.0; // approx 0.0533
-    // As per prompt, assume same ka as d-amphetamine.
+                                              // As per prompt, assume same ka as d-amphetamine.
     let d_params = get_d_amphetamine_params();
 
     PKParameters::new(

@@ -1,7 +1,7 @@
 use super::linear_algebra::Vector;
 use super::model::{Trainable, TwoLayerMLP};
 use super::probability::softmax;
-use crate::ai::optimization::{Optimizer, cross_entropy_softmax_prime};
+use crate::ai::optimization::{cross_entropy_softmax_prime, Optimizer};
 use std::ops::{Deref, DerefMut};
 
 /// The Deep Learning Cycle: Forward -> Loss -> Backward -> Update

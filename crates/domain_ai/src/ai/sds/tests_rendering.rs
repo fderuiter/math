@@ -1,5 +1,5 @@
 use crate::ai::sds::rendering::{
-    NeRFModel, generate_ray_bundle, render_image, stratified_sampling, volume_integration,
+    generate_ray_bundle, render_image, stratified_sampling, volume_integration, NeRFModel,
 };
 use approx::assert_relative_eq;
 use nalgebra::{Matrix4, Vector3};

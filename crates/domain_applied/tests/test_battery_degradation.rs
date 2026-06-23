@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use domain_applied::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
     #[allow(deprecated)]
     use domain_applied::applied::battery_degradation::{capacity, cycles_to_capacity, n70};
+    use domain_applied::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
 
     #[test]
     #[allow(deprecated)]

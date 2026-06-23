@@ -1,9 +1,9 @@
 use domain_applied::applied::favoritism::{
-    FavoritismInputs, calculate_favoritism_score_full, calculate_favoritism_score_with_rng,
+    calculate_favoritism_score_full, calculate_favoritism_score_with_rng, FavoritismInputs,
 };
 use pure_math::pure_math::analysis::integration::{ClenshawCurtis, IntegrationResult, Integrator};
-use rand::SeedableRng;
 use rand::rngs::StdRng;
+use rand::SeedableRng;
 
 #[test]
 fn test_favoritism_deterministic() {

@@ -1,7 +1,7 @@
 // Using petgraph for graph representations.
 // The Graph struct will be a wrapper around a petgraph::Graph.
-use petgraph::Undirected;
 use petgraph::graph::{Graph as PetgraphGraph, NodeIndex};
+use petgraph::Undirected;
 
 /// A wrapper around petgraph::Graph to represent an undirected graph.
 /// The nodes (N) and edges (E) are generic.

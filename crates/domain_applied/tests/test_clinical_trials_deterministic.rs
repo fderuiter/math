@@ -1,8 +1,8 @@
 use domain_applied::applied::clinical_trials::design::{
     AllocationStrategy, BlockRandomizer, Group, SimpleRandomizer,
 };
-use rand::SeedableRng;
 use rand::rngs::StdRng;
+use rand::SeedableRng;
 
 #[test]
 fn test_deterministic_simple_randomization() {
