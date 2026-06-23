@@ -7,7 +7,6 @@ use generative_turbulence_experimental;
 #[derive(Default)]
 pub struct ExperimentalTab {}
 
-
 impl ExplorerTab for ExperimentalTab {
     fn name(&self) -> &'static str {
         "Generative Turbulence (Experimental)"

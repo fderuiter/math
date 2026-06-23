@@ -1,6 +1,6 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::NeuroscienceTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Line, Plot, PlotPoints};
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;

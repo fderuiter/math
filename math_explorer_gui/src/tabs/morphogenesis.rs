@@ -78,7 +78,8 @@ impl SimulationRunner for MorphogenesisRunner {
             width: self.width,
             height: self.height,
             pixels,
-            custom_data: Vec::new(), structured_data: None,
+            custom_data: Vec::new(),
+            structured_data: None,
         }
     }
 
@@ -110,10 +111,20 @@ impl Default for MorphogenesisTab {
         let d_u = 1.0;
         let d_v = 100.0; // Needs significant difference for Turing patterns
         let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 }; // Classic spot/stripe params
-        let diffusion = FiniteDifference2D::new(math_explorer::math_kernel::types::Dimension(width), math_explorer::math_kernel::types::Dimension(height), math_explorer::math_kernel::types::StepSize(1.0), math_explorer::math_kernel::types::StepSize(1.0));
+        let diffusion = FiniteDifference2D::new(
+            math_explorer::math_kernel::types::Dimension(width),
+            math_explorer::math_kernel::types::Dimension(height),
+            math_explorer::math_kernel::types::StepSize(1.0),
+            math_explorer::math_kernel::types::StepSize(1.0),
+        );
 
-        let mut system =
-            TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::biology::morphogenesis::DiffusionCoeff(d_u), math_explorer::biology::morphogenesis::DiffusionCoeff(d_v), kinetics, diffusion);
+        let mut system = TuringSystem::new_with_kinetics(
+            math_explorer::math_kernel::types::Dimension(width * height),
+            math_explorer::biology::morphogenesis::DiffusionCoeff(d_u),
+            math_explorer::biology::morphogenesis::DiffusionCoeff(d_v),
+            kinetics,
+            diffusion,
+        );
 
         // Initialize with noise
         initialize_system(&mut system, width, height);

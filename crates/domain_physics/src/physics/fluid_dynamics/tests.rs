@@ -11,8 +11,8 @@ mod tests {
         solver::FluidParticleSystem,
         types::{FlowState, FluidProperties, SpatialGradients},
     };
-    use pure_math::pure_math::analysis::ode::{Euler as OdeEuler, SolverExt};
     use nalgebra::{Matrix3, Vector3};
+    use pure_math::pure_math::analysis::ode::{Euler as OdeEuler, SolverExt};
 
     #[test]
     fn test_fluid_properties() {

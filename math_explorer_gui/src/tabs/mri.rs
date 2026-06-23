@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};

@@ -139,7 +139,13 @@ impl TuringSystem<2, SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver>
 // Convenience implementation for custom kinetics/diffusion in 2-species case
 impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>> TuringSystem<2, K, D, FusedEulerSolver> {
     /// Creates a new Turing System with custom kinetics and diffusion strategy, using the default Fused Euler solver.
-    pub fn new_with_kinetics(size: Dimension, d_u: DiffusionCoeff, d_v: DiffusionCoeff, kinetics: K, diffusion: D) -> Self {
+    pub fn new_with_kinetics(
+        size: Dimension,
+        d_u: DiffusionCoeff,
+        d_v: DiffusionCoeff,
+        kinetics: K,
+        diffusion: D,
+    ) -> Self {
         Self {
             state: TuringState::new(*size),
             next_state: TuringState::new(*size),
@@ -273,7 +279,12 @@ mod tests {
     #[should_panic(expected = "State vector 1 length mismatch")]
     fn test_derivative_in_place_safety_check() {
         let n = 10;
-        let system = TuringSystem::new(math_commons::math_kernel::types::Dimension(n), DiffusionCoeff(1.0), DiffusionCoeff(1.0), math_commons::math_kernel::types::StepSize(1.0));
+        let system = TuringSystem::new(
+            math_commons::math_kernel::types::Dimension(n),
+            DiffusionCoeff(1.0),
+            DiffusionCoeff(1.0),
+            math_commons::math_kernel::types::StepSize(1.0),
+        );
         let mut state = TuringState::new(n);
 
         // Corrupt the state (simulate internal bug or misuse)
@@ -292,7 +303,12 @@ mod tests {
         let d_u = 1.0;
         let d_v = 0.5;
         let dx = 1.0;
-        let mut system = TuringSystem::new(math_commons::math_kernel::types::Dimension(n), DiffusionCoeff(d_u), DiffusionCoeff(d_v), math_commons::math_kernel::types::StepSize(dx));
+        let mut system = TuringSystem::new(
+            math_commons::math_kernel::types::Dimension(n),
+            DiffusionCoeff(d_u),
+            DiffusionCoeff(d_v),
+            math_commons::math_kernel::types::StepSize(dx),
+        );
 
         // Initialize with some pattern
         for i in 0..n {

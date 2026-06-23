@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::AiTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui::Color32;
 use egui_plot::{Plot, Points};
@@ -151,19 +151,23 @@ impl AiTool for LossLandscapeTool {
                 .x_axis_label("Weight (w)")
                 .y_axis_label("Bias (b)")
                 .data_aspect(1.0)
-                .show_accessible(ui, "Dynamic state of loss_landscape_plot updated.", |plot_ui| {
-                    for point in points {
-                        plot_ui.points(point);
-                    }
+                .show_accessible(
+                    ui,
+                    "Dynamic state of loss_landscape_plot updated.",
+                    |plot_ui| {
+                        for point in points {
+                            plot_ui.points(point);
+                        }
 
-                    // Mark the true solution (w=2, b=1)
-                    plot_ui.points(
-                        Points::new("Global Minima (True Solution)", vec![[2.0, 1.0]])
-                            .color(Color32::GREEN)
-                            .radius(6.0_f32)
-                            .shape(egui_plot::MarkerShape::Circle),
-                    );
-                });
+                        // Mark the true solution (w=2, b=1)
+                        plot_ui.points(
+                            Points::new("Global Minima (True Solution)", vec![[2.0, 1.0]])
+                                .color(Color32::GREEN)
+                                .radius(6.0_f32)
+                                .shape(egui_plot::MarkerShape::Circle),
+                        );
+                    },
+                );
         });
     }
 }

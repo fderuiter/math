@@ -3,8 +3,8 @@
 //! This module implements the conditional score-based diffusion model used for
 //! reconstructing turbulent flow fields from sparse observations.
 
-use tch::nn::VarStore;
 use crate::networks::unet::{UNet, UNetBuilder};
+use tch::nn::VarStore;
 
 /// Represents the conditional diffusion model.
 pub struct DiffusionModel {

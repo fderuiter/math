@@ -4,7 +4,7 @@
 //! It defines how models are optimized, including alternating updates for
 //! GANs and the iterative denoising process for diffusion models.
 
-use tch::nn::{VarStore, Optimizer, OptimizerConfig};
+use tch::nn::{Optimizer, OptimizerConfig, VarStore};
 
 /// A generic trainer for a given model.
 pub struct Trainer {
@@ -17,7 +17,10 @@ impl Trainer {
     /// Creates a new trainer.
     pub fn new(vs: VarStore) -> Result<Self, tch::TchError> {
         let optimizer = tch::nn::Adam::default().build(&vs, 1e-4)?;
-        Ok(Trainer { _vs: vs, _optimizer: optimizer })
+        Ok(Trainer {
+            _vs: vs,
+            _optimizer: optimizer,
+        })
     }
 
     /// Runs the training loop for the adversarially trained Neural Operator (adv-NO).

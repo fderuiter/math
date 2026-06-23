@@ -1,6 +1,6 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::NeuroscienceTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -77,7 +77,8 @@ impl SimulationRunner for HodgkinHuxleyRunner {
             width: 0,
             height: 0,
             pixels: Arc::new(Vec::new()),
-            custom_data, structured_data: None,
+            custom_data,
+            structured_data: None,
         }
     }
 

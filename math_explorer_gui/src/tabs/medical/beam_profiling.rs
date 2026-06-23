@@ -53,7 +53,11 @@ impl MedicalTool for BeamProfilingTool {
                 .view_aspect(2.0)
                 .x_axis_label("Depth (cm)")
                 .y_axis_label("Dose (Arbitrary Units)")
-                .show_accessible(ui, "Dynamic state of depth_dose_curve updated.", |plot_ui| plot_ui.line(line));
+                .show_accessible(
+                    ui,
+                    "Dynamic state of depth_dose_curve updated.",
+                    |plot_ui| plot_ui.line(line),
+                );
         });
     }
 }

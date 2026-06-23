@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::SolidStateTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::physics::solid_state::band_theory::{free_electron_1d, tight_binding_1d};
@@ -96,20 +96,24 @@ impl SolidStateTool for BandStructureTool {
                 .y_axis_label("Energy (E)")
                 .legend(egui_plot::Legend::default());
 
-            plot.show_accessible(ui, "Dynamic state of band_structure_plot updated.", |plot_ui| {
-                plot_ui.line(Line::new("Tight Binding", tb_points).name("Tight Binding"));
+            plot.show_accessible(
+                ui,
+                "Dynamic state of band_structure_plot updated.",
+                |plot_ui| {
+                    plot_ui.line(Line::new("Tight Binding", tb_points).name("Tight Binding"));
 
-                if self.show_free_electron {
-                    let fe_points: PlotPoints = (0..num_points)
-                        .map(|i| {
-                            let k = k_min + (i as f64) * k_step;
-                            let e = free_electron_1d(k, self.hbar, self.m);
-                            [k, e]
-                        })
-                        .collect();
-                    plot_ui.line(Line::new("Free Electron", fe_points).name("Free Electron"));
-                }
-            });
+                    if self.show_free_electron {
+                        let fe_points: PlotPoints = (0..num_points)
+                            .map(|i| {
+                                let k = k_min + (i as f64) * k_step;
+                                let e = free_electron_1d(k, self.hbar, self.m);
+                                [k, e]
+                            })
+                            .collect();
+                        plot_ui.line(Line::new("Free Electron", fe_points).name("Free Electron"));
+                    }
+                },
+            );
         });
     }
 }

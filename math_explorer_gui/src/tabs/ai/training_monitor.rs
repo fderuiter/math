@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use egui::Color32;
@@ -178,57 +178,65 @@ impl AiTool for TrainingMonitorTool {
             // Top: Metrics
             ui.columns(2, |columns| {
                 columns[0].heading("Loss History");
-                Plot::new("loss_plot")
-                    .height(200.0)
-                    .show_accessible(&mut columns[0], "Dynamic state of loss_plot updated.", |plot_ui| {
+                Plot::new("loss_plot").height(200.0).show_accessible(
+                    &mut columns[0],
+                    "Dynamic state of loss_plot updated.",
+                    |plot_ui| {
                         plot_ui.line(Line::new("Loss", self.loss_history.clone()));
-                    });
+                    },
+                );
 
                 columns[1].heading("Accuracy History");
-                Plot::new("accuracy_plot")
-                    .height(200.0)
-                    .show_accessible(&mut columns[1], "Dynamic state of accuracy_plot updated.", |plot_ui| {
+                Plot::new("accuracy_plot").height(200.0).show_accessible(
+                    &mut columns[1],
+                    "Dynamic state of accuracy_plot updated.",
+                    |plot_ui| {
                         plot_ui.line(
                             Line::new("Accuracy", self.accuracy_history.clone())
                                 .color(Color32::GREEN),
                         );
-                    });
+                    },
+                );
             });
 
             ui.separator();
 
             // Bottom: Data Visualization
             ui.heading("Decision Boundary Visualization");
-            Plot::new("data_plot").data_aspect(1.0).show_accessible(ui, "Dynamic state of data_plot updated.", |plot_ui| {
-                // Draw actual data points
-                let mut class_0_points = Vec::new();
-                let mut class_1_points = Vec::new();
+            Plot::new("data_plot").data_aspect(1.0).show_accessible(
+                ui,
+                "Dynamic state of data_plot updated.",
+                |plot_ui| {
+                    // Draw actual data points
+                    let mut class_0_points = Vec::new();
+                    let mut class_1_points = Vec::new();
 
-                for (x, y) in &self.data {
-                    let point = [x[0], x[1]];
-                    if y[0] > 0.5 {
-                        // Class 0
-                        class_0_points.push(point);
-                    } else {
-                        // Class 1
-                        class_1_points.push(point);
+                    for (x, y) in &self.data {
+                        let point = [x[0], x[1]];
+                        if y[0] > 0.5 {
+                            // Class 0
+                            class_0_points.push(point);
+                        } else {
+                            // Class 1
+                            class_1_points.push(point);
+                        }
                     }
-                }
 
-                plot_ui.points(
-                    Points::new("Class 0", class_0_points)
-                        .color(Color32::RED)
-                        .radius(4.0_f32),
-                );
-                plot_ui.points(
-                    Points::new("Class 1", class_1_points)
-                        .color(Color32::BLUE)
-                        .radius(4.0_f32),
-                );
+                    plot_ui.points(
+                        Points::new("Class 0", class_0_points)
+                            .color(Color32::RED)
+                            .radius(4.0_f32),
+                    );
+                    plot_ui.points(
+                        Points::new("Class 1", class_1_points)
+                            .color(Color32::BLUE)
+                            .radius(4.0_f32),
+                    );
 
-                // Optionally draw prediction grid (expensive, maybe skip for now or low res)
-                // If we want to show decision boundary, we can sample a grid.
-            });
+                    // Optionally draw prediction grid (expensive, maybe skip for now or low res)
+                    // If we want to show decision boundary, we can sample a grid.
+                },
+            );
         });
     }
 }

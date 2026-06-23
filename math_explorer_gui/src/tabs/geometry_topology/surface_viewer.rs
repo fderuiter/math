@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::GeometryTopologyTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::differential_geometry::surface::{
@@ -205,9 +205,10 @@ impl GeometryTopologyTool for SurfaceViewer {
 
             let grid_lines = self.generate_grid_lines(surface.as_ref());
 
-            Plot::new("surface_plot")
-                .data_aspect(1.0)
-                .show_accessible(ui, "Dynamic state of surface_plot updated.", |plot_ui| {
+            Plot::new("surface_plot").data_aspect(1.0).show_accessible(
+                ui,
+                "Dynamic state of surface_plot updated.",
+                |plot_ui| {
                     for (i, line_points) in grid_lines.into_iter().enumerate() {
                         plot_ui.line(
                             Line::new("", PlotPoints::new(line_points))
@@ -215,7 +216,8 @@ impl GeometryTopologyTool for SurfaceViewer {
                                 .color(egui::Color32::from_rgb(100, 200, 255)),
                         );
                     }
-                });
+                },
+            );
 
             ui.label("Drag 'Yaw' and 'Pitch' in the side panel to rotate the view.");
         });

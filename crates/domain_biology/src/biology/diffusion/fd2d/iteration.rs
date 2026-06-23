@@ -1,6 +1,6 @@
-use math_commons::math_kernel::types::GridIndex;
-use super::geometry::GeometryStrategy;
 use super::boundary::BoundaryStrategy;
+use super::geometry::GeometryStrategy;
+use math_commons::math_kernel::types::GridIndex;
 
 pub trait IterationStrategy {
     fn iterate<G, B, F>(&self, geom: &G, boundary: &B, op: F)
@@ -20,7 +20,7 @@ impl IterationStrategy for LoopSplittingIteration {
     where
         G: GeometryStrategy,
         B: BoundaryStrategy,
-        F: FnMut(GridIndex, GridIndex, GridIndex, GridIndex, GridIndex)
+        F: FnMut(GridIndex, GridIndex, GridIndex, GridIndex, GridIndex),
     {
         let width = *geom.width();
         let height = *geom.height();

@@ -123,50 +123,56 @@ impl GeometryTopologyTool for VietorisRipsTool {
                 .allow_drag(true)
                 .allow_zoom(true);
 
-            plot.show_accessible(ui, "Dynamic state of vietoris_rips_plot updated.", |plot_ui| {
-                // Draw 2-simplices (triangles)
-                let triangles = self.complex.get_simplices(2);
-                for t in triangles {
-                    let p0 = &self.points[t.vertices[0]];
-                    let p1 = &self.points[t.vertices[1]];
-                    let p2 = &self.points[t.vertices[2]];
+            plot.show_accessible(
+                ui,
+                "Dynamic state of vietoris_rips_plot updated.",
+                |plot_ui| {
+                    // Draw 2-simplices (triangles)
+                    let triangles = self.complex.get_simplices(2);
+                    for t in triangles {
+                        let p0 = &self.points[t.vertices[0]];
+                        let p1 = &self.points[t.vertices[1]];
+                        let p2 = &self.points[t.vertices[2]];
 
-                    let points = vec![[p0.x, p0.y], [p1.x, p1.y], [p2.x, p2.y]];
+                        let points = vec![[p0.x, p0.y], [p1.x, p1.y], [p2.x, p2.y]];
 
-                    plot_ui.polygon(
-                        Polygon::new("Triangle", PlotPoints::new(points))
-                            .fill_color(egui::Color32::from_rgba_unmultiplied(100, 150, 250, 50))
-                            .stroke(egui::Stroke::new(0.0_f32, egui::Color32::TRANSPARENT)),
+                        plot_ui.polygon(
+                            Polygon::new("Triangle", PlotPoints::new(points))
+                                .fill_color(egui::Color32::from_rgba_unmultiplied(
+                                    100, 150, 250, 50,
+                                ))
+                                .stroke(egui::Stroke::new(0.0_f32, egui::Color32::TRANSPARENT)),
+                        );
+                    }
+
+                    // Draw 1-simplices (edges)
+                    let edges = self.complex.get_simplices(1);
+                    for e in edges {
+                        let p0 = &self.points[e.vertices[0]];
+                        let p1 = &self.points[e.vertices[1]];
+
+                        let points = vec![[p0.x, p0.y], [p1.x, p1.y]];
+
+                        plot_ui.line(
+                            Line::new("Edge", PlotPoints::new(points))
+                                .color(egui::Color32::from_rgb(150, 150, 150))
+                                .width(1.5_f32),
+                        );
+                    }
+
+                    // Draw 0-simplices (vertices)
+                    let mut vertex_coords = Vec::new();
+                    for p in &self.points {
+                        vertex_coords.push([p.x, p.y]);
+                    }
+
+                    plot_ui.points(
+                        Points::new("Vertices", PlotPoints::new(vertex_coords))
+                            .color(egui::Color32::from_rgb(50, 50, 200))
+                            .radius(4.0_f32),
                     );
-                }
-
-                // Draw 1-simplices (edges)
-                let edges = self.complex.get_simplices(1);
-                for e in edges {
-                    let p0 = &self.points[e.vertices[0]];
-                    let p1 = &self.points[e.vertices[1]];
-
-                    let points = vec![[p0.x, p0.y], [p1.x, p1.y]];
-
-                    plot_ui.line(
-                        Line::new("Edge", PlotPoints::new(points))
-                            .color(egui::Color32::from_rgb(150, 150, 150))
-                            .width(1.5_f32),
-                    );
-                }
-
-                // Draw 0-simplices (vertices)
-                let mut vertex_coords = Vec::new();
-                for p in &self.points {
-                    vertex_coords.push([p.x, p.y]);
-                }
-
-                plot_ui.points(
-                    Points::new("Vertices", PlotPoints::new(vertex_coords))
-                        .color(egui::Color32::from_rgb(50, 50, 200))
-                        .radius(4.0_f32),
-                );
-            });
+                },
+            );
         });
     }
 }

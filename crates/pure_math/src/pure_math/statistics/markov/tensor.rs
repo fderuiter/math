@@ -20,17 +20,6 @@ pub struct TimeIndex<T: RealField + Copy + ToPrimitive> {
 
 impl<T: RealField + Copy + ToPrimitive> TimeIndex<T> {
     /// Creates a new time index.
-    ///
-    /// # Arguments
-    ///
-    /// * `time` - The time value (must be finite)
-    ///
-    /// # Returns
-    ///
-    /// A new `TimeIndex` or an error if the time is invalid.
-    ///
-    /// # Errors
-    ///
     /// Returns `MarkovError::InvalidState` if `time` is not finite.
     pub fn new(time: T) -> Result<Self> {
         if !time.is_finite() {

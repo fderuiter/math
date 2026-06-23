@@ -1,7 +1,7 @@
 //! This module defines the autoencoder architecture for the CERA framework.
 
-use domain_ai::ai::optimization::Optimizer;
 use crate::climate::tensor_ops::conv1d;
+use domain_ai::ai::optimization::Optimizer;
 use nalgebra::{DMatrix, DVector};
 
 /// A trait representing the Autoencoder model interface.

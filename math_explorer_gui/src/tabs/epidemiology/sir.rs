@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::EpidemiologyTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::epidemiology::compartmental::SIRModel;

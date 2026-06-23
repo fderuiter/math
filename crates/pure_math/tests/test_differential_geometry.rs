@@ -1,5 +1,6 @@
 #![cfg(all(feature = "pure_math"))]
 
+use nalgebra::Point3;
 use pure_math::pure_math::analysis::pde::{PdeClassification, SecondOrderLinearPde2D};
 use pure_math::pure_math::differential_geometry::heat_equation::HeatEquationSolver;
 use pure_math::pure_math::differential_geometry::mean_curvature_flow::{
@@ -7,7 +8,6 @@ use pure_math::pure_math::differential_geometry::mean_curvature_flow::{
 };
 use pure_math::pure_math::differential_geometry::operators::laplace_beltrami;
 use pure_math::pure_math::differential_geometry::surface::{Sphere, SurfaceAnalysis, Torus};
-use nalgebra::Point3;
 use std::f64::consts::PI;
 
 #[test]

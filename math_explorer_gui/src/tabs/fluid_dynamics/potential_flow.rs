@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Arrows, Plot};
 use math_explorer::physics::fluid_dynamics::potential_flow::{
@@ -138,42 +138,47 @@ impl FluidDynamicsTool for PotentialFlowTool {
             Plot::new("potential_flow_plot")
                 .data_aspect(1.0)
                 .view_aspect(1.0)
-                .show_accessible(ui, "Dynamic state of potential_flow_plot updated.", |plot_ui| {
-                    // Generate vector field arrows
-                    let step = (2.0 * self.view_range) / (self.grid_size as f64);
-                    let min = -self.view_range;
-                    let max = self.view_range;
+                .show_accessible(
+                    ui,
+                    "Dynamic state of potential_flow_plot updated.",
+                    |plot_ui| {
+                        // Generate vector field arrows
+                        let step = (2.0 * self.view_range) / (self.grid_size as f64);
+                        let min = -self.view_range;
+                        let max = self.view_range;
 
-                    let mut origins = Vec::new();
-                    let mut tips = Vec::new();
+                        let mut origins = Vec::new();
+                        let mut tips = Vec::new();
 
-                    let mut x = min;
-                    while x <= max {
-                        let mut y = min;
-                        while y <= max {
-                            let v = self.field.velocity(x, y);
-                            let magnitude = v.norm();
+                        let mut x = min;
+                        while x <= max {
+                            let mut y = min;
+                            while y <= max {
+                                let v = self.field.velocity(x, y);
+                                let magnitude = v.norm();
 
-                            // Scale arrow for visibility, but cap it to avoid huge arrows near singularities
-                            let arrow_len = (magnitude * 0.1).min(step * 0.8);
-                            if magnitude > 1e-6 {
-                                let direction = v.normalize();
-                                let start = [x, y];
-                                let end =
-                                    [x + direction.x * arrow_len, y + direction.y * arrow_len];
-                                origins.push(start);
-                                tips.push(end);
+                                // Scale arrow for visibility, but cap it to avoid huge arrows near singularities
+                                let arrow_len = (magnitude * 0.1).min(step * 0.8);
+                                if magnitude > 1e-6 {
+                                    let direction = v.normalize();
+                                    let start = [x, y];
+                                    let end =
+                                        [x + direction.x * arrow_len, y + direction.y * arrow_len];
+                                    origins.push(start);
+                                    tips.push(end);
+                                }
+
+                                y += step;
                             }
-
-                            y += step;
+                            x += step;
                         }
-                        x += step;
-                    }
 
-                    plot_ui.arrows(
-                        Arrows::new("Vector Field", origins, tips).color(egui::Color32::LIGHT_BLUE),
-                    );
-                });
+                        plot_ui.arrows(
+                            Arrows::new("Vector Field", origins, tips)
+                                .color(egui::Color32::LIGHT_BLUE),
+                        );
+                    },
+                );
         });
     }
 }

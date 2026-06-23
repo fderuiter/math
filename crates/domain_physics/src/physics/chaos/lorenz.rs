@@ -1,7 +1,7 @@
 //! Continuous Chaos (The Lorenz System)
 
-use pure_math::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
 use nalgebra::Vector3;
+use pure_math::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
 
 /// Represents the state of the Lorenz system $(x, y, z)$.
 #[derive(Debug, Clone, Copy)]
@@ -130,7 +130,12 @@ impl TimeStepper<Vector3<f64>> for LorenzSystem {
 
     fn step(&mut self, dt: f64) {
         use pure_math::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, <Self as TimeStepper<Vector3<f64>>>::get_state(self), dt);
+        let new_state = RungeKutta4::step(
+            self,
+            0.0,
+            <Self as TimeStepper<Vector3<f64>>>::get_state(self),
+            dt,
+        );
         *self.get_state_mut() = new_state;
     }
 }

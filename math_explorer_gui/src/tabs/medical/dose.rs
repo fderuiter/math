@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::MedicalTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};

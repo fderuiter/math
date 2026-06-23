@@ -76,7 +76,8 @@ pub fn compute_q_invariant_2d(velocity_field: &Tensor) -> Result<Tensor, &'stati
     // Q = 0.5 * (||Omega||^2 - ||S||^2)
     // ||S||^2 = s11^2 + 2*s12^2 + s22^2
     // ||Omega||^2 = 2*w12^2
-    let norm_s_sq = s11.pow_tensor_scalar(2) + s12.pow_tensor_scalar(2) * 2.0 + s22.pow_tensor_scalar(2);
+    let norm_s_sq =
+        s11.pow_tensor_scalar(2) + s12.pow_tensor_scalar(2) * 2.0 + s22.pow_tensor_scalar(2);
     let norm_omega_sq = w12.pow_tensor_scalar(2) * 2.0;
 
     let q = (norm_omega_sq - norm_s_sq) * 0.5;

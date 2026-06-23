@@ -1,8 +1,8 @@
-use crate::error::LoraError;
 use super::strategies::{
     CombinationStrategy, L1RegularizationStrategy, LinearCombinationStrategy, ObjectiveStrategy,
 };
 use super::types::LoraStateDict;
+use crate::error::LoraError;
 
 /// A specialized ensemble of LoRA modules that can be combined dynamically.
 ///

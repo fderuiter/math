@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
@@ -131,7 +131,8 @@ impl SimulationRunner for LbmRunner {
             width,
             height,
             pixels: Arc::new(pixels),
-            custom_data: Vec::new(), structured_data: None,
+            custom_data: Vec::new(),
+            structured_data: None,
         }
     }
 

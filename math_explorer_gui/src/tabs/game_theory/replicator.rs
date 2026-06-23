@@ -1,6 +1,6 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::GameTheoryTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Legend, Line, Plot, PlotPoints, VLine};
 use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
@@ -263,9 +263,13 @@ impl ReplicatorDynamicsTool {
             .allow_drag(false)
             .include_y(0.0)
             .include_y(1.0)
-            .show_accessible(ui, "Dynamic state of population_bar_chart updated.", |plot_ui| {
-                plot_ui.bar_chart(BarChart::new("Distribution", bars));
-            });
+            .show_accessible(
+                ui,
+                "Dynamic state of population_bar_chart updated.",
+                |plot_ui| {
+                    plot_ui.bar_chart(BarChart::new("Distribution", bars));
+                },
+            );
 
         // Numerical readout
         ui.horizontal(|ui| {

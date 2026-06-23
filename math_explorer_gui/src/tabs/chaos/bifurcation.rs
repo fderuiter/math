@@ -1,6 +1,6 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::ChaosTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Plot, PlotPoints, Points};
 use math_explorer::physics::chaos::logistic;
@@ -79,13 +79,17 @@ impl ChaosTool for BifurcationDiagram {
                 .view_aspect(2.0)
                 .x_axis_label("Growth Rate (r)")
                 .y_axis_label("Population (x)")
-                .show_accessible(ui, "Dynamic state of bifurcation_plot updated.", |plot_ui| {
-                    plot_ui.points(
-                        Points::new("Attractor", PlotPoints::new(self.points.clone()))
-                            .radius(1.0_f32)
-                            .color(egui::Color32::from_rgb(100, 200, 255)),
-                    );
-                });
+                .show_accessible(
+                    ui,
+                    "Dynamic state of bifurcation_plot updated.",
+                    |plot_ui| {
+                        plot_ui.points(
+                            Points::new("Attractor", PlotPoints::new(self.points.clone()))
+                                .radius(1.0_f32)
+                                .color(egui::Color32::from_rgb(100, 200, 255)),
+                        );
+                    },
+                );
         });
     }
 }

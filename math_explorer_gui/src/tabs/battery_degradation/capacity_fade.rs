@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::BatteryDegradationTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{HLine, Line, Plot, PlotPoints};
 use math_explorer::applied::battery_degradation::{Cycles, DepthOfDischarge, PowerLawModel};
@@ -84,21 +84,25 @@ impl BatteryDegradationTool for CapacityFadeTool {
                 .y_axis_label("State of Health (Capacity)")
                 .include_y(0.0)
                 .include_y(1.0)
-                .show_accessible(ui, "Dynamic state of capacity_fade_plot updated.", |plot_ui| {
-                    plot_ui.line(line);
-                    // Add a horizontal line at 70% (End of Life)
-                    plot_ui.hline(
-                        HLine::new("End of Life (70%)", 0.7)
-                            .color(egui::Color32::RED)
-                            .style(egui_plot::LineStyle::Dashed { length: 10.0 }),
-                    );
-                    // Add a horizontal line at 80% (First Life)
-                    plot_ui.hline(
-                        HLine::new("First Life (80%)", 0.8)
-                            .color(egui::Color32::YELLOW)
-                            .style(egui_plot::LineStyle::Dashed { length: 10.0 }),
-                    );
-                });
+                .show_accessible(
+                    ui,
+                    "Dynamic state of capacity_fade_plot updated.",
+                    |plot_ui| {
+                        plot_ui.line(line);
+                        // Add a horizontal line at 70% (End of Life)
+                        plot_ui.hline(
+                            HLine::new("End of Life (70%)", 0.7)
+                                .color(egui::Color32::RED)
+                                .style(egui_plot::LineStyle::Dashed { length: 10.0 }),
+                        );
+                        // Add a horizontal line at 80% (First Life)
+                        plot_ui.hline(
+                            HLine::new("First Life (80%)", 0.8)
+                                .color(egui::Color32::YELLOW)
+                                .style(egui_plot::LineStyle::Dashed { length: 10.0 }),
+                        );
+                    },
+                );
 
             ui.add_space(10.0);
 

@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::ClinicalTrialsTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::applied::clinical_trials::survival_analysis::{
@@ -151,12 +151,16 @@ impl ClinicalTrialsTool for SurvivalAnalysisTool {
                 .view_aspect(2.0)
                 .x_axis_label("Time")
                 .y_axis_label("Survival Probability")
-                .show_accessible(ui, "Dynamic state of kaplan_meier_plot updated.", |plot_ui| {
-                    plot_ui.line(
-                        Line::new("Survival Probability", PlotPoints::new(plot_points))
-                            .name("Survival Probability"),
-                    );
-                });
+                .show_accessible(
+                    ui,
+                    "Dynamic state of kaplan_meier_plot updated.",
+                    |plot_ui| {
+                        plot_ui.line(
+                            Line::new("Survival Probability", PlotPoints::new(plot_points))
+                                .name("Survival Probability"),
+                        );
+                    },
+                );
         });
     }
 }

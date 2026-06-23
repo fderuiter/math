@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::SolidStateTool;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
 use math_explorer::physics::solid_state::lattice::{
@@ -159,9 +159,10 @@ impl SolidStateTool for CrystalViewer {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            Plot::new("crystal_plot")
-                .data_aspect(1.0)
-                .show_accessible(ui, "Dynamic state of crystal_plot updated.", |plot_ui| {
+            Plot::new("crystal_plot").data_aspect(1.0).show_accessible(
+                ui,
+                "Dynamic state of crystal_plot updated.",
+                |plot_ui| {
                     // Draw Box
                     self.draw_unit_cell_box(plot_ui);
 
@@ -178,7 +179,8 @@ impl SolidStateTool for CrystalViewer {
                             .radius(5.0_f32)
                             .color(egui::Color32::RED),
                     );
-                });
+                },
+            );
             ui.label("Drag 'Yaw' and 'Pitch' to rotate.");
         });
     }

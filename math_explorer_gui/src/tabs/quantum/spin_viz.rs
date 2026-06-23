@@ -1,5 +1,5 @@
-use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
 use math_explorer::physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};

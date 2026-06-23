@@ -42,7 +42,10 @@ impl VirtualFileSystem for WasmVfs {
         if let Some(content) = get_file_content(path) {
             Ok(content.to_string())
         } else {
-            Err(std::io::Error::new(std::io::ErrorKind::NotFound, "File not found in VFS"))
+            Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "File not found in VFS",
+            ))
         }
     }
 
@@ -55,7 +58,10 @@ impl VirtualFileSystem for WasmVfs {
         if let Some(children) = get_dir_children(path) {
             Ok(children.iter().map(|s| s.to_string()).collect())
         } else {
-            Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Directory not found in VFS"))
+            Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Directory not found in VFS",
+            ))
         }
     }
 }
@@ -70,13 +76,14 @@ pub fn trigger_download(filename: &str, content: &[u8]) {
     array.push(&uint8_array.buffer());
     let mut options = web_sys::BlobPropertyBag::new();
     options.set_type("application/octet-stream");
-    let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(
-        &array,
-        &options
-    ).unwrap();
+    let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&array, &options).unwrap();
     let url = web_sys::Url::create_object_url_with_blob(&blob).unwrap();
-    
-    let a = document.create_element("a").unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+
+    let a = document
+        .create_element("a")
+        .unwrap()
+        .dyn_into::<web_sys::HtmlElement>()
+        .unwrap();
     a.set_attribute("href", &url).unwrap();
     a.set_attribute("download", filename).unwrap();
     a.click();

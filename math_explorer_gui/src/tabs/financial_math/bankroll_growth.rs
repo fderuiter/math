@@ -1,6 +1,6 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::FinancialMathTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::statistics::kelly::{
@@ -157,29 +157,33 @@ impl FinancialMathTool for BankrollGrowthTool {
                     .view_aspect(2.0)
                     .legend(egui_plot::Legend::default());
 
-                plot.show_accessible(ui, "Dynamic state of bankroll_growth_plot updated.", |plot_ui| {
-                    plot_ui.line(
-                        Line::new(
-                            "Full Kelly",
-                            PlotPoints::new(self.full_kelly_points.clone()),
-                        )
-                        .color(egui::Color32::RED),
-                    );
-                    plot_ui.line(
-                        Line::new(
-                            "Half Kelly",
-                            PlotPoints::new(self.half_kelly_points.clone()),
-                        )
-                        .color(egui::Color32::YELLOW),
-                    );
-                    plot_ui.line(
-                        Line::new(
-                            "Quarter Kelly",
-                            PlotPoints::new(self.quarter_kelly_points.clone()),
-                        )
-                        .color(egui::Color32::GREEN),
-                    );
-                });
+                plot.show_accessible(
+                    ui,
+                    "Dynamic state of bankroll_growth_plot updated.",
+                    |plot_ui| {
+                        plot_ui.line(
+                            Line::new(
+                                "Full Kelly",
+                                PlotPoints::new(self.full_kelly_points.clone()),
+                            )
+                            .color(egui::Color32::RED),
+                        );
+                        plot_ui.line(
+                            Line::new(
+                                "Half Kelly",
+                                PlotPoints::new(self.half_kelly_points.clone()),
+                            )
+                            .color(egui::Color32::YELLOW),
+                        );
+                        plot_ui.line(
+                            Line::new(
+                                "Quarter Kelly",
+                                PlotPoints::new(self.quarter_kelly_points.clone()),
+                            )
+                            .color(egui::Color32::GREEN),
+                        );
+                    },
+                );
             }
         });
     }

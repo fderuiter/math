@@ -1,6 +1,6 @@
-use crate::accessibility::PlotAccessibilityExt;
 use super::NumberTheoryTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
 use math_explorer::pure_math::number_theory::partitions;
@@ -173,9 +173,13 @@ impl NumberTheoryTool for PartitionsWidget {
                     Plot::new("partition_plot")
                         .allow_zoom(true)
                         .allow_drag(true)
-                        .show_accessible(ui, "Dynamic state of partition_plot updated.", |plot_ui| {
-                            plot_ui.bar_chart(chart);
-                        });
+                        .show_accessible(
+                            ui,
+                            "Dynamic state of partition_plot updated.",
+                            |plot_ui| {
+                                plot_ui.bar_chart(chart);
+                            },
+                        );
                 });
             });
         });

@@ -68,17 +68,13 @@ impl EpidemiologyTool for NetworkPropagationTool {
                     let _ = self.model.set_num_nodes(num_nodes);
                     self.reset_network();
                 }
-                
+
                 let mut beta = self.model.beta();
-                ui.add(
-                    egui::Slider::new(&mut beta, 0.0..=1.0).text("Transmission (beta)"),
-                );
+                ui.add(egui::Slider::new(&mut beta, 0.0..=1.0).text("Transmission (beta)"));
                 let _ = self.model.set_beta(beta);
-                
+
                 let mut gamma = self.model.gamma();
-                ui.add(
-                    egui::Slider::new(&mut gamma, 0.0..=1.0).text("Recovery (gamma)"),
-                );
+                ui.add(egui::Slider::new(&mut gamma, 0.0..=1.0).text("Recovery (gamma)"));
                 let _ = self.model.set_gamma(gamma);
 
                 ui.separator();
@@ -144,8 +140,8 @@ impl EpidemiologyTool for NetworkPropagationTool {
 
                 // Draw nodes
                 for i in 0..self.model.num_nodes() {
-                    let p =
-                        center + egui::vec2(self.model.positions()[i][0], self.model.positions()[i][1]);
+                    let p = center
+                        + egui::vec2(self.model.positions()[i][0], self.model.positions()[i][1]);
                     let color = match self.model.states()[i] {
                         NodeState::Susceptible => Color32::BLUE,
                         NodeState::Infected => Color32::RED,

@@ -1,6 +1,6 @@
 use super::types::FavoritismInputs;
-use pure_math::pure_math::analysis::integration::Integrator;
 use nalgebra::{DMatrix, DVector};
+use pure_math::pure_math::analysis::integration::Integrator;
 use rand::{Rng, RngCore};
 
 const EPSILON: f64 = 1e-9;
