@@ -7,6 +7,6 @@ edition = "2024"
 
 math_explorer = { path = "../../math_explorer" }
 approx = "0.5.1"
+pure_math = { path = "../../crates/pure_math" }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tch = "0.15.0"
-pure_math = { path = "../../crates/pure_math" }
