@@ -13,11 +13,11 @@ the electrical characteristics of excitable cells such as neurons and cardiac my
 
 ## Install
 
-This module is part of the `math_explorer` core library. To use it, include the library in your `Cargo.toml`.
+This module is part of the `domain_biology` core library. To use it, include the library in your `Cargo.toml`.
 
 ```toml
 [dependencies]
-math_explorer = { path = "path/to/math_explorer" }
+domain_biology = { path = "path/to/domain_biology" }
 ```
 
 ---
@@ -27,10 +27,10 @@ math_explorer = { path = "path/to/math_explorer" }
 You can see this model in action by running the standalone, fully executable example:
 
 ```bash
-cargo run --release --package math_explorer --example hodgkin_huxley_demo
+cargo run --release --package domain_biology --example hodgkin_huxley_demo
 ```
 
-*(See `math_explorer/examples/hodgkin_huxley_demo.rs` for implementation details)*
+*(See `domain_biology/examples/hodgkin_huxley_demo.rs` for implementation details)*
 
 ### Quick Start
 
