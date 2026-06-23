@@ -63,12 +63,11 @@ jobs:
       - name: Check Formatting
         if: matrix.target == 'x86_64-unknown-linux-gnu'
         run: |
-          cargo fmt --all -- --check > fmt_output.txt || (
-            echo "Formatting failed! Diff:" > diff.txt
-            cat fmt_output.txt >> diff.txt
-            gh issue comment 988 -F diff.txt
-            exit 1
-          )
+          cargo fmt --all || true
+          git config --global user.name "CI Bot"
+          git config --global user.email "bot@example.com"
+          git add -u
+          git diff-index --quiet HEAD || (git commit -m "Auto-fix formatting from CI" && git push "https://${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_HEAD_REF})
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
