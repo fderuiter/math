@@ -15,6 +15,7 @@ pub trait SimulationModel: Sized {
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 mod tests {
     use super::*;
     use serde::{Deserialize, Serialize};
