@@ -7,7 +7,7 @@ use crate::error::MarkovError;
 pub type Result<T> = std::result::Result<T, MarkovError>;
 use nalgebra::{DMatrix, RealField};
 
-use super::time_index::TimeIndex;
+pub use super::time_index::TimeIndex;
 use num_traits::ToPrimitive;
 
 /// A time-indexed collection of transition matrices.
