@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_lines)]
 use crate::math_types::{Integer, ops::Pow, ops::RemRounding};
 use crate::pure_math::number_theory::primes::is_prime;
 use thiserror::Error;
