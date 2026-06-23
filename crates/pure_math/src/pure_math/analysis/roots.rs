@@ -22,9 +22,9 @@ pub enum AnalysisError {
 /// # Examples
 ///
 /// ```
-/// use crate::pure_math::analysis::roots::{RootFinder, Bisection, NewtonRaphson};
+/// use pure_math::pure_math::analysis::roots::{RootFinder, Bisection, NewtonRaphson};
 ///
-/// fn main() -> Result<(), crate::pure_math::analysis::roots::AnalysisError> {
+/// fn main() -> Result<(), pure_math::pure_math::analysis::roots::AnalysisError> {
 ///     // Define the function f(x) = x^2 - 4
 ///     let f = |x: f64| x * x - 4.0;
 ///
@@ -72,9 +72,9 @@ pub trait RootFinder {
 /// # Examples
 ///
 /// ```
-/// use crate::pure_math::analysis::roots::{RootFinder, Bisection};
+/// use pure_math::pure_math::analysis::roots::{RootFinder, Bisection};
 ///
-/// fn main() -> Result<(), crate::pure_math::analysis::roots::AnalysisError> {
+/// fn main() -> Result<(), pure_math::pure_math::analysis::roots::AnalysisError> {
 ///     let solver = Bisection::default();
 ///
 ///     // Find root of x^2 - 2 = 0 in [1, 2]
@@ -187,9 +187,9 @@ impl RootFinder for Bisection {
 /// # Examples
 ///
 /// ```
-/// use crate::pure_math::analysis::roots::{RootFinder, NewtonRaphson};
+/// use pure_math::pure_math::analysis::roots::{RootFinder, NewtonRaphson};
 ///
-/// fn main() -> Result<(), crate::pure_math::analysis::roots::AnalysisError> {
+/// fn main() -> Result<(), pure_math::pure_math::analysis::roots::AnalysisError> {
 ///     let solver = NewtonRaphson::default();
 ///
 ///     // Find root of x^2 - 2 = 0

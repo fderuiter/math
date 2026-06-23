@@ -47,7 +47,7 @@ impl ZipDistribution {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::{ZipDistribution, ZipParams};
+    /// use pure_math::pure_math::statistics::zip_regression::{ZipDistribution, ZipParams};
     ///
     /// let params = ZipParams::from_values(0.3, 2.0).unwrap();
     /// let dist = ZipDistribution::new(params);
@@ -94,7 +94,7 @@ impl ZipDistribution {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::{ZipDistribution, Count};
+    /// use pure_math::pure_math::statistics::zip_regression::{ZipDistribution, Count};
     ///
     /// let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
     /// let prob_zero = dist.pmf(Count::new(0));
@@ -143,7 +143,7 @@ impl ZipDistribution {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::ZipDistribution;
+    /// use pure_math::pure_math::statistics::zip_regression::ZipDistribution;
     ///
     /// let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
     /// let mean = dist.mean();
@@ -168,7 +168,7 @@ impl ZipDistribution {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::ZipDistribution;
+    /// use pure_math::pure_math::statistics::zip_regression::ZipDistribution;
     ///
     /// let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
     /// let variance = dist.variance();

@@ -27,7 +27,7 @@ impl LogLink {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::LogLink;
+    /// use pure_math::pure_math::statistics::zip_regression::LogLink;
     ///
     /// let eta = 1.0;
     /// let lambda = LogLink::link(eta);
@@ -85,7 +85,7 @@ impl LogitLink {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::LogitLink;
+    /// use pure_math::pure_math::statistics::zip_regression::LogitLink;
     ///
     /// let gamma = 0.0;
     /// let rho = LogitLink::link(gamma);

@@ -35,7 +35,7 @@
 //! Calculate the optimal fraction of your bankroll to wager given an edge.
 //!
 //! ```rust
-//! use crate::pure_math::statistics::kelly::{
+//! use pure_math::pure_math::statistics::kelly::{
 //!     kelly_fraction, EdgeProbability, Odds
 //! };
 //!
@@ -59,7 +59,7 @@
 //! ##  Deep Dive: Glicko-2 Rating Update
 //!
 //! ```rust
-//! use crate::pure_math::statistics::glicko2::{
+//! use pure_math::pure_math::statistics::glicko2::{
 //!     GlickoPlayer, Rating, RatingDeviation, Volatility, MatchResult, update_rating, SystemConstant
 //! };
 //!

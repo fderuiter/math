@@ -22,7 +22,7 @@ use statrs::distribution::MultivariateNormal;
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::copula::{
+/// use pure_math::pure_math::statistics::copula::{
 ///     GaussianCopula, Probability, Correlation
 /// };
 ///
@@ -57,7 +57,7 @@ impl GaussianCopula {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::copula::{GaussianCopula, Correlation};
+    /// use pure_math::pure_math::statistics::copula::{GaussianCopula, Correlation};
     ///
     /// let rho = Correlation::new(0.5).unwrap();
     /// let copula = GaussianCopula::bivariate(rho).unwrap();
@@ -226,7 +226,7 @@ impl GaussianCopula {
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::copula::{
+/// use pure_math::pure_math::statistics::copula::{
 ///     sgp_joint_probability, Probability, CorrelationMatrix, Correlation
 /// };
 ///

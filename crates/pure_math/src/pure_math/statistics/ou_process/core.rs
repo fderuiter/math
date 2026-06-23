@@ -30,7 +30,7 @@ impl MeanReversionRate {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::MeanReversionRate;
+    /// use pure_math::pure_math::statistics::ou_process::MeanReversionRate;
     ///
     /// let theta = MeanReversionRate::new(0.5).unwrap();
     /// assert_eq!(theta.value(), 0.5);
@@ -76,7 +76,7 @@ impl Volatility {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::Volatility;
+    /// use pure_math::pure_math::statistics::ou_process::Volatility;
     ///
     /// let sigma = Volatility::new(0.2).unwrap();
     /// assert_eq!(sigma.value(), 0.2);
@@ -119,7 +119,7 @@ impl LongTermMean {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::LongTermMean;
+    /// use pure_math::pure_math::statistics::ou_process::LongTermMean;
     ///
     /// let mu = LongTermMean::new(0.45).unwrap();
     /// assert_eq!(mu.value(), 0.45);
@@ -167,7 +167,7 @@ impl OuParams {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::{
+    /// use pure_math::pure_math::statistics::ou_process::{
     ///     OuParams, LongTermMean, MeanReversionRate, Volatility
     /// };
     ///

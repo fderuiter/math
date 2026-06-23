@@ -32,8 +32,8 @@ impl PersistenceInterval {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::tda::PersistenceInterval;
-    /// use crate::error::TdaError;
+    /// use pure_math::pure_math::statistics::tda::PersistenceInterval;
+    /// use pure_math::error::TdaError;
     ///
     /// let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
     /// assert_eq!(interval.persistence(), 1.5);
@@ -106,7 +106,7 @@ impl PersistenceBarcode {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::tda::{
+    /// use pure_math::pure_math::statistics::tda::{
     ///     PersistenceBarcode, PersistenceInterval
     /// };
     ///
@@ -179,10 +179,10 @@ impl Default for PersistenceBarcode {
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::tda::{
+/// use pure_math::pure_math::statistics::tda::{
 ///     PointCloud, Point2D, compute_persistence
 /// };
-/// use crate::error::TdaError;
+/// use pure_math::error::TdaError;
 ///
 /// let points = vec![
 ///     Point2D::new(0.0, 0.0),

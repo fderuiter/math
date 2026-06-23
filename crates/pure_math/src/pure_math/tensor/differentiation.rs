@@ -29,8 +29,8 @@ use nalgebra::{DMatrix, DVector};
 /// # Examples
 ///
 /// ```rust
-/// use crate::pure_math::tensor::differentiation::covariant_derivative_contravariant;
-/// use crate::pure_math::tensor::{RiemannianMetric, ContravariantVector};
+/// use pure_math::pure_math::tensor::differentiation::covariant_derivative_contravariant;
+/// use pure_math::pure_math::tensor::{RiemannianMetric, ContravariantVector};
 /// use nalgebra::{DMatrix, DVector};
 ///
 /// // Define a flat Euclidean metric space
@@ -136,8 +136,8 @@ where
 /// # Examples
 ///
 /// ```rust
-/// use crate::pure_math::tensor::differentiation::covariant_derivative_covariant;
-/// use crate::pure_math::tensor::{RiemannianMetric, CovariantVector};
+/// use pure_math::pure_math::tensor::differentiation::covariant_derivative_covariant;
+/// use pure_math::pure_math::tensor::{RiemannianMetric, CovariantVector};
 /// use nalgebra::{DMatrix, DVector};
 ///
 /// // Define a flat Euclidean metric space

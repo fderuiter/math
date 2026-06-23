@@ -38,7 +38,7 @@ impl ContravariantVector {
     /// # Examples
     ///
     /// ```
-    /// use crate::pure_math::tensor::ContravariantVector;
+    /// use pure_math::pure_math::tensor::ContravariantVector;
     /// use nalgebra::DVector;
     ///
     /// let vec = ContravariantVector::new(DVector::from_vec(vec![1.0, 2.0]));
@@ -66,7 +66,7 @@ impl CovariantVector {
     /// # Examples
     ///
     /// ```
-    /// use crate::pure_math::tensor::CovariantVector;
+    /// use pure_math::pure_math::tensor::CovariantVector;
     /// use nalgebra::DVector;
     ///
     /// let vec = CovariantVector::new(DVector::from_vec(vec![3.0, 4.0, 5.0]));
@@ -94,7 +94,7 @@ impl Rank2Tensor {
     /// # Examples
     ///
     /// ```
-    /// use crate::pure_math::tensor::types::Rank2Tensor;
+    /// use pure_math::pure_math::tensor::types::Rank2Tensor;
     /// use nalgebra::DMatrix;
     ///
     /// let tensor = Rank2Tensor::new(DMatrix::from_vec(2, 2, vec![1.0, 0.0, 0.0, 1.0]));

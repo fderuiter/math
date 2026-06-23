@@ -63,7 +63,7 @@ impl UnionFind {
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::tda::{
+/// use pure_math::pure_math::statistics::tda::{
 ///     PointCloud, Point2D, vietoris_rips_complex, betti_number_0
 /// };
 ///
@@ -122,7 +122,7 @@ pub fn betti_number_0(complex: &SimplicialComplex) -> Result<usize, TdaError> {
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::tda::{
+/// use pure_math::pure_math::statistics::tda::{
 ///     PointCloud, Point2D, vietoris_rips_complex, betti_number_1
 /// };
 ///
@@ -199,7 +199,7 @@ pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::tda::{
+/// use pure_math::pure_math::statistics::tda::{
 ///     PointCloud, Point2D, vietoris_rips_complex, betti_numbers
 /// };
 ///

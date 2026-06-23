@@ -19,7 +19,7 @@
 //! Compute the first few coefficients of the partition function $P^*(n)$.
 //!
 //! ```rust
-//! use crate::pure_math::number_theory::partitions::{gen_p_star, QSeries};
+//! use pure_math::pure_math::number_theory::partitions::{gen_p_star, QSeries};
 //!
 //! // Calculate coefficients up to q^10
 //! let precision = 11;

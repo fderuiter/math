@@ -39,7 +39,7 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// # Examples
     ///
     /// ```
-    /// use crate::pure_math::statistics::markov::hmm::HiddenMarkovModel;
+    /// use pure_math::pure_math::statistics::markov::hmm::HiddenMarkovModel;
     /// use nalgebra::{DMatrix, DVector};
     ///
     /// let initial = DVector::from_vec(vec![0.5, 0.5]);

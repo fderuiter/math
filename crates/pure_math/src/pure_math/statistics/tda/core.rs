@@ -15,7 +15,7 @@ impl Point2D {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::tda::Point2D;
+    /// use pure_math::pure_math::statistics::tda::Point2D;
     ///
     /// let p = Point2D::new(1.0, 2.0);
     /// assert_eq!(p.x, 1.0);
@@ -51,7 +51,7 @@ impl PointCloud {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::tda::{PointCloud, Point2D};
+    /// use pure_math::pure_math::statistics::tda::{PointCloud, Point2D};
     ///
     /// let points = vec![
     ///     Point2D::new(0.0, 0.0),
@@ -125,7 +125,7 @@ impl Simplex {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::tda::Simplex;
+    /// use pure_math::pure_math::statistics::tda::Simplex;
     ///
     /// let simplex = Simplex::new(vec![0, 1, 2]).unwrap();
     /// assert_eq!(simplex.dimension(), 2); // Triangle
@@ -172,7 +172,7 @@ impl Simplex {
     /// # Examples
     ///
     /// ```
-    /// use crate::pure_math::statistics::tda::Simplex;
+    /// use pure_math::pure_math::statistics::tda::Simplex;
     ///
     /// let triangle = Simplex::new(vec![0, 1, 2]).unwrap();
     /// let faces = triangle.faces().unwrap();

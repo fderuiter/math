@@ -62,7 +62,7 @@ impl EulerMaruyama {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::{
+    /// use pure_math::pure_math::statistics::ou_process::{
     ///     EulerMaruyama, OuParams, TimeStep
     /// };
     ///
@@ -94,7 +94,7 @@ impl EulerMaruyama {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::{
+    /// use pure_math::pure_math::statistics::ou_process::{
     ///     EulerMaruyama, OuParams, TimeStep
     /// };
     /// use rand::SeedableRng;
@@ -141,7 +141,7 @@ impl EulerMaruyama {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::{
+    /// use pure_math::pure_math::statistics::ou_process::{
     ///     EulerMaruyama, OuParams, TimeStep
     /// };
     /// use rand::SeedableRng;
@@ -184,7 +184,7 @@ impl EulerMaruyama {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::ou_process::{
+    /// use pure_math::pure_math::statistics::ou_process::{
     ///     EulerMaruyama, OuParams, TimeStep
     /// };
     /// use rand::SeedableRng;

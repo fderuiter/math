@@ -26,7 +26,7 @@ use crate::error::KellyError;
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::kelly::{
+/// use pure_math::pure_math::statistics::kelly::{
 ///     kelly_fraction, EdgeProbability, Odds
 /// };
 ///
@@ -91,7 +91,7 @@ pub fn kelly_fraction(
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::kelly::{
+/// use pure_math::pure_math::statistics::kelly::{
 ///     fractional_kelly, EdgeProbability, Odds
 /// };
 ///
@@ -141,7 +141,7 @@ pub fn fractional_kelly(
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::kelly::{
+/// use pure_math::pure_math::statistics::kelly::{
 ///     expected_growth_rate, kelly_fraction, EdgeProbability, Odds
 /// };
 ///
@@ -191,7 +191,7 @@ pub fn expected_growth_rate(
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::kelly::{
+/// use pure_math::pure_math::statistics::kelly::{
 ///     expected_value, EdgeProbability, Odds
 /// };
 ///

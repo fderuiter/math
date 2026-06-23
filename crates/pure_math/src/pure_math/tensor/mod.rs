@@ -9,7 +9,7 @@
 //! Compute the Christoffel symbols for a 2D sphere.
 //!
 //! ```rust
-//! use crate::pure_math::tensor::{christoffel_symbols, RiemannianMetric};
+//! use pure_math::pure_math::tensor::{christoffel_symbols, RiemannianMetric};
 //! use nalgebra::{DMatrix, DVector};
 //!
 //! // 1. Define the Metric for a Sphere (Radius = 1.0)

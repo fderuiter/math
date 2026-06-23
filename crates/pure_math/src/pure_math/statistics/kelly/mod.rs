@@ -67,7 +67,7 @@
 //! ## Example: Basic Usage
 //!
 //! ```rust
-//! use crate::pure_math::statistics::kelly::{
+//! use pure_math::pure_math::statistics::kelly::{
 //!     kelly_fraction, expected_value, EdgeProbability, Odds
 //! };
 //!
@@ -92,7 +92,7 @@
 //! ## Example: Fractional Kelly
 //!
 //! ```rust
-//! use crate::pure_math::statistics::kelly::{
+//! use pure_math::pure_math::statistics::kelly::{
 //!     kelly_fraction, fractional_kelly, expected_growth_rate,
 //!     EdgeProbability, Odds, variants
 //! };
@@ -116,7 +116,7 @@
 //! ## Example: Converting Odds Formats
 //!
 //! ```rust
-//! use crate::pure_math::statistics::kelly::Odds;
+//! use pure_math::pure_math::statistics::kelly::Odds;
 //!
 //! // American odds
 //! let underdog = Odds::from_american(200.0).unwrap(); // +200
@@ -136,7 +136,7 @@
 //! ## Example: Realistic Sports Betting
 //!
 //! ```rust
-//! use crate::pure_math::statistics::kelly::{
+//! use pure_math::pure_math::statistics::kelly::{
 //!     kelly_fraction, expected_value, EdgeProbability, Odds, variants
 //! };
 //!

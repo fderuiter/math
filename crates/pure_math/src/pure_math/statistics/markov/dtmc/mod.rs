@@ -48,7 +48,7 @@ pub enum StateType {
 /// # Example
 ///
 /// ```rust
-/// use crate::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
+/// use pure_math::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
 /// use nalgebra::DMatrix;
 ///
 /// // Simple 3-state chain: two transient states, one absorbing
@@ -380,7 +380,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use crate::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
+    /// use pure_math::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
     /// use nalgebra::DMatrix;
     ///
     /// // A simple 2-state ergodic chain

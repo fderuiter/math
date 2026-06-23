@@ -25,7 +25,7 @@ use num_traits::ToPrimitive;
 /// # Example
 ///
 /// ```rust
-/// use crate::pure_math::statistics::markov::hmm::HiddenMarkovModel;
+/// use pure_math::pure_math::statistics::markov::hmm::HiddenMarkovModel;
 /// use nalgebra::{DMatrix, DVector};
 ///
 /// // Two hidden states: "Cold" (0) and "Hot" (1)
