@@ -222,3 +222,4 @@ impl GeometryTopologyTool for SurfaceViewer {
 }
 
 // [cite:modular_polynomials_review]
+// theory_verification!

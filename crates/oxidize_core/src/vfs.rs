@@ -89,3 +89,4 @@ pub fn trigger_download(filename: &str, content: &[u8]) {
     a.click();
     web_sys::Url::revoke_object_url(&url).unwrap();
 }
+// theory_verification!
