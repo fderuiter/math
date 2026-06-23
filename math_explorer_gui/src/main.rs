@@ -28,6 +28,7 @@ fn main() -> eframe::Result {
 }
 
 #[cfg(target_arch = "wasm32")]
+// theory_verification!
 fn main() {
     console_error_panic_hook::set_once();
     accessibility::init_accessibility_bridge();
