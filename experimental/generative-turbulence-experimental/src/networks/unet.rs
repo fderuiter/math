@@ -7,8 +7,8 @@
 
 use super::time_embedding::TimeEmbedding;
 use tch::{
-    nn::{self, Module, Path, Sequential},
     Tensor,
+    nn::{self, Module, Path, Sequential},
 };
 
 // Helper function for a standard 2D convolutional block.
