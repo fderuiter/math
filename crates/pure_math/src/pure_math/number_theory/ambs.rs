@@ -5,7 +5,7 @@ use thiserror::Error;
 pub fn sigma(n: u64) -> u64 {
     let mut sum = 0;
     for i in 1..=(n as f64).sqrt() as u64 {
-        if n % i == 0 {
+        if n.is_multiple_of(i) {
             sum += i;
             if i * i != n {
                 sum += n / i;
@@ -28,7 +28,7 @@ pub enum AmbsError {
 pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
     let mut a_copy = a.clone();
     a_copy = a_copy.rem_euc(m);
-    if a_copy < Integer::from(0) {
+    if a_copy < 0 {
         a_copy += m;
     }
     a_copy.invert(m).ok()
@@ -37,7 +37,7 @@ pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
 pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     let mut factors = Vec::new();
     let mut count = 0;
-    while n % 2 == 0 {
+    while n.is_multiple_of(2) {
         count += 1;
         n /= 2;
     }
@@ -48,7 +48,7 @@ pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     let mut i = 3;
     while i * i <= n {
         count = 0;
-        while n % i == 0 {
+        while n.is_multiple_of(i) {
             count += 1;
             n /= i;
         }
@@ -135,7 +135,7 @@ impl AmbsDsp {
 
     pub fn tonelli_shanks(n: &Integer, p: &Integer) -> Result<Vec<Integer>, AmbsError> {
         let n_mod = n.clone().rem_euc(p);
-        if n_mod == Integer::from(0) {
+        if n_mod == 0 {
             return Ok(vec![Integer::from(0)]);
         }
 
@@ -144,12 +144,12 @@ impl AmbsDsp {
             .clone()
             .pow_mod(&(&p_minus_one / Integer::from(2)), p)
             .map_err(|_| AmbsError::ModuloError)?;
-        if legendre != Integer::from(1) {
+        if legendre != 1 {
             return Ok(vec![]);
         }
 
         let p_mod_4 = p.clone().rem_euc(&Integer::from(4));
-        if p_mod_4 == Integer::from(3) {
+        if p_mod_4 == 3 {
             let power = (p.clone() + Integer::from(1)) / Integer::from(4);
             let root = n_mod
                 .pow_mod(&power, p)
@@ -165,7 +165,7 @@ impl AmbsDsp {
         let mut s = 0;
         while q.is_even() {
             s += 1;
-            q = q / Integer::from(2);
+            q /= Integer::from(2);
         }
 
         let mut z = Integer::from(2);
@@ -191,14 +191,14 @@ impl AmbsDsp {
             .pow_mod(&power_r, p)
             .map_err(|_| AmbsError::ModuloError)?;
 
-        while t != Integer::from(0) && t != Integer::from(1) {
+        while t != 0 && t != 1 {
             let mut t2i = t.clone();
             let mut i = 0;
             for j in 1..m {
                 t2i = t2i
                     .pow_mod(&Integer::from(2), p)
                     .map_err(|_| AmbsError::ModuloError)?;
-                if t2i == Integer::from(1) {
+                if t2i == 1 {
                     i = j;
                     break;
                 }
@@ -221,7 +221,7 @@ impl AmbsDsp {
             r = (r * b).rem_euc(p);
         }
 
-        if t == Integer::from(0) {
+        if t == 0 {
             return Ok(vec![Integer::from(0)]);
         }
 
@@ -284,11 +284,10 @@ impl AmbsDsp {
         let mut result = Integer::from(0);
         for (r, m) in residues.iter().zip(moduli.iter()) {
             let m_i = total_modulus.clone() / m.clone();
-            if let Some(m_i_inv) = modular_inverse(&m_i, m) {
+            {
+                let m_i_inv = modular_inverse(&m_i, m)?;
                 let term = r.clone() * m_i * m_i_inv;
                 result += term;
-            } else {
-                return None;
             }
         }
 
@@ -395,7 +394,7 @@ impl AmbsDsp {
 
                 for (c, &is_valid) in c_valid.iter().enumerate().take(c_max) {
                     if is_valid {
-                        let z = Integer::from(&r_i + &Integer::from(Integer::from(c) * &s_l));
+                        let z = Integer::from(&r_i + &(Integer::from(c) * &s_l));
                         let z_sq = Integer::from(&z * &z);
                         let _target_sigma =
                             (Integer::from(2) * &n_l_int * &z_sq + Integer::from(1)) / &s_l;
