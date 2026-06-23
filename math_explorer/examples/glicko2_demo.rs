@@ -1,5 +1,5 @@
 use math_explorer::pure_math::statistics::glicko2::{
-    GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility, update_rating,
+    update_rating, GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
 };
 
 fn main() {

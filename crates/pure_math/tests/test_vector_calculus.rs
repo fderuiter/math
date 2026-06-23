@@ -1,6 +1,6 @@
 use nalgebra::Vector3;
 use pure_math::pure_math::vector_calculus::coordinates::Cartesian;
-use pure_math::pure_math::vector_calculus::theorems::{Domain, verify_divergence_theorem};
+use pure_math::pure_math::vector_calculus::theorems::{verify_divergence_theorem, Domain};
 
 #[test]
 fn test_divergence_theorem_cartesian_box() {

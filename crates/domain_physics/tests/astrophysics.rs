@@ -1,8 +1,8 @@
 #[allow(deprecated)]
 use domain_physics::physics::astrophysics::galaxies::{
-    GeneralIrregular, TypeCode10, TypeCode95To99, calculate_apparent_magnitude_from_distance,
-    calculate_log_mass_from_absolute_magnitude, calculate_log_mass_from_distance,
-    calculate_redshift_from_log_mass,
+    calculate_apparent_magnitude_from_distance, calculate_log_mass_from_absolute_magnitude,
+    calculate_log_mass_from_distance, calculate_redshift_from_log_mass, GeneralIrregular,
+    TypeCode10, TypeCode95To99,
 };
 
 const F64_TOLERANCE: f64 = 1e-9;

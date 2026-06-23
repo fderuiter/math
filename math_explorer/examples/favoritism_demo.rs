@@ -1,4 +1,4 @@
-use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
+use math_explorer::applied::favoritism::{calculate_favoritism_score, FavoritismInputs};
 
 fn main() {
     let mut inputs = FavoritismInputs::default();

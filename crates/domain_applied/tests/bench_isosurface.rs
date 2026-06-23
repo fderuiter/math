@@ -1,4 +1,4 @@
-use domain_applied::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
+use domain_applied::applied::isosurface::{extract_isosurface, Point3D, VoxelGrid};
 use std::time::Instant;
 
 #[test]

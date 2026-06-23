@@ -3,7 +3,7 @@
 //! This example simulates a radar signal reflected from a target and runs the verified
 //! processing pipeline: Coarse FFT -> Fine CZT -> Phase Extraction -> Displacement.
 
-use math_explorer::physics::medical::radar_gating::{C, FmcwConfig, chirp_z_transform};
+use math_explorer::physics::medical::radar_gating::{chirp_z_transform, FmcwConfig, C};
 use num_complex::Complex;
 use std::f64::consts::PI;
 
@@ -19,7 +19,7 @@ fn main() {
     // Simulation Parameters
     // We increase sample rate to 10 MHz to handle the ~266 kHz beat frequency without aliasing.
     let sample_rate = 10.0e6; // 10 MHz ADC
-    // Number of samples per chirp determined by chirp duration (50us)
+                              // Number of samples per chirp determined by chirp duration (50us)
     let n_samples = (sample_rate * config.chirp_time).round() as usize;
     println!("Sample Rate: {:.2} MHz", sample_rate / 1.0e6);
     println!("Samples per Chirp: {}", n_samples);
@@ -50,7 +50,7 @@ fn main() {
     let signal: Vec<Complex<f64>> = (0..n_samples)
         .map(|n| {
             let t = n as f64 / sample_rate; // Time within chirp
-            // IF signal: exp(i * (2*pi*f_b*t + phase_shift))
+                                            // IF signal: exp(i * (2*pi*f_b*t + phase_shift))
             let phase = 2.0 * PI * beat_freq * t + phase_shift;
             Complex::new(0.0, phase).exp()
         })

@@ -91,7 +91,11 @@ fn test_heat_equation_smoothing() {
     // u from 0 to 2pi, v from 0 to pi
     // Let's verify heat diffuses.
     let initial = |_: f64, v: f64| {
-        if (v - PI / 2.0).abs() < 0.5 { 1.0 } else { 0.0 }
+        if (v - PI / 2.0).abs() < 0.5 {
+            1.0
+        } else {
+            0.0
+        }
     };
 
     let mut solver = HeatEquationSolver::new(

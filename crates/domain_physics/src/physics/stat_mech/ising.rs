@@ -302,8 +302,8 @@ impl SpinLattice {
 mod tests {
     use super::*;
     use crate::physics::stat_mech::KB;
-    use rand::SeedableRng;
     use rand::rngs::StdRng;
+    use rand::SeedableRng;
 
     #[test]
     fn test_ising_disordered() {

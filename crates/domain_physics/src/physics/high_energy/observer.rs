@@ -107,11 +107,9 @@ mod tests {
         // E/c = 1.25 * C.
         // px = 0.75 * C.
         let p_vec = FourVector::new(1.25 * C, 0.75 * C, 0.0, 0.0);
-        assert!(
-            p_vec
-                .is_valid_momentum(mass)
-                .expect("Failed to check momentum")
-        );
+        assert!(p_vec
+            .is_valid_momentum(mass)
+            .expect("Failed to check momentum"));
     }
 
     #[test]

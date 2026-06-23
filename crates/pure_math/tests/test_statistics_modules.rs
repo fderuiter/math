@@ -3,8 +3,8 @@
 #[cfg(test)]
 mod glicko2_tests {
     use pure_math::pure_math::statistics::glicko2::{
-        GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
-        update_rating,
+        update_rating, GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant,
+        Volatility,
     };
 
     #[test]
@@ -39,7 +39,7 @@ mod glicko2_tests {
 #[cfg(test)]
 mod kelly_tests {
     use pure_math::pure_math::statistics::kelly::{
-        EdgeProbability, Odds, expected_value, kelly_fraction,
+        expected_value, kelly_fraction, EdgeProbability, Odds,
     };
 
     #[test]
@@ -60,7 +60,7 @@ mod kelly_tests {
 #[cfg(test)]
 mod tda_tests {
     use pure_math::pure_math::statistics::tda::{
-        Point2D, PointCloud, betti_numbers, vietoris_rips_complex,
+        betti_numbers, vietoris_rips_complex, Point2D, PointCloud,
     };
 
     #[test]
