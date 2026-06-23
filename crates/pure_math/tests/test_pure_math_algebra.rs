@@ -1,5 +1,5 @@
 use pure_math::pure_math::algebra::group::{
-    generate_right_coset, is_normal_subgroup, is_subgroup, Permutation, Zn,
+    Permutation, Zn, generate_right_coset, is_normal_subgroup, is_subgroup,
 };
 use pure_math::pure_math::algebra::traits::{Field, Group, Monoid, Ring, Semigroup};
 use pure_math::pure_math::algebra::*;

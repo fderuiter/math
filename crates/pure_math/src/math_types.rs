@@ -1,6 +1,6 @@
 #[cfg(not(target_arch = "wasm32"))]
-pub use rug::{ops, Float, Integer, Rational};
+pub use rug::{Float, Integer, Rational, ops};
 
 #[cfg(target_arch = "wasm32")]
-pub use rug_mock::{ops, Float, Integer, Rational};
+pub use rug_mock::{Float, Integer, Rational, ops};
 // theory_verification!

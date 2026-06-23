@@ -1,7 +1,7 @@
 use math_explorer::epidemiology::compartmental::SIRModel;
 use math_explorer::epidemiology::stochastic::GillespieSolver;
-use rand::rngs::StdRng;
 use rand::SeedableRng;
+use rand::rngs::StdRng;
 use verified_engine::engine::VerifiedEngine;
 
 #[global_allocator]

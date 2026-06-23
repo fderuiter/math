@@ -171,8 +171,8 @@ mod tests {
 
     #[test]
     fn test_deterministic_action_selection() {
-        use rand::rngs::StdRng;
         use rand::SeedableRng;
+        use rand::rngs::StdRng;
 
         // Epsilon 0.5 to trigger both exploration and exploitation
         let agent = TabularQAgent::new(0.1, 0.9, 0.5);

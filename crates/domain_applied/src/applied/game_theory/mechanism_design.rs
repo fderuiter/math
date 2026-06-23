@@ -1,6 +1,6 @@
 use pure_math::pure_math::analysis::roots::{AnalysisError, Bisection, RootFinder};
-use rand::distributions::Distribution as RandDistribution;
 use rand::Rng;
+use rand::distributions::Distribution as RandDistribution;
 use statrs::distribution::{Continuous, ContinuousCDF};
 use statrs::statistics::Distribution;
 
@@ -35,9 +35,8 @@ pub trait ValuationDistribution:
 }
 
 // Blanket implementation for any continuous distribution from statrs
-impl<
-        D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + RandDistribution<f64>,
-    > ValuationDistribution for D
+impl<D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + RandDistribution<f64>>
+    ValuationDistribution for D
 {
 }
 

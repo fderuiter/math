@@ -100,9 +100,9 @@ pub mod gaussian;
 pub mod transforms;
 
 pub use core::{Correlation, CorrelationMatrix, Probability};
-pub use gaussian::{sgp_joint_probability, GaussianCopula};
+pub use gaussian::{GaussianCopula, sgp_joint_probability};
 pub use transforms::{
-    inverse_standard_normal, standard_normal_cdf, NormalTransform, ProbabilityTransform,
+    NormalTransform, ProbabilityTransform, inverse_standard_normal, standard_normal_cdf,
 };
 
 // [cite:clinical_trials_statistics]

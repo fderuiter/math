@@ -3,7 +3,7 @@
 //! Methodologies to enhance signal-to-noise ratio and extract respiratory signals.
 
 use nalgebra::Point3;
-use rustfft::{num_complex::Complex, FftPlanner};
+use rustfft::{FftPlanner, num_complex::Complex};
 
 /// Calculates the Weighted Average Height (WAH) for a set of vertices.
 ///

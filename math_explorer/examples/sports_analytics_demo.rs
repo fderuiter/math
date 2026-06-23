@@ -1,19 +1,19 @@
 //! Comprehensive demonstration of all sports analytics modules.
 
 use math_explorer::pure_math::statistics::{
-    copula::{sgp_joint_probability, Correlation, CorrelationMatrix, Probability},
+    copula::{Correlation, CorrelationMatrix, Probability, sgp_joint_probability},
     glicko2::{
-        update_rating, GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant,
-        Volatility,
+        GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
+        update_rating,
     },
-    kelly::{kelly_fraction, EdgeProbability, Odds},
+    kelly::{EdgeProbability, Odds, kelly_fraction},
     markov::dtmc::{MarkovChain, StateType},
     ou_process::{EulerMaruyama, OuParams, TimeStep},
     zip_regression::{Count, ZipDistribution, ZipParams},
 };
 use nalgebra::{DMatrix, DVector};
-use rand::rngs::StdRng;
 use rand::SeedableRng;
+use rand::rngs::StdRng;
 
 fn main() {
     println!("=== Sports Analytics Framework Demo ===\n");

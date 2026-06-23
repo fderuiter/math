@@ -45,10 +45,10 @@ pub mod stats;
 pub mod strategy;
 pub mod theory;
 
-pub use divide_conquer::{merge_sort, quick_sort, MergeSorter, QuickSorter};
-pub use elementary::{bubble_sort, insertion_sort, BubbleSorter, InsertionSorter};
-pub use heap::{heap_sort, HeapSorter};
-pub use linear::{radix_sort, RadixSorter};
+pub use divide_conquer::{MergeSorter, QuickSorter, merge_sort, quick_sort};
+pub use elementary::{BubbleSorter, InsertionSorter, bubble_sort, insertion_sort};
+pub use heap::{HeapSorter, heap_sort};
+pub use linear::{RadixSorter, radix_sort};
 pub use stats::{SortingResult, SortingStats};
 pub use strategy::Sorter;
 pub use theory::{information_theoretic_bound, stirling_approximation_ln_factorial};

@@ -46,7 +46,7 @@ fn test_theorem_1_1_bounds_n_is_1_mod_3() {
     // For N=7, psi(7) = 8. N=7 is 1 mod 3. Check a_{2,1} where i+j=3. diff = 5
     let bounds = theorem_1_1_bounds(7, 2, 1).unwrap();
     assert_eq!(bounds.v2_bound, Some(15 * 5)); // 75
-                                               // ceil(4.5 * 5) = ceil(22.5) = 23
+    // ceil(4.5 * 5) = ceil(22.5) = 23
     assert_eq!(bounds.v3_bound, Some(23));
     assert_eq!(bounds.v5_bound, Some(3 * 5)); // 15
 }

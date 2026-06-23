@@ -1,4 +1,4 @@
-use domain_applied::applied::favoritism::{calculate_favoritism_score, FavoritismInputs};
+use domain_applied::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 #[test]
 fn test_favoritism_defaults() {
