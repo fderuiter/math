@@ -5,7 +5,9 @@ pub struct FractranProgram {
 }
 
 impl FractranProgram {
-    pub fn new(fractions: Vec<Rational>) -> Self { Self { fractions } }
+    pub fn new(fractions: Vec<Rational>) -> Self {
+        Self { fractions }
+    }
 }
 
 pub struct FractranState {

@@ -4,8 +4,8 @@
 //! (a U-Net based Neural Operator) and a discriminator. It is trained
 //! adversarially to mitigate spectral bias.
 
-use tch::nn::VarStore;
 use crate::networks::unet::{UNet, UNetBuilder};
+use tch::nn::VarStore;
 
 /// Represents the Adversarially Trained Neural Operator (adv-NO).
 pub struct AdvNO {
@@ -35,11 +35,14 @@ impl AdvNO {
         // The discriminator takes the generator's output as input.
         let discriminator = UNetBuilder::new()
             .c_in(c_out) // Input channels for discriminator is output from generator
-            .c_out(1)    // Discriminator outputs a single value (real/fake)
+            .c_out(1) // Discriminator outputs a single value (real/fake)
             .c_init(c_init)
             .time_emb_dim(Some(TIME_EMB_DIM))
             .build(&vs_disc.root());
 
-        AdvNO { generator, discriminator }
+        AdvNO {
+            generator,
+            discriminator,
+        }
     }
 }

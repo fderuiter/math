@@ -1,7 +1,7 @@
-use thiserror::Error;
 use crate::diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use std::fmt;
+use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum HodgkinHuxleyError {
@@ -11,9 +11,10 @@ pub enum HodgkinHuxleyError {
     InvalidConductance(f64),
 }
 
-
 impl Diagnostic for HodgkinHuxleyError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "HodgkinHuxleyError".to_string());

@@ -1,6 +1,6 @@
+use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
-use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use math_explorer::physics::quantum::{
     construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
 };
@@ -65,7 +65,7 @@ impl SimulationRunner for WaveRunner {
 
     fn get_snapshot(&self) -> StateSnapshot {
         let prob_density = self.psi.probability_density();
-        
+
         let structured_data = Box::new(WaveData {
             time: self.time,
             x_axis: self.x_axis.clone(),
@@ -146,7 +146,7 @@ impl Default for WaveSimulator {
             steps_per_frame: 1,
         };
         runner.init_system();
-        
+
         let controller = SimulationController::new(runner);
 
         Self {
@@ -170,7 +170,7 @@ impl QuantumTool for WaveSimulator {
         if self.controller.running {
             ctx.request_repaint();
         }
-        
+
         if let Some(snap) = self.controller.update() {
             if let Some(any_data) = &snap.structured_data {
                 if let Some(wave_data) = any_data.downcast_ref::<WaveData>() {
@@ -204,15 +204,24 @@ impl QuantumTool for WaveSimulator {
                 .clicked();
 
             if changed {
-                let val = if self.potential_type == PotentialType::InfiniteWell { 0.0 } else { 1.0 };
-                self.controller.send_command(SimCommand::UpdateParam("potential_type".to_string(), val));
+                let val = if self.potential_type == PotentialType::InfiniteWell {
+                    0.0
+                } else {
+                    1.0
+                };
+                self.controller
+                    .send_command(SimCommand::UpdateParam("potential_type".to_string(), val));
                 self.controller.send_command(SimCommand::Reset);
             }
 
             ui.separator();
             ui.horizontal(|ui| {
                 if ui
-                    .button(if !self.controller.running { "▶ Play" } else { "⏸ Pause" })
+                    .button(if !self.controller.running {
+                        "▶ Play"
+                    } else {
+                        "⏸ Pause"
+                    })
                     .clicked()
                 {
                     if self.controller.running {
@@ -238,7 +247,7 @@ impl QuantumTool for WaveSimulator {
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut psi_points = Vec::new();
             let mut v_points = Vec::new();
-            
+
             for i in 0..self.cached_x.len() {
                 let x = self.cached_x[i];
                 let p = self.cached_prob[i];

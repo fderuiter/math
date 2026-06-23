@@ -40,6 +40,6 @@ theory_verification!(
         REYNOLDS = 1000.0;
     },
     test = {
-        assert_relative_eq!(REYNOLDS, 1000.0, epsilon=1e-6);
+        assert_relative_eq!(REYNOLDS, 1000.0, epsilon = 1e-6);
     }
 );

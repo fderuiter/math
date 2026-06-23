@@ -167,16 +167,27 @@ impl eframe::App for MathExplorerApp {
 
                         ui.group(|ui| {
                             ui.horizontal(|ui| {
-                                ui.label(egui::RichText::new(format!("[{}]", event.severity)).color(color).strong());
+                                ui.label(
+                                    egui::RichText::new(format!("[{}]", event.severity))
+                                        .color(color)
+                                        .strong(),
+                                );
                                 if let Some(thread) = &event.thread_name {
-                                    ui.label(egui::RichText::new(format!("(Thread: {})", thread)).italics());
+                                    ui.label(
+                                        egui::RichText::new(format!("(Thread: {})", thread))
+                                            .italics(),
+                                    );
                                 }
                                 ui.label(&event.message);
                             });
                             if !event.metadata.is_empty() {
                                 ui.horizontal_wrapped(|ui| {
                                     for (k, v) in &event.metadata {
-                                        ui.label(egui::RichText::new(format!("{}: {}", k, v)).monospace().size(10.0));
+                                        ui.label(
+                                            egui::RichText::new(format!("{}: {}", k, v))
+                                                .monospace()
+                                                .size(10.0),
+                                        );
                                     }
                                 });
                             }

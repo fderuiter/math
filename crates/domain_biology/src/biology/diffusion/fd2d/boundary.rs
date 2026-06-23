@@ -1,8 +1,13 @@
-use math_commons::math_kernel::types::GridIndex;
 use super::geometry::GeometryStrategy;
+use math_commons::math_kernel::types::GridIndex;
 
 pub trait BoundaryStrategy {
-    fn neighbors<G: GeometryStrategy>(&self, x: usize, y: usize, geom: &G) -> (GridIndex, GridIndex, GridIndex, GridIndex);
+    fn neighbors<G: GeometryStrategy>(
+        &self,
+        x: usize,
+        y: usize,
+        geom: &G,
+    ) -> (GridIndex, GridIndex, GridIndex, GridIndex);
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -10,10 +15,15 @@ pub struct NeumannBoundary;
 
 impl BoundaryStrategy for NeumannBoundary {
     #[inline(always)]
-    fn neighbors<G: GeometryStrategy>(&self, x: usize, y: usize, geom: &G) -> (GridIndex, GridIndex, GridIndex, GridIndex) {
+    fn neighbors<G: GeometryStrategy>(
+        &self,
+        x: usize,
+        y: usize,
+        geom: &G,
+    ) -> (GridIndex, GridIndex, GridIndex, GridIndex) {
         let width = *geom.width();
         let height = *geom.height();
-        
+
         let x_prev = if x > 0 { x - 1 } else { x };
         let x_next = if x < width - 1 { x + 1 } else { x };
         let y_prev = if y > 0 { y - 1 } else { y };
@@ -24,6 +34,11 @@ impl BoundaryStrategy for NeumannBoundary {
         let idx_u = y_prev * width + x;
         let idx_d = y_next * width + x;
 
-        (GridIndex(idx_l), GridIndex(idx_r), GridIndex(idx_u), GridIndex(idx_d))
+        (
+            GridIndex(idx_l),
+            GridIndex(idx_r),
+            GridIndex(idx_u),
+            GridIndex(idx_d),
+        )
     }
 }

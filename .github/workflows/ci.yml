@@ -68,7 +68,7 @@ jobs:
         run: |
           echo "Checking for files exceeding 500 lines in core math directories..."
           # Define the directories to check
-          DIRS_TO_CHECK="math_explorer/src/physics math_explorer/src/biology math_explorer/src/pure_math"
+          DIRS_TO_CHECK="crates/domain_physics crates/domain_biology crates/pure_math"
           
           # Find files exceeding 500 lines
           EXCEEDING_FILES=$(find $DIRS_TO_CHECK -name "*.rs" -type f -exec wc -l {} + | awk '$1 > 500 && $2 != "total" {print $0}')

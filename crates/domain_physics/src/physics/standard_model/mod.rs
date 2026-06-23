@@ -14,7 +14,6 @@ pub mod higgs;
 pub mod neutrinos;
 pub mod qcd;
 
-
 // [cite:graph_parameters_rust]
 
 use pure_math::theory_verification;

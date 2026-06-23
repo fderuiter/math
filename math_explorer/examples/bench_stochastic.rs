@@ -5,7 +5,8 @@ use rand::rngs::StdRng;
 use verified_engine::engine::VerifiedEngine;
 
 #[global_allocator]
-static ALLOCATOR: verified_engine::allocator::VerifiedAllocator = verified_engine::allocator::VerifiedAllocator;
+static ALLOCATOR: verified_engine::allocator::VerifiedAllocator =
+    verified_engine::allocator::VerifiedAllocator;
 
 fn main() {
     let steps = 500_000;

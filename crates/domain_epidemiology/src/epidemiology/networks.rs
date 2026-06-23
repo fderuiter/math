@@ -123,12 +123,16 @@ impl NetworkEpidemicModelBuilder {
             return Err(NetworkModelError::InvalidParameters);
         }
 
-        let states = self.states.unwrap_or_else(|| vec![NodeState::Susceptible; num_nodes]);
+        let states = self
+            .states
+            .unwrap_or_else(|| vec![NodeState::Susceptible; num_nodes]);
         if states.len() != num_nodes {
             return Err(NetworkModelError::StateMismatch);
         }
 
-        let positions = self.positions.unwrap_or_else(|| vec![[0.0, 0.0]; num_nodes]);
+        let positions = self
+            .positions
+            .unwrap_or_else(|| vec![[0.0, 0.0]; num_nodes]);
         if positions.len() != num_nodes {
             return Err(NetworkModelError::PositionMismatch);
         }
@@ -154,13 +158,27 @@ impl NetworkEpidemicModel {
         NetworkEpidemicModelBuilder::new()
     }
 
-    pub fn num_nodes(&self) -> usize { self.num_nodes }
-    pub fn states(&self) -> &[NodeState] { &self.states }
-    pub fn states_mut(&mut self) -> &mut Vec<NodeState> { &mut self.states }
-    pub fn positions(&self) -> &[[f32; 2]] { &self.positions }
-    pub fn adjacency(&self) -> &[Vec<usize>] { &self.adjacency }
-    pub fn beta(&self) -> f64 { self.beta }
-    pub fn gamma(&self) -> f64 { self.gamma }
+    pub fn num_nodes(&self) -> usize {
+        self.num_nodes
+    }
+    pub fn states(&self) -> &[NodeState] {
+        &self.states
+    }
+    pub fn states_mut(&mut self) -> &mut Vec<NodeState> {
+        &mut self.states
+    }
+    pub fn positions(&self) -> &[[f32; 2]] {
+        &self.positions
+    }
+    pub fn adjacency(&self) -> &[Vec<usize>] {
+        &self.adjacency
+    }
+    pub fn beta(&self) -> f64 {
+        self.beta
+    }
+    pub fn gamma(&self) -> f64 {
+        self.gamma
+    }
 
     pub fn set_num_nodes(&mut self, num: usize) -> Result<(), NetworkModelError> {
         if num == 0 {

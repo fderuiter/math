@@ -1,7 +1,7 @@
-use crate::error::IsosurfaceError;
 use super::gradients::{CentralDifferenceEstimator, GradientEstimator};
 use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE};
 use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
+use crate::error::IsosurfaceError;
 
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
 #[inline]
@@ -420,12 +420,12 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 ///
 /// // Create a tiny 2x2x2 grid representing a corner
 /// let grid = VoxelGrid::builder()
-    /// .dimensions(2, 2, 2)
-    /// .data(vec![-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0])
-    /// .voxel_size(Point3D::new(1.0, 1.0, 1.0))
-    /// .origin(Point3D::new(0.0, 0.0, 0.0))
-    /// .build()
-    /// .unwrap();
+/// .dimensions(2, 2, 2)
+/// .data(vec![-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0])
+/// .voxel_size(Point3D::new(1.0, 1.0, 1.0))
+/// .origin(Point3D::new(0.0, 0.0, 0.0))
+/// .build()
+/// .unwrap();
 ///
 /// // Extract the surface where value == 0.0
 /// let mesh = extract_isosurface(&grid, 0.0).expect("Failed to extract isosurface");

@@ -2,8 +2,8 @@
 
 use super::core::{Count, ZipParams};
 use super::distribution::ZipDistribution;
-use crate::error::ZipError;
 use super::link_functions::{LogLink, LogitLink};
+use crate::error::ZipError;
 use nalgebra::{DMatrix, DVector};
 
 /// ZIP regression model.

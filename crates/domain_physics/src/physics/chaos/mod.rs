@@ -73,7 +73,6 @@ pub mod logistic;
 pub mod lorenz;
 pub mod metrics;
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

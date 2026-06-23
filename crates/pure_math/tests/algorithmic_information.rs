@@ -1,8 +1,6 @@
 #![cfg(all(feature = "pure_math"))]
 
-use pure_math::pure_math::algorithmic_information::{
-    combinatorics::*,
-};
+use pure_math::pure_math::algorithmic_information::combinatorics::*;
 use std::collections::{HashMap, HashSet};
 
 #[test]
