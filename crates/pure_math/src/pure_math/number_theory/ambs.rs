@@ -133,6 +133,7 @@ impl AmbsDsp {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     pub fn tonelli_shanks(n: &Integer, p: &Integer) -> Result<Vec<Integer>, AmbsError> {
         let n_mod = n.clone().rem_euc(p);
         if n_mod == 0 {
