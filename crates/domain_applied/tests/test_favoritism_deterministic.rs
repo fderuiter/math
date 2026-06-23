@@ -1,5 +1,3 @@
-
-
 use domain_applied::applied::favoritism::{
     FavoritismInputs, calculate_favoritism_score_full, calculate_favoritism_score_with_rng,
 };

@@ -1,5 +1,3 @@
-
-
 use domain_biology::biology::evolution::HawkDovePopulation;
 
 #[test]

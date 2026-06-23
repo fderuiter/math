@@ -1,5 +1,3 @@
-
-
 use pure_math::pure_math::elliptic_curves::*;
 use std::collections::HashMap;
 

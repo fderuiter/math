@@ -1,5 +1,3 @@
-
-
 use domain_applied::applied::cannibalism;
 
 #[test]

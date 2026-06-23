@@ -1,5 +1,3 @@
-
-
 use domain_applied::applied::algorithms::sorting::*;
 
 // Helper to test strategy composition
