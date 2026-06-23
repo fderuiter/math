@@ -57,11 +57,9 @@ impl SimulationRunner for LbmRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) => {
-                if name == "viscosity" {
-                    self.viscosity = val;
-                    self.solver.collision_model.tau = 3.0 * self.viscosity + 0.5;
-                }
+            SimCommand::UpdateParam(name, val) if name == "viscosity" => {
+                self.viscosity = val;
+                self.solver.collision_model.tau = 3.0 * self.viscosity + 0.5;
             }
             SimCommand::ApplyBrush {
                 cx,
