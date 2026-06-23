@@ -48,6 +48,7 @@ impl SimulationRunner for WaveRunner {
                 };
                 self.init_system();
             }
+            SimCommand::UpdateParam(_, _) => {}
             SimCommand::Reset => self.init_system(),
             _ => {}
         }
