@@ -11,7 +11,11 @@ fn test_theory_verification_coverage_and_parity() {
     let applied_dir = workspace_root.join("crates/domain_applied/src/applied");
     let physics_dir = workspace_root.join("crates/domain_physics/src/physics");
 
-    assert!(papers_dir.is_dir(), "missing papers dir: {}", papers_dir.display());
+    assert!(
+        papers_dir.is_dir(),
+        "missing papers dir: {}",
+        papers_dir.display()
+    );
     assert!(
         applied_dir.is_dir(),
         "missing applied dir: {}",

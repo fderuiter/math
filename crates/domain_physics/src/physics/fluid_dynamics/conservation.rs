@@ -2,8 +2,8 @@
 //!
 //! Implements the core Partial Differential Equations (PDEs) of Fluid Dynamics.
 
-use crate::error::FluidError;
 use super::types::{FlowState, FluidProperties, SpatialGradients};
+use crate::error::FluidError;
 use nalgebra::Vector3;
 
 /// Calculates the Material Derivative ($D/Dt$) of a scalar property.

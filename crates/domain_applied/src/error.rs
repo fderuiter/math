@@ -1,8 +1,8 @@
-use pure_math::pure_math::analysis::roots::AnalysisError;
-use thiserror::Error;
 use crate::diagnostics::{Diagnostic, Severity};
+use pure_math::pure_math::analysis::roots::AnalysisError;
 use std::collections::HashMap;
 use std::fmt;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum PharmacokineticsError {
@@ -64,19 +64,25 @@ pub enum IsosurfaceError {
     DataMismatch { expected: usize, actual: usize },
 }
 
-
 impl Diagnostic for PharmacokineticsError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
-        map.insert("error_type".to_string(), "PharmacokineticsError".to_string());
+        map.insert(
+            "error_type".to_string(),
+            "PharmacokineticsError".to_string(),
+        );
         map.insert("description".to_string(), self.to_string());
         map
     }
 }
 
 impl Diagnostic for BatteryError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "BatteryError".to_string());
@@ -86,7 +92,9 @@ impl Diagnostic for BatteryError {
 }
 
 impl Diagnostic for GameTheoryError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "GameTheoryError".to_string());
@@ -96,7 +104,9 @@ impl Diagnostic for GameTheoryError {
 }
 
 impl Diagnostic for EngineeringError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "EngineeringError".to_string());
@@ -106,7 +116,9 @@ impl Diagnostic for EngineeringError {
 }
 
 impl Diagnostic for LoraError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "LoraError".to_string());
@@ -116,7 +128,9 @@ impl Diagnostic for LoraError {
 }
 
 impl Diagnostic for IsosurfaceError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "IsosurfaceError".to_string());

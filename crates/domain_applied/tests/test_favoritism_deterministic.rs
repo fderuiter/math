@@ -3,9 +3,7 @@
 use domain_applied::applied::favoritism::{
     FavoritismInputs, calculate_favoritism_score_full, calculate_favoritism_score_with_rng,
 };
-use pure_math::pure_math::analysis::integration::{
-    ClenshawCurtis, IntegrationResult, Integrator,
-};
+use pure_math::pure_math::analysis::integration::{ClenshawCurtis, IntegrationResult, Integrator};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 

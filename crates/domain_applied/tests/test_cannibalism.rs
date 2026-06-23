@@ -3,8 +3,8 @@
 #[cfg(test)]
 mod tests {
     use domain_applied::applied::cannibalism::two_dimensional_ode::CannibalismModel;
-    use pure_math::pure_math::analysis::ode::OdeSystem;
     use nalgebra::Vector2;
+    use pure_math::pure_math::analysis::ode::OdeSystem;
 
     #[test]
     fn test_struct_implementation() {

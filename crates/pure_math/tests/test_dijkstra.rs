@@ -2,9 +2,9 @@
 
 #[cfg(test)]
 mod tests {
-    use pure_math::pure_math::graph_theory::dijkstra::dijkstra;
     use petgraph::graph::Graph;
     use petgraph::{Directed, Undirected};
+    use pure_math::pure_math::graph_theory::dijkstra::dijkstra;
 
     #[test]
     fn test_dijkstra_directed_simple() {

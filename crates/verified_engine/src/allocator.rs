@@ -25,7 +25,7 @@ unsafe impl GlobalAlloc for VerifiedAllocator {
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         unsafe { System.dealloc(ptr, layout) }
     }
-    
+
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
         if MEMORY_LOCK.load(Ordering::SeqCst) && crate::metrics::is_verification_enabled() {
             eprintln!("VIOLATION: Dynamic memory allocation after initialization.");

@@ -1,10 +1,10 @@
 //! This module handles the training process for the CERA model.
 
-use domain_ai::ai::optimization::{Optimizer, SGD};
 use crate::climate::autoencoder::AutoencoderModel;
 use crate::climate::cera::Cera;
 use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
 use crate::climate::predictor::PredictorModel;
+use domain_ai::ai::optimization::{Optimizer, SGD};
 use nalgebra::DMatrix;
 
 /// A trainer for the CERA model.

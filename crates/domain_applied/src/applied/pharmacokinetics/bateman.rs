@@ -1,6 +1,6 @@
-use crate::error::PharmacokineticsError;
 use super::parameters::PKParameters;
 use super::traits::PharmacokineticModel;
+use crate::error::PharmacokineticsError;
 use pure_math::pure_math::analysis::roots::NewtonRaphson;
 
 /// A model representing a single dose with first-order absorption and elimination (Bateman function).

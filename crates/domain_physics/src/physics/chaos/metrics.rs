@@ -1,9 +1,9 @@
 //! Quantifying Chaos (Lyapunov Exponents)
 
-use crate::error::ChaosError;
 use super::logistic::LogisticMap;
-use pure_math::pure_math::analysis::ode::{OdeSystem, Solver, SolverExt};
+use crate::error::ChaosError;
 use nalgebra::Vector3;
+use pure_math::pure_math::analysis::ode::{OdeSystem, Solver, SolverExt};
 
 /// Calculates the Lyapunov Exponent for the Logistic Map.
 ///

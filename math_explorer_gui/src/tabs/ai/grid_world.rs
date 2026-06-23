@@ -2,8 +2,9 @@ use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::{
-    algorithms::TabularQAgent, MarkovDecisionProcess,
-    grid_world::{GridState, Move, GridWorldEnv},
+    algorithms::TabularQAgent,
+    grid_world::{GridState, GridWorldEnv, Move},
+    MarkovDecisionProcess,
 };
 
 pub struct GridWorldTool {

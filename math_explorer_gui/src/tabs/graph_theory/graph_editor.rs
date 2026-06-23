@@ -80,7 +80,7 @@ impl GraphTheoryTool for GraphEditorTool {
             ui.label(format!("Edges: {}", self.edges.len()));
         });
 
-    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+        #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
         egui::CentralPanel::default().show(ctx, |ui| {
             let (response, painter) =
                 ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());

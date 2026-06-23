@@ -2,8 +2,8 @@
 
 use super::complex::vietoris_rips_complex;
 use super::core::PointCloud;
-use crate::error::TdaError;
 use super::homology::{betti_number_0, betti_number_1};
+use crate::error::TdaError;
 
 /// A persistence interval representing the lifetime of a topological feature.
 ///
@@ -33,7 +33,7 @@ impl PersistenceInterval {
     ///
     /// ```
     /// use crate::pure_math::statistics::tda::PersistenceInterval;
-/// use crate::error::TdaError;
+    /// use crate::error::TdaError;
     ///
     /// let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
     /// assert_eq!(interval.persistence(), 1.5);

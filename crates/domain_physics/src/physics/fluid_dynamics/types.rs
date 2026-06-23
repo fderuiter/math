@@ -1,8 +1,8 @@
 //! Types for Fluid Dynamics.
 
 use crate::error::FluidError;
-use pure_math::pure_math::analysis::ode::VectorOperations;
 use nalgebra::{Matrix3, Vector3};
+use pure_math::pure_math::analysis::ode::VectorOperations;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Physical properties of the fluid.

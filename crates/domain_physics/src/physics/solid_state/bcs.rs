@@ -1,4 +1,3 @@
-use crate::error::SolidStateError;
 /// Superconductivity (BCS Theory)
 ///
 /// Describes the pairing of electrons into Cooper pairs via phonon mediation.
@@ -6,6 +5,7 @@ use crate::error::SolidStateError;
 /// # Refactoring Note
 /// This module has been refactored to use crate::error::SolidStateError;
 use super::types::ElectronVolts;
+use crate::error::SolidStateError;
 
 // --- Traits ---
 

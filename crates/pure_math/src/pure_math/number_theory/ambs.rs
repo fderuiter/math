@@ -1,4 +1,4 @@
-use crate::math_types::{Integer, ops::RemRounding, ops::Pow};
+use crate::math_types::{Integer, ops::Pow, ops::RemRounding};
 use crate::pure_math::number_theory::primes::is_prime;
 use thiserror::Error;
 
@@ -71,7 +71,9 @@ pub fn precompute_valid_prime_powers(limit_p: u64, max_e: u32) -> Vec<(u64, u32,
         }
         for e in 1..=max_e {
             let p_power = Integer::from(p).pow(2 * e).to_u64().unwrap_or(0);
-            if p_power == 0 { continue; }
+            if p_power == 0 {
+                continue;
+            }
             let sig = sigma(p_power);
             let factors = prime_factors(sig);
 
@@ -138,15 +140,20 @@ impl AmbsDsp {
         }
 
         let p_minus_one = p.clone() - Integer::from(1);
-        let legendre = n_mod.clone().pow_mod(&(&p_minus_one / Integer::from(2)), p).map_err(|_| AmbsError::ModuloError)?;
+        let legendre = n_mod
+            .clone()
+            .pow_mod(&(&p_minus_one / Integer::from(2)), p)
+            .map_err(|_| AmbsError::ModuloError)?;
         if legendre != Integer::from(1) {
-            return Ok(vec![]); 
+            return Ok(vec![]);
         }
 
         let p_mod_4 = p.clone().rem_euc(&Integer::from(4));
         if p_mod_4 == Integer::from(3) {
             let power = (p.clone() + Integer::from(1)) / Integer::from(4);
-            let root = n_mod.pow_mod(&power, p).map_err(|_| AmbsError::ModuloError)?;
+            let root = n_mod
+                .pow_mod(&power, p)
+                .map_err(|_| AmbsError::ModuloError)?;
             let root2 = p.clone() - &root;
             if root == root2 {
                 return Ok(vec![root]);
@@ -164,21 +171,33 @@ impl AmbsDsp {
         let mut z = Integer::from(2);
         let power_z = (p.clone() - Integer::from(1)) / Integer::from(2);
         let p_minus_1 = p.clone() - Integer::from(1);
-        while z.clone().pow_mod(&power_z, p).map_err(|_| AmbsError::ModuloError)? != p_minus_1 {
+        while z
+            .clone()
+            .pow_mod(&power_z, p)
+            .map_err(|_| AmbsError::ModuloError)?
+            != p_minus_1
+        {
             z += Integer::from(1);
         }
 
         let mut m = s;
         let mut c = z.pow_mod(&q, p).map_err(|_| AmbsError::ModuloError)?;
-        let mut t = n_mod.clone().pow_mod(&q, p).map_err(|_| AmbsError::ModuloError)?;
+        let mut t = n_mod
+            .clone()
+            .pow_mod(&q, p)
+            .map_err(|_| AmbsError::ModuloError)?;
         let power_r = (q.clone() + Integer::from(1)) / Integer::from(2);
-        let mut r = n_mod.pow_mod(&power_r, p).map_err(|_| AmbsError::ModuloError)?;
+        let mut r = n_mod
+            .pow_mod(&power_r, p)
+            .map_err(|_| AmbsError::ModuloError)?;
 
         while t != Integer::from(0) && t != Integer::from(1) {
             let mut t2i = t.clone();
             let mut i = 0;
             for j in 1..m {
-                t2i = t2i.pow_mod(&Integer::from(2), p).map_err(|_| AmbsError::ModuloError)?;
+                t2i = t2i
+                    .pow_mod(&Integer::from(2), p)
+                    .map_err(|_| AmbsError::ModuloError)?;
                 if t2i == Integer::from(1) {
                     i = j;
                     break;
@@ -189,9 +208,15 @@ impl AmbsDsp {
                 return Ok(vec![]);
             }
 
-            let b = c.clone().pow_mod(&Integer::from(1_u32 << (m - i - 1)), p).map_err(|_| AmbsError::ModuloError)?;
+            let b = c
+                .clone()
+                .pow_mod(&Integer::from(1_u32 << (m - i - 1)), p)
+                .map_err(|_| AmbsError::ModuloError)?;
             m = i;
-            c = b.clone().pow_mod(&Integer::from(2), p).map_err(|_| AmbsError::ModuloError)?;
+            c = b
+                .clone()
+                .pow_mod(&Integer::from(2), p)
+                .map_err(|_| AmbsError::ModuloError)?;
             t = (t * &c).rem_euc(p);
             r = (r * b).rem_euc(p);
         }
@@ -230,7 +255,7 @@ impl AmbsDsp {
                     p_n *= p;
                     x_n = x_n.rem_euc(&p_n);
                 } else {
-                    break; 
+                    break;
                 }
             }
 
@@ -290,7 +315,7 @@ impl AmbsDsp {
         x_l: &Integer,
         s_l: &Integer,
     ) -> Result<Vec<Integer>, AmbsError> {
-        let s_l_u64 = s_l.to_u64().unwrap_or(0); 
+        let s_l_u64 = s_l.to_u64().unwrap_or(0);
         if s_l_u64 == 0 {
             return Ok(vec![]);
         }
@@ -322,7 +347,8 @@ impl AmbsDsp {
     }
 
     pub fn search(&mut self, n_max_str: &str) -> Result<Option<Integer>, AmbsError> {
-        let n_max = Integer::from_str_radix(n_max_str, 10).map_err(|_| AmbsError::ParseError("err".to_string()))?;
+        let n_max = Integer::from_str_radix(n_max_str, 10)
+            .map_err(|_| AmbsError::ParseError("err".to_string()))?;
 
         self.build_prefix(1, 0, 3.0);
 
@@ -349,12 +375,17 @@ impl AmbsDsp {
                 let mut c_valid = vec![true; c_max];
                 let b_stop_sqrt = (self.b_stop / (n_l as f64)).sqrt() as u64;
 
-                let primes: Vec<u64> = (2..=std::cmp::max(2, b_stop_sqrt)).filter(|&q| is_prime(q)).collect();
+                let primes: Vec<u64> = (2..=std::cmp::max(2, b_stop_sqrt))
+                    .filter(|&q| is_prime(q))
+                    .collect();
 
                 for q in primes {
                     let q_int = Integer::from(q);
                     if let Some(s_l_inv) = modular_inverse(&s_l, &q_int) {
-                        let target_c = ((Integer::from(0) - &r_i) * s_l_inv).rem_euc(&q_int).to_usize().ok_or(AmbsError::ConversionError)?;
+                        let target_c = ((Integer::from(0) - &r_i) * s_l_inv)
+                            .rem_euc(&q_int)
+                            .to_usize()
+                            .ok_or(AmbsError::ConversionError)?;
                         let q_usize = q as usize;
                         for c in (target_c..c_max).step_by(q_usize) {
                             c_valid[c] = false;
@@ -366,7 +397,8 @@ impl AmbsDsp {
                     if is_valid {
                         let z = Integer::from(&r_i + &Integer::from(Integer::from(c) * &s_l));
                         let z_sq = Integer::from(&z * &z);
-                        let _target_sigma = (Integer::from(2) * &n_l_int * &z_sq + Integer::from(1)) / &s_l;
+                        let _target_sigma =
+                            (Integer::from(2) * &n_l_int * &z_sq + Integer::from(1)) / &s_l;
                     }
                 }
             }
@@ -383,7 +415,7 @@ pub fn solve_quasiperfect_modularity(
 ) -> Result<String, AmbsError> {
     let mut ambs = AmbsDsp::new(20, 1, 1000.0);
     if let Some(val) = ambs.search(n_max_str)? {
-        Ok(format!("Found: {:?}", val)) 
+        Ok(format!("Found: {:?}", val))
     } else {
         Ok("None".to_string())
     }

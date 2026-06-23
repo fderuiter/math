@@ -1,7 +1,7 @@
-use thiserror::Error;
 use crate::diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use std::fmt;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum NumberTheoryError {
@@ -188,9 +188,10 @@ pub enum Glicko2Error {
     EmptyMatchResults,
 }
 
-
 impl Diagnostic for NumberTheoryError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "NumberTheoryError".to_string());
@@ -200,7 +201,9 @@ impl Diagnostic for NumberTheoryError {
 }
 
 impl Diagnostic for KellyError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "KellyError".to_string());
@@ -210,7 +213,9 @@ impl Diagnostic for KellyError {
 }
 
 impl Diagnostic for MarkovError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "MarkovError".to_string());
@@ -220,7 +225,9 @@ impl Diagnostic for MarkovError {
 }
 
 impl Diagnostic for OuError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "OuError".to_string());
@@ -230,7 +237,9 @@ impl Diagnostic for OuError {
 }
 
 impl Diagnostic for ZipError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "ZipError".to_string());
@@ -240,7 +249,9 @@ impl Diagnostic for ZipError {
 }
 
 impl Diagnostic for TdaError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "TdaError".to_string());
@@ -250,7 +261,9 @@ impl Diagnostic for TdaError {
 }
 
 impl Diagnostic for CopulaError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "CopulaError".to_string());
@@ -260,7 +273,9 @@ impl Diagnostic for CopulaError {
 }
 
 impl Diagnostic for Glicko2Error {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "Glicko2Error".to_string());

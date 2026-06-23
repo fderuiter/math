@@ -5,8 +5,8 @@
 
 use super::conservation::MomentumEquation;
 use super::types::{FlowState, FluidProperties, SpatialGradients};
-use pure_math::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 use nalgebra::Vector3;
+use pure_math::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 
 /// A Lagrangian particle in a flow field.
 ///

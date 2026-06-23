@@ -82,6 +82,8 @@ theory_verification!(
     module = "epidemiology",
     paper = "advanced_linear_algebra.tex",
     epsilon = 1e-6,
-    constants = { TEST = 1.0; },
+    constants = {
+        TEST = 1.0;
+    },
     test = {}
 );

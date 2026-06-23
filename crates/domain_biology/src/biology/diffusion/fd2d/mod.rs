@@ -1,13 +1,13 @@
 use super::SpatialDiffusion;
 
-pub mod geometry;
 pub mod boundary;
+pub mod geometry;
 pub mod iteration;
 
-use math_commons::math_kernel::types::{Dimension, StepSize};
-use geometry::{GeometryStrategy, Cartesian2D};
 use boundary::NeumannBoundary;
+use geometry::{Cartesian2D, GeometryStrategy};
 use iteration::{IterationStrategy, LoopSplittingIteration};
+use math_commons::math_kernel::types::{Dimension, StepSize};
 
 /// A 2D Finite Difference implementation using a 5-point stencil.
 #[derive(Debug, Clone, Copy)]
@@ -69,16 +69,20 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
             let cy = coeff * inv_dy_sq;
             let c_center = -2.0 * (cx + cy);
 
-            self.iteration.iterate(&self.geometry, &self.boundary, |idx, idx_l, idx_r, idx_u, idx_d| {
-                let u_curr = src[*idx];
-                let u_l = src[*idx_l];
-                let u_r = src[*idx_r];
-                let u_u = src[*idx_u];
-                let u_d = src[*idx_d];
+            self.iteration.iterate(
+                &self.geometry,
+                &self.boundary,
+                |idx, idx_l, idx_r, idx_u, idx_d| {
+                    let u_curr = src[*idx];
+                    let u_l = src[*idx_l];
+                    let u_r = src[*idx_r];
+                    let u_u = src[*idx_u];
+                    let u_d = src[*idx_d];
 
-                let diff = (u_r + u_l) * cx + (u_d + u_u) * cy + u_curr * c_center;
-                dst[*idx] = diff;
-            });
+                    let diff = (u_r + u_l) * cx + (u_d + u_u) * cy + u_curr * c_center;
+                    dst[*idx] = diff;
+                },
+            );
         }
     }
 }
@@ -122,28 +126,31 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
             );
         }
 
-        self.iteration.iterate(&self.geometry, &self.boundary, |idx, idx_l, idx_r, idx_u, idx_d| {
-            let mut current_vals = [0.0; N];
-            let mut diff_vals = [0.0; N];
+        self.iteration.iterate(
+            &self.geometry,
+            &self.boundary,
+            |idx, idx_l, idx_r, idx_u, idx_d| {
+                let mut current_vals = [0.0; N];
+                let mut diff_vals = [0.0; N];
 
-            for s in 0..N {
-                let u = state[s];
-                let u_curr = u[*idx];
-                let u_l = u[*idx_l];
-                let u_r = u[*idx_r];
-                let u_u = u[*idx_u];
-                let u_d = u[*idx_d];
+                for s in 0..N {
+                    let u = state[s];
+                    let u_curr = u[*idx];
+                    let u_l = u[*idx_l];
+                    let u_r = u[*idx_r];
+                    let u_u = u[*idx_u];
+                    let u_d = u[*idx_d];
 
-                let diff = (u_r + u_l) * cx[s] + (u_d + u_u) * cy[s] + u_curr * c_center[s];
+                    let diff = (u_r + u_l) * cx[s] + (u_d + u_u) * cy[s] + u_curr * c_center[s];
 
-                current_vals[s] = u_curr;
-                diff_vals[s] = diff;
-            }
-            op(*idx, current_vals, diff_vals);
-        });
+                    current_vals[s] = u_curr;
+                    diff_vals[s] = diff;
+                }
+                op(*idx, current_vals, diff_vals);
+            },
+        );
     }
 }
-
 
 #[cfg(test)]
 mod tests_2d {
@@ -153,7 +160,12 @@ mod tests_2d {
     fn test_laplacian_uniform() {
         let width = 10;
         let height = 10;
-        let diff = FiniteDifference2D::new(math_commons::math_kernel::types::Dimension(width), math_commons::math_kernel::types::Dimension(height), math_commons::math_kernel::types::StepSize(1.0), math_commons::math_kernel::types::StepSize(1.0));
+        let diff = FiniteDifference2D::new(
+            math_commons::math_kernel::types::Dimension(width),
+            math_commons::math_kernel::types::Dimension(height),
+            math_commons::math_kernel::types::StepSize(1.0),
+            math_commons::math_kernel::types::StepSize(1.0),
+        );
 
         let n = width * height;
         let u = vec![1.0; n];
@@ -180,7 +192,12 @@ mod tests_2d {
     fn test_laplacian_parabolic() {
         let width = 5;
         let height = 5;
-        let diff = FiniteDifference2D::new(math_commons::math_kernel::types::Dimension(width), math_commons::math_kernel::types::Dimension(height), math_commons::math_kernel::types::StepSize(1.0), math_commons::math_kernel::types::StepSize(1.0));
+        let diff = FiniteDifference2D::new(
+            math_commons::math_kernel::types::Dimension(width),
+            math_commons::math_kernel::types::Dimension(height),
+            math_commons::math_kernel::types::StepSize(1.0),
+            math_commons::math_kernel::types::StepSize(1.0),
+        );
 
         let n = width * height;
         let mut u = vec![0.0; n];
@@ -224,7 +241,12 @@ mod tests_2d {
     fn test_map_diffusion_equivalence() {
         let width = 5;
         let height = 5;
-        let diff = FiniteDifference2D::new(math_commons::math_kernel::types::Dimension(width), math_commons::math_kernel::types::Dimension(height), math_commons::math_kernel::types::StepSize(1.0), math_commons::math_kernel::types::StepSize(1.0));
+        let diff = FiniteDifference2D::new(
+            math_commons::math_kernel::types::Dimension(width),
+            math_commons::math_kernel::types::Dimension(height),
+            math_commons::math_kernel::types::StepSize(1.0),
+            math_commons::math_kernel::types::StepSize(1.0),
+        );
 
         let n = width * height;
         let mut u = vec![0.0; n];
@@ -286,7 +308,12 @@ mod tests_2d {
         let height = 5;
         let dx = 1.0;
         let dy = 1.0;
-        let diff = FiniteDifference2D::new(math_commons::math_kernel::types::Dimension(width), math_commons::math_kernel::types::Dimension(height), math_commons::math_kernel::types::StepSize(dx), math_commons::math_kernel::types::StepSize(dy));
+        let diff = FiniteDifference2D::new(
+            math_commons::math_kernel::types::Dimension(width),
+            math_commons::math_kernel::types::Dimension(height),
+            math_commons::math_kernel::types::StepSize(dx),
+            math_commons::math_kernel::types::StepSize(dy),
+        );
 
         let n = width * height;
         let mut state = ChemicalState::new(2, n);

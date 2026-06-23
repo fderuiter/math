@@ -42,7 +42,7 @@
 //! Emit the error to the bus using `diagnostics::emit_error(&my_error)`.
 
 use std::collections::HashMap;
-use std::sync::mpsc::{Sender, Receiver, channel};
+use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex, OnceLock};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -98,7 +98,7 @@ impl DiagnosticBus {
     pub fn emit(&self, event: DiagnosticEvent) {
         let _ = self.sender.send(event);
     }
-    
+
     pub fn emit_error<E: Diagnostic>(&self, err: &E) {
         let metadata = err.metadata();
         let thread = std::thread::current();
@@ -152,7 +152,10 @@ pub fn init_panic_hook() {
             "Unknown panic".to_string()
         };
 
-        let location = panic_info.location().map(|l| format!("{}:{}", l.file(), l.line())).unwrap_or_default();
+        let location = panic_info
+            .location()
+            .map(|l| format!("{}:{}", l.file(), l.line()))
+            .unwrap_or_default();
         let mut metadata = HashMap::new();
         metadata.insert("location".to_string(), location);
 

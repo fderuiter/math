@@ -1,5 +1,5 @@
-use crate::error::LoraError;
 use super::types::LoraStateDict;
+use crate::error::LoraError;
 
 /// Strategy for combining multiple LoRA state dictionaries.
 pub trait CombinationStrategy {
