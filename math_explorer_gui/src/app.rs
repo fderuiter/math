@@ -126,6 +126,7 @@ impl MathExplorerApp {
 }
 
 impl eframe::App for MathExplorerApp {
+    #[allow(clippy::too_many_lines)]
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         // Fetch new events
         self.diagnostic_events.extend(global_bus().try_recv_all());

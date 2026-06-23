@@ -179,6 +179,7 @@ impl UNetBuilder {
     ///
     /// # Arguments
     /// * `p` - The path to the variable store.
+    #[allow(clippy::too_many_lines)]
     pub fn build(self, p: &Path) -> UNet {
         let time_embedding = self
             .time_emb_dim
