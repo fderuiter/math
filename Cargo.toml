@@ -16,6 +16,7 @@ members = [
     "crates/rug_mock",
     "crates/wigner_mock"
 ]
+exclude = ["experimental/generative-turbulence-experimental"]
 resolver = "2"
 
 [workspace.lints.clippy]
