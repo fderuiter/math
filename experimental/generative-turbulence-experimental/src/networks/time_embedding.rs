@@ -5,8 +5,8 @@
 //! as is common in Transformer models and diffusion models.
 
 use tch::{
-    Kind, Tensor,
     nn::{self, Module, Path, Sequential},
+    Kind, Tensor,
 };
 
 /// A sinusoidal time embedding module.
