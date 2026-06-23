@@ -62,7 +62,15 @@ jobs:
 
       - name: Check Formatting
         if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: cargo fmt --all -- --check > fmt_output.txt || (cat fmt_output.txt >> $GITHUB_STEP_SUMMARY; exit 1)
+        run: |
+          cargo fmt --all -- --check > fmt_output.txt || (
+            echo "Formatting failed! Diff:" > diff.txt
+            cat fmt_output.txt >> diff.txt
+            gh issue comment 988 -F diff.txt
+            exit 1
+          )
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check File Lengths (500 lines limit)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
