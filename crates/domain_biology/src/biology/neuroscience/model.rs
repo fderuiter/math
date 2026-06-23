@@ -21,7 +21,7 @@ use pure_math::pure_math::analysis::ode::OdeSystem;
 ///
 /// 2.  **Gating Variables ($x \in \{n, m, h\}$):**
 ///     $$ \frac{dx}{dt} = \alpha_x(V)(1 - x) - \beta_x(V)x $$
-///     The rate constants $\alpha_x$ and $\beta_x$ are determined by the [`GatingKinetics`](crate::biology::neuroscience::kinetics::GatingKinetics) strategy.
+///     The rate constants $\alpha_x$ and $\beta_x$ are determined by the [`GatingKinetics`](domain_biology::biology::neuroscience::kinetics::GatingKinetics) strategy.
 #[derive(Debug, Clone)]
 pub struct HodgkinHuxleyModel {
     /// Parameters of the model (conductances, potentials, kinetics).

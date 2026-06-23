@@ -8,7 +8,7 @@
 //! Simulate a single neuron firing an action potential using the Hodgkin-Huxley model.
 //!
 //! ```rust
-//! use crate::biology::neuroscience::HodgkinHuxleyNeuron;
+//! use domain_biology::biology::neuroscience::HodgkinHuxleyNeuron;
 //!
 //! // 1. Initialize neuron at resting potential (-65.0 mV)
 //! let mut neuron = HodgkinHuxleyNeuron::new(-65.0);

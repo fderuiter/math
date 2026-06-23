@@ -26,7 +26,7 @@
 //! and the population should converge to a mixed equilibrium.
 //!
 //! ```rust
-//! use crate::biology::evolution::HawkDovePopulation;
+//! use domain_biology::biology::evolution::HawkDovePopulation;
 //!
 //! // 1. Define the environment
 //! // Value = 2.0, Cost = 10.0 (High cost of fighting)

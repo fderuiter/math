@@ -12,7 +12,7 @@
 //! Calculate the reaction rate of an enzyme at different substrate concentrations.
 //!
 //! ```rust
-//! use crate::biology::kinetics::{MichaelisMenten, KineticsModel};
+//! use domain_biology::biology::kinetics::{MichaelisMenten, KineticsModel};
 //!
 //! // 1. Define Enzyme Properties
 //! // Vmax = 100.0 (Max rate), Km = 50.0 (Substrate conc at half max rate)
@@ -93,7 +93,7 @@ impl KineticsModel for MichaelisMenten {
 /// # Examples
 ///
 /// ```rust
-/// use crate::biology::kinetics::{HillKinetics, KineticsModel};
+/// use domain_biology::biology::kinetics::{HillKinetics, KineticsModel};
 ///
 /// // Create a cooperative enzyme with Hill coefficient n=2.0
 /// let cooperative_enzyme = HillKinetics::new(100.0, 50.0, 2.0).expect("Invalid parameters");
