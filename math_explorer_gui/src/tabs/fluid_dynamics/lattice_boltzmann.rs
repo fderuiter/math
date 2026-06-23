@@ -61,6 +61,7 @@ impl SimulationRunner for LbmRunner {
                 self.viscosity = val;
                 self.solver.collision_model.tau = 3.0 * self.viscosity + 0.5;
             }
+            SimCommand::UpdateParam(_, _) => {}
             SimCommand::ApplyBrush {
                 cx,
                 cy,
