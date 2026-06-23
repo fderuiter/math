@@ -1,5 +1,7 @@
 use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;
+use math_commons::theory::TheoryDescribable;
+use std::collections::HashMap;
 
 /// Represents the state of a quantum system as a vector in a Hilbert space.
 ///
@@ -15,7 +17,36 @@ pub struct QuantumState {
     pub vector: DVector<Complex<f64>>,
 }
 
+impl TheoryDescribable for QuantumState {
+    fn theory_description(&self) -> String {
+        // Use a heuristic to detect the |0> spin state
+        if self.vector.len() == 2 && self.vector[0].re == 1.0 && self.vector[0].im == 0.0 && self.vector[1].re == 0.0 && self.vector[1].im == 0.0 {
+            "|0> spin state".to_string()
+        } else {
+            "Quantum state vector".to_string()
+        }
+    }
+
+    fn theory_citation(&self) -> String {
+        "[cite:quantum_mechanics]".to_string()
+    }
+
+    fn available_descriptions(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("|0>".to_string(), "|0> spin state".to_string());
+        map.insert("default".to_string(), "Quantum state vector".to_string());
+        map
+    }
+}
+
 impl QuantumState {
+    /// Returns the |0> spin state (spin up along Z)
+    pub fn spin_zero() -> Self {
+        let zero = Complex::new(0.0, 0.0);
+        let one = Complex::new(1.0, 0.0);
+        Self::new(DVector::from_vec(vec![one, zero]))
+    }
+
     /// Creates a new QuantumState from a vector of complex numbers.
     ///
     /// # Arguments

@@ -103,9 +103,9 @@ def main():
                 wasm_covered += 1
 
     # Theory parity check: All feature modules
-    feature_modules = ["domain_ai", "domain_applied", "domain_biology", "domain_climate", "domain_epidemiology", "domain_physics", "pure_math"]
+    feature_modules = ["crates/domain_ai", "crates/domain_applied", "crates/domain_biology", "crates/domain_climate", "crates/domain_epidemiology", "crates/domain_physics", "crates/pure_math", "math_explorer_gui"]
     for fm in feature_modules:
-        mod_dir = f"crates/{fm}/src"
+        mod_dir = f"{fm}/src"
         if os.path.exists(mod_dir):
             has_theory = False
             for root, _, files in os.walk(mod_dir):
