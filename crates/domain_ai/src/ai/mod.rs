@@ -49,7 +49,7 @@
 //! Create a standard Transformer Encoder stack to process sequential data.
 //!
 //! ```rust
-//! use crate::ai::transformer::Encoder;
+//! use domain_ai::ai::transformer::Encoder;
 //! use nalgebra::DMatrix;
 //!
 //! // 1. Configure the Architecture

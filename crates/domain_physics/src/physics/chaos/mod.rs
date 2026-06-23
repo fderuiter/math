@@ -42,7 +42,7 @@
 //! ### Example Implementation
 //!
 //! ```rust
-//! use crate::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
+//! use domain_physics::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
 //!
 //! // 1. Initialize the system with the "Butterfly" parameters
 //! // sigma=10, rho=28, beta=8/3

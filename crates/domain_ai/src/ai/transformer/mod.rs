@@ -53,7 +53,7 @@
 //! Constructing and running a full Transformer model (Encoder + Decoder).
 //!
 //! ```rust
-//! use crate::ai::transformer::{Encoder, Decoder, Transformer};
+//! use domain_ai::ai::transformer::{Encoder, Decoder, Transformer};
 //! use nalgebra::DMatrix;
 //!
 //! // 1. Configure Model Parameters

@@ -28,7 +28,7 @@ use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, Nor
 /// whether you are doing Seq2Seq, Causal LM, or Masked LM), you should instantiate components manually:
 ///
 /// ```rust
-/// use crate::ai::transformer::{Transformer, Encoder, Decoder};
+/// use domain_ai::ai::transformer::{Transformer, Encoder, Decoder};
 ///
 /// // 1. Configure Layers
 /// let encoder = Encoder::new(6, 512, 8, 2048);

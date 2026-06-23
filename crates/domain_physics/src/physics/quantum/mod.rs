@@ -29,7 +29,7 @@
 //! Calculate the probability amplitude of coupled angular momentum states.
 //!
 //! ```rust
-//! use crate::physics::quantum::clebsch_gordan;
+//! use domain_physics::physics::quantum::clebsch_gordan;
 //!
 //! // Coupling spin j1=1.5, m1=-0.5 with j2=1.0, m2=1.0
 //! // We want to know the coefficient for total angular momentum J=2.5, M=0.5
@@ -43,7 +43,7 @@
 //! Simulating a spin-1/2 particle in a magnetic field (Pauli-X Hamiltonian).
 //!
 //! ```rust
-//! use crate::physics::quantum::{QuantumState, QuantumOperator, evolve_state, sigma_x};
+//! use domain_physics::physics::quantum::{QuantumState, QuantumOperator, evolve_state, sigma_x};
 //! use nalgebra::DVector;
 //! use num_complex::Complex;
 //!

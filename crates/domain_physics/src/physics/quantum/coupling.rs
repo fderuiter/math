@@ -40,7 +40,7 @@ use wigner_symbols::ClebschGordan;
 /// // Example from Griffiths, Introduction to Quantum Mechanics, 2nd ed., Table 4.8.
 /// // Coupling j1=3/2 and j2=1 for the state |5/2 1/2>.
 /// // We calculate <3/2 -1/2; 1 1 | 5/2 1/2>.
-/// use crate::physics::quantum::clebsch_gordan;
+/// use domain_physics::physics::quantum::clebsch_gordan;
 ///
 /// let j1 = 1.5;
 /// let m1 = -0.5;

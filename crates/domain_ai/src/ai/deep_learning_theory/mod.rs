@@ -49,8 +49,8 @@
 //! Train a simple 2-layer network to solve a classification problem using our theoretical primitives.
 //!
 //! ```rust
-//! use crate::ai::deep_learning_theory::cycle::TrainingLoop;
-//! use crate::ai::optimization::SGD;
+//! use domain_ai::ai::deep_learning_theory::cycle::TrainingLoop;
+//! use domain_ai::ai::optimization::SGD;
 //! use nalgebra::DVector;
 //!
 //! // 1. Define Architecture

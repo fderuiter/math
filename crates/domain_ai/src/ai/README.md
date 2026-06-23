@@ -33,7 +33,7 @@ cargo run --release --package math_explorer --example transformer_demo
 *(See `math_explorer/examples/transformer_demo.rs` for implementation details)*
 
 ```rust
-use math_explorer::ai::transformer::Encoder;
+use domain_ai::ai::transformer::Encoder;
 use nalgebra::DMatrix;
 
 // 1. Configure the Architecture

@@ -36,7 +36,7 @@
 //! Train an agent to navigate a simple 1D grid to reach a target.
 //!
 //! ```rust
-//! use crate::ai::reinforcement_learning::{QLearningAgent, State, Action, TabularQFunction};
+//! use domain_ai::ai::reinforcement_learning::{QLearningAgent, State, Action, TabularQFunction};
 //!
 //! // 1. Define State and Action
 //! #[derive(Clone, Debug, PartialEq, Eq, Hash)]

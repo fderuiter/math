@@ -36,7 +36,7 @@ use num_complex::Complex;
 /// Calculate the time evolution operator for a spin-1/2 system with Hamiltonian H = \sigma_z.
 ///
 /// ```
-/// use crate::physics::quantum::{time_evolution_operator, sigma_z};
+/// use domain_physics::physics::quantum::{time_evolution_operator, sigma_z};
 /// use std::f64::consts::PI;
 /// use num_complex::Complex;
 ///
@@ -104,8 +104,8 @@ pub fn time_evolution_operator(
 /// Simulating a 2-level system (Qubit) undergoing Rabi oscillations.
 ///
 /// ```
-/// use crate::physics::quantum::schrodinger::evolve_state;
-/// use crate::physics::quantum::types::{QuantumState, QuantumOperator};
+/// use domain_physics::physics::quantum::schrodinger::evolve_state;
+/// use domain_physics::physics::quantum::types::{QuantumState, QuantumOperator};
 /// use nalgebra::{DMatrix, DVector};
 /// use num_complex::Complex;
 ///
