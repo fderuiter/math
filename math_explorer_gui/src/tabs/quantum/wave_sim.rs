@@ -40,8 +40,8 @@ impl SimulationRunner for WaveRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) => match name.as_str() {
-                "potential_type" => {
+            SimCommand::UpdateParam(name, val) => {
+                if name.as_str() == "potential_type" {
                     self.potential_type = if val == 0.0 {
                         PotentialType::InfiniteWell
                     } else {
@@ -49,8 +49,7 @@ impl SimulationRunner for WaveRunner {
                     };
                     self.init_system();
                 }
-                _ => {}
-            },
+            }
             SimCommand::Reset => self.init_system(),
             _ => {}
         }

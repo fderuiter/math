@@ -74,7 +74,7 @@ pub fn trigger_download(filename: &str, content: &[u8]) {
     let uint8_array = js_sys::Uint8Array::from(content);
     let array = js_sys::Array::new();
     array.push(&uint8_array.buffer());
-    let mut options = web_sys::BlobPropertyBag::new();
+    let options = web_sys::BlobPropertyBag::new();
     options.set_type("application/octet-stream");
     let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&array, &options).unwrap();
     let url = web_sys::Url::create_object_url_with_blob(&blob).unwrap();

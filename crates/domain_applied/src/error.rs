@@ -1,7 +1,6 @@
 use crate::diagnostics::{Diagnostic, Severity};
 use pure_math::pure_math::analysis::roots::AnalysisError;
 use std::collections::HashMap;
-use std::fmt;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

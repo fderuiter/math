@@ -22,11 +22,6 @@ impl ClebschGordan {
             return 0.0;
         }
 
-        let mut sign = 1.0;
-        if (tj1 - tj2 - tm) % 4 == 2 || (tj1 - tj2 - tm) % 4 == -2 {
-            sign = -1.0;
-        }
-
         let w3j = wigner_3j(tj1, tj2, tj, tm1, tm2, -tm);
         let mut cg_sign = 1.0;
         if (tj1 - tj2 + tm) % 4 == 2 || (tj1 - tj2 + tm) % 4 == -2 {
