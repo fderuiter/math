@@ -62,7 +62,7 @@ jobs:
 
       - name: Check Formatting
         if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: cargo fmt --all -- --check
+        run: cargo fmt --all -- --check > fmt_output.txt || (cat fmt_output.txt >> $GITHUB_STEP_SUMMARY; exit 1)
 
       - name: Check File Lengths (500 lines limit)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
