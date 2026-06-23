@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python for Traceability
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
       - name: Install PyTorch (Linux)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
@@ -148,7 +148,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
       - name: Install PyTorch (AI only)
         if: matrix.feature == 'ai'
