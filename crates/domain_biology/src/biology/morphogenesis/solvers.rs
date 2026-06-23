@@ -127,8 +127,8 @@ impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSyst
 /// Manually stepping a system:
 ///
 /// ```rust
-/// use crate::biology::morphogenesis::{FusedEulerSolver, TuringSolverStrategy, TuringState, SchnakenbergKinetics, TuringDynamics};
-/// use crate::biology::diffusion::FiniteDifference1D;
+/// use domain_biology::biology::morphogenesis::{FusedEulerSolver, TuringSolverStrategy, TuringState, SchnakenbergKinetics, TuringDynamics};
+/// use domain_biology::biology::diffusion::FiniteDifference1D;
 ///
 /// // 1. Setup System Components
 /// let mut solver = FusedEulerSolver::new();

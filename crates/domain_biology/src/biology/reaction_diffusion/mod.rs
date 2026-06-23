@@ -47,8 +47,8 @@
 //! Implementing a simple decay system using the generic framework:
 //!
 //! ```rust
-//! use crate::biology::reaction_diffusion::{ReactionDiffusionSystem, ReactionModel, ChemicalState};
-//! use crate::biology::diffusion::FiniteDifference1D;
+//! use domain_biology::biology::reaction_diffusion::{ReactionDiffusionSystem, ReactionModel, ChemicalState};
+//! use domain_biology::biology::diffusion::FiniteDifference1D;
 //!
 //! // 1. Define custom kinetics (e.g., simple exponential decay)
 //! struct DecayKinetics { rate: f64 }

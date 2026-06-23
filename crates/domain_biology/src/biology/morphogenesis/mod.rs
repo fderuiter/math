@@ -36,12 +36,12 @@
 //! Simulate the emergence of a pattern from random noise.
 //!
 //! ```rust
-//! use crate::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
+//! use domain_biology::biology::morphogenesis::{TuringSystem, SchnakenbergKinetics};
 //!
 //! // 1. System Configuration
 //! // Activator diffuses slowly (1.0), Inhibitor diffuses fast (40.0)
 //! let n = 100;
-//! let mut system = TuringSystem::new(math_commons::math_kernel::types::Dimension(n), crate::biology::morphogenesis::DiffusionCoeff(1.0), crate::biology::morphogenesis::DiffusionCoeff(40.0), math_commons::math_kernel::types::StepSize(1.0));
+//! let mut system = TuringSystem::new(math_commons::math_kernel::types::Dimension(n), domain_biology::biology::morphogenesis::DiffusionCoeff(1.0), domain_biology::biology::morphogenesis::DiffusionCoeff(40.0), math_commons::math_kernel::types::StepSize(1.0));
 //!
 //! // 2. Initialize with Random Noise
 //! // A uniform state would be stable without noise
