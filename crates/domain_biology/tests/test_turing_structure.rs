@@ -1,4 +1,4 @@
-#![cfg(all(feature = "biology", feature = "pure_math"))]
+
 
 #[cfg(test)]
 mod tests {
@@ -21,14 +21,14 @@ mod tests {
         let adapter = StandardSolverAdapter::new(rk4);
 
         let mut system = TuringSystem::new_with_solver(
-            math_explorer::math_kernel::types::Dimension(size),
+            math_commons::math_kernel::types::Dimension(size),
             [
                 domain_biology::biology::morphogenesis::DiffusionCoeff(d_u),
                 domain_biology::biology::morphogenesis::DiffusionCoeff(d_v),
             ],
             SchnakenbergKinetics::default(),
             domain_biology::biology::diffusion::FiniteDifference1D::new(
-                math_explorer::math_kernel::types::StepSize(dx),
+                math_commons::math_kernel::types::StepSize(dx),
             ),
             adapter,
         );

@@ -1,4 +1,4 @@
-#![cfg(all(feature = "applied"))]
+
 
 #[allow(deprecated)]
 use domain_applied::applied::game_theory::equilibrium::{

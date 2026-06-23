@@ -1,4 +1,4 @@
-#![cfg(all(feature = "applied"))]
+
 
 use domain_applied::applied::clinical_trials::types::{ClinicalTrialError, GroupData};
 

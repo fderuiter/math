@@ -1,4 +1,4 @@
-#![cfg(all(feature = "pure_math"))]
+
 
 use pure_math::pure_math::elliptic_curves::*;
 use std::collections::HashMap;

@@ -1,6 +1,6 @@
-#![cfg(all(feature = "applied"))]
 
-extern crate math_explorer;
+
+
 
 use domain_applied::applied::battery_degradation;
 

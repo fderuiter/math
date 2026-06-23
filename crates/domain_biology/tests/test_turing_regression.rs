@@ -1,4 +1,4 @@
-#![cfg(all(feature = "biology"))]
+
 
 use domain_biology::biology::diffusion::FiniteDifference1D;
 use domain_biology::biology::morphogenesis::{ReactionKinetics, TuringSystem};
@@ -28,10 +28,10 @@ fn test_turing_regression() {
     let iterations = 100;
     // Default uses Schnakenberg kinetics (backward compatible)
     let mut system = TuringSystem::new(
-        math_explorer::math_kernel::types::Dimension(size),
+        math_commons::math_kernel::types::Dimension(size),
         domain_biology::biology::morphogenesis::DiffusionCoeff(0.1),
         domain_biology::biology::morphogenesis::DiffusionCoeff(0.05),
-        math_explorer::math_kernel::types::StepSize(1.0),
+        math_commons::math_kernel::types::StepSize(1.0),
     );
 
     // Seed it deterministically
@@ -57,9 +57,9 @@ fn test_custom_kinetics_strategy() {
 
     // Use Gray-Scott kinetics via the Strategy Pattern
     let kinetics = GrayScottKinetics { f: 0.055, k: 0.062 };
-    let diffusion = FiniteDifference1D::new(math_explorer::math_kernel::types::StepSize(1.0));
+    let diffusion = FiniteDifference1D::new(math_commons::math_kernel::types::StepSize(1.0));
     let mut system = TuringSystem::new_with_kinetics(
-        math_explorer::math_kernel::types::Dimension(size),
+        math_commons::math_kernel::types::Dimension(size),
         domain_biology::biology::morphogenesis::DiffusionCoeff(0.2),
         domain_biology::biology::morphogenesis::DiffusionCoeff(0.1),
         kinetics,

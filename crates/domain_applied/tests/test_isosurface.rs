@@ -1,4 +1,4 @@
-#![cfg(all(feature = "applied"))]
+
 
 #[cfg(test)]
 mod tests {

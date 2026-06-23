@@ -32,7 +32,11 @@ jobs:
 
       - name: Install PyTorch (Linux)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: pip install setuptools numpy torch==2.2.0
+
+        
+
+        run: pip install setuptools torch==2.2.0 "numpy<2"
+
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -152,7 +156,11 @@ jobs:
 
       - name: Install PyTorch (AI only)
         if: matrix.feature == 'ai'
-        run: pip install setuptools numpy torch==2.2.0
+
+        
+
+        run: pip install setuptools torch==2.2.0 "numpy<2"
+
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable

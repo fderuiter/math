@@ -1,6 +1,6 @@
-#![cfg(all(feature = "applied"))]
 
-use domain_applied::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
+
+use domain_applied::applied::isosurface::{Point3D, VoxelGrid};
 
 #[test]
 fn test_security_buffer_overflow_prevention() {

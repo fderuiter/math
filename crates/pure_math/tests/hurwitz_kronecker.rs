@@ -1,4 +1,4 @@
-#![cfg(all(feature = "pure_math"))]
+
 
 use pure_math::pure_math::number_theory::class_number::class_number;
 use pure_math::pure_math::number_theory::hurwitz_kronecker::{

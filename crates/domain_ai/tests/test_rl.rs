@@ -1,4 +1,4 @@
-#![cfg(all(feature = "ai"))]
+
 
 #[cfg(test)]
 mod tests {

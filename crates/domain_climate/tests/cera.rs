@@ -1,4 +1,4 @@
-#![cfg(all(feature = "climate"))]
+
 
 use domain_climate::climate::cera::{Cera, CeraConfig};
 use domain_climate::climate::training::CeraTrainer;

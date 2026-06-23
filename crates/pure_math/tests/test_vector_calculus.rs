@@ -1,4 +1,4 @@
-#![cfg(all(feature = "pure_math"))]
+
 
 use nalgebra::Vector3;
 use pure_math::pure_math::vector_calculus::coordinates::Cartesian;

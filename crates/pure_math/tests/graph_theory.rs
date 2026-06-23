@@ -1,4 +1,4 @@
-#![cfg(all(feature = "pure_math"))]
+
 
 use petgraph::graph::NodeIndex;
 use petgraph::visit::EdgeRef;

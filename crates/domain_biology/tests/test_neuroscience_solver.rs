@@ -1,4 +1,4 @@
-#![cfg(all(feature = "biology", feature = "pure_math"))]
+
 
 use domain_biology::biology::neuroscience::neuron::HodgkinHuxleyNeuron;
 use domain_biology::biology::neuroscience::types::HodgkinHuxleyState;

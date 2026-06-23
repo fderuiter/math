@@ -1,4 +1,4 @@
-#![cfg(all(feature = "physics"))]
+
 
 #[allow(deprecated)]
 use domain_physics::physics::astrophysics::galaxies::{
