@@ -1,5 +1,4 @@
 use dashu::base::Abs;
-use dashu::float::FBig;
 use dashu::rational::RBig;
 use num_bigint::BigInt;
 use num_integer::Integer as NumInteger;

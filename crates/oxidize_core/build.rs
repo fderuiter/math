@@ -1,7 +1,8 @@
 use std::env;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     println!("cargo:rerun-if-changed=../../papers");
     println!("cargo:rerun-if-changed=../../math_explorer/src");
