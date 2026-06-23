@@ -2,7 +2,8 @@ use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
 use math_explorer::physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};
-use nalgebra::DVector;
+use math_commons::theory_verification;
+use math_commons::theory::TheoryDescribable;
 use num_complex::Complex;
 
 use super::QuantumTool;
@@ -18,10 +19,7 @@ pub struct SpinVisualizer {
 impl Default for SpinVisualizer {
     fn default() -> Self {
         // Initial state |0> (spin up)
-        let zero = Complex::new(0.0, 0.0);
-        let one = Complex::new(1.0, 0.0);
-        let psi_vec = DVector::from_vec(vec![one, zero]);
-        let psi = QuantumState::new(psi_vec);
+        let psi = QuantumState::spin_zero();
 
         Self {
             psi,
@@ -36,10 +34,7 @@ impl Default for SpinVisualizer {
 impl SpinVisualizer {
     pub fn reset(&mut self) {
         // Reset to |0>
-        let zero = Complex::new(0.0, 0.0);
-        let one = Complex::new(1.0, 0.0);
-        let psi_vec = DVector::from_vec(vec![one, zero]);
-        self.psi = QuantumState::new(psi_vec);
+        self.psi = QuantumState::spin_zero();
         self.time = 0.0;
     }
 
@@ -130,7 +125,7 @@ impl QuantumTool for SpinVisualizer {
                 }
                 if ui
                     .button("🔄 Reset")
-                    .accessible_hover_text("Reset to |0> spin state")
+                    .accessible_hover_text(format!("Reset to {}", theory_verification!(QuantumState::spin_zero())))
                     .clicked()
                 {
                     self.reset();
