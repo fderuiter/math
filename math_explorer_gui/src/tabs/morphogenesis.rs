@@ -1,5 +1,5 @@
-use crate::accessibility::AccessibleHoverText;
-use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
+use crate::async_sim::declarative::{DeclarativeSimulation, ParamDescriptor, ParamType, DeclarativeTab};
+use crate::async_sim::StateSnapshot;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui::ColorImage;
@@ -7,62 +7,128 @@ use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use std::sync::Arc;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum PatternPreset {
-    Spots,
-    Stripes,
-    Labyrinths,
-    Chaos,
+#[derive(Clone, PartialEq)]
+pub struct MorphogenesisParams {
+    pub a: f64,
+    pub b: f64,
+    pub d_u: f64,
+    pub d_v: f64,
+    pub dt: f64,
 }
 
-impl PatternPreset {
-    fn label(&self) -> &'static str {
-        match self {
-            Self::Spots => "Spots (Leopard)",
-            Self::Stripes => "Stripes (Zebra)",
-            Self::Labyrinths => "Labyrinths",
-            Self::Chaos => "Unstable / Chaos",
-        }
-    }
-
-    fn params(&self) -> (f64, f64, f64, f64) {
-        // Returns (a, b, d_u, d_v)
-        // Values tuned for typical Schnakenberg patterns
-        match self {
-            Self::Spots => (0.12, 0.88, 1.0, 100.0),
-            Self::Stripes => (0.1, 0.9, 1.0, 100.0),
-            Self::Labyrinths => (0.14, 0.86, 1.0, 100.0),
-            Self::Chaos => (0.02, 0.98, 1.0, 100.0),
-        }
-    }
-}
-
-struct MorphogenesisRunner {
+pub struct MorphogenesisSim {
     system: TuringSystem<2, SchnakenbergKinetics, FiniteDifference2D>,
-    dt: f64,
     width: usize,
     height: usize,
-    steps_per_frame: usize,
 }
 
-impl SimulationRunner for MorphogenesisRunner {
-    fn process_command(&mut self, cmd: SimCommand) {
-        match cmd {
-            SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) => match name.as_str() {
-                "a" => self.system.kinetics.a = val,
-                "b" => self.system.kinetics.b = val,
-                "d_u" => self.system.diffusion_coeffs[0] = val,
-                "d_v" => self.system.diffusion_coeffs[1] = val,
-                _ => {}
-            },
-            SimCommand::Reset => initialize_system(&mut self.system, self.width, self.height),
-            _ => {}
+impl Default for MorphogenesisSim {
+    fn default() -> Self {
+        let width = 100;
+        let height = 100;
+        
+        let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 };
+        let diffusion = FiniteDifference2D::new(
+            math_explorer::math_kernel::types::Dimension(width),
+            math_explorer::math_kernel::types::Dimension(height),
+            math_explorer::math_kernel::types::StepSize(1.0),
+            math_explorer::math_kernel::types::StepSize(1.0)
+        );
+
+        let system = TuringSystem::new_with_kinetics(
+            math_explorer::math_kernel::types::Dimension(width * height),
+            math_explorer::biology::morphogenesis::DiffusionCoeff(1.0),
+            math_explorer::biology::morphogenesis::DiffusionCoeff(100.0),
+            kinetics,
+            diffusion
+        );
+
+        Self {
+            system,
+            width,
+            height,
+        }
+    }
+}
+
+impl DeclarativeSimulation for MorphogenesisSim {
+    type Params = MorphogenesisParams;
+
+    fn name(&self) -> &'static str {
+        "Morphogenesis"
+    }
+
+    fn description(&self) -> &'static str {
+        "Turing patterns arise from the interaction of two diffusing substances: an activator and an inhibitor. The inhibitor must diffuse significantly faster than the activator."
+    }
+
+    fn default_params(&self) -> Self::Params {
+        MorphogenesisParams {
+            a: 0.1,
+            b: 0.9,
+            d_u: 1.0,
+            d_v: 100.0,
+            dt: 0.05,
         }
     }
 
-    fn step(&mut self) {
-        self.system.step(self.dt);
+    fn param_descriptors(&self) -> Vec<ParamDescriptor<Self::Params>> {
+        vec![
+            ParamDescriptor {
+                name: "a (Feed)".to_string(),
+                description: "".to_string(),
+                ptype: ParamType::F64 { min: 0.0, max: 1.0 },
+                update_f64: Some(|p, v| p.a = v),
+                read_f64: Some(|p| p.a),
+                update_usize: None,
+                read_usize: None,
+            },
+            ParamDescriptor {
+                name: "b (Kill)".to_string(),
+                description: "".to_string(),
+                ptype: ParamType::F64 { min: 0.0, max: 2.0 },
+                update_f64: Some(|p, v| p.b = v),
+                read_f64: Some(|p| p.b),
+                update_usize: None,
+                read_usize: None,
+            },
+            ParamDescriptor {
+                name: "D_u (Activator)".to_string(),
+                description: "".to_string(),
+                ptype: ParamType::F64 { min: 0.1, max: 5.0 },
+                update_f64: Some(|p, v| p.d_u = v),
+                read_f64: Some(|p| p.d_u),
+                update_usize: None,
+                read_usize: None,
+            },
+            ParamDescriptor {
+                name: "D_v (Inhibitor)".to_string(),
+                description: "".to_string(),
+                ptype: ParamType::F64 { min: 10.0, max: 200.0 },
+                update_f64: Some(|p, v| p.d_v = v),
+                read_f64: Some(|p| p.d_v),
+                update_usize: None,
+                read_usize: None,
+            },
+        ]
+    }
+
+    fn setup(&mut self, params: &Self::Params) {
+        self.system.kinetics.a = params.a;
+        self.system.kinetics.b = params.b;
+        self.system.diffusion_coeffs[0] = params.d_u;
+        self.system.diffusion_coeffs[1] = params.d_v;
+        initialize_system(&mut self.system, self.width, self.height);
+    }
+
+    fn step(&mut self, params: &Self::Params) {
+        // We sync params every step in case they changed during execution
+        self.system.kinetics.a = params.a;
+        self.system.kinetics.b = params.b;
+        self.system.diffusion_coeffs[0] = params.d_u;
+        self.system.diffusion_coeffs[1] = params.d_v;
+        
+        self.system.step(params.dt);
     }
 
     fn get_snapshot(&self) -> StateSnapshot {
@@ -78,68 +144,31 @@ impl SimulationRunner for MorphogenesisRunner {
             width: self.width,
             height: self.height,
             pixels,
-            custom_data: Vec::new(), structured_data: None,
+            custom_data: Vec::new(),
+            structured_data: None,
         }
-    }
-
-    fn get_steps_per_frame(&self) -> usize {
-        self.steps_per_frame
     }
 }
 
-#[allow(dead_code)]
 pub struct MorphogenesisTab {
-    controller: SimulationController,
-    texture: Option<egui::TextureHandle>,
-    // Simulation parameters
-    a: f64,
-    b: f64,
-    d_u: f64,
-    d_v: f64,
-    dt: f64,
-    width: usize,
-    height: usize,
-    simulation_speed: usize,
-    selected_preset: Option<PatternPreset>,
+    inner: DeclarativeTab<MorphogenesisSim>,
 }
 
 impl Default for MorphogenesisTab {
     fn default() -> Self {
-        let width = 100;
-        let height = 100;
-        let d_u = 1.0;
-        let d_v = 100.0; // Needs significant difference for Turing patterns
-        let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 }; // Classic spot/stripe params
-        let diffusion = FiniteDifference2D::new(math_explorer::math_kernel::types::Dimension(width), math_explorer::math_kernel::types::Dimension(height), math_explorer::math_kernel::types::StepSize(1.0), math_explorer::math_kernel::types::StepSize(1.0));
-
-        let mut system =
-            TuringSystem::new_with_kinetics(math_explorer::math_kernel::types::Dimension(width * height), math_explorer::biology::morphogenesis::DiffusionCoeff(d_u), math_explorer::biology::morphogenesis::DiffusionCoeff(d_v), kinetics, diffusion);
-
-        // Initialize with noise
-        initialize_system(&mut system, width, height);
-
-        let runner = MorphogenesisRunner {
-            system,
-            dt: 0.05,
-            width,
-            height,
-            steps_per_frame: 10,
-        };
-        let controller = SimulationController::new(runner);
-
         Self {
-            controller,
-            texture: None,
-            a: 0.1,
-            b: 0.9,
-            d_u,
-            d_v,
-            dt: 0.05,
-            width,
-            height,
-            simulation_speed: 10,
-            selected_preset: None,
+            inner: DeclarativeTab::new(MorphogenesisSim::default(), 10),
         }
+    }
+}
+
+impl ExplorerTab for MorphogenesisTab {
+    fn name(&self) -> &'static str {
+        self.inner.name()
+    }
+
+    fn show(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        self.inner.show(ctx, frame);
     }
 }
 
@@ -151,8 +180,6 @@ fn initialize_system(
     let n = width * height;
     let mut rng = SimpleRng::new(12345);
 
-    // Schnakenberg equilibrium: u = a + b, v = b / (a+b)^2
-    // We add noise around this equilibrium
     let a = system.kinetics.a;
     let b = system.kinetics.b;
     let u_eq = a + b;
@@ -164,118 +191,9 @@ fn initialize_system(
     }
 }
 
-impl ExplorerTab for MorphogenesisTab {
-    fn name(&self) -> &'static str {
-        "Morphogenesis"
-    }
-
-    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    #[allow(clippy::field_reassign_with_default)]
-    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::SidePanel::left("morphogenesis_controls").show(ctx, |ui| {
-            ui.heading("Turing Patterns");
-            ui.label("Schnakenberg Kinetics");
-            ui.separator();
-
-            ui.heading("Pattern Gallery");
-            ui.horizontal_wrapped(|ui| {
-                for preset in [
-                    PatternPreset::Spots,
-                    PatternPreset::Stripes,
-                    PatternPreset::Labyrinths,
-                    PatternPreset::Chaos,
-                ] {
-                    let selected = self.selected_preset == Some(preset);
-                    if ui.selectable_label(selected, preset.label()).clicked() {
-                        let (a, b, d_u, d_v) = preset.params();
-                        self.a = a;
-                        self.b = b;
-                        self.d_u = d_u;
-                        self.d_v = d_v;
-
-                        self.controller.send_command(SimCommand::UpdateParam("a".to_string(), a));
-                        self.controller.send_command(SimCommand::UpdateParam("b".to_string(), b));
-                        self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), d_u));
-                        self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), d_v));
-
-                        self.controller.send_command(SimCommand::Reset);
-                        self.selected_preset = Some(preset);
-                    }
-                }
-            });
-            ui.separator();
-
-            ui.collapsing("Parameters", |ui| {
-                let mut changed = false;
-                changed |= ui.add(egui::Slider::new(&mut self.a, 0.0..=1.0).text("a (Feed)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.b, 0.0..=2.0).text("b (Kill)")).changed();
-
-                ui.separator();
-                changed |= ui.add(egui::Slider::new(&mut self.d_u, 0.1..=5.0).text("D_u (Activator)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.d_v, 10.0..=200.0).text("D_v (Inhibitor)")).changed();
-
-                if changed {
-                    self.controller.send_command(SimCommand::UpdateParam("a".to_string(), self.a));
-                    self.controller.send_command(SimCommand::UpdateParam("b".to_string(), self.b));
-                    self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), self.d_u));
-                    self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), self.d_v));
-                    self.selected_preset = None;
-                }
-            });
-
-            ui.separator();
-            if ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=50).text("Speed (steps/frame)")).changed() {
-                self.controller.send_command(SimCommand::SetSpeed(self.simulation_speed));
-            }
-
-            let pause_btn = ui.button(if !self.controller.running { "▶ Resume" } else { "⏸ Pause" });
-            if pause_btn.accessible_hover_text(if !self.controller.running { "Resume the Turing pattern simulation" } else { "Pause the Turing pattern simulation" }).clicked() {
-                if self.controller.running {
-                    self.controller.send_command(SimCommand::Pause);
-                } else {
-                    self.controller.send_command(SimCommand::Start);
-                }
-            }
-
-            if ui.button("↻ Reset / Randomize").accessible_hover_text("Re-initialize the simulation grid with random noise").clicked() {
-                 self.controller.send_command(SimCommand::Reset);
-            }
-
-            ui.separator();
-            ui.label("Description:");
-            ui.label("Turing patterns arise from the interaction of two diffusing substances: an activator and an inhibitor. The inhibitor must diffuse significantly faster than the activator.");
-        });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            if self.controller.running {
-                // Request repaint to keep animation going
-                ui.ctx().request_repaint();
-            }
-
-            // Update texture
-            if let Some(snapshot) = self.controller.update() {
-                let mut image = ColorImage::default();
-                image.size = [snapshot.width, snapshot.height];
-                image.pixels = snapshot.pixels.as_ref().clone();
-                let texture = self.texture.get_or_insert_with(|| {
-                    ui.ctx()
-                        .load_texture("morphogenesis_plot", image.clone(), Default::default())
-                });
-                texture.set(image, Default::default());
-            }
-
-            // Draw
-            if let Some(texture) = &self.texture {
-                ui.image((texture.id(), texture.size_vec2()));
-            }
-        });
-    }
-}
-
 fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
     let mut pixels = Vec::with_capacity(width * height * 4);
 
-    // Find range for auto-scaling
     let (min, max) = data
         .iter()
         .fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), &val| {
@@ -287,7 +205,6 @@ fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
 
     for &val in data {
         let norm = (val - min) * inv_range;
-        // Simple heatmap: Blue -> Cyan -> Green -> Yellow -> Red
         let (r, g, b) = heatmap_color(norm);
         pixels.push(r);
         pixels.push(g);
@@ -300,11 +217,6 @@ fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
 
 fn heatmap_color(t: f64) -> (u8, u8, u8) {
     let t = t.clamp(0.0, 1.0);
-    // Plasma-like colormap approximation
-    // t=0: Dark Blue (0,0,128)
-    // t=0.5: Red (255,0,0)
-    // t=1: Yellow (255,255,0)
-
     if t < 0.5 {
         let t2 = t * 2.0;
         let r = (255.0 * t2) as u8;
@@ -320,12 +232,6 @@ fn heatmap_color(t: f64) -> (u8, u8, u8) {
     }
 }
 
-/// A lightweight, deterministic pseudo-random number generator.
-///
-/// **Architectural Decision:**
-/// We implement this simple Linear Congruential Generator (LCG) / PCG variant locally to avoid
-/// pulling in the heavy `rand` crate tree for the GUI. The GUI only needs noise for visualization
-/// initialization, not cryptographic security or statistical rigor (which should be handled in `math_explorer`).
 struct SimpleRng {
     state: u64,
 }
@@ -336,10 +242,8 @@ impl SimpleRng {
     }
 
     fn next_f64(&mut self) -> f64 {
-        // Simple LCG
         self.state = self.state.wrapping_mul(6364136223846793005).wrapping_add(1);
         let x = self.state;
-        // let count = (x >> 59) as u32;
         let x = x ^ x >> 18;
         let rot = (x >> 27) as u32;
         let val = (x as u32).rotate_right(rot);
@@ -350,5 +254,3 @@ impl SimpleRng {
         min + self.next_f64() * (max - min)
     }
 }
-
-// [cite:graph_parameters_rust]

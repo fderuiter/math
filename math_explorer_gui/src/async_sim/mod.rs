@@ -4,6 +4,8 @@ use std::sync::Arc;
 #[cfg(not(target_arch = "wasm32"))]
 use std::thread;
 
+pub mod declarative;
+
 pub enum SimCommand {
     Start,
     Pause,
