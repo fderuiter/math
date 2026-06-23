@@ -1,259 +1,139 @@
 use super::NeuroscienceTool;
-use crate::accessibility::AccessibleHoverText;
-use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
+use crate::async_sim::declarative::{DeclarativeSimulation, DeclarativeTab, PlotData, PlotLine};
+use crate::declare_params;
+use crate::async_sim::StateSnapshot;
+use crate::tabs::ExplorerTab;
 use eframe::egui;
-use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::biology::neuroscience::{HodgkinHuxleyNeuron, HodgkinHuxleyParameters};
 use std::collections::VecDeque;
 use std::sync::Arc;
 
-struct HodgkinHuxleyRunner {
-    neuron: HodgkinHuxleyNeuron,
-    params: HodgkinHuxleyParameters,
-    history: VecDeque<[f64; 2]>,
-    time: f64,
-    i_ext: f64,
-    dt: f64,
-    steps_per_frame: usize,
+declare_params! {
+    pub struct HHParams {
+        #[param(name = "g_Na (Sodium)", min = 0.0, max = 200.0)]
+        pub g_na: f64,
+        #[param(name = "g_K (Potassium)", min = 0.0, max = 100.0)]
+        pub g_k: f64,
+        #[param(name = "g_L (Leak)", min = 0.0, max = 1.0)]
+        pub g_l: f64,
+        #[param(name = "I_ext (Injected Current)", min = -10.0, max = 50.0)]
+        pub i_ext: f64,
+    }
 }
 
-impl SimulationRunner for HodgkinHuxleyRunner {
-    fn process_command(&mut self, cmd: SimCommand) {
-        match cmd {
-            SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(ref name, val) => match name.as_str() {
-                "g_na" => self.params.g_na = val,
-                "g_k" => self.params.g_k = val,
-                "g_l" => self.params.g_l = val,
-                "i_ext" => self.i_ext = val,
-                _ => {}
-            },
-            SimCommand::Reset => {
-                self.neuron = HodgkinHuxleyNeuron::new(-65.0);
-                self.time = 0.0;
-                self.history.clear();
-            }
-            _ => {}
+pub struct HodgkinHuxleyRunner {
+    neuron: HodgkinHuxleyNeuron,
+    history: VecDeque<[f64; 2]>,
+    time: f64,
+    dt: f64,
+    last_params: Option<HHParams>,
+}
+
+impl Default for HodgkinHuxleyRunner {
+    fn default() -> Self {
+        Self {
+            neuron: HodgkinHuxleyNeuron::new(-65.0),
+            history: VecDeque::new(),
+            time: 0.0,
+            dt: 0.01,
+            last_params: None,
         }
+    }
+}
 
-        // Reconstruct neuron if parameters changed
-        if let SimCommand::UpdateParam(name, _) = cmd {
-            if name != "i_ext" {
-                let builder = HodgkinHuxleyNeuron::builder()
-                    .with_initial_v(self.neuron.v())
-                    .with_n(self.neuron.n())
-                    .with_m(self.neuron.m())
-                    .with_h(self.neuron.h())
-                    .with_params(self.params.clone());
+impl DeclarativeSimulation for HodgkinHuxleyRunner {
+    type Params = HHParams;
 
-                if let Ok(new_neuron) = builder.build() {
-                    self.neuron = new_neuron;
-                }
-            }
+    fn name(&self) -> &'static str {
+        "Hodgkin-Huxley Model"
+    }
+
+    fn default_params(&self) -> Self::Params {
+        HHParams {
+            g_na: 120.0,
+            g_k: 36.0,
+            g_l: 0.3,
+            i_ext: 10.0,
         }
     }
 
-    fn step(&mut self) {
-        self.neuron.update(self.dt, self.i_ext);
+    fn param_descriptors(&self) -> Vec<crate::async_sim::declarative::ParamDescriptor<Self::Params>> {
+        HHParams::descriptors()
+    }
+
+    fn setup(&mut self, _params: &Self::Params) {
+        self.neuron = HodgkinHuxleyNeuron::new(-65.0);
+        self.time = 0.0;
+        self.history.clear();
+        self.last_params = None;
+    }
+
+    fn step(&mut self, params: &Self::Params) {
+        if self.last_params.as_ref() != Some(params) {
+            let mut hh_params = HodgkinHuxleyParameters::default();
+            hh_params.g_na = params.g_na;
+            hh_params.g_k = params.g_k;
+            hh_params.g_l = params.g_l;
+            
+            let current_v = self.neuron.v();
+            let mut new_neuron = HodgkinHuxleyNeuron::try_new_with_params(current_v, hh_params).unwrap();
+            let _ = new_neuron.set_n(self.neuron.n());
+            let _ = new_neuron.set_m(self.neuron.m());
+            let _ = new_neuron.set_h(self.neuron.h());
+            self.neuron = new_neuron;
+            self.last_params = Some(params.clone());
+        }
+
+        self.neuron.update(self.dt, params.i_ext);
         self.time += self.dt;
+
         self.history.push_back([self.time, self.neuron.v()]);
-        while self.history.len() > 10_000 {
+        if self.history.len() > 5000 {
             self.history.pop_front();
         }
     }
 
     fn get_snapshot(&self) -> StateSnapshot {
-        // Flatten history and push current time/voltage as the last two elements
-        let mut custom_data = Vec::with_capacity(self.history.len() * 2 + 2);
-        for &[t, v] in &self.history {
-            custom_data.push(t);
-            custom_data.push(v);
-        }
-        custom_data.push(self.time);
-        custom_data.push(self.neuron.v());
+        let points: Vec<[f64; 2]> = self.history.iter().copied().collect();
+        
+        let plot_data = PlotData {
+            lines: vec![
+                PlotLine {
+                    name: "Membrane Potential (mV)".to_string(),
+                    points,
+                    color: [255, 0, 0],
+                }
+            ],
+        };
 
         StateSnapshot {
             width: 0,
             height: 0,
             pixels: Arc::new(Vec::new()),
-            custom_data, structured_data: None,
+            custom_data: Vec::new(),
+            structured_data: Some(Box::new(plot_data) as Box<dyn std::any::Any + Send>),
         }
-    }
-
-    fn get_steps_per_frame(&self) -> usize {
-        self.steps_per_frame
     }
 }
 
 pub struct HodgkinHuxleyTool {
-    controller: SimulationController,
-    history: VecDeque<[f64; 2]>, // Local cache for plotting
-    time: f64,
-    voltage: f64,
-
-    // UI State for sliders (to avoid modifying params directly every frame)
-    g_na: f64,
-    g_k: f64,
-    g_l: f64,
-    i_ext: f64,
+    inner: DeclarativeTab<HodgkinHuxleyRunner>,
 }
 
 impl Default for HodgkinHuxleyTool {
     fn default() -> Self {
-        let params = HodgkinHuxleyParameters::default();
-        let neuron = HodgkinHuxleyNeuron::new(-65.0);
-
-        let runner = HodgkinHuxleyRunner {
-            neuron,
-            params: params.clone(),
-            history: VecDeque::new(),
-            time: 0.0,
-            i_ext: 10.0,
-            dt: 0.01,
-            steps_per_frame: 10,
-        };
-
         Self {
-            controller: SimulationController::new(runner),
-            g_na: params.g_na,
-            g_k: params.g_k,
-            g_l: params.g_l,
-            history: VecDeque::new(),
-            time: 0.0,
-            voltage: -65.0,
-            i_ext: 10.0, // Default injection
+            inner: DeclarativeTab::new(HodgkinHuxleyRunner::default(), 200),
         }
     }
 }
 
 impl NeuroscienceTool for HodgkinHuxleyTool {
     fn name(&self) -> &'static str {
-        "Hodgkin-Huxley Model"
+        self.inner.name()
     }
 
-    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
-        egui::SidePanel::left("hh_controls").show(ctx, |ui| {
-            ui.heading("Parameters");
-            ui.separator();
-
-            ui.label("Conductances (mS/cm²)");
-            if ui
-                .add(egui::Slider::new(&mut self.g_na, 0.0..=200.0).text("Na+ (Sodium)"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("g_na".to_string(), self.g_na));
-            }
-            if ui
-                .add(egui::Slider::new(&mut self.g_k, 0.0..=100.0).text("K+ (Potassium)"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("g_k".to_string(), self.g_k));
-            }
-            if ui
-                .add(egui::Slider::new(&mut self.g_l, 0.0..=5.0).text("Leak"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("g_l".to_string(), self.g_l));
-            }
-
-            ui.separator();
-            ui.label("Input");
-            if ui
-                .add(egui::Slider::new(&mut self.i_ext, 0.0..=50.0).text("I_ext (Current)"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("i_ext".to_string(), self.i_ext));
-            }
-
-            ui.separator();
-            ui.heading("Simulation");
-            ui.horizontal(|ui| {
-                let is_running = self.controller.running;
-                if ui
-                    .button(if is_running { "⏸ Pause" } else { "▶ Start" })
-                    .accessible_hover_text(if is_running {
-                        "Pause the Hodgkin-Huxley simulation"
-                    } else {
-                        "Start the Hodgkin-Huxley simulation"
-                    })
-                    .clicked()
-                {
-                    if is_running {
-                        self.controller.send_command(SimCommand::Pause);
-                    } else {
-                        self.controller.send_command(SimCommand::Start);
-                    }
-                }
-                if ui
-                    .button("↻ Reset")
-                    .accessible_hover_text("Reset the simulation to its initial state")
-                    .clicked()
-                {
-                    self.controller.send_command(SimCommand::Reset);
-                    self.time = 0.0;
-                    self.voltage = -65.0;
-                    self.history.clear();
-
-                    // Re-apply current slider values
-                    self.controller
-                        .send_command(SimCommand::UpdateParam("g_na".to_string(), self.g_na));
-                    self.controller
-                        .send_command(SimCommand::UpdateParam("g_k".to_string(), self.g_k));
-                    self.controller
-                        .send_command(SimCommand::UpdateParam("g_l".to_string(), self.g_l));
-                    self.controller
-                        .send_command(SimCommand::UpdateParam("i_ext".to_string(), self.i_ext));
-                }
-            });
-
-            ui.label(format!("Time: {:.2} ms", self.time));
-            ui.label(format!("Voltage: {:.2} mV", self.voltage));
-        });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            // Update from background thread
-            if let Some(snapshot) = self.controller.update() {
-                if snapshot.custom_data.len() >= 2 {
-                    self.voltage = *snapshot.custom_data.last().unwrap();
-                    self.time = snapshot.custom_data[snapshot.custom_data.len() - 2];
-
-                    // Reconstruct history
-                    self.history.clear();
-                    for i in (0..snapshot.custom_data.len() - 2).step_by(2) {
-                        self.history
-                            .push_back([snapshot.custom_data[i], snapshot.custom_data[i + 1]]);
-                    }
-                }
-            }
-
-            if self.controller.running {
-                // Request repaint to animate
-                ctx.request_repaint();
-            }
-
-            // Plotting
-            let line = Line::new(
-                "Membrane Potential (V)",
-                PlotPoints::from_iter(self.history.iter().copied()),
-            )
-            .color(egui::Color32::from_rgb(100, 200, 255));
-
-            Plot::new("hh_voltage_plot")
-                .x_axis_label("Time (ms)")
-                .y_axis_label("Voltage (mV)")
-                .view_aspect(2.0)
-                .show(ui, |plot_ui| {
-                    plot_ui.line(line);
-                });
-        });
+        self.inner.show_ctx(ctx);
     }
 }
-
-// Removed local reset and update_params logic.
-
-// [cite:advanced_linear_algebra]

@@ -1,4 +1,5 @@
 use crate::async_sim::declarative::{DeclarativeSimulation, ParamDescriptor, ParamType, DeclarativeTab};
+use crate::declare_params;
 use crate::async_sim::StateSnapshot;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
@@ -7,13 +8,19 @@ use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use std::sync::Arc;
 
-#[derive(Clone, PartialEq)]
-pub struct MorphogenesisParams {
-    pub a: f64,
-    pub b: f64,
-    pub d_u: f64,
-    pub d_v: f64,
-    pub dt: f64,
+declare_params! {
+    pub struct MorphogenesisParams {
+        #[param(name = "a (Feed)", min = 0.0, max = 1.0)]
+        pub a: f64,
+        #[param(name = "b (Kill)", min = 0.0, max = 2.0)]
+        pub b: f64,
+        #[param(name = "D_u (Activator)", min = 0.1, max = 5.0)]
+        pub d_u: f64,
+        #[param(name = "D_v (Inhibitor)", min = 10.0, max = 200.0)]
+        pub d_v: f64,
+        #[param(name = "dt", min = 0.01, max = 0.1)]
+        pub dt: f64,
+    }
 }
 
 pub struct MorphogenesisSim {
@@ -73,44 +80,7 @@ impl DeclarativeSimulation for MorphogenesisSim {
     }
 
     fn param_descriptors(&self) -> Vec<ParamDescriptor<Self::Params>> {
-        vec![
-            ParamDescriptor {
-                name: "a (Feed)".to_string(),
-                description: "".to_string(),
-                ptype: ParamType::F64 { min: 0.0, max: 1.0 },
-                update_f64: Some(|p, v| p.a = v),
-                read_f64: Some(|p| p.a),
-                update_usize: None,
-                read_usize: None,
-            },
-            ParamDescriptor {
-                name: "b (Kill)".to_string(),
-                description: "".to_string(),
-                ptype: ParamType::F64 { min: 0.0, max: 2.0 },
-                update_f64: Some(|p, v| p.b = v),
-                read_f64: Some(|p| p.b),
-                update_usize: None,
-                read_usize: None,
-            },
-            ParamDescriptor {
-                name: "D_u (Activator)".to_string(),
-                description: "".to_string(),
-                ptype: ParamType::F64 { min: 0.1, max: 5.0 },
-                update_f64: Some(|p, v| p.d_u = v),
-                read_f64: Some(|p| p.d_u),
-                update_usize: None,
-                read_usize: None,
-            },
-            ParamDescriptor {
-                name: "D_v (Inhibitor)".to_string(),
-                description: "".to_string(),
-                ptype: ParamType::F64 { min: 10.0, max: 200.0 },
-                update_f64: Some(|p, v| p.d_v = v),
-                read_f64: Some(|p| p.d_v),
-                update_usize: None,
-                read_usize: None,
-            },
-        ]
+        MorphogenesisParams::descriptors()
     }
 
     fn setup(&mut self, params: &Self::Params) {

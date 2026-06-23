@@ -1,24 +1,107 @@
+pub struct PlotData { pub lines: Vec<PlotLine> }
+pub struct PlotLine { pub name: String, pub points: Vec<[f64; 2]>, pub color: [u8; 3] }
 use crate::async_sim::{StateSnapshot, SimStateUpdate};
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use std::sync::mpsc::{self, Receiver, Sender};
+use egui_plot::{Legend, Line, Plot, PlotPoints};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::thread;
 
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum ParamValue {
+    F64(f64),
+    Usize(usize),
+    Bool(bool),
+}
+
 pub enum ParamType {
     F64 { min: f64, max: f64 },
     Usize { min: usize, max: usize },
+    Bool,
+}
+
+pub trait ParamField {
+    fn to_value(&self) -> ParamValue;
+    fn from_value(&mut self, v: ParamValue);
+    fn default_type(min: Option<Self>, max: Option<Self>) -> ParamType where Self: Sized;
+}
+
+impl ParamField for f64 {
+    fn to_value(&self) -> ParamValue { ParamValue::F64(*self) }
+    fn from_value(&mut self, v: ParamValue) { if let ParamValue::F64(val) = v { *self = val; } }
+    fn default_type(min: Option<f64>, max: Option<f64>) -> ParamType {
+        ParamType::F64 { min: min.unwrap_or(0.0), max: max.unwrap_or(1.0) }
+    }
+}
+
+impl ParamField for usize {
+    fn to_value(&self) -> ParamValue { ParamValue::Usize(*self) }
+    fn from_value(&mut self, v: ParamValue) { if let ParamValue::Usize(val) = v { *self = val; } }
+    fn default_type(min: Option<usize>, max: Option<usize>) -> ParamType {
+        ParamType::Usize { min: min.unwrap_or(0), max: max.unwrap_or(100) }
+    }
+}
+
+impl ParamField for bool {
+    fn to_value(&self) -> ParamValue { ParamValue::Bool(*self) }
+    fn from_value(&mut self, v: ParamValue) { if let ParamValue::Bool(val) = v { *self = val; } }
+    fn default_type(_min: Option<bool>, _max: Option<bool>) -> ParamType {
+        ParamType::Bool
+    }
 }
 
 pub struct ParamDescriptor<P> {
     pub name: String,
     pub description: String,
     pub ptype: ParamType,
-    pub update_f64: Option<fn(&mut P, f64)>,
-    pub read_f64: Option<fn(&P) -> f64>,
-    pub update_usize: Option<fn(&mut P, usize)>,
-    pub read_usize: Option<fn(&P) -> usize>,
+    pub update: Box<dyn Fn(&mut P, ParamValue) + Send + Sync>,
+    pub read: Box<dyn Fn(&P) -> ParamValue + Send + Sync>,
+}
+
+#[macro_export]
+macro_rules! declare_params {
+    (
+        $vis:vis struct $StructName:ident {
+            $(
+                #[param(name = $name:expr $(, min = $min:expr, max = $max:expr)?)]
+                $field_vis:vis $field:ident : $ftype:ty
+            ),* $(,)?
+        }
+    ) => {
+        #[derive(Clone, PartialEq, Debug)]
+        $vis struct $StructName {
+            $(
+                $field_vis $field: $ftype,
+            )*
+        }
+
+        impl $StructName {
+            pub fn descriptors() -> Vec<$crate::async_sim::declarative::ParamDescriptor<Self>> {
+                vec![
+                    $(
+                        $crate::async_sim::declarative::ParamDescriptor {
+                            name: $name.to_string(),
+                            description: "".to_string(),
+                            ptype: <$ftype as $crate::async_sim::declarative::ParamField>::default_type(
+                                declare_params!(@opt $($min)?),
+                                declare_params!(@opt $($max)?)
+                            ),
+                            update: Box::new(|p: &mut Self, v: $crate::async_sim::declarative::ParamValue| {
+                                $crate::async_sim::declarative::ParamField::from_value(&mut p.$field, v);
+                            }),
+                            read: Box::new(|p: &Self| {
+                                $crate::async_sim::declarative::ParamField::to_value(&p.$field)
+                            }),
+                        }
+                    ),*
+                ]
+            }
+        }
+    };
+    (@opt $val:expr) => { Some($val) };
+    (@opt) => { None };
 }
 
 pub trait DeclarativeSimulation: Send + 'static {
@@ -236,16 +319,11 @@ impl<T: DeclarativeSimulation> DeclarativeTab<T> {
             texture: None,
         }
     }
-}
 
-impl<T: DeclarativeSimulation> ExplorerTab for DeclarativeTab<T> {
-    fn name(&self) -> &'static str {
-        self.name
-    }
-
-    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    pub fn show_ctx(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left(format!("{}_controls", self.name)).show(ctx, |ui| {
             ui.heading(self.name);
+            
             ui.separator();
 
             ui.collapsing("Parameters", |ui| {
@@ -253,19 +331,25 @@ impl<T: DeclarativeSimulation> ExplorerTab for DeclarativeTab<T> {
                 for desc in &self.descriptors {
                     match desc.ptype {
                         ParamType::F64 { min, max } => {
-                            if let (Some(read), Some(update)) = (desc.read_f64, desc.update_f64) {
-                                let mut val = read(&self.controller.params);
+                            if let ParamValue::F64(mut val) = (desc.read)(&self.controller.params) {
                                 if ui.add(egui::Slider::new(&mut val, min..=max).text(&desc.name)).changed() {
-                                    update(&mut self.controller.params, val);
+                                    (desc.update)(&mut self.controller.params, ParamValue::F64(val));
                                     changed = true;
                                 }
                             }
                         }
                         ParamType::Usize { min, max } => {
-                            if let (Some(read), Some(update)) = (desc.read_usize, desc.update_usize) {
-                                let mut val = read(&self.controller.params);
+                            if let ParamValue::Usize(mut val) = (desc.read)(&self.controller.params) {
                                 if ui.add(egui::Slider::new(&mut val, min..=max).text(&desc.name)).changed() {
-                                    update(&mut self.controller.params, val);
+                                    (desc.update)(&mut self.controller.params, ParamValue::Usize(val));
+                                    changed = true;
+                                }
+                            }
+                        }
+                        ParamType::Bool => {
+                            if let ParamValue::Bool(mut val) = (desc.read)(&self.controller.params) {
+                                if ui.checkbox(&mut val, &desc.name).changed() {
+                                    (desc.update)(&mut self.controller.params, ParamValue::Bool(val));
                                     changed = true;
                                 }
                             }
@@ -309,18 +393,48 @@ impl<T: DeclarativeSimulation> ExplorerTab for DeclarativeTab<T> {
             }
 
             if let Some(snapshot) = self.controller.update() {
-                let mut image = egui::ColorImage::default();
-                image.size = [snapshot.width, snapshot.height];
-                image.pixels = snapshot.pixels.as_ref().clone();
-                let texture = self.texture.get_or_insert_with(|| {
-                    ui.ctx().load_texture(format!("{}_plot", self.name), image.clone(), Default::default())
-                });
-                texture.set(image, Default::default());
+                if let Some(any_data) = &snapshot.structured_data {
+                    if let Some(plot_data) = any_data.downcast_ref::<PlotData>() {
+                        Plot::new(format!("{}_egui_plot", self.name))
+                            .legend(Legend::default())
+                            .view_aspect(2.0)
+                            .show(ui, |plot_ui| {
+                                for line_data in &plot_data.lines {
+                                    plot_ui.line(
+                                        Line::new(&line_data.name, PlotPoints::new(line_data.points.clone()))
+                                            .color(egui::Color32::from_rgb(line_data.color[0], line_data.color[1], line_data.color[2]))
+                                            .width(2.0_f32),
+                                    );
+                                }
+                            });
+                        return;
+                    }
+                }
+                
+                if snapshot.width > 0 && snapshot.height > 0 {
+                    let mut image = egui::ColorImage::default();
+                    image.size = [snapshot.width, snapshot.height];
+                    image.pixels = snapshot.pixels.as_ref().clone();
+                    let texture = self.texture.get_or_insert_with(|| {
+                        ui.ctx().load_texture(format!("{}_plot", self.name), image.clone(), Default::default())
+                    });
+                    texture.set(image, Default::default());
+                }
             }
 
             if let Some(texture) = &self.texture {
                 ui.image((texture.id(), texture.size_vec2()));
             }
         });
+    }
+}
+
+impl<T: DeclarativeSimulation> ExplorerTab for DeclarativeTab<T> {
+    fn name(&self) -> &'static str {
+        self.name
+    }
+
+    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.show_ctx(ctx);
     }
 }
