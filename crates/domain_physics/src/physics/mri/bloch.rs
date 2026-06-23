@@ -1,8 +1,8 @@
 //! Classical Dynamics Simulator using Bloch Equations.
 
 use super::proton;
-use pure_math::pure_math::analysis::ode::{Euler, OdeSystem, Solver, SolverExt, TimeStepper};
 use nalgebra::Vector3;
+use pure_math::pure_math::analysis::ode::{Euler, OdeSystem, Solver, SolverExt, TimeStepper};
 
 /// Classical Dynamics Simulator using Bloch Equations.
 pub struct BlochSimulator {
@@ -56,7 +56,12 @@ impl TimeStepper<Vector3<f64>> for BlochSimulator {
 
     fn step(&mut self, dt: f64) {
         use pure_math::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, <Self as TimeStepper<Vector3<f64>>>::get_state(self), dt);
+        let new_state = RungeKutta4::step(
+            self,
+            0.0,
+            <Self as TimeStepper<Vector3<f64>>>::get_state(self),
+            dt,
+        );
         *self.get_state_mut() = new_state;
     }
 }

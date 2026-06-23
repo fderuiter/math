@@ -53,7 +53,7 @@ where
     sum
 }
 
-    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+#[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 fn integrate_surface_flux<S, F>(coords: &S, domain: &Domain, steps: usize, field: F) -> f64
 where
     S: OrthogonalCoordinateSystem,

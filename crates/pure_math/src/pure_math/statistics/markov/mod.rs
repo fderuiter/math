@@ -313,9 +313,9 @@ pub mod tensor;
 pub mod validation;
 
 // Re-export commonly used types
+pub use crate::error::MarkovError;
 pub use ctmc::ContinuousMarkovChain;
 pub use dtmc::{MarkovChain, StateType};
-pub use crate::error::MarkovError;
 pub type Result<T> = std::result::Result<T, MarkovError>;
 pub use hmm::HiddenMarkovModel;
 pub use tensor::{TimeIndex, TransitionTensor};

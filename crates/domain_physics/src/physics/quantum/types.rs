@@ -1,6 +1,6 @@
+use math_commons::theory::TheoryDescribable;
 use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;
-use math_commons::theory::TheoryDescribable;
 use std::collections::HashMap;
 
 /// Represents the state of a quantum system as a vector in a Hilbert space.
@@ -20,7 +20,12 @@ pub struct QuantumState {
 impl TheoryDescribable for QuantumState {
     fn theory_description(&self) -> String {
         // Use a heuristic to detect the |0> spin state
-        if self.vector.len() == 2 && self.vector[0].re == 1.0 && self.vector[0].im == 0.0 && self.vector[1].re == 0.0 && self.vector[1].im == 0.0 {
+        if self.vector.len() == 2
+            && self.vector[0].re == 1.0
+            && self.vector[0].im == 0.0
+            && self.vector[1].re == 0.0
+            && self.vector[1].im == 0.0
+        {
             "|0> spin state".to_string()
         } else {
             "Quantum state vector".to_string()

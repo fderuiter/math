@@ -1,7 +1,7 @@
-use math_explorer::ai::reinforcement_learning::grid_world::{GridState, GridWorldEnv, Move};
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
+use math_explorer::ai::reinforcement_learning::grid_world::{GridState, GridWorldEnv, Move};
 use math_explorer::ai::reinforcement_learning::{algorithms::TabularQAgent, MarkovDecisionProcess};
 
 #[derive(Clone, Copy, PartialEq)]

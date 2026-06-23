@@ -1,7 +1,7 @@
-use thiserror::Error;
 use crate::diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use std::fmt;
+use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum AIError {
@@ -30,9 +30,10 @@ pub enum AIError {
     DistributionLengthMismatch { expected: usize, got: usize },
 }
 
-
 impl Diagnostic for AIError {
-    fn severity(&self) -> Severity { Severity::Error }
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "AIError".to_string());

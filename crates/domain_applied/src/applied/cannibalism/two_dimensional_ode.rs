@@ -3,8 +3,8 @@
 // dN/dt = beta_N(N, C) * N + beta_C(N, C) * C - K(N) * N - phi(N, C) - mu_N(N, C) * N
 // dC/dt = K(N) * N - mu_C(N, C) * C
 
-use pure_math::pure_math::analysis::ode::OdeSystem;
 use nalgebra::Vector2;
+use pure_math::pure_math::analysis::ode::OdeSystem;
 
 /// Parameters for the Cannibalism ODE system.
 ///

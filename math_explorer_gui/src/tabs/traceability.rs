@@ -1,7 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use std::collections::{HashMap, HashSet};
 use oxidize_core::vfs::VirtualFileSystem;
+use std::collections::{HashMap, HashSet};
 
 #[cfg(not(target_arch = "wasm32"))]
 type VfsImpl = oxidize_core::vfs::DefaultVfs;
@@ -74,7 +74,7 @@ impl TraceabilityTab {
         let mut code_files = Vec::new();
         self.scan_dir(&vfs, "math_explorer/src", &mut code_files);
         self.scan_dir(&vfs, "math_explorer_gui/src/tabs", &mut code_files);
-        
+
         // Scan inside individual crates
         if let Ok(crates) = vfs.list_dir("crates") {
             for crate_name in crates {
@@ -133,7 +133,8 @@ impl TraceabilityTab {
         if let Ok(entries) = vfs.list_dir(dir) {
             for entry in entries {
                 let path = format!("{}/{}", dir, entry);
-                if entry.contains('.') { // simple heuristic for file vs dir
+                if entry.contains('.') {
+                    // simple heuristic for file vs dir
                     if path.ends_with(".rs") {
                         files.push(path.clone());
                     }

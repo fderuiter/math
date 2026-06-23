@@ -1,8 +1,8 @@
 //! Analysis tools for OU process applications.
 
 use super::core::OuParams;
-use crate::error::OuError;
 use super::solver::{EulerMaruyama, TimeStep};
+use crate::error::OuError;
 use rand::Rng;
 
 /// Performance statistics from Monte Carlo simulation.

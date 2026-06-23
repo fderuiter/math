@@ -1,5 +1,5 @@
-use crate::error::AIError;
 use crate::ai::sds::rendering::{NeRFModel, RayBundle};
+use crate::error::AIError;
 use nalgebra::DMatrix;
 
 /// Module 5.1: Jacobian-Vector Product

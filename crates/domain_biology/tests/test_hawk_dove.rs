@@ -3,8 +3,8 @@
 #[cfg(test)]
 mod tests {
     use domain_biology::biology::evolution::HawkDovePopulation;
-    use pure_math::pure_math::analysis::ode::RungeKutta4;
     use nalgebra::DVector;
+    use pure_math::pure_math::analysis::ode::RungeKutta4;
 
     #[test]
     fn test_hawk_dove_evolution() {

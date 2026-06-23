@@ -44,7 +44,6 @@ pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
         .as_f64()
 }
 
-
 // [cite:algorithmic_information_rust]
 
 use pure_math::theory_verification;

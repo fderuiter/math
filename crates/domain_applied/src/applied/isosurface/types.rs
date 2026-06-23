@@ -168,7 +168,9 @@ impl std::fmt::Display for VoxelGridError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::InvalidDimensions => write!(f, "Grid dimensions must be greater than zero"),
-            Self::DataSizeMismatch => write!(f, "Data vector size does not match width * height * depth"),
+            Self::DataSizeMismatch => {
+                write!(f, "Data vector size does not match width * height * depth")
+            }
             Self::InvalidVoxelSize => write!(f, "Voxel size components must be strictly positive"),
         }
     }
@@ -259,12 +261,24 @@ impl VoxelGrid {
         VoxelGridBuilder::new()
     }
 
-    pub fn width(&self) -> usize { self.width }
-    pub fn height(&self) -> usize { self.height }
-    pub fn depth(&self) -> usize { self.depth }
-    pub fn data(&self) -> &[f32] { &self.data }
-    pub fn voxel_size(&self) -> &Point3D { &self.voxel_size }
-    pub fn origin(&self) -> &Point3D { &self.origin }
+    pub fn width(&self) -> usize {
+        self.width
+    }
+    pub fn height(&self) -> usize {
+        self.height
+    }
+    pub fn depth(&self) -> usize {
+        self.depth
+    }
+    pub fn data(&self) -> &[f32] {
+        &self.data
+    }
+    pub fn voxel_size(&self) -> &Point3D {
+        &self.voxel_size
+    }
+    pub fn origin(&self) -> &Point3D {
+        &self.origin
+    }
 
     pub fn set_voxel_size(&mut self, size: Point3D) -> Result<(), VoxelGridError> {
         if size.x <= 0.0 || size.y <= 0.0 || size.z <= 0.0 {

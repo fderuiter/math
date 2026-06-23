@@ -21,25 +21,40 @@ fn main() {
 
     for root in root_dirs {
         let root_path = Path::new(root);
-        if !root_path.exists() { continue; }
-        
+        if !root_path.exists() {
+            continue;
+        }
+
         let mut stack = vec![root_path.to_path_buf()];
         while let Some(current) = stack.pop() {
-            let relative_dir = current.strip_prefix("../../").unwrap().to_str().unwrap().to_string();
-            
+            let relative_dir = current
+                .strip_prefix("../../")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
+
             if let Ok(entries) = fs::read_dir(&current) {
                 let mut children = Vec::new();
                 for entry in entries.flatten() {
                     let path = entry.path();
                     let name = entry.file_name().to_str().unwrap().to_string();
                     children.push(name.clone());
-                    
-                    let relative_path = path.strip_prefix("../../").unwrap().to_str().unwrap().to_string();
-                    
+
+                    let relative_path = path
+                        .strip_prefix("../../")
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string();
+
                     if path.is_file() {
                         if relative_path.ends_with(".tex") || relative_path.ends_with(".rs") {
                             let content = fs::read_to_string(&path).unwrap_or_default();
-                            map_entries.push_str(&format!("{:?} => Some({:?}),\n", relative_path, content));
+                            map_entries.push_str(&format!(
+                                "{:?} => Some({:?}),\n",
+                                relative_path, content
+                            ));
                         } else {
                             map_entries.push_str(&format!("{:?} => Some(\"\"),\n", relative_path));
                         }
@@ -47,13 +62,18 @@ fn main() {
                         stack.push(path);
                     }
                 }
-                let child_str = children.iter().map(|c| format!("{:?}", c)).collect::<Vec<_>>().join(", ");
+                let child_str = children
+                    .iter()
+                    .map(|c| format!("{:?}", c))
+                    .collect::<Vec<_>>()
+                    .join(", ");
                 dirs_map.push_str(&format!("{:?} => Some(&[{}]),\n", relative_dir, child_str));
             }
         }
     }
 
-    let code = format!("
+    let code = format!(
+        "
 pub fn get_file_content(path: &str) -> Option<&'static str> {{
     match path {{
         {}
@@ -67,7 +87,9 @@ pub fn get_dir_children(path: &str) -> Option<&'static [&'static str]> {{
         _ => None,
     }}
 }}
-", map_entries, dirs_map);
+",
+        map_entries, dirs_map
+    );
 
     fs::write(dest_path, code).unwrap();
 }

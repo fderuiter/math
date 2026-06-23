@@ -85,9 +85,9 @@ pub use bloch::BlochSimulator;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pure_math::pure_math::analysis::ode::{RungeKutta4, TimeStepper};
     use approx::assert_relative_eq;
     use nalgebra::Vector3;
+    use pure_math::pure_math::analysis::ode::{RungeKutta4, TimeStepper};
     use std::f64::consts::PI;
 
     #[test]

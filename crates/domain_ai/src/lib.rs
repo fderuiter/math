@@ -1,3 +1,3 @@
-pub mod error;
-pub mod diagnostics;
 pub mod ai;
+pub mod diagnostics;
+pub mod error;

@@ -10,7 +10,13 @@ use tch::nn::{Module, Path};
 pub fn conv_block(p: &Path, c_in: i64, c_out: i64) -> impl Module {
     // Placeholder implementation
     tch::nn::seq()
-        .add(tch::nn::conv2d(p / "conv", c_in, c_out, 3, Default::default()))
+        .add(tch::nn::conv2d(
+            p / "conv",
+            c_in,
+            c_out,
+            3,
+            Default::default(),
+        ))
         .add_fn(|xs| xs.relu())
 }
 

@@ -3,13 +3,13 @@
 //! This module implements the VQ-VAE used for comparison in the paper.
 //! It features a discrete latent space (codebook) and skip connections.
 
-use tch::nn::VarStore;
 use crate::networks::unet::{UNet, UNetBuilder};
+use tch::nn::VarStore;
 
 /// Represents the VQ-VAE model.
 pub struct VqVae {
     pub model: UNet, // The UNet architecture serves as the encoder and decoder with skip connections
-    // A field for the codebook will be added here.
+                     // A field for the codebook will be added here.
 }
 
 impl VqVae {
