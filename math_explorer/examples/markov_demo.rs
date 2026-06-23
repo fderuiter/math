@@ -1,9 +1,10 @@
 //! Comprehensive example demonstrating Markov Chain models.
 
+use math_explorer::pure_math::statistics::markov::TimeIndex;
 use math_explorer::pure_math::statistics::markov::ctmc::ContinuousMarkovChain;
 use math_explorer::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
 use math_explorer::pure_math::statistics::markov::hmm::HiddenMarkovModel;
-use math_explorer::pure_math::statistics::markov::tensor::{TimeIndex, TransitionTensor};
+use math_explorer::pure_math::statistics::markov::tensor::TransitionTensor;
 use nalgebra::{DMatrix, DVector};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
