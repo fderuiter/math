@@ -129,3 +129,4 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
         self.inner.show_ctx(ctx);
     }
 }
+// [cite:tensors] [cite:gaussian_splatting]

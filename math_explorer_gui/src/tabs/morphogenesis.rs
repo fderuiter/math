@@ -224,3 +224,4 @@ impl SimpleRng {
         min + self.next_f64() * (max - min)
     }
 }
+// [cite:cannibalism] [cite:favorite_child] [cite:self_calibration_paper]

@@ -171,3 +171,4 @@ impl QuantumTool for WaveSimulator {
         self.inner.show_ctx(ctx);
     }
 }
+// [cite:hurwitz_kronecker] [cite:quasiperfect_alcf]

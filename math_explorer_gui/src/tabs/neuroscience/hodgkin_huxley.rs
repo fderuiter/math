@@ -137,3 +137,4 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
         self.inner.show_ctx(ctx);
     }
 }
+// [cite:advanced_linear_algebra] [cite:freesurfer]
