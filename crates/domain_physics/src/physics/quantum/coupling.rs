@@ -77,3 +77,4 @@ pub fn clebsch_gordan(j1: f64, m1: f64, j2: f64, m2: f64, j: f64, m: f64) -> f64
     // directly into an f64 via the From trait.
     cg.value().into()
 }
+// theory_verification!
