@@ -180,7 +180,7 @@ impl GeometryTopologyTool for SurfaceViewer {
                     let _ = vfs.write_to_file(filename, obj.as_bytes());
                 }
                 #[cfg(target_arch = "wasm32")]
-// theory_verification!
+                // theory_verification!
                 {
                     use oxidize_core::vfs::VirtualFileSystem;
                     let vfs = oxidize_core::vfs::WasmVfs;
