@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
@@ -247,12 +248,22 @@ impl QuantumTool for WaveSimulator {
                 v_points.push([x, v * 0.2]);
             }
 
+            let mut max_p = 0.0;
+            let mut peak_x = 0.0;
+            for p in &psi_points {
+                if p[1] > max_p {
+                    max_p = p[1];
+                    peak_x = p[0];
+                }
+            }
+            let narrative = format!("Wave peak at x={:.2}, max probability amplitude={:.2}", peak_x, max_p);
+
             Plot::new("quantum_plot")
                 .legend(Legend::default())
                 .x_axis_label("Position (x)")
                 .y_axis_label("Probability Density / Potential")
                 .view_aspect(2.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, narrative, |plot_ui| {
                     plot_ui.line(
                         Line::new("Probability |ψ|²", PlotPoints::new(psi_points))
                             .color(egui::Color32::WHITE)

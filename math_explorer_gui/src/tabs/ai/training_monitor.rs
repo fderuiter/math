@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
@@ -179,14 +180,14 @@ impl AiTool for TrainingMonitorTool {
                 columns[0].heading("Loss History");
                 Plot::new("loss_plot")
                     .height(200.0)
-                    .show(&mut columns[0], |plot_ui| {
+                    .show_accessible(&mut columns[0], "Dynamic state of loss_plot updated.", |plot_ui| {
                         plot_ui.line(Line::new("Loss", self.loss_history.clone()));
                     });
 
                 columns[1].heading("Accuracy History");
                 Plot::new("accuracy_plot")
                     .height(200.0)
-                    .show(&mut columns[1], |plot_ui| {
+                    .show_accessible(&mut columns[1], "Dynamic state of accuracy_plot updated.", |plot_ui| {
                         plot_ui.line(
                             Line::new("Accuracy", self.accuracy_history.clone())
                                 .color(Color32::GREEN),
@@ -198,7 +199,7 @@ impl AiTool for TrainingMonitorTool {
 
             // Bottom: Data Visualization
             ui.heading("Decision Boundary Visualization");
-            Plot::new("data_plot").data_aspect(1.0).show(ui, |plot_ui| {
+            Plot::new("data_plot").data_aspect(1.0).show_accessible(ui, "Dynamic state of data_plot updated.", |plot_ui| {
                 // Draw actual data points
                 let mut class_0_points = Vec::new();
                 let mut class_1_points = Vec::new();

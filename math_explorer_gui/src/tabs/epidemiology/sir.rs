@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::EpidemiologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -102,7 +103,7 @@ impl EpidemiologyTool for SirTool {
                 .view_aspect(2.0)
                 .legend(egui_plot::Legend::default());
 
-            plot.show(ui, |plot_ui| {
+            plot.show_accessible(ui, "Dynamic state of sir_plot updated.", |plot_ui| {
                 plot_ui.line(
                     Line::new("Susceptible", PlotPoints::new(self.s_points.clone()))
                         .color(egui::Color32::BLUE),

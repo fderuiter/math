@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::NumberTheoryTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
@@ -172,7 +173,7 @@ impl NumberTheoryTool for PartitionsWidget {
                     Plot::new("partition_plot")
                         .allow_zoom(true)
                         .allow_drag(true)
-                        .show(ui, |plot_ui| {
+                        .show_accessible(ui, "Dynamic state of partition_plot updated.", |plot_ui| {
                             plot_ui.bar_chart(chart);
                         });
                 });

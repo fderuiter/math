@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::NeuroscienceTool;
 use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
@@ -247,7 +248,7 @@ impl NeuroscienceTool for HodgkinHuxleyTool {
                 .x_axis_label("Time (ms)")
                 .y_axis_label("Voltage (mV)")
                 .view_aspect(2.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of hh_voltage_plot updated.", |plot_ui| {
                     plot_ui.line(line);
                 });
         });

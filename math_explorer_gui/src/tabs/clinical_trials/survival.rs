@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::ClinicalTrialsTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -150,7 +151,7 @@ impl ClinicalTrialsTool for SurvivalAnalysisTool {
                 .view_aspect(2.0)
                 .x_axis_label("Time")
                 .y_axis_label("Survival Probability")
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of kaplan_meier_plot updated.", |plot_ui| {
                     plot_ui.line(
                         Line::new("Survival Probability", PlotPoints::new(plot_points))
                             .name("Survival Probability"),

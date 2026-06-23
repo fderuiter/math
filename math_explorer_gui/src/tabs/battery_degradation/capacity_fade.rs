@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::BatteryDegradationTool;
 use eframe::egui;
 use egui_plot::{HLine, Line, Plot, PlotPoints};
@@ -83,7 +84,7 @@ impl BatteryDegradationTool for CapacityFadeTool {
                 .y_axis_label("State of Health (Capacity)")
                 .include_y(0.0)
                 .include_y(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of capacity_fade_plot updated.", |plot_ui| {
                     plot_ui.line(line);
                     // Add a horizontal line at 70% (End of Life)
                     plot_ui.hline(

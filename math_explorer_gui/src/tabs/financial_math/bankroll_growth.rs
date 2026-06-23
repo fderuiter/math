@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::FinancialMathTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
@@ -156,7 +157,7 @@ impl FinancialMathTool for BankrollGrowthTool {
                     .view_aspect(2.0)
                     .legend(egui_plot::Legend::default());
 
-                plot.show(ui, |plot_ui| {
+                plot.show_accessible(ui, "Dynamic state of bankroll_growth_plot updated.", |plot_ui| {
                     plot_ui.line(
                         Line::new(
                             "Full Kelly",

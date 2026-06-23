@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::tabs::climate::ClimateTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -28,7 +29,7 @@ impl ClimateTool for TemperatureAnomaliesTool {
             .y_axis_formatter(|y, _range| format!("{:.2}°C", y.value))
             .legend(egui_plot::Legend::default());
 
-        plot.show(ui, |plot_ui| {
+        plot.show_accessible(ui, "Dynamic state of temperature_anomalies_plot updated.", |plot_ui| {
             let points = PlotPoints::new(self.time_series.clone());
             let line = Line::new("Temperature Anomaly", points).width(2.0_f32);
             plot_ui.line(line);

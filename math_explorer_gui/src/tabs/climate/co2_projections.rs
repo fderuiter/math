@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::tabs::climate::ClimateTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -35,7 +36,7 @@ impl ClimateTool for Co2ProjectionsTool {
             .y_axis_formatter(|y, _range| format!("{:.1} ppm", y.value))
             .legend(egui_plot::Legend::default());
 
-        plot.show(ui, |plot_ui| {
+        plot.show_accessible(ui, "Dynamic state of co2_projections_plot updated.", |plot_ui| {
             let hist_points = PlotPoints::new(historical);
             let hist_line = Line::new("Historical CO2", hist_points).width(2.0_f32);
             plot_ui.line(hist_line);

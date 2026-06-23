@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::AiTool;
 use eframe::egui;
 use egui::Color32;
@@ -150,7 +151,7 @@ impl AiTool for LossLandscapeTool {
                 .x_axis_label("Weight (w)")
                 .y_axis_label("Bias (b)")
                 .data_aspect(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of loss_landscape_plot updated.", |plot_ui| {
                     for point in points {
                         plot_ui.points(point);
                     }

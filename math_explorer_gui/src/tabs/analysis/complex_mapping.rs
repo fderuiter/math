@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::AnalysisTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -154,7 +155,7 @@ impl AnalysisTool for ComplexMappingTool {
                     .view_aspect(1.0)
                     .x_axis_label("Re(z)")
                     .y_axis_label("Im(z)")
-                    .show(&mut columns[0], |plot_ui| {
+                    .show_accessible(&mut columns[0], "Dynamic state of z_plane_plot updated.", |plot_ui| {
                         // Draw grid lines
                         if self.grid_max > self.grid_min && self.grid_density > 1 {
                             let step =
@@ -197,7 +198,7 @@ impl AnalysisTool for ComplexMappingTool {
                     .view_aspect(1.0)
                     .x_axis_label("Re(w)")
                     .y_axis_label("Im(w)")
-                    .show(&mut columns[1], |plot_ui| {
+                    .show_accessible(&mut columns[1], "Dynamic state of w_plane_plot updated.", |plot_ui| {
                         if self.grid_max > self.grid_min && self.grid_density > 1 {
                             let step =
                                 (self.grid_max - self.grid_min) / (self.grid_density as f64 - 1.0);

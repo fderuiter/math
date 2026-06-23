@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::SolidStateTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -95,7 +96,7 @@ impl SolidStateTool for BandStructureTool {
                 .y_axis_label("Energy (E)")
                 .legend(egui_plot::Legend::default());
 
-            plot.show(ui, |plot_ui| {
+            plot.show_accessible(ui, "Dynamic state of band_structure_plot updated.", |plot_ui| {
                 plot_ui.line(Line::new("Tight Binding", tb_points).name("Tight Binding"));
 
                 if self.show_free_electron {

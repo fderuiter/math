@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::ChaosTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -164,9 +165,25 @@ impl ChaosTool for AttractorPlotter {
         egui::CentralPanel::default().show(ctx, |ui| {
             let points: Vec<[f64; 2]> = self.history.iter().map(|p| self.project(*p)).collect();
 
+            let mut min_x = 0.0_f64;
+            let mut max_x = 0.0_f64;
+            let mut min_y = 0.0_f64;
+            let mut max_y = 0.0_f64;
+            if let Some(first) = points.first() {
+                min_x = first[0]; max_x = first[0];
+                min_y = first[1]; max_y = first[1];
+            }
+            for p in &points {
+                min_x = min_x.min(p[0]); max_x = max_x.max(p[0]);
+                min_y = min_y.min(p[1]); max_y = max_y.max(p[1]);
+            }
+            let is_chaotic = points.len() > 100 && (max_x - min_x) > 1.0;
+            let status = if is_chaotic { "chaotic" } else { "stabilized" };
+            let narrative = format!("Coordinate range X:[{:.1},{:.1}] Y:[{:.1},{:.1}]. System is {}", min_x, max_x, min_y, max_y, status);
+
             Plot::new("attractor_plot")
                 .data_aspect(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, narrative, |plot_ui| {
                     plot_ui.line(
                         Line::new("Trajectory", PlotPoints::new(points))
                             .color(egui::Color32::from_rgb(100, 200, 255)),

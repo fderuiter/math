@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::AnalysisTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -356,7 +357,7 @@ impl AnalysisTool for OdeSolverTool {
                 .x_axis_label("Time (t)")
                 .y_axis_label("Value")
                 .legend(egui_plot::Legend::default())
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of ode_plot updated.", |plot_ui| {
                     plot_ui.line(line_y);
                     if self.preset == OdePreset::HarmonicOscillator && !plot_points_v.is_empty() {
                         let line_v = Line::new("y'(t)", PlotPoints::new(plot_points_v))

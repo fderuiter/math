@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::AnalysisTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Polygon};
@@ -207,7 +208,7 @@ impl AnalysisTool for RiemannIntegrationTool {
                 .view_aspect(2.0)
                 .x_axis_label("x")
                 .y_axis_label("f(x)")
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of riemann_plot updated.", |plot_ui| {
                     plot_ui.line(true_line);
                     for poly in polygons {
                         plot_ui.polygon(poly);

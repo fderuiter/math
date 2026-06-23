@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::physics::fluid_dynamics::regimes::{
@@ -150,7 +151,7 @@ impl FluidDynamicsTool for TurbulenceTool {
             Plot::new("turbulence_plot")
                 .data_aspect(1.0)
                 .view_aspect(0.5)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of turbulence_plot updated.", |plot_ui| {
                     // Visualize flow lines
                     let n_lines = 10;
                     let length = 10.0;

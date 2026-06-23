@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::MedicalTool;
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
@@ -70,7 +71,7 @@ impl MedicalTool for DoseCalculationTool {
                     .view_aspect(1.0)
                     .show_grid(false)
                     .show_axes([true, true])
-                    .show(ui, |plot_ui| {
+                    .show_accessible(ui, "Dynamic state of dose_heatmap updated.", |plot_ui| {
                         plot_ui.image(PlotImage::new(
                             "dose_field",
                             texture.id(),

@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::SolidStateTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
@@ -160,7 +161,7 @@ impl SolidStateTool for CrystalViewer {
         egui::CentralPanel::default().show(ctx, |ui| {
             Plot::new("crystal_plot")
                 .data_aspect(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of crystal_plot updated.", |plot_ui| {
                     // Draw Box
                     self.draw_unit_cell_box(plot_ui);
 

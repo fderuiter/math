@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
@@ -137,7 +138,7 @@ impl ExplorerTab for FavoritismTab {
 
                 Plot::new("favoritism_plot")
                     .legend(egui_plot::Legend::default())
-                    .show(ui, |plot_ui| plot_ui.bar_chart(chart));
+                    .show_accessible(ui, "Dynamic state of favoritism_plot updated.", |plot_ui| plot_ui.bar_chart(chart));
 
                 ui.separator();
                 ui.heading("Rankings");

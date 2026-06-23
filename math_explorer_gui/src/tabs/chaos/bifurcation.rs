@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::ChaosTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
@@ -78,7 +79,7 @@ impl ChaosTool for BifurcationDiagram {
                 .view_aspect(2.0)
                 .x_axis_label("Growth Rate (r)")
                 .y_axis_label("Population (x)")
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of bifurcation_plot updated.", |plot_ui| {
                     plot_ui.points(
                         Points::new("Attractor", PlotPoints::new(self.points.clone()))
                             .radius(1.0_f32)

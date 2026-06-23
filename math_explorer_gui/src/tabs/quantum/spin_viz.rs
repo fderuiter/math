@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
@@ -205,7 +206,7 @@ impl QuantumTool for SpinVisualizer {
             Plot::new("bloch_sphere")
                 .data_aspect(1.0)
                 .view_aspect(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of bloch_sphere updated.", |plot_ui| {
                     for (name, points, color) in circle_points {
                         plot_ui.line(Line::new(name, PlotPoints::new(points)).color(color));
                     }

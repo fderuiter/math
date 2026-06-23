@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::GameTheoryTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
@@ -196,7 +197,7 @@ impl ReplicatorDynamicsTool {
             .legend(Legend::default())
             .allow_drag(true)
             .allow_zoom(true)
-            .show(ui, |plot_ui| {
+            .show_accessible(ui, "Dynamic state of replicator_plot updated.", |plot_ui| {
                 if self.trajectory.is_empty() {
                     return;
                 }
@@ -262,7 +263,7 @@ impl ReplicatorDynamicsTool {
             .allow_drag(false)
             .include_y(0.0)
             .include_y(1.0)
-            .show(ui, |plot_ui| {
+            .show_accessible(ui, "Dynamic state of population_bar_chart updated.", |plot_ui| {
                 plot_ui.bar_chart(BarChart::new("Distribution", bars));
             });
 

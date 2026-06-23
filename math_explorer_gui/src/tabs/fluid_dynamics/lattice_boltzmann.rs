@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
@@ -290,7 +291,7 @@ impl FluidDynamicsTool for LatticeBoltzmannTool {
                     .allow_drag(false)
                     .allow_zoom(false)
                     .allow_scroll(false)
-                    .show(ui, |plot_ui| {
+                    .show_accessible(ui, "Dynamic state of lbm_plot updated.", |plot_ui| {
                         plot_ui.image(PlotImage::new(
                             "fluid_field",
                             texture.id(),

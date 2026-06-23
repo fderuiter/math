@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::tabs::medical::MedicalTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -52,7 +53,7 @@ impl MedicalTool for BeamProfilingTool {
                 .view_aspect(2.0)
                 .x_axis_label("Depth (cm)")
                 .y_axis_label("Dose (Arbitrary Units)")
-                .show(ui, |plot_ui| plot_ui.line(line));
+                .show_accessible(ui, "Dynamic state of depth_dose_curve updated.", |plot_ui| plot_ui.line(line));
         });
     }
 }

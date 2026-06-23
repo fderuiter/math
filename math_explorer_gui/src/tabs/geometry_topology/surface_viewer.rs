@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::GeometryTopologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -206,7 +207,7 @@ impl GeometryTopologyTool for SurfaceViewer {
 
             Plot::new("surface_plot")
                 .data_aspect(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of surface_plot updated.", |plot_ui| {
                     for (i, line_points) in grid_lines.into_iter().enumerate() {
                         plot_ui.line(
                             Line::new("", PlotPoints::new(line_points))

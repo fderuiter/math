@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
@@ -170,7 +171,7 @@ impl ExplorerTab for MriTab {
                 .x_axis_label("Time (s)")
                 .y_axis_label("Magnetization (M/M0)")
                 .view_aspect(2.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of bloch_plot updated.", |plot_ui| {
                     plot_ui.line(Line::new("Mx (Transverse)", PlotPoints::new(mx)).color(egui::Color32::RED));
                     plot_ui.line(Line::new("My (Transverse)", PlotPoints::new(my)).color(egui::Color32::GREEN));
                     plot_ui.line(Line::new("Mz (Longitudinal)", PlotPoints::new(mz)).color(egui::Color32::BLUE));

@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Arrows, Plot};
@@ -137,7 +138,7 @@ impl FluidDynamicsTool for PotentialFlowTool {
             Plot::new("potential_flow_plot")
                 .data_aspect(1.0)
                 .view_aspect(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of potential_flow_plot updated.", |plot_ui| {
                     // Generate vector field arrows
                     let step = (2.0 * self.view_range) / (self.grid_size as f64);
                     let min = -self.view_range;

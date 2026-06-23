@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::tabs::ai::AiTool;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
@@ -138,7 +139,7 @@ impl AiTool for ActivationFunctionsTool {
 
             Plot::new("activation_function_plot")
                 .legend(Legend::default())
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of activation_function_plot updated.", |plot_ui| {
                     plot_ui.line(line);
                     plot_ui.line(deriv_line);
                 });

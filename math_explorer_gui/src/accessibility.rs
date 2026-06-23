@@ -57,3 +57,25 @@ impl AccessibleHoverText for Response {
         self.on_hover_text(text_into)
     }
 }
+
+pub trait PlotAccessibilityExt {
+    fn show_accessible<R>(
+        self,
+        ui: &mut eframe::egui::Ui,
+        narrative: impl Into<eframe::egui::WidgetText>,
+        build: impl FnOnce(&mut egui_plot::PlotUi) -> R,
+    ) -> egui_plot::PlotResponse<R>;
+}
+
+impl<'a> PlotAccessibilityExt for egui_plot::Plot<'a> {
+    fn show_accessible<R>(
+        self,
+        ui: &mut eframe::egui::Ui,
+        narrative: impl Into<eframe::egui::WidgetText>,
+        build: impl FnOnce(&mut egui_plot::PlotUi) -> R,
+    ) -> egui_plot::PlotResponse<R> {
+        let mut response = self.show(ui, build);
+        response.response = response.response.accessible_hover_text(narrative);
+        response
+    }
+}

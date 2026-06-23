@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use super::NeuroscienceTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
@@ -118,7 +119,7 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                     .height(height)
                     .x_axis_label("Time (ms)")
                     .y_axis_label("Membrane Potential (mV)")
-                    .show(ui, |plot_ui| {
+                    .show_accessible(ui, "Dynamic state of voltage_plot updated.", |plot_ui| {
                         // Voltage Line
                         plot_ui.line(Line::new(
                             "Voltage",
@@ -154,7 +155,7 @@ impl NeuroscienceTool for SpikeAnalysisTool {
                 Plot::new("isi_plot")
                     .x_axis_label("Inter-Spike Interval (ms)")
                     .y_axis_label("Count")
-                    .show(ui, |plot_ui| {
+                    .show_accessible(ui, "Dynamic state of isi_plot updated.", |plot_ui| {
                         if !self.isis.is_empty() {
                             let bars = self.compute_histogram(20); // 20 bins
                             plot_ui.bar_chart(

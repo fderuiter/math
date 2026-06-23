@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
 use math_explorer::physics::quantum::clebsch_gordan;
@@ -153,7 +154,7 @@ impl QuantumTool for ClebschGordanTool {
                 .view_aspect(2.0)
                 .include_y(-1.0)
                 .include_y(1.0)
-                .show(ui, |plot_ui| {
+                .show_accessible(ui, "Dynamic state of clebsch_plot updated.", |plot_ui| {
                     plot_ui.bar_chart(chart);
                 });
 

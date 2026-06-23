@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use crate::tabs::geometry_topology::GeometryTopologyTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points, Polygon};
@@ -122,7 +123,7 @@ impl GeometryTopologyTool for VietorisRipsTool {
                 .allow_drag(true)
                 .allow_zoom(true);
 
-            plot.show(ui, |plot_ui| {
+            plot.show_accessible(ui, "Dynamic state of vietoris_rips_plot updated.", |plot_ui| {
                 // Draw 2-simplices (triangles)
                 let triangles = self.complex.get_simplices(2);
                 for t in triangles {

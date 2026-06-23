@@ -1,3 +1,4 @@
+use crate::accessibility::PlotAccessibilityExt;
 use math_explorer::ai::reinforcement_learning::grid_world::{GridState, GridWorldEnv, Move};
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ai::AiTool;
@@ -121,7 +122,7 @@ impl AiTool for RewardPlotsTool {
                 .view_aspect(2.0)
                 .legend(egui_plot::Legend::default());
 
-            plot.show(ui, |plot_ui| {
+            plot.show_accessible(ui, "Dynamic state of reward_plot updated.", |plot_ui| {
                 plot_ui.line(line);
             });
         });
