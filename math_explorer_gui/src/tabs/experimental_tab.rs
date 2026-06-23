@@ -2,6 +2,8 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 #[allow(unused_imports)]
+use generative_turbulence_experimental;
+
 #[derive(Default)]
 pub struct ExperimentalTab {}
 
