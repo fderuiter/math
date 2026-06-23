@@ -22,7 +22,7 @@ impl EdgeProbability {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::kelly::EdgeProbability;
+    /// use pure_math::pure_math::statistics::kelly::EdgeProbability;
     ///
     /// let p = EdgeProbability::new(0.55).unwrap();
     /// assert_eq!(p.value(), 0.55);
@@ -71,7 +71,7 @@ impl Odds {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::kelly::Odds;
+    /// use pure_math::pure_math::statistics::kelly::Odds;
     ///
     /// let odds = Odds::new(2.5).unwrap();
     /// assert_eq!(odds.value(), 2.5);
@@ -105,7 +105,7 @@ impl Odds {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::kelly::Odds;
+    /// use pure_math::pure_math::statistics::kelly::Odds;
     ///
     /// let underdog = Odds::from_american(200.0).unwrap(); // +200
     /// assert!((underdog.value() - 3.0).abs() < 0.01);
@@ -135,7 +135,7 @@ impl Odds {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::kelly::Odds;
+    /// use pure_math::pure_math::statistics::kelly::Odds;
     ///
     /// let odds = Odds::from_fractional(5.0, 2.0).unwrap(); // 5/2
     /// assert!((odds.value() - 3.5).abs() < 0.01);
@@ -161,7 +161,7 @@ impl Odds {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::kelly::Odds;
+    /// use pure_math::pure_math::statistics::kelly::Odds;
     ///
     /// let odds = Odds::new(2.0).unwrap();
     /// assert!((odds.implied_probability() - 0.5).abs() < 0.01);
@@ -191,7 +191,7 @@ impl BankrollFraction {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::kelly::BankrollFraction;
+    /// use pure_math::pure_math::statistics::kelly::BankrollFraction;
     ///
     /// let fraction = BankrollFraction::new(0.1).unwrap();
     /// assert_eq!(fraction.value(), 0.1);
@@ -213,7 +213,7 @@ impl BankrollFraction {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::kelly::BankrollFraction;
+    /// use pure_math::pure_math::statistics::kelly::BankrollFraction;
     ///
     /// let fraction = BankrollFraction::new(0.1).unwrap();
     /// let bet = fraction.bet_amount(1000.0).unwrap();

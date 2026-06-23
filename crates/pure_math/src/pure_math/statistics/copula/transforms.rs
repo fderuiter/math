@@ -52,7 +52,7 @@ impl NormalTransform {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::copula::NormalTransform;
+    /// use pure_math::pure_math::statistics::copula::NormalTransform;
     ///
     /// let transform = NormalTransform::new(0.0, 1.0).unwrap();
     /// ```
@@ -96,7 +96,7 @@ impl ProbabilityTransform for NormalTransform {
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::copula::{inverse_standard_normal, Probability};
+/// use pure_math::pure_math::statistics::copula::{inverse_standard_normal, Probability};
 ///
 /// let u = Probability::new(0.975).unwrap();
 /// let z = inverse_standard_normal(u).unwrap();
@@ -124,7 +124,7 @@ pub fn inverse_standard_normal(u: Probability) -> Result<f64, CopulaError> {
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::copula::standard_normal_cdf;
+/// use pure_math::pure_math::statistics::copula::standard_normal_cdf;
 ///
 /// let z = 1.96;
 /// let p = standard_normal_cdf(z).unwrap();

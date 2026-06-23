@@ -30,7 +30,7 @@ const VOLATILITY_TOLERANCE: f64 = 1e-6;
 /// # Example
 ///
 /// ```
-/// use crate::pure_math::statistics::glicko2::{
+/// use pure_math::pure_math::statistics::glicko2::{
 ///     GlickoPlayer, MatchResult, Rating, RatingDeviation, Volatility, SystemConstant, update_rating
 /// };
 ///

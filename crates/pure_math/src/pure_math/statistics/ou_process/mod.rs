@@ -60,7 +60,7 @@
 //! ## Example: Shooting Percentage Dynamics
 //!
 //! ```rust
-//! use crate::pure_math::statistics::ou_process::{
+//! use pure_math::pure_math::statistics::ou_process::{
 //!     EulerMaruyama, OuParams, TimeStep
 //! };
 //! use rand::SeedableRng;
@@ -89,7 +89,7 @@
 //! ## Example: Comeback Probability
 //!
 //! ```rust
-//! use crate::pure_math::statistics::ou_process::{OuAnalyzer, OuParams, TimeStep};
+//! use pure_math::pure_math::statistics::ou_process::{OuAnalyzer, OuParams, TimeStep};
 //! use rand::SeedableRng;
 //! use rand::rngs::StdRng;
 //!

@@ -19,7 +19,7 @@
 /// # Examples
 ///
 /// ```
-/// use crate::pure_math::logic::forall;
+/// use pure_math::pure_math::logic::forall;
 ///
 /// let domain = vec![2, 4, 6, 8];
 /// assert!(forall(domain.into_iter(), |x| x % 2 == 0));
@@ -44,7 +44,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use crate::pure_math::logic::exists;
+/// use pure_math::pure_math::logic::exists;
 ///
 /// let domain = vec![1, 3, 5, 8];
 /// assert!(exists(domain.into_iter(), |x| x % 2 == 0)); // 8 is even

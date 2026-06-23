@@ -27,7 +27,7 @@ impl PoissonRate {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::PoissonRate;
+    /// use pure_math::pure_math::statistics::zip_regression::PoissonRate;
     ///
     /// let lambda = PoissonRate::new(2.5).unwrap();
     /// assert_eq!(lambda.value(), 2.5);
@@ -70,7 +70,7 @@ impl ZeroInflation {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::ZeroInflation;
+    /// use pure_math::pure_math::statistics::zip_regression::ZeroInflation;
     ///
     /// let rho = ZeroInflation::new(0.3).unwrap();
     /// assert_eq!(rho.value(), 0.3);
@@ -155,7 +155,7 @@ impl ZipParams {
     /// # Example
     ///
     /// ```
-    /// use crate::pure_math::statistics::zip_regression::{ZipParams, ZeroInflation, PoissonRate};
+    /// use pure_math::pure_math::statistics::zip_regression::{ZipParams, ZeroInflation, PoissonRate};
     ///
     /// let params = ZipParams::new(
     ///     ZeroInflation::new(0.2).unwrap(),

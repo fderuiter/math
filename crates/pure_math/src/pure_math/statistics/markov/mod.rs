@@ -100,7 +100,7 @@
 //!
 //! ### Expected Possession Value (EPV)
 //! ```rust
-//! use crate::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
+//! use pure_math::pure_math::statistics::markov::dtmc::{MarkovChain, StateType};
 //! use nalgebra::{DMatrix, DVector};
 //!
 //! // States: offense, advantage, score, turnover
@@ -130,7 +130,7 @@
 //!
 //! ### Shot Clock Urgency
 //! ```rust
-//! use crate::pure_math::statistics::markov::tensor::{TransitionTensor, TimeIndex};
+//! use pure_math::pure_math::statistics::markov::tensor::{TransitionTensor, TimeIndex};
 //! use nalgebra::DMatrix;
 //!
 //! let mut tensor = TransitionTensor::new(
@@ -161,7 +161,7 @@
 //!
 //! ### Hot Hand Detection
 //! ```rust
-//! use crate::pure_math::statistics::markov::hmm::HiddenMarkovModel;
+//! use pure_math::pure_math::statistics::markov::hmm::HiddenMarkovModel;
 //! use nalgebra::{DMatrix, DVector};
 //!
 //! // Hidden states: Cold (0), Hot (1)
@@ -197,7 +197,7 @@
 //!
 //! ### Market Regime Detection
 //! ```rust
-//! use crate::pure_math::statistics::markov::hmm::HiddenMarkovModel;
+//! use pure_math::pure_math::statistics::markov::hmm::HiddenMarkovModel;
 //! use nalgebra::{DMatrix, DVector};
 //!
 //! // Hidden states: Bull (0), Bear (1), Sideways (2)
@@ -226,7 +226,7 @@
 //! ## Queueing Theory
 //!
 //! ```rust
-//! use crate::pure_math::statistics::markov::ctmc::ContinuousMarkovChain;
+//! use pure_math::pure_math::statistics::markov::ctmc::ContinuousMarkovChain;
 //! use nalgebra::DMatrix;
 //!
 //! // M/M/1 queue: arrival rate λ = 2, service rate μ = 3

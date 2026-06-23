@@ -26,7 +26,7 @@ use num_traits::ToPrimitive;
 /// # Example
 ///
 /// ```rust
-/// use crate::pure_math::statistics::markov::ctmc::ContinuousMarkovChain;
+/// use pure_math::pure_math::statistics::markov::ctmc::ContinuousMarkovChain;
 /// use nalgebra::DMatrix;
 ///
 /// // Two-state birth-death process
@@ -326,7 +326,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use crate::pure_math::statistics::markov::ContinuousMarkovChain;
+    /// use pure_math::pure_math::statistics::markov::ContinuousMarkovChain;
     /// use nalgebra::DMatrix;
     /// use rand::SeedableRng;
     /// use rand::rngs::StdRng;

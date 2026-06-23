@@ -40,7 +40,7 @@ use nalgebra::DMatrix;
 /// # Examples
 ///
 /// ```
-/// use crate::pure_math::algebra::linear_algebra::decomposition::effective_rank;
+/// use pure_math::pure_math::algebra::linear_algebra::decomposition::effective_rank;
 /// use nalgebra::DMatrix;
 ///
 /// let diag = DMatrix::from_diagonal(&nalgebra::DVector::from_vec(vec![1.0, 0.00000000001, 3.0]));

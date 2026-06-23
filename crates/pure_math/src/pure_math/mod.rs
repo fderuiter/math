@@ -11,7 +11,7 @@
 //! Check if a number is prime using optimized algorithms.
 //!
 //! ```rust
-//! use crate::pure_math::number_theory;
+//! use pure_math::pure_math::number_theory;
 //!
 //! // Check a small prime
 //! assert!(number_theory::is_prime(17));

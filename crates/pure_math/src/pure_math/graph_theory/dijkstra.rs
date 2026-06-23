@@ -70,7 +70,7 @@ impl<W: PartialOrd> PartialOrd for State<W> {
 /// # Examples
 ///
 /// ```rust
-/// use crate::pure_math::graph_theory::dijkstra::dijkstra;
+/// use pure_math::pure_math::graph_theory::dijkstra::dijkstra;
 /// use petgraph::graph::Graph;
 ///
 /// let mut graph = Graph::<(), f64>::new();

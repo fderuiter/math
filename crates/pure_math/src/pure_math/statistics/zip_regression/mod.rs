@@ -71,7 +71,7 @@
 //! ## Example Usage
 //!
 //! ```rust
-//! use crate::pure_math::statistics::zip_regression::{
+//! use pure_math::pure_math::statistics::zip_regression::{
 //!     ZipDistribution, ZipParams, ZeroInflation, PoissonRate, Count
 //! };
 //!
@@ -94,7 +94,7 @@
 //! ## Simple Regression Example
 //!
 //! ```rust
-//! use crate::pure_math::statistics::zip_regression::{simple_zip_fit, Count};
+//! use pure_math::pure_math::statistics::zip_regression::{simple_zip_fit, Count};
 //!
 //! // Observed player block counts over 10 games
 //! let blocks = vec![

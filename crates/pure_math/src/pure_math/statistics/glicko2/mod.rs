@@ -90,7 +90,7 @@
 //! ## Example: Basic Usage
 //!
 //! ```rust
-//! use crate::pure_math::statistics::glicko2::{
+//! use pure_math::pure_math::statistics::glicko2::{
 //!     GlickoPlayer, Rating, RatingDeviation, Volatility,
 //!     MatchResult, SystemConstant, update_rating
 //! };
@@ -122,7 +122,7 @@
 //! ## Example: Multiple Games
 //!
 //! ```rust
-//! use crate::pure_math::statistics::glicko2::{
+//! use pure_math::pure_math::statistics::glicko2::{
 //!     GlickoPlayer, Rating, RatingDeviation, Volatility,
 //!     MatchResult, SystemConstant, update_rating
 //! };
@@ -158,7 +158,7 @@
 //! ## Example: Handling Inactivity
 //!
 //! ```rust
-//! use crate::pure_math::statistics::glicko2::{
+//! use pure_math::pure_math::statistics::glicko2::{
 //!     GlickoPlayer, Rating, RatingDeviation, Volatility,
 //!     update_rating, SystemConstant
 //! };

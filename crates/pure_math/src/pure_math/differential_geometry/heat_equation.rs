@@ -32,8 +32,8 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
     /// Simulating heat diffusion on a unit Sphere:
     ///
     /// ```rust
-    /// use crate::pure_math::differential_geometry::surface::Sphere;
-    /// use crate::pure_math::differential_geometry::heat_equation::HeatEquationSolver;
+    /// use pure_math::pure_math::differential_geometry::surface::Sphere;
+    /// use pure_math::pure_math::differential_geometry::heat_equation::HeatEquationSolver;
     /// use std::f64::consts::PI;
     ///
     /// // 1. Define the surface

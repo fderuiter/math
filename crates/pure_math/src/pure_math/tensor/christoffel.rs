@@ -27,8 +27,8 @@ use nalgebra::{DMatrix, DVector};
 /// # Examples
 ///
 /// ```
-/// use crate::pure_math::tensor::christoffel::christoffel_symbols;
-/// use crate::pure_math::tensor::metric::RiemannianMetric;
+/// use pure_math::pure_math::tensor::christoffel::christoffel_symbols;
+/// use pure_math::pure_math::tensor::metric::RiemannianMetric;
 /// use nalgebra::{DMatrix, DVector};
 ///
 /// // Define a 2D polar metric: g_{rr} = 1, g_{\theta\theta} = r^2, off-diagonals = 0

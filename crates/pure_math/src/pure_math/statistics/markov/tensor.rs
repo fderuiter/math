@@ -25,7 +25,7 @@ use num_traits::ToPrimitive;
 /// # Example
 ///
 /// ```rust
-/// use crate::pure_math::statistics::markov::tensor::{TransitionTensor, TimeIndex};
+/// use pure_math::pure_math::statistics::markov::tensor::{TransitionTensor, TimeIndex};
 ///
 /// // Create a tensor with transitions at different shot clock times
 /// let mut tensor = TransitionTensor::<f64>::new(2, TimeIndex::new(0.0).unwrap(), TimeIndex::new(24.0).unwrap());
