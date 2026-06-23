@@ -40,14 +40,16 @@ impl SimulationRunner for WaveRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) => if name.as_str() == "potential_type" {
-                self.potential_type = if val == 0.0 {
-                    PotentialType::InfiniteWell
-                } else {
-                    PotentialType::HarmonicOscillator
-                };
-                self.init_system();
-            },
+            SimCommand::UpdateParam(name, val) => {
+                if name.as_str() == "potential_type" {
+                    self.potential_type = if val == 0.0 {
+                        PotentialType::InfiniteWell
+                    } else {
+                        PotentialType::HarmonicOscillator
+                    };
+                    self.init_system();
+                }
+            }
             SimCommand::Reset => self.init_system(),
             _ => {}
         }
