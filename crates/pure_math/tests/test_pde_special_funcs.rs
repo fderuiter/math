@@ -1,4 +1,4 @@
-#![cfg(all(feature = "pure_math"))]
+
 
 use approx::assert_abs_diff_eq;
 use pure_math::pure_math::analysis::pde::{

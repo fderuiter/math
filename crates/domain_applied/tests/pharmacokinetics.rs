@@ -1,4 +1,4 @@
-#![cfg(all(feature = "applied"))]
+
 
 // math_explorer/tests/pharmacokinetics.rs
 

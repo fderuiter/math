@@ -1,4 +1,4 @@
-#![cfg(all(feature = "biology"))]
+
 
 use domain_biology::biology::diffusion::FiniteDifference2D;
 use domain_biology::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
@@ -9,16 +9,16 @@ fn bench_turing_2d_step() {
     let width = 300;
     let height = 300;
     let diff = FiniteDifference2D::new(
-        math_explorer::math_kernel::types::Dimension(width),
-        math_explorer::math_kernel::types::Dimension(height),
-        math_explorer::math_kernel::types::StepSize(1.0),
-        math_explorer::math_kernel::types::StepSize(1.0),
+        math_commons::math_kernel::types::Dimension(width),
+        math_commons::math_kernel::types::Dimension(height),
+        math_commons::math_kernel::types::StepSize(1.0),
+        math_commons::math_kernel::types::StepSize(1.0),
     );
     let kinetics = SchnakenbergKinetics::default();
 
     // Create system with 90k elements
     let mut system = TuringSystem::new_with_kinetics(
-        math_explorer::math_kernel::types::Dimension(width * height),
+        math_commons::math_kernel::types::Dimension(width * height),
         domain_biology::biology::morphogenesis::DiffusionCoeff(1.0),
         domain_biology::biology::morphogenesis::DiffusionCoeff(40.0),
         kinetics,

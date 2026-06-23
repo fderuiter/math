@@ -1,4 +1,4 @@
-#![cfg(all(feature = "applied", feature = "pure_math"))]
+
 
 #[cfg(test)]
 mod tests {

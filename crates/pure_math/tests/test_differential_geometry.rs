@@ -1,4 +1,4 @@
-#![cfg(all(feature = "pure_math"))]
+
 
 use nalgebra::Point3;
 use pure_math::pure_math::analysis::pde::{PdeClassification, SecondOrderLinearPde2D};

@@ -1,4 +1,4 @@
-#![cfg(all(feature = "physics"))]
+
 
 use approx::assert_relative_eq;
 use domain_physics::physics::quantum::{
