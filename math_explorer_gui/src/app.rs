@@ -13,8 +13,6 @@ use crate::tabs::climate::ClimateTab;
 use crate::tabs::clinical_trials::ClinicalTrialsTab;
 #[cfg(feature = "epidemiology")]
 use crate::tabs::epidemiology::EpidemiologyTab;
-#[cfg(feature = "strict-opt-in-experimental")]
-use crate::tabs::experimental_tab::ExperimentalTab;
 #[cfg(feature = "applied")]
 use crate::tabs::favoritism::FavoritismTab;
 #[cfg(feature = "pure_math")]
@@ -104,8 +102,6 @@ impl Default for MathExplorerApp {
 
         tabs.push(Box::new(crate::tabs::TraceabilityTab::default()));
 
-        #[cfg(feature = "strict-opt-in-experimental")]
-        tabs.push(Box::new(ExperimentalTab::default()));
 
         Self {
             tabs,

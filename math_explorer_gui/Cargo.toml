@@ -13,7 +13,6 @@ biology = ["math_explorer/biology", "applied", "pure_math"]
 climate = ["math_explorer/climate", "ai"]
 epidemiology = ["math_explorer/epidemiology", "pure_math"]
 physics = ["math_explorer/physics", "applied", "pure_math"]
-strict-opt-in-experimental = ["generative-turbulence-experimental"]
 
 [dependencies]
 eframe = "0.33.3"
@@ -22,7 +21,6 @@ egui_plot = "0.34.1"
 nalgebra = "0.34.0"
 math_explorer = { path = "../math_explorer", optional = true }
 math_commons = { path = "../crates/math_commons" }
-generative-turbulence-experimental = { path = "../experimental/generative-turbulence-experimental", optional = true }
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"
