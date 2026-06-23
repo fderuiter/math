@@ -356,3 +356,4 @@ mod tests_2d {
         assert_eq!(out.species(1)[center_idx], 0.0);
     }
 }
+// [cite:graph_parameters_rust]

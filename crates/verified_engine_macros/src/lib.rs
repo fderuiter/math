@@ -53,25 +53,23 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
     }
 
     fn visit_macro(&mut self, node: &'ast syn::Macro) {
-        if let Some(ident) = node.path.segments.last().map(|s| s.ident.to_string()) {
-            if ident == "assert"
-                || ident == "assert_eq"
-                || ident == "assert_ne"
-                || ident == "debug_assert"
-            {
-                self.assertions += 1;
-            }
+        if let Some(ident) = node.path.segments.last().map(|s| s.ident.to_string())
+            && matches!(
+                ident.as_str(),
+                "assert" | "assert_eq" | "assert_ne" | "debug_assert"
+            )
+        {
+            self.assertions += 1;
         }
         syn::visit::visit_macro(self, node);
     }
 
     fn visit_expr_call(&mut self, node: &'ast syn::ExprCall) {
-        if let syn::Expr::Path(ref expr_path) = *node.func {
-            if let Some(ident) = expr_path.path.segments.last().map(|s| s.ident.to_string()) {
-                if ident == self.function_name {
-                    self.direct_recursion = true;
-                }
-            }
+        if let syn::Expr::Path(ref expr_path) = *node.func
+            && let Some(ident) = expr_path.path.segments.last().map(|s| s.ident.to_string())
+            && ident == self.function_name
+        {
+            self.direct_recursion = true;
         }
         syn::visit::visit_expr_call(self, node);
     }
