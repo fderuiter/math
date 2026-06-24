@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::climate::ClimateTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::climate::cera::Cera;
 use math_explorer::climate::config::CeraConfig;
@@ -27,13 +27,14 @@ impl Default for CeraTool {
     }
 }
 
-impl ClimateTool for CeraTool {
+impl InteractiveTool for CeraTool {
     fn name(&self) -> &'static str {
         "CERA Model"
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ui: &mut egui::Ui) {
+    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.label(
             "Configure CERA (Climate-invariant Encoding through Representation Alignment) Model:",
         );

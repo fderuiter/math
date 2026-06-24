@@ -1,4 +1,4 @@
-use super::NumberTheoryTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
@@ -51,7 +51,7 @@ impl PartitionsWidget {
     }
 }
 
-impl NumberTheoryTool for PartitionsWidget {
+impl InteractiveTool for PartitionsWidget {
     fn name(&self) -> &'static str {
         "Partition Function"
     }

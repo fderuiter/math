@@ -1,4 +1,4 @@
-use super::ClinicalTrialsTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::applied::clinical_trials::survival_analysis::{
@@ -96,7 +96,7 @@ impl SurvivalAnalysisTool {
     }
 }
 
-impl ClinicalTrialsTool for SurvivalAnalysisTool {
+impl InteractiveTool for SurvivalAnalysisTool {
     fn name(&self) -> &'static str {
         "Survival Curves (Kaplan-Meier)"
     }

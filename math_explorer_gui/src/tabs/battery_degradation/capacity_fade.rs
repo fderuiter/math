@@ -1,4 +1,4 @@
-use super::BatteryDegradationTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{HLine, Line, Plot, PlotPoints};
 use math_explorer::applied::battery_degradation::{Cycles, DepthOfDischarge, PowerLawModel};
@@ -19,7 +19,7 @@ impl Default for CapacityFadeTool {
     }
 }
 
-impl BatteryDegradationTool for CapacityFadeTool {
+impl InteractiveTool for CapacityFadeTool {
     fn name(&self) -> &'static str {
         "Capacity Fade"
     }

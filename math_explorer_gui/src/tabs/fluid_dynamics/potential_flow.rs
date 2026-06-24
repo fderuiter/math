@@ -51,9 +51,9 @@ impl Default for PotentialFlowTool {
     }
 }
 
-use crate::tabs::fluid_dynamics::FluidDynamicsTool;
+use crate::framework::InteractiveTool;
 
-impl FluidDynamicsTool for PotentialFlowTool {
+impl InteractiveTool for PotentialFlowTool {
     fn name(&self) -> &'static str {
         "Potential Flow"
     }

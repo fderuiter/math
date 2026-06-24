@@ -15,9 +15,9 @@ impl Default for PrimeSpiralWidget {
     }
 }
 
-use super::NumberTheoryTool;
+use crate::framework::InteractiveTool;
 
-impl NumberTheoryTool for PrimeSpiralWidget {
+impl InteractiveTool for PrimeSpiralWidget {
     fn name(&self) -> &'static str {
         "Prime Spiral (Ulam Spiral)"
     }

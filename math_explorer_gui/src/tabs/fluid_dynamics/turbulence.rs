@@ -35,9 +35,9 @@ impl Default for TurbulenceTool {
     }
 }
 
-use crate::tabs::fluid_dynamics::FluidDynamicsTool;
+use crate::framework::InteractiveTool;
 
-impl FluidDynamicsTool for TurbulenceTool {
+impl InteractiveTool for TurbulenceTool {
     fn name(&self) -> &'static str {
         "Turbulence / Reynolds Analysis"
     }

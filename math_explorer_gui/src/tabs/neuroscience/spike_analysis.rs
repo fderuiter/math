@@ -1,4 +1,4 @@
-use super::NeuroscienceTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Line, Plot, PlotPoints};
@@ -42,7 +42,7 @@ impl Default for SpikeAnalysisTool {
     }
 }
 
-impl NeuroscienceTool for SpikeAnalysisTool {
+impl InteractiveTool for SpikeAnalysisTool {
     fn name(&self) -> &'static str {
         "Spike Train Analysis"
     }

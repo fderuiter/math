@@ -1,4 +1,4 @@
-use super::FinancialMathTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -104,13 +104,14 @@ impl BankrollGrowthTool {
     }
 }
 
-impl FinancialMathTool for BankrollGrowthTool {
+impl InteractiveTool for BankrollGrowthTool {
     fn name(&self) -> &'static str {
         "Bankroll Growth"
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ui: &mut egui::Ui) {
+    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             ui.heading("Parameters");
             let mut changed = false;

@@ -22,9 +22,9 @@ impl Default for UalbfWidget {
     }
 }
 
-use super::NumberTheoryTool;
+use crate::framework::InteractiveTool;
 
-impl NumberTheoryTool for UalbfWidget {
+impl InteractiveTool for UalbfWidget {
     fn name(&self) -> &'static str {
         "UALBF"
     }

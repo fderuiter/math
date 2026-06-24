@@ -1,4 +1,4 @@
-use super::FinancialMathTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::pure_math::statistics::kelly::{
     expected_value, kelly_fraction, variants, EdgeProbability, Odds,
@@ -35,13 +35,14 @@ impl Default for BetSizeCalculatorTool {
     }
 }
 
-impl FinancialMathTool for BetSizeCalculatorTool {
+impl InteractiveTool for BetSizeCalculatorTool {
     fn name(&self) -> &'static str {
         "Bet Size Calculator"
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ui: &mut egui::Ui) {
+    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.heading("Kelly Criterion Bet Size Calculator");
         ui.label("Calculate optimal bet sizing based on your edge and odds.");
         ui.separator();

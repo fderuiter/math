@@ -1,4 +1,4 @@
-use super::GraphTheoryTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use eframe::egui::Pos2;
@@ -113,7 +113,7 @@ impl NetworkMetricsTool {
     }
 }
 
-impl GraphTheoryTool for NetworkMetricsTool {
+impl InteractiveTool for NetworkMetricsTool {
     fn name(&self) -> &'static str {
         "Network Metrics"
     }

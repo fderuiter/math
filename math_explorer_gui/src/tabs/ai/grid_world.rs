@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::ai::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::{
     algorithms::TabularQAgent,
@@ -77,7 +77,7 @@ impl GridWorldTool {
     }
 }
 
-impl AiTool for GridWorldTool {
+impl InteractiveTool for GridWorldTool {
     fn name(&self) -> &'static str {
         "Grid World (RL)"
     }

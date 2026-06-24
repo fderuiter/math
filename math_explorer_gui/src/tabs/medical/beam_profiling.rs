@@ -1,4 +1,4 @@
-use crate::tabs::medical::MedicalTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::physics::medical::dose::algorithm::calculate_terma;
@@ -17,7 +17,7 @@ impl Default for BeamProfilingTool {
     }
 }
 
-impl MedicalTool for BeamProfilingTool {
+impl InteractiveTool for BeamProfilingTool {
     fn name(&self) -> &'static str {
         "Beam Profiling"
     }

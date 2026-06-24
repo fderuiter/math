@@ -1,4 +1,4 @@
-use super::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::Color32;
 use egui_plot::{Plot, Points};
@@ -37,7 +37,7 @@ impl Default for LossLandscapeTool {
     }
 }
 
-impl AiTool for LossLandscapeTool {
+impl InteractiveTool for LossLandscapeTool {
     fn name(&self) -> &'static str {
         "Loss Landscape"
     }

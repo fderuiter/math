@@ -1,4 +1,4 @@
-use crate::tabs::ai::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
 use math_explorer::ai::deep_learning_theory::calculus::{
@@ -32,7 +32,7 @@ impl Default for ActivationFunctionsTool {
     }
 }
 
-impl AiTool for ActivationFunctionsTool {
+impl InteractiveTool for ActivationFunctionsTool {
     fn name(&self) -> &'static str {
         "Activation Functions"
     }

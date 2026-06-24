@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::clinical_trials::ClinicalTrialsTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::applied::clinical_trials::design::{
     AllocationStrategy, BlockRandomizer, Group, SimpleRandomizer,
@@ -32,7 +32,7 @@ impl Default for RandomizationTool {
     }
 }
 
-impl ClinicalTrialsTool for RandomizationTool {
+impl InteractiveTool for RandomizationTool {
     fn name(&self) -> &'static str {
         "Randomization"
     }

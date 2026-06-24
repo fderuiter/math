@@ -1,4 +1,4 @@
-use super::MedicalTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};
@@ -24,7 +24,7 @@ impl Default for DoseCalculationTool {
     }
 }
 
-impl MedicalTool for DoseCalculationTool {
+impl InteractiveTool for DoseCalculationTool {
     fn name(&self) -> &'static str {
         "Dose Calculation"
     }

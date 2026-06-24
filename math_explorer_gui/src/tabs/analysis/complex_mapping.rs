@@ -1,4 +1,4 @@
-use super::AnalysisTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::analysis::complex::mapping::conformal_scale_factor;
@@ -73,7 +73,7 @@ impl Default for ComplexMappingTool {
     }
 }
 
-impl AnalysisTool for ComplexMappingTool {
+impl InteractiveTool for ComplexMappingTool {
     fn name(&self) -> &'static str {
         "Complex Mapping"
     }

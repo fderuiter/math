@@ -175,9 +175,9 @@ impl Default for LatticeBoltzmannTool {
     }
 }
 
-use crate::tabs::fluid_dynamics::FluidDynamicsTool;
+use crate::framework::InteractiveTool;
 
-impl FluidDynamicsTool for LatticeBoltzmannTool {
+impl InteractiveTool for LatticeBoltzmannTool {
     fn name(&self) -> &'static str {
         "Lattice Boltzmann (Demo)"
     }

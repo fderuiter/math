@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::ai::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::grid_world::{GridState, GridWorldEnv, Move};
 use math_explorer::ai::reinforcement_learning::{algorithms::TabularQAgent, MarkovDecisionProcess};
@@ -92,7 +92,7 @@ impl QTableInspectorTool {
     }
 }
 
-impl AiTool for QTableInspectorTool {
+impl InteractiveTool for QTableInspectorTool {
     fn name(&self) -> &'static str {
         "Q-Table Inspector"
     }

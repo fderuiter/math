@@ -1,4 +1,4 @@
-use super::BatteryDegradationTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel};
@@ -19,7 +19,7 @@ impl Default for LifetimeEstimatorTool {
     }
 }
 
-impl BatteryDegradationTool for LifetimeEstimatorTool {
+impl InteractiveTool for LifetimeEstimatorTool {
     fn name(&self) -> &'static str {
         "Lifetime Estimator"
     }

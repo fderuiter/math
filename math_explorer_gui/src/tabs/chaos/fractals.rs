@@ -1,4 +1,4 @@
-use crate::tabs::chaos::ChaosTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::physics::chaos::fractals::{escape_time_julia, escape_time_mandelbrot};
 use num_complex::Complex;
@@ -33,7 +33,7 @@ impl Default for FractalViewer {
     }
 }
 
-impl ChaosTool for FractalViewer {
+impl InteractiveTool for FractalViewer {
     fn name(&self) -> &'static str {
         "Fractal Viewer"
     }

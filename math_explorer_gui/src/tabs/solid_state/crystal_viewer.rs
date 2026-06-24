@@ -1,4 +1,4 @@
-use super::SolidStateTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
 use math_explorer::physics::solid_state::lattice::{
@@ -113,7 +113,7 @@ impl CrystalViewer {
     }
 }
 
-impl SolidStateTool for CrystalViewer {
+impl InteractiveTool for CrystalViewer {
     fn name(&self) -> &'static str {
         "Crystal Lattice Viewer"
     }

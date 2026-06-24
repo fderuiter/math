@@ -1,4 +1,4 @@
-use super::ClinicalTrialsTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::applied::clinical_trials::sample_size::{
@@ -58,7 +58,7 @@ impl SampleSizeCalculatorTool {
     }
 }
 
-impl ClinicalTrialsTool for SampleSizeCalculatorTool {
+impl InteractiveTool for SampleSizeCalculatorTool {
     fn name(&self) -> &'static str {
         "Sample Size Calculator"
     }

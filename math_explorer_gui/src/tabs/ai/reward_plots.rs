@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::ai::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::ai::reinforcement_learning::grid_world::{GridState, GridWorldEnv, Move};
@@ -68,7 +68,7 @@ impl RewardPlotsTool {
     }
 }
 
-impl AiTool for RewardPlotsTool {
+impl InteractiveTool for RewardPlotsTool {
     fn name(&self) -> &'static str {
         "Reward Plots"
     }

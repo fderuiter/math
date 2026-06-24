@@ -1,4 +1,4 @@
-use super::NumberTheoryTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::pure_math::number_theory::ambs::prime_factors;
@@ -12,7 +12,7 @@ pub struct FactorizationTool {
     results: Option<FactorizationResult>,
 }
 
-impl NumberTheoryTool for FactorizationTool {
+impl InteractiveTool for FactorizationTool {
     fn name(&self) -> &'static str {
         "Factorization Tool"
     }

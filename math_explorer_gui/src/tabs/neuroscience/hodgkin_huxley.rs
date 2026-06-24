@@ -1,4 +1,4 @@
-use super::NeuroscienceTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
@@ -127,7 +127,7 @@ impl Default for HodgkinHuxleyTool {
     }
 }
 
-impl NeuroscienceTool for HodgkinHuxleyTool {
+impl InteractiveTool for HodgkinHuxleyTool {
     fn name(&self) -> &'static str {
         "Hodgkin-Huxley Model"
     }
