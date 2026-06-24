@@ -1,9 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod replicator;
-
 
 pub struct GameTheoryTab {
     framework: crate::framework::SimulationFramework,
@@ -12,9 +10,9 @@ pub struct GameTheoryTab {
 impl Default for GameTheoryTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-Box::new(replicator::ReplicatorDynamicsTool::default())
-            ]),
+            framework: crate::framework::SimulationFramework::new(vec![Box::new(
+                replicator::ReplicatorDynamicsTool::default(),
+            )]),
         }
     }
 }

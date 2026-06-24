@@ -41,7 +41,12 @@ impl InteractiveTool for BetSizeCalculatorTool {
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show(&mut self, ctx: &egui::Context) {
+        eframe::egui::CentralPanel::default().show(ctx, |ui| {
+            self.show_ui(ui);
+        });
+    }
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.heading("Kelly Criterion Bet Size Calculator");
         ui.label("Calculate optimal bet sizing based on your edge and odds.");

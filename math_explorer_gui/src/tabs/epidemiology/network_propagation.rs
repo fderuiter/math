@@ -1,5 +1,5 @@
-use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::Color32;
 use math_explorer::epidemiology::networks::{NetworkEpidemicModel, NodeState};
@@ -32,7 +32,12 @@ impl InteractiveTool for NetworkPropagationTool {
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show(&mut self, ctx: &egui::Context) {
+        eframe::egui::CentralPanel::default().show(ctx, |ui| {
+            self.show_ui(ui);
+        });
+    }
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show_ui(&mut self, ui: &mut egui::Ui) {
         if self.is_running {
             let mut rng = rand::thread_rng();

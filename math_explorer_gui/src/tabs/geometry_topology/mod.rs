@@ -1,11 +1,9 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod curvature_heatmap;
 pub mod surface_viewer;
 pub mod vietoris_rips;
-
 
 pub struct GeometryTopologyTab {
     framework: crate::framework::SimulationFramework,
@@ -15,11 +13,9 @@ impl Default for GeometryTopologyTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(surface_viewer::SurfaceViewer::default()),
                 Box::new(curvature_heatmap::CurvatureHeatmap::default()),
                 Box::new(vietoris_rips::VietorisRipsTool::default()),
-            
             ]),
         }
     }

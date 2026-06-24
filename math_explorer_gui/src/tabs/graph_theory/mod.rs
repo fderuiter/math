@@ -1,11 +1,9 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod algorithm_visualizer;
 pub mod graph_editor;
 pub mod network_metrics;
-
 
 pub struct GraphTheoryTab {
     framework: crate::framework::SimulationFramework,
@@ -15,11 +13,9 @@ impl Default for GraphTheoryTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(graph_editor::GraphEditorTool::default()),
                 Box::new(algorithm_visualizer::AlgorithmVisualizerTool::default()),
                 Box::new(network_metrics::NetworkMetricsTool::default()),
-            
             ]),
         }
     }

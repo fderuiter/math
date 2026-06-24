@@ -1,13 +1,11 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod network_propagation;
 pub mod sir;
 
 use network_propagation::NetworkPropagationTool;
 use sir::SirTool;
-
 
 pub struct EpidemiologyTab {
     framework: crate::framework::SimulationFramework,
@@ -17,10 +15,8 @@ impl Default for EpidemiologyTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(SirTool::default()),
                 Box::new(NetworkPropagationTool::default()),
-            
             ]),
         }
     }

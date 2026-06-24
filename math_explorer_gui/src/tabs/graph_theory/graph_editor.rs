@@ -1,5 +1,5 @@
-use crate::framework::{InteractionContext, InteractiveTool};
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::{InteractionContext, InteractiveTool};
 use eframe::egui;
 use eframe::egui::Pos2;
 use math_explorer::pure_math::graph_theory::graph::Graph;

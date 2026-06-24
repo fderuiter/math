@@ -19,7 +19,11 @@ impl InteractiveTool for Co2ProjectionsTool {
         "CO2 Projections"
     }
 
-    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show(&mut self, ctx: &egui::Context) {
+        eframe::egui::CentralPanel::default().show(ctx, |ui| {
+            self.show_ui(ui);
+        });
+    }
     fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.label("Global CO2 Concentration Projections:");
         ui.add(

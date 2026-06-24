@@ -1,5 +1,5 @@
-use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
 use math_explorer::pure_math::number_theory::partitions;

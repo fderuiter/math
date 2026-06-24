@@ -67,7 +67,11 @@ impl InteractiveTool for SirTool {
         "SIR Model"
     }
 
-    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show(&mut self, ctx: &egui::Context) {
+        eframe::egui::CentralPanel::default().show(ctx, |ui| {
+            self.show_ui(ui);
+        });
+    }
     fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             ui.heading("Parameters");

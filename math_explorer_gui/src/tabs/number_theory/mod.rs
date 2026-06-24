@@ -1,12 +1,10 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod factorization;
 pub mod partitions_widget;
 pub mod prime_spiral;
 pub mod ualbf_widget;
-
 
 pub struct NumberTheoryTab {
     framework: crate::framework::SimulationFramework,
@@ -16,12 +14,10 @@ impl Default for NumberTheoryTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(prime_spiral::PrimeSpiralWidget::default()),
                 Box::new(ualbf_widget::UalbfWidget::default()),
                 Box::new(factorization::FactorizationTool::default()),
                 Box::new(partitions_widget::PartitionsWidget::default()),
-            
             ]),
         }
     }
