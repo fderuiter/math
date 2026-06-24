@@ -1,6 +1,5 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod hodgkin_huxley;
 pub mod neural_network_viz;
@@ -10,7 +9,6 @@ use hodgkin_huxley::HodgkinHuxleyTool;
 use neural_network_viz::NeuralNetworkVizTool;
 use spike_analysis::SpikeAnalysisTool;
 
-
 pub struct NeuroscienceTab {
     framework: crate::framework::SimulationFramework,
 }
@@ -19,11 +17,9 @@ impl Default for NeuroscienceTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(HodgkinHuxleyTool::default()),
                 Box::new(SpikeAnalysisTool::default()),
                 Box::new(NeuralNetworkVizTool::default()),
-            
             ]),
         }
     }

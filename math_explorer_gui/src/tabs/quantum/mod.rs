@@ -1,6 +1,5 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod clebsch;
 pub mod spin_viz;
@@ -8,7 +7,6 @@ pub mod wave_sim;
 
 use clebsch::ClebschGordanTool;
 use wave_sim::WaveSimulator;
-
 
 pub struct QuantumTab {
     framework: crate::framework::SimulationFramework,
@@ -18,11 +16,9 @@ impl Default for QuantumTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(WaveSimulator::default()),
                 Box::new(ClebschGordanTool::default()),
                 Box::new(spin_viz::SpinVisualizer::default()),
-            
             ]),
         }
     }

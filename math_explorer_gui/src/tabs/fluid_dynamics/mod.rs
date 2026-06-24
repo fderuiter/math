@@ -1,6 +1,5 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod lattice_boltzmann;
 pub mod potential_flow;
@@ -10,7 +9,6 @@ use lattice_boltzmann::LatticeBoltzmannTool;
 use potential_flow::PotentialFlowTool;
 use turbulence::TurbulenceTool;
 
-
 pub struct FluidDynamicsTab {
     framework: crate::framework::SimulationFramework,
 }
@@ -19,11 +17,9 @@ impl Default for FluidDynamicsTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(PotentialFlowTool::default()),
                 Box::new(TurbulenceTool::default()),
                 Box::new(LatticeBoltzmannTool::default()),
-            
             ]),
         }
     }

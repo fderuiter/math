@@ -1,5 +1,5 @@
-use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::pure_math::number_theory::ambs::prime_factors;
 use math_explorer::pure_math::number_theory::primes::is_prime;

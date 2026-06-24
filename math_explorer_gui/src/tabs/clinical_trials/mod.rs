@@ -1,6 +1,5 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod randomization;
 pub mod sample_size;
@@ -10,7 +9,6 @@ use randomization::RandomizationTool;
 use sample_size::SampleSizeCalculatorTool;
 use survival::SurvivalAnalysisTool;
 
-
 pub struct ClinicalTrialsTab {
     framework: crate::framework::SimulationFramework,
 }
@@ -19,11 +17,9 @@ impl Default for ClinicalTrialsTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(SurvivalAnalysisTool::default()),
                 Box::new(SampleSizeCalculatorTool::default()),
                 Box::new(RandomizationTool::default()),
-            
             ]),
         }
     }

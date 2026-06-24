@@ -1,5 +1,5 @@
-use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::physics::stat_mech::ising::SpinLattice;
 use math_explorer::physics::stat_mech::KB;

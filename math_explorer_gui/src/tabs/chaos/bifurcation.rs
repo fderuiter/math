@@ -1,5 +1,5 @@
-use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Plot, PlotPoints, Points};
 use math_explorer::physics::chaos::logistic;

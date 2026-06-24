@@ -1,5 +1,5 @@
-use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::statistics::kelly::{
@@ -110,7 +110,12 @@ impl InteractiveTool for BankrollGrowthTool {
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show(&mut self, ctx: &egui::Context) {
+        eframe::egui::CentralPanel::default().show(ctx, |ui| {
+            self.show_ui(ui);
+        });
+    }
+    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             ui.heading("Parameters");

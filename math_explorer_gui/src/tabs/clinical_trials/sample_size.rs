@@ -1,5 +1,5 @@
-use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::applied::clinical_trials::sample_size::{
     calculate_sample_size_means, calculate_sample_size_proportions,

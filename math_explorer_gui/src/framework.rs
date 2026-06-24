@@ -21,8 +21,9 @@ pub trait InteractiveTool {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            let (response, painter) = ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
-            
+            let (response, painter) =
+                ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
+
             let interaction_ctx = InteractionContext {
                 pointer_pos: response.interact_pointer_pos(),
                 delta: response.drag_delta(),
@@ -109,7 +110,10 @@ pub struct CoordinateMapper {
 
 impl CoordinateMapper {
     pub fn new(screen_rect: egui::Rect, sim_rect: egui::Rect) -> Self {
-        Self { screen_rect, sim_rect }
+        Self {
+            screen_rect,
+            sim_rect,
+        }
     }
 
     pub fn screen_to_sim(&self, pos: egui::Pos2) -> egui::Pos2 {

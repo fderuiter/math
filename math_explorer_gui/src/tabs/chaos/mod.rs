@@ -1,11 +1,9 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod attractors;
 pub mod bifurcation;
 pub mod fractals;
-
 
 pub struct ChaosTab {
     framework: crate::framework::SimulationFramework,
@@ -15,11 +13,9 @@ impl Default for ChaosTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(attractors::AttractorPlotter::default()),
                 Box::new(bifurcation::BifurcationDiagram::default()),
                 Box::new(fractals::FractalViewer::default()),
-            
             ]),
         }
     }

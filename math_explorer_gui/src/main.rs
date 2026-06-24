@@ -1,7 +1,7 @@
 pub mod accessibility;
-pub mod framework;
 mod app;
 pub mod async_sim;
+pub mod framework;
 mod tabs;
 
 use app::MathExplorerApp;

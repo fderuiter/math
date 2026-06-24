@@ -1,6 +1,5 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use crate::framework::SimulationFramework;
 
 pub mod activation_functions;
 pub mod attention_maps;
@@ -11,7 +10,6 @@ pub mod reward_plots;
 pub mod tokenization;
 pub mod training_monitor;
 
-
 pub struct AiTab {
     framework: crate::framework::SimulationFramework,
 }
@@ -20,7 +18,6 @@ impl Default for AiTab {
     fn default() -> Self {
         Self {
             framework: crate::framework::SimulationFramework::new(vec![
-
                 Box::new(loss_landscape::LossLandscapeTool::default()),
                 Box::new(training_monitor::TrainingMonitorTool::default()),
                 Box::new(activation_functions::ActivationFunctionsTool::default()),
@@ -29,7 +26,6 @@ impl Default for AiTab {
                 Box::new(q_table_inspector::QTableInspectorTool::default()),
                 Box::new(reward_plots::RewardPlotsTool::default()),
                 Box::new(tokenization::TokenizationTool::default()),
-            
             ]),
         }
     }
