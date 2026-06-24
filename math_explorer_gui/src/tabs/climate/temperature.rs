@@ -1,4 +1,4 @@
-use crate::tabs::climate::ClimateTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 
@@ -14,12 +14,13 @@ impl Default for TemperatureAnomaliesTool {
     }
 }
 
-impl ClimateTool for TemperatureAnomaliesTool {
+impl InteractiveTool for TemperatureAnomaliesTool {
     fn name(&self) -> &'static str {
         "Temperature Anomalies"
     }
 
-    fn show(&mut self, ui: &mut egui::Ui) {
+    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.label("Global Temperature Anomalies:");
 
         let plot = Plot::new("temperature_anomalies_plot")

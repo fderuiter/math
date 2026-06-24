@@ -1,4 +1,4 @@
-use crate::tabs::climate::ClimateTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 
@@ -14,12 +14,13 @@ impl Default for Co2ProjectionsTool {
     }
 }
 
-impl ClimateTool for Co2ProjectionsTool {
+impl InteractiveTool for Co2ProjectionsTool {
     fn name(&self) -> &'static str {
         "CO2 Projections"
     }
 
-    fn show(&mut self, ui: &mut egui::Ui) {
+    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.label("Global CO2 Concentration Projections:");
         ui.add(
             egui::Slider::new(&mut self.reduction_scenario, 0.0..=1.0)

@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::ai::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::ai::transformer::tokenization::{
     CharTokenizer, PseudoEmbedding, Tokenizer, WordTokenizer,
@@ -54,7 +54,7 @@ impl TokenizationTool {
     }
 }
 
-impl AiTool for TokenizationTool {
+impl InteractiveTool for TokenizationTool {
     fn name(&self) -> &'static str {
         "Tokenization & Embeddings"
     }

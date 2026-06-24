@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::neuroscience::NeuroscienceTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::Color32;
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
@@ -88,7 +88,7 @@ impl NeuralNetworkVizTool {
     }
 }
 
-impl NeuroscienceTool for NeuralNetworkVizTool {
+impl InteractiveTool for NeuralNetworkVizTool {
     fn name(&self) -> &'static str {
         "Neural Network Viz"
     }

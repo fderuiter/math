@@ -1,4 +1,4 @@
-use super::AnalysisTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::analysis::ode::{
@@ -181,7 +181,7 @@ impl OdeSolverTool {
     }
 }
 
-impl AnalysisTool for OdeSolverTool {
+impl InteractiveTool for OdeSolverTool {
     fn name(&self) -> &'static str {
         "ODE Solvers"
     }

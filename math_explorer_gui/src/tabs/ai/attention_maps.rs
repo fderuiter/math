@@ -1,4 +1,4 @@
-use super::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use nalgebra::DMatrix;
 
@@ -123,7 +123,7 @@ impl AttentionMapsTool {
     }
 }
 
-impl AiTool for AttentionMapsTool {
+impl InteractiveTool for AttentionMapsTool {
     fn name(&self) -> &'static str {
         "Attention Maps"
     }

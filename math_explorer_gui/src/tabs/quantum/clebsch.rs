@@ -2,7 +2,7 @@ use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
 use math_explorer::physics::quantum::clebsch_gordan;
 
-use super::QuantumTool;
+use crate::framework::InteractiveTool;
 
 pub struct ClebschGordanTool {
     j1: f64,
@@ -37,7 +37,7 @@ impl ClebschGordanTool {
     }
 }
 
-impl QuantumTool for ClebschGordanTool {
+impl InteractiveTool for ClebschGordanTool {
     fn name(&self) -> &'static str {
         "Clebsch-Gordan"
     }

@@ -1,4 +1,4 @@
-use super::GraphTheoryTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use eframe::egui::Pos2;
@@ -149,7 +149,7 @@ impl AlgorithmVisualizerTool {
     }
 }
 
-impl GraphTheoryTool for AlgorithmVisualizerTool {
+impl InteractiveTool for AlgorithmVisualizerTool {
     fn name(&self) -> &'static str {
         "Algorithm Visualizer"
     }

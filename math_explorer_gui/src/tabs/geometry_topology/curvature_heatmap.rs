@@ -1,4 +1,4 @@
-use super::GeometryTopologyTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::differential_geometry::surface::{
@@ -199,7 +199,7 @@ impl CurvatureHeatmap {
     }
 }
 
-impl GeometryTopologyTool for CurvatureHeatmap {
+impl InteractiveTool for CurvatureHeatmap {
     fn name(&self) -> &'static str {
         "Curvature Heatmap"
     }

@@ -1,4 +1,4 @@
-use super::GeometryTopologyTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::differential_geometry::surface::{
@@ -107,7 +107,7 @@ impl SurfaceViewer {
     }
 }
 
-impl GeometryTopologyTool for SurfaceViewer {
+impl InteractiveTool for SurfaceViewer {
     fn name(&self) -> &'static str {
         "Surface Viewer"
     }

@@ -1,4 +1,4 @@
-use super::SolidStateTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use math_explorer::physics::stat_mech::ising::SpinLattice;
@@ -28,7 +28,7 @@ impl Default for IsingModelTool {
     }
 }
 
-impl SolidStateTool for IsingModelTool {
+impl InteractiveTool for IsingModelTool {
     fn name(&self) -> &'static str {
         "Ising Model"
     }

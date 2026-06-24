@@ -1,4 +1,4 @@
-use super::GameTheoryTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Legend, Line, Plot, PlotPoints, VLine};
@@ -282,7 +282,7 @@ impl ReplicatorDynamicsTool {
     }
 }
 
-impl GameTheoryTool for ReplicatorDynamicsTool {
+impl InteractiveTool for ReplicatorDynamicsTool {
     fn name(&self) -> &'static str {
         "Replicator Dynamics"
     }

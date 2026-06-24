@@ -1,4 +1,4 @@
-use super::SolidStateTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::physics::solid_state::band_theory::{free_electron_1d, tight_binding_1d};
@@ -26,7 +26,7 @@ impl Default for BandStructureTool {
     }
 }
 
-impl SolidStateTool for BandStructureTool {
+impl InteractiveTool for BandStructureTool {
     fn name(&self) -> &'static str {
         "Band Structure"
     }

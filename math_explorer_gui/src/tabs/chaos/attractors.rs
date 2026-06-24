@@ -1,4 +1,4 @@
-use super::ChaosTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState, LorenzSystem};
@@ -85,7 +85,7 @@ impl AttractorPlotter {
     }
 }
 
-impl ChaosTool for AttractorPlotter {
+impl InteractiveTool for AttractorPlotter {
     fn name(&self) -> &'static str {
         "Attractor Plotter"
     }

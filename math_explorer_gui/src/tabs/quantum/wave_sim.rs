@@ -8,7 +8,7 @@ use nalgebra::DVector;
 use num_complex::Complex;
 use std::any::Any;
 
-use super::QuantumTool;
+use crate::framework::InteractiveTool;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PotentialType {
@@ -158,7 +158,7 @@ impl Default for WaveSimulator {
     }
 }
 
-impl QuantumTool for WaveSimulator {
+impl InteractiveTool for WaveSimulator {
     fn name(&self) -> &'static str {
         "Wave Simulator"
     }

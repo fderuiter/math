@@ -1,4 +1,4 @@
-use super::EpidemiologyTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui::Color32;
@@ -26,13 +26,14 @@ impl NetworkPropagationTool {
     }
 }
 
-impl EpidemiologyTool for NetworkPropagationTool {
+impl InteractiveTool for NetworkPropagationTool {
     fn name(&self) -> &'static str {
         "Network Propagation"
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ui: &mut egui::Ui) {
+    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         if self.is_running {
             let mut rng = rand::thread_rng();
             self.model.step_with_rng(&mut rng);

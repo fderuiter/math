@@ -1,4 +1,4 @@
-use super::ChaosTool;
+use crate::framework::InteractiveTool;
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
 use egui_plot::{Plot, PlotPoints, Points};
@@ -31,7 +31,7 @@ impl BifurcationDiagram {
     }
 }
 
-impl ChaosTool for BifurcationDiagram {
+impl InteractiveTool for BifurcationDiagram {
     fn name(&self) -> &'static str {
         "Bifurcation Diagram"
     }

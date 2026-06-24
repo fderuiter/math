@@ -1,4 +1,4 @@
-use super::AnalysisTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Polygon};
 use math_explorer::pure_math::analysis::integration::{Integrator, Trapezoidal};
@@ -64,7 +64,7 @@ impl RiemannIntegrationTool {
     }
 }
 
-impl AnalysisTool for RiemannIntegrationTool {
+impl InteractiveTool for RiemannIntegrationTool {
     fn name(&self) -> &'static str {
         "Riemann Integration"
     }

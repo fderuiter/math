@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::tabs::ai::AiTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::Color32;
 use egui_plot::{Line, Plot, Points};
@@ -98,7 +98,7 @@ impl TrainingMonitorTool {
     }
 }
 
-impl AiTool for TrainingMonitorTool {
+impl InteractiveTool for TrainingMonitorTool {
     fn name(&self) -> &'static str {
         "Training Monitor"
     }

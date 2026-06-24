@@ -1,4 +1,4 @@
-use crate::tabs::geometry_topology::GeometryTopologyTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points, Polygon};
 use math_explorer::pure_math::statistics::tda::{
@@ -59,7 +59,7 @@ impl VietorisRipsTool {
     }
 }
 
-impl GeometryTopologyTool for VietorisRipsTool {
+impl InteractiveTool for VietorisRipsTool {
     fn name(&self) -> &'static str {
         "Vietoris-Rips Complex"
     }

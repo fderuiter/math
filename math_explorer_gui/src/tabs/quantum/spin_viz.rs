@@ -6,7 +6,7 @@ use math_commons::theory_verification;
 use math_explorer::physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};
 use num_complex::Complex;
 
-use super::QuantumTool;
+use crate::framework::InteractiveTool;
 
 pub struct SpinVisualizer {
     psi: QuantumState,
@@ -92,7 +92,7 @@ impl SpinVisualizer {
     }
 }
 
-impl QuantumTool for SpinVisualizer {
+impl InteractiveTool for SpinVisualizer {
     fn name(&self) -> &'static str {
         "Spin Dynamics (Bloch Sphere)"
     }

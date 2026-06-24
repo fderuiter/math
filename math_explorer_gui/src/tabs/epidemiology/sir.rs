@@ -1,4 +1,4 @@
-use super::EpidemiologyTool;
+use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::epidemiology::compartmental::SIRModel;
@@ -62,12 +62,13 @@ impl SirTool {
     }
 }
 
-impl EpidemiologyTool for SirTool {
+impl InteractiveTool for SirTool {
     fn name(&self) -> &'static str {
         "SIR Model"
     }
 
-    fn show(&mut self, ui: &mut egui::Ui) {
+    fn show(&mut self, ctx: &egui::Context) { eframe::egui::CentralPanel::default().show(ctx, |ui| { self.show_ui(ui); }); }
+    fn show_ui(&mut self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             ui.heading("Parameters");
             let mut changed = false;
