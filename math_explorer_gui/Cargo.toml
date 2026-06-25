@@ -19,12 +19,12 @@ eframe = "0.33.3"
 egui_plot = "0.34.1"
 
 nalgebra = "0.34.0"
+oxidize_core = { path = "../crates/oxidize_core" }
 math_explorer = { path = "../math_explorer", optional = true }
 math_commons = { path = "../crates/math_commons" }
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"
-oxidize_core = { version = "0.1.0", path = "../crates/oxidize_core" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.7"

@@ -2,6 +2,7 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 
 pub mod curvature_heatmap;
+pub mod export_utils;
 pub mod surface_viewer;
 pub mod vietoris_rips;
 
