@@ -93,6 +93,6 @@ mod tests {
         assert!(sim.get_state().grid.iter().all(|&x| x));
     }
 }
+pub mod mesh;
 pub mod traceability;
 pub mod vfs;
-pub mod mesh;
