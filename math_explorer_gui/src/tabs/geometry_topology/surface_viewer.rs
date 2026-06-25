@@ -105,6 +105,20 @@ impl SurfaceViewer {
 
         lines
     }
+    fn create_surface(&self) -> Box<dyn ParametricSurface> {
+        match self.surface_type {
+            SurfaceType::Sphere => Box::new(Sphere {
+                radius: self.sphere_radius,
+            }),
+            SurfaceType::Torus => Box::new(Torus {
+                major_radius: self.torus_major_radius,
+                minor_radius: self.torus_minor_radius,
+            }),
+            SurfaceType::KleinBottle => Box::new(KleinBottle {
+                radius: self.klein_radius,
+            }),
+        }
+    }
 }
 
 impl InteractiveTool for SurfaceViewer {
@@ -169,9 +183,9 @@ impl InteractiveTool for SurfaceViewer {
 
             ui.separator();
             if ui.button("Export to OBJ").clicked() {
-                // Generate a dummy OBJ for the parametric surface to satisfy the requirement
-                let mut obj = String::from("# Exported by Math Explorer\n");
-                obj.push_str("v 0 0 0\n"); // Just a dummy stub for now or we could generate vertices
+                let surface = self.create_surface();
+                let mesh = super::export_utils::surface_to_mesh(surface.as_ref(), self.u_resolution, self.v_resolution);
+                let obj = oxidize_core::mesh::export_mesh_to_obj_string(&mesh).unwrap_or_else(|_| String::new());
                 let filename = "surface.obj";
                 #[cfg(not(target_arch = "wasm32"))]
                 {
@@ -190,18 +204,7 @@ impl InteractiveTool for SurfaceViewer {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            let surface: Box<dyn ParametricSurface> = match self.surface_type {
-                SurfaceType::Sphere => Box::new(Sphere {
-                    radius: self.sphere_radius,
-                }),
-                SurfaceType::Torus => Box::new(Torus {
-                    major_radius: self.torus_major_radius,
-                    minor_radius: self.torus_minor_radius,
-                }),
-                SurfaceType::KleinBottle => Box::new(KleinBottle {
-                    radius: self.klein_radius,
-                }),
-            };
+            let surface = self.create_surface();
 
             let grid_lines = self.generate_grid_lines(surface.as_ref());
 

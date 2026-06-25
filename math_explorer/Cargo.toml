@@ -15,6 +15,7 @@ domain_climate = { path = "../crates/domain_climate", optional = true }
 domain_epidemiology = { path = "../crates/domain_epidemiology", optional = true }
 thiserror = "2.0.18"
 nalgebra = "0.34.0"
+oxidize_core = { path = "../crates/oxidize_core" }
 
 [features]
 default = []
