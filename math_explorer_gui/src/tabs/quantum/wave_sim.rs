@@ -1,12 +1,15 @@
+use crate::accessibility::AccessibleTheoryHover;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
+use math_commons::theory::TheoryDescribable;
 use math_explorer::physics::quantum::{
     construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
 };
 use nalgebra::DVector;
 use num_complex::Complex;
 use std::any::Any;
+use std::collections::HashMap;
 
 use crate::framework::InteractiveTool;
 
@@ -158,6 +161,30 @@ impl Default for WaveSimulator {
     }
 }
 
+impl TheoryDescribable for WaveSimulator {
+    fn theory_description(&self) -> String {
+        let pot = if self.potential_type == PotentialType::InfiniteWell {
+            "Infinite Well"
+        } else {
+            "Harmonic Oscillator"
+        };
+        format!(
+            "Quantum wave simulation in {}, time: {:.2}",
+            pot, self.cached_time
+        )
+    }
+
+    fn theory_citation(&self) -> String {
+        "[cite:quantum_mechanics]".to_string()
+    }
+
+    fn available_descriptions(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("default".to_string(), "Quantum wave simulation".to_string());
+        map
+    }
+}
+
 impl InteractiveTool for WaveSimulator {
     fn name(&self) -> &'static str {
         "Wave Simulator"
@@ -254,7 +281,7 @@ impl InteractiveTool for WaveSimulator {
                 v_points.push([x, v * 0.2]);
             }
 
-            Plot::new("quantum_plot")
+            let response = Plot::new("quantum_plot")
                 .legend(Legend::default())
                 .x_axis_label("Position (x)")
                 .y_axis_label("Probability Density / Potential")
@@ -269,7 +296,9 @@ impl InteractiveTool for WaveSimulator {
                         Line::new("Potential V(x) (scaled)", PlotPoints::new(v_points))
                             .color(egui::Color32::from_rgb(100, 100, 255)),
                     );
-                });
+                })
+                .response;
+            response.accessible_theory_hover(self);
         });
     }
 }

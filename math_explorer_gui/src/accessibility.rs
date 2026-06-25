@@ -1,4 +1,5 @@
 use eframe::egui::{Response, WidgetText};
+use math_commons::theory::TheoryDescribable;
 
 #[cfg(target_arch = "wasm32")]
 // theory_verification!
@@ -57,6 +58,16 @@ impl AccessibleHoverText for Response {
         }
 
         self.on_hover_text(text_into)
+    }
+}
+
+pub trait AccessibleTheoryHover {
+    fn accessible_theory_hover(self, theory: &impl TheoryDescribable) -> Self;
+}
+
+impl AccessibleTheoryHover for Response {
+    fn accessible_theory_hover(self, theory: &impl TheoryDescribable) -> Self {
+        self.accessible_hover_text(theory.theory_description())
     }
 }
 // theory_verification!

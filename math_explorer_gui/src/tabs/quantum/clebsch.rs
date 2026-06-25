@@ -1,6 +1,9 @@
+use crate::accessibility::AccessibleTheoryHover;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
+use math_commons::theory::TheoryDescribable;
 use math_explorer::physics::quantum::clebsch_gordan;
+use std::collections::HashMap;
 
 use crate::framework::InteractiveTool;
 
@@ -34,6 +37,28 @@ impl Default for ClebschGordanTool {
 impl ClebschGordanTool {
     fn calculate(&mut self) {
         self.result = clebsch_gordan(self.j1, self.m1, self.j2, self.m2, self.j, self.m);
+    }
+}
+
+impl TheoryDescribable for ClebschGordanTool {
+    fn theory_description(&self) -> String {
+        format!(
+            "Clebsch-Gordan coefficient for j1={}, m1={}, j2={}, m2={}, J={}, M={} is {:.6}",
+            self.j1, self.m1, self.j2, self.m2, self.j, self.m, self.result
+        )
+    }
+
+    fn theory_citation(&self) -> String {
+        "[cite:quantum_mechanics]".to_string()
+    }
+
+    fn available_descriptions(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert(
+            "default".to_string(),
+            "Clebsch-Gordan coefficient".to_string(),
+        );
+        map
     }
 }
 
@@ -149,13 +174,15 @@ impl InteractiveTool for ClebschGordanTool {
             let chart =
                 BarChart::new("Coefficient Value", vec![bar]).color(egui::Color32::LIGHT_BLUE);
 
-            Plot::new("clebsch_plot")
+            let response = Plot::new("clebsch_plot")
                 .view_aspect(2.0)
                 .include_y(-1.0)
                 .include_y(1.0)
                 .show(ui, |plot_ui| {
                     plot_ui.bar_chart(chart);
-                });
+                })
+                .response;
+            response.accessible_theory_hover(self);
 
             // Warnings / Info
             if (self.m1 + self.m2 - self.m).abs() > 1e-9 {

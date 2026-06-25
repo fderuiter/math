@@ -1,7 +1,10 @@
+use crate::accessibility::AccessibleTheoryHover;
 use crate::framework::InteractiveTool;
 use eframe::egui;
+use math_commons::theory::TheoryDescribable;
 use math_explorer::physics::chaos::fractals::{escape_time_julia, escape_time_mandelbrot};
 use num_complex::Complex;
+use std::collections::HashMap;
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 enum FractalMode {
@@ -30,6 +33,32 @@ impl Default for FractalViewer {
             texture: None,
             dirty: true,
         }
+    }
+}
+
+impl TheoryDescribable for FractalViewer {
+    fn theory_description(&self) -> String {
+        let name = match self.mode {
+            FractalMode::Mandelbrot => "Mandelbrot set".to_string(),
+            FractalMode::Julia => format!(
+                "Julia set with c=({:.2}, {:.2})",
+                self.julia_c.re, self.julia_c.im
+            ),
+        };
+        format!(
+            "Fractal viewer: {}, center: ({:.2}, {:.2}), zoom: {:.2}",
+            name, self.center.re, self.center.im, self.zoom
+        )
+    }
+
+    fn theory_citation(&self) -> String {
+        "[cite:graph_parameters_rust]".to_string()
+    }
+
+    fn available_descriptions(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("default".to_string(), "Fractal viewer".to_string());
+        map
     }
 }
 
@@ -188,7 +217,7 @@ impl InteractiveTool for FractalViewer {
 
             if let Some(texture) = &self.texture {
                 // Display the image
-                let response = ui.image(texture);
+                let response = ui.image(texture).accessible_theory_hover(self);
 
                 // Handle basic drag to pan
                 if response.dragged() {

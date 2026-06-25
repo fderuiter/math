@@ -1,7 +1,9 @@
 //! Continuous Chaos (The Lorenz System)
 
+use math_commons::theory::TheoryDescribable;
 use nalgebra::Vector3;
 use pure_math::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
+use std::collections::HashMap;
 
 /// Represents the state of the Lorenz system $(x, y, z)$.
 #[derive(Debug, Clone, Copy)]
@@ -176,6 +178,33 @@ impl OdeSystem<Vector3<f64>> for LorenzSystem {
         let dz = x * y - self.beta * z;
 
         Vector3::new(dx, dy, dz)
+    }
+}
+
+impl TheoryDescribable for LorenzSystem {
+    fn theory_description(&self) -> String {
+        let x = self.state.vec.x;
+        let y = self.state.vec.y;
+        let z = self.state.vec.z;
+        let regime = if self.rho > 24.74 {
+            "Chaotic regime"
+        } else {
+            "Stable regime"
+        };
+        format!(
+            "Lorenz attractor in {}, state: x={:.2}, y={:.2}, z={:.2}",
+            regime, x, y, z
+        )
+    }
+
+    fn theory_citation(&self) -> String {
+        "[cite:chaos_theory]".to_string()
+    }
+
+    fn available_descriptions(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("default".to_string(), "Lorenz attractor state".to_string());
+        map
     }
 }
 

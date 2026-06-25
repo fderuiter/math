@@ -1,4 +1,4 @@
-use crate::accessibility::AccessibleHoverText;
+use crate::accessibility::{AccessibleHoverText, AccessibleTheoryHover};
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
 use math_commons::theory::TheoryDescribable;
@@ -200,7 +200,7 @@ impl InteractiveTool for SpinVisualizer {
             let end = self.project([ex, ey, ez]);
             let vec_line = vec![start, end];
 
-            Plot::new("bloch_sphere")
+            let response = Plot::new("bloch_sphere")
                 .data_aspect(1.0)
                 .view_aspect(1.0)
                 .show(ui, |plot_ui| {
@@ -232,7 +232,9 @@ impl InteractiveTool for SpinVisualizer {
                             .radius(5.0_f32)
                             .color(egui::Color32::YELLOW),
                     );
-                });
+                })
+                .response;
+            response.accessible_theory_hover(&self.psi);
         });
     }
 }
