@@ -1,3 +1,4 @@
+use crate::accessibility::AccessibleTheoryHover;
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
@@ -164,14 +165,16 @@ impl InteractiveTool for AttractorPlotter {
         egui::CentralPanel::default().show(ctx, |ui| {
             let points: Vec<[f64; 2]> = self.history.iter().map(|p| self.project(*p)).collect();
 
-            Plot::new("attractor_plot")
+            let response = Plot::new("attractor_plot")
                 .data_aspect(1.0)
                 .show(ui, |plot_ui| {
                     plot_ui.line(
                         Line::new("Trajectory", PlotPoints::new(points))
                             .color(egui::Color32::from_rgb(100, 200, 255)),
                     );
-                });
+                })
+                .response;
+            response.accessible_theory_hover(&self.system);
 
             ui.label("Drag 'Yaw' and 'Pitch' in the side panel to rotate the view.");
         });
