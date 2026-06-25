@@ -2,6 +2,7 @@
 
 use super::types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
 use pure_math::pure_math::analysis::ode::OdeSystem;
+use verified_engine::Theory;
 
 /// The Hodgkin-Huxley system of differential equations.
 ///
@@ -22,7 +23,11 @@ use pure_math::pure_math::analysis::ode::OdeSystem;
 /// 2.  **Gating Variables ($x \in \{n, m, h\}$):**
 ///     $$ \frac{dx}{dt} = \alpha_x(V)(1 - x) - \beta_x(V)x $$
 ///     The rate constants $\alpha_x$ and $\beta_x$ are determined by the [`GatingKinetics`](domain_biology::biology::neuroscience::kinetics::GatingKinetics) strategy.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Theory)]
+#[theory(
+    description = "The Hodgkin-Huxley model describes the initiation and propagation of action potentials in neurons using a set of non-linear differential equations.",
+    citation = "A quantitative description of membrane current and its application to conduction and excitation in nerve (Hodgkin & Huxley, 1952)"
+)]
 pub struct HodgkinHuxleyModel {
     /// Parameters of the model (conductances, potentials, kinetics).
     pub params: HodgkinHuxleyParameters,

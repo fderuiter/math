@@ -3,6 +3,7 @@ use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, State
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};
+use math_commons::theory::TheoryDescribable;
 use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
     BgkCollision, LatticeBoltzmannD2Q9,
 };
@@ -199,7 +200,9 @@ impl InteractiveTool for LatticeBoltzmannTool {
 
         // Controls
         egui::SidePanel::left("lbm_controls").show(ctx, |ui| {
-            ui.heading("Lattice Boltzmann");
+            let dummy_lbm: LatticeBoltzmannD2Q9<BgkCollision> = LatticeBoltzmannD2Q9::new(1, 1, 1.0);
+            ui.heading("Lattice Boltzmann")
+                .accessible_hover_text(dummy_lbm.theory_description());
             ui.separator();
 
             if ui

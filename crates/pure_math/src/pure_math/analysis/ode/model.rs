@@ -1,5 +1,6 @@
 use super::stepper::TimeStepper;
 use super::traits::{OdeSystem, Solver, VectorOperations};
+use verified_engine::Theory;
 
 /// A generic container for an ODE model, combining State, Dynamics, and a Solver.
 ///
@@ -10,7 +11,11 @@ use super::traits::{OdeSystem, Solver, VectorOperations};
 /// * `State` - The state vector type (must implement `VectorOperations`).
 /// * `Dynamics` - The system definition (must implement `OdeSystem<State>`).
 /// * `S` - The numerical solver strategy (must implement `Solver<State>`).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Theory)]
+#[theory(
+    description = "An Ordinary Differential Equation (ODE) model encapsulates a dynamical system's state, its governing differential equations, and a numerical solver to simulate its evolution over time.",
+    citation = "Numerical Recipes: The Art of Scientific Computing (Press et al., 2007)"
+)]
 pub struct OdeModel<State, Dynamics, S> {
     /// The current state of the system.
     pub state: State,

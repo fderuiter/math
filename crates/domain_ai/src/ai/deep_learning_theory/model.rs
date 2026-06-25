@@ -25,8 +25,15 @@ pub trait Trainable {
     ) -> Result<(), crate::ai::optimization::OptimizationError>;
 }
 
+use verified_engine::Theory;
+
 /// A standard Two-Layer Multi-Layer Perceptron (MLP).
 /// Architecture: Input -> Dense -> ReLU -> Dense -> Softmax (implicit in loss)
+#[derive(Theory)]
+#[theory(
+    description = "A Multi-Layer Perceptron (MLP) is a class of feedforward artificial neural network consisting of at least three layers of nodes: an input layer, a hidden layer and an output layer. Except for the input nodes, each node is a neuron that uses a nonlinear activation function.",
+    citation = "Learning representations by back-propagating errors (Rumelhart et al., 1986)"
+)]
 pub struct TwoLayerMLP {
     pub layer1: DenseLayer,
     pub layer2: DenseLayer,

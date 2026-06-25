@@ -1,5 +1,8 @@
+use crate::accessibility::AccessibleHoverText;
 use crate::framework::InteractiveTool;
 use eframe::egui;
+use math_commons::theory::TheoryDescribable;
+use math_explorer::ai::transformer::{Encoder, Decoder, Transformer};
 use nalgebra::DMatrix;
 
 pub struct AttentionMapsTool {
@@ -130,7 +133,14 @@ impl InteractiveTool for AttentionMapsTool {
 
     fn show(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Self-Attention Mechanism");
+            let dummy_transformer = Transformer {
+                encoder: Encoder::new(1, 4, 1, 4),
+                decoder: Decoder::new(1, 4, 1, 4),
+            };
+            
+            ui.heading("Self-Attention Mechanism")
+                .accessible_hover_text(dummy_transformer.theory_description());
+                
             ui.label("Explore how Queries (Q), Keys (K), and Values (V) interact.");
 
             egui::ScrollArea::vertical().show(ui, |ui| {

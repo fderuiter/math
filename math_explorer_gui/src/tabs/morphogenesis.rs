@@ -3,6 +3,8 @@ use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, State
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui::ColorImage;
+use math_commons::theory::TheoryDescribable;
+use math_explorer::biology::reaction_diffusion::ReactionDiffusionModel;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use std::sync::Arc;
@@ -184,7 +186,18 @@ impl ExplorerTab for MorphogenesisTab {
     #[allow(clippy::field_reassign_with_default)]
     fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("morphogenesis_controls").show(ctx, |ui| {
-            ui.heading("Turing Patterns");
+            let dummy_model = ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+                reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
+                diffusion: FiniteDifference2D::new(
+                    math_explorer::math_kernel::types::Dimension(1),
+                    math_explorer::math_kernel::types::Dimension(1),
+                    math_explorer::math_kernel::types::StepSize(1.0),
+                    math_explorer::math_kernel::types::StepSize(1.0),
+                ),
+                diffusion_coeffs: vec![],
+            };
+            ui.heading("Turing Patterns")
+                .accessible_hover_text(dummy_model.theory_description());
             ui.label("Schnakenberg Kinetics");
             ui.separator();
 
