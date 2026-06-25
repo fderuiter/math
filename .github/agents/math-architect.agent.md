@@ -70,7 +70,7 @@ Determine which domain(s) your mathematical concept belongs to:
 Create a detailed blueprint before implementation:
 
 **A. Module Structure Design**
-```
+```text
 proposed_domain/
 ├── mod.rs              # Public API exports, module documentation
 ├── core.rs             # Core types and traits
@@ -83,13 +83,13 @@ proposed_domain/
 
 **B. Type Modeling Strategy**
 - Use **Newtypes** for domain-specific quantities:
-  ```rust
+  ```rust,ignore
   pub struct Temperature(f64);      // Not just f64
   pub struct Pressure(f64);         // Not just f64
   pub struct Concentration(f64);    // Not just f64
   ```
 - Use **Builder Pattern** for complex initialization:
-  ```rust
+  ```rust,ignore
   pub struct SimulationBuilder { ... }
   impl SimulationBuilder {
       pub fn new() -> Self { ... }
@@ -98,7 +98,7 @@ proposed_domain/
   }
   ```
 - Use **Strategy Pattern** for interchangeable algorithms:
-  ```rust
+  ```rust,ignore
   pub trait IntegrationStrategy {
       fn step(&self, state: &State, dt: f64) -> State;
   }
@@ -111,7 +111,7 @@ proposed_domain/
 
 **D. Error Handling Strategy**
 - Define domain-specific error types:
-  ```rust
+  ```rust,ignore
   #[derive(thiserror::Error, Debug)]
   pub enum SimulationError {
       #[error("Invalid parameter: {0}")]
@@ -134,7 +134,7 @@ proposed_domain/
   - Citations (if from literature)
   
   Example:
-  ```rust
+  ```rust,ignore
   /// Computes the Clebsch-Gordan coefficient ⟨j₁ m₁; j₂ m₂ | J M⟩.
   ///
   /// These coefficients arise in the quantum mechanical coupling of angular momenta.
@@ -155,11 +155,11 @@ proposed_domain/
   ///
   /// # Example
   ///
-  /// ```rust
+  /// ```rust,ignore
   /// use math_explorer::physics::quantum::clebsch_gordan;
   /// let coeff = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
   /// assert!((coeff - 0.5477).abs() < 1e-3);
-  /// ```
+  /// ```text
   ///
   /// # References
   ///
@@ -172,7 +172,7 @@ proposed_domain/
 **B. Generic Solvers Pattern**
 Decouple models from solution algorithms:
 
-```rust
+```rust,ignore
 // Define the system
 pub struct MySystem {
     params: SystemParams,
@@ -196,7 +196,7 @@ let trajectory = solver.solve(&system, initial_state, 0.0, 10.0);
 **C. Deterministic Randomness**
 Always inject RNG for reproducibility:
 
-```rust
+```rust,ignore
 // ❌ WRONG: Non-deterministic
 pub fn monte_carlo_simulation(n_samples: usize) -> Vec<f64> {
     let mut rng = rand::thread_rng();  // BAD!
@@ -228,7 +228,7 @@ fn test_monte_carlo_reproducible() {
 
 Each domain module should follow this structure:
 
-```rust
+```rust,ignore
 // mod.rs - Public API and module documentation
 //! # Domain Name
 //!
@@ -240,9 +240,9 @@ Each domain module should follow this structure:
 //!
 //! ## Example
 //!
-//! ```rust
+//! ```rust,ignore
 //! // Typical usage example
-//! ```
+//! ```text
 
 pub mod submodule1;
 pub mod submodule2;
@@ -260,7 +260,7 @@ pub use submodule2::{PublicType2};
 - **Property Tests**: Use `proptest` for property-based testing (when applicable)
 
 **B. Test Organization**
-```rust
+```rust,ignore
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -431,7 +431,7 @@ Location: `pure_math/analysis/ode/`
 Location: Various physics modules
 
 **Key Features:**
-```rust
+```rust,ignore
 pub struct Kelvin(pub f64);
 pub struct Pascal(pub f64);
 pub struct Joule(pub f64);

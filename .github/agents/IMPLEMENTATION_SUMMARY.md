@@ -125,11 +125,11 @@ When working on mathematical implementations, GitHub Copilot will automatically 
 ### Manual Invocation
 You can explicitly request the agent:
 
-```
+```text
 @math-architect Implement a new numerical solver for stiff ODEs in the pure_math module
 ```
 
-```
+```text
 Using the Mathematical Implementation Architect, add Fourier analysis to the pure_math/analysis module
 ```
 
@@ -165,7 +165,7 @@ The custom agent incorporates and extends the guidelines from the repository's `
 
 ### Project Structure
 The agent understands the existing directory structure:
-```
+```text
 math_explorer/src/
 ├── ai/              (AI and ML implementations)
 ├── applied/         (Applied mathematics)
