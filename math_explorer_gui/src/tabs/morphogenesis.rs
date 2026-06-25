@@ -4,9 +4,9 @@ use crate::tabs::ExplorerTab;
 use eframe::egui;
 use egui::ColorImage;
 use math_commons::theory::TheoryDescribable;
-use math_explorer::biology::reaction_diffusion::ReactionDiffusionModel;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
+use math_explorer::biology::reaction_diffusion::ReactionDiffusionModel;
 use std::sync::Arc;
 
 #[derive(Debug, Clone, Copy, PartialEq)]

@@ -8,11 +8,19 @@ pub struct CitationRegistry {
 impl CitationRegistry {
     pub fn global() -> &'static RwLock<CitationRegistry> {
         static REGISTRY: OnceLock<RwLock<CitationRegistry>> = OnceLock::new();
-        REGISTRY.get_or_init(|| RwLock::new(CitationRegistry { citations: HashMap::new() }))
+        REGISTRY.get_or_init(|| {
+            RwLock::new(CitationRegistry {
+                citations: HashMap::new(),
+            })
+        })
     }
 
     pub fn register(id: String, citation: String) {
-        Self::global().write().unwrap().citations.insert(id, citation);
+        Self::global()
+            .write()
+            .unwrap()
+            .citations
+            .insert(id, citation);
     }
 
     pub fn get(id: &str) -> Option<String> {
