@@ -5,8 +5,14 @@ use crate::climate::predictor::{Predictor, PredictorModel};
 use nalgebra::DMatrix;
 // Re-export CeraConfig for backward compatibility (or convenience)
 pub use crate::climate::config::CeraConfig;
+use verified_engine::Theory;
 
 /// The main CERA model.
+#[derive(Theory)]
+#[theory(
+    description = "CERA is a Climate-Emulation and Response Architecture that combines autoencoders with a predictive downstream model to map local atmospheric states to global cloud properties under varying climate forcing.",
+    citation = "Climate-Emulation and Response Architecture (CERA) paper"
+)]
 pub struct Cera<A: AutoencoderModel, P: PredictorModel> {
     /// The autoencoder component.
     pub autoencoder: A,

@@ -3,7 +3,10 @@ use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, State
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
-use math_explorer::biology::neuroscience::{HodgkinHuxleyNeuron, HodgkinHuxleyParameters};
+use math_commons::theory::TheoryDescribable;
+use math_explorer::biology::neuroscience::{
+    HodgkinHuxleyModel, HodgkinHuxleyNeuron, HodgkinHuxleyParameters,
+};
 use std::collections::VecDeque;
 use std::sync::Arc;
 
@@ -135,7 +138,9 @@ impl InteractiveTool for HodgkinHuxleyTool {
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("hh_controls").show(ctx, |ui| {
-            ui.heading("Parameters");
+            let dummy_model = HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0);
+            ui.heading("Parameters")
+                .accessible_hover_text(dummy_model.theory_description());
             ui.separator();
 
             ui.label("Conductances (mS/cm²)");

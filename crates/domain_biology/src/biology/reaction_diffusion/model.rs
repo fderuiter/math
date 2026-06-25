@@ -1,5 +1,6 @@
 use pure_math::pure_math::analysis::ode::solvers::Euler;
 use pure_math::pure_math::analysis::ode::traits::{OdeSystem, Solver};
+use verified_engine::Theory;
 
 use super::{ChemicalState, DiffusionModel, ReactionDiffusionError, ReactionModel};
 
@@ -9,6 +10,11 @@ use super::{ChemicalState, DiffusionModel, ReactionDiffusionError, ReactionModel
 /// and coefficients), separating them from the mutable simulation state.
 ///
 /// It implements `OdeSystem` to calculate the time derivative ($dC/dt$) given a state.
+#[derive(Theory)]
+#[theory(
+    description = "Turing patterns arise from reaction-diffusion systems where local auto-activation is coupled with long-range inhibition, leading to spontaneous symmetry breaking and the formation of stable spatial patterns.",
+    citation = "The Chemical Basis of Morphogenesis (Turing, 1952)"
+)]
 pub struct ReactionDiffusionModel<R, D> {
     pub reaction: R,
     pub diffusion: D,

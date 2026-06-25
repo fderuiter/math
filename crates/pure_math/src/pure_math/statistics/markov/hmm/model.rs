@@ -2,6 +2,7 @@ use crate::error::MarkovError;
 pub type Result<T> = std::result::Result<T, MarkovError>;
 use nalgebra::{DMatrix, DVector, RealField};
 use num_traits::ToPrimitive;
+use verified_engine::Theory;
 
 /// A Hidden Markov Model.
 ///
@@ -52,7 +53,11 @@ use num_traits::ToPrimitive;
 /// let states = hmm.viterbi(&observations).unwrap();
 /// println!("Most likely states: {:?}", states);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Theory)]
+#[theory(
+    description = "A Hidden Markov Model (HMM) is a statistical Markov model in which the system being modeled is assumed to be a Markov process with unobservable (hidden) states.",
+    citation = "A tutorial on hidden Markov models and selected applications in speech recognition (Rabiner, 1989)"
+)]
 pub struct HiddenMarkovModel<T: RealField + Copy + ToPrimitive> {
     /// Initial state probabilities π.
     pub(crate) initial: DVector<T>,

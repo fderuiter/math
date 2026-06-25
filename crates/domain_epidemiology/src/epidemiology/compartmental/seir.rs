@@ -2,6 +2,7 @@ use super::common::{validate_initial_infected, validate_population, validate_rat
 use crate::error::EpidemiologyError;
 use crate::impl_compartmental_ops;
 use pure_math::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, TimeStepper};
+use verified_engine::Theory;
 
 /// State for the SEIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -54,7 +55,11 @@ impl OdeSystem<SEIRState> for SEIRDynamics {
 /// $$dI/dt = \sigma E - \gamma I$$
 ///
 /// Use `SEIRModel::builder()` or `SEIRModel::new()` to construct.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Theory)]
+#[theory(
+    description = "The SEIR model is a compartmental epidemic model that incorporates an exposed (latent) period before individuals become infectious.",
+    citation = "Mathematical epidemiology of infectious diseases (Diekmann & Heesterbeek, 2000)"
+)]
 pub struct SEIRModel<S: Solver<SEIRState> = RungeKutta4<SEIRState>> {
     state: SEIRState,
     /// The underlying dynamics model (parameters + equations).

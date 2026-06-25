@@ -2,6 +2,7 @@ use super::common::{validate_initial_infected, validate_population, validate_rat
 use crate::error::EpidemiologyError;
 use crate::impl_compartmental_ops;
 use pure_math::pure_math::analysis::ode::{OdeSystem, RungeKutta4, Solver, TimeStepper};
+use verified_engine::Theory;
 
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -50,7 +51,11 @@ impl OdeSystem<SIRState> for SIRDynamics {
 /// $$dR/dt = \gamma I$$
 ///
 /// Use `SIRModel::builder()` or `SIRModel::new()` to construct.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Theory)]
+#[theory(
+    description = "The SIR model is an epidemiological model that computes the theoretical number of people infected with a contagious illness in a closed population over time.",
+    citation = "A Contribution to the Mathematical Theory of Epidemics (Kermack & McKendrick, 1927)"
+)]
 pub struct SIRModel<S: Solver<SIRState> = RungeKutta4<SIRState>> {
     state: SIRState,
     /// The underlying dynamics model (parameters + equations).

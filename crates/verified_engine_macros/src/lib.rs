@@ -133,3 +133,50 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     TokenStream::from(quote! { #input_fn })
 }
+
+#[proc_macro_derive(Theory, attributes(theory))]
+pub fn derive_theory(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = input.ident;
+    let generics = input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    let mut description = String::new();
+    let mut citation = String::new();
+
+    for attr in input.attrs {
+        if attr.path().is_ident("theory") {
+            let _ = attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident("description") {
+                    let value = meta.value()?;
+                    let s: syn::LitStr = value.parse()?;
+                    description = s.value();
+                } else if meta.path.is_ident("citation") {
+                    let value = meta.value()?;
+                    let s: syn::LitStr = value.parse()?;
+                    citation = s.value();
+                }
+                Ok(())
+            });
+        }
+    }
+
+    let expanded = quote! {
+        impl #impl_generics math_commons::theory::TheoryDescribable for #name #ty_generics #where_clause {
+            fn theory_description(&self) -> String {
+                #description.to_string()
+            }
+            fn theory_citation(&self) -> String {
+                math_commons::citation_registry::CitationRegistry::register(stringify!(#name).to_string(), #citation.to_string());
+                #citation.to_string()
+            }
+            fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+                let mut map = std::collections::HashMap::new();
+                map.insert("default".to_string(), #description.to_string());
+                map
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
