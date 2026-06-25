@@ -10,8 +10,11 @@ fn main() {
     let vfs = DefaultVfs;
     let engine = TraceabilityEngine::new(&vfs);
 
-    let mut code_dirs = vec!["math_explorer/src".to_string(), "math_explorer_gui/src/tabs".to_string()];
-    
+    let mut code_dirs = vec![
+        "math_explorer/src".to_string(),
+        "math_explorer_gui/src/tabs".to_string(),
+    ];
+
     // Add crate dirs
     if let Ok(crates) = vfs.list_dir("crates") {
         for crate_name in crates {
