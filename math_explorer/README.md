@@ -41,7 +41,7 @@ fn main() {
     for step in 0..1000 {
         neuron.update(dt, 10.0);
         if step % 100 == 0 {
-            println!("t={:.2}ms, V={:.2}mV", step as f64 * dt, neuron.v);
+            println!("t={:.2}ms, V={:.2}mV", step as f64 * dt, neuron.v());
         }
     }
 }
@@ -65,11 +65,11 @@ use math_explorer::pure_math::analysis::ode::RungeKutta4;
 fn main() {
     let initial_state = LorenzState::new(10.0, 10.0, 10.0);
     let system = LorenzSystem::default_chaotic(initial_state);
-    let solver = RungeKutta4;
+    let mut solver = RungeKutta4::new(&initial_state.vec);
 
     // Calculate the maximal Lyapunov exponent
     // Args: System, Solver, Initial Vec, Time Step, Iterations, Evolution Time
-    let lambda = lorenz_lyapunov(&system, &solver, initial_state.vec, 0.01, 1000, 1.0).unwrap();
+    let lambda = lorenz_lyapunov(&system, &mut solver, initial_state.vec, 0.01, 1000, 1.0).unwrap();
     println!("Lyapunov Exponent: {:.4}", lambda);
 }
 ```

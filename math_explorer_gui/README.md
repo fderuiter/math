@@ -86,7 +86,7 @@ You can create a single file `src/tabs/fluid_dynamics.rs` or a directory `src/ta
 
 **Example `src/tabs/fluid_dynamics.rs`:**
 
-```rust
+```rust,ignore
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
@@ -118,14 +118,14 @@ impl ExplorerTab for FluidDynamicsTab {
 ### 2. Register the Module
 In `src/tabs/mod.rs`, add your module:
 
-```rust
+```rust,ignore
 pub mod fluid_dynamics;
 ```
 
 ### 3. Add to App
 In `src/app.rs` (or wherever the tabs are initialized, likely in `MathExplorerApp::default`), add your tab to the list:
 
-```rust
+```rust,ignore
 Box::new(FluidDynamicsTab::default()),
 ```
 

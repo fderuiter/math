@@ -74,7 +74,7 @@ We follow the **Curator's Philosophy**: "Code explains HOW; Docs explain WHY."
 
 Example:
 
-```rust
+```rust,ignore
 /// Checks if a number is a prime number.
 ///
 /// # Arguments
@@ -91,7 +91,7 @@ Example:
 /// use math_explorer::pure_math::number_theory::is_prime;
 /// assert!(is_prime(5));
 /// assert!(!is_prime(4));
-/// ```
+/// ```text
 pub fn is_prime(n: u64) -> bool { ... }
 ```
 

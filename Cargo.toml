@@ -14,7 +14,8 @@ members = [
     "math_explorer",
     "math_explorer_gui",
     "crates/rug_mock",
-    "crates/wigner_mock"
+    "crates/wigner_mock",
+    "crates/markdown_tests"
 ]
 exclude = ["experimental/generative-turbulence-experimental"]
 resolver = "2"

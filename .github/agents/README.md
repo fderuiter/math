@@ -35,11 +35,11 @@ Custom agents are automatically available when working on this repository throug
 2. **Manually Selected**: You can explicitly request the agent by name in your prompt
 
 Example prompts:
-```
+```text
 @math-architect Implement a new numerical integration method for stiff ODEs
 ```
 
-```
+```text
 Using the Mathematical Implementation Architect, add a Fourier transform module to pure_math
 ```
 
