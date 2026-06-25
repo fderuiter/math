@@ -14,12 +14,14 @@
 ///   where $v = -\partial_p H(p)$.
 pub trait Hamiltonian {
     /// Evaluates the Hamiltonian $H(p)$ at momentum $p$.
+    #[verified_engine::verified]
     fn evaluate(&self, p: f64) -> f64;
 
     /// Evaluates the derivative $\partial_p H(p)$.
     ///
     /// This determines the advection velocity (drift) in the Fokker-Planck equation:
     /// $v = - \partial_p H(p)$.
+    #[verified_engine::verified]
     fn derivative(&self, p: f64) -> f64;
 }
 
@@ -35,22 +37,26 @@ pub struct QuadraticHamiltonian {
 }
 
 impl Default for QuadraticHamiltonian {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self { mass: 1.0 }
     }
 }
 
 impl QuadraticHamiltonian {
+    #[verified_engine::verified]
     pub fn new(mass: f64) -> Self {
         Self { mass }
     }
 }
 
 impl Hamiltonian for QuadraticHamiltonian {
+    #[verified_engine::verified]
     fn evaluate(&self, p: f64) -> f64 {
         (p * p) / (2.0 * self.mass)
     }
 
+    #[verified_engine::verified]
     fn derivative(&self, p: f64) -> f64 {
         p / self.mass
     }

@@ -8,6 +8,7 @@ use nalgebra::{DMatrix, DVector};
 /// This allows for different predictor architectures and decouples the training loop.
 pub trait PredictorModel {
     /// Performs a forward pass through the predictor.
+    #[verified_engine::verified]
     fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32>;
 
     /// Updates the weights of the predictor using the provided optimizer.
@@ -45,6 +46,7 @@ impl Predictor {
     /// # Returns
     ///
     /// A new `Predictor` instance.
+    #[verified_engine::verified]
     pub fn new(input_size: usize, output_size: usize) -> Self {
         let layers = vec![
             ConvLayer::new(input_size, 128),
@@ -67,6 +69,7 @@ impl Predictor {
     /// # Returns
     ///
     /// A new `Predictor` instance.
+    #[verified_engine::verified]
     pub fn new_from_layers(layers: Vec<ConvLayer>, input_size: usize, output_size: usize) -> Self {
         Self {
             layers,
@@ -77,6 +80,7 @@ impl Predictor {
 }
 
 impl PredictorModel for Predictor {
+    #[verified_engine::verified]
     fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = input.clone();
         for (i, layer) in self.layers.iter().enumerate() {
@@ -119,6 +123,7 @@ mod tests {
     use nalgebra::DMatrix;
 
     #[test]
+    #[verified_engine::verified]
     fn test_predictor_forward_pass() {
         let input_size = 30 * 2; // 30 levels, 2 aligned latent channels
         let output_size = 148;
@@ -135,6 +140,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_predictor_update_weights_with_optimizer() {
         let input_size = 10;
         let output_size = 5;

@@ -22,6 +22,7 @@ pub trait ValuationDistribution:
     /// provided it is non-negative.
     ///
     /// The condition $J(v) \geq 0$ defines the optimal reserve price.
+    #[verified_engine::verified]
     fn virtual_valuation(&self, v: f64) -> f64 {
         let pdf = self.pdf(v);
         let cdf = self.cdf(v);
@@ -65,6 +66,7 @@ impl<D: Continuous<f64, f64> + ContinuousCDF<f64, f64> + Distribution<f64> + Ran
 /// let r_star = optimal_reserve_price(&dist, 0.0, 100.0);
 /// assert!((r_star - 50.0).abs() < 1e-4);
 /// ```
+#[verified_engine::verified]
 pub fn optimal_reserve_price<D: ValuationDistribution>(
     dist: &D,
     lower_bound: f64,
@@ -91,6 +93,7 @@ pub fn optimal_reserve_price<D: ValuationDistribution>(
 }
 
 /// Calculates the **Optimal Reserve Price** for a single-item auction using a custom solver.
+#[verified_engine::verified]
 pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
     dist: &D,
     lower_bound: f64,
@@ -108,6 +111,7 @@ pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder
 ///
 /// This simulation draws random valuations for $n$ bidders, calculates their virtual valuations,
 /// and averages the maximum non-negative virtual valuation over `n_simulations`.
+#[verified_engine::verified]
 pub fn simulate_optimal_revenue<D: ValuationDistribution>(
     dist: &D,
     n_bidders: usize,
@@ -119,6 +123,7 @@ pub fn simulate_optimal_revenue<D: ValuationDistribution>(
 
 /// Same as `simulate_optimal_revenue` but allows injecting a custom RNG
 /// for deterministic testing.
+#[verified_engine::verified]
 pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Sized>(
     dist: &D,
     n_bidders: usize,
@@ -155,6 +160,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level optimal_reserve_price function directly."
     )]
+    #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn optimal_reserve_price<D: ValuationDistribution>(
         dist: &D,
         lower_bound: f64,
@@ -167,6 +173,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level optimal_reserve_price_with_solver function directly."
     )]
+    #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
         dist: &D,
         lower_bound: f64,
@@ -180,6 +187,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level simulate_optimal_revenue function directly."
     )]
+    #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn simulate_optimal_revenue<D: ValuationDistribution>(
         dist: &D,
         n_bidders: usize,
@@ -192,6 +200,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level simulate_optimal_revenue_with_rng function directly."
     )]
+    #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Sized>(
         dist: &D,
         n_bidders: usize,
@@ -208,6 +217,7 @@ mod tests {
     use statrs::distribution::Uniform;
 
     #[test]
+    #[verified_engine::verified]
     fn test_virtual_valuation_uniform() {
         // For Uniform(0, 1): f(v) = 1, F(v) = v.
         // J(v) = v - (1 - v)/1 = v - 1 + v = 2v - 1.
@@ -223,6 +233,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_optimal_reserve_uniform() {
         // For Uniform(0, 1), J(r) = 2r - 1 = 0 => r = 0.5.
         let dist = Uniform::new(0.0, 1.0).unwrap();
@@ -231,6 +242,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_revenue_simulation() {
         // 1 bidder, Uniform(0, 1). Optimal auction sets reserve r=0.5.
         // Revenue = E[max(0, J(v))]. J(v) = 2v-1.
@@ -245,6 +257,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_optimal_reserve_unbracketed_fallback() {
         // Uniform(0, 100). J(v) = 2v - 100. Root at 50.
         let dist = Uniform::new(0.0, 100.0).unwrap();

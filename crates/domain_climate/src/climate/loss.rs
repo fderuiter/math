@@ -12,6 +12,7 @@ use nalgebra::DMatrix;
 /// # Returns
 ///
 /// The mean squared error.
+#[verified_engine::verified]
 pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> f32 {
     assert_eq!(
         y_true.shape(),
@@ -35,6 +36,7 @@ pub fn mse_loss(y_true: &DMatrix<f32>, y_pred: &DMatrix<f32>) -> f32 {
 /// # Returns
 ///
 /// The average Earth Mover's Distance.
+#[verified_engine::verified]
 pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
     assert_eq!(
         z1.shape(),
@@ -93,6 +95,7 @@ pub fn earth_movers_distance(z1: &DMatrix<f32>, z2: &DMatrix<f32>) -> f32 {
 /// # Returns
 ///
 /// The total weighted loss.
+#[verified_engine::verified]
 pub fn cera_loss(
     reconstruction_loss: f32,
     prediction_loss: f32,
@@ -111,6 +114,7 @@ mod tests {
     use nalgebra::DMatrix;
 
     #[test]
+    #[verified_engine::verified]
     fn test_mse_loss() {
         let y_true = DMatrix::from_row_slice(2, 2, &[1.0, 2.0, 3.0, 4.0]);
         let y_pred = DMatrix::from_row_slice(2, 2, &[1.0, 3.0, 2.0, 4.0]);
@@ -122,6 +126,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_earth_movers_distance() {
         // Two distributions for the first channel, two for the second
         let z1 = DMatrix::from_row_slice(4, 2, &[1.0, 8.0, 2.0, 7.0, 3.0, 6.0, 4.0, 5.0]);

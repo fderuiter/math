@@ -9,6 +9,7 @@ use crate::error::HighEnergyError;
 ///
 /// # Errors
 /// * `HighEnergyError::InvalidAdiabaticIndex` if `adiabatic_index <= 1`.
+#[verified_engine::verified]
 pub fn shock_compression_ratio(adiabatic_index: f64) -> Result<f64, HighEnergyError> {
     if adiabatic_index <= 1.0 {
         return Err(HighEnergyError::InvalidAdiabaticIndex {
@@ -26,6 +27,7 @@ pub fn shock_compression_ratio(adiabatic_index: f64) -> Result<f64, HighEnergyEr
 /// * `HighEnergyError::InvalidAdiabaticIndex` if `adiabatic_index <= 1`.
 /// * `HighEnergyError::InvalidDensity` if `density <= 0`.
 /// * `HighEnergyError::InvalidPressure` if `pressure < 0`.
+#[verified_engine::verified]
 pub fn specific_enthalpy(
     adiabatic_index: f64,
     pressure: f64,
@@ -53,6 +55,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_fluid_dynamics() {
         // Compression ratio, gamma_hat = 4/3.
         // r = (4/3 + 1) / (4/3 - 1) = (7/3) / (1/3) = 7.
@@ -61,6 +64,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_errors() {
         assert!(shock_compression_ratio(1.0).is_err());
         assert!(specific_enthalpy(1.4, -1.0, 1.0).is_err());

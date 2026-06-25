@@ -2,6 +2,7 @@ use super::scoring::calculate_soft_self_consistency_scores;
 use super::temperature::{calculate_answer_entropy, map_entropy_to_temperature};
 use super::types::Response;
 
+#[verified_engine::verified]
 fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
     let scores = calculate_soft_self_consistency_scores(responses);
     let entropy = calculate_answer_entropy(responses);
@@ -55,6 +56,7 @@ fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
 /// The KL divergence loss.
 use crate::error::AIError;
 
+#[verified_engine::verified]
 pub fn calculate_kl_divergence_loss(
     responses: &[Response],
     predicted_dist: &[f64],
@@ -83,6 +85,7 @@ mod tests {
     use super::*;
     use crate::ai::self_calibration::types::Response;
     #[test]
+    #[verified_engine::verified]
     fn test_kl_divergence_calculation() -> Result<(), crate::error::AIError> {
         let responses = vec![
             Response {

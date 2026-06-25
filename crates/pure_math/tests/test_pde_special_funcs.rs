@@ -6,6 +6,7 @@ use pure_math::pure_math::analysis::pde::{
 use pure_math::pure_math::special_functions::{bessel, legendre, polynomials};
 
 #[test]
+#[verified_engine::verified]
 fn test_wave_equation_dalembert() {
     let wave = WaveEquation1D::new(2.0); // c = 2.0
 
@@ -19,6 +20,7 @@ fn test_wave_equation_dalembert() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_heat_equation_separated() {
     let heat = HeatEquation1D::new(0.5); // kappa = 0.5
 
@@ -33,6 +35,7 @@ fn test_heat_equation_separated() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_laplace_equation() {
     // u(x,y) = sin(x) * sinh(y) => A=0, B=1, C=0, D=1, lambda=1
     let val = LaplaceEquation2D::separated_mode_cartesian(
@@ -47,6 +50,7 @@ fn test_laplace_equation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_greens_function_simple() {
     // Solve y'' = f(x) with y(0)=0, y(1)=0.
     // Green's function is G(x, xi) = x(xi - 1) for x < xi, xi(x - 1) for x > xi.
@@ -69,6 +73,7 @@ fn test_greens_function_simple() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_legendre_polynomials() {
     // P_0(x) = 1
     assert_abs_diff_eq!(legendre::legendre_p(0, 0.5), 1.0);
@@ -79,6 +84,7 @@ fn test_legendre_polynomials() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_legendre_orthogonality() {
     // P_1 and P_2 should be orthogonal.
     let dot = legendre::check_orthogonality_legendre(1, 2);
@@ -90,6 +96,7 @@ fn test_legendre_orthogonality() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_hermite_polynomials() {
     // H_0 = 1
     assert_abs_diff_eq!(polynomials::hermite(0, 2.0), 1.0);
@@ -100,6 +107,7 @@ fn test_hermite_polynomials() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_laguerre_polynomials() {
     // L_0 = 1
     assert_abs_diff_eq!(polynomials::laguerre(0, 2.0), 1.0);
@@ -110,6 +118,7 @@ fn test_laguerre_polynomials() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_bessel_orthogonality_check() {
     // Roots of J_0: 2.4048, 5.5201 (approx)
     let alpha = 2.4048255577;

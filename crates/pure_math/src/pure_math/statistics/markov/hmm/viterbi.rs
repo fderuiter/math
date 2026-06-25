@@ -56,6 +56,7 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// let path = hmm.viterbi(&obs).unwrap();
     /// assert_eq!(path, vec![1, 0]);
     /// ```
+    #[verified_engine::verified]
     pub fn viterbi(&self, observations: &[usize]) -> Result<Vec<usize>> {
         if observations.is_empty() {
             return Err(MarkovError::InvalidObservation {

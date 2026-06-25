@@ -26,6 +26,7 @@ impl PhaseUnwrapper {
     /// # Arguments
     ///
     /// * `wavelength` - The wavelength of the radar signal in meters (e.g., ~0.0039 m for 77GHz).
+    #[verified_engine::verified]
     pub fn new(wavelength: f64) -> Self {
         Self {
             last_phase: 0.0,
@@ -50,6 +51,7 @@ impl PhaseUnwrapper {
     /// # Returns
     ///
     /// The total accumulated displacement in meters.
+    #[verified_engine::verified]
     pub fn process(&mut self, sample: Complex<f64>) -> f64 {
         // Step 1: Phase Extraction
         // phi[n] = arctan(Q / I) -> range (-PI, PI]
@@ -84,6 +86,7 @@ impl PhaseUnwrapper {
     }
 
     /// Resets the unwrapper state (e.g., if tracking is lost).
+    #[verified_engine::verified]
     pub fn reset(&mut self) {
         self.initialized = false;
         self.accumulated_displacement = 0.0;

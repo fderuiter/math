@@ -4,6 +4,7 @@ use domain_applied::applied::win_ratio::{
 
 const FLOAT_TOLERANCE: f64 = 1e-3;
 
+#[verified_engine::verified]
 fn get_test_data() -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
     let group1 = vec![vec![1, 0, 1], vec![0, 1, 1], vec![1, 1, 0]];
     let group2 = vec![vec![0, 1, 0], vec![1, 0, 0], vec![0, 0, 1]];
@@ -11,6 +12,7 @@ fn get_test_data() -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_matched_pairs() {
     let (group1, group2) = get_test_data();
     #[allow(deprecated)]
@@ -52,6 +54,7 @@ fn test_matched_pairs() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_unmatched_pairs() {
     let (group1, group2) = get_test_data();
     #[allow(deprecated)]
@@ -72,6 +75,7 @@ fn test_unmatched_pairs() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_calculate_bmi() {
     let weight_kg = 70.0;
     let height_m = 1.75;
@@ -87,6 +91,7 @@ fn test_calculate_bmi() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_sample_win_ratio() {
     let counts = sample_win_ratio::WinLossCounts::new(10, 20, 5, 15);
     let n_w = counts.n_wins();
@@ -114,6 +119,7 @@ fn test_sample_win_ratio() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_probability_win_ratio_with_simulation() {
     let params = simulation::SimulationParams::new(0.1, 0.2, 0.8, 0.7);
     let c = 5.0;

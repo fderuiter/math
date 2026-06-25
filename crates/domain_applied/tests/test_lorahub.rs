@@ -2,6 +2,7 @@ use domain_applied::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
 
 #[test]
+#[verified_engine::verified]
 fn test_lorahub_linear_combination() {
     // Create two dummy LoRA modules
     let mut lora1 = LoraStateDict::new();
@@ -34,6 +35,7 @@ fn test_lorahub_linear_combination() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_lorahub_objective() {
     let ensemble = LoraEnsemble::new(vec![]);
     let weights = vec![1.0, -2.0, 3.0];

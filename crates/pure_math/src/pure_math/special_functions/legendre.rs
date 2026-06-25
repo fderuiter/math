@@ -1,6 +1,7 @@
 /// Legendre Polynomial $P_\ell(x)$ computed via recurrence relation.
 ///
 /// $(n+1)P_{n+1}(x) = (2n+1)x P_n(x) - n P_{n-1}(x)$
+#[verified_engine::verified]
 pub fn legendre_p(l: u64, x: f64) -> f64 {
     if l == 0 {
         return 1.0;
@@ -25,6 +26,7 @@ pub fn legendre_p(l: u64, x: f64) -> f64 {
 ///
 /// Uses standard recurrence relations.
 /// Note: This implementation includes the Condon-Shortley phase $(-1)^m$.
+#[verified_engine::verified]
 pub fn legendre_p_associated(l: u64, m: i64, x: f64) -> f64 {
     if m < 0 {
         // Relationship for negative m can be added if needed,
@@ -76,6 +78,7 @@ pub fn legendre_p_associated(l: u64, m: i64, x: f64) -> f64 {
 
 /// Checks orthogonality of Legendre polynomials on [-1, 1].
 /// $\int_{-1}^1 P_\ell(x) P_k(x) dx = \frac{2}{2\ell+1} \delta_{\ell k}$
+#[verified_engine::verified]
 pub fn check_orthogonality_legendre(l: u64, k: u64) -> f64 {
     let steps = 1000;
     let h = 2.0 / steps as f64; // Range is 2 (-1 to 1)

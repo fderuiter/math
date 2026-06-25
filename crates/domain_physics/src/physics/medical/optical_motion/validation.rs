@@ -19,6 +19,7 @@
 ///
 /// Note: This implementation follows the specific formula provided in the user request,
 /// which uses `measured` in the denominator.
+#[verified_engine::verified]
 pub fn percentage_error(measured: f64, reference: f64) -> f64 {
     if measured == 0.0 {
         return f64::INFINITY; // Avoid division by zero
@@ -40,6 +41,7 @@ pub fn percentage_error(measured: f64, reference: f64) -> f64 {
 /// # Formula
 ///
 /// $RMSE = \sqrt{\frac{1}{n} \sum (X_i - Y_i)^2}$
+#[verified_engine::verified]
 pub fn root_mean_square_error(measured: &[f64], reference: &[f64]) -> f64 {
     let n = measured.len().min(reference.len());
     if n == 0 {
@@ -66,6 +68,7 @@ pub fn root_mean_square_error(measured: &[f64], reference: &[f64]) -> f64 {
 /// # Returns
 ///
 /// * `f64` - The correlation coefficient r (-1.0 to 1.0).
+#[verified_engine::verified]
 pub fn pearson_correlation(x: &[f64], y: &[f64]) -> f64 {
     let n = x.len().min(y.len());
     if n < 2 {
@@ -115,6 +118,7 @@ pub fn pearson_correlation(x: &[f64], y: &[f64]) -> f64 {
 /// # Formula
 ///
 /// $DSC = \frac{2 |A \cap B|}{|A| + |B|}$
+#[verified_engine::verified]
 pub fn dice_similarity_coefficient(set_a: &[bool], set_b: &[bool]) -> f64 {
     let n = set_a.len().min(set_b.len());
     let mut intersection = 0;
@@ -154,6 +158,7 @@ pub fn dice_similarity_coefficient(set_a: &[bool], set_b: &[bool]) -> f64 {
 /// # Formula
 ///
 /// $Error = \sum (Y_{measured}\[i\] - Y_{reference}\[i\])^2$
+#[verified_engine::verified]
 pub fn time_shift_error(measured: &[f64], reference: &[f64]) -> f64 {
     let n = measured.len().min(reference.len());
     measured

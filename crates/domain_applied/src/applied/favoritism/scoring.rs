@@ -34,6 +34,7 @@ use rand::Rng;
 /// let score = calculate_favoritism_score(&inputs);
 /// assert!(score > 0.0);
 /// ```
+#[verified_engine::verified]
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
     let mut rng = rand::thread_rng();
     calculate_favoritism_score_with_rng(inputs, &mut rng)
@@ -42,6 +43,7 @@ pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
 /// Calculates the favoritism score using an injected RNG.
 ///
 /// See `calculate_favoritism_score` for details.
+#[verified_engine::verified]
 pub fn calculate_favoritism_score_with_rng<R: Rng>(inputs: &FavoritismInputs, rng: &mut R) -> f64 {
     calculate_favoritism_score_full(inputs, rng, &ClenshawCurtis)
 }
@@ -49,6 +51,7 @@ pub fn calculate_favoritism_score_with_rng<R: Rng>(inputs: &FavoritismInputs, rn
 /// Calculates the favoritism score using an injected RNG and Integrator.
 ///
 /// This allows for deterministic testing (via RNG) and flexible integration strategies (via Integrator).
+#[verified_engine::verified]
 pub fn calculate_favoritism_score_full<R: Rng, I: Integrator + ?Sized>(
     inputs: &FavoritismInputs,
     rng: &mut R,

@@ -22,6 +22,7 @@ pub trait SpectralTransform {
     ///
     /// # Returns
     /// * `Result<Vec<Complex64>, TransformError>` - The transformed signal (frequency domain).
+    #[verified_engine::verified]
     fn forward(&mut self, input: &[Complex64]) -> Result<Vec<Complex64>, TransformError>;
 
     /// Performs the inverse transform (e.g., Frequency -> Time).
@@ -31,5 +32,6 @@ pub trait SpectralTransform {
     ///
     /// # Returns
     /// * `Result<Vec<Complex64>, TransformError>` - The reconstructed signal (time domain).
+    #[verified_engine::verified]
     fn inverse(&mut self, input: &[Complex64]) -> Result<Vec<Complex64>, TransformError>;
 }

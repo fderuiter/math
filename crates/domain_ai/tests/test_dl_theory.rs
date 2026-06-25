@@ -4,6 +4,7 @@ use domain_ai::ai::optimization::SGD;
 use nalgebra::DVector;
 
 #[test]
+#[verified_engine::verified]
 fn test_deep_learning_cycle() {
     // Xor problem-ish (non-linear)
     // 2 inputs, 2 hidden units, 2 output classes
@@ -38,6 +39,7 @@ fn test_deep_learning_cycle() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_explicit_model_construction() {
     // Explicitly construct TwoLayerMLP and inject it
     let model = TwoLayerMLP::new(2, 4, 2);
@@ -49,6 +51,7 @@ fn test_explicit_model_construction() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_backward_compatibility_layer_access() {
     // Verify we can still access layer1/layer2 like before (via Deref)
     let network = TrainingLoop::new(2, 4, 2, Box::new(SGD::new(0.1)));
@@ -61,6 +64,7 @@ fn test_backward_compatibility_layer_access() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_linear_algebra_basics() {
     use domain_ai::ai::deep_learning_theory::linear_algebra::*;
 

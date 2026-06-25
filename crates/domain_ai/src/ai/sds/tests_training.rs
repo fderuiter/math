@@ -3,6 +3,7 @@ use approx::assert_relative_eq;
 use nalgebra::DMatrix;
 
 #[test]
+#[verified_engine::verified]
 fn test_adam_step() {
     let rows = 2;
     let cols = 2;
@@ -29,6 +30,7 @@ fn test_adam_step() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_sgd_step() {
     let rows = 2;
     let cols = 2;

@@ -64,9 +64,11 @@ pub enum IsosurfaceError {
 }
 
 impl Diagnostic for PharmacokineticsError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert(
@@ -79,9 +81,11 @@ impl Diagnostic for PharmacokineticsError {
 }
 
 impl Diagnostic for BatteryError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "BatteryError".to_string());
@@ -91,9 +95,11 @@ impl Diagnostic for BatteryError {
 }
 
 impl Diagnostic for GameTheoryError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "GameTheoryError".to_string());
@@ -103,9 +109,11 @@ impl Diagnostic for GameTheoryError {
 }
 
 impl Diagnostic for EngineeringError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "EngineeringError".to_string());
@@ -115,9 +123,11 @@ impl Diagnostic for EngineeringError {
 }
 
 impl Diagnostic for LoraError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "LoraError".to_string());
@@ -127,9 +137,11 @@ impl Diagnostic for LoraError {
 }
 
 impl Diagnostic for IsosurfaceError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "IsosurfaceError".to_string());
@@ -139,6 +151,7 @@ impl Diagnostic for IsosurfaceError {
 }
 
 impl std::fmt::Display for GameTheoryError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -147,6 +160,7 @@ impl std::fmt::Display for GameTheoryError {
 impl std::error::Error for GameTheoryError {}
 
 impl std::fmt::Display for EngineeringError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -155,6 +169,7 @@ impl std::fmt::Display for EngineeringError {
 impl std::error::Error for EngineeringError {}
 
 impl std::fmt::Display for IsosurfaceError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }

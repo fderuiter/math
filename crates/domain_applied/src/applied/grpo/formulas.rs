@@ -16,6 +16,7 @@ pub use super::rewards::{binary_reward, composite_reward, repetition_penalty, un
 /// # Returns
 ///
 /// The response-level advantage for `reward_i`.
+#[verified_engine::verified]
 pub fn response_level_advantage(rewards: &[f64], reward_i: f64) -> f64 {
     let data = Data::new(rewards.to_vec());
     let mean = data.mean().unwrap_or(0.0);
@@ -37,6 +38,7 @@ pub fn response_level_advantage(rewards: &[f64], reward_i: f64) -> f64 {
 /// # Returns
 ///
 /// The calculated objective value to be maximized (or minimized if negative).
+#[verified_engine::verified]
 pub fn clipped_surrogate_objective(
     pi_thetas: &[f64],
     pi_theta_olds: &[f64],
@@ -70,6 +72,7 @@ pub fn clipped_surrogate_objective(
 /// # Returns
 ///
 /// The proportion of responses that match the pseudo-label.
+#[verified_engine::verified]
 pub fn solver_empirical_accuracy(responses: &[String], pseudo_label: &str) -> f64 {
     let m = responses.len() as f64;
     if m == 0.0 {
@@ -89,6 +92,7 @@ pub fn solver_empirical_accuracy(responses: &[String], pseudo_label: &str) -> f6
 /// # Returns
 ///
 /// The lower bound on the KL divergence.
+#[verified_engine::verified]
 pub fn kl_divergence_lower_bound(p: f64, beta: f64) -> f64 {
     if beta == 0.0 {
         return f64::INFINITY;

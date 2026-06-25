@@ -14,6 +14,7 @@
 /// # Returns
 ///
 /// * `usize` - Number of pulses.
+#[verified_engine::verified]
 pub fn dirac_pulse_count(t_on: f64, t_off: f64, delta_t: f64) -> usize {
     if delta_t <= 0.0 || t_off < t_on {
         return 0;
@@ -34,6 +35,7 @@ pub fn dirac_pulse_count(t_on: f64, t_off: f64, delta_t: f64) -> usize {
 /// # Returns
 ///
 /// * `f64` - The delay time.
+#[verified_engine::verified]
 pub fn signal_front_delay(phase_slope_high_freq: f64) -> f64 {
     phase_slope_high_freq
 }

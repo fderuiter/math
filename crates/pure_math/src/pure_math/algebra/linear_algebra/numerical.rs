@@ -30,6 +30,7 @@ pub enum LinearAlgebraError {
 /// # Returns
 ///
 /// * `Result<DVector<f64>, LinearAlgebraError>` - The solution vector $x$.
+#[verified_engine::verified]
 pub fn solve_linear_system(
     a: &DMatrix<f64>,
     b: &DVector<f64>,
@@ -54,6 +55,7 @@ pub fn solve_linear_system(
 /// # Returns
 ///
 /// * `Result<DVector<f64>, LinearAlgebraError>` - The coefficient vector $\mathbf{c}$.
+#[verified_engine::verified]
 pub fn solve_normal_equation(
     a: &DMatrix<f64>,
     b: &DVector<f64>,
@@ -85,6 +87,7 @@ pub fn solve_normal_equation(
 /// # Returns
 ///
 /// * `DMatrix<f64>` - The pseudoinverse matrix.
+#[verified_engine::verified]
 pub fn moore_penrose_pseudoinverse(matrix: &DMatrix<f64>, epsilon: f64) -> DMatrix<f64> {
     match matrix.clone().svd(true, true).pseudo_inverse(epsilon) {
         Ok(pinv) => pinv,
@@ -97,6 +100,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_normal_equation() {
         // Fit y = mx + c
         // Points: (1, 1), (2, 2), (3, 3)

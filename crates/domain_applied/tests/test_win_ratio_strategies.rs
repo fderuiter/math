@@ -3,6 +3,7 @@ use domain_applied::applied::win_ratio::pair_comparison::{
 };
 
 #[test]
+#[verified_engine::verified]
 fn test_mixed_strategies() {
     // Scenario:
     // Outcome 1: Days to Death (Higher is Better - longer survival)
@@ -41,6 +42,7 @@ fn test_mixed_strategies() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_threshold_strategy() {
     // Scenario:
     // Outcome 1: Biomarker Level (Higher is Better, but difference < 5.0 is a Tie)
@@ -71,6 +73,7 @@ fn test_threshold_strategy() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_backward_compatibility() {
     // Ensure deprecated function still works
     let group1 = vec![vec![10.0]];

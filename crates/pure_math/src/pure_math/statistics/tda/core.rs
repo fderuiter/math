@@ -21,6 +21,7 @@ impl Point2D {
     /// assert_eq!(p.x, 1.0);
     /// assert_eq!(p.y, 2.0);
     /// ```
+    #[verified_engine::verified]
     pub fn new(x: f64, y: f64) -> Self {
         Self { x, y }
     }
@@ -28,6 +29,7 @@ impl Point2D {
     /// Computes Euclidean distance to another point.
     ///
     /// Formula: d = √((x₁ - x₂)² + (y₁ - y₂)²)
+    #[verified_engine::verified]
     pub fn distance(&self, other: &Point2D) -> f64 {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
@@ -61,6 +63,7 @@ impl PointCloud {
     /// let cloud = PointCloud::new(points).unwrap();
     /// assert_eq!(cloud.size(), 3);
     /// ```
+    #[verified_engine::verified]
     pub fn new(points: Vec<Point2D>) -> Result<Self, TdaError> {
         if points.is_empty() {
             return Err(TdaError::EmptyPointCloud);
@@ -69,6 +72,7 @@ impl PointCloud {
     }
 
     /// Returns the number of points in the cloud.
+    #[verified_engine::verified]
     pub fn size(&self) -> usize {
         self.points.len()
     }
@@ -77,6 +81,7 @@ impl PointCloud {
     ///
     /// Returns a symmetric matrix where element (i, j) is the distance
     /// between points i and j.
+    #[verified_engine::verified]
     pub fn distance_matrix(&self) -> Vec<Vec<f64>> {
         let n = self.points.len();
         let mut dist = vec![vec![0.0; n]; n];
@@ -130,6 +135,7 @@ impl Simplex {
     /// let simplex = Simplex::new(vec![0, 1, 2]).unwrap();
     /// assert_eq!(simplex.dimension(), 2); // Triangle
     /// ```
+    #[verified_engine::verified]
     pub fn new(mut vertices: Vec<usize>) -> Result<Self, TdaError> {
         if vertices.is_empty() {
             return Err(TdaError::InvalidSimplex {
@@ -155,6 +161,7 @@ impl Simplex {
     /// Returns the dimension of the simplex.
     ///
     /// A simplex with (n+1) vertices has dimension n.
+    #[verified_engine::verified]
     pub fn dimension(&self) -> usize {
         self.vertices.len() - 1
     }
@@ -182,6 +189,7 @@ impl Simplex {
     /// assert!(faces.contains(&Simplex::new(vec![0, 2]).unwrap()));
     /// assert!(faces.contains(&Simplex::new(vec![1, 2]).unwrap()));
     /// ```
+    #[verified_engine::verified]
     pub fn faces(&self) -> Result<Vec<Simplex>, TdaError> {
         if self.vertices.len() == 1 {
             return Ok(vec![]); // 0-simplex has no faces
@@ -200,6 +208,7 @@ impl Simplex {
     /// Computes the diameter of the simplex in the point cloud.
     ///
     /// The diameter is the maximum distance between any pair of vertices.
+    #[verified_engine::verified]
     pub fn diameter(&self, distance_matrix: &[Vec<f64>]) -> f64 {
         let mut max_dist = 0.0;
         for i in 0..self.vertices.len() {
@@ -217,6 +226,7 @@ impl Simplex {
 }
 
 impl PartialOrd for Simplex {
+    #[verified_engine::verified]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
@@ -224,6 +234,7 @@ impl PartialOrd for Simplex {
 
 impl Ord for Simplex {
     /// Lexicographic ordering on vertices.
+    #[verified_engine::verified]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.vertices.cmp(&other.vertices)
     }
@@ -234,6 +245,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_point2d_distance() {
         let p1 = Point2D::new(0.0, 0.0);
         let p2 = Point2D::new(3.0, 4.0);
@@ -243,12 +255,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_point_cloud_empty() {
         let result = PointCloud::new(vec![]);
         assert!(result.is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_point_cloud_distance_matrix() {
         let points = vec![
             Point2D::new(0.0, 0.0),
@@ -268,6 +282,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplex_vertex() {
         let s = Simplex::new(vec![0]).unwrap();
         assert_eq!(s.dimension(), 0);
@@ -275,6 +290,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplex_edge() {
         let s = Simplex::new(vec![0, 1]).unwrap();
         assert_eq!(s.dimension(), 1);
@@ -282,6 +298,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplex_triangle() {
         let s = Simplex::new(vec![0, 1, 2]).unwrap();
         assert_eq!(s.dimension(), 2);
@@ -294,6 +311,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplex_sorted() {
         let s1 = Simplex::new(vec![2, 0, 1]).unwrap();
         let s2 = Simplex::new(vec![0, 1, 2]).unwrap();
@@ -303,12 +321,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplex_duplicate_vertices() {
         let result = Simplex::new(vec![0, 1, 1]);
         assert!(result.is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplex_diameter() {
         let points = vec![
             Point2D::new(0.0, 0.0),

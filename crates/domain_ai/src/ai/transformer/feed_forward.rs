@@ -30,6 +30,7 @@ impl FeedForward {
     /// # Arguments
     /// * `d_model`: The input and output dimension of the network.
     /// * `d_ff`: The inner-layer dimension.
+    #[verified_engine::verified]
     pub fn new(d_model: usize, d_ff: usize) -> Self {
         Self {
             w1: DMatrix::zeros(d_model, d_ff),
@@ -40,6 +41,7 @@ impl FeedForward {
     }
 
     /// Performs the forward pass of the FFN.
+    #[verified_engine::verified]
     pub fn forward_impl(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         // First linear transformation: x * W1 + b1
         let mut hidden = x * &self.w1;
@@ -56,12 +58,14 @@ impl FeedForward {
     }
 
     /// Performs the forward pass of the FFN.
+    #[verified_engine::verified]
     pub fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         self.forward_impl(x)
     }
 }
 
 impl FeedForwardNetwork for FeedForward {
+    #[verified_engine::verified]
     fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         self.forward_impl(x)
     }
@@ -72,6 +76,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_feed_forward_dims() {
         let seq_len = 10;
         let d_model = 512;

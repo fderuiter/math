@@ -38,15 +38,19 @@ pub enum KalmanError {
 /// - $v_k \sim N(0, R_k)$: Measurement Noise
 pub trait KalmanModel<T: RealField + Copy> {
     /// Returns the State Transition Matrix ($F_k$) of size $(n \times n)$.
+    #[verified_engine::verified]
     fn transition_matrix(&self, dt: T) -> DMatrix<T>;
 
     /// Returns the Measurement Matrix ($H_k$) of size $(m \times n)$.
+    #[verified_engine::verified]
     fn measurement_matrix(&self) -> DMatrix<T>;
 
     /// Returns the Process Noise Covariance ($Q_k$) of size $(n \times n)$.
+    #[verified_engine::verified]
     fn process_noise(&self, dt: T) -> DMatrix<T>;
 
     /// Returns the Measurement Noise Covariance ($R_k$) of size $(m \times m)$.
+    #[verified_engine::verified]
     fn measurement_noise(&self) -> DMatrix<T>;
 }
 
@@ -73,6 +77,7 @@ pub trait KalmanSystem<T: RealField + Copy> {
     ///
     /// # Returns
     /// A tuple `(predicted_state, transition_jacobian)`.
+    #[verified_engine::verified]
     fn predict_state(&self, state: &DVector<T>, dt: T) -> (DVector<T>, DMatrix<T>);
 
     /// Predicts the measurement $z_k$ and returns the measurement Jacobian $H_k$.
@@ -82,32 +87,39 @@ pub trait KalmanSystem<T: RealField + Copy> {
     ///
     /// # Returns
     /// A tuple `(predicted_measurement, measurement_jacobian)`.
+    #[verified_engine::verified]
     fn predict_measurement(&self, state: &DVector<T>) -> (DVector<T>, DMatrix<T>);
 
     /// Returns the Process Noise Covariance $Q_k$.
+    #[verified_engine::verified]
     fn process_noise(&self, dt: T) -> DMatrix<T>;
 
     /// Returns the Measurement Noise Covariance $R_k$.
+    #[verified_engine::verified]
     fn measurement_noise(&self) -> DMatrix<T>;
 }
 
 impl<T: RealField + Copy, M: KalmanModel<T>> KalmanSystem<T> for M {
+    #[verified_engine::verified]
     fn predict_state(&self, state: &DVector<T>, dt: T) -> (DVector<T>, DMatrix<T>) {
         let f = self.transition_matrix(dt);
         let x_pred = &f * state;
         (x_pred, f)
     }
 
+    #[verified_engine::verified]
     fn predict_measurement(&self, state: &DVector<T>) -> (DVector<T>, DMatrix<T>) {
         let h = self.measurement_matrix();
         let z_pred = &h * state;
         (z_pred, h)
     }
 
+    #[verified_engine::verified]
     fn process_noise(&self, dt: T) -> DMatrix<T> {
         KalmanModel::process_noise(self, dt)
     }
 
+    #[verified_engine::verified]
     fn measurement_noise(&self) -> DMatrix<T> {
         KalmanModel::measurement_noise(self)
     }
@@ -140,6 +152,7 @@ pub struct KalmanFilterBuilder<T: RealField + Copy, M: KalmanSystem<T>> {
 }
 
 impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilterBuilder<T, M> {
+    #[verified_engine::verified]
     fn new(model: M, dt: T) -> Self {
         Self {
             state: None,
@@ -150,12 +163,14 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilterBuilder<T, M> {
     }
 
     /// Sets the initial state vector.
+    #[verified_engine::verified]
     pub fn initial_state(mut self, state: DVector<T>) -> Self {
         self.state = Some(state);
         self
     }
 
     /// Sets the initial covariance matrix.
+    #[verified_engine::verified]
     pub fn initial_covariance(mut self, covariance: DMatrix<T>) -> Self {
         self.covariance = Some(covariance);
         self
@@ -166,6 +181,7 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilterBuilder<T, M> {
     /// # Errors
     /// Returns `KalmanError::DimensionMismatch` if state and covariance dimensions do not align.
     /// Returns `KalmanError::InitializationError` if state or covariance are missing.
+    #[verified_engine::verified]
     pub fn build(self) -> Result<KalmanFilter<T, M>, KalmanError> {
         let state = self
             .state
@@ -193,6 +209,7 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilterBuilder<T, M> {
 
 impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilter<T, M> {
     /// Returns a new builder for constructing a `KalmanFilter`.
+    #[verified_engine::verified]
     pub fn builder(model: M, dt: T) -> KalmanFilterBuilder<T, M> {
         KalmanFilterBuilder::new(model, dt)
     }
@@ -203,6 +220,7 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilter<T, M> {
     ///
     /// $$ \hat{x}_{k|k-1} = f(\hat{x}_{k-1|k-1}) $$
     /// $$ P_{k|k-1} = F_k P_{k-1|k-1} F_k^T + Q_k $$
+    #[verified_engine::verified]
     pub fn predict(&mut self) {
         // Generalized Prediction
         let (x_pred, f) = self.model.predict_state(&self.state, self.dt);
@@ -225,6 +243,7 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilter<T, M> {
     /// # Arguments
     ///
     /// * `measurement` - The measurement vector $z_k$.
+    #[verified_engine::verified]
     pub fn update(&mut self, measurement: &DVector<T>) -> Result<(), KalmanError> {
         // Generalized Update
         let (z_pred, h) = self.model.predict_measurement(&self.state);
@@ -270,24 +289,29 @@ mod tests {
     }
 
     impl KalmanModel<f64> for MockCvModel {
+        #[verified_engine::verified]
         fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
             // [1, dt]
             // [0, 1]
             DMatrix::from_row_slice(2, 2, &[1.0, dt, 0.0, 1.0])
         }
+        #[verified_engine::verified]
         fn measurement_matrix(&self) -> DMatrix<f64> {
             // [1, 0]
             DMatrix::from_row_slice(1, 2, &[1.0, 0.0])
         }
+        #[verified_engine::verified]
         fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
             DMatrix::identity(2, 2) * self.process_noise
         }
+        #[verified_engine::verified]
         fn measurement_noise(&self) -> DMatrix<f64> {
             DMatrix::from_element(1, 1, self.measurement_noise)
         }
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_kalman_predict_logic() -> Result<(), KalmanError> {
         let dt = 1.0;
         let model = MockCvModel {
@@ -312,12 +336,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_extended_kalman_filter() -> Result<(), KalmanError> {
         // Define a non-linear model: x_{k} = sqrt(x_{k-1})
         // Measurement: z_k = x_k^2
         struct NonLinearModel;
 
         impl KalmanSystem<f64> for NonLinearModel {
+            #[verified_engine::verified]
             fn predict_state(
                 &self,
                 state: &DVector<f64>,
@@ -334,6 +360,7 @@ mod tests {
                 )
             }
 
+            #[verified_engine::verified]
             fn predict_measurement(&self, state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
                 let x = state[0];
                 let z_pred = x.powi(2);
@@ -346,10 +373,12 @@ mod tests {
                 )
             }
 
+            #[verified_engine::verified]
             fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
                 DMatrix::from_element(1, 1, 0.1)
             }
 
+            #[verified_engine::verified]
             fn measurement_noise(&self) -> DMatrix<f64> {
                 DMatrix::from_element(1, 1, 0.1)
             }
@@ -384,11 +413,13 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_singular_covariance_error() -> Result<(), KalmanError> {
         // Create a model where measurement noise R is zero and H is zero, leading to singular S.
         // S = HPH' + R. If H=0 and R=0, S=0, which is singular.
         struct SingularModel;
         impl KalmanSystem<f64> for SingularModel {
+            #[verified_engine::verified]
             fn predict_state(
                 &self,
                 state: &DVector<f64>,
@@ -396,12 +427,15 @@ mod tests {
             ) -> (DVector<f64>, DMatrix<f64>) {
                 (state.clone(), DMatrix::identity(1, 1))
             }
+            #[verified_engine::verified]
             fn predict_measurement(&self, _state: &DVector<f64>) -> (DVector<f64>, DMatrix<f64>) {
                 (DVector::from_element(1, 0.0), DMatrix::zeros(1, 1)) // H = 0
             }
+            #[verified_engine::verified]
             fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
                 DMatrix::zeros(1, 1)
             }
+            #[verified_engine::verified]
             fn measurement_noise(&self) -> DMatrix<f64> {
                 DMatrix::zeros(1, 1) // R = 0
             }
@@ -419,6 +453,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_dimension_mismatch() {
         let model = MockCvModel {
             process_noise: 0.0,
@@ -447,6 +482,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_builder_missing_fields() {
         let model = MockCvModel {
             process_noise: 0.0,

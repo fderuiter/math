@@ -1,6 +1,7 @@
 use domain_applied::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 #[test]
+#[verified_engine::verified]
 fn test_security_division_by_zero_prevention() {
     let mut inputs = FavoritismInputs::default();
     // Set x_0 to zero to trigger division by zero in proximity integral
@@ -18,6 +19,7 @@ fn test_security_division_by_zero_prevention() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_security_empty_siblings_prevention() {
     let mut inputs = FavoritismInputs::default();
     // Empty siblings list means denominator integral becomes 0
@@ -35,6 +37,7 @@ fn test_security_empty_siblings_prevention() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_security_log_domain_prevention() {
     let mut inputs = FavoritismInputs::default();
     // Set f_initial to -1.0 or less to trigger log(0) or log(negative)

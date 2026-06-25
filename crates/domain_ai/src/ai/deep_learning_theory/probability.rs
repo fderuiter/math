@@ -6,6 +6,7 @@ use super::linear_algebra::Vector;
 /// P(y=j|\mathbf{x}) = \frac{e^{z_j}}{\sum_{k} e^{z_k}}
 ///
 /// This ensures all outputs sum to 1, representing a valid categorical distribution.
+#[verified_engine::verified]
 pub fn softmax(z: &Vector) -> Vector {
     // For numerical stability, subtract the max value from z before exp.
     let max_z = z.max();
@@ -26,6 +27,7 @@ pub fn softmax(z: &Vector) -> Vector {
 ///
 /// Minimizing the Cross-Entropy Loss is mathematically equivalent to maximizing
 /// the likelihood for classification tasks.
+#[verified_engine::verified]
 pub fn mle_explanation() -> &'static str {
     "MLE searches for parameters that maximize the probability of the observed data."
 }

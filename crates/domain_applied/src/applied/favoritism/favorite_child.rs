@@ -20,6 +20,7 @@ pub struct Child {
 ///
 /// An `Option` containing a reference to the `Child` with the highest favoritism score.
 /// Returns `None` if the slice is empty.
+#[verified_engine::verified]
 pub fn find_favorite_child(children: &[Child]) -> Option<&Child> {
     children.iter().max_by(|a, b| {
         let score_a = calculate_favoritism_score(&a.inputs);

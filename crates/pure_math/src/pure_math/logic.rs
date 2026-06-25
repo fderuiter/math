@@ -24,6 +24,7 @@
 /// let domain = vec![2, 4, 6, 8];
 /// assert!(forall(domain.into_iter(), |x| x % 2 == 0));
 /// ```
+#[verified_engine::verified]
 pub fn forall<I, F>(domain: I, p: F) -> bool
 where
     I: Iterator,
@@ -49,6 +50,7 @@ where
 /// let domain = vec![1, 3, 5, 8];
 /// assert!(exists(domain.into_iter(), |x| x % 2 == 0)); // 8 is even
 /// ```
+#[verified_engine::verified]
 pub fn exists<I, F>(domain: I, p: F) -> bool
 where
     I: Iterator,
@@ -65,6 +67,7 @@ where
 /// Negation of a Universal Quantifier.
 ///
 /// Demonstrates the logical equivalence: $\neg [\forall x, P(x)] \iff \exists x, \neg P(x)$.
+#[verified_engine::verified]
 pub fn negate_forall<I, F>(domain: I, p: F) -> bool
 where
     I: Iterator + Clone,
@@ -77,6 +80,7 @@ where
 /// Negation of an Existential Quantifier.
 ///
 /// Demonstrates the logical equivalence: $\neg [\exists x, P(x)] \iff \forall x, \neg P(x)$.
+#[verified_engine::verified]
 pub fn negate_exists<I, F>(domain: I, p: F) -> bool
 where
     I: Iterator + Clone,
@@ -93,6 +97,7 @@ where
 /// by verifying `P(n)` for all n.
 ///
 /// Note: This is not a formal proof, but a computational verification.
+#[verified_engine::verified]
 pub fn verify_induction<F>(limit: usize, p: F) -> bool
 where
     F: Fn(usize) -> bool,
@@ -118,6 +123,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_quantifiers() {
         let evens = vec![2, 4, 6, 8];
         assert!(forall(evens.clone().into_iter(), |x| x % 2 == 0));
@@ -129,6 +135,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_negations() {
         let evens = vec![2, 4, 6];
         // "Not all are even" should be false
@@ -140,6 +147,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_induction_sum() {
         // Prove sum(1..n) = n(n+1)/2
         let prop = |n: usize| {

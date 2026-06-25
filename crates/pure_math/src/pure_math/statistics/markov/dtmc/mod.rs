@@ -107,6 +107,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// Panics if the generic real field `T` fails to instantiate from the `f64` value `1e-10`.
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[verified_engine::verified]
     pub fn new(transition_matrix: DMatrix<T>, state_types: Vec<StateType>) -> Result<Self> {
         let n = transition_matrix.nrows();
 
@@ -188,26 +189,31 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     }
 
     /// Returns the transition matrix.
+    #[verified_engine::verified]
     pub fn transition_matrix(&self) -> &DMatrix<T> {
         &self.transition_matrix
     }
 
     /// Returns the state types.
+    #[verified_engine::verified]
     pub fn state_types(&self) -> &[StateType] {
         &self.state_types
     }
 
     /// Returns the number of states.
+    #[verified_engine::verified]
     pub fn num_states(&self) -> usize {
         self.state_types.len()
     }
 
     /// Returns the number of transient states.
+    #[verified_engine::verified]
     pub fn num_transient(&self) -> usize {
         self.transient_indices.len()
     }
 
     /// Returns the number of absorbing states.
+    #[verified_engine::verified]
     pub fn num_absorbing(&self) -> usize {
         self.absorbing_indices.len()
     }
@@ -217,6 +223,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Returns
     ///
     /// The Q submatrix of size (n_transient × n_transient).
+    #[verified_engine::verified]
     pub fn q_matrix(&self) -> DMatrix<T> {
         let n_t = self.transient_indices.len();
         let mut q = DMatrix::zeros(n_t, n_t);
@@ -235,6 +242,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Returns
     ///
     /// The R submatrix of size (n_transient × n_absorbing).
+    #[verified_engine::verified]
     pub fn r_matrix(&self) -> DMatrix<T> {
         let n_t = self.transient_indices.len();
         let n_a = self.absorbing_indices.len();
@@ -264,6 +272,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Errors
     ///
     /// Returns `SingularMatrix` if (I - Q) is not invertible.
+    #[verified_engine::verified]
     pub fn fundamental_matrix(&self) -> Result<DMatrix<T>> {
         let q = self.q_matrix();
         let n_t = q.nrows();
@@ -290,6 +299,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Errors
     ///
     /// Returns an error if the fundamental matrix cannot be computed.
+    #[verified_engine::verified]
     pub fn absorption_probabilities(&self) -> Result<DMatrix<T>> {
         if self.absorbing_indices.is_empty() {
             return Err(MarkovError::InvalidState {
@@ -315,6 +325,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Errors
     ///
     /// Returns an error if the fundamental matrix cannot be computed.
+    #[verified_engine::verified]
     pub fn expected_absorption_times(&self) -> Result<DVector<T>> {
         let n = self.fundamental_matrix()?;
         let n_t = n.nrows();
@@ -336,6 +347,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// # Returns
     ///
     /// The n-step transition matrix P^n.
+    #[verified_engine::verified]
     pub fn n_step_transition(&self, n: usize) -> DMatrix<T> {
         if n == 0 {
             return DMatrix::identity(self.num_states(), self.num_states());
@@ -398,6 +410,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// assert!((pi[0] - 2.0 / 3.0).abs() < 1e-10);
     /// assert!((pi[1] - 1.0 / 3.0).abs() < 1e-10);
     /// ```
+    #[verified_engine::verified]
     pub fn stationary_distribution(&self) -> Option<DVector<T>> {
         // For chains with absorbing states, only absorbing states have non-zero
         // stationary probability
@@ -464,6 +477,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// Returns an error if:
     /// - The fundamental matrix cannot be computed
     /// - The reward vector size doesn't match the number of absorbing states
+    #[verified_engine::verified]
     pub fn expected_possession_value(&self, rewards: &DVector<T>) -> Result<DVector<T>> {
         if rewards.len() != self.num_absorbing() {
             return Err(MarkovError::DimensionMismatch {

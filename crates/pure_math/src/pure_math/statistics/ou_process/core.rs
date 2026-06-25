@@ -35,6 +35,7 @@ impl MeanReversionRate {
     /// let theta = MeanReversionRate::new(0.5).unwrap();
     /// assert_eq!(theta.value(), 0.5);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, OuError> {
         if value <= 0.0 || !value.is_finite() {
             return Err(OuError::InvalidMeanReversionRate { value });
@@ -43,6 +44,7 @@ impl MeanReversionRate {
     }
 
     /// Returns the raw rate value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -81,6 +83,7 @@ impl Volatility {
     /// let sigma = Volatility::new(0.2).unwrap();
     /// assert_eq!(sigma.value(), 0.2);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, OuError> {
         if value < 0.0 || !value.is_finite() {
             return Err(OuError::InvalidVolatility { value });
@@ -89,6 +92,7 @@ impl Volatility {
     }
 
     /// Returns the raw volatility value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -124,6 +128,7 @@ impl LongTermMean {
     /// let mu = LongTermMean::new(0.45).unwrap();
     /// assert_eq!(mu.value(), 0.45);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, OuError> {
         if !value.is_finite() {
             return Err(OuError::InvalidSimulationParams {
@@ -134,6 +139,7 @@ impl LongTermMean {
     }
 
     /// Returns the raw mean value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -177,6 +183,7 @@ impl OuParams {
     ///     Volatility::new(0.3).unwrap()
     /// );
     /// ```
+    #[verified_engine::verified]
     pub fn new(mu: LongTermMean, theta: MeanReversionRate, sigma: Volatility) -> Self {
         Self { mu, theta, sigma }
     }
@@ -196,6 +203,7 @@ impl OuParams {
     /// # Errors
     ///
     /// Returns an `OuError` if any parameter is invalid (e.g., negative volatility).
+    #[verified_engine::verified]
     pub fn from_values(mu: f64, theta: f64, sigma: f64) -> Result<Self, OuError> {
         Ok(Self {
             mu: LongTermMean::new(mu)?,
@@ -210,12 +218,14 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_mean_reversion_rate_valid() {
         let theta = MeanReversionRate::new(0.5).unwrap();
         assert_eq!(theta.value(), 0.5);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_mean_reversion_rate_invalid() {
         assert!(MeanReversionRate::new(-0.1).is_err());
         assert!(MeanReversionRate::new(0.0).is_err());
@@ -224,6 +234,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_volatility_valid() {
         let sigma = Volatility::new(0.2).unwrap();
         assert_eq!(sigma.value(), 0.2);
@@ -233,12 +244,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_volatility_invalid() {
         assert!(Volatility::new(-0.1).is_err());
         assert!(Volatility::new(f64::NAN).is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_long_term_mean_valid() {
         let mu = LongTermMean::new(0.5).unwrap();
         assert_eq!(mu.value(), 0.5);
@@ -248,12 +261,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_long_term_mean_invalid() {
         assert!(LongTermMean::new(f64::NAN).is_err());
         assert!(LongTermMean::new(f64::INFINITY).is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_ou_params() {
         let params = OuParams::from_values(0.5, 1.0, 0.3).unwrap();
         assert_eq!(params.mu.value(), 0.5);
@@ -262,6 +277,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_ou_params_invalid() {
         // Invalid theta (negative)
         assert!(OuParams::from_values(0.5, -1.0, 0.3).is_err());

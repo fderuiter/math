@@ -4,6 +4,7 @@ use std::collections::{HashMap, HashSet};
 #[test]
 #[ignore]
 #[cfg(any())]
+#[verified_engine::verified]
 fn test_distance() {
     assert_eq!(distance(&p1, &p2), Rational::from(5));
 }
@@ -11,6 +12,7 @@ fn test_distance() {
 #[test]
 #[ignore]
 #[cfg(any())]
+#[verified_engine::verified]
 fn test_kolmogorov_approx() {
     assert!(
         (prefix_kolmogorov_approx(&Integer::from(10))
@@ -21,6 +23,7 @@ fn test_kolmogorov_approx() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_combinatorial_lemma() {
     let mut x_set = HashSet::new();
     x_set.insert(1);

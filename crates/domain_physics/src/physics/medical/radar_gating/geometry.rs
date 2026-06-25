@@ -52,6 +52,7 @@ impl AngleFftConfig {
     /// - x is horizontal
     /// - y is depth (range)
     /// - z is vertical
+    #[verified_engine::verified]
     pub fn spherical_to_cartesian(&self, point: &SphericalPoint) -> Point3<f64> {
         let w_x = (2.0 * point.azimuth_index as f64) / self.n_fft_azimuth as f64;
         let w_z = (2.0 * point.elevation_index as f64) / self.n_fft_elevation as f64;
@@ -78,6 +79,7 @@ pub struct SensorToPatientTransform {
 
 impl SensorToPatientTransform {
     /// Creates a new transformation from a rotation and translation.
+    #[verified_engine::verified]
     pub fn new(rotation: Rotation3<f64>, translation: Translation3<f64>) -> Self {
         Self {
             rotation,
@@ -88,6 +90,7 @@ impl SensorToPatientTransform {
     /// Transforms a point from Sensor Frame ($P_S$) to Patient Frame ($P_P$).
     ///
     /// $$ P_P = R \cdot P_S + T $$
+    #[verified_engine::verified]
     pub fn transform_point(&self, point_sensor: &Point3<f64>) -> Point3<f64> {
         self.translation * (self.rotation * point_sensor)
     }
@@ -106,6 +109,7 @@ impl SensorToPatientTransform {
 /// # Returns
 ///
 /// * `f64` - The angle in radians.
+#[verified_engine::verified]
 pub fn angle_of_arrival(
     wavelength: f64,
     phase_difference: f64,
@@ -131,6 +135,7 @@ pub fn angle_of_arrival(
 /// * `num_rx_antennas` ($N_{RX}$) - Number of receive antennas (or virtual array size).
 /// * `antenna_distance` ($l$) - Spacing between array elements.
 /// * `angle` ($\theta$) - The look angle (off-boresight). Resolution degrades as $\theta$ increases.
+#[verified_engine::verified]
 pub fn angle_resolution(
     wavelength: f64,
     num_rx_antennas: usize,
@@ -155,6 +160,7 @@ pub fn angle_resolution(
 ///
 /// * `vertical_distance` ($d_{\text{TAA}}$) - Distance between thoracic and abdominal regions (e.g., 20 cm).
 /// * `range` ($R$) - Distance from the sensor to the patient.
+#[verified_engine::verified]
 pub fn required_angular_separation(vertical_distance: f64, range: f64) -> f64 {
     (vertical_distance / range).atan()
 }

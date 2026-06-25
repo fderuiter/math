@@ -10,6 +10,7 @@ use super::types::{FlowState, FluidProperties};
 /// * `properties`: Fluid properties.
 /// * `velocity_magnitude`: Characteristic velocity scale $u$.
 /// * `characteristic_length`: Characteristic length scale $L$.
+#[verified_engine::verified]
 pub fn reynolds_number(
     properties: &FluidProperties,
     velocity_magnitude: f64,
@@ -30,6 +31,7 @@ pub fn reynolds_number(
     since = "0.2.0",
     note = "Use `regimes::PipeFlowClassifier` for explicit strategy"
 )]
+#[verified_engine::verified]
 pub fn flow_regime(re: f64) -> FlowRegime {
     PipeFlowClassifier.classify(re)
 }
@@ -42,6 +44,7 @@ pub fn flow_regime(re: f64) -> FlowRegime {
 /// * `properties`: Fluid properties (specifically density $\rho$).
 /// * `height`: Elevation $h$ relative to a datum.
 /// * `gravity`: Gravitational acceleration $g$ (magnitude, usually 9.81).
+#[verified_engine::verified]
 pub fn bernoulli_constant(
     state: &FlowState,
     properties: &FluidProperties,
@@ -58,6 +61,7 @@ pub fn bernoulli_constant(
 ///
 /// * `properties`: Fluid properties (specifically dynamic viscosity $\mu$).
 /// * `velocity_gradient_normal`: Gradient of velocity perpendicular to the wall ($\frac{\partial u}{\partial y}$).
+#[verified_engine::verified]
 pub fn shear_stress(properties: &FluidProperties, velocity_gradient_normal: f64) -> f64 {
     properties.dynamic_viscosity() * velocity_gradient_normal
 }

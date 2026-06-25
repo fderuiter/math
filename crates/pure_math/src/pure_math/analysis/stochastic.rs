@@ -21,6 +21,7 @@ pub trait StochasticSystem<State> {
     /// Appends the propensity (rate) of each reaction in the current state to the output buffer.
     ///
     /// The buffer is cleared by the solver before calling this method.
+    #[verified_engine::verified]
     fn propensities(&self, state: &State, out: &mut Vec<f64>);
 
     /// Updates the state according to the reaction that occurred.
@@ -28,6 +29,7 @@ pub trait StochasticSystem<State> {
     /// # Arguments
     /// * `state` - The current state to be modified.
     /// * `reaction_index` - The index of the reaction to execute (corresponding to the index in propensities).
+    #[verified_engine::verified]
     fn react(&self, state: &mut State, reaction_index: usize) -> Result<(), StochasticError>;
 }
 
@@ -44,6 +46,7 @@ impl<R: Rng> GillespieSolver<R> {
     /// Creates a new solver with the provided random number generator.
     ///
     /// This allows for deterministic simulations by passing a seeded RNG.
+    #[verified_engine::verified]
     pub fn new(rng: R) -> Self {
         Self {
             rng,
@@ -120,6 +123,7 @@ mod tests {
     }
 
     impl StochasticSystem<DecayState> for DecayModel {
+        #[verified_engine::verified]
         fn propensities(&self, state: &DecayState, out: &mut Vec<f64>) {
             if state.x > 0 {
                 out.push(self.k * state.x as f64);
@@ -128,6 +132,7 @@ mod tests {
             }
         }
 
+        #[verified_engine::verified]
         fn react(
             &self,
             state: &mut DecayState,
@@ -143,6 +148,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_decay_process() -> Result<(), StochasticError> {
         let rng = StdRng::seed_from_u64(42);
         let mut solver = GillespieSolver::new(rng);

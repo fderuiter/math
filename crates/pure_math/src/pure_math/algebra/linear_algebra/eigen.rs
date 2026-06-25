@@ -55,6 +55,7 @@ use nalgebra::DMatrix;
 /// let unstable_matrix = DMatrix::from_row_slice(2, 2, &[2.0, 0.0, 0.0, -3.0]);
 /// assert!(!is_stable(&unstable_matrix));
 /// ```
+#[verified_engine::verified]
 pub fn is_stable(matrix: &DMatrix<f64>) -> bool {
     let eigens = matrix.complex_eigenvalues();
     eigens.iter().all(|lambda| lambda.re < 0.0)
@@ -85,6 +86,7 @@ pub fn is_stable(matrix: &DMatrix<f64>) -> bool {
 /// // Frequencies should be 2.0 and 3.0
 /// assert!((freqs[0] - 2.0).abs() < 1e-5 || (freqs[0] - 3.0).abs() < 1e-5);
 /// ```
+#[verified_engine::verified]
 pub fn natural_frequencies(matrix: &DMatrix<f64>) -> Vec<f64> {
     let eigens = matrix.complex_eigenvalues();
     eigens
@@ -117,6 +119,7 @@ mod tests {
     use nalgebra::DVector;
 
     #[test]
+    #[verified_engine::verified]
     fn test_stability() {
         // Stable: -1, -2
         let m = DMatrix::from_diagonal(&DVector::from_vec(vec![-1.0, -2.0]));
@@ -128,6 +131,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_natural_frequencies() {
         // Eigenvalues -4, -9 => Frequencies 2, 3
         let m = DMatrix::from_diagonal(&DVector::from_vec(vec![-4.0, -9.0]));

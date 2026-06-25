@@ -5,8 +5,11 @@
 
 /// Particle statistics type.
 pub trait ParticleStatistics {
+    #[verified_engine::verified]
     fn validate_set_occupation(current: u8, count: u8) -> Result<(), String>;
+    #[verified_engine::verified]
     fn validate_create_particle(current: u8) -> Result<u8, String>;
+    #[verified_engine::verified]
     fn check_commutation(op1: &Operator, op2: &Operator) -> f64;
 }
 
@@ -37,6 +40,7 @@ pub struct Operator {
 }
 
 impl Operator {
+    #[verified_engine::verified]
     pub fn new(op_type: QuantumOperatorType, index: usize) -> Self {
         Self { op_type, index }
     }
@@ -54,6 +58,7 @@ pub struct FockState {
 
 impl FockState {
     /// Creates a new vacuum state |0, 0, ...> with given size.
+    #[verified_engine::verified]
     pub fn new(size: usize) -> Self {
         Self {
             occupations: vec![0; size],
@@ -64,6 +69,7 @@ impl FockState {
     ///
     /// The `P` type parameter specifies the particle statistics (e.g., `Fermion`, `Boson`)
     /// which will validate the occupation rules.
+    #[verified_engine::verified]
     pub fn set_occupation<P: ParticleStatistics>(
         &mut self,
         index: usize,
@@ -81,6 +87,7 @@ impl FockState {
     ///
     /// The `P` type parameter specifies the particle statistics (e.g., `Fermion`, `Boson`)
     /// which will validate the creation rules.
+    #[verified_engine::verified]
     pub fn create_particle<P: ParticleStatistics>(&mut self, index: usize) -> Result<(), String> {
         if index >= self.occupations.len() {
             return Err(format!("Index {} out of bounds", index));
@@ -93,6 +100,7 @@ impl FockState {
 }
 
 impl ParticleStatistics for Fermion {
+    #[verified_engine::verified]
     fn validate_set_occupation(_current: u8, count: u8) -> Result<(), String> {
         if count > 1 {
             return Err(
@@ -102,6 +110,7 @@ impl ParticleStatistics for Fermion {
         Ok(())
     }
 
+    #[verified_engine::verified]
     fn validate_create_particle(current: u8) -> Result<u8, String> {
         if current >= 1 {
             return Err("Pauli Exclusion: State already occupied".to_string());
@@ -109,6 +118,7 @@ impl ParticleStatistics for Fermion {
         Ok(1)
     }
 
+    #[verified_engine::verified]
     fn check_commutation(op1: &Operator, op2: &Operator) -> f64 {
         // Fermions: Anti-commutator {A, B} = AB + BA
         // {c_i, c_j^\dagger} = delta_{ij}
@@ -125,10 +135,12 @@ impl ParticleStatistics for Fermion {
 }
 
 impl ParticleStatistics for Boson {
+    #[verified_engine::verified]
     fn validate_set_occupation(_current: u8, _count: u8) -> Result<(), String> {
         Ok(())
     }
 
+    #[verified_engine::verified]
     fn validate_create_particle(current: u8) -> Result<u8, String> {
         if current == u8::MAX {
             return Err("Boson saturation (u8 max)".to_string());
@@ -136,6 +148,7 @@ impl ParticleStatistics for Boson {
         Ok(current + 1)
     }
 
+    #[verified_engine::verified]
     fn check_commutation(op1: &Operator, op2: &Operator) -> f64 {
         // Bosons: Commutator [A, B] = AB - BA
         // [a_i, a_j^\dagger] = delta_{ij}
@@ -164,6 +177,7 @@ impl ParticleStatistics for Boson {
 /// Returns the value of:
 /// * `{op1, op2}` for Fermions. Expected to be `delta_{ij}` for {c, c^\dagger}.
 /// * `[op1, op2]` for Bosons. Expected to be `delta_{ij}` for [a, a^\dagger].
+#[verified_engine::verified]
 pub fn check_commutation<P: ParticleStatistics>(op1: &Operator, op2: &Operator) -> f64 {
     P::check_commutation(op1, op2)
 }
@@ -173,6 +187,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_fermion_exclusion() {
         let mut state = FockState::new(2);
         // First addition should succeed
@@ -182,6 +197,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_commutation_logic() {
         let c_k = Operator::new(QuantumOperatorType::Annihilation, 1);
         let c_k_dag = Operator::new(QuantumOperatorType::Creation, 1);

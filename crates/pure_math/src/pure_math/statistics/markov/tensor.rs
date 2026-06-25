@@ -71,6 +71,7 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     /// # Returns
     ///
     /// A new `TransitionTensor`.
+    #[verified_engine::verified]
     pub fn new(num_states: usize, min_time: TimeIndex<T>, max_time: TimeIndex<T>) -> Self {
         TransitionTensor {
             num_states,
@@ -100,6 +101,7 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     /// # Panics
     ///
     /// Panics if `time.value()` or any slice's time value is NaN during binary search (`partial_cmp().unwrap()`).
+    #[verified_engine::verified]
     pub fn add_time_slice(&mut self, time: TimeIndex<T>, matrix: DMatrix<T>) -> Result<()> {
         // Validate time bounds
         if time.value() < self.min_time.value() || time.value() > self.max_time.value() {
@@ -161,6 +163,7 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     /// # Panics
     ///
     /// Panics if `time.value()` or any slice's time value is NaN during binary search (`partial_cmp().unwrap()`).
+    #[verified_engine::verified]
     pub fn transition_matrix_at(&self, time: TimeIndex<T>) -> Result<DMatrix<T>> {
         if self.time_slices.is_empty() {
             return Err(MarkovError::InvalidState {
@@ -210,16 +213,19 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     }
 
     /// Returns the number of time slices.
+    #[verified_engine::verified]
     pub fn num_time_slices(&self) -> usize {
         self.time_slices.len()
     }
 
     /// Returns the number of states.
+    #[verified_engine::verified]
     pub fn num_states(&self) -> usize {
         self.num_states
     }
 
     /// Returns the time range.
+    #[verified_engine::verified]
     pub fn time_range(&self) -> (T, T) {
         (self.min_time.value(), self.max_time.value())
     }
@@ -245,6 +251,7 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
     /// # Panics
     ///
     /// Panics if `T::from_usize()` fails and returns `None` for the number of samples or indices.
+    #[verified_engine::verified]
     pub fn average_transition(
         &self,
         start_time: TimeIndex<T>,
@@ -276,6 +283,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_time_index() {
         let t = TimeIndex::new(10.0).unwrap();
         assert_eq!(t.value(), 10.0);
@@ -286,6 +294,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_tensor_creation() {
         let min_t = TimeIndex::new(0.0).unwrap();
         let max_t = TimeIndex::new(24.0).unwrap();
@@ -297,6 +306,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_add_time_slice() {
         let min_t = TimeIndex::new(0.0).unwrap();
         let max_t = TimeIndex::new(24.0).unwrap();
@@ -310,6 +320,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_exact_time_lookup() {
         let min_t = TimeIndex::new(0.0).unwrap();
         let max_t = TimeIndex::new(24.0).unwrap();
@@ -329,6 +340,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_interpolation() {
         let min_t = TimeIndex::new(0.0).unwrap();
         let max_t = TimeIndex::new(24.0).unwrap();
@@ -354,6 +366,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_shot_clock_urgency() {
         // Model basketball possession: as shot clock decreases, urgency increases
         let min_t = TimeIndex::new(0.0).unwrap();
@@ -409,6 +422,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_average_transition() {
         let min_t = TimeIndex::new(0.0).unwrap();
         let max_t = TimeIndex::new(10.0).unwrap();
@@ -438,6 +452,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_out_of_bounds_time() {
         let min_t = TimeIndex::new(0.0).unwrap();
         let max_t = TimeIndex::new(24.0).unwrap();
@@ -451,6 +466,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_invalid_matrix() {
         let min_t = TimeIndex::new(0.0).unwrap();
         let max_t = TimeIndex::new(24.0).unwrap();

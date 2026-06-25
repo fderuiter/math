@@ -110,12 +110,14 @@ pub struct DiffusionCoeff(pub f64);
 
 impl Deref for DiffusionCoeff {
     type Target = f64;
+    #[verified_engine::verified]
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
 impl DerefMut for DiffusionCoeff {
+    #[verified_engine::verified]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
@@ -124,6 +126,7 @@ impl DerefMut for DiffusionCoeff {
 // Convenience implementation for the standard 2-species case
 impl TuringSystem<2, SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver> {
     /// Creates a new Turing System with default Schnakenberg kinetics, 1D Finite Difference, and Fused Euler Solver.
+    #[verified_engine::verified]
     pub fn new(size: Dimension, d_u: DiffusionCoeff, d_v: DiffusionCoeff, dx: StepSize) -> Self {
         Self {
             state: TuringState::new(*size),
@@ -139,6 +142,7 @@ impl TuringSystem<2, SchnakenbergKinetics, FiniteDifference1D, FusedEulerSolver>
 // Convenience implementation for custom kinetics/diffusion in 2-species case
 impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>> TuringSystem<2, K, D, FusedEulerSolver> {
     /// Creates a new Turing System with custom kinetics and diffusion strategy, using the default Fused Euler solver.
+    #[verified_engine::verified]
     pub fn new_with_kinetics(
         size: Dimension,
         d_u: DiffusionCoeff,
@@ -162,6 +166,7 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
     TuringSystem<N, K, D, S>
 {
     /// Creates a new Turing System with custom kinetics, diffusion strategy, and solver.
+    #[verified_engine::verified]
     pub fn new_with_solver(
         size: Dimension,
         diffusion_coeffs: [DiffusionCoeff; N],
@@ -184,6 +189,7 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
     }
 
     /// Updates the grid using the solver strategy.
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         let n = self.state.len();
         if n == 0 {
@@ -215,21 +221,25 @@ impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>, S: TuringSolverStrategy<2>>
     TuringSystem<2, K, D, S>
 {
     /// Accessor for the activator concentrations (backward compatibility/convenience).
+    #[verified_engine::verified]
     pub fn u(&self) -> &[f64] {
         self.state.u()
     }
 
     /// Accessor for the inhibitor concentrations (backward compatibility/convenience).
+    #[verified_engine::verified]
     pub fn v(&self) -> &[f64] {
         self.state.v()
     }
 
     /// Mutable accessor for the activator concentrations.
+    #[verified_engine::verified]
     pub fn u_mut(&mut self) -> &mut [f64] {
         self.state.u_mut()
     }
 
     /// Mutable accessor for the inhibitor concentrations.
+    #[verified_engine::verified]
     pub fn v_mut(&mut self) -> &mut [f64] {
         self.state.v_mut()
     }
@@ -238,12 +248,14 @@ impl<K: ReactionKinetics<2>, D: SpatialDiffusion<2>, S: TuringSolverStrategy<2>>
 impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
     OdeSystem<TuringState<N>> for TuringSystem<N, K, D, S>
 {
+    #[verified_engine::verified]
     fn derivative(&self, t: f64, state: &TuringState<N>) -> TuringState<N> {
         let mut out = TuringState::new(state.len());
         self.derivative_in_place(t, state, &mut out);
         out
     }
 
+    #[verified_engine::verified]
     fn derivative_in_place(&self, t: f64, state: &TuringState<N>, out: &mut TuringState<N>) {
         let dynamics = TuringDynamics {
             kinetics: &self.kinetics,
@@ -257,14 +269,17 @@ impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSo
 impl<const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>, S: TuringSolverStrategy<N>>
     TimeStepper<TuringState<N>> for TuringSystem<N, K, D, S>
 {
+    #[verified_engine::verified]
     fn get_state(&self) -> &TuringState<N> {
         &self.state
     }
 
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut TuringState<N> {
         &mut self.state
     }
 
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         // Delegate to the optimized inherent method
         self.step(dt);
@@ -277,6 +292,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "State vector 1 length mismatch")]
+    #[verified_engine::verified]
     fn test_derivative_in_place_safety_check() {
         let n = 10;
         let system = TuringSystem::new(
@@ -297,6 +313,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_turing_system_logic_preservation() {
         // Setup a small system
         let n = 10;

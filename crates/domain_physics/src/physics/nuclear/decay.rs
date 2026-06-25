@@ -10,6 +10,7 @@ use std::f64::consts::PI;
 /// * `initial_quantity` - Initial quantity (N0).
 /// * `half_life` - Half-life in seconds.
 /// * `time` - Time elapsed in seconds.
+#[verified_engine::verified]
 pub fn calculate_remaining(
     initial_quantity: f64,
     half_life: f64,
@@ -28,6 +29,7 @@ pub fn calculate_remaining(
 /// * `z_daughter` - Atomic number of the daughter nucleus.
 /// * `z_alpha` - Atomic number of the alpha particle (usually 2).
 /// * `velocity` - Velocity of the alpha particle in fm/s.
+#[verified_engine::verified]
 pub fn gamow_factor(
     z_daughter: AtomicNumber,
     z_alpha: AtomicNumber,

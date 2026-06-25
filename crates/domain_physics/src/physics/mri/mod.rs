@@ -91,6 +91,7 @@ mod tests {
     use std::f64::consts::PI;
 
     #[test]
+    #[verified_engine::verified]
     fn test_larmor_frequency() {
         // Verify Larmor frequency of Hydrogen at 1.5 Tesla
         // Expected: ~ 63.87 MHz -> 63.87e6 * 2pi rad/s
@@ -108,6 +109,7 @@ mod tests {
 
     #[test]
     #[allow(deprecated)]
+    #[verified_engine::verified]
     fn test_bloch_relaxation_legacy() {
         // Test T2 relaxation using legacy API
         // Initialize M = [0, 1, 0], B = 0 (no precession), T1 = inf, T2 = 1.0
@@ -139,6 +141,7 @@ mod tests {
 
     #[test]
     #[allow(deprecated)]
+    #[verified_engine::verified]
     fn test_bloch_rk4_accuracy_legacy() {
         // T2 relaxation with RK4 using legacy API
         let initial_m = Vector3::new(0.0, 1.0, 0.0);
@@ -164,6 +167,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bloch_time_stepper_api() {
         // Test new TimeStepper API
         let initial_m = Vector3::new(0.0, 1.0, 0.0);

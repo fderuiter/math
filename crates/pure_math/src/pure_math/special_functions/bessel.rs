@@ -7,6 +7,7 @@ use std::f64::consts::PI;
 /// $J_\nu(x) = \sum_{k=0}^{\infty} \frac{(-1)^k}{k! \Gamma(\nu + k + 1)} \left(\frac{x}{2}\right)^{\nu + 2k}$
 ///
 /// Note: Series converges fast for small x. For large x, asymptotic expansion is preferred.
+#[verified_engine::verified]
 pub fn bessel_j(nu: f64, x: f64) -> f64 {
     let mut sum = 0.0;
     let limit = 50; // Truncate series
@@ -31,6 +32,7 @@ pub fn bessel_j(nu: f64, x: f64) -> f64 {
 /// Bessel Function of the Second Kind $Y_\nu(x)$.
 ///
 /// Placeholder: Returns NaN as reliable implementation is complex without external crate.
+#[verified_engine::verified]
 pub fn bessel_y(_nu: f64, _x: f64) -> f64 {
     unimplemented!("Bessel function of second kind not yet implemented via series expansion")
 }
@@ -38,6 +40,7 @@ pub fn bessel_y(_nu: f64, _x: f64) -> f64 {
 /// Spherical Bessel Function of the First Kind $j_\ell(x)$.
 ///
 /// Defined as $j_\ell(x) = \sqrt{\frac{\pi}{2x}} J_{\ell+1/2}(x)$.
+#[verified_engine::verified]
 pub fn spherical_bessel_j(l: u64, x: f64) -> f64 {
     if x.abs() < 1e-10 {
         if l == 0 {
@@ -55,6 +58,7 @@ pub fn spherical_bessel_j(l: u64, x: f64) -> f64 {
 /// $\int_0^1 x J_\nu(\alpha x) J_\nu(\beta x) dx$ should be 0 if $\alpha \neq \beta$ are roots.
 ///
 /// This function computes the integral numerically.
+#[verified_engine::verified]
 pub fn check_orthogonality_bessel(nu: f64, alpha: f64, beta: f64) -> f64 {
     let integrand = |x: f64| x * bessel_j(nu, alpha * x) * bessel_j(nu, beta * x);
     // Simple trapezoidal integration for demonstration/checking

@@ -9,6 +9,7 @@ pub trait ReactionKinetics<const N: usize = 2> {
     ///
     /// # Returns
     /// An array `[dC_1/dt, ..., dC_N/dt]` representing the reaction terms.
+    #[verified_engine::verified]
     fn reaction(&self, concentrations: [f64; N]) -> [f64; N];
 }
 
@@ -35,18 +36,21 @@ pub struct SchnakenbergKinetics {
 
 impl SchnakenbergKinetics {
     /// Creates a new Schnakenberg kinetics model.
+    #[verified_engine::verified]
     pub fn new(a: f64, b: f64) -> Self {
         Self { a, b }
     }
 }
 
 impl Default for SchnakenbergKinetics {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self { a: 0.01, b: 0.05 }
     }
 }
 
 impl ReactionKinetics<2> for SchnakenbergKinetics {
+    #[verified_engine::verified]
     fn reaction(&self, concentrations: [f64; 2]) -> [f64; 2] {
         let u = concentrations[0];
         let v = concentrations[1];
@@ -58,6 +62,7 @@ impl ReactionKinetics<2> for SchnakenbergKinetics {
 }
 
 impl ReactionModel for SchnakenbergKinetics {
+    #[verified_engine::verified]
     fn reaction(&self, concentrations: &[f64], rates: &mut [f64]) {
         if concentrations.len() < 2 || rates.len() < 2 {
             return;
@@ -69,6 +74,7 @@ impl ReactionModel for SchnakenbergKinetics {
         rates[1] = out[1];
     }
 
+    #[verified_engine::verified]
     fn add_reaction_batch(
         &self,
         state: &crate::biology::reaction_diffusion::ChemicalState,

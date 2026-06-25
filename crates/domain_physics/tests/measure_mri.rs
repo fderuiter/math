@@ -4,6 +4,7 @@ use num_complex::Complex;
 use std::time::Instant;
 
 #[test]
+#[verified_engine::verified]
 fn measure_mri_dft_performance() {
     let size = 64; // 64x64 matrix
     let density = DMatrix::from_fn(size, size, |r, c| {

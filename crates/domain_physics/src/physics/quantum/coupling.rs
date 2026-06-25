@@ -55,6 +55,7 @@ use wigner_symbols::ClebschGordan;
 /// // Standard tables give <3/2 -1/2; 1 1 | 5/2 1/2> = sqrt(3/10) approx 0.5477.
 /// assert!((coeff - (3.0f64 / 10.0f64).sqrt()).abs() < 1e-9);
 /// ```
+#[verified_engine::verified]
 pub fn clebsch_gordan(j1: f64, m1: f64, j2: f64, m2: f64, j: f64, m: f64) -> f64 {
     // The wigner_symbols crate uses integers to represent half-integer spins,
     // by storing twice the value.

@@ -9,12 +9,14 @@ const DEFAULT_BETA_END: f64 = 0.02;
 /// Input: None.
 /// Operation: Select a random integer timestep t.
 /// Output: Timestep scalar t.
+#[verified_engine::verified]
 pub fn sample_timestep(max_timesteps: usize) -> usize {
     let mut rng = rand::thread_rng();
     sample_timestep_with_rng(max_timesteps, &mut rng)
 }
 
 /// Module 2.1: Time Sampling using an injected RNG.
+#[verified_engine::verified]
 pub fn sample_timestep_with_rng<R: Rng + ?Sized>(max_timesteps: usize, rng: &mut R) -> usize {
     rng.gen_range(1..=max_timesteps)
 }
@@ -30,6 +32,7 @@ pub struct NoiseSchedule {
 }
 
 impl NoiseSchedule {
+    #[verified_engine::verified]
     pub fn new(timesteps: usize) -> Self {
         // Linear schedule for betas as an example (e.g. 1e-4 to 0.02)
         let beta_start = DEFAULT_BETA_START;
@@ -57,6 +60,7 @@ impl NoiseSchedule {
         }
     }
 
+    #[verified_engine::verified]
     pub fn get_scales(&self, t: usize) -> (f64, f64) {
         // t is 1-indexed in the prompt, let's assume 0-indexed internally or handle offset.
         // Prompt: t ~ U{1...T}. Let's say index t-1.
@@ -75,6 +79,7 @@ impl NoiseSchedule {
 /// Input: Rendered Image x_render, Random Gaussian Noise epsilon ~ N(0, I).
 /// Operation: Linear combination (interpolation).
 /// Output: Noisy Latent Image z_t (scaled to diffusion model resolution).
+#[verified_engine::verified]
 pub fn inject_noise(
     image: &DMatrix<f64>,
     noise: &DMatrix<f64>,
@@ -85,12 +90,14 @@ pub fn inject_noise(
 }
 
 /// Helper to generate Gaussian noise matching image dimensions
+#[verified_engine::verified]
 pub fn generate_noise(rows: usize, cols: usize) -> Result<DMatrix<f64>, crate::error::AIError> {
     let mut rng = rand::thread_rng();
     generate_noise_with_rng(rows, cols, &mut rng)
 }
 
 /// Helper to generate Gaussian noise matching image dimensions using an injected RNG.
+#[verified_engine::verified]
 pub fn generate_noise_with_rng<R: Rng + ?Sized>(
     rows: usize,
     cols: usize,

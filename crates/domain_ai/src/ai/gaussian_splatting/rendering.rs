@@ -5,6 +5,7 @@ use nalgebra::Vector3;
 ///
 /// C = sum(c_i * alpha_i * T_i)
 /// where T_i = prod(1 - alpha_j) for j < i
+#[verified_engine::verified]
 pub fn blend_gaussians(
     sorted_gaussians: &[Gaussian2D],
     pixel_coord: &nalgebra::Point2<f64>,
@@ -35,6 +36,7 @@ pub fn blend_gaussians(
 /// Evaluates the opacity of a 2D Gaussian at a specific point.
 ///
 /// alpha = alpha_raw * exp(-0.5 * (x - mu)^T * Sigma^-1 * (x - mu))
+#[verified_engine::verified]
 pub fn evaluate_gaussian_opacity(gaussian: &Gaussian2D, point: &nalgebra::Point2<f64>) -> f64 {
     let dx = point.x - gaussian.mean.x;
     let dy = point.y - gaussian.mean.y;
@@ -61,6 +63,7 @@ mod tests {
     use nalgebra::{Matrix2, Point2};
 
     #[test]
+    #[verified_engine::verified]
     fn test_evaluate_gaussian() {
         let g = Gaussian2D {
             mean: Point2::new(0.0, 0.0),
@@ -80,6 +83,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_blend_gaussians() {
         let g1 = Gaussian2D {
             mean: Point2::new(0.0, 0.0),

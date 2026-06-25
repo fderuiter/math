@@ -10,6 +10,7 @@ pub enum ComparisonResult {
 
 /// Defines how to compare two outcomes of type T.
 pub trait OutcomeComparator<T: ?Sized> {
+    #[verified_engine::verified]
     fn compare(&self, a: &T, b: &T) -> ComparisonResult;
 }
 
@@ -19,6 +20,7 @@ pub trait OutcomeComparator<T: ?Sized> {
 pub struct HigherIsBetter;
 
 impl<T: PartialOrd> OutcomeComparator<T> for HigherIsBetter {
+    #[verified_engine::verified]
     fn compare(&self, a: &T, b: &T) -> ComparisonResult {
         if a > b {
             ComparisonResult::Win
@@ -36,6 +38,7 @@ impl<T: PartialOrd> OutcomeComparator<T> for HigherIsBetter {
 pub struct LowerIsBetter;
 
 impl<T: PartialOrd> OutcomeComparator<T> for LowerIsBetter {
+    #[verified_engine::verified]
     fn compare(&self, a: &T, b: &T) -> ComparisonResult {
         if a < b {
             ComparisonResult::Win
@@ -58,12 +61,14 @@ pub struct ThresholdComparator {
 }
 
 impl ThresholdComparator {
+    #[verified_engine::verified]
     pub fn new(threshold: f64) -> Self {
         Self { threshold }
     }
 }
 
 impl OutcomeComparator<f64> for ThresholdComparator {
+    #[verified_engine::verified]
     fn compare(&self, a: &f64, b: &f64) -> ComparisonResult {
         if a - b > self.threshold {
             ComparisonResult::Win
@@ -85,6 +90,7 @@ pub struct WinRatioAnalysis<T> {
 
 /// A strategy for pairing subjects between two groups for comparison.
 pub trait PairingStrategy<T> {
+    #[verified_engine::verified]
     fn evaluate(
         &self,
         analysis: &WinRatioAnalysis<T>,
@@ -97,6 +103,7 @@ pub trait PairingStrategy<T> {
 pub struct UnmatchedPairing;
 
 impl<T> PairingStrategy<T> for UnmatchedPairing {
+    #[verified_engine::verified]
     fn evaluate(
         &self,
         analysis: &WinRatioAnalysis<T>,
@@ -122,6 +129,7 @@ impl<T> PairingStrategy<T> for UnmatchedPairing {
 pub struct MatchedPairing;
 
 impl<T> PairingStrategy<T> for MatchedPairing {
+    #[verified_engine::verified]
     fn evaluate(
         &self,
         analysis: &WinRatioAnalysis<T>,
@@ -148,6 +156,7 @@ impl<T> PairingStrategy<T> for MatchedPairing {
 
 impl<T> WinRatioAnalysis<T> {
     /// Creates a new analysis with no strategies.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             strategies: Vec::new(),
@@ -156,12 +165,14 @@ impl<T> WinRatioAnalysis<T> {
     }
 
     /// Adds a comparison strategy for the next outcome level.
+    #[verified_engine::verified]
     pub fn add_strategy(mut self, strategy: Box<dyn OutcomeComparator<T>>) -> Self {
         self.strategies.push(strategy);
         self
     }
 
     /// Compares two subjects outcome-by-outcome using the configured strategies.
+    #[verified_engine::verified]
     pub fn compare_subjects(&self, subject1: &[T], subject2: &[T]) -> ComparisonResult {
         // Zip the outcomes with the strategies.
         // If there are more outcomes than strategies, the extra outcomes are ignored (or we could panic/error).
@@ -192,17 +203,20 @@ impl<T> WinRatioAnalysis<T> {
     }
 
     /// Performs an Unmatched Pair comparison (All-Pairs).
+    #[verified_engine::verified]
     pub fn unmatched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
         self.evaluate_pairs(group1, group2, &UnmatchedPairing)
     }
 
     /// Performs a Matched Pair comparison.
+    #[verified_engine::verified]
     pub fn matched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
         self.evaluate_pairs(group1, group2, &MatchedPairing)
     }
 }
 
 impl<T: PartialOrd + 'static> Default for WinRatioAnalysis<T> {
+    #[verified_engine::verified]
     fn default() -> Self {
         // Default behavior mimics the old `compare_outcomes`: HigherIsBetter for everything.
         // However, since we don't know how many levels there are, we can't pre-populate.
@@ -219,6 +233,7 @@ impl<T: PartialOrd + 'static> Default for WinRatioAnalysis<T> {
 /// **DEPRECATED**: Use `WinRatioAnalysis` for more flexibility.
 /// This function assumes "Higher is Better" for all outcomes.
 #[deprecated(note = "Use WinRatioAnalysis to configure comparison strategies per outcome.")]
+#[verified_engine::verified]
 pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> ComparisonResult {
     for (outcome1, outcome2) in subject1.iter().zip(subject2.iter()) {
         if outcome1 > outcome2 {
@@ -234,6 +249,7 @@ pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> Compar
 ///
 /// **DEPRECATED**: Use `WinRatioAnalysis::unmatched_pairs`.
 #[deprecated(note = "Use WinRatioAnalysis::unmatched_pairs.")]
+#[verified_engine::verified]
 pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
     // This assumes the length of the first vector is the number of outcomes.
     // If group1 or group1[0] is empty, this returns early gracefully via min(length).
@@ -254,6 +270,7 @@ pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (
 ///
 /// **DEPRECATED**: Use `WinRatioAnalysis::matched_pairs`.
 #[deprecated(note = "Use WinRatioAnalysis::matched_pairs.")]
+#[verified_engine::verified]
 pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
     let mut analysis = WinRatioAnalysis::new();
     if let Some(first) = group1.first() {
@@ -273,6 +290,7 @@ pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i3
 /// $$ WR = \frac{N_{wins}}{N_{losses}} $$
 ///
 /// Returns `f64::INFINITY` if losses are zero.
+#[verified_engine::verified]
 pub fn calculate_win_ratio(wins: i32, losses: i32) -> f64 {
     if losses == 0 {
         f64::INFINITY
@@ -307,6 +325,7 @@ pub struct WinRatioStats {
 /// The standard error is estimated as:
 /// $$ SE = \sqrt{\frac{p(1-p)}{N}} $$
 /// Where $p$ is the proportion of wins among untied pairs (simplified).
+#[verified_engine::verified]
 pub fn calculate_statistics(wins: i32, losses: i32) -> Option<WinRatioStats> {
     let total_pairs = wins + losses;
     if total_pairs == 0 {

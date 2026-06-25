@@ -3,6 +3,7 @@ use super::geometry::GeometryStrategy;
 use math_commons::math_kernel::types::GridIndex;
 
 pub trait IterationStrategy {
+    #[verified_engine::verified]
     fn iterate<G, B, F>(&self, geom: &G, boundary: &B, op: F)
     where
         G: GeometryStrategy,
@@ -16,6 +17,7 @@ pub struct LoopSplittingIteration;
 impl IterationStrategy for LoopSplittingIteration {
     #[inline(always)]
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[verified_engine::verified]
     fn iterate<G, B, F>(&self, geom: &G, boundary: &B, mut op: F)
     where
         G: GeometryStrategy,

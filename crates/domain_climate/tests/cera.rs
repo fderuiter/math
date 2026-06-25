@@ -8,6 +8,7 @@ const ALIGNED_CHANNELS: usize = 2;
 const NUM_LEVELS: usize = 30;
 const OUTPUT_SIZE: usize = 148;
 
+#[verified_engine::verified]
 fn generate_synthetic_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMatrix<f32>) {
     let inputs = DMatrix::from_fn(n_samples * NUM_LEVELS, IN_CHANNELS, |_, _| {
         rand::random::<f32>() + offset
@@ -17,6 +18,7 @@ fn generate_synthetic_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMat
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_cera_integration() {
     // 1. Configure the CERA model
     let config = CeraConfig {

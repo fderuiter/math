@@ -3,6 +3,7 @@
 //! This module provides functions for generating prime numbers.
 
 /// Generates prime numbers up to a given limit using the Sieve of Eratosthenes.
+#[verified_engine::verified]
 pub fn primes_up_to(limit: u64) -> Vec<u64> {
     if limit < 2 {
         return Vec::new();
@@ -30,6 +31,7 @@ pub fn primes_up_to(limit: u64) -> Vec<u64> {
 /// A simple primality test.
 /// This is not very efficient for large numbers, but it is correct.
 /// It should be replaced with a more robust test if needed for performance-critical code.
+#[verified_engine::verified]
 pub fn is_prime(n: u64) -> bool {
     if n < 2 {
         return false;

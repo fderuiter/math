@@ -36,12 +36,14 @@ pub struct TuringDynamics<'a, const N: usize, K, D> {
 impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> OdeSystem<TuringState<N>>
     for TuringDynamics<'a, N, K, D>
 {
+    #[verified_engine::verified]
     fn derivative(&self, t: f64, state: &TuringState<N>) -> TuringState<N> {
         let mut out = TuringState::new(state.len());
         self.derivative_in_place(t, state, &mut out);
         out
     }
 
+    #[verified_engine::verified]
     fn derivative_in_place(&self, _t: f64, state: &TuringState<N>, out: &mut TuringState<N>) {
         let n = state.len();
         if n == 0 {
@@ -155,6 +157,7 @@ impl FusedEulerSolver {
     ///
     /// Since the solver holds no state (it is a pure strategy), this is effectively a no-op
     /// provided for API consistency.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self
     }
@@ -216,6 +219,7 @@ pub struct StandardSolverAdapter<S> {
 }
 
 impl<S> StandardSolverAdapter<S> {
+    #[verified_engine::verified]
     pub fn new(solver: S) -> Self {
         Self { solver }
     }

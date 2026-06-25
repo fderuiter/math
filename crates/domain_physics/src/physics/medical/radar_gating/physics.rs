@@ -25,6 +25,7 @@ impl FmcwConfig {
     /// - Bandwidth: 4 GHz
     /// - Frequency: 60 GHz
     /// - Chirp Time: 50 microseconds
+    #[verified_engine::verified]
     pub fn iwr6843_default() -> Self {
         Self {
             bandwidth: 4.0e9,
@@ -38,6 +39,7 @@ impl FmcwConfig {
     /// The ability to resolve two distinct points in depth is determined by the sweep bandwidth $B$.
     ///
     /// $$ \Delta R = \frac{c}{2B} $$
+    #[verified_engine::verified]
     pub fn range_resolution(&self) -> f64 {
         C / (2.0 * self.bandwidth)
     }
@@ -45,6 +47,7 @@ impl FmcwConfig {
     /// Calculates the signal wavelength ($\lambda$).
     ///
     /// $$ \lambda = \frac{c}{f_c} $$
+    #[verified_engine::verified]
     pub fn wavelength(&self) -> f64 {
         C / self.center_frequency
     }
@@ -58,6 +61,7 @@ impl FmcwConfig {
     /// # Arguments
     ///
     /// * `phase_shift` - The phase shift in radians.
+    #[verified_engine::verified]
     pub fn velocity_from_phase(&self, phase_shift: f64) -> f64 {
         let lambda = self.wavelength();
         (phase_shift * lambda) / (4.0 * std::f64::consts::PI * self.chirp_time)
@@ -71,6 +75,7 @@ impl FmcwConfig {
     /// # Arguments
     ///
     /// * `beat_frequency` - The measured beat frequency in Hz.
+    #[verified_engine::verified]
     pub fn range_from_beat_frequency(&self, beat_frequency: f64) -> f64 {
         (beat_frequency * C * self.chirp_time) / (2.0 * self.bandwidth)
     }
@@ -85,6 +90,7 @@ impl FmcwConfig {
     /// # Arguments
     ///
     /// * `phase_shift` - The phase shift in radians.
+    #[verified_engine::verified]
     pub fn displacement_from_phase(&self, phase_shift: f64) -> f64 {
         let lambda = self.wavelength();
         (phase_shift * lambda) / (4.0 * std::f64::consts::PI)
@@ -97,6 +103,7 @@ impl FmcwConfig {
     /// # Arguments
     ///
     /// * `t` - Time within the chirp duration.
+    #[verified_engine::verified]
     pub fn chirp_frequency(&self, t: f64) -> f64 {
         let slope = self.bandwidth / self.chirp_time;
         slope * t + self.center_frequency
@@ -113,6 +120,7 @@ impl FmcwConfig {
     /// * `phi1` - Initial phase of signal 1.
     /// * `phi2` - Initial phase of signal 2.
     /// * `t` - Time.
+    #[verified_engine::verified]
     pub fn mixer_output(omega1: f64, omega2: f64, phi1: f64, phi2: f64, t: f64) -> f64 {
         ((omega1 - omega2) * t + (phi1 - phi2)).sin()
     }
@@ -122,6 +130,7 @@ impl FmcwConfig {
     /// Determined by the chirp repetition time ($T_c$).
     ///
     /// $$ v_{max} = \frac{\lambda}{4 T_c} $$
+    #[verified_engine::verified]
     pub fn max_unambiguous_velocity(&self) -> f64 {
         let lambda = self.wavelength();
         lambda / (4.0 * self.chirp_time)
@@ -135,6 +144,7 @@ impl FmcwConfig {
     ///
     /// * `thickness` ($d$) - Material thickness in meters.
     /// * `dielectric_constant` ($\epsilon_r$) - Relative permittivity.
+    #[verified_engine::verified]
     pub fn dielectric_phase_delay(&self, thickness: f64, dielectric_constant: f64) -> f64 {
         let lambda = self.wavelength();
         (4.0 * std::f64::consts::PI * thickness / lambda) * (dielectric_constant.sqrt() - 1.0)
@@ -148,6 +158,7 @@ impl FmcwConfig {
     ///
     /// * `slope` ($S$) - Frequency slope of the chirp (Hz/s).
     /// * `range` ($R$) - Distance to target (m).
+    #[verified_engine::verified]
     pub fn beat_frequency(slope: f64, range: f64) -> f64 {
         (slope * 2.0 * range) / C
     }

@@ -2,6 +2,7 @@ use domain_physics::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmann
 use std::time::Instant;
 
 #[test]
+#[verified_engine::verified]
 fn bench_lbm_step() {
     let width = 100;
     let height = 100;

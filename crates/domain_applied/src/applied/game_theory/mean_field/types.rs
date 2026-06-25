@@ -66,6 +66,7 @@ impl
     >
 {
     /// Creates a new Type-State builder.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             viscosity: WithoutViscosity,
@@ -86,6 +87,7 @@ impl Default
         WithoutSpaceBounds,
     >
 {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
@@ -93,6 +95,7 @@ impl Default
 
 impl<T, G, TS, S> MFGConfigBuilder<WithoutViscosity, T, G, TS, S> {
     /// Sets the viscosity (nu).
+    #[verified_engine::verified]
     pub fn viscosity(self, viscosity: f64) -> MFGConfigBuilder<WithViscosity, T, G, TS, S> {
         MFGConfigBuilder {
             viscosity: WithViscosity(viscosity),
@@ -106,6 +109,7 @@ impl<T, G, TS, S> MFGConfigBuilder<WithoutViscosity, T, G, TS, S> {
 
 impl<V, G, TS, S> MFGConfigBuilder<V, WithoutTimeHorizon, G, TS, S> {
     /// Sets the time horizon (T).
+    #[verified_engine::verified]
     pub fn time_horizon(self, time_horizon: f64) -> MFGConfigBuilder<V, WithTimeHorizon, G, TS, S> {
         MFGConfigBuilder {
             viscosity: self.viscosity,
@@ -119,6 +123,7 @@ impl<V, G, TS, S> MFGConfigBuilder<V, WithoutTimeHorizon, G, TS, S> {
 
 impl<V, T, TS, S> MFGConfigBuilder<V, T, WithoutGridPoints, TS, S> {
     /// Sets the number of grid points (Nx).
+    #[verified_engine::verified]
     pub fn grid_points(
         self,
         grid_points: NonZeroUsize,
@@ -135,6 +140,7 @@ impl<V, T, TS, S> MFGConfigBuilder<V, T, WithoutGridPoints, TS, S> {
 
 impl<V, T, G, S> MFGConfigBuilder<V, T, G, WithoutTimeSteps, S> {
     /// Sets the number of time steps (Nt).
+    #[verified_engine::verified]
     pub fn time_steps(
         self,
         time_steps: NonZeroUsize,
@@ -151,6 +157,7 @@ impl<V, T, G, S> MFGConfigBuilder<V, T, G, WithoutTimeSteps, S> {
 
 impl<V, T, G, TS> MFGConfigBuilder<V, T, G, TS, WithoutSpaceBounds> {
     /// Sets the space bounds.
+    #[verified_engine::verified]
     pub fn space_bounds(
         self,
         space_min: f64,
@@ -180,6 +187,7 @@ impl
 {
     /// Builds the `MFGConfig` struct.
     /// This method is only available when all required fields have been set.
+    #[verified_engine::verified]
     pub fn build(self) -> Result<MFGConfig, GameTheoryError> {
         let viscosity = self.viscosity.0;
         let time_horizon = self.time_horizon.0;

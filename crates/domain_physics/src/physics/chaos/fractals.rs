@@ -9,6 +9,7 @@ use num_complex::Complex;
 /// $f_c(z) = z^2 + c$ does not diverge when iterated from $z=0$.
 ///
 /// Returns the number of iterations until $|z| > 2$ (escape radius), or `max_iter` if it stays bounded.
+#[verified_engine::verified]
 pub fn escape_time_mandelbrot(c: Complex<f64>, max_iter: u32) -> u32 {
     let mut z = Complex::new(0.0, 0.0);
     for i in 0..max_iter {
@@ -26,6 +27,7 @@ pub fn escape_time_mandelbrot(c: Complex<f64>, max_iter: u32) -> u32 {
 /// $f_c(z) = z^2 + c$ starting from a point $z$ in the complex plane.
 ///
 /// Returns the number of iterations until $|z| > 2$, or `max_iter` if it stays bounded.
+#[verified_engine::verified]
 pub fn escape_time_julia(z: Complex<f64>, c: Complex<f64>, max_iter: u32) -> u32 {
     let mut z = z;
     for i in 0..max_iter {
@@ -47,6 +49,7 @@ pub fn escape_time_julia(z: Complex<f64>, c: Complex<f64>, max_iter: u32) -> u32
 ///
 /// Note: This implementation returns the normalized count (proportion of pairs closer than $\epsilon$).
 /// The actual dimension would be the slope of $\ln(C(\epsilon))$ vs $\ln(\epsilon)$.
+#[verified_engine::verified]
 pub fn correlation_dimension(trajectory: &[Vector3<f64>], epsilon: f64) -> f64 {
     let n = trajectory.len();
     if n < 2 {
@@ -97,6 +100,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_mandelbrot_bounded() {
         // Point inside Mandelbrot set (0,0) should not escape
         let c = Complex::new(0.0, 0.0);
@@ -105,6 +109,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_mandelbrot_escape() {
         // Point outside Mandelbrot set (2,2) should escape quickly
         let c = Complex::new(2.0, 2.0);
@@ -113,6 +118,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_julia_bounded() {
         // Julia set for c = 0 is the unit circle.
         // z=0 should stay at 0.

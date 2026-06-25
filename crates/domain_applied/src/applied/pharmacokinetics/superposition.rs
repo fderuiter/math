@@ -11,6 +11,7 @@ pub struct SuperpositionModel<M> {
 
 impl<M> SuperpositionModel<M> {
     /// Creates a new `SuperpositionModel`.
+    #[verified_engine::verified]
     pub fn new(base_model: M, dose_times: Vec<f64>) -> Self {
         Self {
             base_model,
@@ -20,6 +21,7 @@ impl<M> SuperpositionModel<M> {
 }
 
 impl<M: PharmacokineticModel> PharmacokineticModel for SuperpositionModel<M> {
+    #[verified_engine::verified]
     fn concentration(&self, t: f64) -> f64 {
         self.dose_times
             .iter()

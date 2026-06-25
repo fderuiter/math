@@ -30,9 +30,11 @@ pub enum AIError {
 }
 
 impl Diagnostic for AIError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "AIError".to_string());

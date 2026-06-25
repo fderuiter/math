@@ -17,16 +17,19 @@ pub struct WinLossCounts {
 
 impl WinLossCounts {
     /// Creates a new `WinLossCounts` instance.
+    #[verified_engine::verified]
     pub fn new(n_a: u32, n_b: u32, n_c: u32, n_d: u32) -> Self {
         Self { n_a, n_b, n_c, n_d }
     }
 
     /// Calculates the total number of wins (Nw).
+    #[verified_engine::verified]
     pub fn n_wins(&self) -> u32 {
         self.n_b + self.n_d
     }
 
     /// Calculates the total number of losses (Nl).
+    #[verified_engine::verified]
     pub fn n_losses(&self) -> u32 {
         self.n_a + self.n_c
     }
@@ -47,6 +50,7 @@ impl WinLossCounts {
 /// ## Returns
 ///
 /// The sample win ratio as a `f64`. Returns `f64::INFINITY` if the number of losses is zero.
+#[verified_engine::verified]
 pub fn calculate_sample_win_ratio(counts: &WinLossCounts) -> f64 {
     let n_w = counts.n_wins() as f64;
     let n_l = counts.n_losses() as f64;
@@ -71,6 +75,7 @@ pub fn calculate_sample_win_ratio(counts: &WinLossCounts) -> f64 {
 /// ## Returns
 ///
 /// The proportion of wins as a `f64`.
+#[verified_engine::verified]
 pub fn calculate_win_proportion(n_w: u32, n_l: u32) -> f64 {
     let n_w = n_w as f64;
     let n_l = n_l as f64;
@@ -96,6 +101,7 @@ pub fn calculate_win_proportion(n_w: u32, n_l: u32) -> f64 {
 /// ## Returns
 ///
 /// A tuple `(lower_bound, upper_bound)` for the confidence interval.
+#[verified_engine::verified]
 pub fn calculate_confidence_interval(n_w: u32, n_l: u32) -> (f64, f64) {
     let n_total = (n_w + n_l) as f64;
     if n_total == 0.0 {
@@ -139,6 +145,7 @@ pub fn calculate_confidence_interval(n_w: u32, n_l: u32) -> (f64, f64) {
 /// ## Returns
 ///
 /// The significance test statistic as a `f64`.
+#[verified_engine::verified]
 pub fn calculate_significance_test_statistic(n_w: u32, n_l: u32) -> f64 {
     let n_total = (n_w + n_l) as f64;
     if n_total == 0.0 {

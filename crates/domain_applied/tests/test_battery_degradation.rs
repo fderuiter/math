@@ -6,6 +6,7 @@ mod tests {
 
     #[test]
     #[allow(deprecated)]
+    #[verified_engine::verified]
     fn test_legacy_functions() {
         // Test values from the docstring to verify behavior
         let d = 60.0; // 60% DoD
@@ -22,6 +23,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_strong_types() {
         let dod = DepthOfDischarge::new(60.0).unwrap();
         let model = PowerLawModel::standard();
@@ -37,16 +39,19 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_dod_bounds_upper() {
         assert!(DepthOfDischarge::new(100.1).is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_dod_bounds_lower() {
         assert!(DepthOfDischarge::new(-0.1).is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_custom_model() {
         // Create a fictional better battery that lasts twice as long
         let standard = PowerLawModel::standard();

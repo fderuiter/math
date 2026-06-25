@@ -15,6 +15,7 @@ pub struct TwoPulseModel<M> {
 }
 
 impl<M> TwoPulseModel<M> {
+    #[verified_engine::verified]
     pub fn new(base_model: M, lag_time: f64, f1: f64, f2: f64) -> Self {
         Self {
             base_model,
@@ -26,6 +27,7 @@ impl<M> TwoPulseModel<M> {
 }
 
 impl<M: PharmacokineticModel> PharmacokineticModel for TwoPulseModel<M> {
+    #[verified_engine::verified]
     fn concentration(&self, t: f64) -> f64 {
         let c1 = self.base_model.concentration(t);
         let c2 = if t >= self.lag_time {

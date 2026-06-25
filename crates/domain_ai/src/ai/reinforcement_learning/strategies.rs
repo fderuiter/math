@@ -3,6 +3,7 @@ use rand::Rng;
 
 /// Strategy for selecting an action based on Q-values.
 pub trait ExplorationStrategy<S, A> {
+    #[verified_engine::verified]
     fn select_action(
         &self,
         state: &S,
@@ -22,6 +23,7 @@ pub struct EpsilonGreedy {
 }
 
 impl EpsilonGreedy {
+    #[verified_engine::verified]
     pub fn new(epsilon: f64) -> Self {
         Self { epsilon }
     }
@@ -32,6 +34,7 @@ where
     S: State,
     A: Action,
 {
+    #[verified_engine::verified]
     fn select_action(
         &self,
         _state: &S,

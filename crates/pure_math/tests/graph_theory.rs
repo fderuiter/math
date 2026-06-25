@@ -6,6 +6,7 @@ use pure_math::pure_math::graph_theory::{
 };
 
 #[test]
+#[verified_engine::verified]
 fn test_degeneracy_k5() {
     // Create a K5 graph (a clique of 5 vertices).
     // The degeneracy of a K5 graph is 4.
@@ -21,6 +22,7 @@ fn test_degeneracy_k5() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_degeneracy_path() {
     // Create a path graph P5: 0 -- 1 -- 2 -- 3 -- 4
     // The degeneracy of a path graph is 1.
@@ -34,12 +36,14 @@ fn test_degeneracy_path() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_degeneracy_empty() {
     let g: Graph<(), ()> = Graph::new();
     assert_eq!(degeneracy(&g), 0);
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_vertex_cover() {
     // Create a star graph with a center and 3 leaves.
     // The minimum vertex cover is {center}, size 1.
@@ -63,6 +67,7 @@ fn test_vertex_cover() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_treewidth_placeholder() {
     let mut g: Graph<(), ()> = Graph::new();
     let n1 = g.add_node(());

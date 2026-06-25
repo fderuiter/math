@@ -20,12 +20,14 @@ pub struct TrainingLoop<M: Trainable = TwoLayerMLP> {
 impl<M: Trainable> Deref for TrainingLoop<M> {
     type Target = M;
 
+    #[verified_engine::verified]
     fn deref(&self) -> &Self::Target {
         &self.model
     }
 }
 
 impl<M: Trainable> DerefMut for TrainingLoop<M> {
+    #[verified_engine::verified]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.model
     }
@@ -33,6 +35,7 @@ impl<M: Trainable> DerefMut for TrainingLoop<M> {
 
 impl TrainingLoop<TwoLayerMLP> {
     /// Backward compatibility constructor for the default MLP architecture.
+    #[verified_engine::verified]
     pub fn new(
         input_dim: usize,
         hidden_dim: usize,
@@ -48,6 +51,7 @@ impl TrainingLoop<TwoLayerMLP> {
 
 impl<M: Trainable> TrainingLoop<M> {
     /// Creates a new Training Loop with a custom model.
+    #[verified_engine::verified]
     pub fn new_with_model(model: M, optimizer: Box<dyn Optimizer<f64>>) -> Self {
         Self { model, optimizer }
     }
@@ -80,6 +84,7 @@ impl<M: Trainable> TrainingLoop<M> {
     /// let loss = trainer.train_step(&x, &y_true).unwrap();
     /// assert!(loss > 0.0);
     /// ```
+    #[verified_engine::verified]
     pub fn train_step(
         &mut self,
         x: &Vector,
@@ -109,6 +114,7 @@ impl<M: Trainable> TrainingLoop<M> {
     }
 
     /// Predicts the class for a given input.
+    #[verified_engine::verified]
     pub fn predict(&self, x: &Vector) -> Vector {
         let z = self.model.forward(x);
         softmax(&z)

@@ -16,6 +16,7 @@ pub struct QSeries<T: EuclideanDomain> {
 }
 
 impl<T: EuclideanDomain> Default for QSeries<T> {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
@@ -23,11 +24,13 @@ impl<T: EuclideanDomain> Default for QSeries<T> {
 
 impl<T: EuclideanDomain> QSeries<T> {
     /// Creates a new empty QSeries.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         QSeries { coeffs: vec![] }
     }
 
     /// Creates a QSeries with a given capacity.
+    #[verified_engine::verified]
     pub fn with_capacity(capacity: usize) -> Self {
         QSeries {
             coeffs: Vec::with_capacity(capacity),
@@ -35,21 +38,25 @@ impl<T: EuclideanDomain> QSeries<T> {
     }
 
     /// Creates a QSeries from a vector of coefficients.
+    #[verified_engine::verified]
     pub fn from_vec(coeffs: Vec<T>) -> Self {
         QSeries { coeffs }
     }
 
     /// Gets the coefficient of q^n.
+    #[verified_engine::verified]
     pub fn get_coeff(&self, n: usize) -> T {
         self.coeffs.get(n).cloned().unwrap_or_else(T::zero)
     }
 
     /// Truncates the series to a given precision.
+    #[verified_engine::verified]
     pub fn truncate(&mut self, precision: usize) {
         self.coeffs.truncate(precision);
     }
 
     /// Computes the power of a QSeries using exponentiation by squaring.
+    #[verified_engine::verified]
     pub fn pow(&self, exp: u32) -> QSeries<T> {
         let precision = self.coeffs.len();
         if exp == 0 {
@@ -83,6 +90,7 @@ impl<T: EuclideanDomain> QSeries<T> {
 impl<T: EuclideanDomain> Add for &QSeries<T> {
     type Output = QSeries<T>;
 
+    #[verified_engine::verified]
     fn add(self, other: Self) -> QSeries<T> {
         let len1 = self.coeffs.len();
         let len2 = other.coeffs.len();
@@ -100,6 +108,7 @@ impl<T: EuclideanDomain> Add for &QSeries<T> {
 impl<T: EuclideanDomain> Mul for &QSeries<T> {
     type Output = QSeries<T>;
 
+    #[verified_engine::verified]
     fn mul(self, other: Self) -> QSeries<T> {
         let len1 = self.coeffs.len();
         let len2 = other.coeffs.len();
@@ -134,6 +143,7 @@ impl<T: EuclideanDomain> Mul for &QSeries<T> {
 impl<T: EuclideanDomain> Div for &QSeries<T> {
     type Output = QSeries<T>;
 
+    #[verified_engine::verified]
     fn div(self, other: Self) -> QSeries<T> {
         let len1 = self.coeffs.len();
         let len2 = other.coeffs.len();
@@ -172,6 +182,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_qseries_add() {
         let s1 = QSeries::from_vec(vec![1i64, 2, 3]);
         let s2 = QSeries::from_vec(vec![4i64, 5, 6, 7]);
@@ -180,6 +191,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_qseries_mul() {
         let s1 = QSeries::from_vec(vec![1i64, 1]); // 1+q
         let s2 = QSeries::from_vec(vec![1i64, 1]); // 1+q
@@ -193,6 +205,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_qseries_div() {
         // 1 / (1-q) = 1+q+q^2+...
         let one = QSeries::from_vec(vec![1i64, 0, 0, 0, 0]);

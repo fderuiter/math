@@ -18,6 +18,7 @@ use crate::error::DoseFluenceError;
 /// # Formula
 ///
 /// $T = \mu \Psi_0 e^{-\mu d}$
+#[verified_engine::verified]
 pub fn calculate_terma(
     incident_fluence: f64,
     mu: f64,
@@ -47,6 +48,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_terma_calculation() {
         assert!(calculate_terma(-1.0, 0.1, 10.0).is_err());
         assert_eq!(calculate_terma(100.0, 0.0, 10.0).unwrap(), 0.0);

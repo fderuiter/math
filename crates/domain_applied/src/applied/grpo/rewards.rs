@@ -7,6 +7,7 @@
 /// # Returns
 ///
 /// The uncertainty reward, which is higher when `p_hat` is close to 0.5.
+#[verified_engine::verified]
 pub fn uncertainty_reward(p_hat: f64) -> f64 {
     1.0 - 2.0 * (p_hat - 0.5).abs()
 }
@@ -22,6 +23,7 @@ pub fn uncertainty_reward(p_hat: f64) -> f64 {
 /// # Returns
 ///
 /// The calculated repetition penalty.
+#[verified_engine::verified]
 pub fn repetition_penalty(cluster_size: usize, batch_size: usize, lambda: f64) -> f64 {
     lambda * (cluster_size as f64 / batch_size as f64)
 }
@@ -36,6 +38,7 @@ pub fn repetition_penalty(cluster_size: usize, batch_size: usize, lambda: f64) -
 /// # Returns
 ///
 /// The composite reward, which is non-negative.
+#[verified_engine::verified]
 pub fn composite_reward(uncertainty_reward: f64, repetition_penalty: f64) -> f64 {
     (uncertainty_reward - repetition_penalty).max(0.0)
 }
@@ -49,6 +52,7 @@ pub fn composite_reward(uncertainty_reward: f64, repetition_penalty: f64) -> f64
 /// # Returns
 ///
 /// 1 if the check is satisfied, 0 otherwise.
+#[verified_engine::verified]
 pub fn binary_reward(satisfies_check: bool) -> i32 {
     if satisfies_check { 1 } else { 0 }
 }

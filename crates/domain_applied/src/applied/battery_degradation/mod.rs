@@ -13,6 +13,7 @@ pub use types::{Capacity, Cycles, DepthOfDischarge};
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().n70(DepthOfDischarge::new_clamped(d))` instead"
 )]
+#[verified_engine::verified]
 pub fn n70(d: f64) -> f64 {
     PowerLawModel::standard()
         .n70(DepthOfDischarge::new_clamped(d))
@@ -24,6 +25,7 @@ pub fn n70(d: f64) -> f64 {
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().capacity(...)` instead"
 )]
+#[verified_engine::verified]
 pub fn capacity(n: f64, d: f64) -> f64 {
     PowerLawModel::standard()
         .capacity(Cycles::new_clamped(n), DepthOfDischarge::new_clamped(d))
@@ -35,6 +37,7 @@ pub fn capacity(n: f64, d: f64) -> f64 {
     since = "0.2.0",
     note = "Use `PowerLawModel::standard().cycles_to_capacity(...)` instead"
 )]
+#[verified_engine::verified]
 pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
     PowerLawModel::standard()
         .cycles_to_capacity(

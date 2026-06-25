@@ -27,6 +27,7 @@ impl EnantiomerModel {
     /// # Returns
     /// - `Ok(EnantiomerModel)` if fractions and resulting doses are valid.
     /// - `Err(PharmacokineticsError)` if any parameter or fraction is invalid.
+    #[verified_engine::verified]
     pub fn new(
         d_params: PKParameters,
         l_params: PKParameters,
@@ -57,6 +58,7 @@ impl EnantiomerModel {
 }
 
 impl PharmacokineticModel for EnantiomerModel {
+    #[verified_engine::verified]
     fn concentration(&self, t: f64) -> f64 {
         self.d_model.concentration(t) + self.l_model.concentration(t)
     }
@@ -64,23 +66,27 @@ impl PharmacokineticModel for EnantiomerModel {
 
 impl EnantiomerModel {
     /// Calculates the total concentration of both enantiomers at time `t` for a single IR dose.
+    #[verified_engine::verified]
     pub fn concentration_ir_single_dose(&self, t: f64) -> f64 {
         self.concentration(t)
     }
 
     /// Calculates the total concentration for multiple IR doses using superposition.
+    #[verified_engine::verified]
     pub fn concentration_ir_multiple_doses(&self, dose_times: &[f64], t: f64) -> f64 {
         let model = SuperpositionModel::new(*self, dose_times.to_vec());
         model.concentration(t)
     }
 
     /// Calculates the total concentration for a single XR dose using the two-pulse model.
+    #[verified_engine::verified]
     pub fn concentration_xr_single_dose(&self, lag_time: f64, f1: f64, f2: f64, t: f64) -> f64 {
         let model = TwoPulseModel::new(*self, lag_time, f1, f2);
         model.concentration(t)
     }
 
     /// Calculates the total concentration for multiple XR doses using superposition.
+    #[verified_engine::verified]
     pub fn concentration_xr_multiple_doses(
         &self,
         dose_times: &[f64],

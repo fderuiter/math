@@ -10,6 +10,7 @@ use nalgebra::Vector3;
 ///
 /// * J > 0: Ferromagnetic
 /// * J < 0: Antiferromagnetic
+#[verified_engine::verified]
 pub fn calculate_heisenberg_energy(
     j: f64,
     spins: &[Vector3<f64>],
@@ -29,6 +30,7 @@ pub fn calculate_heisenberg_energy(
 /// E(k) = 2 J S a^2 k^2
 ///
 /// Represents the energy cost of long-wavelength spin waves.
+#[verified_engine::verified]
 pub fn magnon_dispersion(k: f64, j: f64, s: f64, a: f64) -> f64 {
     2.0 * j * s * a.powi(2) * k.powi(2)
 }

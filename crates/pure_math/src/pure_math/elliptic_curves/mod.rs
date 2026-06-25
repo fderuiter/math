@@ -28,6 +28,7 @@ pub enum EllipticCurveError {
 /// assert_eq!(factors.get(&7), Some(&1));
 /// assert_eq!(factors.get(&5), None);
 /// ```
+#[verified_engine::verified]
 pub fn prime_factors(mut n: u64) -> HashMap<u64, u32> {
     let mut factors = HashMap::new();
     if n == 0 {
@@ -64,6 +65,7 @@ pub fn prime_factors(mut n: u64) -> HashMap<u64, u32> {
 /// assert_eq!(psi(6), 12); // 6 * (1 + 1/2) * (1 + 1/3) = 6 * 3/2 * 4/3
 /// assert_eq!(psi(5), 6); // 5 * (1 + 1/5)
 /// ```
+#[verified_engine::verified]
 pub fn psi(n: u64) -> u64 {
     if n == 0 {
         return 0;
@@ -122,6 +124,7 @@ pub struct Theorem11Bounds {
 /// assert_eq!(bounds_7.v3_bound, Some(23));
 /// assert_eq!(bounds_7.v5_bound, Some(3 * (8 - 3)));
 /// ```
+#[verified_engine::verified]
 pub fn theorem_1_1_bounds(n: u64, i: u64, j: u64) -> Result<Theorem11Bounds, EllipticCurveError> {
     let psi_n = psi(n);
     if i + j >= psi_n {
@@ -189,6 +192,7 @@ pub struct Theorem12Bounds {
 /// assert_eq!(bounds.v3_bound, Some(6 * (6 - 0)));
 /// assert_eq!(bounds.v7_bound, Some(2 * (6 - 0)));
 /// ```
+#[verified_engine::verified]
 pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Result<Theorem12Bounds, EllipticCurveError> {
     let psi_n = psi(n);
     if i + j >= psi_n {

@@ -7,12 +7,14 @@ pub struct HeatEquation1D {
 }
 
 impl HeatEquation1D {
+    #[verified_engine::verified]
     pub fn new(diffusivity: f64) -> Self {
         Self { diffusivity }
     }
 
     /// Computes a single separated variable mode.
     /// $u(x, t) = (A \cos \lambda x + B \sin \lambda x) e^{-\lambda^2 \kappa t}$
+    #[verified_engine::verified]
     pub fn separated_mode(
         &self,
         lambda: f64,
@@ -36,6 +38,7 @@ pub struct HeatRodSolution {
 }
 
 impl HeatRodSolution {
+    #[verified_engine::verified]
     pub fn evaluate(&self, x: f64, t: f64) -> f64 {
         let mut u = 0.0;
         let k = self.diffusivity;

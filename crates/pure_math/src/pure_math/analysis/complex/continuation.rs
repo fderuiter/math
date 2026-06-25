@@ -9,6 +9,7 @@ use num_complex::Complex64;
 /// # Arguments
 /// * `f` - The function defined for Im $z \ge 0$.
 /// * `z` - The point to evaluate.
+#[verified_engine::verified]
 pub fn schwarz_reflect<F>(f: F, z: Complex64) -> Complex64
 where
     F: Fn(Complex64) -> Complex64,
@@ -22,6 +23,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_schwarz_reflect_polynomial() {
         // f(z) = z^2 + 1. Real on real axis.
         // We define f conceptually for Im z >= 0.

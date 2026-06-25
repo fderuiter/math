@@ -14,6 +14,7 @@ pub struct GaugeCouplings {
 
 impl GaugeCouplings {
     /// Creates a new instance of GaugeCouplings.
+    #[verified_engine::verified]
     pub fn new(g1: f64, g2: f64, gs: f64) -> Self {
         Self { g1, g2, gs }
     }
@@ -26,6 +27,7 @@ impl GaugeCouplings {
     /// to the physical mass eigenstates (Photon, Z).
     ///
     /// Formula: $\tan \theta_W = g_1 / g_2$
+    #[verified_engine::verified]
     pub fn weak_mixing_angle(&self) -> (f64, f64) {
         let theta_w = (self.g1 / self.g2).atan();
         (theta_w.cos(), theta_w.sin())

@@ -2,6 +2,7 @@
 ///
 /// Recurrence: $H_{n+1}(x) = 2xH_n(x) - 2nH_{n-1}(x)$
 /// $H_0(x) = 1$, $H_1(x) = 2x$.
+#[verified_engine::verified]
 pub fn hermite(n: u64, x: f64) -> f64 {
     if n == 0 {
         return 1.0;
@@ -26,6 +27,7 @@ pub fn hermite(n: u64, x: f64) -> f64 {
 ///
 /// Recurrence: $(n+1)L_{n+1}(x) = (2n+1-x)L_n(x) - nL_{n-1}(x)$
 /// $L_0(x) = 1$, $L_1(x) = 1 - x$.
+#[verified_engine::verified]
 pub fn laguerre(n: u64, x: f64) -> f64 {
     if n == 0 {
         return 1.0;

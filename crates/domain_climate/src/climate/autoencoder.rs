@@ -7,9 +7,11 @@ use nalgebra::{DMatrix, DVector};
 /// A trait representing the Autoencoder model interface.
 pub trait AutoencoderModel {
     /// Encodes the input data into a latent representation.
+    #[verified_engine::verified]
     fn encode(&self, input: &DMatrix<f32>) -> DMatrix<f32>;
 
     /// Performs a forward pass through the autoencoder.
+    #[verified_engine::verified]
     fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>);
 
     /// Updates the weights of the model using the provided optimizer.
@@ -25,6 +27,7 @@ pub trait AutoencoderModel {
 ///
 /// * `x` - The matrix to apply the activation to (in-place).
 /// * `alpha` - The negative slope coefficient.
+#[verified_engine::verified]
 pub fn leaky_relu(x: &mut DMatrix<f32>, alpha: f32) {
     x.iter_mut().for_each(|val| {
         if *val < 0.0 {
@@ -57,6 +60,7 @@ impl ConvLayer {
     /// # Returns
     ///
     /// A new `ConvLayer`.
+    #[verified_engine::verified]
     pub fn new(in_channels: usize, out_channels: usize) -> Self {
         // Simple random initialization using from_fn
         let kernel = DMatrix::from_fn(out_channels, in_channels, |_, _| {
@@ -108,6 +112,7 @@ impl Encoder {
     /// # Returns
     ///
     /// A new `Encoder`.
+    #[verified_engine::verified]
     pub fn new(in_channels: usize, latent_channels: usize) -> Self {
         let layers = vec![
             ConvLayer::new(in_channels, 64),
@@ -126,6 +131,7 @@ impl Encoder {
     /// # Returns
     ///
     /// A new `Encoder`.
+    #[verified_engine::verified]
     pub fn new_from_layers(layers: Vec<ConvLayer>) -> Self {
         Self { layers }
     }
@@ -139,6 +145,7 @@ impl Encoder {
     /// # Returns
     ///
     /// The latent representation matrix.
+    #[verified_engine::verified]
     pub fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = input.clone();
         for (i, layer) in self.layers.iter().enumerate() {
@@ -182,6 +189,7 @@ impl Decoder {
     /// # Returns
     ///
     /// A new `Decoder`.
+    #[verified_engine::verified]
     pub fn new(latent_channels: usize, out_channels: usize) -> Self {
         let layers = vec![
             ConvLayer::new(latent_channels, 64),
@@ -200,6 +208,7 @@ impl Decoder {
     /// # Returns
     ///
     /// A new `Decoder`.
+    #[verified_engine::verified]
     pub fn new_from_layers(layers: Vec<ConvLayer>) -> Self {
         Self { layers }
     }
@@ -213,6 +222,7 @@ impl Decoder {
     /// # Returns
     ///
     /// The reconstructed data matrix.
+    #[verified_engine::verified]
     pub fn forward(&self, latent_representation: &DMatrix<f32>) -> DMatrix<f32> {
         let mut x = latent_representation.clone();
         for (i, layer) in self.layers.iter().enumerate() {
@@ -257,6 +267,7 @@ impl Autoencoder {
     /// # Returns
     ///
     /// A new `Autoencoder`.
+    #[verified_engine::verified]
     pub fn new(in_channels: usize, latent_channels: usize) -> Self {
         // The decoder's input is the encoder's output, and vice versa.
         let encoder = Encoder::new(in_channels, latent_channels);
@@ -274,6 +285,7 @@ impl Autoencoder {
     /// # Returns
     ///
     /// A new `Autoencoder`.
+    #[verified_engine::verified]
     pub fn new_from_components(encoder: Encoder, decoder: Decoder) -> Self {
         Self { encoder, decoder }
     }
@@ -287,6 +299,7 @@ impl Autoencoder {
     /// # Returns
     ///
     /// A tuple containing `(latent_representation, reconstruction)`.
+    #[verified_engine::verified]
     pub fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
@@ -295,10 +308,12 @@ impl Autoencoder {
 }
 
 impl AutoencoderModel for Autoencoder {
+    #[verified_engine::verified]
     fn encode(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
         self.encoder.forward(input)
     }
 
+    #[verified_engine::verified]
     fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
@@ -323,6 +338,7 @@ mod tests {
     use nalgebra::DMatrix;
 
     #[test]
+    #[verified_engine::verified]
     fn test_autoencoder_forward_pass() {
         let in_channels = 2;
         let latent_channels = 3;
@@ -343,6 +359,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_leaky_relu() {
         let mut matrix = DMatrix::from_row_slice(2, 2, &[-1.0, 2.0, -3.0, 0.0]);
         leaky_relu(&mut matrix, 0.1);

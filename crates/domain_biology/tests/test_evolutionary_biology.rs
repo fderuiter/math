@@ -1,6 +1,7 @@
 use domain_biology::biology::evolution::HawkDovePopulation;
 
 #[test]
+#[verified_engine::verified]
 fn test_hawk_dove_update() {
     let pop = HawkDovePopulation::new(2.0, 4.0); // v=2, c=4
     let p_h = 0.8;

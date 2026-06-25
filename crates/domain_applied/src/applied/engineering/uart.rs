@@ -6,11 +6,13 @@ pub struct BaudRate(u32);
 
 impl BaudRate {
     /// Creates a new `BaudRate`.
+    #[verified_engine::verified]
     pub fn new(value: u32) -> Self {
         Self(value)
     }
 
     /// Returns the inner value.
+    #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
@@ -22,11 +24,13 @@ pub struct DataBits(u32);
 
 impl DataBits {
     /// Creates a new `DataBits`.
+    #[verified_engine::verified]
     pub fn new(value: u32) -> Self {
         Self(value)
     }
 
     /// Returns the inner value.
+    #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
@@ -41,6 +45,7 @@ impl TotalBits {
     ///
     /// # Errors
     /// Returns `EngineeringError` if `value` is 0, since a frame cannot have 0 bits.
+    #[verified_engine::verified]
     pub fn new(value: u32) -> Result<Self, EngineeringError> {
         if value == 0 {
             return Err(EngineeringError::InvalidParameter {
@@ -52,6 +57,7 @@ impl TotalBits {
     }
 
     /// Returns the inner value.
+    #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
@@ -87,6 +93,7 @@ impl TotalBits {
 /// );
 /// assert_eq!(throughput, 7680.0);
 /// ```
+#[verified_engine::verified]
 pub fn calculate_uart_throughput(
     baud_rate: BaudRate,
     data_bits: DataBits,
@@ -126,6 +133,7 @@ pub fn calculate_uart_throughput(
     since = "0.2.0",
     note = "Use `calculate_uart_throughput` with semantic types instead to prevent primitive obsession."
 )]
+#[verified_engine::verified]
 pub fn uart_effective_throughput(baud_rate: u32, data_bits: u32, total_bits: u32) -> f64 {
     if total_bits == 0 {
         return 0.0;
@@ -138,6 +146,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_uart() {
         // 9600 baud, 8N1 (1 start + 8 data + 1 stop = 10 bits)
         // 9600 * 0.8 = 7680
@@ -147,6 +156,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_calculate_uart_throughput() {
         let eff = calculate_uart_throughput(
             BaudRate::new(9600),

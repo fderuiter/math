@@ -16,6 +16,7 @@ use num_complex::Complex;
 ///
 /// # Returns
 /// A 3x3 Complex Matrix representing $V_{CKM}$.
+#[verified_engine::verified]
 pub fn construct_ckm(
     theta12: f64,
     theta23: f64,
@@ -60,6 +61,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_ckm_unitarity() {
         let theta12 = 0.2;
         let theta23 = 0.04;

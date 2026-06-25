@@ -9,6 +9,7 @@ impl CuttingSpeed {
     ///
     /// # Errors
     /// Returns `EngineeringError` if `value` is negative or zero.
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, EngineeringError> {
         if value <= 0.0 {
             return Err(EngineeringError::InvalidParameter {
@@ -20,6 +21,7 @@ impl CuttingSpeed {
     }
 
     /// Returns the inner value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -34,6 +36,7 @@ impl MaterialConstant {
     ///
     /// # Errors
     /// Returns `EngineeringError` if `value` is negative.
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, EngineeringError> {
         if value < 0.0 {
             return Err(EngineeringError::InvalidParameter {
@@ -45,6 +48,7 @@ impl MaterialConstant {
     }
 
     /// Returns the inner value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -59,6 +63,7 @@ impl ToolExponent {
     ///
     /// # Errors
     /// Returns `EngineeringError` if `value` is zero, to prevent division by zero in the exponent.
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, EngineeringError> {
         if value == 0.0 {
             return Err(EngineeringError::InvalidParameter {
@@ -70,6 +75,7 @@ impl ToolExponent {
     }
 
     /// Returns the inner value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -81,11 +87,13 @@ pub struct ToolLife(f64);
 
 impl ToolLife {
     /// Creates a new `ToolLife`.
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Self {
         Self(value)
     }
 
     /// Returns the inner value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -125,6 +133,7 @@ impl ToolLife {
 /// // Expecting (100/40)^(1/0.1) = 2.5^10 = 9536.7...
 /// assert!(life.value() > 9000.0);
 /// ```
+#[verified_engine::verified]
 pub fn calculate_taylor_tool_life(
     cutting_speed: CuttingSpeed,
     constant_c: MaterialConstant,
@@ -173,6 +182,7 @@ pub fn calculate_taylor_tool_life(
     since = "0.2.0",
     note = "Use `calculate_taylor_tool_life` with semantic types instead to prevent primitive obsession."
 )]
+#[verified_engine::verified]
 pub fn taylor_tool_life(cutting_speed: f64, constant_c: f64, exponent_n: f64) -> f64 {
     if cutting_speed <= 0.0 || exponent_n == 0.0 {
         return 0.0;
@@ -185,6 +195,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_calculate_taylor_tool_life() {
         let life = calculate_taylor_tool_life(
             CuttingSpeed::new(40.0).unwrap(),

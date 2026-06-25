@@ -15,6 +15,7 @@ pub struct UalbfSearchResult {
     pub candidates_checked: usize,
 }
 
+#[verified_engine::verified]
 pub fn ualbf_search(
     _limit_p: u64,
     _max_exponent: u32,

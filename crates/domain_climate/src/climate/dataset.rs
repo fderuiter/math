@@ -4,6 +4,7 @@ use rand::Rng;
 
 /// Generates synthetic global temperature anomaly data.
 /// Returns a vector of [year, anomaly] pairs.
+#[verified_engine::verified]
 pub fn get_temperature_anomalies() -> Vec<[f64; 2]> {
     let mut rng = rand::thread_rng();
     get_temperature_anomalies_with_rng(&mut rng)
@@ -11,6 +12,7 @@ pub fn get_temperature_anomalies() -> Vec<[f64; 2]> {
 
 /// Generates synthetic global temperature anomaly data using an injected RNG.
 /// Returns a vector of [year, anomaly] pairs.
+#[verified_engine::verified]
 pub fn get_temperature_anomalies_with_rng<R: Rng + ?Sized>(rng: &mut R) -> Vec<[f64; 2]> {
     let mut time_series = Vec::new();
     let mut current_anomaly = -0.5;
@@ -29,12 +31,14 @@ pub fn get_temperature_anomalies_with_rng<R: Rng + ?Sized>(rng: &mut R) -> Vec<[
 /// Historical data up to 2020, then projection up to 2100 based on the `reduction_scenario` factor.
 /// `reduction_scenario` from 0.0 (business as usual) to 1.0 (aggressive reduction).
 /// Returns a tuple of (historical_data, projected_data).
+#[verified_engine::verified]
 pub fn get_co2_projections(reduction_scenario: f64) -> (Vec<[f64; 2]>, Vec<[f64; 2]>) {
     let mut rng = rand::thread_rng();
     get_co2_projections_with_rng(&mut rng, reduction_scenario)
 }
 
 /// Generates synthetic global CO2 concentration data and projections using an injected RNG.
+#[verified_engine::verified]
 pub fn get_co2_projections_with_rng<R: Rng + ?Sized>(
     rng: &mut R,
     reduction_scenario: f64,

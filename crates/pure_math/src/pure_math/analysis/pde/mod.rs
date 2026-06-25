@@ -18,6 +18,7 @@ pub struct SecondOrderLinearPde2D {
 }
 
 impl SecondOrderLinearPde2D {
+    #[verified_engine::verified]
     pub fn classify(&self) -> PdeClassification {
         let discriminant = self.b * self.b - 4.0 * self.a * self.c;
         if discriminant < -1e-9 {
@@ -37,6 +38,7 @@ impl SecondOrderLinearPde2D {
 /// modifying the core enum.
 pub trait BoundaryCondition {
     /// Evaluates the boundary condition at the given spatial or spatio-temporal coordinates.
+    #[verified_engine::verified]
     fn evaluate_boundary(&self, x: f64, y: f64) -> f64;
 }
 
@@ -46,6 +48,7 @@ pub struct DirichletBoundary {
 }
 
 impl BoundaryCondition for DirichletBoundary {
+    #[verified_engine::verified]
     fn evaluate_boundary(&self, x: f64, y: f64) -> f64 {
         (self.function)(x, y)
     }
@@ -57,6 +60,7 @@ pub struct NeumannBoundary {
 }
 
 impl BoundaryCondition for NeumannBoundary {
+    #[verified_engine::verified]
     fn evaluate_boundary(&self, x: f64, y: f64) -> f64 {
         (self.function)(x, y)
     }

@@ -3,6 +3,7 @@ use approx::assert_relative_eq;
 use nalgebra::{DMatrix, DVector};
 
 #[test]
+#[verified_engine::verified]
 fn test_simple_absorbing_chain() {
     // Two transient states, one absorbing
     let p = DMatrix::from_row_slice(
@@ -60,6 +61,7 @@ fn test_simple_absorbing_chain() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_absorption_probabilities() {
     // Classic gambler's ruin: states 0 and 4 are absorbing
     let p = DMatrix::from_row_slice(
@@ -106,6 +108,7 @@ fn test_absorption_probabilities() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_expected_possession_value() {
     // Simple basketball example
     let p = DMatrix::from_row_slice(
@@ -142,6 +145,7 @@ fn test_expected_possession_value() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_n_step_transition() {
     let p = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
 
@@ -171,6 +175,7 @@ fn test_n_step_transition() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_stationary_distribution_ergodic() {
     // Simple ergodic chain
     let p = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
@@ -195,6 +200,7 @@ fn test_stationary_distribution_ergodic() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_validation_errors() {
     // Test non-square matrix
     let p = DMatrix::from_row_slice(2, 3, &[0.5, 0.3, 0.2, 0.3, 0.4, 0.3]);

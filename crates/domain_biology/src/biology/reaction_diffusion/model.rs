@@ -24,12 +24,14 @@ pub struct ReactionDiffusionModel<R, D> {
 impl<R: ReactionModel, D: DiffusionModel> OdeSystem<ChemicalState>
     for ReactionDiffusionModel<R, D>
 {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &ChemicalState) -> ChemicalState {
         let mut out = ChemicalState::new(state.num_species(), state.grid_size());
         self.derivative_in_place(_t, state, &mut out);
         out
     }
 
+    #[verified_engine::verified]
     fn derivative_in_place(&self, _t: f64, state: &ChemicalState, out: &mut ChemicalState) {
         // Compute Diffusion
         self.diffusion.apply(state, out, &self.diffusion_coeffs);
@@ -68,6 +70,7 @@ pub struct ReactionDiffusionSystemBuilder<R, D, S> {
 }
 
 impl<R, D, S> Default for ReactionDiffusionSystemBuilder<R, D, S> {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             num_species: None,
@@ -84,6 +87,7 @@ impl<R: ReactionModel, D: DiffusionModel>
     ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>>
 {
     /// Starts a new builder with default type parameters.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
     }
@@ -93,30 +97,35 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
     ReactionDiffusionSystemBuilder<R, D, S>
 {
     /// Sets the number of chemical species.
+    #[verified_engine::verified]
     pub fn num_species(mut self, num_species: usize) -> Self {
         self.num_species = Some(num_species);
         self
     }
 
     /// Sets the spatial grid size.
+    #[verified_engine::verified]
     pub fn grid_size(mut self, grid_size: usize) -> Self {
         self.grid_size = Some(grid_size);
         self
     }
 
     /// Sets the reaction kinetics model.
+    #[verified_engine::verified]
     pub fn reaction(mut self, reaction: R) -> Self {
         self.reaction = Some(reaction);
         self
     }
 
     /// Sets the spatial diffusion model.
+    #[verified_engine::verified]
     pub fn diffusion(mut self, diffusion: D) -> Self {
         self.diffusion = Some(diffusion);
         self
     }
 
     /// Sets the diffusion coefficients for each species.
+    #[verified_engine::verified]
     pub fn diffusion_coeffs(mut self, coeffs: Vec<f64>) -> Self {
         self.diffusion_coeffs = Some(coeffs);
         self
@@ -142,6 +151,7 @@ impl<R: ReactionModel, D: DiffusionModel>
     ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>>
 {
     /// Builds the `ReactionDiffusionSystem` with the default Euler solver.
+    #[verified_engine::verified]
     pub fn build(
         self,
     ) -> Result<ReactionDiffusionSystem<R, D, Euler<ChemicalState>>, ReactionDiffusionError> {
@@ -195,6 +205,7 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
     ReactionDiffusionSystemBuilder<R, D, S>
 {
     /// Builds the `ReactionDiffusionSystem` with a custom solver.
+    #[verified_engine::verified]
     pub fn build_with_solver(
         self,
     ) -> Result<ReactionDiffusionSystem<R, D, S>, ReactionDiffusionError> {
@@ -246,6 +257,7 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
 
 impl<R: ReactionModel, D: DiffusionModel> ReactionDiffusionSystem<R, D, Euler<ChemicalState>> {
     /// Creates a new builder for a Reaction-Diffusion system.
+    #[verified_engine::verified]
     pub fn builder() -> ReactionDiffusionSystemBuilder<R, D, Euler<ChemicalState>> {
         ReactionDiffusionSystemBuilder::new()
     }
@@ -255,6 +267,7 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
     ReactionDiffusionSystem<R, D, S>
 {
     /// Advances the system by a time step `dt` using the configured solver.
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         // The solver manages the integration logic.
         // We pass 0.0 as the current time since most RD systems are autonomous (time-invariant).
@@ -262,11 +275,13 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
     }
 
     /// Accessor for the reaction model.
+    #[verified_engine::verified]
     pub fn reaction(&self) -> &R {
         &self.model.reaction
     }
 
     /// Accessor for the diffusion model.
+    #[verified_engine::verified]
     pub fn diffusion(&self) -> &D {
         &self.model.diffusion
     }

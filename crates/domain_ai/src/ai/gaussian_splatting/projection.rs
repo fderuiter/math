@@ -10,6 +10,7 @@ use nalgebra::{Matrix2, Matrix3, Matrix4, SMatrix, Vector3};
 /// * `t`: The point in camera space (t.x, t.y, t.z).
 /// * `focal_x`: Focal length in x.
 /// * `focal_y`: Focal length in y.
+#[verified_engine::verified]
 pub fn compute_jacobian(t: &Vector3<f64>, focal_x: f64, focal_y: f64) -> SMatrix<f64, 2, 3> {
     let x = t.x;
     let y = t.y;
@@ -37,6 +38,7 @@ pub fn compute_jacobian(t: &Vector3<f64>, focal_x: f64, focal_y: f64) -> SMatrix
 /// * `cov3d`: The 3D covariance matrix.
 /// * `view_matrix`: The 4x4 viewing transformation matrix (World -> Camera).
 /// * `jacobian`: The 2x3 Jacobian of the projection.
+#[verified_engine::verified]
 pub fn project_covariance(
     cov3d: &Matrix3<f64>,
     view_matrix: &Matrix4<f64>,
@@ -57,6 +59,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_jacobian() {
         let t = Vector3::new(1.0, 2.0, 5.0);
         let fx = 100.0;

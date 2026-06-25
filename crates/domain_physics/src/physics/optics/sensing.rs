@@ -16,6 +16,7 @@
 /// # Returns
 ///
 /// * `f64` - Intensity at the point.
+#[verified_engine::verified]
 pub fn lambertian_intensity(power_tx: f64, distance: f64, angle: f64, mode_n: f64) -> f64 {
     if distance <= 0.0 {
         return 0.0; // Singularity
@@ -47,6 +48,7 @@ pub fn lambertian_intensity(power_tx: f64, distance: f64, angle: f64, mode_n: f6
 /// # Returns
 ///
 /// * `f64` - Minimum resolvable displacement ($\Delta r_{min}$).
+#[verified_engine::verified]
 pub fn lws_range_resolution(r0: f64, delta_r_max: f64, bits: u32) -> f64 {
     let term1 = (r0 - delta_r_max).powi(-4);
     let term2 = 2.0_f64.powi(bits as i32);
@@ -63,6 +65,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_lambertian() {
         // n=1 (Lambertian), phi=0 (cos=1), P=2pi, r=1
         // I = (2 * 2pi) / (2pi * 1) = 2

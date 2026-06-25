@@ -4,6 +4,7 @@ use super::types::*;
 /// Trait defining the behavior of a nuclear binding energy model.
 pub trait BindingEnergyModel {
     /// Calculates the Binding Energy B(Z, A).
+    #[verified_engine::verified]
     fn binding_energy(
         &self,
         atomic_number: AtomicNumber,
@@ -11,6 +12,7 @@ pub trait BindingEnergyModel {
     ) -> Result<f64, NuclearError>;
 
     /// Calculates the Binding Energy per nucleon.
+    #[verified_engine::verified]
     fn binding_energy_per_nucleon(
         &self,
         atomic_number: AtomicNumber,
@@ -32,6 +34,7 @@ pub struct LiquidDropModel {
 }
 
 impl Default for LiquidDropModel {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             a_v: liquid_drop_constants::A_V,
@@ -45,11 +48,13 @@ impl Default for LiquidDropModel {
 
 impl LiquidDropModel {
     /// Creates a new LiquidDropModel with standard constants.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates a new LiquidDropModel with custom constants.
+    #[verified_engine::verified]
     pub fn with_constants(a_v: f64, a_s: f64, a_c: f64, a_sym: f64, delta_coeff: f64) -> Self {
         Self {
             a_v,
@@ -62,6 +67,7 @@ impl LiquidDropModel {
 }
 
 impl BindingEnergyModel for LiquidDropModel {
+    #[verified_engine::verified]
     fn binding_energy(
         &self,
         atomic_number: AtomicNumber,
@@ -116,6 +122,7 @@ pub mod shell {
     ///
     /// # Returns
     /// * `f64` - The energy shift factor.
+    #[verified_engine::verified]
     pub fn spin_orbit_coupling(l: f64, s: f64, j: f64) -> f64 {
         let hbar = constants::HBAR_C / constants::LIGHT_SPEED;
         let term = j * (j + 1.0) - l * (l + 1.0) - s * (s + 1.0);

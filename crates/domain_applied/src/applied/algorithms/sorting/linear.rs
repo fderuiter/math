@@ -6,6 +6,7 @@ use super::strategy::Sorter;
 pub struct RadixSorter;
 
 impl Sorter<u64> for RadixSorter {
+    #[verified_engine::verified]
     fn sort(&self, data: &[u64]) -> SortingResult<u64> {
         let mut sorted_data = data.to_vec();
         let mut stats = SortingStats::default();
@@ -57,10 +58,12 @@ impl Sorter<u64> for RadixSorter {
 ///
 /// # constraints
 /// Only works for non-negative integers (`u64`) in this implementation.
+#[verified_engine::verified]
 pub fn radix_sort(data: &[u64]) -> SortingResult<u64> {
     RadixSorter.sort(data)
 }
 
+#[verified_engine::verified]
 fn counting_sort_for_radix(arr: &[u64], output: &mut [u64], shift: u32, stats: &mut SortingStats) {
     let n = arr.len();
     let mut count = [0; 256];

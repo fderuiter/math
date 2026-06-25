@@ -1,6 +1,7 @@
 use domain_applied::applied::clinical_trials::types::{ClinicalTrialError, GroupData};
 
 #[test]
+#[verified_engine::verified]
 fn test_group_data_nan_rejection() {
     let data = vec![1.0, 2.0, f64::NAN, 4.0];
 
@@ -15,6 +16,7 @@ fn test_group_data_nan_rejection() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_group_data_infinite_rejection() {
     let data = vec![1.0, 2.0, f64::INFINITY, 4.0];
 

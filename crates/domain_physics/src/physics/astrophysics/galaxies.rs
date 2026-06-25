@@ -18,6 +18,7 @@ pub struct Mpc(pub f64);
 
 impl Mpc {
     /// Returns the value as `f64`.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
@@ -29,6 +30,7 @@ pub struct SolarMassLog(pub f64);
 
 impl SolarMassLog {
     /// Returns the value as `f64`.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
@@ -40,6 +42,7 @@ pub struct Magnitude(pub f64);
 
 impl Magnitude {
     /// Returns the value as `f64`.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
@@ -51,6 +54,7 @@ pub struct Redshift(pub f64);
 
 impl Redshift {
     /// Returns the value as `f64`.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
@@ -61,15 +65,19 @@ impl Redshift {
 /// Defines the empirical relationships for a specific galaxy morphology.
 pub trait GalaxyModel {
     /// Calculates log(Mass) from Distance.
+    #[verified_engine::verified]
     fn log_mass_from_distance(&self, d: Mpc) -> SolarMassLog;
 
     /// Calculates Apparent Magnitude (B-band) from Distance.
+    #[verified_engine::verified]
     fn apparent_magnitude_from_distance(&self, d: Mpc) -> Option<Magnitude>;
 
     /// Calculates log(Mass) from Absolute Magnitude (V-band).
+    #[verified_engine::verified]
     fn log_mass_from_absolute_magnitude(&self, m: Magnitude) -> SolarMassLog;
 
     /// Calculates Redshift from log(Mass).
+    #[verified_engine::verified]
     fn redshift_from_log_mass(&self, m: SolarMassLog) -> Redshift;
 }
 
@@ -80,18 +88,22 @@ pub trait GalaxyModel {
 pub struct GeneralIrregular;
 
 impl GalaxyModel for GeneralIrregular {
+    #[verified_engine::verified]
     fn log_mass_from_distance(&self, d: Mpc) -> SolarMassLog {
         SolarMassLog(0.0230 * d.0 + 0.7840)
     }
 
+    #[verified_engine::verified]
     fn apparent_magnitude_from_distance(&self, d: Mpc) -> Option<Magnitude> {
         Some(Magnitude(0.0206 * d.0 + 16.0010))
     }
 
+    #[verified_engine::verified]
     fn log_mass_from_absolute_magnitude(&self, m: Magnitude) -> SolarMassLog {
         SolarMassLog(-0.6670 * m.0 - 1.4975)
     }
 
+    #[verified_engine::verified]
     fn redshift_from_log_mass(&self, m: SolarMassLog) -> Redshift {
         Redshift(0.0094 * m.0 - 0.7270)
     }
@@ -102,19 +114,23 @@ impl GalaxyModel for GeneralIrregular {
 pub struct TypeCode10;
 
 impl GalaxyModel for TypeCode10 {
+    #[verified_engine::verified]
     fn log_mass_from_distance(&self, d: Mpc) -> SolarMassLog {
         SolarMassLog(0.0250 * d.0 + 7.6860)
     }
 
+    #[verified_engine::verified]
     fn apparent_magnitude_from_distance(&self, d: Mpc) -> Option<Magnitude> {
         Some(Magnitude(0.0140 * d.0 + 16.575))
     }
 
+    #[verified_engine::verified]
     fn log_mass_from_absolute_magnitude(&self, m: Magnitude) -> SolarMassLog {
         // Uses the same formula as the general case for this relationship
         SolarMassLog(-0.6670 * m.0 - 1.4975)
     }
 
+    #[verified_engine::verified]
     fn redshift_from_log_mass(&self, m: SolarMassLog) -> Redshift {
         Redshift(0.00093 * m.0 - 0.0716)
     }
@@ -125,18 +141,22 @@ impl GalaxyModel for TypeCode10 {
 pub struct TypeCode95To99;
 
 impl GalaxyModel for TypeCode95To99 {
+    #[verified_engine::verified]
     fn log_mass_from_distance(&self, d: Mpc) -> SolarMassLog {
         SolarMassLog(0.0504 * d.0 + 7.5715)
     }
 
+    #[verified_engine::verified]
     fn apparent_magnitude_from_distance(&self, _d: Mpc) -> Option<Magnitude> {
         None // Relationship not established in the paper
     }
 
+    #[verified_engine::verified]
     fn log_mass_from_absolute_magnitude(&self, m: Magnitude) -> SolarMassLog {
         SolarMassLog(-0.3837 * m.0 - 2.2864)
     }
 
+    #[verified_engine::verified]
     fn redshift_from_log_mass(&self, m: SolarMassLog) -> Redshift {
         Redshift(0.0031 * m.0 - 0.0223)
     }
@@ -161,6 +181,7 @@ pub enum GalaxyType {
 // This allows the Enum to be used where the Trait is expected, and simplifies legacy functions.
 #[allow(deprecated)]
 impl GalaxyModel for GalaxyType {
+    #[verified_engine::verified]
     fn log_mass_from_distance(&self, d: Mpc) -> SolarMassLog {
         match self {
             GalaxyType::All => GeneralIrregular.log_mass_from_distance(d),
@@ -169,6 +190,7 @@ impl GalaxyModel for GalaxyType {
         }
     }
 
+    #[verified_engine::verified]
     fn apparent_magnitude_from_distance(&self, d: Mpc) -> Option<Magnitude> {
         match self {
             GalaxyType::All => GeneralIrregular.apparent_magnitude_from_distance(d),
@@ -177,6 +199,7 @@ impl GalaxyModel for GalaxyType {
         }
     }
 
+    #[verified_engine::verified]
     fn log_mass_from_absolute_magnitude(&self, m: Magnitude) -> SolarMassLog {
         match self {
             GalaxyType::All => GeneralIrregular.log_mass_from_absolute_magnitude(m),
@@ -185,6 +208,7 @@ impl GalaxyModel for GalaxyType {
         }
     }
 
+    #[verified_engine::verified]
     fn redshift_from_log_mass(&self, m: SolarMassLog) -> Redshift {
         match self {
             GalaxyType::All => GeneralIrregular.redshift_from_log_mass(m),
@@ -225,6 +249,7 @@ pub struct Galaxy {
 /// # Returns
 /// The calculated logarithm of the mass.
 #[deprecated(note = "Use GalaxyModel::log_mass_from_distance with strong types instead")]
+#[verified_engine::verified]
 pub fn calculate_log_mass_from_distance(distance: f64, model: &impl GalaxyModel) -> f64 {
     model.log_mass_from_distance(Mpc(distance)).0
 }
@@ -238,6 +263,7 @@ pub fn calculate_log_mass_from_distance(distance: f64, model: &impl GalaxyModel)
 /// # Returns
 /// The calculated apparent magnitude, or `None` if the formula is not applicable for the given type.
 #[deprecated(note = "Use GalaxyModel::apparent_magnitude_from_distance with strong types instead")]
+#[verified_engine::verified]
 pub fn calculate_apparent_magnitude_from_distance(
     distance: f64,
     model: &impl GalaxyModel,
@@ -256,6 +282,7 @@ pub fn calculate_apparent_magnitude_from_distance(
 /// # Returns
 /// The calculated logarithm of the mass.
 #[deprecated(note = "Use GalaxyModel::log_mass_from_absolute_magnitude with strong types instead")]
+#[verified_engine::verified]
 pub fn calculate_log_mass_from_absolute_magnitude(
     absolute_magnitude_v: f64,
     model: &impl GalaxyModel,
@@ -274,6 +301,7 @@ pub fn calculate_log_mass_from_absolute_magnitude(
 /// # Returns
 /// The calculated redshift.
 #[deprecated(note = "Use GalaxyModel::redshift_from_log_mass with strong types instead")]
+#[verified_engine::verified]
 pub fn calculate_redshift_from_log_mass(log_mass_solar: f64, model: &impl GalaxyModel) -> f64 {
     model.redshift_from_log_mass(SolarMassLog(log_mass_solar)).0
 }

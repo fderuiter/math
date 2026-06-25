@@ -4,6 +4,7 @@ use domain_applied::applied::clinical_trials::survival_analysis::{
 use domain_applied::applied::clinical_trials::types::{ClinicalTrialError, SurvivalTime};
 
 #[test]
+#[verified_engine::verified]
 fn test_hazard_ratio_valid() {
     let group1 = vec![
         Observation {
@@ -32,6 +33,7 @@ fn test_hazard_ratio_valid() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_hazard_ratio_error() {
     let group1 = vec![Observation {
         time: SurvivalTime::new(10.0).unwrap(),
@@ -50,6 +52,7 @@ fn test_hazard_ratio_error() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_hazard_ratio_negative_time() {
     // This test now verifies that we cannot construct an invalid SurvivalTime,
     // which prevents invalid Observations from being created in the first place.

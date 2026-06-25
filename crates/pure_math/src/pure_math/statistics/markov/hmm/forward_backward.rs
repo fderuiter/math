@@ -25,6 +25,7 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// # Returns
     ///
     /// The probability of the observation sequence.
+    #[verified_engine::verified]
     pub fn forward(&self, observations: &[usize]) -> Result<T> {
         let (alpha, _) = self.forward_probabilities(observations)?;
         let zero = T::zero();
@@ -176,6 +177,7 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// # Returns
     ///
     /// A matrix where column t contains γ(t, ·).
+    #[verified_engine::verified]
     pub fn posterior_probabilities(&self, observations: &[usize]) -> Result<DMatrix<T>> {
         let (alpha, scaling_factors) = self.forward_probabilities(observations)?;
         let beta = self.backward_probabilities(observations, &scaling_factors)?;
@@ -210,6 +212,7 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// # Returns
     ///
     /// The posterior probabilities P(Xₜ = i | Y₁, ..., Yₜ) at the final time T.
+    #[verified_engine::verified]
     pub fn filter(&self, observations: &[usize]) -> Result<DVector<T>> {
         let (alpha, _) = self.forward_probabilities(observations)?;
         let t_max = observations.len();

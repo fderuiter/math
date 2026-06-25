@@ -12,6 +12,7 @@ pub struct Polynomial<T: Ring> {
 }
 
 impl<T: Ring> Polynomial<T> {
+    #[verified_engine::verified]
     pub fn new(coeffs: Vec<T>) -> Self {
         let mut p = Polynomial { coeffs };
         p.trim();
@@ -19,6 +20,7 @@ impl<T: Ring> Polynomial<T> {
     }
 
     /// Removes trailing zeros.
+    #[verified_engine::verified]
     fn trim(&mut self) {
         while self.coeffs.len() > 1 && self.coeffs.last().is_some_and(|c| c.is_zero()) {
             self.coeffs.pop();
@@ -31,6 +33,7 @@ impl<T: Ring> Polynomial<T> {
         }
     }
 
+    #[verified_engine::verified]
     pub fn degree(&self) -> Option<usize> {
         if self.coeffs.is_empty() {
             None // Degree of zero polynomial is -infinity (represented as None)
@@ -40,6 +43,7 @@ impl<T: Ring> Polynomial<T> {
     }
 
     /// Evaluation at x using Horner's method.
+    #[verified_engine::verified]
     pub fn eval(&self, x: T) -> T {
         if self.coeffs.is_empty() {
             return T::zero();
@@ -54,6 +58,7 @@ impl<T: Ring> Polynomial<T> {
 
 impl<T: Ring> Add for Polynomial<T> {
     type Output = Self;
+    #[verified_engine::verified]
     fn add(self, other: Self) -> Self {
         let max_len = std::cmp::max(self.coeffs.len(), other.coeffs.len());
         let mut new_coeffs = Vec::with_capacity(max_len);
@@ -69,6 +74,7 @@ impl<T: Ring> Add for Polynomial<T> {
 
 impl<T: Ring> Mul for Polynomial<T> {
     type Output = Self;
+    #[verified_engine::verified]
     fn mul(self, other: Self) -> Self {
         if self.coeffs.is_empty() || other.coeffs.is_empty() {
             return Polynomial::new(vec![]);
@@ -93,15 +99,18 @@ impl<T: Ring> Mul for Polynomial<T> {
 // Note: To implement `Ring` trait for `Polynomial<T>`, we need all of them.
 
 impl<T: Ring> Ring for Polynomial<T> {
+    #[verified_engine::verified]
     fn zero() -> Self {
         Polynomial::new(vec![])
     }
+    #[verified_engine::verified]
     fn one() -> Self {
         Polynomial::new(vec![T::one()])
     }
 }
 
 impl<T: Ring> AddAssign for Polynomial<T> {
+    #[verified_engine::verified]
     fn add_assign(&mut self, other: Self) {
         *self = self.clone() + other;
     }
@@ -109,18 +118,21 @@ impl<T: Ring> AddAssign for Polynomial<T> {
 
 impl<T: Ring> Sub for Polynomial<T> {
     type Output = Self;
+    #[verified_engine::verified]
     fn sub(self, other: Self) -> Self {
         self + (-other)
     }
 }
 
 impl<T: Ring> SubAssign for Polynomial<T> {
+    #[verified_engine::verified]
     fn sub_assign(&mut self, other: Self) {
         *self = self.clone() - other;
     }
 }
 
 impl<T: Ring> MulAssign for Polynomial<T> {
+    #[verified_engine::verified]
     fn mul_assign(&mut self, other: Self) {
         *self = self.clone() * other;
     }
@@ -128,6 +140,7 @@ impl<T: Ring> MulAssign for Polynomial<T> {
 
 impl<T: Ring> Neg for Polynomial<T> {
     type Output = Self;
+    #[verified_engine::verified]
     fn neg(self) -> Self {
         Polynomial::new(self.coeffs.into_iter().map(|c| -c).collect())
     }

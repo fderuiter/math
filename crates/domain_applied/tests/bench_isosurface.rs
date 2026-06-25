@@ -2,6 +2,7 @@ use domain_applied::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface
 use std::time::Instant;
 
 #[test]
+#[verified_engine::verified]
 fn bench_isosurface_performance() {
     let size = 100; // 100^3 = 1M voxels
     let mut data = Vec::with_capacity(size * size * size);

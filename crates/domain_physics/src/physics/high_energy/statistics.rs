@@ -6,6 +6,7 @@ use crate::error::HighEnergyError;
 /// * `n_on` - Counts on source.
 /// * `n_off` - Background counts.
 /// * `alpha` - Ratio of exposure times (t_on / t_off).
+#[verified_engine::verified]
 pub fn li_ma_significance(n_on: f64, n_off: f64, alpha: f64) -> Result<f64, HighEnergyError> {
     if n_on < 0.0 || n_off < 0.0 || alpha <= 0.0 {
         return Err(HighEnergyError::InvalidStatisticsParams {
@@ -46,6 +47,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_statistics_li_ma() {
         // Example: Non=10, Noff=10, alpha=1.
         // term1 = 10 * ln(2 * 10/20) = 10 * ln(1) = 0.

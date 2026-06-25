@@ -20,6 +20,7 @@ use nalgebra::DVector;
 /// # Returns
 ///
 /// * `f64` - The total cost.
+#[verified_engine::verified]
 pub fn calculate_cost(
     current_dose: &DVector<f64>,
     tumor_indices: &[usize],
@@ -64,6 +65,7 @@ pub fn calculate_cost(
 /// # Returns
 ///
 /// * `DVector<f64>` - Updated weights ($w_{new}$), clipped to be non-negative.
+#[verified_engine::verified]
 pub fn update_weights(
     current_weights: &DVector<f64>,
     gradient: &DVector<f64>,
@@ -80,6 +82,7 @@ mod tests {
     use nalgebra::DVector;
 
     #[test]
+    #[verified_engine::verified]
     fn test_cost_function_logic() {
         // Tumor: 2 voxels, indices 0, 1. Prescription 50.
         // Organ: 2 voxels, indices 2, 3. Limit 20.
@@ -104,6 +107,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_gradient_update() {
         let w_old = DVector::from_vec(vec![10.0, 5.0]);
         let grad = DVector::from_vec(vec![2.0, -1.0]);

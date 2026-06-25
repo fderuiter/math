@@ -5,6 +5,7 @@ pub use pure_math::pure_math::analysis::stochastic::{
 };
 
 impl<S: Solver<SIRState>> StochasticSystem<SIRState> for SIRModel<S> {
+    #[verified_engine::verified]
     fn propensities(&self, state: &SIRState, out: &mut Vec<f64>) {
         // Reaction 0: Infection (S + I -> 2I)
         // Rate: beta * S * I / N
@@ -18,6 +19,7 @@ impl<S: Solver<SIRState>> StochasticSystem<SIRState> for SIRModel<S> {
         out.push(recovery_rate);
     }
 
+    #[verified_engine::verified]
     fn react(&self, state: &mut SIRState, reaction_index: usize) -> Result<(), StochasticError> {
         match reaction_index {
             0 => {
@@ -40,6 +42,7 @@ impl<S: Solver<SIRState>> StochasticSystem<SIRState> for SIRModel<S> {
 /// Calculates the probability of extinction given R0 and initial cases.
 ///
 /// Based on Branching Process theory: $P_{ext} = (1/R_0)^{I_0}$ if $R_0 > 1$.
+#[verified_engine::verified]
 pub fn probability_of_extinction(r0: f64, initial_cases: f64) -> f64 {
     if r0 <= 1.0 {
         1.0
@@ -56,6 +59,7 @@ mod tests {
     use std::error::Error;
 
     #[test]
+    #[verified_engine::verified]
     fn test_extinction_probability() {
         let r0 = 0.5;
         let i0 = 10.0;
@@ -68,6 +72,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_gillespie_solver_deterministic() -> Result<(), Box<dyn Error>> {
         // Seeded RNG for deterministic test
         let rng = StdRng::seed_from_u64(42);

@@ -27,6 +27,7 @@ pub struct SIRDynamics {
 }
 
 impl OdeSystem<SIRState> for SIRDynamics {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &SIRState) -> SIRState {
         let s = state.s;
         let i = state.i;
@@ -65,14 +66,17 @@ pub struct SIRModel<S: Solver<SIRState> = RungeKutta4<SIRState>> {
 }
 
 impl<S: Solver<SIRState>> TimeStepper<SIRState> for SIRModel<S> {
+    #[verified_engine::verified]
     fn get_state(&self) -> &SIRState {
         &self.state
     }
 
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut SIRState {
         &mut self.state
     }
 
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         // Delegate stepping to the injected solver strategy.
         // pass &self.dynamics to avoid partial borrow of self.
@@ -91,30 +95,35 @@ pub struct SIRModelBuilder {
 
 impl SIRModelBuilder {
     /// Sets the total population size N.
+    #[verified_engine::verified]
     pub fn n(mut self, n: f64) -> Self {
         self.n = Some(n);
         self
     }
 
     /// Sets the initial infected count I0.
+    #[verified_engine::verified]
     pub fn i0(mut self, i0: f64) -> Self {
         self.i0 = Some(i0);
         self
     }
 
     /// Sets the transmission rate beta.
+    #[verified_engine::verified]
     pub fn beta(mut self, beta: f64) -> Self {
         self.beta = Some(beta);
         self
     }
 
     /// Sets the recovery rate gamma.
+    #[verified_engine::verified]
     pub fn gamma(mut self, gamma: f64) -> Self {
         self.gamma = Some(gamma);
         self
     }
 
     /// Builds the SIRModel, validating all parameters.
+    #[verified_engine::verified]
     pub fn build(self) -> Result<SIRModel<RungeKutta4<SIRState>>, EpidemiologyError> {
         let n = self.n.ok_or(EpidemiologyError::MissingParameter {
             name: "n (population)".to_string(),
@@ -150,11 +159,13 @@ impl SIRModelBuilder {
 
 impl SIRModel<RungeKutta4<SIRState>> {
     /// Returns a new builder for the SIRModel.
+    #[verified_engine::verified]
     pub fn builder() -> SIRModelBuilder {
         SIRModelBuilder::default()
     }
 
     /// Constructs a new SIRModel with the given parameters using RungeKutta4.
+    #[verified_engine::verified]
     pub fn new(
         n: f64,
         i0: f64,
@@ -167,6 +178,7 @@ impl SIRModel<RungeKutta4<SIRState>> {
 
 impl<S: Solver<SIRState>> SIRModel<S> {
     /// Advances the state by dt using the configured solver.
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         <Self as TimeStepper<SIRState>>::step(self, dt);
     }
@@ -186,27 +198,32 @@ impl<S: Solver<SIRState>> SIRModel<S> {
     }
 
     /// Returns the transmission rate beta.
+    #[verified_engine::verified]
     pub fn beta(&self) -> f64 {
         self.dynamics.beta
     }
 
     /// Returns the recovery rate gamma.
+    #[verified_engine::verified]
     pub fn gamma(&self) -> f64 {
         self.dynamics.gamma
     }
 
     /// Returns the total population size N.
+    #[verified_engine::verified]
     pub fn n(&self) -> f64 {
         self.dynamics.n
     }
 
     /// Returns the current state.
+    #[verified_engine::verified]
     pub fn state(&self) -> &SIRState {
         &self.state
     }
 }
 
 impl<S: Solver<SIRState>> OdeSystem<SIRState> for SIRModel<S> {
+    #[verified_engine::verified]
     fn derivative(&self, t: f64, state: &SIRState) -> SIRState {
         // Delegate to the pure dynamics component
         self.dynamics.derivative(t, state)
@@ -219,6 +236,7 @@ mod tests {
     use pure_math::pure_math::analysis::ode::{Euler, RungeKutta4};
 
     #[test]
+    #[verified_engine::verified]
     fn test_builder() {
         let model = SIRModel::builder()
             .n(1000.0)
@@ -233,6 +251,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_builder_missing_param() {
         let model = SIRModel::builder().n(1000.0).build();
         assert!(matches!(
@@ -242,6 +261,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_threshold_theorem() {
         let n = 1000.0;
         let i0 = 10.0;
@@ -258,6 +278,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_sir_step_with_rk4() {
         let n = 1000.0;
         let i0 = 10.0;
@@ -279,6 +300,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_sir_step_with_euler() {
         let n = 1000.0;
         let i0 = 10.0;
@@ -293,6 +315,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_independent_dynamics() {
         // Demonstrate usage of SIRDynamics without SIRModel (pure strategy pattern)
         let dynamics = SIRDynamics {
@@ -329,6 +352,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_swapping_solver() {
         let n = 1000.0;
         let i0 = 10.0;

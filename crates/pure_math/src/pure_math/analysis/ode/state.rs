@@ -10,6 +10,7 @@ pub struct VecState(pub Vec<f64>);
 impl Add for VecState {
     type Output = Self;
 
+    #[verified_engine::verified]
     fn add(mut self, rhs: Self) -> Self {
         let len = std::cmp::min(self.0.len(), rhs.0.len());
         self.0.truncate(len);
@@ -21,6 +22,7 @@ impl Add for VecState {
 }
 
 impl AddAssign for VecState {
+    #[verified_engine::verified]
     fn add_assign(&mut self, rhs: Self) {
         let len = std::cmp::min(self.0.len(), rhs.0.len());
         // Use zip to avoid bounds checks and handle length mismatch gracefully
@@ -33,6 +35,7 @@ impl AddAssign for VecState {
 impl Mul<f64> for VecState {
     type Output = Self;
 
+    #[verified_engine::verified]
     fn mul(mut self, scalar: f64) -> Self {
         for val in self.0.iter_mut() {
             *val *= scalar;
@@ -42,6 +45,7 @@ impl Mul<f64> for VecState {
 }
 
 impl MulAssign<f64> for VecState {
+    #[verified_engine::verified]
     fn mul_assign(&mut self, scalar: f64) {
         for val in self.0.iter_mut() {
             *val *= scalar;
@@ -50,6 +54,7 @@ impl MulAssign<f64> for VecState {
 }
 
 impl VectorOperations for VecState {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         let len = std::cmp::min(self.0.len(), other.0.len());
         for (a, b) in self.0.iter_mut().zip(other.0.iter()).take(len) {
@@ -57,6 +62,7 @@ impl VectorOperations for VecState {
         }
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         // Reuse buffer if possible
         if self.0.len() != other.0.len() {
@@ -65,6 +71,7 @@ impl VectorOperations for VecState {
         self.0.copy_from_slice(&other.0);
     }
 
+    #[verified_engine::verified]
     fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
         if self.0.len() != source.0.len() {
             self.0.resize(source.0.len(), 0.0);
@@ -83,6 +90,7 @@ pub struct ArrayState<const N: usize>(pub [f64; N]);
 
 impl<const N: usize> Add for ArrayState<N> {
     type Output = Self;
+    #[verified_engine::verified]
     fn add(self, rhs: Self) -> Self {
         let mut arr = [0.0; N];
         for (i, val) in arr.iter_mut().enumerate() {
@@ -94,6 +102,7 @@ impl<const N: usize> Add for ArrayState<N> {
 
 impl<const N: usize> Mul<f64> for ArrayState<N> {
     type Output = Self;
+    #[verified_engine::verified]
     fn mul(self, scalar: f64) -> Self {
         let mut arr = [0.0; N];
         for (i, val) in arr.iter_mut().enumerate() {
@@ -104,6 +113,7 @@ impl<const N: usize> Mul<f64> for ArrayState<N> {
 }
 
 impl<const N: usize> AddAssign for ArrayState<N> {
+    #[verified_engine::verified]
     fn add_assign(&mut self, rhs: Self) {
         for (a, b) in self.0.iter_mut().zip(rhs.0.iter()) {
             *a += b;
@@ -112,6 +122,7 @@ impl<const N: usize> AddAssign for ArrayState<N> {
 }
 
 impl<const N: usize> MulAssign<f64> for ArrayState<N> {
+    #[verified_engine::verified]
     fn mul_assign(&mut self, scalar: f64) {
         for val in self.0.iter_mut() {
             *val *= scalar;
@@ -120,16 +131,19 @@ impl<const N: usize> MulAssign<f64> for ArrayState<N> {
 }
 
 impl<const N: usize> VectorOperations for ArrayState<N> {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         for (a, b) in self.0.iter_mut().zip(other.0.iter()) {
             *a += b * scale;
         }
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         self.0 = other.0;
     }
 
+    #[verified_engine::verified]
     fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
         for ((dst, src), oth) in self.0.iter_mut().zip(source.0.iter()).zip(other.0.iter()) {
             *dst = *src + *oth * scale;
@@ -140,34 +154,41 @@ impl<const N: usize> VectorOperations for ArrayState<N> {
 // Implementations for nalgebra types
 
 impl VectorOperations for Vector2<f64> {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         *self += other * scale;
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         *self = *other;
     }
 
+    #[verified_engine::verified]
     fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
         *self = *source + *other * scale;
     }
 }
 
 impl VectorOperations for Vector3<f64> {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         *self += other * scale;
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         *self = *other;
     }
 
+    #[verified_engine::verified]
     fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
         *self = *source + *other * scale;
     }
 }
 
 impl VectorOperations for DVector<f64> {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         // Use slice iteration to avoid temporary allocations from 'other * scale'
         // This assumes DVector storage is contiguous which it is for standard DVector.
@@ -176,10 +197,12 @@ impl VectorOperations for DVector<f64> {
         }
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         self.copy_from(other);
     }
 
+    #[verified_engine::verified]
     fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
         if self.len() != source.len() {
             self.copy_from(source);

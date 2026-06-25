@@ -26,6 +26,7 @@ pub trait SpatialDiffusion<const N: usize> {
     /// * `index`: The linear index of the point.
     /// * `current_vals`: Current values of species at index.
     /// * `diff_vals`: The diffusion terms ($D \nabla^2 u$).
+    #[verified_engine::verified]
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], op: F)
     where
         F: FnMut(usize, [f64; N], [f64; N]);
@@ -38,6 +39,7 @@ pub trait SpatialDiffusion<const N: usize> {
     /// * `state` - Input concentration slices.
     /// * `out` - Output buffers for diffusion terms.
     /// * `coeffs` - Diffusion coefficients.
+    #[verified_engine::verified]
     fn apply(&self, state: [&[f64]; N], out: [&mut [f64]; N], coeffs: [f64; N]) {
         // Default implementation: calculate diffusion and write to buffer
         self.map_diffusion(state, coeffs, |i, _, diffs| {

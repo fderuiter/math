@@ -36,6 +36,7 @@ impl DecoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `DecoderLayer` instance.
+    #[verified_engine::verified]
     pub fn new(d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             self_attn: MultiHeadAttention::new(d_model, h),
@@ -50,6 +51,7 @@ impl DecoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
 
 impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> DecoderLayer<A, F, N> {
     /// Creates a new `DecoderLayer` with injected components.
+    #[verified_engine::verified]
     pub fn new_with_components(
         self_attn: A,
         cross_attn: A,
@@ -80,6 +82,7 @@ impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Decode
     /// # Returns
     ///
     /// The output matrix.
+    #[verified_engine::verified]
     pub fn forward(
         &self,
         x: &DMatrix<f64>,
@@ -129,6 +132,7 @@ impl Decoder<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `Decoder` instance.
+    #[verified_engine::verified]
     pub fn new(num_layers: usize, d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             layers: (0..num_layers)
@@ -140,6 +144,7 @@ impl Decoder<MultiHeadAttention, FeedForward, LayerNorm> {
 
 impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Decoder<A, F, N> {
     /// Creates a new `Decoder` with injected layers.
+    #[verified_engine::verified]
     pub fn new_with_layers(layers: Vec<DecoderLayer<A, F, N>>) -> Self {
         Self { layers }
     }
@@ -156,6 +161,7 @@ impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Decode
     /// # Returns
     ///
     /// The output matrix.
+    #[verified_engine::verified]
     pub fn forward(
         &self,
         mut x: DMatrix<f64>,
@@ -175,6 +181,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_decoder_layer_dims() {
         let seq_len = 10;
         let d_model = 512;

@@ -24,6 +24,7 @@ pub struct ProbabilityWinRatioContext {
 
 impl ProbabilityWinRatioContext {
     /// Creates a new `ProbabilityWinRatioContext`.
+    #[verified_engine::verified]
     pub fn new(s0_at_c: f64, s1_at_c: f64, c: f64, error_tolerance: f64) -> Self {
         Self {
             s0_at_c,
@@ -36,6 +37,7 @@ impl ProbabilityWinRatioContext {
     /// Calculates the win probability, W(c).
     ///
     /// Delegates to `calculate_win_probability_with_integrator` using `ClenshawCurtis` as default.
+    #[verified_engine::verified]
     pub fn calculate_win_probability<FS1, FPDFT0, FG1, FPDFX0>(
         &self,
         s1: FS1,
@@ -59,6 +61,7 @@ impl ProbabilityWinRatioContext {
     }
 
     /// Calculates the win probability using a specific integrator.
+    #[verified_engine::verified]
     pub fn calculate_win_probability_with_integrator<FS1, FPDFT0, FG1, FPDFX0, I>(
         &self,
         s1: FS1,
@@ -84,6 +87,7 @@ impl ProbabilityWinRatioContext {
     /// Calculates the loss probability, L(c).
     ///
     /// Delegates to `calculate_loss_probability_with_integrator` using `ClenshawCurtis` as default.
+    #[verified_engine::verified]
     pub fn calculate_loss_probability<FS0, FPDFT1, FG0, FPDFX1>(
         &self,
         s0: FS0,
@@ -107,6 +111,7 @@ impl ProbabilityWinRatioContext {
     }
 
     /// Calculates the loss probability using a specific integrator.
+    #[verified_engine::verified]
     pub fn calculate_loss_probability_with_integrator<FS0, FPDFT1, FG0, FPDFX1, I>(
         &self,
         s0: FS0,
@@ -130,6 +135,7 @@ impl ProbabilityWinRatioContext {
     }
 
     /// Internal helper method to compute probability to avoid duplicating numerical integration logic.
+    #[verified_engine::verified]
     fn calculate_probability_internal<F1, F2, I>(
         &self,
         integrand1: F1,
@@ -162,6 +168,7 @@ impl ProbabilityWinRatioContext {
 /// ## Returns
 ///
 /// The probability win ratio as a `f64`. Returns `f64::INFINITY` if the loss probability is zero.
+#[verified_engine::verified]
 pub fn calculate_probability_win_ratio(win_probability: f64, loss_probability: f64) -> f64 {
     if loss_probability == 0.0 {
         return f64::INFINITY;

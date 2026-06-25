@@ -13,6 +13,7 @@ pub struct TimeIndex<T: RealField + Copy + ToPrimitive> {
 
 impl<T: RealField + Copy + ToPrimitive> TimeIndex<T> {
     /// Creates a new time index.
+    #[verified_engine::verified]
     pub fn new(time: T) -> Result<Self, MarkovError> {
         if !time.is_finite() {
             return Err(MarkovError::InvalidState {
@@ -26,6 +27,7 @@ impl<T: RealField + Copy + ToPrimitive> TimeIndex<T> {
     }
 
     /// Returns the time value.
+    #[verified_engine::verified]
     pub fn value(&self) -> T {
         self.time
     }

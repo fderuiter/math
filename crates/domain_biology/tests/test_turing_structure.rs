@@ -6,6 +6,7 @@ mod tests {
     use pure_math::pure_math::analysis::ode::RungeKutta4;
 
     #[test]
+    #[verified_engine::verified]
     fn test_turing_system_generic_step_with_rk4() {
         let size = 100;
         let d_u = 1.0;

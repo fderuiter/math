@@ -11,6 +11,7 @@ pub struct LorenzState {
 }
 
 impl LorenzState {
+    #[verified_engine::verified]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         LorenzState {
             vec: Vector3::new(x, y, z),
@@ -27,6 +28,7 @@ pub struct LorenzBuilder {
 }
 
 impl Default for LorenzBuilder {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             sigma: 10.0,
@@ -38,29 +40,34 @@ impl Default for LorenzBuilder {
 
 impl LorenzBuilder {
     /// Creates a new builder with standard chaotic constants.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Sets the Prandtl number $\sigma$.
+    #[verified_engine::verified]
     pub fn sigma(mut self, val: f64) -> Self {
         self.sigma = val;
         self
     }
 
     /// Sets the Rayleigh number $\rho$.
+    #[verified_engine::verified]
     pub fn rho(mut self, val: f64) -> Self {
         self.rho = val;
         self
     }
 
     /// Sets the geometric factor $\beta$.
+    #[verified_engine::verified]
     pub fn beta(mut self, val: f64) -> Self {
         self.beta = val;
         self
     }
 
     /// Builds the `LorenzSystem` with the configured parameters and initial state.
+    #[verified_engine::verified]
     pub fn build(self, state: LorenzState) -> LorenzSystem {
         LorenzSystem {
             sigma: self.sigma,
@@ -120,14 +127,17 @@ pub struct LorenzSystem {
 }
 
 impl TimeStepper<Vector3<f64>> for LorenzSystem {
+    #[verified_engine::verified]
     fn get_state(&self) -> &Vector3<f64> {
         &self.state.vec
     }
 
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut Vector3<f64> {
         &mut self.state.vec
     }
 
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         use pure_math::pure_math::analysis::ode::RungeKutta4;
         let new_state = RungeKutta4::step(
@@ -145,6 +155,7 @@ impl LorenzSystem {
     ///
     /// # Deprecation Notice
     /// Prefer using `LorenzBuilder::new().build(initial_state)` for better composability.
+    #[verified_engine::verified]
     pub fn default_chaotic(initial_state: LorenzState) -> Self {
         LorenzBuilder::new().build(initial_state)
     }
@@ -152,6 +163,7 @@ impl LorenzSystem {
     /// Advances the system by time `dt` using the Runge-Kutta 4 (RK4) method.
     ///
     /// This now delegates to the generic `RungeKutta4` solver via `TimeStepper`.
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         <Self as TimeStepper<Vector3<f64>>>::step(self, dt);
     }
@@ -166,6 +178,7 @@ impl LorenzSystem {
 
 impl OdeSystem<Vector3<f64>> for LorenzSystem {
     /// Calculates the derivative at a given state.
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &Vector3<f64>) -> Vector3<f64> {
         let x = state.x;
         let y = state.y;
@@ -198,6 +211,7 @@ impl SimulationModel for LorenzSystem {
     type State = LorenzState;
     type Error = std::io::Error;
 
+    #[verified_engine::verified]
     fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
         // We initialize to an arbitrary point, maybe near the attractor.
         let state = LorenzState::new(10.0, 10.0, 10.0);
@@ -208,6 +222,7 @@ impl SimulationModel for LorenzSystem {
             .build(state))
     }
 
+    #[verified_engine::verified]
     fn step(&mut self) -> Result<(), Self::Error> {
         // Since we don't store dt in LorenzSystem directly via the interface,
         // we'd typically have dt in the Config or State. We'll use 0.01 for now.
@@ -216,6 +231,7 @@ impl SimulationModel for LorenzSystem {
         Ok(())
     }
 
+    #[verified_engine::verified]
     fn get_state(&self) -> Self::State {
         self.state
     }

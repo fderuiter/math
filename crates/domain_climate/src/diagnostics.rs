@@ -54,6 +54,7 @@ pub enum Severity {
 }
 
 impl std::fmt::Display for Severity {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Severity::Info => write!(f, "INFO"),
@@ -65,9 +66,11 @@ impl std::fmt::Display for Severity {
 }
 
 pub trait Diagnostic: std::error::Error + Send + Sync + 'static {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         HashMap::new()
     }
@@ -87,6 +90,7 @@ pub struct DiagnosticBus {
 }
 
 impl DiagnosticBus {
+    #[verified_engine::verified]
     pub fn new() -> Self {
         let (sender, receiver) = channel();
         Self {
@@ -95,10 +99,12 @@ impl DiagnosticBus {
         }
     }
 
+    #[verified_engine::verified]
     pub fn emit(&self, event: DiagnosticEvent) {
         let _ = self.sender.send(event);
     }
 
+    #[verified_engine::verified]
     pub fn emit_error<E: Diagnostic>(&self, err: &E) {
         let metadata = err.metadata();
         let thread = std::thread::current();
@@ -111,6 +117,7 @@ impl DiagnosticBus {
         });
     }
 
+    #[verified_engine::verified]
     pub fn try_recv_all(&self) -> Vec<DiagnosticEvent> {
         let mut events = Vec::new();
         if let Ok(rx) = self.receiver.lock() {
@@ -123,24 +130,29 @@ impl DiagnosticBus {
 }
 
 impl Default for DiagnosticBus {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[verified_engine::verified]
 pub fn global_bus() -> &'static DiagnosticBus {
     static BUS: OnceLock<DiagnosticBus> = OnceLock::new();
     BUS.get_or_init(DiagnosticBus::new)
 }
 
+#[verified_engine::verified]
 pub fn emit(event: DiagnosticEvent) {
     global_bus().emit(event);
 }
 
+#[verified_engine::verified]
 pub fn emit_error<E: Diagnostic>(err: &E) {
     global_bus().emit_error(err);
 }
 
+#[verified_engine::verified]
 pub fn init_panic_hook() {
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {

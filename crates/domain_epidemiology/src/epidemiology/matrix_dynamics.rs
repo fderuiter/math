@@ -8,6 +8,7 @@ use nalgebra::DMatrix;
 /// # Returns
 /// * `Ok(f64)`: The spectral radius (R0).
 /// * `Err(EpidemiologyError)`: If dimensions mismatch or V is singular.
+#[verified_engine::verified]
 pub fn calculate_r0_matrix(
     f_mat: &DMatrix<f64>,
     v_mat: &DMatrix<f64>,
@@ -41,6 +42,7 @@ mod tests {
     use super::super::compartmental;
 
     #[test]
+    #[verified_engine::verified]
     fn test_matrix_r0_scalar_equivalence() {
         // 1x1 Matrix case should match scalar calculation
         let beta = 2.0;

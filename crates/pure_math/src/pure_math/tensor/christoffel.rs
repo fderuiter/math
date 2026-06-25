@@ -51,6 +51,7 @@ use nalgebra::{DMatrix, DVector};
 /// assert!((gammas[1][(0, 1)] - 0.5).abs() < 1e-4);
 /// assert!((gammas[1][(1, 0)] - 0.5).abs() < 1e-4);
 /// ```
+#[verified_engine::verified]
 pub fn christoffel_symbols(
     metric: &impl Metric,
     point: &DVector<f64>,

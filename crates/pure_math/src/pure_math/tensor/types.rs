@@ -44,11 +44,13 @@ impl ContravariantVector {
     /// let vec = ContravariantVector::new(DVector::from_vec(vec![1.0, 2.0]));
     /// assert_eq!(vec.dim(), 2);
     /// ```
+    #[verified_engine::verified]
     pub fn new(data: DVector<f64>) -> Self {
         Self(data)
     }
 
     /// Returns the dimensionality (number of components) of the vector.
+    #[verified_engine::verified]
     pub fn dim(&self) -> usize {
         self.0.len()
     }
@@ -72,11 +74,13 @@ impl CovariantVector {
     /// let vec = CovariantVector::new(DVector::from_vec(vec![3.0, 4.0, 5.0]));
     /// assert_eq!(vec.dim(), 3);
     /// ```
+    #[verified_engine::verified]
     pub fn new(data: DVector<f64>) -> Self {
         Self(data)
     }
 
     /// Returns the dimensionality (number of components) of the vector.
+    #[verified_engine::verified]
     pub fn dim(&self) -> usize {
         self.0.len()
     }
@@ -100,6 +104,7 @@ impl Rank2Tensor {
     /// let tensor = Rank2Tensor::new(DMatrix::from_vec(2, 2, vec![1.0, 0.0, 0.0, 1.0]));
     /// assert_eq!(tensor.0.nrows(), 2);
     /// ```
+    #[verified_engine::verified]
     pub fn new(data: DMatrix<f64>) -> Self {
         Self(data)
     }

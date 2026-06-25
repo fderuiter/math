@@ -2,6 +2,7 @@ use super::surface::{ParametricSurface, SurfaceAnalysis};
 
 /// Computes the Laplace-Beltrami operator $\Delta_S f$ at point $(u, v)$.
 /// $\Delta_S f = \frac{1}{\sqrt{g}} [ \partial_u (\frac{G f_u - F f_v}{\sqrt{g}}) + \partial_v (\frac{E f_v - F f_u}{\sqrt{g}}) ]$
+#[verified_engine::verified]
 pub fn laplace_beltrami<S, F>(surface: &S, u: f64, v: f64, func: &F) -> f64
 where
     S: ParametricSurface,

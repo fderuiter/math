@@ -3,6 +3,7 @@ use pure_math::pure_math::vector_calculus::coordinates::Cartesian;
 use pure_math::pure_math::vector_calculus::theorems::{Domain, verify_divergence_theorem};
 
 #[test]
+#[verified_engine::verified]
 fn test_divergence_theorem_cartesian_box() {
     let coords = Cartesian;
     let domain = Domain {
@@ -30,6 +31,7 @@ fn test_divergence_theorem_cartesian_box() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_divergence_theorem_cartesian_polynomial() {
     let coords = Cartesian;
     let domain = Domain {

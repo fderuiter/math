@@ -15,6 +15,7 @@ impl DepthOfDischarge {
     /// # Errors
     ///
     /// Returns `BatteryError::InvalidDepthOfDischarge` if `value` is not between 0.0 and 100.0 inclusive.
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, BatteryError> {
         if !(0.0..=100.0).contains(&value) {
             return Err(BatteryError::InvalidDepthOfDischarge(value));
@@ -23,17 +24,20 @@ impl DepthOfDischarge {
     }
 
     /// Creates a new `DepthOfDischarge`, clamping the value to the `[0.0, 100.0]` range to ensure validity.
+    #[verified_engine::verified]
     pub fn new_clamped(value: f64) -> Self {
         Self(value.clamp(0.0, 100.0))
     }
 
     /// Returns the value as a f64.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
 }
 
 impl fmt::Display for DepthOfDischarge {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:.2}%", self.0)
     }
@@ -49,6 +53,7 @@ impl Capacity {
     /// # Errors
     ///
     /// Returns `BatteryError::InvalidCapacity` if `value` is not between 0.0 and 1.0 inclusive.
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, BatteryError> {
         if !(0.0..=1.0).contains(&value) {
             return Err(BatteryError::InvalidCapacity(value));
@@ -57,17 +62,20 @@ impl Capacity {
     }
 
     /// Creates a new `Capacity`, clamping the value to the `[0.0, 1.0]` range to ensure validity.
+    #[verified_engine::verified]
     pub fn new_clamped(value: f64) -> Self {
         Self(value.clamp(0.0, 1.0))
     }
 
     /// Returns the value as a f64.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
 }
 
 impl fmt::Display for Capacity {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:.2}", self.0)
     }
@@ -83,6 +91,7 @@ impl Cycles {
     /// # Errors
     ///
     /// Returns `BatteryError::NegativeCycles` if `value` is negative.
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, BatteryError> {
         if value < 0.0 {
             return Err(BatteryError::NegativeCycles(value));
@@ -91,17 +100,20 @@ impl Cycles {
     }
 
     /// Creates a new `Cycles`, clamping the value to be at least `0.0` to ensure validity.
+    #[verified_engine::verified]
     pub fn new_clamped(value: f64) -> Self {
         Self(value.max(0.0))
     }
 
     /// Returns the value as a f64.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
 }
 
 impl fmt::Display for Cycles {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:.1} cycles", self.0)
     }

@@ -2,6 +2,7 @@ use super::types::{MarkovDecisionProcess, Policy};
 
 /// Calculates the State-Value Function $V_\pi(s)$.
 /// $V_\pi(s) = \sum_{a} \pi(a|s) \sum_{s'} P(s'|s, a) [R(s, a, s') + \gamma V_\pi(s')]$
+#[verified_engine::verified]
 pub fn state_value_bellman_equation<M>(
     mdp: &M,
     policy: &impl Policy<M::S, M::A>,
@@ -37,6 +38,7 @@ where
 /// Calculates the Action-Value Function $Q_\pi(s, a)$.
 /// $Q_\pi(s, a) = \sum_{s'} P(s'|s, a) [R(s, a, s') + \gamma \sum_{a'} \pi(a'|s') Q_\pi(s', a')]$
 /// OR simply: $Q_\pi(s, a) = \sum_{s'} P(s'|s, a) [R(s, a, s') + \gamma V_\pi(s')]$
+#[verified_engine::verified]
 pub fn action_value_bellman_equation<M>(
     mdp: &M,
     state: &M::S,
@@ -63,6 +65,7 @@ where
 
 /// The Bellman Optimality Equation for $V^*(s)$.
 /// $V^*(s) = \max_{a} \sum_{s'} P(s'|s, a) [R(s, a, s') + \gamma V^*(s')]$
+#[verified_engine::verified]
 pub fn bellman_optimality_value<M>(
     mdp: &M,
     state: &M::S,

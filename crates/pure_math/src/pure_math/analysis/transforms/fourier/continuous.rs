@@ -23,6 +23,7 @@ use std::f64::consts::PI;
 /// * `l` - Half-period $L$. The function is assumed periodic over $[-L, L]$.
 /// * `n_terms` - Number of terms $N$ to calculate (for $n=1$ to $N$).
 /// * `integrator` - The integration strategy.
+#[verified_engine::verified]
 pub fn calculate_fourier_coefficients_real<F, I>(
     f: F,
     l: f64,
@@ -63,6 +64,7 @@ where
 }
 
 /// Evaluates the real Fourier series at a given point $x$.
+#[verified_engine::verified]
 pub fn evaluate_fourier_series_real(x: f64, l: f64, a0: f64, an: &[f64], bn: &[f64]) -> f64 {
     let mut sum = a0 / 2.0;
     for (i, (a, b)) in an.iter().zip(bn.iter()).enumerate() {
@@ -82,6 +84,7 @@ pub fn evaluate_fourier_series_real(x: f64, l: f64, a0: f64, an: &[f64], bn: &[f
 /// * `l` - Half-period $L$.
 /// * `n_terms` - Number of terms to calculate (from $-N$ to $N$).
 /// * `integrator` - The integration strategy.
+#[verified_engine::verified]
 pub fn calculate_fourier_coefficients_complex<F, I>(
     f: F,
     l: f64,
@@ -139,6 +142,7 @@ where
 /// * `omega` - The angular frequency $\omega$.
 /// * `bounds` - The integration bounds $(t_{min}, t_{max})$. Since numerical integration requires finite bounds, approximate infinity with a sufficiently large interval where $f(t) \to 0$.
 /// * `integrator` - The integration strategy.
+#[verified_engine::verified]
 pub fn fourier_transform<F, I>(f: F, omega: f64, bounds: (f64, f64), integrator: &I) -> Complex64
 where
     F: Fn(f64) -> f64 + Copy,
@@ -164,6 +168,7 @@ mod tests {
     use crate::pure_math::analysis::integration::ClenshawCurtis;
 
     #[test]
+    #[verified_engine::verified]
     fn test_fourier_series_smooth() {
         // Smooth function: f(x) = cos(pi x / L) + 0.5 * sin(2 pi x / L)
         // L = 1. f(x) = cos(pi x) + 0.5 * sin(2 pi x).
@@ -193,6 +198,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fourier_transform_gaussian() {
         // Gaussian: f(t) = e^{-t^2}
         // Transform: F(w) = 1/sqrt(2) * e^{-w^2/4}

@@ -24,6 +24,7 @@ pub struct JordanBlock {
 
 impl JordanBlock {
     /// Creates a new Jordan Block.
+    #[verified_engine::verified]
     pub fn new(eigenvalue: Complex<f64>, size: usize) -> Self {
         Self { eigenvalue, size }
     }
@@ -43,6 +44,7 @@ impl JordanBlock {
     /// assert_eq!(mat[(0, 1)], Complex::new(1.0, 0.0)); // Super-diagonal
     /// assert_eq!(mat[(1, 0)], Complex::new(0.0, 0.0));
     /// ```
+    #[verified_engine::verified]
     pub fn to_matrix(&self) -> DMatrix<Complex<f64>> {
         let mut matrix = DMatrix::from_element(self.size, self.size, Complex::new(0.0, 0.0));
         for i in 0..self.size {
@@ -67,6 +69,7 @@ impl CompanionMatrix {
     ///
     /// # Arguments
     /// * `coeffs` - The coefficients of the polynomial $[a_0, a_1, \dots, a_{n-1}]$.
+    #[verified_engine::verified]
     pub fn new(coeffs: Vec<f64>) -> Self {
         Self { coeffs }
     }
@@ -91,6 +94,7 @@ impl CompanionMatrix {
     /// assert_eq!(mat[(1, 1)], -3.0);
     /// assert_eq!(mat[(1, 0)], 1.0);
     /// ```
+    #[verified_engine::verified]
     pub fn to_matrix(&self) -> DMatrix<f64> {
         let n = self.coeffs.len();
         let mut matrix = DMatrix::zeros(n, n);
@@ -114,6 +118,7 @@ mod tests {
     use nalgebra::Complex;
 
     #[test]
+    #[verified_engine::verified]
     fn test_jordan_block() {
         let block = JordanBlock::new(Complex::new(3.0, 0.0), 2);
         let m = block.to_matrix();
@@ -124,6 +129,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_companion_matrix() {
         // t^2 + 5t + 6 => coeffs [6, 5]
         let c = CompanionMatrix::new(vec![6.0, 5.0]);

@@ -18,6 +18,7 @@
 /// # Formula
 ///
 /// $r = \frac{n \sum X_i Y_i - \sum X_i \sum Y_i}{\sqrt{n \sum X_i^2 - (\sum X_i)^2} \sqrt{n \sum Y_i^2 - (\sum Y_i)^2}}$
+#[verified_engine::verified]
 pub fn pearson_correlation(x: &[f64], y: &[f64]) -> Option<f64> {
     if x.len() != y.len() || x.is_empty() {
         return None;
@@ -65,6 +66,7 @@ pub fn pearson_correlation(x: &[f64], y: &[f64]) -> Option<f64> {
 /// # Formula
 ///
 /// $\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (X_i - Y_i)^2}$
+#[verified_engine::verified]
 pub fn root_mean_square_error(predicted: &[f64], observed: &[f64]) -> Option<f64> {
     if predicted.len() != observed.len() || predicted.is_empty() {
         return None;
@@ -99,6 +101,7 @@ pub fn root_mean_square_error(predicted: &[f64], observed: &[f64]) -> Option<f64
 ///
 /// *Note*: The provided formula divides by $X_{\text{meas}}$. Standard error usually divides by $X_{\text{ref}}$,
 /// but we follow the requested formula.
+#[verified_engine::verified]
 pub fn spatial_accuracy_error(measured: f64, reference: f64) -> f64 {
     if measured.abs() < 1e-9 {
         return 0.0; // Avoid division by zero
@@ -111,6 +114,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_pearson() {
         let x = vec![1.0, 2.0, 3.0];
         let y = vec![2.0, 4.0, 6.0];
@@ -125,6 +129,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_rmse() {
         let p = vec![1.0, 2.0, 3.0];
         let o = vec![1.0, 2.0, 3.0];
@@ -137,6 +142,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_spatial_error() {
         // meas=100, ref=90. Error = (10/100)*100 = 10%
         assert_eq!(spatial_accuracy_error(100.0, 90.0), 10.0);

@@ -61,6 +61,7 @@ pub struct HawkDovePopulation {
 }
 
 impl HawkDovePopulation {
+    #[verified_engine::verified]
     pub fn new(v: f64, c: f64) -> Self {
         Self { v, c }
     }
@@ -78,6 +79,7 @@ impl HawkDovePopulation {
     ///
     /// Row 0 / Col 0: Hawk
     /// Row 1 / Col 1: Dove
+    #[verified_engine::verified]
     pub fn to_replicator_dynamics(&self) -> Result<ReplicatorDynamics, GameTheoryError> {
         let e_hh = (self.v - self.c) / 2.0;
         let e_hd = self.v;
@@ -97,6 +99,7 @@ impl HawkDovePopulation {
     ///
     /// # Returns
     /// The new frequency of Hawks.
+    #[verified_engine::verified]
     pub fn update_frequencies(&self, hawk_freq: f64, dt: f64) -> Result<f64, GameTheoryError> {
         if !(0.0..=1.0).contains(&hawk_freq) {
             return Err(GameTheoryError::InvalidParameter {
@@ -129,6 +132,7 @@ impl HawkDovePopulation {
     /// * `hawk_freq` - Current frequency of Hawks.
     /// * `dt` - Time step.
     /// * `solver` - A mutable reference to a generic `Solver`.
+    #[verified_engine::verified]
     pub fn update_frequencies_with_solver<S>(
         &self,
         hawk_freq: f64,
@@ -168,6 +172,7 @@ impl HawkDovePopulation {
 ///
 /// Equation: $\dot{p}_H = p_H (1 - p_H) \frac{(V - p_H C)}{2}$
 impl OdeSystem<ArrayState<1>> for HawkDovePopulation {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &ArrayState<1>) -> ArrayState<1> {
         let p_h = state.0[0];
 

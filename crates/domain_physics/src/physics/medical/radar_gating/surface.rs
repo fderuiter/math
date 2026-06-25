@@ -30,6 +30,7 @@ impl BiQuadraticSurface {
     /// # Returns
     /// * `Some(BiQuadraticSurface)` if the fit is successful.
     /// * `None` if the system is under-determined (too few points).
+    #[verified_engine::verified]
     pub fn fit(points: &[Point3<f64>]) -> Option<Self> {
         let n = points.len();
         if n < 6 {
@@ -69,6 +70,7 @@ impl BiQuadraticSurface {
     }
 
     /// Evaluates the surface height $z$ at a given $(x, y)$.
+    #[verified_engine::verified]
     pub fn evaluate(&self, x: f64, y: f64) -> f64 {
         let c = &self.coefficients;
         c[0] + c[1] * x + c[2] * y + c[3] * x * y + c[4] * x.powi(2) + c[5] * y.powi(2)
@@ -77,6 +79,7 @@ impl BiQuadraticSurface {
     /// Generates a dense grid of points from the fitted surface.
     ///
     /// Useful for visualization.
+    #[verified_engine::verified]
     pub fn generate_mesh(
         &self,
         x_range: (f64, f64),
@@ -112,6 +115,7 @@ impl BiQuadraticSurface {
 /// # Returns
 ///
 /// * `f64` - The WAH value.
+#[verified_engine::verified]
 pub fn weighted_average_height(vertices: &[Point3<f64>]) -> f64 {
     if vertices.is_empty() {
         return 0.0;

@@ -19,6 +19,7 @@ pub struct Surface {
 /// # Returns
 ///
 /// The calculated internal energy value.
+#[verified_engine::verified]
 pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
     // A simple placeholder: sum of squared distances between adjacent vertices
     // to simulate tension and rigidity.
@@ -43,6 +44,7 @@ pub fn internal_energy(surface: &Surface, alpha: f64, beta: f64) -> f64 {
 /// # Returns
 ///
 /// The calculated external energy value.
+#[verified_engine::verified]
 pub fn external_energy(surface: &Surface, image_gradient_strength: f64) -> f64 {
     // Placeholder: assumes a constant gradient strength for simplicity.
     // The energy is lower if the gradient is stronger.
@@ -57,6 +59,7 @@ pub fn external_energy(surface: &Surface, image_gradient_strength: f64) -> f64 {
 /// * `surface` - The surface mesh to evolve.
 /// * `learning_rate` - The step size for the gradient descent.
 /// * `gradient_strength` - The strength of the gradient to apply.
+#[verified_engine::verified]
 pub fn evolve_surface(surface: &mut Surface, learning_rate: f64, gradient_strength: f64) {
     // In a real scenario, we'd compute the functional derivative of the energy.
     // Here, we just move each vertex slightly in a simulated direction.

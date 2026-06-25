@@ -7,12 +7,14 @@ use rand::Rng;
 ///
 /// # Returns
 /// * `f64` - Final position.
+#[verified_engine::verified]
 pub fn random_walk_1d(steps: usize) -> f64 {
     let mut rng = rand::thread_rng();
     random_walk_1d_with_rng(steps, &mut rng)
 }
 
 /// Simulates a 1D Random Walk using an injected RNG.
+#[verified_engine::verified]
 pub fn random_walk_1d_with_rng<R: Rng + ?Sized>(steps: usize, rng: &mut R) -> f64 {
     let mut position = 0.0;
     for _ in 0..steps {
@@ -35,12 +37,14 @@ pub fn random_walk_1d_with_rng<R: Rng + ?Sized>(steps: usize, rng: &mut R) -> f6
 ///
 /// # Returns
 /// * `f64` - Estimated Diffusion Coefficient D.
+#[verified_engine::verified]
 pub fn estimate_diffusion_coefficient(num_walks: usize, time_steps: usize) -> f64 {
     let mut rng = rand::thread_rng();
     estimate_diffusion_coefficient_with_rng(num_walks, time_steps, &mut rng)
 }
 
 /// Estimates the Diffusion Coefficient D using an injected RNG.
+#[verified_engine::verified]
 pub fn estimate_diffusion_coefficient_with_rng<R: Rng + ?Sized>(
     num_walks: usize,
     time_steps: usize,
@@ -65,6 +69,7 @@ mod tests {
     use rand::rngs::StdRng;
 
     #[test]
+    #[verified_engine::verified]
     fn test_diffusion() {
         // For Random Walk D ~ 0.5 (since dx=1, dt=1).
         let mut rng = StdRng::seed_from_u64(42);

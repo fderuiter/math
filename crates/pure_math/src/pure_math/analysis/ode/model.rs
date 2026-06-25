@@ -27,6 +27,7 @@ pub struct OdeModel<State, Dynamics, S> {
 
 impl<State, Dynamics, S> OdeModel<State, Dynamics, S> {
     /// Constructs a new OdeModel.
+    #[verified_engine::verified]
     pub fn new(state: State, dynamics: Dynamics, solver: S) -> Self {
         Self {
             state,
@@ -42,10 +43,12 @@ where
     Dynamics: OdeSystem<State>,
     S: Solver<State>,
 {
+    #[verified_engine::verified]
     fn derivative(&self, t: f64, state: &State) -> State {
         self.dynamics.derivative(t, state)
     }
 
+    #[verified_engine::verified]
     fn derivative_in_place(&self, t: f64, state: &State, out: &mut State) {
         self.dynamics.derivative_in_place(t, state, out);
     }
@@ -57,14 +60,17 @@ where
     Dynamics: OdeSystem<State>,
     S: Solver<State>,
 {
+    #[verified_engine::verified]
     fn get_state(&self) -> &State {
         &self.state
     }
 
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut State {
         &mut self.state
     }
 
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         // We pass &self.dynamics to the solver.
         // The solver needs a reference to something implementing OdeSystem<State>.

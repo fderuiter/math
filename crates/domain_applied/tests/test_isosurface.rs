@@ -3,6 +3,7 @@ mod tests {
     use domain_applied::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 
     #[test]
+    #[verified_engine::verified]
     fn test_sphere_extraction() {
         // Create a 20x20x20 grid
         let size = 20;
@@ -57,6 +58,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_small_grid() {
         let grid = VoxelGrid::builder()
             .dimensions(2, 2, 2)
