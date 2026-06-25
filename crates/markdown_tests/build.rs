@@ -14,10 +14,9 @@ fn get_markdown_files(dir: &Path, files: &mut Vec<PathBuf>, dirs: &mut Vec<PathB
                         continue;
                     }
                     get_markdown_files(&path, files, dirs);
-                } else if path.is_file() {
-                    if path.extension().and_then(|s| s.to_str()) == Some("md") {
-                        files.push(path);
-                    }
+                } else if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("md")
+                {
+                    files.push(path);
                 }
             }
         }
@@ -43,9 +42,9 @@ fn main() {
     for (i, path) in files.iter().enumerate() {
         let abs_path = fs::canonicalize(path).unwrap();
         let abs_path_str = abs_path.to_str().unwrap().replace("\\", "/");
-        
+
         println!("cargo:rerun-if-changed={}", abs_path_str);
-        
+
         generated_code.push_str(&format!(
             "#[doc = include_str!(\"{}\")]\npub mod md_test_{} {{}}\n",
             abs_path_str, i
