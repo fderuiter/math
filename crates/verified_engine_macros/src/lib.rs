@@ -140,7 +140,7 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
     let name = input.ident;
     let generics = input.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    
+
     let mut description = String::new();
     let mut citation = String::new();
 

@@ -4,7 +4,9 @@ use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_commons::theory::TheoryDescribable;
-use math_explorer::biology::neuroscience::{HodgkinHuxleyNeuron, HodgkinHuxleyParameters, HodgkinHuxleyModel};
+use math_explorer::biology::neuroscience::{
+    HodgkinHuxleyModel, HodgkinHuxleyNeuron, HodgkinHuxleyParameters,
+};
 use std::collections::VecDeque;
 use std::sync::Arc;
 

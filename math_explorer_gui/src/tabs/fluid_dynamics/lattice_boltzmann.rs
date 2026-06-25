@@ -200,7 +200,8 @@ impl InteractiveTool for LatticeBoltzmannTool {
 
         // Controls
         egui::SidePanel::left("lbm_controls").show(ctx, |ui| {
-            let dummy_lbm: LatticeBoltzmannD2Q9<BgkCollision> = LatticeBoltzmannD2Q9::new(1, 1, 1.0);
+            let dummy_lbm: LatticeBoltzmannD2Q9<BgkCollision> =
+                LatticeBoltzmannD2Q9::new(1, 1, 1.0);
             ui.heading("Lattice Boltzmann")
                 .accessible_hover_text(dummy_lbm.theory_description());
             ui.separator();
