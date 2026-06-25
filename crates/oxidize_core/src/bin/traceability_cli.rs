@@ -1,7 +1,11 @@
+#[cfg(not(target_arch = "wasm32"))]
 use oxidize_core::traceability::TraceabilityEngine;
+#[cfg(not(target_arch = "wasm32"))]
 use oxidize_core::vfs::{DefaultVfs, VirtualFileSystem};
+#[cfg(not(target_arch = "wasm32"))]
 use std::process;
 
+#[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let vfs = DefaultVfs;
     let engine = TraceabilityEngine::new(&vfs);
@@ -51,3 +55,6 @@ fn main() {
         }
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+fn main() {}
