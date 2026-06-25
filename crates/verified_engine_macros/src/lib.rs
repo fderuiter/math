@@ -28,6 +28,10 @@ impl<'ast> Visit<'ast> for ExprCounter {
         self.loads += 1;
         syn::visit::visit_expr_index(self, node);
     }
+    
+    fn visit_block(&mut self, _node: &'ast syn::Block) {
+        // Do not recurse into blocks; they will be handled by visit_block_mut
+    }
 }
 
 struct InjectorVisitor;
@@ -42,17 +46,13 @@ impl VisitMut for InjectorVisitor {
             if counter.arithmetic > 0 {
                 let count = counter.arithmetic;
                 new_stmts.push(syn::parse_quote! {
-                    for _ in 0..#count {
-                        verified_engine::metrics::increment_arithmetic();
-                    }
+                    verified_engine::metrics::increment_arithmetic(#count as u64);
                 });
             }
             if counter.loads > 0 {
                 let count = counter.loads;
                 new_stmts.push(syn::parse_quote! {
-                    for _ in 0..#count {
-                        verified_engine::metrics::increment_memory_loads();
-                    }
+                    verified_engine::metrics::increment_memory_loads(#count as u64);
                 });
             }
             
