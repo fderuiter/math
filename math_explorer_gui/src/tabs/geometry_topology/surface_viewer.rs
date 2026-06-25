@@ -184,8 +184,13 @@ impl InteractiveTool for SurfaceViewer {
             ui.separator();
             if ui.button("Export to OBJ").clicked() {
                 let surface = self.create_surface();
-                let mesh = super::export_utils::surface_to_mesh(surface.as_ref(), self.u_resolution, self.v_resolution);
-                let obj = oxidize_core::mesh::export_mesh_to_obj_string(&mesh).unwrap_or_else(|_| String::new());
+                let mesh = super::export_utils::surface_to_mesh(
+                    surface.as_ref(),
+                    self.u_resolution,
+                    self.v_resolution,
+                );
+                let obj = oxidize_core::mesh::export_mesh_to_obj_string(&mesh)
+                    .unwrap_or_else(|_| String::new());
                 let filename = "surface.obj";
                 #[cfg(not(target_arch = "wasm32"))]
                 {

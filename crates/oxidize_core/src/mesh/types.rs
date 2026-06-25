@@ -41,12 +41,48 @@ impl Point3D {
     }
 }
 
-impl Add for Point3D { type Output = Self; #[inline] fn add(self, rhs: Self) -> Self { Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z) } }
-impl Sub for Point3D { type Output = Self; #[inline] fn sub(self, rhs: Self) -> Self { Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z) } }
-impl Neg for Point3D { type Output = Self; #[inline] fn neg(self) -> Self { Self::new(-self.x, -self.y, -self.z) } }
-impl Mul<f32> for Point3D { type Output = Self; #[inline] fn mul(self, scalar: f32) -> Self { Self::new(self.x * scalar, self.y * scalar, self.z * scalar) } }
-impl Mul<Point3D> for f32 { type Output = Point3D; #[inline] fn mul(self, point: Point3D) -> Point3D { point * self } }
-impl Div<f32> for Point3D { type Output = Self; #[inline] fn div(self, scalar: f32) -> Self { Self::new(self.x / scalar, self.y / scalar, self.z / scalar) } }
+impl Add for Point3D {
+    type Output = Self;
+    #[inline]
+    fn add(self, rhs: Self) -> Self {
+        Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+    }
+}
+impl Sub for Point3D {
+    type Output = Self;
+    #[inline]
+    fn sub(self, rhs: Self) -> Self {
+        Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
+    }
+}
+impl Neg for Point3D {
+    type Output = Self;
+    #[inline]
+    fn neg(self) -> Self {
+        Self::new(-self.x, -self.y, -self.z)
+    }
+}
+impl Mul<f32> for Point3D {
+    type Output = Self;
+    #[inline]
+    fn mul(self, scalar: f32) -> Self {
+        Self::new(self.x * scalar, self.y * scalar, self.z * scalar)
+    }
+}
+impl Mul<Point3D> for f32 {
+    type Output = Point3D;
+    #[inline]
+    fn mul(self, point: Point3D) -> Point3D {
+        point * self
+    }
+}
+impl Div<f32> for Point3D {
+    type Output = Self;
+    #[inline]
+    fn div(self, scalar: f32) -> Self {
+        Self::new(self.x / scalar, self.y / scalar, self.z / scalar)
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Triangle {
