@@ -46,10 +46,10 @@ impl TraceabilityTab {
         let vfs = oxidize_core::vfs::WasmVfs;
 
         let engine = oxidize_core::traceability::TraceabilityEngine::new(&vfs);
-        
+
         // Scan the standard directories
         let code_dirs = vec!["math_explorer/src", "math_explorer_gui/src/tabs"];
-        
+
         // We simulate reading the crates directories
         let mut crate_dirs = Vec::new();
         if let Ok(crates) = vfs.list_dir("crates") {
@@ -57,7 +57,7 @@ impl TraceabilityTab {
                 crate_dirs.push(format!("crates/{}/src", crate_name));
             }
         }
-        
+
         let mut all_dirs: Vec<&str> = code_dirs.into_iter().collect();
         for dir in &crate_dirs {
             all_dirs.push(dir.as_str());
@@ -67,7 +67,7 @@ impl TraceabilityTab {
             self.orphaned_papers = report.orphaned_papers;
             self.unlinked_code = report.unlinked_code;
             self.invalid_links = report.invalid_links;
-            
+
             for (paper_name, linked_code) in report.paper_coverage {
                 self.papers.insert(
                     paper_name.clone(),
@@ -80,7 +80,6 @@ impl TraceabilityTab {
             }
         }
     }
-
 }
 
 impl ExplorerTab for TraceabilityTab {

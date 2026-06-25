@@ -34,7 +34,11 @@ impl<'a> TraceabilityEngine<'a> {
             if let Some(end) = content[real_start..].find("]") {
                 let paper_name = content[real_start..real_start + end].to_string();
                 // basic regex validation: [a-zA-Z0-9_.-]+
-                if paper_name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.' || c == '-') && !paper_name.is_empty() {
+                if paper_name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.' || c == '-')
+                    && !paper_name.is_empty()
+                {
                     cites.push(paper_name);
                 }
                 search_idx = real_start + end + 1;
@@ -45,10 +49,14 @@ impl<'a> TraceabilityEngine<'a> {
         cites
     }
 
-    pub fn scan_repository(&self, code_dirs: &[&str], papers_dir: &str) -> Result<TraceabilityReport, std::io::Error> {
+    pub fn scan_repository(
+        &self,
+        code_dirs: &[&str],
+        papers_dir: &str,
+    ) -> Result<TraceabilityReport, std::io::Error> {
         let mut valid_papers = HashSet::new();
         let mut report = TraceabilityReport::default();
-        
+
         // 1. Scan papers
         if let Ok(entries) = self.vfs.list_dir(papers_dir) {
             for name in entries {
@@ -68,11 +76,12 @@ impl<'a> TraceabilityEngine<'a> {
 
         for file in code_files {
             report.scanned_files += 1;
-            let is_module = file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
+            let is_module =
+                file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
 
             if let Ok(content) = self.vfs.read_to_string(&file) {
                 let cites = Self::extract_citations(&content);
-                
+
                 if cites.is_empty() && is_module {
                     report.unlinked_code.push(file.clone());
                 }
