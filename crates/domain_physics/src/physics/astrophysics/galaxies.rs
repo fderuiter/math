@@ -194,9 +194,15 @@ impl GalaxyModel for GalaxyType {
     }
 }
 
+use verified_engine::Theory;
+
 /// Represents the physical properties of a dwarf galaxy.
 /// Not all properties may be known for a given galaxy.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Theory)]
+#[theory(
+    description = "Empirical formulas to estimate physical properties of dwarf galaxies, derived from observational data.",
+    citation = "Tillaboev, Tadjibaev, and Otojanova (2025)"
+)]
 pub struct Galaxy {
     /// Distance to the galaxy in Megaparsecs (Mpc).
     pub distance: Option<f64>,

@@ -1,5 +1,6 @@
 use super::state::LatticeState;
 use std::marker::PhantomData;
+use verified_engine::Theory;
 
 /// Trait defining the lattice geometry and weights.
 ///
@@ -117,6 +118,11 @@ impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
 /// assert_eq!(ux, 0.0);
 /// assert_eq!(uy, 0.0);
 /// ```
+#[derive(Theory)]
+#[theory(
+    description = "The Lattice Boltzmann Method (LBM) is a discrete computational fluid dynamics approach that simulates Newtonian fluid flows by modeling the microscopic behavior of fictitious fluid particles on a regular grid.",
+    citation = "Lattice Boltzmann equation for fluid dynamics and beyond (Succi, 2001)"
+)]
 pub struct LatticeBoltzmann<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> {
     /// The simulation state (grids, obstacles).
     pub state: LatticeState<Q>,

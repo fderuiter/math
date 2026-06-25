@@ -5,6 +5,8 @@ use super::feed_forward::FeedForward;
 use super::layer_norm::LayerNorm;
 use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, NormalizationLayer};
 
+use verified_engine::Theory;
+
 /// The full Transformer model container.
 ///
 /// #  Architecture
@@ -42,6 +44,11 @@ use crate::ai::transformer::traits::{AttentionMechanism, FeedForwardNetwork, Nor
 ///
 /// // 3. (User Responsibility) Add Embeddings & Positional Encoding here...
 /// ```
+#[derive(Theory)]
+#[theory(
+    description = "The Transformer architecture relies entirely on attention mechanisms, dispensing with recurrence and convolutions entirely. The encoder maps an input sequence to a continuous representation, which the decoder uses to generate an output sequence.",
+    citation = "Attention Is All You Need (Vaswani et al., 2017)"
+)]
 pub struct Transformer<
     A: AttentionMechanism = MultiHeadAttention,
     F: FeedForwardNetwork = FeedForward,

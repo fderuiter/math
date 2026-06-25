@@ -2,6 +2,8 @@
 
 use super::types::{Capacity, Cycles, DepthOfDischarge};
 
+use verified_engine::Theory;
+
 /// A trait representing a battery degradation model.
 pub trait DegradationModel {
     /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
@@ -18,7 +20,11 @@ pub trait DegradationModel {
 /// A power-law based battery degradation model.
 ///
 /// $N_{70}(d) = \alpha \cdot d^\beta$
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Theory)]
+#[theory(
+    description = "Empirical power-law model characterizing the cycle life of lithium-ion batteries as a function of depth of discharge.",
+    citation = "Capacity Fade Model for Li-ion Batteries (Smith et al., 2011)"
+)]
 pub struct PowerLawModel {
     alpha: f64,
     beta: f64,
