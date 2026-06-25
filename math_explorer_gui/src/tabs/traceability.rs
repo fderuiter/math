@@ -1,14 +1,7 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use oxidize_core::vfs::VirtualFileSystem;
-use std::collections::{HashMap, HashSet};
-
-#[cfg(not(target_arch = "wasm32"))]
-type VfsImpl = oxidize_core::vfs::DefaultVfs;
-
-#[cfg(target_arch = "wasm32")]
-// theory_verification!
-type VfsImpl = oxidize_core::vfs::WasmVfs;
+use std::collections::HashMap;
 
 pub struct TraceabilityTab {
     papers: HashMap<String, PaperStatus>,
@@ -52,100 +45,42 @@ impl TraceabilityTab {
         // theory_verification!
         let vfs = oxidize_core::vfs::WasmVfs;
 
-        // 1. Scan papers
-        let papers_dir = "papers";
-        let mut valid_papers = HashSet::new();
-        if let Ok(entries) = vfs.list_dir(papers_dir) {
-            for name in entries {
-                if name.ends_with(".tex") {
-                    let paper_name = name.trim_end_matches(".tex").to_string();
-                    valid_papers.insert(paper_name.clone());
-                    self.papers.insert(
-                        paper_name.clone(),
-                        PaperStatus {
-                            name: paper_name,
-                            linked_code: Vec::new(),
-                            is_wip: false,
-                        },
-                    );
-                }
-            }
-        }
-
-        // 2. Scan code files
-        let mut code_files = Vec::new();
-        self.scan_dir(&vfs, "math_explorer/src", &mut code_files);
-        self.scan_dir(&vfs, "math_explorer_gui/src/tabs", &mut code_files);
-
-        // Scan inside individual crates
+        let engine = oxidize_core::traceability::TraceabilityEngine::new(&vfs);
+        
+        // Scan the standard directories
+        let code_dirs = vec!["math_explorer/src", "math_explorer_gui/src/tabs"];
+        
+        // We simulate reading the crates directories
+        let mut crate_dirs = Vec::new();
         if let Ok(crates) = vfs.list_dir("crates") {
             for crate_name in crates {
-                let path = format!("crates/{}/src", crate_name);
-                self.scan_dir(&vfs, &path, &mut code_files);
+                crate_dirs.push(format!("crates/{}/src", crate_name));
             }
         }
-
-        for file in code_files {
-            let is_module =
-                file.ends_with("mod.rs") || file.contains("math_explorer_gui/src/tabs/");
-
-            if !is_module {
-                continue;
-            }
-
-            if let Ok(content) = vfs.read_to_string(&file) {
-                let mut found_cite = false;
-
-                let mut search_idx = 0;
-                while let Some(start) = content[search_idx..].find("[cite:") {
-                    found_cite = true;
-                    let real_start = search_idx + start + 6;
-                    if let Some(end) = content[real_start..].find("]") {
-                        let paper_name = content[real_start..real_start + end].to_string();
-                        if valid_papers.contains(&paper_name) {
-                            if let Some(status) = self.papers.get_mut(&paper_name) {
-                                status.linked_code.push(file.clone());
-                            }
-                        } else {
-                            self.invalid_links.push((file.clone(), paper_name));
-                        }
-                        search_idx = real_start + end + 1;
-                    } else {
-                        break;
-                    }
-                }
-
-                if !found_cite {
-                    self.unlinked_code.push(file.clone());
-                }
-            }
+        
+        let mut all_dirs: Vec<&str> = code_dirs.into_iter().collect();
+        for dir in &crate_dirs {
+            all_dirs.push(dir.as_str());
         }
 
-        // 3. Find orphans
-        for (name, status) in &self.papers {
-            if status.linked_code.is_empty() {
-                self.orphaned_papers.push(name.clone());
-            }
-        }
-        self.orphaned_papers.sort();
-        self.unlinked_code.sort();
-    }
-
-    fn scan_dir(&self, vfs: &VfsImpl, dir: &str, files: &mut Vec<String>) {
-        if let Ok(entries) = vfs.list_dir(dir) {
-            for entry in entries {
-                let path = format!("{}/{}", dir, entry);
-                if entry.contains('.') {
-                    // simple heuristic for file vs dir
-                    if path.ends_with(".rs") {
-                        files.push(path.clone());
-                    }
-                } else {
-                    self.scan_dir(vfs, &path, files);
-                }
+        if let Ok(report) = engine.scan_repository(&all_dirs, "papers") {
+            self.orphaned_papers = report.orphaned_papers;
+            self.unlinked_code = report.unlinked_code;
+            self.invalid_links = report.invalid_links;
+            
+            for (paper_name, linked_code) in report.paper_coverage {
+                self.papers.insert(
+                    paper_name.clone(),
+                    PaperStatus {
+                        name: paper_name,
+                        linked_code,
+                        is_wip: false,
+                    },
+                );
             }
         }
     }
+
 }
 
 impl ExplorerTab for TraceabilityTab {

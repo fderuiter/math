@@ -22,10 +22,9 @@ macro_rules! theory_verification {
 
             #[test]
             fn test_theory_verification() {
-                // Cross-reference module name with paper name
-                let expected_paper = format!("{}.tex", $module_name);
-                if $paper_name != expected_paper.as_str() {
-                    println!("cargo:warning=Naming parity mismatch: module '{}' maps to paper '{}', expected '{}'", $module_name, $paper_name, expected_paper);
+                // Cross-reference module name with paper name using shared engine
+                if !oxidize_core::traceability::TraceabilityEngine::check_naming_parity($module_name, $paper_name) {
+                    println!("cargo:warning=Naming parity mismatch: module '{}' maps to paper '{}'", $module_name, $paper_name);
                 }
 
                 $test_body
