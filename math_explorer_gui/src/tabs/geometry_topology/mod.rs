@@ -1,3 +1,4 @@
+// @explorer_feature = "pure_math"
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 

@@ -2,6 +2,7 @@
 name = "math_explorer_gui"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 [features]
 default = ["domain_logic", "ai", "applied", "biology", "climate", "epidemiology", "physics", "pure_math"]
