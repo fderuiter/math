@@ -344,7 +344,7 @@ mod tests {
         let v_out = system.v().to_vec();
 
         // Expected values captured from baseline run (from original morphogenesis.rs)
-        let expected_u = vec![
+        let expected_u = [
             0.9798926377401955,
             1.0722504645444493,
             1.1685990805783317,
@@ -356,7 +356,7 @@ mod tests {
             1.7267186541725483,
             1.8109737170223916,
         ];
-        let expected_v = vec![
+        let expected_v = [
             0.47709091921002866,
             0.4263770084483741,
             0.3750152156844884,
