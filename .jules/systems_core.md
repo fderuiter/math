@@ -9,4 +9,5 @@ This document tracks the evolution of the core system architecture, including ma
 
 ## Recent Architectural Changes
 - Initial version-controlled integration of architectural records.
+- **Automated Plugin Discovery Pattern:** Replaced manual GUI tab registration with a build-time discovery mechanism using `build.rs` to generate instantiation logic, enforcing open-closed principle for module extensions.
 - Transitioned from filesystem-based naming parity to a centralized TOML registry (traceability.toml) for theory linking.

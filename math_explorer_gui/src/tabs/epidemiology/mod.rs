@@ -1,3 +1,4 @@
+// @explorer_feature = "epidemiology"
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
