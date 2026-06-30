@@ -17,7 +17,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "engineering",
-    paper = "cera_framework.tex",
     epsilon = 1e-6,
     constants = {
         TOLERANCE = 0.001;

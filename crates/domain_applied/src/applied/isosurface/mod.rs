@@ -56,7 +56,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "isosurface",
-    paper = "isosurface_extraction.tex",
     epsilon = 1e-6,
     constants = {
         LEVEL = 0.0;
