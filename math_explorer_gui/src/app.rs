@@ -37,6 +37,14 @@ impl MathExplorerApp {
 impl eframe::App for MathExplorerApp {
     #[allow(clippy::too_many_lines)]
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        if let Some(msg) = ctx.data_mut(|d| {
+            let msg = d.get_temp::<String>(egui::Id::new("aria_live_message"));
+            d.remove::<String>(egui::Id::new("aria_live_message"));
+            msg
+        }) {
+            crate::accessibility::announce_status(&msg);
+        }
+
         // Fetch new events
         self.diagnostic_events.extend(global_bus().try_recv_all());
 

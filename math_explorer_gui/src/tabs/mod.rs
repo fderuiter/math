@@ -8,7 +8,7 @@ include!(concat!(env!("OUT_DIR"), "/generated_tabs.rs"));
 /// (e.g., MRI Physics, Game Theory) should implement this trait as a standalone struct.
 ///
 /// # Automated Plugin Discovery
-/// 
+///
 /// The `math_explorer_gui` application uses an automated build-time plugin discovery mechanism.
 /// To add a new tab to the GUI, you simply need to create a new module file in the `src/tabs` directory
 /// (or in any workspace dependency), and implement the `ExplorerTab` trait for your struct.
@@ -18,9 +18,9 @@ include!(concat!(env!("OUT_DIR"), "/generated_tabs.rs"));
 /// inclusion and instantiation logic.
 ///
 /// ## Configuration Attributes
-/// 
+///
 /// You can configure how your tab is built and displayed by adding special magic comments at the top of your module file:
-/// 
+///
 /// - `// @explorer_feature = "feature_name"`: Tells the build script that this tab should only be included if the specified Cargo feature is enabled.
 /// - `// @explorer_order = 10`: Defines the order in which this tab appears in the navigation bar. Lower numbers appear first.
 ///
@@ -29,7 +29,7 @@ include!(concat!(env!("OUT_DIR"), "/generated_tabs.rs"));
 /// ```rust,no_run
 /// // @explorer_feature = "pure_math"
 /// // @explorer_order = 1
-/// 
+///
 /// use math_explorer_gui::tabs::ExplorerTab;
 /// use eframe::egui;
 ///

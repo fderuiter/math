@@ -24,3 +24,6 @@ resolver = "2"
 too_many_lines = "deny"
 cognitive_complexity = "deny"
 
+
+[patch.crates-io]
+egui_plot = { path = "egui_plot" }
