@@ -95,7 +95,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "win_ratio",
-    paper = "win_ratio.tex",
     epsilon = 1e-6,
     constants = {
         TIE = 0.5;

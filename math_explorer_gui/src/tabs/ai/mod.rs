@@ -1,3 +1,4 @@
+// @explorer_feature = "ai"
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 

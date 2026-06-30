@@ -1,3 +1,4 @@
+// @explorer_feature = "climate"
 pub mod cera;
 pub mod co2_projections;
 pub mod temperature;

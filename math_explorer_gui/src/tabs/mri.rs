@@ -1,3 +1,4 @@
+// @explorer_feature = "physics"
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;

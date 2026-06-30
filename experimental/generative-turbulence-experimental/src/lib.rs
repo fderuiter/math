@@ -34,7 +34,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "generative_turbulence",
-    paper = "generative_turbulence.tex",
     epsilon = 1e-6,
     constants = {
         REYNOLDS = 1000.0;

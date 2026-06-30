@@ -1,3 +1,4 @@
+// @explorer_feature = "applied"
 use crate::accessibility::AccessibleHoverText;
 use crate::tabs::ExplorerTab;
 use eframe::egui;
