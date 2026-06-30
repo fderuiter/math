@@ -12,7 +12,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "cannibalism",
-    paper = "cannibalism.tex",
     epsilon = 1e-6,
     constants = {
         BETA_N = 1.0;

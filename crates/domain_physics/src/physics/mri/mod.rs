@@ -195,7 +195,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "mri",
-    paper = "quantum_mechanics.tex",
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

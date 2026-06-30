@@ -112,7 +112,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "pharmacokinetics",
-    paper = "mmwave_radiotherapy_setup.tex",
     epsilon = 1e-6,
     constants = {
         DOSE = 100.0;

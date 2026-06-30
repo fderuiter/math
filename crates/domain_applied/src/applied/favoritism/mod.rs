@@ -98,7 +98,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "favoritism",
-    paper = "favorite_child.tex",
     epsilon = 1e-6,
     constants = {
         BASE_SCORE = 1.0;
