@@ -28,9 +28,7 @@ pub struct SurfaceViewer {
     v_resolution: usize,
 
     // View
-    pitch: f32,
-    yaw: f32,
-    zoom: f32,
+    camera: crate::framework::Camera3D,
 }
 
 impl Default for SurfaceViewer {
@@ -43,9 +41,7 @@ impl Default for SurfaceViewer {
             klein_radius: 2.0,
             u_resolution: 30,
             v_resolution: 30,
-            pitch: 0.5,
-            yaw: 0.5,
-            zoom: 1.0,
+            camera: crate::framework::Camera3D::new(0.5, 0.5, 1.0),
         }
     }
 }
@@ -53,22 +49,7 @@ impl Default for SurfaceViewer {
 impl SurfaceViewer {
     /// Projects a 3D point to 2D based on rotation and zoom
     fn project(&self, p: Point3<f64>) -> [f64; 2] {
-        // Rotation Matrix
-        // Yaw (around Z) - Assuming Z is up
-        let cy = (self.yaw as f64).cos();
-        let sy = (self.yaw as f64).sin();
-        let x1 = p.x * cy - p.y * sy;
-        let y1 = p.x * sy + p.y * cy;
-        let z1 = p.z;
-
-        // Pitch (around X)
-        let cp = (self.pitch as f64).cos();
-        let sp = (self.pitch as f64).sin();
-        let y2 = y1 * cp - z1 * sp;
-        // let z2 = y1 * sp + z1 * cp;
-
-        // Apply zoom
-        [x1 * (self.zoom as f64), y2 * (self.zoom as f64)]
+        self.camera.project(&[p.x, p.y, p.z])
     }
 
     fn generate_grid_lines(&self, surface: &dyn ParametricSurface) -> Vec<Vec<[f64; 2]>> {
@@ -159,13 +140,7 @@ impl InteractiveTool for SurfaceViewer {
             });
 
             ui.collapsing("View", |ui| {
-                ui.label("Yaw");
-                ui.drag_angle(&mut self.yaw);
-
-                ui.label("Pitch");
-                ui.drag_angle(&mut self.pitch);
-
-                ui.add(egui::Slider::new(&mut self.zoom, 0.1..=5.0).text("Zoom"));
+                self.camera.ui(ui);
             });
 
             ui.collapsing("Resolution", |ui| {
@@ -206,7 +181,7 @@ impl InteractiveTool for SurfaceViewer {
 
             let grid_lines = self.generate_grid_lines(surface.as_ref());
 
-            Plot::new("surface_plot")
+            let response = Plot::new("surface_plot")
                 .data_aspect(1.0)
                 .show(ui, |plot_ui| {
                     for (i, line_points) in grid_lines.into_iter().enumerate() {
@@ -216,7 +191,10 @@ impl InteractiveTool for SurfaceViewer {
                                 .color(egui::Color32::from_rgb(100, 200, 255)),
                         );
                     }
-                });
+                })
+                .response;
+
+            self.camera.handle_interaction(&response, ui);
 
             ui.label("Drag 'Yaw' and 'Pitch' in the side panel to rotate the view.");
         });

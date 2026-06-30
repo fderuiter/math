@@ -18,10 +18,7 @@ pub struct AttractorPlotter {
     history: VecDeque<Vector3<f64>>, // Store as Vector3 for easier math
     max_points: usize,
 
-    // Camera / Projection
-    pitch: f32,
-    yaw: f32,
-    zoom: f32,
+    camera: crate::framework::Camera3D,
 }
 
 impl Default for AttractorPlotter {
@@ -36,9 +33,7 @@ impl Default for AttractorPlotter {
             dt: 0.01,
             history: VecDeque::with_capacity(2000),
             max_points: 2000,
-            pitch: 0.0,
-            yaw: 0.0,
-            zoom: 1.0,
+            camera: crate::framework::Camera3D::new(0.0, 0.0, 1.0),
         }
     }
 }
@@ -67,22 +62,7 @@ impl AttractorPlotter {
         let center_offset = Vector3::new(0.0, 0.0, 25.0);
         let p_centered = p - center_offset;
 
-        // Rotation Matrix
-        // Yaw (around Y)
-        let cy = (self.yaw as f64).cos();
-        let sy = (self.yaw as f64).sin();
-        let x1 = p_centered.x * cy - p_centered.z * sy;
-        let z1 = p_centered.x * sy + p_centered.z * cy;
-        let y1 = p_centered.y;
-
-        // Pitch (around X)
-        let cp = (self.pitch as f64).cos();
-        let sp = (self.pitch as f64).sin();
-        let y2 = y1 * cp - z1 * sp;
-        // let z2 = y1 * sp + z1 * cp; // Depth
-
-        // Apply zoom
-        [x1 * (self.zoom as f64), y2 * (self.zoom as f64)]
+        self.camera.project(&[p_centered.x, p_centered.y, p_centered.z])
     }
 }
 
@@ -139,13 +119,7 @@ impl InteractiveTool for AttractorPlotter {
             });
 
             ui.collapsing("View", |ui| {
-                ui.label("Yaw (Rotate Y)");
-                ui.drag_angle(&mut self.yaw);
-
-                ui.label("Pitch (Rotate X)");
-                ui.drag_angle(&mut self.pitch);
-
-                ui.add(egui::Slider::new(&mut self.zoom, 0.1..=5.0).text("Zoom"));
+                self.camera.ui(ui);
             });
 
             ui.separator();
@@ -167,6 +141,9 @@ impl InteractiveTool for AttractorPlotter {
                     );
                 })
                 .response;
+            
+            self.camera.handle_interaction(&response, ui);
+            
             response.accessible_theory_hover(&self.system);
 
             ui.label("Drag 'Yaw' and 'Pitch' in the side panel to rotate the view.");

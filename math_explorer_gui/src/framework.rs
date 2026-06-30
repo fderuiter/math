@@ -108,6 +108,71 @@ pub struct CoordinateMapper {
     pub sim_rect: egui::Rect,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct Camera3D {
+    pub pitch: f32,
+    pub yaw: f32,
+    pub zoom: f32,
+}
+
+impl Default for Camera3D {
+    fn default() -> Self {
+        Self {
+            pitch: 0.5,
+            yaw: 0.5,
+            zoom: 1.0,
+        }
+    }
+}
+
+impl Camera3D {
+    pub fn new(pitch: f32, yaw: f32, zoom: f32) -> Self {
+        Self { pitch, yaw, zoom }
+    }
+
+    pub fn handle_interaction(&mut self, response: &egui::Response, ui: &egui::Ui) {
+        if response.dragged() {
+            let delta = response.drag_delta();
+            self.yaw -= delta.x * 0.01;
+            self.pitch -= delta.y * 0.01;
+        }
+
+        let scroll = ui.input(|i| i.raw_scroll_delta.y);
+        if scroll != 0.0 && response.hovered() {
+            self.zoom *= 1.0 + (scroll * 0.001);
+            self.zoom = self.zoom.clamp(0.01, 100.0);
+        }
+    }
+
+    pub fn project(&self, point: &[f64; 3]) -> [f64; 2] {
+        let cy = (self.yaw as f64).cos();
+        let sy = (self.yaw as f64).sin();
+        let cp = (self.pitch as f64).cos();
+        let sp = (self.pitch as f64).sin();
+
+        // Apply yaw (rotate around Z)
+        let x1 = point[0] * cy - point[1] * sy;
+        let y1 = point[0] * sy + point[1] * cy;
+        let z1 = point[2];
+
+        // Apply pitch (rotate around X)
+        let x2 = x1;
+        let y2 = y1 * cp - z1 * sp;
+
+        [x2 * (self.zoom as f64), y2 * (self.zoom as f64)]
+    }
+
+    pub fn ui(&mut self, ui: &mut egui::Ui) {
+        ui.label("Yaw");
+        ui.drag_angle(&mut self.yaw);
+
+        ui.label("Pitch");
+        ui.drag_angle(&mut self.pitch);
+
+        ui.add(egui::Slider::new(&mut self.zoom, 0.1..=5.0).text("Zoom"));
+    }
+}
+
 impl CoordinateMapper {
     pub fn new(screen_rect: egui::Rect, sim_rect: egui::Rect) -> Self {
         Self {
