@@ -16,6 +16,7 @@ pub struct CeraTrainer<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<
 
 impl<'a, A: AutoencoderModel, P: PredictorModel> CeraTrainer<'a, A, P, SGD<f32>> {
     /// Creates a new CeraTrainer with default SGD optimizer.
+    #[verified_engine::verified]
     pub fn new(model: &'a mut Cera<A, P>) -> Self {
         // Initialize optimizer from config.
         let lr = model.config.learning_rate;
@@ -26,6 +27,7 @@ impl<'a, A: AutoencoderModel, P: PredictorModel> CeraTrainer<'a, A, P, SGD<f32>>
 
 impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<'a, A, P, O> {
     /// Creates a new CeraTrainer with a custom optimizer.
+    #[verified_engine::verified]
     pub fn new_with_optimizer(model: &'a mut Cera<A, P>, optimizer: O) -> Self {
         Self { model, optimizer }
     }
@@ -38,6 +40,7 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
     /// the end-to-end testing of the model's architecture and data flow.
     /// A full implementation would require a proper autograd engine to compute
     /// gradients and an optimizer (e.g., Adam) to update the weights.
+    #[verified_engine::verified]
     fn optimizer_step(&mut self) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
         // Use the autoencoder's interface for updates
         self.model.autoencoder.update_weights(&mut self.optimizer)?;
@@ -54,6 +57,7 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
     /// * `control_inputs` - Input data for the control climate.
     /// * `control_targets` - Target outputs for the control climate.
     /// * `warm_inputs` - Input data for the warm climate.
+    #[verified_engine::verified]
     pub fn train(
         &mut self,
         control_inputs: &DMatrix<f32>,

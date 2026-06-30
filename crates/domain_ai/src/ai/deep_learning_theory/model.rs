@@ -6,6 +6,7 @@ use crate::ai::optimization::Optimizer;
 pub trait Trainable {
     /// Performs a forward pass through the network.
     /// Returns the logits (pre-softmax outputs).
+    #[verified_engine::verified]
     fn forward(&self, x: &Vector) -> Vector;
 
     /// Performs the backward pass and updates parameters.
@@ -17,6 +18,7 @@ pub trait Trainable {
     ///
     /// # Errors
     /// Returns an `OptimizationError` if the parameter updates fail during optimization.
+    #[verified_engine::verified]
     fn backward_update(
         &mut self,
         x: &Vector,
@@ -40,6 +42,7 @@ pub struct TwoLayerMLP {
 }
 
 impl TwoLayerMLP {
+    #[verified_engine::verified]
     pub fn new(input_dim: usize, hidden_dim: usize, output_dim: usize) -> Self {
         Self {
             layer1: DenseLayer::new(input_dim, hidden_dim),
@@ -49,12 +52,14 @@ impl TwoLayerMLP {
 }
 
 impl Trainable for TwoLayerMLP {
+    #[verified_engine::verified]
     fn forward(&self, x: &Vector) -> Vector {
         let z1 = self.layer1.forward(x);
         let a1 = relu(&z1);
         self.layer2.forward(&a1)
     }
 
+    #[verified_engine::verified]
     fn backward_update(
         &mut self,
         x: &Vector,

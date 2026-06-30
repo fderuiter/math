@@ -4,6 +4,7 @@ pub struct DyadicRational {
 }
 
 impl DyadicRational {
+    #[verified_engine::verified]
     pub fn new(m: i64, r: u32) -> Self {
         Self { m, r }
     }

@@ -2,6 +2,7 @@ use approx::assert_relative_eq;
 use domain_physics::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
 
 #[test]
+#[verified_engine::verified]
 fn test_lbm_initialization() {
     let width = 20;
     let height = 10;
@@ -20,6 +21,7 @@ fn test_lbm_initialization() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_lbm_mass_conservation() {
     let width = 20;
     let height = 10;
@@ -49,6 +51,7 @@ fn test_lbm_mass_conservation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_lbm_velocity_propagation() {
     let width = 20;
     let height = 10;
@@ -69,6 +72,7 @@ fn test_lbm_velocity_propagation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_lbm_obstacle() {
     let width = 10;
     let height = 10;

@@ -10,6 +10,7 @@ use std::collections::HashMap;
 /// # Returns
 ///
 /// The entropy value.
+#[verified_engine::verified]
 pub fn calculate_answer_entropy(responses: &[Response]) -> f64 {
     if responses.is_empty() {
         return 0.0;
@@ -38,6 +39,7 @@ pub fn calculate_answer_entropy(responses: &[Response]) -> f64 {
 /// # Returns
 ///
 /// The temperature value.
+#[verified_engine::verified]
 pub fn map_entropy_to_temperature(entropy: f64) -> f64 {
     1.0 + 0.5 * entropy
 }
@@ -47,6 +49,7 @@ mod tests {
     use super::*;
     use crate::ai::self_calibration::types::Response;
     #[test]
+    #[verified_engine::verified]
     fn test_calculate_answer_entropy() {
         let responses = vec![
             Response {

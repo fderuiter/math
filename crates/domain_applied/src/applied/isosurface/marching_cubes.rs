@@ -5,6 +5,7 @@ use crate::error::IsosurfaceError;
 
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
 #[inline]
+#[verified_engine::verified]
 fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Point3D {
     if (threshold - v1).abs() < Point3D::EPSILON {
         return p1;
@@ -22,6 +23,7 @@ fn interpolate(p1: Point3D, v1: f32, p2: Point3D, v2: f32, threshold: f32) -> Po
 
 /// Linear interpolation of normals.
 #[inline]
+#[verified_engine::verified]
 fn interpolate_normal(n1: Point3D, v1: f32, n2: Point3D, v2: f32, threshold: f32) -> Point3D {
     if (v1 - v2).abs() < Point3D::EPSILON {
         return n1;
@@ -53,6 +55,7 @@ pub struct MarchingCubes<'a, G: GradientEstimator> {
 
 impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// Creates a new Marching Cubes extractor.
+    #[verified_engine::verified]
     pub fn new(grid: &'a VoxelGrid, estimator: G) -> Self {
         Self { grid, estimator }
     }
@@ -96,6 +99,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// let mesh = extractor.extract(0.0).expect("Extraction failed");
     /// assert!(!mesh.triangles.is_empty(), "Expected a generated mesh");
     /// ```
+    #[verified_engine::verified]
     pub fn extract(&self, threshold: f32) -> Result<Mesh, IsosurfaceError> {
         self.validate_grid()?;
 
@@ -164,6 +168,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
         Ok(Mesh { triangles })
     }
 
+    #[verified_engine::verified]
     fn validate_grid(&self) -> Result<(), IsosurfaceError> {
         if self.grid.width() < 2 || self.grid.height() < 2 || self.grid.depth() < 2 {
             return Err(IsosurfaceError::InvalidGrid(
@@ -195,6 +200,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     /// It uses unchecked indexing and bitwise operations to compute the active edges.
     ///
     #[inline(always)]
+    #[verified_engine::verified]
     fn get_cube_values_fast(
         &self,
         base_idx: usize,
@@ -230,6 +236,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     }
 
     #[inline]
+    #[verified_engine::verified]
     fn get_cube_positions(&self, x: usize, y: usize, z: usize) -> [Point3D; 8] {
         let x_pos = self.grid.origin().x + (x as f32) * self.grid.voxel_size().x;
         let y_pos = self.grid.origin().y + (y as f32) * self.grid.voxel_size().y;
@@ -258,6 +265,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     ///
     #[inline(always)]
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[verified_engine::verified]
     fn compute_gradients_fast(
         &self,
         coords: (usize, usize, usize),
@@ -341,6 +349,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     }
 
     #[inline]
+    #[verified_engine::verified]
     fn triangulate_cube(&self, cube: &CubeData, threshold: f32, output: &mut Vec<Triangle>) {
         let edge_flags = CUBE_EDGE_FLAGS[cube.index];
         let mut edge_vertex = [Point3D::new(0.0, 0.0, 0.0); 12];
@@ -433,6 +442,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 /// // The simple gradient will yield triangles spanning across the middle.
 /// assert!(!mesh.triangles.is_empty(), "Mesh should contain triangles");
 /// ```
+#[verified_engine::verified]
 pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, IsosurfaceError> {
     let extractor = MarchingCubes::new(grid, CentralDifferenceEstimator);
     extractor.extract(threshold)

@@ -18,6 +18,7 @@ pub struct FiniteDifference2D {
 }
 
 impl FiniteDifference2D {
+    #[verified_engine::verified]
     pub fn new(width: Dimension, height: Dimension, dx: StepSize, dy: StepSize) -> Self {
         Self {
             geometry: Cartesian2D {
@@ -33,6 +34,7 @@ impl FiniteDifference2D {
 }
 
 impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
+    #[verified_engine::verified]
     fn apply(
         &self,
         state: &crate::biology::reaction_diffusion::ChemicalState,
@@ -88,6 +90,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
 }
 
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
+    #[verified_engine::verified]
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)
     where
         F: FnMut(usize, [f64; N], [f64; N]),
@@ -157,6 +160,7 @@ mod tests_2d {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_laplacian_uniform() {
         let width = 10;
         let height = 10;
@@ -189,6 +193,7 @@ mod tests_2d {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_laplacian_parabolic() {
         let width = 5;
         let height = 5;
@@ -238,6 +243,7 @@ mod tests_2d {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_map_diffusion_equivalence() {
         let width = 5;
         let height = 5;
@@ -301,6 +307,7 @@ mod tests_2d {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_diffusion_model_2d() {
         use crate::biology::reaction_diffusion::{ChemicalState, DiffusionModel};
 

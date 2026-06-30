@@ -6,13 +6,16 @@ use std::f64::consts::PI;
 /// Allows evaluation on different sheets and navigation between sheets via winding.
 pub trait RiemannSurface {
     /// Returns the total number of sheets, or `None` if infinite.
+    #[verified_engine::verified]
     fn num_sheets(&self) -> Option<usize>;
 
     /// Evaluates the function at `z` on the specified `sheet`.
+    #[verified_engine::verified]
     fn evaluate(&self, z: Complex64, sheet: isize) -> Complex64;
 
     /// Calculates the target sheet index after winding around the branch point.
     /// `winding_number` represents the number of counter-clockwise turns.
+    #[verified_engine::verified]
     fn next_sheet(&self, current_sheet: isize, winding_number: isize) -> isize;
 }
 
@@ -23,6 +26,7 @@ pub struct NthRootSurface {
 }
 
 impl NthRootSurface {
+    #[verified_engine::verified]
     pub fn new(n: usize) -> Self {
         assert!(n > 0);
         Self { n }
@@ -30,10 +34,12 @@ impl NthRootSurface {
 }
 
 impl RiemannSurface for NthRootSurface {
+    #[verified_engine::verified]
     fn num_sheets(&self) -> Option<usize> {
         Some(self.n)
     }
 
+    #[verified_engine::verified]
     fn evaluate(&self, z: Complex64, sheet: isize) -> Complex64 {
         // Normalize sheet to 0..n-1
         let k = sheet.rem_euclid(self.n as isize);
@@ -44,6 +50,7 @@ impl RiemannSurface for NthRootSurface {
         Complex64::from_polar(r.powf(1.0 / self.n as f64), new_theta)
     }
 
+    #[verified_engine::verified]
     fn next_sheet(&self, current_sheet: isize, winding_number: isize) -> isize {
         (current_sheet + winding_number).rem_euclid(self.n as isize)
     }
@@ -54,16 +61,19 @@ impl RiemannSurface for NthRootSurface {
 pub struct LogSurface;
 
 impl RiemannSurface for LogSurface {
+    #[verified_engine::verified]
     fn num_sheets(&self) -> Option<usize> {
         None
     }
 
+    #[verified_engine::verified]
     fn evaluate(&self, z: Complex64, sheet: isize) -> Complex64 {
         // Principal log is ln(r) + i*theta, where theta in (-pi, pi].
         // Sheet k adds 2*pi*k to the imaginary part.
         z.ln() + Complex64::new(0.0, 2.0 * PI * (sheet as f64))
     }
 
+    #[verified_engine::verified]
     fn next_sheet(&self, current_sheet: isize, winding_number: isize) -> isize {
         current_sheet + winding_number
     }
@@ -75,6 +85,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_nth_root_surface() {
         let surface = NthRootSurface::new(2); // Sqrt
         let z = Complex64::new(1.0, 0.0);
@@ -96,6 +107,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_log_surface() {
         let surface = LogSurface;
         let z = Complex64::new(1.0, 0.0);

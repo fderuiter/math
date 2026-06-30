@@ -8,6 +8,7 @@ pub trait Metric {
     /// # Errors
     ///
     /// Returns a `TensorError` if the metric calculation fails for the given point.
+    #[verified_engine::verified]
     fn metric_at(&self, point: &DVector<f64>) -> Result<DMatrix<f64>, TensorError>;
 
     /// Computes the inverse (contravariant) metric tensor $g^{ij}$ at a given point.
@@ -16,6 +17,7 @@ pub trait Metric {
     ///
     /// Returns `TensorError::SingularMetric` if the covariant metric tensor is not invertible.
     /// May also return a `TensorError` propagated from `metric_at`.
+    #[verified_engine::verified]
     fn inverse_metric_at(&self, point: &DVector<f64>) -> Result<DMatrix<f64>, TensorError> {
         let g_cov = self.metric_at(point)?;
         g_cov.try_inverse().ok_or(TensorError::SingularMetric)
@@ -27,6 +29,7 @@ pub trait Metric {
     ///
     /// Returns `TensorError::DimensionMismatch` if the vector's dimension does not match the metric's dimensions.
     /// May also return a `TensorError` propagated from `metric_at`.
+    #[verified_engine::verified]
     fn lower_index(
         &self,
         vec: &ContravariantVector,
@@ -49,6 +52,7 @@ pub trait Metric {
     ///
     /// Returns `TensorError::DimensionMismatch` if the vector's dimension does not match the inverse metric's dimensions.
     /// May also return a `TensorError` propagated from `inverse_metric_at`.
+    #[verified_engine::verified]
     fn raise_index(
         &self,
         vec: &CovariantVector,
@@ -78,6 +82,7 @@ impl<F> RiemannianMetric<F>
 where
     F: Fn(&DVector<f64>) -> DMatrix<f64>,
 {
+    #[verified_engine::verified]
     pub fn new(metric_fn: F) -> Self {
         Self { metric_fn }
     }
@@ -87,6 +92,7 @@ impl<F> Metric for RiemannianMetric<F>
 where
     F: Fn(&DVector<f64>) -> DMatrix<f64>,
 {
+    #[verified_engine::verified]
     fn metric_at(&self, point: &DVector<f64>) -> Result<DMatrix<f64>, TensorError> {
         Ok((self.metric_fn)(point))
     }

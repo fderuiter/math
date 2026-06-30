@@ -28,6 +28,7 @@ pub struct LogisticMap {
 
 impl LogisticMap {
     /// Creates a new LogisticMap instance.
+    #[verified_engine::verified]
     pub fn new(r: f64, initial_state: f64) -> Self {
         LogisticMap {
             r,
@@ -39,6 +40,7 @@ impl LogisticMap {
 impl Iterator for LogisticMap {
     type Item = f64;
 
+    #[verified_engine::verified]
     fn next(&mut self) -> Option<Self::Item> {
         self.state = self.r * self.state * (1.0 - self.state);
         Some(self.state)
@@ -60,6 +62,7 @@ impl Iterator for LogisticMap {
 ///
 /// A vector of tuples `(r, x)`, where `r` is the parameter value and `x` is a visited state
 /// on the attractor.
+#[verified_engine::verified]
 pub fn generate_bifurcation_diagram(r_start: f64, r_end: f64, steps: usize) -> Vec<(f64, f64)> {
     let mut points = Vec::new();
     let step_size = (r_end - r_start) / steps as f64;

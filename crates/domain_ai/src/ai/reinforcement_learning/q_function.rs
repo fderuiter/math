@@ -20,6 +20,7 @@ where
     S: State + Hash + Eq,
     A: Action + Hash + Eq,
 {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
@@ -30,6 +31,7 @@ where
     S: State + Hash + Eq,
     A: Action + Hash + Eq,
 {
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             table: HashMap::new(),
@@ -42,6 +44,7 @@ where
     S: State + Hash + Eq,
     A: Action + Hash + Eq,
 {
+    #[verified_engine::verified]
     fn value(&self, state: &S, action: &A) -> f64 {
         // We must clone the key to search if we only have references,
         // or we need to borrow properly. HashMap `get` takes `&K`.
@@ -56,6 +59,7 @@ where
             .unwrap_or(&0.0)
     }
 
+    #[verified_engine::verified]
     fn update(&mut self, state: &S, action: &A, value: f64) {
         self.table.insert((state.clone(), action.clone()), value);
     }

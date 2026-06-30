@@ -10,6 +10,7 @@ pub struct Graph<N, E> {
 }
 
 impl<N, E> Default for Graph<N, E> {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
@@ -17,6 +18,7 @@ impl<N, E> Default for Graph<N, E> {
 
 impl<N, E> Graph<N, E> {
     /// Creates a new empty graph.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Graph {
             graph: PetgraphGraph::new_undirected(),
@@ -24,11 +26,13 @@ impl<N, E> Graph<N, E> {
     }
 
     /// Adds a node to the graph.
+    #[verified_engine::verified]
     pub fn add_node(&mut self, weight: N) -> NodeIndex {
         self.graph.add_node(weight)
     }
 
     /// Adds an edge between two nodes.
+    #[verified_engine::verified]
     pub fn add_edge(&mut self, a: NodeIndex, b: NodeIndex, weight: E) {
         self.graph.add_edge(a, b, weight);
     }

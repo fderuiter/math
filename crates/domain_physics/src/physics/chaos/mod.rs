@@ -80,6 +80,7 @@ mod tests {
     use nalgebra as na;
 
     #[test]
+    #[verified_engine::verified]
     fn test_logistic_chaos_lyapunov() {
         // For r=3.9, the map is chaotic, so Lyapunov exponent should be positive.
         // Theoretical value is approx 0.496.
@@ -93,6 +94,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_logistic_stability_lyapunov() {
         // For r=2.5, the map is stable (fixed point at 0.6), so Lyapunov exponent should be negative.
         // f'(x*) = 2.5(1 - 1.2) = 2.5(-0.2) = -0.5. ln(0.5) approx -0.693.
@@ -112,6 +114,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_lorenz_boundedness() {
         // Run Lorenz system and ensure it stays within reasonable bounds.
         // The Lorenz attractor is contained within a specific region of space.
@@ -129,6 +132,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bifurcation_diagram_generation() {
         let points = logistic::generate_bifurcation_diagram(3.0, 4.0, 10);
         // steps=10 means 11 values of r. Each has 50 points. Total 550 points.
@@ -141,6 +145,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_lorenz_lyapunov_strategy() {
         use pure_math::pure_math::analysis::ode::{Euler, RungeKutta4};
         let state = lorenz::LorenzState::new(1.0, 1.0, 1.0);
@@ -183,6 +188,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_correlation_dimension_simple() {
         // Create a line of points: (0,0,0), (1,0,0), (2,0,0) ...
         // Dimension should be 1. But we just test the C(epsilon) calculation here.
@@ -202,6 +208,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_lorenz_builder_custom_parameters() {
         let state = lorenz::LorenzState::new(1.0, 1.0, 1.0);
 

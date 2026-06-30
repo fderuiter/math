@@ -13,6 +13,7 @@ use nalgebra::Vector3;
 /// * `local_change`: Partial time derivative $\frac{\partial \phi}{\partial t}$.
 /// * `velocity`: Flow velocity $\mathbf{u}$.
 /// * `gradient`: Spatial gradient $\nabla \phi$.
+#[verified_engine::verified]
 pub fn material_derivative_scalar(
     local_change: f64,
     velocity: Vector3<f64>,
@@ -28,6 +29,7 @@ pub fn material_derivative_scalar(
 /// * `local_change`: Partial time derivative $\frac{\partial \mathbf{A}}{\partial t}$.
 /// * `velocity`: Flow velocity $\mathbf{u}$.
 /// * `gradient_tensor`: Jacobian matrix representing $\nabla \mathbf{A}$ (where $J_{ij} = \partial A_i / \partial x_j$).
+#[verified_engine::verified]
 pub fn material_derivative_vector(
     local_change: Vector3<f64>,
     velocity: Vector3<f64>,
@@ -46,6 +48,7 @@ pub fn material_derivative_vector(
 /// $$\nabla \cdot \mathbf{u} = 0$$
 ///
 /// Returns the divergence of the velocity field. Ideally, this should be zero.
+#[verified_engine::verified]
 pub fn continuity_divergence(velocity_divergence: f64) -> f64 {
     velocity_divergence
 }
@@ -56,6 +59,7 @@ pub fn continuity_divergence(velocity_divergence: f64) -> f64 {
 /// without changing the integration loop.
 pub trait MomentumEquation {
     /// Computes the local acceleration $\frac{\partial \mathbf{u}}{\partial t}$.
+    #[verified_engine::verified]
     fn acceleration(
         &self,
         properties: &FluidProperties,
@@ -71,6 +75,7 @@ pub trait MomentumEquation {
 pub struct NavierStokes;
 
 impl MomentumEquation for NavierStokes {
+    #[verified_engine::verified]
     fn acceleration(
         &self,
         properties: &FluidProperties,
@@ -101,6 +106,7 @@ impl MomentumEquation for NavierStokes {
 pub struct Euler;
 
 impl MomentumEquation for Euler {
+    #[verified_engine::verified]
     fn acceleration(
         &self,
         properties: &FluidProperties,
@@ -123,6 +129,7 @@ impl MomentumEquation for Euler {
 /// Computes the time evolution of velocity based on the Navier-Stokes Equations.
 ///
 /// Wrapper around `NavierStokes` strategy for backward compatibility.
+#[verified_engine::verified]
 pub fn navier_stokes_time_derivative(
     properties: &FluidProperties,
     state: &FlowState,
@@ -139,6 +146,7 @@ pub fn navier_stokes_time_derivative(
 /// Computes the time evolution of velocity based on the Euler Equations (Inviscid).
 ///
 /// Wrapper around `Euler` strategy for backward compatibility.
+#[verified_engine::verified]
 pub fn euler_time_derivative(
     rho: f64,
     state: &FlowState,

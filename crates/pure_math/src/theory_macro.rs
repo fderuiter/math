@@ -20,6 +20,7 @@ macro_rules! theory_verification {
             )*
 
             #[test]
+            #[verified_engine::verified]
             fn test_theory_verification() {
                 // Check that the module is registered in the shared engine registry
                 if !oxidize_core::traceability::TraceabilityEngine::verify_module_registered($module_name) {

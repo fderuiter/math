@@ -13,32 +13,38 @@ pub trait GatingKinetics: Send + Sync + std::fmt::Debug {
     /// Rate constant $\alpha_n$ for Potassium activation ($n$).
     ///
     /// Represents the rate at which closed Potassium channels open (activate).
+    #[verified_engine::verified]
     fn alpha_n(&self, v: f64, v_rest: f64) -> f64;
 
     /// Rate constant $\beta_n$ for Potassium activation ($n$).
     ///
     /// Represents the rate at which open Potassium channels close (deactivate).
+    #[verified_engine::verified]
     fn beta_n(&self, v: f64, v_rest: f64) -> f64;
 
     /// Rate constant $\alpha_m$ for Sodium activation ($m$).
     ///
     /// Represents the rate at which closed Sodium channels open (activate).
+    #[verified_engine::verified]
     fn alpha_m(&self, v: f64, v_rest: f64) -> f64;
 
     /// Rate constant $\beta_m$ for Sodium activation ($m$).
     ///
     /// Represents the rate at which open Sodium channels close (deactivate).
+    #[verified_engine::verified]
     fn beta_m(&self, v: f64, v_rest: f64) -> f64;
 
     /// Rate constant $\alpha_h$ for Sodium inactivation ($h$).
     ///
     /// Represents the rate at which inactivated Sodium channels recover (become closed but active).
     /// Note that for inactivation, "alpha" typically refers to the recovery from inactivation.
+    #[verified_engine::verified]
     fn alpha_h(&self, v: f64, v_rest: f64) -> f64;
 
     /// Rate constant $\beta_h$ for Sodium inactivation ($h$).
     ///
     /// Represents the rate at which open Sodium channels inactivate.
+    #[verified_engine::verified]
     fn beta_h(&self, v: f64, v_rest: f64) -> f64;
 }
 
@@ -73,6 +79,7 @@ impl GatingKinetics for StandardKinetics {
     /// When $V = V_{rest} + 10$, the denominator approaches zero ($e^0 - 1 = 0$).
     /// We use L'Hôpital's rule to evaluate the limit:
     /// $$ \lim_{x \to 0} \frac{0.01 x}{e^{0.1 x} - 1} = \frac{0.01}{0.1} = 0.1 $$
+    #[verified_engine::verified]
     fn alpha_n(&self, v: f64, v_rest: f64) -> f64 {
         let x = 10.0 - (v - v_rest);
         if x.abs() < 1e-9 {
@@ -85,6 +92,7 @@ impl GatingKinetics for StandardKinetics {
     /// Potassium deactivation rate $\beta_n$.
     ///
     /// $$ \beta_n = 0.125 \exp\left(-\frac{V - V_{rest}}{80}\right) $$
+    #[verified_engine::verified]
     fn beta_n(&self, v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         0.125 * (-dv / 80.0).exp()
@@ -98,6 +106,7 @@ impl GatingKinetics for StandardKinetics {
     /// When $V = V_{rest} + 25$, the denominator approaches zero.
     /// We use L'Hôpital's rule to evaluate the limit:
     /// $$ \lim_{x \to 0} \frac{0.1 x}{e^{0.1 x} - 1} = \frac{0.1}{0.1} = 1.0 $$
+    #[verified_engine::verified]
     fn alpha_m(&self, v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         let x = 25.0 - dv;
@@ -111,6 +120,7 @@ impl GatingKinetics for StandardKinetics {
     /// Sodium deactivation rate $\beta_m$.
     ///
     /// $$ \beta_m = 4.0 \exp\left(-\frac{V - V_{rest}}{18}\right) $$
+    #[verified_engine::verified]
     fn beta_m(&self, v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         4.0 * (-dv / 18.0).exp()
@@ -119,6 +129,7 @@ impl GatingKinetics for StandardKinetics {
     /// Sodium recovery from inactivation rate $\alpha_h$.
     ///
     /// $$ \alpha_h = 0.07 \exp\left(-\frac{V - V_{rest}}{20}\right) $$
+    #[verified_engine::verified]
     fn alpha_h(&self, v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         0.07 * (-dv / 20.0).exp()
@@ -127,6 +138,7 @@ impl GatingKinetics for StandardKinetics {
     /// Sodium inactivation rate $\beta_h$.
     ///
     /// $$ \beta_h = \frac{1}{\exp(3.0 - 0.1(V - V_{rest})) + 1} $$
+    #[verified_engine::verified]
     fn beta_h(&self, v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         1.0 / ((3.0 - 0.1 * dv).exp() + 1.0)
@@ -138,6 +150,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_alpha_n_singularity() {
         let kinetics = StandardKinetics;
         let v_rest = -65.0;
@@ -151,6 +164,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_alpha_m_singularity() {
         let kinetics = StandardKinetics;
         let v_rest = -65.0;

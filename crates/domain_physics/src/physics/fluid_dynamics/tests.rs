@@ -15,6 +15,7 @@ mod tests {
     use pure_math::pure_math::analysis::ode::{Euler as OdeEuler, SolverExt};
 
     #[test]
+    #[verified_engine::verified]
     fn test_fluid_properties() {
         let water = FluidProperties::water();
         assert!((water.density() - 998.2).abs() < 1e-6);
@@ -25,6 +26,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fluid_properties_validation() {
         assert!(FluidProperties::new(-10.0, 1.0).is_err()); // Negative density
         assert!(FluidProperties::new(10.0, -1.0).is_err()); // Negative viscosity
@@ -32,6 +34,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_material_derivative() {
         let velocity = Vector3::new(1.0, 2.0, 3.0);
         let gradient = Vector3::new(0.1, 0.2, 0.3);
@@ -43,6 +46,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_reynolds_number_and_strategies() {
         let props = FluidProperties::new(1000.0, 0.001).unwrap(); // Water-like
         let u = 2.0;
@@ -77,6 +81,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bernoulli() {
         let props = FluidProperties::new(1000.0, 1.0).unwrap(); // rho=1000
         let g = 9.81;
@@ -91,6 +96,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_shear_stress() {
         let props = FluidProperties::new(1000.0, 0.001).unwrap(); // mu = 0.001
         let grad_u = 500.0; // 1/s
@@ -101,6 +107,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_navier_stokes_simple_couette() {
         let props = FluidProperties::new(1.0, 1.0).unwrap(); // rho=1, mu=1 -> nu=1
         let state = FlowState::new(Vector3::new(1.0, 0.0, 0.0), 0.0);
@@ -120,12 +127,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_continuity() {
         assert_eq!(continuity_divergence(0.0), 0.0);
         assert_eq!(continuity_divergence(0.5), 0.5);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_strategy_pattern_composability() {
         let props = FluidProperties::new(1000.0, 0.001).unwrap();
         let state = FlowState::new(Vector3::zeros(), 101325.0);
@@ -157,6 +166,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fluid_particle_integration() {
         // Setup: Water particle driven by pressure gradient
         let props = FluidProperties::water();

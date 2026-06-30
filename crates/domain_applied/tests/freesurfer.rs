@@ -2,6 +2,7 @@ use domain_applied::applied::freesurfer::*;
 use nalgebra::{DMatrix, DVector};
 
 #[test]
+#[verified_engine::verified]
 fn test_surface_reconstruction() {
     let mut surface = Surface {
         vertices: vec![[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]],
@@ -18,6 +19,7 @@ fn test_surface_reconstruction() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_bayesian_classification() {
     let likelihood = 0.8;
     let prior = 0.5;
@@ -26,6 +28,7 @@ fn test_bayesian_classification() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_cortical_thickness() {
     // Add the test points as vertices to the surfaces to ensure the simplified
     // vertex-only distance calculation works as expected for this test.
@@ -43,6 +46,7 @@ fn test_cortical_thickness() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_glm_beta_estimation() {
     let x: DMatrix<f64> = DMatrix::from_row_slice(4, 2, &[1.0, 1.0, 1.0, 2.0, 1.0, 3.0, 1.0, 4.0]);
     let y: DVector<f64> = DVector::from_vec(vec![6.0, 5.0, 7.0, 10.0]);
@@ -53,6 +57,7 @@ fn test_glm_beta_estimation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_glm_t_statistic() {
     let x: DMatrix<f64> = DMatrix::from_row_slice(4, 2, &[1.0, 1.0, 1.0, 2.0, 1.0, 3.0, 1.0, 4.0]);
     let y: DVector<f64> = DVector::from_vec(vec![6.0, 5.0, 7.0, 10.0]);

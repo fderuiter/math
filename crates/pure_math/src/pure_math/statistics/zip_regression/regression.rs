@@ -63,6 +63,7 @@ impl ZipRegression {
     ///
     /// Returns `ZipError::InsufficientData` if there are fewer than 2 counts.
     /// Returns `ZipError::InvalidDimensions` if the number of rows in `x_matrix` or `z_matrix` does not match the number of counts.
+    #[verified_engine::verified]
     pub fn new(
         counts: Vec<Count>,
         x_matrix: DMatrix<f64>,
@@ -114,6 +115,7 @@ impl ZipRegression {
     /// # Errors
     ///
     /// Returns a `ZipError` if the calculated parameters (after link functions) are invalid.
+    #[verified_engine::verified]
     pub fn predict(
         x_row: &DVector<f64>,
         z_row: &DVector<f64>,
@@ -141,6 +143,7 @@ impl ZipRegression {
     /// # Returns
     ///
     /// The log-likelihood value
+    #[verified_engine::verified]
     pub fn log_likelihood(&self, beta: &DVector<f64>, alpha: &DVector<f64>) -> f64 {
         let mut ll = 0.0;
         let beta_t = beta.transpose();
@@ -173,11 +176,13 @@ impl ZipRegression {
     }
 
     /// Returns the number of observations.
+    #[verified_engine::verified]
     pub fn n_obs(&self) -> usize {
         self.counts.len()
     }
 
     /// Returns the observed counts.
+    #[verified_engine::verified]
     pub fn counts(&self) -> &[Count] {
         &self.counts
     }
@@ -208,6 +213,7 @@ impl ZipRegression {
 /// let counts = vec![Count::new(0), Count::new(0), Count::new(1), Count::new(2), Count::new(0)];
 /// let params = simple_zip_fit(&counts).unwrap();
 /// ```
+#[verified_engine::verified]
 pub fn simple_zip_fit(counts: &[Count]) -> Result<ZipParams, ZipError> {
     if counts.is_empty() {
         return Err(ZipError::InsufficientData {
@@ -276,6 +282,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_zip_regression_creation() {
         let counts = vec![Count::new(0), Count::new(1), Count::new(2)];
         let x = DMatrix::from_element(3, 1, 1.0);
@@ -286,6 +293,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_zip_regression_dimension_mismatch() {
         let counts = vec![Count::new(0), Count::new(1), Count::new(2)];
         let x = DMatrix::from_element(2, 1, 1.0); // Wrong size
@@ -296,6 +304,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_zip_predict() {
         let x_row = DVector::from_vec(vec![1.0, 2.0]);
         let z_row = DVector::from_vec(vec![1.0, 0.5]);
@@ -316,6 +325,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simple_zip_fit() {
         // Simulate data with known parameters
         let counts = vec![
@@ -335,6 +345,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simple_zip_fit_all_zeros() {
         let counts = vec![Count::new(0), Count::new(0), Count::new(0)];
         let params = simple_zip_fit(&counts).unwrap();
@@ -344,6 +355,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_log_likelihood() {
         let counts = vec![Count::new(0), Count::new(1), Count::new(2)];
         let x = DMatrix::from_element(3, 1, 1.0);

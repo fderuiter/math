@@ -19,6 +19,7 @@ pub struct BlochSimulator {
 }
 
 impl OdeSystem<Vector3<f64>> for BlochSimulator {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &Vector3<f64>) -> Vector3<f64> {
         let gamma = proton::GYROMAGNETIC_RATIO;
 
@@ -46,14 +47,17 @@ impl OdeSystem<Vector3<f64>> for BlochSimulator {
 }
 
 impl TimeStepper<Vector3<f64>> for BlochSimulator {
+    #[verified_engine::verified]
     fn get_state(&self) -> &Vector3<f64> {
         &self.magnetization
     }
 
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut Vector3<f64> {
         &mut self.magnetization
     }
 
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         use pure_math::pure_math::analysis::ode::RungeKutta4;
         let new_state = RungeKutta4::step(
@@ -72,6 +76,7 @@ impl BlochSimulator {
     /// # Arguments
     /// * `initial_magnetization` - Initial state of $\vec{M}$.
     /// * `m0` - Equilibrium magnetization.
+    #[verified_engine::verified]
     pub fn new(initial_magnetization: Vector3<f64>, m0: f64) -> Self {
         Self {
             magnetization: initial_magnetization,
@@ -83,11 +88,13 @@ impl BlochSimulator {
     }
 
     /// Sets the magnetic field vector $\vec{B}$.
+    #[verified_engine::verified]
     pub fn set_b_field(&mut self, b_field: Vector3<f64>) {
         self.b_field = b_field;
     }
 
     /// Sets the relaxation times $T_1$ and $T_2$.
+    #[verified_engine::verified]
     pub fn set_relaxation(&mut self, t1: f64, t2: f64) {
         self.t1 = t1;
         self.t2 = t2;
@@ -107,6 +114,7 @@ impl BlochSimulator {
         since = "0.2.0",
         note = "Use set_parameters() then solver.step() or TimeStepper::step()"
     )]
+    #[verified_engine::verified]
     pub fn step_with<S>(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64, solver: &mut S)
     where
         S: Solver<Vector3<f64>>,
@@ -134,6 +142,7 @@ impl BlochSimulator {
         since = "0.2.0",
         note = "Use set_parameters() then TimeStepper::step()"
     )]
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64) {
         // Create a solver with the current magnetization structure
         let mut solver = Euler::new(&self.magnetization);
@@ -170,6 +179,7 @@ impl SimulationModel for BlochSimulator {
     type State = BlochState;
     type Error = std::io::Error;
 
+    #[verified_engine::verified]
     fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
         let initial_m = Vector3::new(0.0, 1.0, 0.0); // Default 90 deg flipped
         let mut sim = BlochSimulator::new(initial_m, config.m0);
@@ -179,11 +189,13 @@ impl SimulationModel for BlochSimulator {
         Ok(sim)
     }
 
+    #[verified_engine::verified]
     fn step(&mut self) -> Result<(), Self::Error> {
         <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(self, 0.01);
         Ok(())
     }
 
+    #[verified_engine::verified]
     fn get_state(&self) -> Self::State {
         BlochState {
             x: self.magnetization.x,

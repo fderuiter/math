@@ -17,6 +17,7 @@ pub const K_B: f64 = 1.380649e-23;
 ///
 /// # Returns
 /// * Larmor frequency in rad/s.
+#[verified_engine::verified]
 pub fn larmor_frequency(b0: f64) -> f64 {
     GYROMAGNETIC_RATIO * b0
 }
@@ -31,6 +32,7 @@ pub fn larmor_frequency(b0: f64) -> f64 {
 ///
 /// # Returns
 /// * Population ratio or an error if temperature is invalid (<= 0).
+#[verified_engine::verified]
 pub fn boltzmann_ratio(temperature: f64, b0: f64) -> Result<f64, String> {
     if temperature <= 0.0 {
         return Err("Temperature must be positive".to_string());

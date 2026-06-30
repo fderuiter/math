@@ -19,6 +19,7 @@ pub enum FlowRegime {
 /// A strategy for classifying flow regimes.
 pub trait FlowClassifier {
     /// Determines the flow regime for a given Reynolds number.
+    #[verified_engine::verified]
     fn classify(&self, re: f64) -> FlowRegime;
 }
 
@@ -31,6 +32,7 @@ pub trait FlowClassifier {
 pub struct PipeFlowClassifier;
 
 impl FlowClassifier for PipeFlowClassifier {
+    #[verified_engine::verified]
     fn classify(&self, re: f64) -> FlowRegime {
         if re < 2000.0 {
             FlowRegime::Laminar
@@ -52,6 +54,7 @@ impl FlowClassifier for PipeFlowClassifier {
 pub struct FlatPlateClassifier;
 
 impl FlowClassifier for FlatPlateClassifier {
+    #[verified_engine::verified]
     fn classify(&self, re: f64) -> FlowRegime {
         if re < 500_000.0 {
             FlowRegime::Laminar

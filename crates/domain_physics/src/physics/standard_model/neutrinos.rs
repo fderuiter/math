@@ -10,6 +10,7 @@
 ///
 /// # Formula
 /// $P = \sin^2(2\theta) \sin^2\left( 1.27 \frac{\Delta m^2 L}{E} \right)$
+#[verified_engine::verified]
 pub fn oscillation_prob(theta: f64, delta_m2: f64, l_km: f64, e_gev: f64) -> f64 {
     let term1 = (2.0 * theta).sin().powi(2);
     // The factor 1.27 comes from conversion of units: 1.27 * (L/km) * (dm^2/eV^2) / (E/GeV)
@@ -24,6 +25,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_neutrino_oscillation() {
         // Check bounds [0, 1]
         let p = oscillation_prob(0.5, 0.0025, 295.0, 0.6);

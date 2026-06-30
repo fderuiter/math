@@ -5,6 +5,7 @@ mod tests {
     use pure_math::pure_math::analysis::ode::OdeSystem;
 
     #[test]
+    #[verified_engine::verified]
     fn test_struct_implementation() {
         let n = 100.0;
         let c = 10.0;

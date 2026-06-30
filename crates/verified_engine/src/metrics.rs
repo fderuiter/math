@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::Cell;
 
 #[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ComplexityMetrics {
@@ -18,47 +18,55 @@ impl ComplexityMetrics {
 }
 
 thread_local! {
-    pub static METRICS: RefCell<ComplexityMetrics> = const { RefCell::new(ComplexityMetrics::new()) };
-    pub static VERIFICATION_MODE: RefCell<bool> = const { RefCell::new(false) };
+    pub static ARITHMETIC_OPS: Cell<u64> = const { Cell::new(0) };
+    pub static MEMORY_LOADS: Cell<u64> = const { Cell::new(0) };
+    pub static FUNCTION_CALLS: Cell<u64> = const { Cell::new(0) };
+    pub static VERIFICATION_MODE: Cell<bool> = const { Cell::new(false) };
 }
 
 pub fn enable_verification() {
-    VERIFICATION_MODE.with(|m| *m.borrow_mut() = true);
+    VERIFICATION_MODE.set(true);
 }
 
 pub fn disable_verification() {
-    VERIFICATION_MODE.with(|m| *m.borrow_mut() = false);
+    VERIFICATION_MODE.set(false);
 }
 
 pub fn is_verification_enabled() -> bool {
-    VERIFICATION_MODE.with(|m| *m.borrow())
+    VERIFICATION_MODE.get()
 }
 
 pub fn reset_metrics() {
-    METRICS.with(|m| *m.borrow_mut() = ComplexityMetrics::default());
+    ARITHMETIC_OPS.set(0);
+    MEMORY_LOADS.set(0);
+    FUNCTION_CALLS.set(0);
 }
 
 pub fn get_metrics() -> ComplexityMetrics {
-    METRICS.with(|m| m.borrow().clone())
-}
-
-#[inline]
-pub fn increment_arithmetic() {
-    if is_verification_enabled() {
-        METRICS.with(|m| m.borrow_mut().arithmetic_ops += 1);
+    ComplexityMetrics {
+        arithmetic_ops: ARITHMETIC_OPS.get(),
+        memory_loads: MEMORY_LOADS.get(),
+        function_calls: FUNCTION_CALLS.get(),
     }
 }
 
-#[inline]
-pub fn increment_memory_loads() {
+#[inline(always)]
+pub fn increment_arithmetic(count: u64) {
     if is_verification_enabled() {
-        METRICS.with(|m| m.borrow_mut().memory_loads += 1);
+        ARITHMETIC_OPS.set(ARITHMETIC_OPS.get() + count);
     }
 }
 
-#[inline]
+#[inline(always)]
+pub fn increment_memory_loads(count: u64) {
+    if is_verification_enabled() {
+        MEMORY_LOADS.set(MEMORY_LOADS.get() + count);
+    }
+}
+
+#[inline(always)]
 pub fn increment_calls() {
     if is_verification_enabled() {
-        METRICS.with(|m| m.borrow_mut().function_calls += 1);
+        FUNCTION_CALLS.set(FUNCTION_CALLS.get() + 1);
     }
 }

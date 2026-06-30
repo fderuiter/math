@@ -5,6 +5,7 @@ impl LatticeBoltzmannD2Q9<BgkCollision> {
     /// Creates a new solver with the given dimensions and relaxation time.
     ///
     /// * `tau`: Relaxation time. Must be > 0.5 for stability.
+    #[verified_engine::verified]
     pub fn new(width: usize, height: usize, tau: f64) -> Self {
         Self::new_with_model(width, height, BgkCollision { tau: tau.max(0.51) })
     }
@@ -12,6 +13,7 @@ impl LatticeBoltzmannD2Q9<BgkCollision> {
 
 impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<Q, L, C> {
     /// Creates a new solver with a specific collision model.
+    #[verified_engine::verified]
     pub fn new_with_model(width: usize, height: usize, collision_model: C) -> Self {
         // Validation: Ensure lattice directions are within [-1, 1] range supported by stream()
         for &dx in &L::directions_x() {
@@ -31,6 +33,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     }
 
     /// Initializes the grid to a uniform equilibrium state (rho=1, u=0).
+    #[verified_engine::verified]
     pub fn init_equilibrium(&mut self) {
         for i in 0..self.state.width * self.state.height {
             self.state.rho[i] = 1.0;
@@ -43,6 +46,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     }
 
     /// Sets a rectangular region of velocity (e.g., inlet).
+    #[verified_engine::verified]
     pub fn set_inlet(&mut self, x: usize, y: usize, w: usize, h: usize, u_x: f64, u_y: f64) {
         for j in y..(y + h).min(self.state.height) {
             for i in x..(x + w).min(self.state.width) {
@@ -59,6 +63,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     }
 
     /// Sets an obstacle at (x, y).
+    #[verified_engine::verified]
     pub fn set_obstacle(&mut self, x: usize, y: usize, is_obstacle: bool) {
         if x < self.state.width && y < self.state.height {
             let idx = self.state.index(x, y);
@@ -72,6 +77,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     }
 
     /// Performs one simulation step (Stream -> Collision).
+    #[verified_engine::verified]
     pub fn step(&mut self) {
         self.stream();
         self.state.swap_buffers();
@@ -87,6 +93,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// 1. Reading `f` only once (instead of twice).
     /// 2. Keeping `rho`, `ux`, `uy` in CPU registers for the collision step, avoiding
     ///    store-then-load latency for these variables.
+    #[verified_engine::verified]
     fn macroscopic_and_collision(&mut self) {
         let cx = L::directions_x();
         let cy = L::directions_y();
@@ -136,6 +143,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
 
     /// Streaming step: Move particles to neighboring cells.
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[verified_engine::verified]
     fn stream(&mut self) {
         let width = self.state.width;
         let height = self.state.height;
@@ -267,6 +275,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     }
 
     /// Enforce specific boundary conditions (like driving velocity).
+    #[verified_engine::verified]
     fn boundary_conditions(&mut self) {
         // ... (Existing code is commented out, preserving it as is)
     }
@@ -278,6 +287,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// # Returns
     ///
     /// The width of the simulation domain.
+    #[verified_engine::verified]
     pub fn width(&self) -> usize {
         self.state.width
     }
@@ -287,6 +297,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// # Returns
     ///
     /// The height of the simulation domain.
+    #[verified_engine::verified]
     pub fn height(&self) -> usize {
         self.state.height
     }
@@ -305,6 +316,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// # Panics
     ///
     /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
+    #[verified_engine::verified]
     pub fn get_density(&self, x: usize, y: usize) -> f64 {
         self.state.rho[self.state.index(x, y)]
     }
@@ -336,6 +348,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// assert_eq!(ux, 0.0);
     /// assert_eq!(uy, 0.0);
     /// ```
+    #[verified_engine::verified]
     pub fn get_velocity(&self, x: usize, y: usize) -> (f64, f64) {
         let idx = self.state.index(x, y);
         (self.state.ux[idx], self.state.uy[idx])
@@ -357,6 +370,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// # Panics
     ///
     /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
+    #[verified_engine::verified]
     pub fn get_velocity_magnitude(&self, x: usize, y: usize) -> f64 {
         let idx = self.state.index(x, y);
         (self.state.ux[idx].powi(2) + self.state.uy[idx].powi(2)).sqrt()
@@ -379,6 +393,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// # Panics
     ///
     /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
+    #[verified_engine::verified]
     pub fn is_obstacle(&self, x: usize, y: usize) -> bool {
         self.state.obstacles[self.state.index(x, y)]
     }
@@ -397,6 +412,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// solver.clear_obstacles();
     /// assert!(!solver.is_obstacle(5, 5));
     /// ```
+    #[verified_engine::verified]
     pub fn clear_obstacles(&mut self) {
         self.state.obstacles.fill(false);
     }
@@ -421,15 +437,18 @@ impl SimulationModel for LatticeBoltzmannD2Q9<BgkCollision> {
     type State = LatticeState<9>;
     type Error = std::io::Error;
 
+    #[verified_engine::verified]
     fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
         Ok(Self::new(config.width, config.height, config.tau))
     }
 
+    #[verified_engine::verified]
     fn step(&mut self) -> Result<(), Self::Error> {
         self.step();
         Ok(())
     }
 
+    #[verified_engine::verified]
     fn get_state(&self) -> Self::State {
         self.state.clone()
     }

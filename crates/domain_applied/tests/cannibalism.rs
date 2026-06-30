@@ -1,6 +1,7 @@
 use domain_applied::applied::cannibalism;
 
 #[test]
+#[verified_engine::verified]
 fn test_mckendrick_von_foerster() {
     let t = 0.0;
     let a = 0.0;
@@ -11,6 +12,7 @@ fn test_mckendrick_von_foerster() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_birth_rate() {
     let t = 0.0;
     let result = cannibalism::birth_rate(t);
@@ -18,6 +20,7 @@ fn test_birth_rate() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_death_rate() {
     let nu_a = 0.1;
     let c_a = 0.2;
@@ -28,6 +31,7 @@ fn test_death_rate() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_juvenile_dynamics() {
     let i_t = 0.1;
     let c_a = 0.2;
@@ -38,6 +42,7 @@ fn test_juvenile_dynamics() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_adult_dynamics() {
     let n_t_alpha = 50.0;
     let f_i_t = 0.1;

@@ -16,6 +16,7 @@ pub struct TimeParams {
 }
 
 impl Default for TimeParams {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             t: 365.0,
@@ -41,6 +42,7 @@ pub struct GiftParams {
 }
 
 impl Default for GiftParams {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             g_emotional: 5.0,
@@ -65,6 +67,7 @@ pub struct ContactParams {
 }
 
 impl Default for ContactParams {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             f_initial: 7.0,
@@ -98,6 +101,7 @@ pub struct PersonalityParams {
 }
 
 impl Default for PersonalityParams {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             intelligence: 7.0,
@@ -126,6 +130,7 @@ pub struct SocialParams {
 }
 
 impl Default for SocialParams {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             birth_order_weight: 1.2,
@@ -148,6 +153,7 @@ pub struct ComplimentParams {
 }
 
 impl Default for ComplimentParams {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             compliments: DVector::from_vec(vec![10.0, 5.0, 8.0]),
@@ -166,6 +172,7 @@ pub struct FamilyParams {
 }
 
 impl Default for FamilyParams {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             sibling_distances: vec![100.0, 50.0, 10.0],

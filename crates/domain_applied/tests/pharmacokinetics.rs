@@ -6,6 +6,7 @@ use domain_applied::applied::pharmacokinetics::*;
 const TOLERANCE: f64 = 1e-6;
 
 // Helper function to create parameters for d-amphetamine based on the prompt.
+#[verified_engine::verified]
 fn get_d_amphetamine_params() -> PKParameters {
     // From prompt: d-amphetamine t_1/2 = 10h -> ke = ln(2)/10
     let ke_d = std::f64::consts::LN_2 / 10.0; // approx 0.0693
@@ -25,6 +26,7 @@ fn get_d_amphetamine_params() -> PKParameters {
 }
 
 // Helper function to create parameters for l-amphetamine based on the prompt.
+#[verified_engine::verified]
 fn get_l_amphetamine_params() -> PKParameters {
     // From prompt: l-amphetamine t_1/2 = 13h -> ke = ln(2)/13
     let ke_l = std::f64::consts::LN_2 / 13.0; // approx 0.0533
@@ -42,6 +44,7 @@ fn get_l_amphetamine_params() -> PKParameters {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_half_life() {
     let ke = std::f64::consts::LN_2 / 10.0;
     assert!((half_life(ke) - 10.0).abs() < TOLERANCE);
@@ -49,6 +52,7 @@ fn test_half_life() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_t_max_and_solve_ka() {
     let ke = 0.0693;
     let t_max_target = 3.0;
@@ -63,6 +67,7 @@ fn test_t_max_and_solve_ka() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_bateman_function() {
     let params = get_d_amphetamine_params();
 
@@ -95,6 +100,7 @@ fn test_bateman_function() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_superposition() {
     let params = get_d_amphetamine_params();
     let dose_times = &[0.0, 4.0]; // Two doses, 4 hours apart.
@@ -111,6 +117,7 @@ fn test_superposition() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_enantiomer_model_ir() {
     let d_params = get_d_amphetamine_params();
     let l_params = get_l_amphetamine_params();
@@ -131,6 +138,7 @@ fn test_enantiomer_model_ir() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_enantiomer_model_xr() {
     let d_params = get_d_amphetamine_params();
     let l_params = get_l_amphetamine_params();
@@ -167,6 +175,7 @@ fn test_enantiomer_model_xr() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_pk_parameter_validation() {
     // Test negative dose
     let res = PKParameters::new(1.0, -10.0, 1.0, 1.0, 1.0);
@@ -187,6 +196,7 @@ fn test_pk_parameter_validation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_builder() {
     let params = PKParametersBuilder::new()
         .bioavailability(0.8)

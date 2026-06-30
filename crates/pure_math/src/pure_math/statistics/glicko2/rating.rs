@@ -68,6 +68,7 @@ const VOLATILITY_TOLERANCE: f64 = 1e-6;
 ///
 /// Glickman, M. E. (2012). "Example of the Glicko-2 system."
 /// <http://www.glicko.net/glicko/glicko2.pdf>
+#[verified_engine::verified]
 pub fn update_rating(
     player: &GlickoPlayer,
     results: &[MatchResult],
@@ -110,6 +111,7 @@ pub fn update_rating(
 /// Computes the variance v for the rating period.
 ///
 /// Formula: v = 1 / Σⱼ g(φⱼ)² E(μ, μⱼ, φⱼ)(1 - E(μ, μⱼ, φⱼ))
+#[verified_engine::verified]
 fn compute_variance(mu: f64, results: &[MatchResult]) -> Result<f64, Glicko2Error> {
     let sum: f64 = results
         .iter()
@@ -133,12 +135,14 @@ fn compute_variance(mu: f64, results: &[MatchResult]) -> Result<f64, Glicko2Erro
 /// Computes the delta (performance improvement estimate).
 ///
 /// Formula: Δ = v · Σⱼ g(φⱼ)(sⱼ - E(μ, μⱼ, φⱼ))
+#[verified_engine::verified]
 fn compute_delta(mu: f64, results: &[MatchResult], v: f64) -> Result<f64, Glicko2Error> {
     let sum = compute_summation(mu, results)?;
     Ok(v * sum)
 }
 
 /// Helper function to compute Σⱼ g(φⱼ)(sⱼ - E(μ, μⱼ, φⱼ)).
+#[verified_engine::verified]
 fn compute_summation(mu: f64, results: &[MatchResult]) -> Result<f64, Glicko2Error> {
     let sum: f64 = results
         .iter()
@@ -159,6 +163,7 @@ fn compute_summation(mu: f64, results: &[MatchResult]) -> Result<f64, Glicko2Err
 /// f(x) = exp(x)(Δ² - φ² - v - exp(x)) / (2(φ² + v + exp(x))²) - (x - ln(σ²)) / τ² = 0
 ///
 /// The Illinois algorithm is a variant of the false position method with better convergence.
+#[verified_engine::verified]
 fn update_volatility(
     phi: f64,
     sigma: f64,
@@ -236,6 +241,7 @@ fn update_volatility(
 /// Formula: φ' = √(φ² + σ²)
 ///
 /// This models the increased uncertainty about a player's skill when they are inactive.
+#[verified_engine::verified]
 pub fn increase_rd_for_inactivity(player: &GlickoPlayer) -> GlickoPlayer {
     let (_, phi, sigma) = player.to_glicko2_scale();
     let phi_new = (phi * phi + sigma * sigma).sqrt();
@@ -252,6 +258,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_update_rating_single_win() {
         // Player beats weaker opponent
         let player = GlickoPlayer::new(
@@ -278,6 +285,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_update_rating_single_loss() {
         // Player loses to stronger opponent
         let player = GlickoPlayer::new(
@@ -304,6 +312,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_update_rating_draw() {
         // Player draws with equal opponent
         let player = GlickoPlayer::new(
@@ -330,6 +339,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_update_rating_multiple_games() {
         // Player plays multiple games
         let player = GlickoPlayer::new(
@@ -370,6 +380,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_glickman_example() {
         // Example from Glickman's paper
         // Player: rating=1500, RD=200, volatility=0.06
@@ -432,6 +443,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_increase_rd_for_inactivity() {
         let player = GlickoPlayer::new(
             Rating::new(1500.0).unwrap(),
@@ -450,6 +462,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_empty_results() {
         let player = GlickoPlayer::default();
         let results: Vec<MatchResult> = vec![];

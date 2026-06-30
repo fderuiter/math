@@ -26,6 +26,7 @@ impl PKParameters {
     /// * `ka` - Absorption rate constant (> 0).
     /// * `ke` - Elimination rate constant (> 0).
     /// * `v` - Volume of distribution (> 0).
+    #[verified_engine::verified]
     pub fn new(f: f64, d: f64, ka: f64, ke: f64, v: f64) -> Result<Self, PharmacokineticsError> {
         if !(0.0..=1.0).contains(&f) {
             return Err(PharmacokineticsError::InvalidParameter(format!(
@@ -62,31 +63,37 @@ impl PKParameters {
     }
 
     /// Returns the bioavailability fraction (f).
+    #[verified_engine::verified]
     pub fn f(&self) -> f64 {
         self.f
     }
 
     /// Returns the dose amount (d).
+    #[verified_engine::verified]
     pub fn d(&self) -> f64 {
         self.d
     }
 
     /// Returns the absorption rate constant (ka).
+    #[verified_engine::verified]
     pub fn ka(&self) -> f64 {
         self.ka
     }
 
     /// Returns the elimination rate constant (ke).
+    #[verified_engine::verified]
     pub fn ke(&self) -> f64 {
         self.ke
     }
 
     /// Returns the volume of distribution (v).
+    #[verified_engine::verified]
     pub fn v(&self) -> f64 {
         self.v
     }
 
     /// Returns a new `PKParameters` with the dose updated.
+    #[verified_engine::verified]
     pub fn with_dose(&self, d: f64) -> Result<Self, PharmacokineticsError> {
         Self::new(self.f, d, self.ka, self.ke, self.v)
     }
@@ -104,41 +111,48 @@ pub struct PKParametersBuilder {
 
 impl PKParametersBuilder {
     /// Creates a new builder.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Sets bioavailability (f).
+    #[verified_engine::verified]
     pub fn bioavailability(mut self, f: f64) -> Self {
         self.f = Some(f);
         self
     }
 
     /// Sets dose (d).
+    #[verified_engine::verified]
     pub fn dose(mut self, d: f64) -> Self {
         self.d = Some(d);
         self
     }
 
     /// Sets absorption rate constant (ka).
+    #[verified_engine::verified]
     pub fn absorption_rate(mut self, ka: f64) -> Self {
         self.ka = Some(ka);
         self
     }
 
     /// Sets elimination rate constant (ke).
+    #[verified_engine::verified]
     pub fn elimination_rate(mut self, ke: f64) -> Self {
         self.ke = Some(ke);
         self
     }
 
     /// Sets volume of distribution (v).
+    #[verified_engine::verified]
     pub fn volume(mut self, v: f64) -> Self {
         self.v = Some(v);
         self
     }
 
     /// Builds the `PKParameters` struct, validating all fields.
+    #[verified_engine::verified]
     pub fn build(self) -> Result<PKParameters, PharmacokineticsError> {
         let f = self.f.ok_or_else(|| {
             PharmacokineticsError::InvalidParameter("Bioavailability (f) is required".to_string())

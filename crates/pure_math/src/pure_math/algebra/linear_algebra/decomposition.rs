@@ -47,6 +47,7 @@ use nalgebra::DMatrix;
 /// // With high tolerance, rank is 2.
 /// assert_eq!(effective_rank(&diag, Some(1e-5)), 2);
 /// ```
+#[verified_engine::verified]
 pub fn effective_rank(matrix: &DMatrix<f64>, tolerance: Option<f64>) -> usize {
     let svd = matrix.clone().svd(false, false);
     let tol = tolerance.unwrap_or(1e-10);
@@ -70,6 +71,7 @@ pub fn effective_rank(matrix: &DMatrix<f64>, tolerance: Option<f64>) -> usize {
 ///
 /// # Panics
 /// Panics if SVD computation fails (e.g., non-convergence), which is rare.
+#[verified_engine::verified]
 pub fn low_rank_approximation(matrix: &DMatrix<f64>, k: usize) -> DMatrix<f64> {
     let svd = matrix.clone().svd(true, true);
     let u = svd.u.as_ref().expect("SVD failed to compute U");
@@ -90,6 +92,7 @@ mod tests {
     use nalgebra::DMatrix;
 
     #[test]
+    #[verified_engine::verified]
     fn test_effective_rank() {
         let m = DMatrix::from_row_slice(2, 2, &[1.0, 0.0, 0.0, 0.0]);
         assert_eq!(effective_rank(&m, None), 1);
@@ -99,6 +102,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_low_rank_approx() {
         // Rank 2 matrix
         let m = DMatrix::from_row_slice(2, 2, &[2.0, 0.0, 0.0, 1.0]);

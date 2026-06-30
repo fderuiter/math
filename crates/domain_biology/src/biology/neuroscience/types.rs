@@ -30,6 +30,7 @@ pub struct HodgkinHuxleyParameters {
 }
 
 impl Default for HodgkinHuxleyParameters {
+    #[verified_engine::verified]
     fn default() -> Self {
         let v_rest = -65.0;
         Self {
@@ -63,6 +64,7 @@ pub struct HodgkinHuxleyState {
 impl Add for HodgkinHuxleyState {
     type Output = Self;
 
+    #[verified_engine::verified]
     fn add(self, rhs: Self) -> Self {
         Self {
             v: self.v + rhs.v,
@@ -74,6 +76,7 @@ impl Add for HodgkinHuxleyState {
 }
 
 impl AddAssign for HodgkinHuxleyState {
+    #[verified_engine::verified]
     fn add_assign(&mut self, rhs: Self) {
         self.v += rhs.v;
         self.n += rhs.n;
@@ -85,6 +88,7 @@ impl AddAssign for HodgkinHuxleyState {
 impl Mul<f64> for HodgkinHuxleyState {
     type Output = Self;
 
+    #[verified_engine::verified]
     fn mul(self, scalar: f64) -> Self {
         Self {
             v: self.v * scalar,
@@ -96,6 +100,7 @@ impl Mul<f64> for HodgkinHuxleyState {
 }
 
 impl MulAssign<f64> for HodgkinHuxleyState {
+    #[verified_engine::verified]
     fn mul_assign(&mut self, scalar: f64) {
         self.v *= scalar;
         self.n *= scalar;
@@ -105,6 +110,7 @@ impl MulAssign<f64> for HodgkinHuxleyState {
 }
 
 impl VectorOperations for HodgkinHuxleyState {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         self.v += other.v * scale;
         self.n += other.n * scale;
@@ -112,6 +118,7 @@ impl VectorOperations for HodgkinHuxleyState {
         self.h += other.h * scale;
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         *self = *other;
     }

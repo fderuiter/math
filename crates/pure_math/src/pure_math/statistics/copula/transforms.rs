@@ -20,6 +20,7 @@ pub trait ProbabilityTransform {
     /// # Returns
     ///
     /// The cumulative probability U ∈ [0, 1]
+    #[verified_engine::verified]
     fn to_uniform(&self, value: f64) -> Result<Probability, CopulaError>;
 
     /// Inverse transform from uniform to original distribution.
@@ -31,6 +32,7 @@ pub trait ProbabilityTransform {
     /// # Returns
     ///
     /// The value in the original distribution
+    #[verified_engine::verified]
     fn inverse_transform(&self, u: Probability) -> f64;
 }
 
@@ -56,6 +58,7 @@ impl NormalTransform {
     ///
     /// let transform = NormalTransform::new(0.0, 1.0).unwrap();
     /// ```
+    #[verified_engine::verified]
     pub fn new(mean: f64, std_dev: f64) -> Result<Self, CopulaError> {
         let normal = Normal::new(mean, std_dev).map_err(|e| CopulaError::NumericalError {
             reason: format!("Failed to create normal distribution: {}", e),
@@ -64,17 +67,20 @@ impl NormalTransform {
     }
 
     /// Creates a standard normal transform N(0,1).
+    #[verified_engine::verified]
     pub fn standard() -> Result<Self, CopulaError> {
         Self::new(0.0, 1.0)
     }
 }
 
 impl ProbabilityTransform for NormalTransform {
+    #[verified_engine::verified]
     fn to_uniform(&self, value: f64) -> Result<Probability, CopulaError> {
         let u = self.normal.cdf(value);
         Probability::new(u)
     }
 
+    #[verified_engine::verified]
     fn inverse_transform(&self, u: Probability) -> f64 {
         // Inverse CDF (quantile function)
         self.normal.inverse_cdf(u.value())
@@ -102,6 +108,7 @@ impl ProbabilityTransform for NormalTransform {
 /// let z = inverse_standard_normal(u).unwrap();
 /// // z ≈ 1.96 (97.5th percentile)
 /// ```
+#[verified_engine::verified]
 pub fn inverse_standard_normal(u: Probability) -> Result<f64, CopulaError> {
     let normal = Normal::new(0.0, 1.0).map_err(|e| CopulaError::NumericalError {
         reason: format!("Failed to create standard normal: {}", e),
@@ -130,6 +137,7 @@ pub fn inverse_standard_normal(u: Probability) -> Result<f64, CopulaError> {
 /// let p = standard_normal_cdf(z).unwrap();
 /// // p ≈ 0.975
 /// ```
+#[verified_engine::verified]
 pub fn standard_normal_cdf(z: f64) -> Result<Probability, CopulaError> {
     let normal = Normal::new(0.0, 1.0).map_err(|e| CopulaError::NumericalError {
         reason: format!("Failed to create standard normal: {}", e),
@@ -143,6 +151,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_normal_transform_standard() {
         let transform = NormalTransform::standard().unwrap();
 
@@ -157,6 +166,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_normal_transform_with_parameters() {
         let transform = NormalTransform::new(10.0, 2.0).unwrap();
 
@@ -166,6 +176,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_inverse_standard_normal() {
         // Test known values
         let u_median = Probability::new(0.5).unwrap();
@@ -179,6 +190,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_standard_normal_cdf() {
         // Test z=0 -> p=0.5
         let p = standard_normal_cdf(0.0).unwrap();
@@ -190,6 +202,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_round_trip() {
         let transform = NormalTransform::standard().unwrap();
 

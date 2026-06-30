@@ -26,6 +26,7 @@ impl Probability {
     /// let p = Probability::new(0.75).unwrap();
     /// assert_eq!(p.value(), 0.75);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, CopulaError> {
         if !(0.0..=1.0).contains(&value) || !value.is_finite() {
             return Err(CopulaError::InvalidProbability { value });
@@ -34,6 +35,7 @@ impl Probability {
     }
 
     /// Returns the raw probability value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -62,6 +64,7 @@ impl Correlation {
     /// let rho = Correlation::new(-0.3).unwrap();
     /// assert_eq!(rho.value(), -0.3);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, CopulaError> {
         if !(-1.0..=1.0).contains(&value) || !value.is_finite() {
             return Err(CopulaError::InvalidCorrelation { value });
@@ -70,6 +73,7 @@ impl Correlation {
     }
 
     /// Returns the raw correlation value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -93,6 +97,7 @@ impl CorrelationMatrix {
     /// # Returns
     ///
     /// * `Result<CorrelationMatrix, CopulaError>` - The validated matrix or an error
+    #[verified_engine::verified]
     pub fn new(matrix: DMatrix<f64>) -> Result<Self, CopulaError> {
         // Check square
         if matrix.nrows() != matrix.ncols() {
@@ -152,6 +157,7 @@ impl CorrelationMatrix {
     /// let rho = Correlation::new(-0.3).unwrap();
     /// let matrix = CorrelationMatrix::bivariate(rho).unwrap();
     /// ```
+    #[verified_engine::verified]
     pub fn bivariate(rho: Correlation) -> Result<Self, CopulaError> {
         let r = rho.value();
         let matrix = DMatrix::from_row_slice(2, 2, &[1.0, r, r, 1.0]);
@@ -159,16 +165,19 @@ impl CorrelationMatrix {
     }
 
     /// Returns the underlying matrix.
+    #[verified_engine::verified]
     pub fn matrix(&self) -> &DMatrix<f64> {
         &self.matrix
     }
 
     /// Returns the dimension of the matrix.
+    #[verified_engine::verified]
     pub fn dimension(&self) -> usize {
         self.matrix.nrows()
     }
 
     /// Returns the correlation between variables i and j.
+    #[verified_engine::verified]
     pub fn get_correlation(&self, i: usize, j: usize) -> Option<f64> {
         if i < self.dimension() && j < self.dimension() {
             Some(self.matrix[(i, j)])
@@ -183,6 +192,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_probability_valid() {
         let p = Probability::new(0.5).unwrap();
         assert_eq!(p.value(), 0.5);
@@ -195,6 +205,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_probability_invalid() {
         assert!(Probability::new(-0.1).is_err());
         assert!(Probability::new(1.1).is_err());
@@ -202,6 +213,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_correlation_valid() {
         let rho = Correlation::new(0.5).unwrap();
         assert_eq!(rho.value(), 0.5);
@@ -211,6 +223,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_correlation_invalid() {
         assert!(Correlation::new(-1.1).is_err());
         assert!(Correlation::new(1.1).is_err());
@@ -218,6 +231,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_correlation_matrix_bivariate() {
         let rho = Correlation::new(0.6).unwrap();
         let matrix = CorrelationMatrix::bivariate(rho).unwrap();
@@ -229,12 +243,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_correlation_matrix_invalid_diagonal() {
         let matrix = DMatrix::from_row_slice(2, 2, &[0.5, 0.3, 0.3, 1.0]);
         assert!(CorrelationMatrix::new(matrix).is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_correlation_matrix_not_symmetric() {
         let matrix = DMatrix::from_row_slice(2, 2, &[1.0, 0.3, 0.5, 1.0]);
         assert!(CorrelationMatrix::new(matrix).is_err());

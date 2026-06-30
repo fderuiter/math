@@ -4,6 +4,7 @@ use pure_math::pure_math::analysis::ode::{OdeSystem, RungeKutta4, SolverExt, Vec
 struct DecayModel;
 
 impl OdeSystem<VecState> for DecayModel {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &VecState) -> VecState {
         // dy/dt = -y
         let derivatives: Vec<f64> = state.0.iter().map(|&y| -y).collect();
@@ -12,6 +13,7 @@ impl OdeSystem<VecState> for DecayModel {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_vec_state_ode() {
     let system = DecayModel;
     let initial_state = VecState(vec![10.0, 5.0]); // Two independent decay processes

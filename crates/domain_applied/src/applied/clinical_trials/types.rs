@@ -16,6 +16,7 @@ pub enum ClinicalTrialError {
 }
 
 impl fmt::Display for ClinicalTrialError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::InsufficientSampleSize { required, actual } => {
@@ -54,6 +55,7 @@ pub struct ContingencyTable {
 
 impl ContingencyTable {
     /// Creates a new contingency table.
+    #[verified_engine::verified]
     pub fn new(
         treatment_event: u32,
         treatment_no_event: u32,
@@ -78,6 +80,7 @@ impl ContingencyTable {
     }
 
     /// Returns total count.
+    #[verified_engine::verified]
     pub fn total(&self) -> f64 {
         (self.treatment_event
             + self.treatment_no_event
@@ -96,6 +99,7 @@ pub struct GroupData {
 
 impl GroupData {
     /// Creates a new `GroupData` instance.
+    #[verified_engine::verified]
     pub fn new(data: Vec<f64>) -> Result<Self, ClinicalTrialError> {
         if data.len() < 2 {
             return Err(ClinicalTrialError::InsufficientSampleSize {
@@ -118,22 +122,26 @@ impl GroupData {
     }
 
     /// Returns the raw data slice.
+    #[verified_engine::verified]
     pub fn as_slice(&self) -> &[f64] {
         &self.data
     }
 
     /// Returns the number of samples.
+    #[verified_engine::verified]
     pub fn n(&self) -> usize {
         self.data.len()
     }
 
     /// Calculates the mean.
+    #[verified_engine::verified]
     pub fn mean(&self) -> f64 {
         let sum: f64 = self.data.iter().sum();
         sum / self.n() as f64
     }
 
     /// Calculates the variance.
+    #[verified_engine::verified]
     pub fn variance(&self) -> f64 {
         let m = self.mean();
         let sum_sq_diff: f64 = self.data.iter().map(|x| (x - m).powi(2)).sum();
@@ -152,6 +160,7 @@ impl SurvivalTime {
     ///
     /// # Errors
     /// Returns `ClinicalTrialError::InvalidData` if `t` is negative or NaN.
+    #[verified_engine::verified]
     pub fn new(t: f64) -> Result<Self, ClinicalTrialError> {
         if t.is_nan() || t < 0.0 {
             return Err(ClinicalTrialError::InvalidData(format!(
@@ -163,12 +172,14 @@ impl SurvivalTime {
     }
 
     /// Returns the underlying `f64` value.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
     }
 }
 
 impl fmt::Display for SurvivalTime {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }

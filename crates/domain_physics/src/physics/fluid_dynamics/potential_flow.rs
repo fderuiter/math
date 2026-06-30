@@ -15,12 +15,15 @@ use std::f64::consts::PI;
 /// A fundamental element of a 2D potential flow field.
 pub trait FlowElement: Send + Sync {
     /// Velocity vector (u, v) at point (x, y).
+    #[verified_engine::verified]
     fn velocity(&self, x: f64, y: f64) -> Vector2<f64>;
 
     /// Stream function value psi at point (x, y).
+    #[verified_engine::verified]
     fn stream_function(&self, x: f64, y: f64) -> f64;
 
     /// Velocity potential phi at point (x, y).
+    #[verified_engine::verified]
     fn potential(&self, x: f64, y: f64) -> f64;
 }
 
@@ -40,6 +43,7 @@ impl UniformFlow {
     ///
     /// * `velocity` - The velocity magnitude.
     /// * `angle_degrees` - The angle of the flow in degrees.
+    #[verified_engine::verified]
     pub fn new(velocity: f64, angle_degrees: f64) -> Self {
         Self {
             velocity,
@@ -49,6 +53,7 @@ impl UniformFlow {
 }
 
 impl FlowElement for UniformFlow {
+    #[verified_engine::verified]
     fn velocity(&self, _x: f64, _y: f64) -> Vector2<f64> {
         Vector2::new(
             self.velocity * self.angle.cos(),
@@ -56,10 +61,12 @@ impl FlowElement for UniformFlow {
         )
     }
 
+    #[verified_engine::verified]
     fn stream_function(&self, x: f64, y: f64) -> f64 {
         self.velocity * (y * self.angle.cos() - x * self.angle.sin())
     }
 
+    #[verified_engine::verified]
     fn potential(&self, x: f64, y: f64) -> f64 {
         self.velocity * (x * self.angle.cos() + y * self.angle.sin())
     }
@@ -98,12 +105,14 @@ impl Source {
     /// * `strength` - The volumetric flow rate per unit depth.
     /// * `x` - The x-coordinate of the location.
     /// * `y` - The y-coordinate of the location.
+    #[verified_engine::verified]
     pub fn new(strength: f64, x: f64, y: f64) -> Self {
         Self { strength, x, y }
     }
 }
 
 impl FlowElement for Source {
+    #[verified_engine::verified]
     fn velocity(&self, x: f64, y: f64) -> Vector2<f64> {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -116,12 +125,14 @@ impl FlowElement for Source {
         Vector2::new(u, v)
     }
 
+    #[verified_engine::verified]
     fn stream_function(&self, x: f64, y: f64) -> f64 {
         let dx = x - self.x;
         let dy = y - self.y;
         (self.strength / (2.0 * PI)) * dy.atan2(dx)
     }
 
+    #[verified_engine::verified]
     fn potential(&self, x: f64, y: f64) -> f64 {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -164,12 +175,14 @@ impl Vortex {
     /// * `strength` - The circulation strength ($\Gamma$).
     /// * `x` - The x-coordinate of the location.
     /// * `y` - The y-coordinate of the location.
+    #[verified_engine::verified]
     pub fn new(strength: f64, x: f64, y: f64) -> Self {
         Self { strength, x, y }
     }
 }
 
 impl FlowElement for Vortex {
+    #[verified_engine::verified]
     fn velocity(&self, x: f64, y: f64) -> Vector2<f64> {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -184,6 +197,7 @@ impl FlowElement for Vortex {
         Vector2::new(u, v)
     }
 
+    #[verified_engine::verified]
     fn stream_function(&self, x: f64, y: f64) -> f64 {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -194,6 +208,7 @@ impl FlowElement for Vortex {
         (self.strength / (2.0 * PI)) * r.ln()
     }
 
+    #[verified_engine::verified]
     fn potential(&self, x: f64, y: f64) -> f64 {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -235,12 +250,14 @@ impl Doublet {
     /// * `strength` - The doublet strength ($\kappa$).
     /// * `x` - The x-coordinate of the location.
     /// * `y` - The y-coordinate of the location.
+    #[verified_engine::verified]
     pub fn new(strength: f64, x: f64, y: f64) -> Self {
         Self { strength, x, y }
     }
 }
 
 impl FlowElement for Doublet {
+    #[verified_engine::verified]
     fn velocity(&self, x: f64, y: f64) -> Vector2<f64> {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -271,6 +288,7 @@ impl FlowElement for Doublet {
         Vector2::new(u, v)
     }
 
+    #[verified_engine::verified]
     fn stream_function(&self, x: f64, y: f64) -> f64 {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -282,6 +300,7 @@ impl FlowElement for Doublet {
         -(self.strength * dy) / (2.0 * PI * r2)
     }
 
+    #[verified_engine::verified]
     fn potential(&self, x: f64, y: f64) -> f64 {
         let dx = x - self.x;
         let dy = y - self.y;
@@ -328,6 +347,7 @@ pub struct PotentialFlowField {
 
 impl PotentialFlowField {
     /// Creates a new, empty potential flow field.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             elements: Vec::new(),
@@ -339,17 +359,20 @@ impl PotentialFlowField {
     /// # Arguments
     ///
     /// * `element` - A boxed flow element implementing the `FlowElement` trait.
+    #[verified_engine::verified]
     pub fn add(&mut self, element: Box<dyn FlowElement>) {
         self.elements.push(element);
     }
 
     /// Removes all flow elements from the field.
+    #[verified_engine::verified]
     pub fn clear(&mut self) {
         self.elements.clear();
     }
 }
 
 impl FlowElement for PotentialFlowField {
+    #[verified_engine::verified]
     fn velocity(&self, x: f64, y: f64) -> Vector2<f64> {
         let mut u_total = Vector2::zeros();
         for element in &self.elements {
@@ -358,6 +381,7 @@ impl FlowElement for PotentialFlowField {
         u_total
     }
 
+    #[verified_engine::verified]
     fn stream_function(&self, x: f64, y: f64) -> f64 {
         let mut psi_total = 0.0;
         for element in &self.elements {
@@ -366,6 +390,7 @@ impl FlowElement for PotentialFlowField {
         psi_total
     }
 
+    #[verified_engine::verified]
     fn potential(&self, x: f64, y: f64) -> f64 {
         let mut phi_total = 0.0;
         for element in &self.elements {

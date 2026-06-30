@@ -6,6 +6,7 @@ use super::class_number::class_number;
 
 /// Calculates the weighted class number h_w(d) as defined in the paper.
 /// Note: The paper uses a convention where h_w(d) = 0 for d.rem_euclid(4) in {2, 3}.
+#[verified_engine::verified]
 pub fn weighted_class_number(d: i64) -> f64 {
     if d >= 0 {
         return 0.0;
@@ -25,6 +26,7 @@ pub fn weighted_class_number(d: i64) -> f64 {
 
 /// Calculates the Hurwitz-Kronecker class number H(D).
 /// H(D) = sum_{f^2 | D} h_w(D / f^2)
+#[verified_engine::verified]
 pub fn hurwitz_class_number(d: i64) -> f64 {
     if d > 0 {
         return 0.0;
@@ -47,6 +49,7 @@ pub fn hurwitz_class_number(d: i64) -> f64 {
 
 /// Verifies the summation formula for a given prime p.
 /// sum_{t^2 < p} H(t^2 - p) = (p - 2) / 3
+#[verified_engine::verified]
 pub fn verify_summation_formula(p: u64) -> bool {
     let p_i64 = p as i64;
     let mut sum = 0.0;

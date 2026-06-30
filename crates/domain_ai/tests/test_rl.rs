@@ -32,6 +32,7 @@ mod tests {
         type S = GridState;
         type A = Move;
 
+        #[verified_engine::verified]
         fn transition_probability(
             &self,
             next_state: &Self::S,
@@ -50,6 +51,7 @@ mod tests {
             }
         }
 
+        #[verified_engine::verified]
         fn reward(&self, current_state: &Self::S, _action: &Self::A, next_state: &Self::S) -> f64 {
             if *current_state == GridState::Path && *next_state == GridState::Goal {
                 10.0
@@ -60,6 +62,7 @@ mod tests {
             }
         }
 
+        #[verified_engine::verified]
         fn actions(&self, state: &Self::S) -> Vec<Self::A> {
             match state {
                 GridState::Goal | GridState::Trap => vec![],
@@ -67,10 +70,12 @@ mod tests {
             }
         }
 
+        #[verified_engine::verified]
         fn discount_factor(&self) -> f64 {
             self.gamma
         }
 
+        #[verified_engine::verified]
         fn is_terminal(&self, state: &Self::S) -> bool {
             matches!(state, GridState::Goal | GridState::Trap)
         }
@@ -78,15 +83,18 @@ mod tests {
 
     struct RandomPolicy;
     impl Policy<GridState, Move> for RandomPolicy {
+        #[verified_engine::verified]
         fn probability(&self, _state: &GridState, _action: &Move) -> f64 {
             0.5
         }
+        #[verified_engine::verified]
         fn sample(&self, _state: &GridState) -> Move {
             Move::Forward // Simplified
         }
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bellman_equations() {
         let env = SimpleGridWorld { gamma: 0.9 };
         let policy = RandomPolicy;
@@ -124,6 +132,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_q_learning_agent() {
         let mut agent = TabularQAgent::new(0.1, 0.9, 0.1);
         let state = GridState::Start;
@@ -170,6 +179,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_deterministic_action_selection() {
         use rand::SeedableRng;
         use rand::rngs::StdRng;

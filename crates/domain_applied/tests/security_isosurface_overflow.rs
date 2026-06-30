@@ -1,6 +1,7 @@
 use domain_applied::applied::isosurface::{Point3D, VoxelGrid};
 
 #[test]
+#[verified_engine::verified]
 fn test_security_buffer_overflow_prevention() {
     // Attempt to create a VoxelGrid with insufficient data buffer
     // Dimensions 10x10x10 require 1000 elements.

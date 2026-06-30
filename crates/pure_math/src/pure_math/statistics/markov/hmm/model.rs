@@ -89,6 +89,7 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// - `DimensionMismatch`: If dimensions are inconsistent
     /// - `InvalidProbability`: If probabilities are invalid
     /// - `NotStochastic`: If matrices are not stochastic
+    #[verified_engine::verified]
     pub fn new(
         initial: DVector<T>,
         transitions: DMatrix<T>,
@@ -132,26 +133,31 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     }
 
     /// Returns the number of hidden states.
+    #[verified_engine::verified]
     pub fn num_states(&self) -> usize {
         self.num_states
     }
 
     /// Returns the number of observable symbols.
+    #[verified_engine::verified]
     pub fn num_observations(&self) -> usize {
         self.num_observations
     }
 
     /// Returns the initial state probabilities.
+    #[verified_engine::verified]
     pub fn initial(&self) -> &DVector<T> {
         &self.initial
     }
 
     /// Returns the transition matrix.
+    #[verified_engine::verified]
     pub fn transitions(&self) -> &DMatrix<T> {
         &self.transitions
     }
 
     /// Returns the emission matrix.
+    #[verified_engine::verified]
     pub fn emissions(&self) -> &DMatrix<T> {
         &self.emissions
     }

@@ -15,6 +15,7 @@ pub struct SimplicialComplex {
 
 impl SimplicialComplex {
     /// Creates a new empty simplicial complex.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             simplices: Vec::new(),
@@ -30,6 +31,7 @@ impl SimplicialComplex {
     ///
     /// Returns a [`TdaError::InvalidSimplex`] if generating the faces of the simplex fails
     /// (e.g., due to duplicate vertices or other invalid structural states).
+    #[verified_engine::verified]
     pub fn add_simplex(&mut self, simplex: Simplex) -> Result<(), TdaError> {
         let dim = simplex.dimension();
 
@@ -61,6 +63,7 @@ impl SimplicialComplex {
     /// assert_eq!(complex.count_simplices(0), 2); // 2 vertices
     /// assert_eq!(complex.count_simplices(1), 1); // 1 edge
     /// ```
+    #[verified_engine::verified]
     pub fn count_simplices(&self, dimension: usize) -> usize {
         if dimension >= self.simplices.len() {
             0
@@ -70,6 +73,7 @@ impl SimplicialComplex {
     }
 
     /// Returns all simplices of a given dimension.
+    #[verified_engine::verified]
     pub fn get_simplices(&self, dimension: usize) -> Vec<Simplex> {
         if dimension >= self.simplices.len() {
             Vec::new()
@@ -79,6 +83,7 @@ impl SimplicialComplex {
     }
 
     /// Returns the maximum dimension of any simplex in the complex.
+    #[verified_engine::verified]
     pub fn dimension(&self) -> usize {
         if self.simplices.is_empty() {
             0
@@ -88,6 +93,7 @@ impl SimplicialComplex {
     }
 
     /// Checks if the complex contains a given simplex.
+    #[verified_engine::verified]
     pub fn contains(&self, simplex: &Simplex) -> bool {
         let dim = simplex.dimension();
         if dim >= self.simplices.len() {
@@ -99,6 +105,7 @@ impl SimplicialComplex {
 }
 
 impl Default for SimplicialComplex {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
@@ -147,6 +154,7 @@ impl Default for SimplicialComplex {
 /// println!("Vertices: {}", complex.count_simplices(0));
 /// println!("Edges: {}", complex.count_simplices(1));
 /// ```
+#[verified_engine::verified]
 pub fn vietoris_rips_complex(
     cloud: &PointCloud,
     radius: f64,
@@ -202,6 +210,7 @@ mod tests {
     use crate::pure_math::statistics::tda::core::Point2D;
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplicial_complex_add_edge() {
         let mut complex = SimplicialComplex::new();
         let edge = Simplex::new(vec![0, 1]).unwrap();
@@ -213,6 +222,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplicial_complex_add_triangle() {
         let mut complex = SimplicialComplex::new();
         let triangle = Simplex::new(vec![0, 1, 2]).unwrap();
@@ -225,6 +235,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_simplicial_complex_contains() {
         let mut complex = SimplicialComplex::new();
         let edge = Simplex::new(vec![0, 1]).unwrap();
@@ -235,6 +246,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_vietoris_rips_three_points_small_radius() {
         // Three points forming a right triangle
         let points = vec![
@@ -251,6 +263,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_vietoris_rips_three_points_medium_radius() {
         let points = vec![
             Point2D::new(0.0, 0.0),
@@ -267,6 +280,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_vietoris_rips_three_points_large_radius() {
         let points = vec![
             Point2D::new(0.0, 0.0),
@@ -283,6 +297,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_vietoris_rips_invalid_radius() {
         let points = vec![Point2D::new(0.0, 0.0), Point2D::new(1.0, 0.0)];
         let cloud = PointCloud::new(points).unwrap();
@@ -292,6 +307,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_vietoris_rips_square() {
         // Four points forming a square
         let points = vec![

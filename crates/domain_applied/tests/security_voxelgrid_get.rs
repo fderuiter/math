@@ -1,6 +1,7 @@
 use domain_applied::applied::isosurface::{Point3D, VoxelGrid};
 
 #[test]
+#[verified_engine::verified]
 fn test_voxelgrid_panic_on_malformed_data() {
     // Attempt to create a VoxelGrid with insufficient data buffer
     // 10x10x10 = 1000 voxels required, but only 1 provided.

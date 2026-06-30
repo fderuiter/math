@@ -7,5 +7,6 @@ pub trait PharmacokineticModel {
     ///
     /// # Returns
     /// The concentration at time `t`.
+    #[verified_engine::verified]
     fn concentration(&self, t: f64) -> f64;
 }

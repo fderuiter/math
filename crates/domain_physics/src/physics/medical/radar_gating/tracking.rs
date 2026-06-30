@@ -18,6 +18,7 @@ pub struct ConstantVelocityModel {
 }
 
 impl ConstantVelocityModel {
+    #[verified_engine::verified]
     pub fn new(process_noise_var: f64, measurement_noise_var: f64) -> Self {
         Self {
             process_noise_var,
@@ -27,22 +28,26 @@ impl ConstantVelocityModel {
 }
 
 impl KalmanModel<f64> for ConstantVelocityModel {
+    #[verified_engine::verified]
     fn transition_matrix(&self, dt: f64) -> DMatrix<f64> {
         // [1, dt]
         // [0, 1 ]
         DMatrix::from_row_slice(2, 2, &[1.0, dt, 0.0, 1.0])
     }
 
+    #[verified_engine::verified]
     fn measurement_matrix(&self) -> DMatrix<f64> {
         // [1, 0] -> Measure position only
         DMatrix::from_row_slice(1, 2, &[1.0, 0.0])
     }
 
+    #[verified_engine::verified]
     fn process_noise(&self, _dt: f64) -> DMatrix<f64> {
         // Simplified Q: I * var
         DMatrix::identity(2, 2) * self.process_noise_var
     }
 
+    #[verified_engine::verified]
     fn measurement_noise(&self) -> DMatrix<f64> {
         // R is 1x1 matrix for scalar measurement
         DMatrix::from_row_slice(1, 1, &[self.measurement_noise_var])
@@ -64,6 +69,7 @@ impl TrackingFilter {
     /// * `initial_amplitude` - Initial position guess.
     /// * `dt` - Time step in seconds.
     /// * `model` - The physics model implementation (e.g., `ConstantVelocityModel`).
+    #[verified_engine::verified]
     pub fn new(initial_amplitude: f64, dt: f64, model: ConstantVelocityModel) -> Self {
         let initial_state = DVector::from_vec(vec![initial_amplitude, 0.0]);
         let initial_covariance = DMatrix::identity(2, 2);
@@ -78,11 +84,13 @@ impl TrackingFilter {
     }
 
     /// Predicts the next state.
+    #[verified_engine::verified]
     pub fn predict(&mut self) {
         self.inner.predict();
     }
 
     /// Updates the state with a new measurement.
+    #[verified_engine::verified]
     pub fn update(&mut self, measured_amplitude: f64) {
         // Optimization: Use from_column_slice to avoid extra allocation if vector was larger,
         // though here we just need a 1-element vector. from_element is cleaner.
@@ -97,11 +105,13 @@ impl TrackingFilter {
     }
 
     /// Returns the current estimated amplitude (position).
+    #[verified_engine::verified]
     pub fn amplitude(&self) -> f64 {
         self.inner.state[0]
     }
 
     /// Returns the current estimated velocity.
+    #[verified_engine::verified]
     pub fn velocity(&self) -> f64 {
         self.inner.state[1]
     }
@@ -109,6 +119,7 @@ impl TrackingFilter {
     /// Returns the current state covariance matrix.
     ///
     /// Useful for visualizing uncertainty or debugging filter convergence.
+    #[verified_engine::verified]
     pub fn covariance(&self) -> &DMatrix<f64> {
         &self.inner.covariance
     }

@@ -4,6 +4,7 @@ use num_complex::Complex64;
 /// Calculates the linear magnification factor of a conformal map w = f(z) at z0.
 ///
 /// Returns $|f'(z_0)|$.
+#[verified_engine::verified]
 pub fn conformal_scale_factor<F>(derivative_f: F, z0: Complex64) -> f64
 where
     F: Fn(Complex64) -> Complex64,
@@ -14,6 +15,7 @@ where
 /// Calculates the area magnification factor of a conformal map w = f(z) at z0.
 ///
 /// Returns $|f'(z_0)|^2$.
+#[verified_engine::verified]
 pub fn area_magnification<F>(derivative_f: F, z0: Complex64) -> f64
 where
     F: Fn(Complex64) -> Complex64,
@@ -37,6 +39,7 @@ pub struct SchwarzChristoffel {
 }
 
 impl SchwarzChristoffel {
+    #[verified_engine::verified]
     pub fn new(prevertices: Vec<f64>, exponents: Vec<f64>, a: Complex64, b: Complex64) -> Self {
         assert_eq!(
             prevertices.len(),
@@ -52,6 +55,7 @@ impl SchwarzChristoffel {
     }
 
     /// Evaluates the derivative dw/dz at z.
+    #[verified_engine::verified]
     pub fn derivative(&self, z: Complex64) -> Complex64 {
         let mut prod = Complex64::new(1.0, 0.0);
         for (x, k) in self.prevertices.iter().zip(self.exponents.iter()) {
@@ -65,6 +69,7 @@ impl SchwarzChristoffel {
     /// Integrates from a reference point `integration_start` to `z`.
     /// `w(z) = b + integral_{z_ref}^z f'(zeta) dzeta`.
     /// `b` is interpreted as `w(integration_start)`.
+    #[verified_engine::verified]
     pub fn transform(&self, z: Complex64, integration_start: Complex64, steps: usize) -> Complex64 {
         let gamma = |t: f64| integration_start + (z - integration_start) * Complex64::new(t, 0.0);
         let dgamma = |_t: f64| z - integration_start;
@@ -82,6 +87,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_magnification() {
         // w = z^2 => w' = 2z
         let derivative = |z: Complex64| 2.0 * z;
@@ -96,6 +102,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_schwarz_christoffel_sqrt() {
         // Map z to z^0.5 (sqrt).
         // w' = 0.5 z^-0.5.

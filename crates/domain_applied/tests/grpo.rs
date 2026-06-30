@@ -1,6 +1,7 @@
 use domain_applied::applied::grpo::formulas::*;
 
 #[test]
+#[verified_engine::verified]
 fn test_response_level_advantage() {
     let rewards = vec![1.0, 2.0, 3.0, 4.0, 5.0];
     let advantage = response_level_advantage(&rewards, 3.0);
@@ -14,6 +15,7 @@ fn test_response_level_advantage() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_clipped_surrogate_objective() {
     let pi_thetas = vec![1.1, 1.3];
     let pi_theta_olds = vec![1.0, 1.0];
@@ -39,6 +41,7 @@ fn test_clipped_surrogate_objective() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_uncertainty_reward() {
     let reward_max = uncertainty_reward(0.5);
     assert!((reward_max - 1.0).abs() < 1e-9);
@@ -51,6 +54,7 @@ fn test_uncertainty_reward() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_pairwise_distance_bleu() {
     let dist = pairwise_distance_bleu("hello world", "hello world");
     assert!((dist - 0.0).abs() < 1e-9);
@@ -60,12 +64,14 @@ fn test_pairwise_distance_bleu() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_repetition_penalty() {
     let penalty = repetition_penalty(10, 100, 1.0);
     assert!((penalty - 0.1).abs() < 1e-9);
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_composite_reward() {
     let reward = composite_reward(0.8, 0.1);
     assert!((reward - 0.7).abs() < 1e-9);
@@ -75,12 +81,14 @@ fn test_composite_reward() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_binary_reward() {
     assert_eq!(binary_reward(true), 1);
     assert_eq!(binary_reward(false), 0);
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_solver_empirical_accuracy() {
     let responses = vec![
         "apple".to_string(),
@@ -95,6 +103,7 @@ fn test_solver_empirical_accuracy() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_kl_divergence_lower_bound() {
     let bound = kl_divergence_lower_bound(0.5, 1.0);
     assert!((bound - 0.125).abs() < 1e-9);

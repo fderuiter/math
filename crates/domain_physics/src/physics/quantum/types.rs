@@ -18,6 +18,7 @@ pub struct QuantumState {
 }
 
 impl TheoryDescribable for QuantumState {
+    #[verified_engine::verified]
     fn theory_description(&self) -> String {
         // Use a heuristic to detect the |0> spin state
         if self.vector.len() == 2
@@ -32,10 +33,12 @@ impl TheoryDescribable for QuantumState {
         }
     }
 
+    #[verified_engine::verified]
     fn theory_citation(&self) -> String {
         "[cite:quantum_mechanics]".to_string()
     }
 
+    #[verified_engine::verified]
     fn available_descriptions(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("|0>".to_string(), "|0> spin state".to_string());
@@ -46,6 +49,7 @@ impl TheoryDescribable for QuantumState {
 
 impl QuantumState {
     /// Returns the |0> spin state (spin up along Z)
+    #[verified_engine::verified]
     pub fn spin_zero() -> Self {
         let zero = Complex::new(0.0, 0.0);
         let one = Complex::new(1.0, 0.0);
@@ -56,6 +60,7 @@ impl QuantumState {
     ///
     /// # Arguments
     /// * `vector` - A `DVector<Complex<f64>>` representing the state.
+    #[verified_engine::verified]
     pub fn new(vector: DVector<Complex<f64>>) -> Self {
         Self { vector }
     }
@@ -63,6 +68,7 @@ impl QuantumState {
     /// Calculates the norm (magnitude) of the state vector.
     ///
     /// \sqrt{\langle\psi|\psi\rangle}
+    #[verified_engine::verified]
     pub fn norm(&self) -> f64 {
         self.vector.norm()
     }
@@ -72,6 +78,7 @@ impl QuantumState {
     /// |\psi'\rangle = \frac{|\psi\rangle}{\sqrt{\langle\psi|\psi\rangle}}
     ///
     /// Returns a new QuantumState.
+    #[verified_engine::verified]
     pub fn normalize(&self) -> Self {
         let norm = self.norm();
         if norm == 0.0 {
@@ -97,6 +104,7 @@ impl QuantumState {
     ///
     /// # Returns
     /// The complex scalar result of \langle\psi|\phi\rangle.
+    #[verified_engine::verified]
     pub fn inner_product(&self, other: &QuantumState) -> Complex<f64> {
         self.vector.dotc(&other.vector)
     }
@@ -105,6 +113,7 @@ impl QuantumState {
     ///
     /// For a discrete state vector, this returns a vector of real probabilities
     /// corresponding to each basis state: P_i = |\psi_i|^2.
+    #[verified_engine::verified]
     pub fn probability_density(&self) -> DVector<f64> {
         self.vector.map(|c| c.norm_sqr())
     }
@@ -122,6 +131,7 @@ pub struct QuantumOperator {
 
 impl QuantumOperator {
     /// Creates a new QuantumOperator from a complex matrix.
+    #[verified_engine::verified]
     pub fn new(matrix: DMatrix<Complex<f64>>) -> Self {
         Self { matrix }
     }
@@ -129,6 +139,7 @@ impl QuantumOperator {
     /// Checks if the operator is Hermitian (Self-adjoint).
     ///
     /// \hat{A} = \hat{A}^\dagger
+    #[verified_engine::verified]
     pub fn is_hermitian(&self, tolerance: f64) -> bool {
         let adjoint = self.matrix.adjoint();
         // Using a reference avoids an unnecessary heap allocation of the intermediate matrix
@@ -138,6 +149,7 @@ impl QuantumOperator {
     /// Calculates the expectation value of the operator for a given state.
     ///
     /// \langle \hat{A} \rangle = \langle \psi | \hat{A} | \psi \rangle
+    #[verified_engine::verified]
     pub fn expectation_value(&self, state: &QuantumState) -> Complex<f64> {
         // <psi| (A |psi>)
         let bra = state.vector.adjoint();
@@ -148,6 +160,7 @@ impl QuantumOperator {
     /// Calculates the commutator with another operator.
     ///
     /// [\hat{A}, \hat{B}] = \hat{A}\hat{B} - \hat{B}\hat{A}
+    #[verified_engine::verified]
     pub fn commutator(&self, other: &QuantumOperator) -> QuantumOperator {
         let ab = &self.matrix * &other.matrix;
         let ba = &other.matrix * &self.matrix;

@@ -5,6 +5,7 @@ pub struct FractranProgram {
 }
 
 impl FractranProgram {
+    #[verified_engine::verified]
     pub fn new(fractions: Vec<Rational>) -> Self {
         Self { fractions }
     }

@@ -13,6 +13,7 @@ use pure_math::pure_math::analysis::ode::{OdeSystem, Solver, SolverExt};
 ///
 /// Formula: $\lambda \approx \frac{1}{n} \sum_{i=0}^{n-1} \ln | f'(x_i) |$
 /// where $f'(x) = r(1 - 2x)$.
+#[verified_engine::verified]
 pub fn logistic_lyapunov(r: f64, x0: f64, n: usize) -> f64 {
     let mut map = LogisticMap::new(r, x0);
     let mut sum_logs = 0.0;
@@ -42,6 +43,7 @@ pub fn logistic_lyapunov(r: f64, x0: f64, n: usize) -> f64 {
 ///
 /// # Returns
 /// Estimated largest Lyapunov exponent.
+#[verified_engine::verified]
 pub fn lorenz_lyapunov<S, Sol>(
     system: &S,
     solver: &mut Sol,

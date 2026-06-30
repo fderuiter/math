@@ -70,6 +70,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     /// # Errors
     ///
     /// - `InvalidGenerator`: If the matrix is not a valid generator
+    #[verified_engine::verified]
     pub fn new(generator: DMatrix<T>) -> Result<Self> {
         let n = generator.nrows();
 
@@ -89,11 +90,13 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     }
 
     /// Returns the generator matrix.
+    #[verified_engine::verified]
     pub fn generator(&self) -> &DMatrix<T> {
         &self.generator
     }
 
     /// Returns the number of states.
+    #[verified_engine::verified]
     pub fn num_states(&self) -> usize {
         self.num_states
     }
@@ -116,6 +119,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     /// # Implementation
     ///
     /// Uses the scaling and squaring method with Padé approximation.
+    #[verified_engine::verified]
     pub fn transition_probabilities(&self, t: T) -> Result<DMatrix<T>> {
         if !t.is_finite() || t < T::zero() {
             return Err(MarkovError::InvalidState {
@@ -139,6 +143,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     ///
     /// This is a simplified implementation. For production use, consider using
     /// a specialized library like `nalgebra::linalg::Exp`.
+    #[verified_engine::verified]
     fn matrix_exponential(&self, a: &DMatrix<T>) -> Result<DMatrix<T>> {
         let n = a.nrows();
 
@@ -193,6 +198,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     }
 
     /// Computes the 1-norm of a matrix (maximum absolute column sum).
+    #[verified_engine::verified]
     fn matrix_norm_1(&self, a: &DMatrix<T>) -> f64 {
         let mut max_sum: f64 = 0.0;
         for j in 0..a.ncols() {
@@ -220,6 +226,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     ///
     /// This function will panic if `T::from_f64` fails when attempting to cast
     /// numeric constants (e.g., tolerances or exponents) to the generic type `T`.
+    #[verified_engine::verified]
     pub fn steady_state(&self) -> Option<DVector<T>> {
         // For irreducible CTMCs, we can find the steady state by computing
         // the null space of G^T and normalizing.
@@ -274,6 +281,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     ///
     /// The expected time satisfies: Q·t = -1, where Q is the transient
     /// submatrix of the generator.
+    #[verified_engine::verified]
     pub fn expected_absorption_times(&self, transient_states: &[usize]) -> Result<DVector<T>> {
         let n_t = transient_states.len();
         if n_t == 0 {
@@ -343,6 +351,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     /// assert!(!trajectory.is_empty());
     /// assert_eq!(trajectory[0], (0.0, 0));
     /// ```
+    #[verified_engine::verified]
     pub fn simulate_trajectory<R: rand::Rng>(
         &self,
         initial_state: usize,

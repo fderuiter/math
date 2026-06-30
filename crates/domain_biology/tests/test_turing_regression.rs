@@ -7,6 +7,7 @@ struct GrayScottKinetics {
 }
 
 impl ReactionKinetics<2> for GrayScottKinetics {
+    #[verified_engine::verified]
     fn reaction(&self, concentrations: [f64; 2]) -> [f64; 2] {
         let u = concentrations[0];
         let v = concentrations[1];
@@ -21,6 +22,7 @@ impl ReactionKinetics<2> for GrayScottKinetics {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_turing_regression() {
     let size = 100;
     let iterations = 100;
@@ -49,6 +51,7 @@ fn test_turing_regression() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_custom_kinetics_strategy() {
     let size = 50;
     let iterations = 10;

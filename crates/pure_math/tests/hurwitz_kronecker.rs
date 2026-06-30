@@ -4,6 +4,7 @@ use pure_math::pure_math::number_theory::hurwitz_kronecker::{
 };
 
 #[test]
+#[verified_engine::verified]
 fn test_class_number() {
     assert_eq!(class_number(-3), 1);
     assert_eq!(class_number(-4), 1);
@@ -17,6 +18,7 @@ fn test_class_number() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_weighted_class_number() {
     assert_eq!(weighted_class_number(-3), 1.0 / 3.0);
     assert_eq!(weighted_class_number(-4), 1.0 / 2.0);
@@ -26,6 +28,7 @@ fn test_weighted_class_number() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_hurwitz_class_number() {
     // H(-1) = h_w(-1) = 0
     assert_eq!(hurwitz_class_number(-1), 0.0);
@@ -40,6 +43,7 @@ fn test_hurwitz_class_number() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_summation_formula_example() {
     assert!(verify_summation_formula(5));
     assert!(verify_summation_formula(7));
@@ -47,6 +51,7 @@ fn test_summation_formula_example() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_summation_formula_large_scale() {
     let primes = pure_math::pure_math::number_theory::primes::primes_up_to(100);
     for p in primes {

@@ -3,6 +3,7 @@ use crate::math_types::{Integer, ops::Pow, ops::RemRounding};
 use crate::pure_math::number_theory::primes::is_prime;
 use thiserror::Error;
 
+#[verified_engine::verified]
 pub fn sigma(n: u64) -> u64 {
     let mut sum = 0;
     for i in 1..=(n as f64).sqrt() as u64 {
@@ -26,6 +27,7 @@ pub enum AmbsError {
     ConversionError,
 }
 
+#[verified_engine::verified]
 pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
     let mut a_copy = a.clone();
     a_copy = a_copy.rem_euc(m);
@@ -35,6 +37,7 @@ pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
     a_copy.invert(m).ok()
 }
 
+#[verified_engine::verified]
 pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     let mut factors = Vec::new();
     let mut count = 0;
@@ -64,6 +67,7 @@ pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     factors
 }
 
+#[verified_engine::verified]
 pub fn precompute_valid_prime_powers(limit_p: u64, max_e: u32) -> Vec<(u64, u32, u64)> {
     let mut valid = Vec::new();
     for p in 3..=limit_p {
@@ -101,6 +105,7 @@ pub struct AmbsDsp {
 }
 
 impl AmbsDsp {
+    #[verified_engine::verified]
     pub fn new(limit_p: u64, max_e: u32, b_stop: f64) -> Self {
         Self {
             valid_powers: precompute_valid_prime_powers(limit_p, max_e),
@@ -109,6 +114,7 @@ impl AmbsDsp {
         }
     }
 
+    #[verified_engine::verified]
     pub fn build_prefix(&mut self, current_p: u64, last_p_index: usize, h_max_remaining: f64) {
         if (current_p as f64) >= self.b_stop {
             self.prefix_pool.push(current_p);
@@ -135,6 +141,7 @@ impl AmbsDsp {
     }
 
     #[allow(clippy::too_many_lines)]
+    #[verified_engine::verified]
     pub fn tonelli_shanks(n: &Integer, p: &Integer) -> Result<Vec<Integer>, AmbsError> {
         let n_mod = n.clone().rem_euc(p);
         if n_mod == 0 {
@@ -235,6 +242,7 @@ impl AmbsDsp {
         }
     }
 
+    #[verified_engine::verified]
     fn hensels_lifting(a: &Integer, p: &Integer, k: u32) -> Result<Vec<Integer>, AmbsError> {
         let roots_mod_p = Self::tonelli_shanks(a, p)?;
         let mut final_roots = Vec::new();
@@ -273,6 +281,7 @@ impl AmbsDsp {
         Ok(final_roots)
     }
 
+    #[verified_engine::verified]
     fn crt(residues: &[Integer], moduli: &[Integer]) -> Option<Integer> {
         if residues.is_empty() || residues.len() != moduli.len() {
             return None;
@@ -296,6 +305,7 @@ impl AmbsDsp {
         Some(result.rem_euc(&total_modulus))
     }
 
+    #[verified_engine::verified]
     fn cartesian_product(lists: &[Vec<Integer>]) -> Vec<Vec<Integer>> {
         let mut res = vec![vec![]];
         for list in lists {
@@ -312,6 +322,7 @@ impl AmbsDsp {
         res
     }
 
+    #[verified_engine::verified]
     pub fn compute_modular_square_roots(
         x_l: &Integer,
         s_l: &Integer,
@@ -347,6 +358,7 @@ impl AmbsDsp {
         Ok(final_roots)
     }
 
+    #[verified_engine::verified]
     pub fn search(&mut self, n_max_str: &str) -> Result<Option<Integer>, AmbsError> {
         let n_max = Integer::from_str_radix(n_max_str, 10)
             .map_err(|_| AmbsError::ParseError("err".to_string()))?;
@@ -408,6 +420,7 @@ impl AmbsDsp {
     }
 }
 
+#[verified_engine::verified]
 pub fn solve_quasiperfect_modularity(
     _s_l_str: &str,
     _n_l_str: &str,

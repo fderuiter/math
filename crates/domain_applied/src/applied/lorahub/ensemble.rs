@@ -23,6 +23,7 @@ impl LoraEnsemble<LinearCombinationStrategy, L1RegularizationStrategy> {
     ///
     /// # Arguments
     /// * `modules` - A vector of LoRA state dictionaries.
+    #[verified_engine::verified]
     pub fn new(modules: Vec<LoraStateDict>) -> Self {
         Self {
             modules,
@@ -36,6 +37,7 @@ impl LoraEnsemble<LinearCombinationStrategy, L1RegularizationStrategy> {
 
 impl<C: CombinationStrategy, O: ObjectiveStrategy> LoraEnsemble<C, O> {
     /// Creates a new `LoraEnsemble` with custom strategies.
+    #[verified_engine::verified]
     pub fn with_strategies(
         modules: Vec<LoraStateDict>,
         combination_strategy: C,
@@ -56,6 +58,7 @@ impl<C: CombinationStrategy, O: ObjectiveStrategy> LoraEnsemble<C, O> {
     /// # Returns
     /// A `Result` containing the combined `LoraStateDict`, or an error message
     /// if the inputs are invalid.
+    #[verified_engine::verified]
     pub fn combine(&self, weights: &[f64]) -> Result<LoraStateDict, LoraError> {
         self.combination_strategy.combine(&self.modules, weights)
     }
@@ -70,12 +73,14 @@ impl<C: CombinationStrategy, O: ObjectiveStrategy> LoraEnsemble<C, O> {
     /// * `weights` - The weights being evaluated.
     /// * `mock_loss` - The external loss value.
     /// * `alpha` - Regularization strength.
+    #[verified_engine::verified]
     pub fn evaluate_objective(&self, weights: &[f64], mock_loss: f64, alpha: f64) -> f64 {
         let strategy = L1RegularizationStrategy::new(alpha);
         strategy.evaluate(weights, mock_loss)
     }
 
     /// Calculates the objective score using the configured strategy.
+    #[verified_engine::verified]
     pub fn evaluate(&self, weights: &[f64], mock_loss: f64) -> f64 {
         self.objective_strategy.evaluate(weights, mock_loss)
     }

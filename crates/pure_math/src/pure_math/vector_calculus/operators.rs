@@ -5,6 +5,7 @@ const H: f64 = 1e-5;
 
 /// Computes the partial derivative of a scalar function `f` with respect to the
 /// `i`-th coordinate using a centered finite difference method.
+#[verified_engine::verified]
 fn partial_derivative<F>(i: usize, point: &Vector3<f64>, f: F) -> f64
 where
     F: Fn(&Vector3<f64>) -> f64,
@@ -18,6 +19,7 @@ where
 
 /// Computes the gradient of a scalar field $\nabla \Phi$.
 /// Returns the components of the gradient in the local basis vectors of the coordinate system.
+#[verified_engine::verified]
 pub fn gradient<S, F>(coords: &S, field: F, point: &Vector3<f64>) -> Vector3<f64>
 where
     S: OrthogonalCoordinateSystem,
@@ -36,6 +38,7 @@ where
 
 /// Computes the divergence of a vector field $\nabla \cdot \mathbf{A}$.
 /// The field `A` should return components in the curvilinear basis.
+#[verified_engine::verified]
 pub fn divergence<S, F>(coords: &S, field: F, point: &Vector3<f64>) -> f64
 where
     S: OrthogonalCoordinateSystem,
@@ -68,6 +71,7 @@ where
 
 /// Computes the curl of a vector field $\nabla \times \mathbf{A}$.
 /// Returns the components in the curvilinear basis.
+#[verified_engine::verified]
 pub fn curl<S, F>(coords: &S, field: F, point: &Vector3<f64>) -> Vector3<f64>
 where
     S: OrthogonalCoordinateSystem,
@@ -97,6 +101,7 @@ where
 }
 
 /// Computes the Laplacian of a scalar field $\nabla^2 \Phi$.
+#[verified_engine::verified]
 pub fn laplacian<S, F>(coords: &S, field: F, point: &Vector3<f64>) -> f64
 where
     S: OrthogonalCoordinateSystem,

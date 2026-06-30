@@ -28,6 +28,7 @@ pub struct SEIRDynamics {
 }
 
 impl OdeSystem<SEIRState> for SEIRDynamics {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &SEIRState) -> SEIRState {
         let s = state.s;
         let e = state.e;
@@ -69,14 +70,17 @@ pub struct SEIRModel<S: Solver<SEIRState> = RungeKutta4<SEIRState>> {
 }
 
 impl<S: Solver<SEIRState>> TimeStepper<SEIRState> for SEIRModel<S> {
+    #[verified_engine::verified]
     fn get_state(&self) -> &SEIRState {
         &self.state
     }
 
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut SEIRState {
         &mut self.state
     }
 
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         // Delegate stepping to the injected solver strategy.
         // pass &self.dynamics to avoid partial borrow of self.
@@ -96,36 +100,42 @@ pub struct SEIRModelBuilder {
 
 impl SEIRModelBuilder {
     /// Sets the total population size N.
+    #[verified_engine::verified]
     pub fn n(mut self, n: f64) -> Self {
         self.n = Some(n);
         self
     }
 
     /// Sets the initial infected count I0.
+    #[verified_engine::verified]
     pub fn i0(mut self, i0: f64) -> Self {
         self.i0 = Some(i0);
         self
     }
 
     /// Sets the transmission rate beta.
+    #[verified_engine::verified]
     pub fn beta(mut self, beta: f64) -> Self {
         self.beta = Some(beta);
         self
     }
 
     /// Sets the incubation rate sigma.
+    #[verified_engine::verified]
     pub fn sigma(mut self, sigma: f64) -> Self {
         self.sigma = Some(sigma);
         self
     }
 
     /// Sets the recovery rate gamma.
+    #[verified_engine::verified]
     pub fn gamma(mut self, gamma: f64) -> Self {
         self.gamma = Some(gamma);
         self
     }
 
     /// Builds the SEIRModel, validating all parameters.
+    #[verified_engine::verified]
     pub fn build(self) -> Result<SEIRModel<RungeKutta4<SEIRState>>, EpidemiologyError> {
         let n = self.n.ok_or(EpidemiologyError::MissingParameter {
             name: "n (population)".to_string(),
@@ -171,11 +181,13 @@ impl SEIRModelBuilder {
 
 impl SEIRModel<RungeKutta4<SEIRState>> {
     /// Returns a new builder for the SEIRModel.
+    #[verified_engine::verified]
     pub fn builder() -> SEIRModelBuilder {
         SEIRModelBuilder::default()
     }
 
     /// Constructs a new SEIRModel with the given parameters using RungeKutta4.
+    #[verified_engine::verified]
     pub fn new(
         n: f64,
         i0: f64,
@@ -195,6 +207,7 @@ impl SEIRModel<RungeKutta4<SEIRState>> {
 
 impl<S: Solver<SEIRState>> SEIRModel<S> {
     /// Advances the state by dt using the configured solver.
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         <Self as TimeStepper<SEIRState>>::step(self, dt);
     }
@@ -214,32 +227,38 @@ impl<S: Solver<SEIRState>> SEIRModel<S> {
     }
 
     /// Returns the transmission rate beta.
+    #[verified_engine::verified]
     pub fn beta(&self) -> f64 {
         self.dynamics.beta
     }
 
     /// Returns the incubation rate sigma.
+    #[verified_engine::verified]
     pub fn sigma(&self) -> f64 {
         self.dynamics.sigma
     }
 
     /// Returns the recovery rate gamma.
+    #[verified_engine::verified]
     pub fn gamma(&self) -> f64 {
         self.dynamics.gamma
     }
 
     /// Returns the total population size N.
+    #[verified_engine::verified]
     pub fn n(&self) -> f64 {
         self.dynamics.n
     }
 
     /// Returns the current state.
+    #[verified_engine::verified]
     pub fn state(&self) -> &SEIRState {
         &self.state
     }
 }
 
 impl<S: Solver<SEIRState>> OdeSystem<SEIRState> for SEIRModel<S> {
+    #[verified_engine::verified]
     fn derivative(&self, t: f64, state: &SEIRState) -> SEIRState {
         // Delegate to the pure dynamics component
         self.dynamics.derivative(t, state)
@@ -252,6 +271,7 @@ mod tests {
     use pure_math::pure_math::analysis::ode::{Euler, RungeKutta4};
 
     #[test]
+    #[verified_engine::verified]
     fn test_builder() {
         let model = SEIRModel::builder()
             .n(1000.0)
@@ -267,6 +287,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_builder_missing_param() {
         let model = SEIRModel::builder().n(1000.0).build();
         assert!(matches!(
@@ -276,6 +297,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_seir_step_with_rk4() {
         let n = 1000.0;
         let i0 = 10.0;
@@ -295,6 +317,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_swapping_solver() {
         let n = 1000.0;
         let i0 = 10.0;

@@ -17,6 +17,7 @@ pub type Matrix = DMatrix<f64>;
 /// # Geometric Interpretation
 /// The dot product is a measure of similarity. If a weight vector aligns with an input vector,
 /// the activation is high. Geometrically, it relates to the cosine of the angle between them.
+#[verified_engine::verified]
 pub fn dot_product(a: &Vector, b: &Vector) -> Scalar {
     a.dot(b)
 }
@@ -30,6 +31,7 @@ pub fn dot_product(a: &Vector, b: &Vector) -> Scalar {
 ///
 /// # Returns
 /// The pre-activation output (\mathbf{z}).
+#[verified_engine::verified]
 pub fn linear_transformation(x: &Vector, w: &Matrix, b: &Vector) -> Vector {
     // W is typically (output_dim, input_dim)
     // x is (input_dim)
@@ -48,12 +50,14 @@ impl DenseLayer {
     /// Creates a new dense layer with random initialization.
     ///
     /// This method uses the default thread-local RNG.
+    #[verified_engine::verified]
     pub fn new(input_dim: usize, output_dim: usize) -> Self {
         let mut rng = rand::thread_rng();
         Self::new_with_rng(input_dim, output_dim, &mut rng)
     }
 
     /// Creates a new dense layer with random initialization using the provided RNG.
+    #[verified_engine::verified]
     pub fn new_with_rng<R: rand::Rng + ?Sized>(
         input_dim: usize,
         output_dim: usize,
@@ -70,6 +74,7 @@ impl DenseLayer {
     }
 
     /// Performs the forward pass.
+    #[verified_engine::verified]
     pub fn forward(&self, x: &Vector) -> Vector {
         linear_transformation(x, &self.weights, &self.bias)
     }

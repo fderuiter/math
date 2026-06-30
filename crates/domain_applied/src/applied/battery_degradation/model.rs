@@ -8,12 +8,15 @@ use verified_engine::Theory;
 pub trait DegradationModel {
     /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
     /// for a given depth-of-discharge (DoD).
+    #[verified_engine::verified]
     fn n70(&self, d: DepthOfDischarge) -> Cycles;
 
     /// Calculates the remaining battery capacity after a number of cycles.
+    #[verified_engine::verified]
     fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity;
 
     /// Calculates the number of equivalent full cycles to reach a target capacity.
+    #[verified_engine::verified]
     fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles;
 }
 
@@ -32,6 +35,7 @@ pub struct PowerLawModel {
 
 impl PowerLawModel {
     /// Creates a new `PowerLawModel`.
+    #[verified_engine::verified]
     pub fn new(alpha: f64, beta: f64) -> Self {
         Self { alpha, beta }
     }
@@ -39,6 +43,7 @@ impl PowerLawModel {
     /// Returns the standard Li-ion model fitted to experimental data.
     ///
     /// alpha = 1.019e5, beta = -1.2639
+    #[verified_engine::verified]
     pub fn standard() -> Self {
         Self {
             alpha: 1.019e5,
@@ -50,12 +55,14 @@ impl PowerLawModel {
 impl DegradationModel for PowerLawModel {
     /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
     /// for a given depth-of-discharge (DoD).
+    #[verified_engine::verified]
     fn n70(&self, d: DepthOfDischarge) -> Cycles {
         let val = self.alpha * d.as_f64().powf(self.beta);
         Cycles::new_clamped(val)
     }
 
     /// Calculates the remaining battery capacity after a number of cycles.
+    #[verified_engine::verified]
     fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity {
         let n70_val = self.n70(d).as_f64();
         if n70_val == 0.0 {
@@ -68,6 +75,7 @@ impl DegradationModel for PowerLawModel {
     }
 
     /// Calculates the number of equivalent full cycles to reach a target capacity.
+    #[verified_engine::verified]
     fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles {
         let n70_val = self.n70(d).as_f64();
         let ln_target = target.as_f64().ln();
@@ -81,16 +89,19 @@ impl DegradationModel for PowerLawModel {
 impl PowerLawModel {
     /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
     /// for a given depth-of-discharge (DoD).
+    #[verified_engine::verified]
     pub fn n70(&self, d: DepthOfDischarge) -> Cycles {
         DegradationModel::n70(self, d)
     }
 
     /// Calculates the remaining battery capacity after a number of cycles.
+    #[verified_engine::verified]
     pub fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity {
         DegradationModel::capacity(self, n, d)
     }
 
     /// Calculates the number of equivalent full cycles to reach a target capacity.
+    #[verified_engine::verified]
     pub fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles {
         DegradationModel::cycles_to_capacity(self, target, d)
     }
@@ -101,6 +112,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_standard_model_n70() {
         let model = PowerLawModel::standard();
 
@@ -123,6 +135,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_capacity_decay() {
         let model = PowerLawModel::standard();
         let dod = DepthOfDischarge::new_clamped(60.0);
@@ -138,6 +151,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_cycles_to_capacity() {
         let model = PowerLawModel::standard();
         let dod = DepthOfDischarge::new_clamped(50.0);
@@ -153,8 +167,10 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_trait_implementation() {
         // This function accepts any implementation of DegradationModel
+        #[verified_engine::verified]
         fn evaluate_model<M: DegradationModel>(model: &M) -> f64 {
             let d = DepthOfDischarge::new_clamped(50.0);
             model.n70(d).as_f64()

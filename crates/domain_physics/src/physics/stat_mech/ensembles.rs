@@ -10,6 +10,7 @@ use super::KB;
 ///
 /// # Returns
 /// * `f64` - The unnormalized probability weight.
+#[verified_engine::verified]
 pub fn boltzmann_factor(energy: f64, temperature: f64) -> f64 {
     if temperature <= 0.0 {
         // Strictly speaking, T=0 is a singularity for this formula.
@@ -37,6 +38,7 @@ pub fn boltzmann_factor(energy: f64, temperature: f64) -> f64 {
 ///
 /// # Returns
 /// * `f64` - The partition function Z.
+#[verified_engine::verified]
 pub fn calculate_partition_function(energies: &[f64], temperature: f64) -> f64 {
     energies
         .iter()
@@ -54,6 +56,7 @@ pub fn calculate_partition_function(energies: &[f64], temperature: f64) -> f64 {
 ///
 /// # Returns
 /// * `f64` - Helmholtz Free Energy in Joules.
+#[verified_engine::verified]
 pub fn helmholtz_free_energy(partition_function: f64, temperature: f64) -> f64 {
     -KB * temperature * partition_function.ln()
 }
@@ -68,6 +71,7 @@ pub fn helmholtz_free_energy(partition_function: f64, temperature: f64) -> f64 {
 ///
 /// # Returns
 /// * `f64` - Internal Energy U in Joules.
+#[verified_engine::verified]
 pub fn average_energy(energies: &[f64], temperature: f64) -> f64 {
     let z = calculate_partition_function(energies, temperature);
     if z == 0.0 {
@@ -91,6 +95,7 @@ pub fn average_energy(energies: &[f64], temperature: f64) -> f64 {
 ///
 /// # Returns
 /// * `f64` - Entropy S in J/K.
+#[verified_engine::verified]
 pub fn entropy(internal_energy: f64, free_energy: f64, temperature: f64) -> f64 {
     if temperature == 0.0 {
         return 0.0;
@@ -103,6 +108,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_z_consistency() {
         // System with 1 state at E=0.
         // Z = e^(-beta*0) = 1.

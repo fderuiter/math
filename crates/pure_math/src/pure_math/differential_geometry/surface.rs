@@ -3,10 +3,12 @@ use nalgebra::{Matrix2, Point3, Vector3};
 /// Represents a parametric surface $r(u, v)$ in $\mathbb{R}^3$.
 pub trait ParametricSurface {
     /// Returns the 3D point at parameters $(u, v)$.
+    #[verified_engine::verified]
     fn position(&self, u: f64, v: f64) -> Point3<f64>;
 
     /// Returns the partial derivative $\frac{\partial r}{\partial u}$.
     /// Default implementation uses finite differences.
+    #[verified_engine::verified]
     fn partial_u(&self, u: f64, v: f64) -> Vector3<f64> {
         let h = 1e-6;
         (self.position(u + h, v) - self.position(u - h, v)) / (2.0 * h)
@@ -14,6 +16,7 @@ pub trait ParametricSurface {
 
     /// Returns the partial derivative $\frac{\partial r}{\partial v}$.
     /// Default implementation uses finite differences.
+    #[verified_engine::verified]
     fn partial_v(&self, u: f64, v: f64) -> Vector3<f64> {
         let h = 1e-6;
         (self.position(u, v + h) - self.position(u, v - h)) / (2.0 * h)
@@ -24,31 +27,39 @@ pub trait ParametricSurface {
 /// Separating these satisfies the Interface Segregation Principle.
 pub trait SurfaceAnalysis {
     /// Returns the unit normal vector $\mathbf{n} = \frac{r_u \times r_v}{|r_u \times r_v|}$.
+    #[verified_engine::verified]
     fn unit_normal(&self, u: f64, v: f64) -> Vector3<f64>;
 
     /// Computes the First Fundamental Form coefficients $(E, F, G)$.
     /// $E = r_u \cdot r_u$, $F = r_u \cdot r_v$, $G = r_v \cdot r_v$
+    #[verified_engine::verified]
     fn first_fundamental_form(&self, u: f64, v: f64) -> (f64, f64, f64);
 
     /// Computes the Second Fundamental Form coefficients $(L, M, N)$.
     /// $L = r_{uu} \cdot n$, $M = r_{uv} \cdot n$, $N = r_{vv} \cdot n$
+    #[verified_engine::verified]
     fn second_fundamental_form(&self, u: f64, v: f64) -> (f64, f64, f64);
 
     /// Computes the Gaussian Curvature $K = \frac{LN - M^2}{EG - F^2}$.
+    #[verified_engine::verified]
     fn gaussian_curvature(&self, u: f64, v: f64) -> f64;
 
     /// Computes the Mean Curvature $H = \frac{EN - 2FM + GL}{2(EG - F^2)}$.
+    #[verified_engine::verified]
     fn mean_curvature(&self, u: f64, v: f64) -> f64;
 
     /// Computes the metric tensor $g_{ij}$ and its inverse $g^{ij}$.
     /// Returns (g_det, g_inv)
+    #[verified_engine::verified]
     fn metric_tensor_inverse(&self, u: f64, v: f64) -> (f64, Matrix2<f64>);
 
     /// Differential area element $\sqrt{EG - F^2}$.
+    #[verified_engine::verified]
     fn area_element(&self, u: f64, v: f64) -> f64;
 }
 
 impl<T: ParametricSurface> SurfaceAnalysis for T {
+    #[verified_engine::verified]
     fn unit_normal(&self, u: f64, v: f64) -> Vector3<f64> {
         let ru = self.partial_u(u, v);
         let rv = self.partial_v(u, v);
@@ -56,12 +67,14 @@ impl<T: ParametricSurface> SurfaceAnalysis for T {
         cross.normalize()
     }
 
+    #[verified_engine::verified]
     fn first_fundamental_form(&self, u: f64, v: f64) -> (f64, f64, f64) {
         let ru = self.partial_u(u, v);
         let rv = self.partial_v(u, v);
         (ru.dot(&ru), ru.dot(&rv), rv.dot(&rv))
     }
 
+    #[verified_engine::verified]
     fn second_fundamental_form(&self, u: f64, v: f64) -> (f64, f64, f64) {
         let h = 1e-5;
         let n = self.unit_normal(u, v);
@@ -85,6 +98,7 @@ impl<T: ParametricSurface> SurfaceAnalysis for T {
         (ruu.dot(&n), ruv.dot(&n), rvv.dot(&n))
     }
 
+    #[verified_engine::verified]
     fn gaussian_curvature(&self, u: f64, v: f64) -> f64 {
         let (e, f, g) = self.first_fundamental_form(u, v);
         let (l, m, n) = self.second_fundamental_form(u, v);
@@ -95,6 +109,7 @@ impl<T: ParametricSurface> SurfaceAnalysis for T {
         det_ii / det_g
     }
 
+    #[verified_engine::verified]
     fn mean_curvature(&self, u: f64, v: f64) -> f64 {
         let (e, f, g) = self.first_fundamental_form(u, v);
         let (l, m, n) = self.second_fundamental_form(u, v);
@@ -104,6 +119,7 @@ impl<T: ParametricSurface> SurfaceAnalysis for T {
         (e * n - 2.0 * f * m + g * l) / (2.0 * det_g)
     }
 
+    #[verified_engine::verified]
     fn metric_tensor_inverse(&self, u: f64, v: f64) -> (f64, Matrix2<f64>) {
         let (e, f, g) = self.first_fundamental_form(u, v);
         let det = e * g - f * f;
@@ -111,6 +127,7 @@ impl<T: ParametricSurface> SurfaceAnalysis for T {
         (det, inv)
     }
 
+    #[verified_engine::verified]
     fn area_element(&self, u: f64, v: f64) -> f64 {
         let (e, f, g) = self.first_fundamental_form(u, v);
         (e * g - f * f).sqrt()
@@ -123,6 +140,7 @@ pub struct Sphere {
 }
 
 impl ParametricSurface for Sphere {
+    #[verified_engine::verified]
     fn position(&self, u: f64, v: f64) -> Point3<f64> {
         // u = theta (azimuthal), v = phi (polar)
         // x = R sin(v) cos(u)
@@ -144,6 +162,7 @@ pub struct Torus {
 }
 
 impl ParametricSurface for Torus {
+    #[verified_engine::verified]
     fn position(&self, u: f64, v: f64) -> Point3<f64> {
         // u \in [0, 2pi), v \in [0, 2pi)
         let x = (self.major_radius + self.minor_radius * v.cos()) * u.cos();
@@ -160,6 +179,7 @@ pub struct KleinBottle {
 }
 
 impl ParametricSurface for KleinBottle {
+    #[verified_engine::verified]
     fn position(&self, u: f64, v: f64) -> Point3<f64> {
         // Standard "figure-8" immersion:
         // u \in [0, 2pi), v \in [0, 2pi)

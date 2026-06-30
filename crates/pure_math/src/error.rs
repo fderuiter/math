@@ -188,9 +188,11 @@ pub enum Glicko2Error {
 }
 
 impl Diagnostic for NumberTheoryError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "NumberTheoryError".to_string());
@@ -200,9 +202,11 @@ impl Diagnostic for NumberTheoryError {
 }
 
 impl Diagnostic for KellyError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "KellyError".to_string());
@@ -212,9 +216,11 @@ impl Diagnostic for KellyError {
 }
 
 impl Diagnostic for MarkovError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "MarkovError".to_string());
@@ -224,9 +230,11 @@ impl Diagnostic for MarkovError {
 }
 
 impl Diagnostic for OuError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "OuError".to_string());
@@ -236,9 +244,11 @@ impl Diagnostic for OuError {
 }
 
 impl Diagnostic for ZipError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "ZipError".to_string());
@@ -248,9 +258,11 @@ impl Diagnostic for ZipError {
 }
 
 impl Diagnostic for TdaError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "TdaError".to_string());
@@ -260,9 +272,11 @@ impl Diagnostic for TdaError {
 }
 
 impl Diagnostic for CopulaError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "CopulaError".to_string());
@@ -272,9 +286,11 @@ impl Diagnostic for CopulaError {
 }
 
 impl Diagnostic for Glicko2Error {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "Glicko2Error".to_string());
@@ -284,6 +300,7 @@ impl Diagnostic for Glicko2Error {
 }
 
 impl std::fmt::Display for MarkovError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -292,6 +309,7 @@ impl std::fmt::Display for MarkovError {
 impl std::error::Error for MarkovError {}
 
 impl std::fmt::Display for ZipError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -300,6 +318,7 @@ impl std::fmt::Display for ZipError {
 impl std::error::Error for ZipError {}
 
 impl std::fmt::Display for TdaError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -308,6 +327,7 @@ impl std::fmt::Display for TdaError {
 impl std::error::Error for TdaError {}
 
 impl std::fmt::Display for CopulaError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -316,6 +336,7 @@ impl std::fmt::Display for CopulaError {
 impl std::error::Error for CopulaError {}
 
 impl std::fmt::Display for Glicko2Error {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }

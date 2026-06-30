@@ -27,6 +27,7 @@ pub struct CannibalismModel {
 
 impl CannibalismModel {
     /// Creates a new `CannibalismModel` with the specified parameters.
+    #[verified_engine::verified]
     pub fn new(beta_n: f64, beta_c: f64, k_n: f64, phi_n_c: f64, mu_n: f64, mu_c: f64) -> Self {
         Self {
             beta_n,
@@ -45,6 +46,7 @@ impl CannibalismModel {
 /// - index 0: Normal population ($N$)
 /// - index 1: Cannibal population ($C$)
 impl OdeSystem<Vector2<f64>> for CannibalismModel {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &Vector2<f64>) -> Vector2<f64> {
         let n = state[0];
         let c = state[1];

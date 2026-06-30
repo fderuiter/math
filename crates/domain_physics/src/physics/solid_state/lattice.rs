@@ -3,6 +3,7 @@ use nalgebra::Vector3;
 /// Strategy trait for generating crystal unit cells.
 pub trait CrystalSystem {
     /// Generates the unit cell for the given lattice constant.
+    #[verified_engine::verified]
     fn generate(&self, a: f64) -> UnitCell;
 }
 
@@ -11,6 +12,7 @@ pub trait CrystalSystem {
 pub struct SimpleCubic;
 
 impl CrystalSystem for SimpleCubic {
+    #[verified_engine::verified]
     fn generate(&self, a: f64) -> UnitCell {
         let lattice_vectors = [
             Vector3::new(a, 0.0, 0.0),
@@ -30,6 +32,7 @@ impl CrystalSystem for SimpleCubic {
 pub struct BodyCenteredCubic;
 
 impl CrystalSystem for BodyCenteredCubic {
+    #[verified_engine::verified]
     fn generate(&self, a: f64) -> UnitCell {
         let lattice_vectors = [
             Vector3::new(a, 0.0, 0.0),
@@ -52,6 +55,7 @@ impl CrystalSystem for BodyCenteredCubic {
 pub struct FaceCenteredCubic;
 
 impl CrystalSystem for FaceCenteredCubic {
+    #[verified_engine::verified]
     fn generate(&self, a: f64) -> UnitCell {
         let lattice_vectors = [
             Vector3::new(a, 0.0, 0.0),
@@ -85,6 +89,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_simple_cubic() {
         let system = SimpleCubic;
         let cell = system.generate(1.0);
@@ -93,6 +98,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bcc() {
         let system = BodyCenteredCubic;
         let cell = system.generate(2.0);
@@ -101,6 +107,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fcc() {
         let system = FaceCenteredCubic;
         let cell = system.generate(2.0);

@@ -34,6 +34,7 @@ impl MusicEstimator {
     ///
     /// # Errors
     /// Returns `RadarError::InvalidConfiguration` if parameters are invalid.
+    #[verified_engine::verified]
     pub fn new(
         samples_per_chirp: usize,
         smoothing_factor: usize,
@@ -68,6 +69,7 @@ impl MusicEstimator {
     ///
     /// Once enough snapshots are collected, the covariance matrix is robust.
     /// Ideally, call `compute_spectrum` after filling the buffer.
+    #[verified_engine::verified]
     pub fn add_snapshot(&mut self, chirp: &[Complex<f64>]) -> Result<(), RadarError> {
         if chirp.len() != self.samples_per_chirp {
             return Err(RadarError::ChirpLengthMismatch {
@@ -130,6 +132,7 @@ impl MusicEstimator {
     /// assert_eq!(spectrum.len(), 11); // 0.0 to 1.0 with 0.1 step inclusive
     /// ```
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[verified_engine::verified]
     pub fn compute_spectrum(
         &self,
         start_range: f64,

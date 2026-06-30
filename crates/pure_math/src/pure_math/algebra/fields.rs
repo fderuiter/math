@@ -18,6 +18,7 @@ pub struct Fp<const P: i64> {
 }
 
 impl<const P: i64> Fp<P> {
+    #[verified_engine::verified]
     pub fn new(value: i64) -> Self {
         Fp {
             value: value.rem_euclid(P),
@@ -28,12 +29,14 @@ impl<const P: i64> Fp<P> {
 // Implement Operations
 impl<const P: i64> Add for Fp<P> {
     type Output = Self;
+    #[verified_engine::verified]
     fn add(self, other: Self) -> Self {
         Fp::new(self.value + other.value)
     }
 }
 
 impl<const P: i64> AddAssign for Fp<P> {
+    #[verified_engine::verified]
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
     }
@@ -41,12 +44,14 @@ impl<const P: i64> AddAssign for Fp<P> {
 
 impl<const P: i64> Sub for Fp<P> {
     type Output = Self;
+    #[verified_engine::verified]
     fn sub(self, other: Self) -> Self {
         Fp::new(self.value - other.value)
     }
 }
 
 impl<const P: i64> SubAssign for Fp<P> {
+    #[verified_engine::verified]
     fn sub_assign(&mut self, other: Self) {
         *self = *self - other;
     }
@@ -54,12 +59,14 @@ impl<const P: i64> SubAssign for Fp<P> {
 
 impl<const P: i64> Mul for Fp<P> {
     type Output = Self;
+    #[verified_engine::verified]
     fn mul(self, other: Self) -> Self {
         Fp::new(self.value * other.value)
     }
 }
 
 impl<const P: i64> MulAssign for Fp<P> {
+    #[verified_engine::verified]
     fn mul_assign(&mut self, other: Self) {
         *self = *self * other;
     }
@@ -67,15 +74,18 @@ impl<const P: i64> MulAssign for Fp<P> {
 
 impl<const P: i64> Neg for Fp<P> {
     type Output = Self;
+    #[verified_engine::verified]
     fn neg(self) -> Self {
         Fp::new(-self.value)
     }
 }
 
 impl<const P: i64> Ring for Fp<P> {
+    #[verified_engine::verified]
     fn zero() -> Self {
         Fp::new(0)
     }
+    #[verified_engine::verified]
     fn one() -> Self {
         Fp::new(1)
     }
@@ -84,12 +94,14 @@ impl<const P: i64> Ring for Fp<P> {
 impl<const P: i64> Div for Fp<P> {
     type Output = Self;
     #[allow(clippy::suspicious_arithmetic_impl)]
+    #[verified_engine::verified]
     fn div(self, other: Self) -> Self {
         self * other.multiplicative_inverse()
     }
 }
 
 impl<const P: i64> Field for Fp<P> {
+    #[verified_engine::verified]
     fn multiplicative_inverse(&self) -> Self {
         if self.is_zero() {
             panic!("Division by zero in Fp");
@@ -104,18 +116,36 @@ impl<const P: i64> Field for Fp<P> {
 }
 
 // Helper for Extended Euclidean Algorithm
+#[verified_engine::verified]
 fn extended_gcd(a: i64, b: i64) -> (i64, i64, i64) {
-    if a == 0 {
-        (b, 0, 1)
-    } else {
-        let (g, x1, y1) = extended_gcd(b % a, a);
-        let x = y1 - (b / a) * x1;
-        let y = x1;
-        (g, x, y)
+    let mut s = 0;
+    let mut old_s = 1;
+    let mut t = 1;
+    let mut old_t = 0;
+    let mut r = b;
+    let mut old_r = a;
+
+    while r != 0 {
+        let quotient = old_r / r;
+
+        let temp_r = r;
+        r = old_r - quotient * r;
+        old_r = temp_r;
+
+        let temp_s = s;
+        s = old_s - quotient * s;
+        old_s = temp_s;
+
+        let temp_t = t;
+        t = old_t - quotient * t;
+        old_t = temp_t;
     }
+
+    (old_r, old_s, old_t)
 }
 
 impl<const P: i64> fmt::Display for Fp<P> {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.value)
     }

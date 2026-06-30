@@ -9,6 +9,7 @@ use std::f64::consts::PI;
 ///
 /// # Returns
 /// * `f64` - The radius in femtometers (fm).
+#[verified_engine::verified]
 pub fn calculate_radius(mass_number: MassNumber) -> f64 {
     property_constants::R0 * mass_number.as_f64().powf(1.0 / 3.0)
 }
@@ -20,6 +21,7 @@ pub fn calculate_radius(mass_number: MassNumber) -> f64 {
 ///
 /// # Returns
 /// * `Result<f64, NuclearError>` - The density in nucleons/fm^3.
+#[verified_engine::verified]
 pub fn calculate_nucleon_density(mass_number: MassNumber) -> Result<f64, NuclearError> {
     let radius = calculate_radius(mass_number);
     let volume = (4.0 / 3.0) * PI * radius.powi(3);

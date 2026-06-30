@@ -7,12 +7,14 @@ use nalgebra::DVector;
 /// (like Kakutani's) which guarantee the existence of Nash Equilibria.
 pub trait ConvexSet {
     /// Checks if a point belongs to the set.
+    #[verified_engine::verified]
     fn contains(&self, point: &DVector<f64>) -> bool;
 
     /// Checks if the set is convex.
     ///
     /// *Note:* This is often a theoretical property assumed by the modeler.
     /// An implementation might perform a randomized check (e.g., is the midpoint of two random points in the set?).
+    #[verified_engine::verified]
     fn is_convex(&self) -> bool;
 }
 
@@ -48,6 +50,7 @@ impl BoxSet {
     /// // A point inside the box
     /// assert!(box_set.contains(&DVector::from_vec(vec![0.5, 0.0])));
     /// ```
+    #[verified_engine::verified]
     pub fn new(min_vals: Vec<f64>, max_vals: Vec<f64>) -> Self {
         assert_eq!(min_vals.len(), max_vals.len());
         Self {
@@ -58,6 +61,7 @@ impl BoxSet {
 }
 
 impl ConvexSet for BoxSet {
+    #[verified_engine::verified]
     fn contains(&self, point: &DVector<f64>) -> bool {
         if point.len() != self.min_bounds.len() {
             return false;
@@ -70,6 +74,7 @@ impl ConvexSet for BoxSet {
         true
     }
 
+    #[verified_engine::verified]
     fn is_convex(&self) -> bool {
         true // A box is always convex
     }
@@ -86,12 +91,14 @@ impl ConvexSet for BoxSet {
 pub trait Correspondence {
     /// Checks if `target` is in the image set $\phi(\text{source})$.
     /// effectively: `target` $\in \phi(\text{source})$
+    #[verified_engine::verified]
     fn is_in_image(&self, source: &DVector<f64>, target: &DVector<f64>) -> bool;
 }
 
 /// Checks if $x^* \in \phi(x^*)$.
 ///
 /// If this returns true, `point` represents a Nash Equilibrium (or a fixed point of the dynamical system).
+#[verified_engine::verified]
 pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64>) -> bool {
     correspondence.is_in_image(point, point)
 }
@@ -109,6 +116,7 @@ impl FixedPointVerifier {
         since = "0.2.0",
         note = "Use the module-level is_fixed_point function directly."
     )]
+    #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64>) -> bool {
         is_fixed_point(correspondence, point)
     }
@@ -127,6 +135,7 @@ pub struct BestResponseCorrespondence {
 }
 
 impl Correspondence for BestResponseCorrespondence {
+    #[verified_engine::verified]
     fn is_in_image(&self, source: &DVector<f64>, target: &DVector<f64>) -> bool {
         let expected = (self.mapping)(source);
         (target - expected).norm() <= self.tolerance
@@ -138,6 +147,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_box_set_contains() {
         let box_set = BoxSet::new(vec![0.0, 0.0], vec![1.0, 1.0]);
         assert!(box_set.contains(&DVector::from_vec(vec![0.5, 0.5])));
@@ -145,6 +155,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fixed_point() {
         // Define a simple mapping f(x) = 0.5 * x. Fixed point is 0.
         let correspondence = BestResponseCorrespondence {

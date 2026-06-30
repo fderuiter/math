@@ -33,6 +33,7 @@ impl LogLink {
     /// let lambda = LogLink::link(eta);
     /// assert!((lambda - 2.718281828).abs() < 1e-6);  // e^1
     /// ```
+    #[verified_engine::verified]
     pub fn link(linear_predictor: f64) -> f64 {
         linear_predictor.exp()
     }
@@ -46,6 +47,7 @@ impl LogLink {
     /// # Returns
     ///
     /// The linear predictor η = log(λ)
+    #[verified_engine::verified]
     pub fn inverse_link(rate: f64) -> f64 {
         rate.ln()
     }
@@ -53,11 +55,13 @@ impl LogLink {
     /// Computes the derivative of the link function.
     ///
     /// d(λ)/d(η) = exp(η) = λ
+    #[verified_engine::verified]
     pub fn derivative(linear_predictor: f64) -> f64 {
         linear_predictor.exp()
     }
 
     /// Applies the log link to a vector of linear predictors.
+    #[verified_engine::verified]
     pub fn link_vector(linear_predictors: &DVector<f64>) -> DVector<f64> {
         linear_predictors.map(Self::link)
     }
@@ -91,6 +95,7 @@ impl LogitLink {
     /// let rho = LogitLink::link(gamma);
     /// assert!((rho - 0.5).abs() < 1e-9);  // expit(0) = 0.5
     /// ```
+    #[verified_engine::verified]
     pub fn link(linear_predictor: f64) -> f64 {
         // expit(γ) = 1/(1 + exp(-γ))
         // Numerically stable version
@@ -111,6 +116,7 @@ impl LogitLink {
     /// # Returns
     ///
     /// The linear predictor γ = logit(ρ)
+    #[verified_engine::verified]
     pub fn inverse_link(probability: f64) -> f64 {
         // logit(ρ) = log(ρ/(1-ρ))
         (probability / (1.0 - probability)).ln()
@@ -119,11 +125,13 @@ impl LogitLink {
     /// Computes the derivative of the logit link function.
     ///
     /// d(ρ)/d(γ) = ρ(1-ρ)
+    #[verified_engine::verified]
     pub fn derivative(probability: f64) -> f64 {
         probability * (1.0 - probability)
     }
 
     /// Applies the logit link to a vector of linear predictors.
+    #[verified_engine::verified]
     pub fn link_vector(linear_predictors: &DVector<f64>) -> DVector<f64> {
         linear_predictors.map(Self::link)
     }
@@ -134,6 +142,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_log_link() {
         // exp(0) = 1
         assert!((LogLink::link(0.0) - 1.0).abs() < 1e-9);
@@ -146,6 +155,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_log_link_inverse() {
         let lambda = 5.0;
         let eta = LogLink::inverse_link(lambda);
@@ -154,6 +164,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_log_link_derivative() {
         let eta = 1.5;
         let derivative = LogLink::derivative(eta);
@@ -162,6 +173,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_logit_link() {
         // expit(0) = 0.5
         assert!((LogitLink::link(0.0) - 0.5).abs() < 1e-9);
@@ -174,6 +186,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_logit_link_inverse() {
         let rho = 0.3;
         let gamma = LogitLink::inverse_link(rho);
@@ -182,6 +195,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_logit_link_bounds() {
         // Should always return values in [0, 1]
         for gamma in [-10.0, -5.0, -1.0, 0.0, 1.0, 5.0, 10.0] {
@@ -191,6 +205,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_logit_derivative() {
         let rho = 0.3;
         let derivative = LogitLink::derivative(rho);
@@ -199,6 +214,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_log_link_vector() {
         let predictors = DVector::from_vec(vec![0.0, 1.0, 2.0]);
         let rates = LogLink::link_vector(&predictors);
@@ -209,6 +225,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_logit_link_vector() {
         let predictors = DVector::from_vec(vec![-1.0, 0.0, 1.0]);
         let probs = LogitLink::link_vector(&predictors);

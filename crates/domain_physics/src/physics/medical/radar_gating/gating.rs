@@ -18,6 +18,7 @@ pub struct GatingLogic {
 
 impl GatingLogic {
     /// Creates a new Gating Logic instance.
+    #[verified_engine::verified]
     pub fn new(threshold: f64, hysteresis: f64, system_latency: f64) -> Self {
         Self {
             threshold,
@@ -47,6 +48,7 @@ impl GatingLogic {
     /// - Turn OFF if $A_{pred} > T + H$.
     ///
     /// This assumes "low amplitude" is the target state (e.g. baseline).
+    #[verified_engine::verified]
     pub fn evaluate(&mut self, amplitude: f64, velocity: f64) -> bool {
         // Latency Compensation
         // Predict the amplitude at the time the beam actually switches.

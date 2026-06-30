@@ -6,6 +6,7 @@ use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;
 
 #[test]
+#[verified_engine::verified]
 fn test_normalization() {
     let c1 = Complex::new(3.0, 0.0);
     let c2 = Complex::new(4.0, 0.0);
@@ -20,6 +21,7 @@ fn test_normalization() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_inner_product() {
     // |0> = [1, 0]
     // |1> = [0, 1]
@@ -41,6 +43,7 @@ fn test_inner_product() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_pauli_commutators() {
     let sx = sigma_x();
     let sy = sigma_y();
@@ -55,6 +58,7 @@ fn test_pauli_commutators() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_time_evolution() {
     // Hamiltonian H = w * Sz. w = 1.
     // Time t. U(t) = exp(-i Sz t / h_bar).
@@ -80,6 +84,7 @@ fn test_time_evolution() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_dft_unitarity() {
     let n = 4;
     let dft = dft_operator(n);

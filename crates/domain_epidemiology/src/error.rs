@@ -19,9 +19,11 @@ pub enum EpidemiologyError {
 }
 
 impl Diagnostic for EpidemiologyError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "EpidemiologyError".to_string());
@@ -31,6 +33,7 @@ impl Diagnostic for EpidemiologyError {
 }
 
 impl std::fmt::Display for EpidemiologyError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }

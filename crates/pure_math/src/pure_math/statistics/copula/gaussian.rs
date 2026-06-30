@@ -44,6 +44,7 @@ impl GaussianCopula {
     /// # Arguments
     ///
     /// * `correlation` - The correlation matrix
+    #[verified_engine::verified]
     pub fn new(correlation: CorrelationMatrix) -> Self {
         Self { correlation }
     }
@@ -62,6 +63,7 @@ impl GaussianCopula {
     /// let rho = Correlation::new(0.5).unwrap();
     /// let copula = GaussianCopula::bivariate(rho).unwrap();
     /// ```
+    #[verified_engine::verified]
     pub fn bivariate(rho: Correlation) -> Result<Self, CopulaError> {
         let correlation = CorrelationMatrix::bivariate(rho)?;
         Ok(Self::new(correlation))
@@ -76,6 +78,7 @@ impl GaussianCopula {
     /// # Returns
     ///
     /// The joint cumulative probability
+    #[verified_engine::verified]
     pub fn cdf(&self, u: &[Probability]) -> Result<Probability, CopulaError> {
         if u.len() != self.correlation.dimension() {
             return Err(CopulaError::DimensionMismatch {
@@ -94,6 +97,7 @@ impl GaussianCopula {
     }
 
     /// Computes the bivariate Gaussian copula CDF.
+    #[verified_engine::verified]
     fn bivariate_cdf(&self, u1: Probability, u2: Probability) -> Result<Probability, CopulaError> {
         // Transform to z-scores
         let z1 = inverse_standard_normal(u1)?;
@@ -117,6 +121,7 @@ impl GaussianCopula {
     }
 
     /// Approximates the bivariate normal CDF using Drezner & Wesolowsky (1990) method.
+    #[verified_engine::verified]
     fn bivariate_normal_cdf(&self, z1: f64, z2: f64, rho: f64) -> Result<f64, CopulaError> {
         // Handle edge cases
         if !z1.is_finite() || !z2.is_finite() {
@@ -147,6 +152,7 @@ impl GaussianCopula {
     }
 
     /// Numerical integration for bivariate normal CDF.
+    #[verified_engine::verified]
     fn integrate_bivariate_normal(&self, z1: f64, z2: f64, rho: f64) -> Result<f64, CopulaError> {
         // Use a simple grid-based integration
         let n_points = 100;
@@ -183,6 +189,7 @@ impl GaussianCopula {
     }
 
     /// Multivariate Gaussian copula CDF (general case).
+    #[verified_engine::verified]
     fn multivariate_cdf(&self, u: &[Probability]) -> Result<Probability, CopulaError> {
         // Transform to z-scores
         let mut z_scores = Vec::with_capacity(u.len());
@@ -207,6 +214,7 @@ impl GaussianCopula {
     }
 
     /// Returns the correlation matrix.
+    #[verified_engine::verified]
     pub fn correlation(&self) -> &CorrelationMatrix {
         &self.correlation
     }
@@ -241,6 +249,7 @@ impl GaussianCopula {
 ///
 /// let joint_prob = sgp_joint_probability(&[p_a, p_b], &corr_matrix).unwrap();
 /// ```
+#[verified_engine::verified]
 pub fn sgp_joint_probability(
     marginals: &[Probability],
     correlation_matrix: &CorrelationMatrix,
@@ -262,6 +271,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_gaussian_copula_creation() {
         let rho = Correlation::new(0.5).unwrap();
         let copula = GaussianCopula::bivariate(rho).unwrap();
@@ -269,6 +279,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_gaussian_copula_independence() {
         // When ρ = 0, copula should be product of marginals
         let rho = Correlation::new(0.0).unwrap();
@@ -285,6 +296,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_gaussian_copula_positive_correlation() {
         // Positive correlation should increase joint probability
         let rho_indep = Correlation::new(0.0).unwrap();
@@ -304,6 +316,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_gaussian_copula_negative_correlation() {
         // Negative correlation should decrease joint probability
         let rho_indep = Correlation::new(0.0).unwrap();
@@ -323,6 +336,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_sgp_joint_probability() {
         let p_a = Probability::new(0.99).unwrap();
         let p_b = Probability::new(0.60).unwrap();
@@ -338,6 +352,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_copula_bounds() {
         // Copula value should always be in [0, 1]
         let rho = Correlation::new(0.3).unwrap();

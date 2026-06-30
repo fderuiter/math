@@ -6,6 +6,7 @@ use std::hash::Hash;
 
 /// Q-Learning Update Rule.
 /// $Q(s, a) \leftarrow Q(s, a) + \alpha [R + \gamma \max_{a'} Q(s', a') - Q(s, a)]$
+#[verified_engine::verified]
 pub fn q_learning_update(
     current_q: f64,
     reward: f64,
@@ -46,6 +47,7 @@ where
     Q: QFunction<S, A>,
 {
     /// Creates a new generic Q-Learning agent.
+    #[verified_engine::verified]
     pub fn new_generic(
         q_func: Q,
         learning_rate: f64,
@@ -60,10 +62,12 @@ where
         }
     }
 
+    #[verified_engine::verified]
     pub fn get_q_value(&self, state: &S, action: &A) -> f64 {
         self.q_func.value(state, action)
     }
 
+    #[verified_engine::verified]
     pub fn update(
         &mut self,
         state: &S,
@@ -103,6 +107,7 @@ where
 
     /// Selects an action using the injected strategy.
     /// This method uses the default thread-local RNG.
+    #[verified_engine::verified]
     pub fn select_action(&self, state: &S, available_actions: &[A]) -> Option<A> {
         let mut rng = rand::thread_rng();
         self.select_action_with_rng(state, available_actions, &mut rng)
@@ -110,6 +115,7 @@ where
 
     /// Selects an action using the injected strategy and a provided RNG.
     /// Useful for deterministic testing.
+    #[verified_engine::verified]
     pub fn select_action_with_rng(
         &self,
         state: &S,
@@ -133,6 +139,7 @@ where
     A: Action + Hash + Eq,
 {
     /// Creates a new Tabular Q-Agent.
+    #[verified_engine::verified]
     pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
         Self {
             q_func: TabularQFunction::new(),
@@ -143,6 +150,7 @@ where
     }
 
     /// Creates a new Tabular Q-Agent with a custom exploration strategy.
+    #[verified_engine::verified]
     pub fn new_with_strategy(
         learning_rate: f64,
         discount_factor: f64,
@@ -163,6 +171,7 @@ where
 /// This function calculates the gradient component for a single step.
 /// * `return_gt`: The cumulative return $G_t$.
 /// * `grad_log_pi`: The gradient of the log probability of the action taken.
+#[verified_engine::verified]
 pub fn policy_gradient_step(return_gt: f64, grad_log_pi: &[f64], learning_rate: f64) -> Vec<f64> {
     grad_log_pi
         .iter()

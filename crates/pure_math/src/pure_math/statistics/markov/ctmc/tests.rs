@@ -5,6 +5,7 @@ use rand::SeedableRng;
 use rand::rngs::StdRng;
 
 #[test]
+#[verified_engine::verified]
 fn test_two_state_birth_death() {
     // State 0 → State 1 at rate 2.0
     // State 1 → State 0 at rate 3.0
@@ -21,6 +22,7 @@ fn test_two_state_birth_death() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_transition_probabilities() {
     let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 1.0, -1.0]);
 
@@ -52,6 +54,7 @@ fn test_transition_probabilities() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_simulation() {
     let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 2.0, -2.0]);
 
@@ -76,6 +79,7 @@ fn test_simulation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_validation_errors() {
     // Non-square matrix
     let g = DMatrix::from_row_slice(2, 3, &[-1.0, 1.0, 0.0, 1.0, -1.0, 0.0]);
@@ -95,6 +99,7 @@ fn test_validation_errors() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_absorption_times() {
     // States 0, 1 are transient; state 2 is absorbing
     let generator = DMatrix::from_row_slice(
@@ -121,6 +126,7 @@ fn test_absorption_times() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_deterministic_simulation() {
     let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 1.0, -1.0]);
     let chain = ContinuousMarkovChain::new(generator).unwrap();

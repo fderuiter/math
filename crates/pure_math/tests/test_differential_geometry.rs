@@ -9,6 +9,7 @@ use pure_math::pure_math::differential_geometry::surface::{Sphere, SurfaceAnalys
 use std::f64::consts::PI;
 
 #[test]
+#[verified_engine::verified]
 fn test_sphere_properties() {
     let radius = 2.0;
     let sphere = Sphere { radius };
@@ -39,6 +40,7 @@ fn test_sphere_properties() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_torus_curvature_sign() {
     let major = 3.0;
     let minor = 1.0;
@@ -57,6 +59,7 @@ fn test_torus_curvature_sign() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_pde_classification() {
     let laplace = SecondOrderLinearPde2D {
         a: 1.0,
@@ -74,6 +77,7 @@ fn test_pde_classification() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_laplace_beltrami_constant() {
     let sphere = Sphere { radius: 1.0 };
     let constant_func = |_: f64, _: f64| 1.0;
@@ -83,6 +87,7 @@ fn test_laplace_beltrami_constant() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_heat_equation_smoothing() {
     let radius = 1.0;
     let sphere = Sphere { radius };
@@ -131,6 +136,7 @@ fn test_heat_equation_smoothing() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_mean_curvature_flow_shrinkage() {
     // Create a discrete sphere
     let nu = 20;

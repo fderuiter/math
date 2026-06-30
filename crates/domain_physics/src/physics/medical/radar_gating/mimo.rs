@@ -26,6 +26,7 @@ impl Beamformer {
     /// * `num_antennas` - Number of RX antennas ($M$).
     /// * `spacing` - Spacing between antennas (usually $\lambda/2$).
     /// * `wavelength` - Signal wavelength ($\lambda$).
+    #[verified_engine::verified]
     pub fn new_ula(num_antennas: usize, spacing: f64, wavelength: f64) -> Self {
         let mut antenna_positions = Vec::with_capacity(num_antennas);
         // Center the array around 0 for symmetry, or start at 0.
@@ -45,6 +46,7 @@ impl Beamformer {
     }
 
     /// Sets custom weights for the antennas (e.g., Hamming window to reduce sidelobes).
+    #[verified_engine::verified]
     pub fn set_weights(&mut self, weights: &[f64]) -> Result<(), &'static str> {
         if weights.len() != self.antenna_positions.len() {
             return Err("Number of weights must match number of antennas");
@@ -65,6 +67,7 @@ impl Beamformer {
     /// # Returns
     ///
     /// The combined beamformed signal.
+    #[verified_engine::verified]
     pub fn steer(&self, signals: &[Complex<f64>], angle_rad: f64) -> Complex<f64> {
         if signals.len() != self.antenna_positions.len() {
             // In a real system, handle this gracefully. For now, panic or return 0.

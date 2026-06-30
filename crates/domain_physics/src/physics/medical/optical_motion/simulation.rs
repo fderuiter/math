@@ -16,6 +16,7 @@
 /// # Returns
 ///
 /// * `f64` - The simulated height $Z(t)$.
+#[verified_engine::verified]
 pub fn cosine_respiratory_curve(t: f64, amplitude: f64, period: f64) -> f64 {
     // Note: The formula uses 6*pi, which implies 3 cycles per 'tau' if tau is the standard period?
     // Usually standard is 2*pi*t/T.
@@ -42,6 +43,7 @@ pub fn cosine_respiratory_curve(t: f64, amplitude: f64, period: f64) -> f64 {
 /// # Returns
 ///
 /// * `f64` - Position $y_1$.
+#[verified_engine::verified]
 pub fn translation_stage_motion(
     t: f64,
     half_period: f64,
@@ -56,6 +58,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_cosine_model() {
         // t=0, phase = pi/2. cos(pi/2) = 0. Z = 0.
         let z0 = cosine_respiratory_curve(0.0, 1.0, 5.0);
@@ -63,6 +66,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_translation_motion() {
         // t=T -> y = b
         let y = translation_stage_motion(5.0, 5.0, 2.0, 10.0);

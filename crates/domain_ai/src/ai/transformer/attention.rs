@@ -18,6 +18,7 @@ use nalgebra::DMatrix;
 /// # Returns
 /// A tuple containing the output matrix of shape (sequence_length, d_v) and the
 /// attention weights matrix of shape (sequence_length, sequence_length).
+#[verified_engine::verified]
 pub fn scaled_dot_product_attention(
     q: &DMatrix<f64>,
     k: &DMatrix<f64>,
@@ -75,6 +76,7 @@ impl MultiHeadAttention {
     ///
     /// In a real model, the weight matrices would be initialized randomly.
     /// Here, they are initialized as zeros for simplicity.
+    #[verified_engine::verified]
     pub fn new(d_model: usize, h: usize) -> Self {
         assert!(
             d_model.is_multiple_of(h),
@@ -94,6 +96,7 @@ impl MultiHeadAttention {
     }
 
     /// Performs the forward pass for the Multi-Head Attention layer.
+    #[verified_engine::verified]
     pub fn forward_impl(
         &self,
         q: &DMatrix<f64>,
@@ -129,6 +132,7 @@ impl MultiHeadAttention {
     }
 
     /// Helper for backward compatibility or direct usage
+    #[verified_engine::verified]
     pub fn forward(
         &self,
         q: &DMatrix<f64>,
@@ -141,6 +145,7 @@ impl MultiHeadAttention {
 }
 
 impl AttentionMechanism for MultiHeadAttention {
+    #[verified_engine::verified]
     fn forward(
         &self,
         q: &DMatrix<f64>,
@@ -157,6 +162,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_scaled_dot_product_attention_dims() {
         let seq_len = 10;
         let d_k = 64;
@@ -174,6 +180,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_multi_head_attention_dims() {
         let seq_len = 10;
         let d_model = 512;
@@ -191,6 +198,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_scaled_dot_product_attention_zero_dim() {
         use approx::assert_relative_eq;
         let seq_len = 5;

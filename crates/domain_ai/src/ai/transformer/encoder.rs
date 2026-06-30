@@ -33,6 +33,7 @@ impl EncoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `EncoderLayer` instance initialized with the given parameters.
+    #[verified_engine::verified]
     pub fn new(d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             self_attn: MultiHeadAttention::new(d_model, h),
@@ -45,6 +46,7 @@ impl EncoderLayer<MultiHeadAttention, FeedForward, LayerNorm> {
 
 impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> EncoderLayer<A, F, N> {
     /// Creates a new `EncoderLayer` with injected components.
+    #[verified_engine::verified]
     pub fn new_with_components(self_attn: A, feed_forward: F, norm1: N, norm2: N) -> Self {
         Self {
             self_attn,
@@ -64,6 +66,7 @@ impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Encode
     /// # Returns
     ///
     /// The output matrix of shape (sequence_length, d_model).
+    #[verified_engine::verified]
     pub fn forward(&self, x: &DMatrix<f64>, mask: Option<&DMatrix<f64>>) -> DMatrix<f64> {
         let attn_output = self.self_attn.forward(x, x, x, mask);
         let x_plus_attn = x + attn_output;
@@ -98,6 +101,7 @@ impl Encoder<MultiHeadAttention, FeedForward, LayerNorm> {
     /// # Returns
     ///
     /// A new `Encoder` instance.
+    #[verified_engine::verified]
     pub fn new(num_layers: usize, d_model: usize, h: usize, d_ff: usize) -> Self {
         Self {
             layers: (0..num_layers)
@@ -109,6 +113,7 @@ impl Encoder<MultiHeadAttention, FeedForward, LayerNorm> {
 
 impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Encoder<A, F, N> {
     /// Creates a new `Encoder` with injected layers.
+    #[verified_engine::verified]
     pub fn new_with_layers(layers: Vec<EncoderLayer<A, F, N>>) -> Self {
         Self { layers }
     }
@@ -123,6 +128,7 @@ impl<A: AttentionMechanism, F: FeedForwardNetwork, N: NormalizationLayer> Encode
     /// # Returns
     ///
     /// The output matrix after passing through all layers.
+    #[verified_engine::verified]
     pub fn forward(&self, mut x: DMatrix<f64>, mask: Option<&DMatrix<f64>>) -> DMatrix<f64> {
         for layer in &self.layers {
             x = layer.forward(&x, mask);
@@ -136,6 +142,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_encoder_layer_dims() {
         let seq_len = 10;
         let d_model = 512;

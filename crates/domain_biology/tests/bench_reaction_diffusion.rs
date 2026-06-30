@@ -3,6 +3,7 @@ use domain_biology::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem}
 use std::time::Instant;
 
 #[test]
+#[verified_engine::verified]
 fn bench_turing_2d_step() {
     let width = 300;
     let height = 300;

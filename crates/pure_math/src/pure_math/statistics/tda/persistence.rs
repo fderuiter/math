@@ -44,6 +44,7 @@ impl PersistenceInterval {
     ///     Err(TdaError::InvalidRadius { .. })
     /// ));
     /// ```
+    #[verified_engine::verified]
     pub fn new(birth: f64, death: f64, dimension: usize) -> Result<Self, TdaError> {
         if birth < 0.0 || death < birth || !birth.is_finite() || !death.is_finite() {
             return Err(TdaError::InvalidRadius { value: birth });
@@ -58,11 +59,13 @@ impl PersistenceInterval {
     /// Returns the persistence (lifetime) of the feature.
     ///
     /// Formula: persistence = death - birth
+    #[verified_engine::verified]
     pub fn persistence(&self) -> f64 {
         self.death - self.birth
     }
 
     /// Returns true if this is a significant feature (persistence > threshold).
+    #[verified_engine::verified]
     pub fn is_significant(&self, threshold: f64) -> bool {
         self.persistence() > threshold
     }
@@ -80,6 +83,7 @@ pub struct PersistenceBarcode {
 
 impl PersistenceBarcode {
     /// Creates a new empty barcode.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             intervals: Vec::new(),
@@ -87,16 +91,19 @@ impl PersistenceBarcode {
     }
 
     /// Adds an interval to the barcode.
+    #[verified_engine::verified]
     pub fn add_interval(&mut self, interval: PersistenceInterval) {
         self.intervals.push(interval);
     }
 
     /// Returns the number of intervals.
+    #[verified_engine::verified]
     pub fn len(&self) -> usize {
         self.intervals.len()
     }
 
     /// Returns true if the barcode is empty.
+    #[verified_engine::verified]
     pub fn is_empty(&self) -> bool {
         self.intervals.is_empty()
     }
@@ -117,6 +124,7 @@ impl PersistenceBarcode {
     /// let holes = barcode.filter_by_dimension(1);
     /// assert_eq!(holes.len(), 1);
     /// ```
+    #[verified_engine::verified]
     pub fn filter_by_dimension(&self, dimension: usize) -> Vec<&PersistenceInterval> {
         self.intervals
             .iter()
@@ -127,6 +135,7 @@ impl PersistenceBarcode {
     /// Filters intervals by minimum persistence.
     ///
     /// Only returns features with persistence > threshold.
+    #[verified_engine::verified]
     pub fn filter_by_persistence(&self, threshold: f64) -> Vec<&PersistenceInterval> {
         self.intervals
             .iter()
@@ -135,6 +144,7 @@ impl PersistenceBarcode {
     }
 
     /// Returns the most persistent feature of a given dimension.
+    #[verified_engine::verified]
     pub fn most_persistent(&self, dimension: usize) -> Option<&PersistenceInterval> {
         self.filter_by_dimension(dimension)
             .into_iter()
@@ -147,6 +157,7 @@ impl PersistenceBarcode {
 }
 
 impl Default for PersistenceBarcode {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
@@ -207,6 +218,7 @@ impl Default for PersistenceBarcode {
 ///     Err(TdaError::InvalidRadius { .. })
 /// ));
 /// ```
+#[verified_engine::verified]
 pub fn compute_persistence(
     cloud: &PointCloud,
     radii: &[f64],
@@ -302,6 +314,7 @@ mod tests {
     use crate::pure_math::statistics::tda::core::Point2D;
 
     #[test]
+    #[verified_engine::verified]
     fn test_persistence_interval() {
         let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
         assert_eq!(interval.birth, 0.5);
@@ -311,12 +324,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_persistence_interval_invalid() {
         assert!(PersistenceInterval::new(2.0, 1.0, 0).is_err()); // birth > death
         assert!(PersistenceInterval::new(-1.0, 1.0, 0).is_err()); // negative birth
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_persistence_interval_is_significant() {
         let interval = PersistenceInterval::new(0.5, 2.0, 1).unwrap();
         assert!(interval.is_significant(1.0));
@@ -324,6 +339,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_barcode_filter_by_dimension() {
         let mut barcode = PersistenceBarcode::new();
         barcode.add_interval(PersistenceInterval::new(0.0, 1.0, 0).unwrap());
@@ -338,6 +354,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_barcode_filter_by_persistence() {
         let mut barcode = PersistenceBarcode::new();
         barcode.add_interval(PersistenceInterval::new(0.0, 0.5, 0).unwrap()); // persistence 0.5
@@ -349,6 +366,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_barcode_most_persistent() {
         let mut barcode = PersistenceBarcode::new();
         barcode.add_interval(PersistenceInterval::new(0.0, 1.0, 1).unwrap()); // persistence 1.0
@@ -360,6 +378,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_compute_persistence_line() {
         // Points on a line
         let points = vec![
@@ -382,6 +401,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_compute_persistence_triangle() {
         // Equilateral triangle - this will form a hollow triangle at some radius
         // but might fill in at larger radii
@@ -402,6 +422,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_compute_persistence_two_clusters() {
         // Two well-separated clusters
         let points = vec![

@@ -4,6 +4,7 @@ use crate::biology::morphogenesis::SchnakenbergKinetics;
 use pure_math::pure_math::analysis::ode::solvers::RungeKutta4;
 
 #[test]
+#[verified_engine::verified]
 fn test_reaction_diffusion_system_rk4() {
     // Setup a small system with RK4 solver
     let n = 10;
@@ -48,6 +49,7 @@ fn test_reaction_diffusion_system_rk4() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_reaction_diffusion_system_equivalence() {
     // Setup a small system
     let n = 10;

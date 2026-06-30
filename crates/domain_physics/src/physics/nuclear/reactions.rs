@@ -7,6 +7,7 @@ use super::types::*;
 /// # Arguments
 /// * `input_masses` - Slice of input masses in MeV/c^2.
 /// * `output_masses` - Slice of output masses in MeV/c^2.
+#[verified_engine::verified]
 pub fn q_value(input_masses: &[f64], output_masses: &[f64]) -> f64 {
     let sum_in: f64 = input_masses.iter().sum();
     let sum_out: f64 = output_masses.iter().sum();
@@ -21,6 +22,7 @@ pub fn q_value(input_masses: &[f64], output_masses: &[f64]) -> f64 {
 /// * `energy` - Energy E in MeV.
 /// * `resonance_energy` - Resonance energy E_res in MeV.
 /// * `gamma_width` - Decay width Gamma in MeV.
+#[verified_engine::verified]
 pub fn breit_wigner(
     energy: f64,
     resonance_energy: f64,

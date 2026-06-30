@@ -20,6 +20,7 @@ impl FluidProperties {
     /// # Errors
     /// Returns `FluidError::InvalidDensity` if `density <= 0`.
     /// Returns `FluidError::InvalidViscosity` if `dynamic_viscosity < 0`.
+    #[verified_engine::verified]
     pub fn new(density: f64, dynamic_viscosity: f64) -> Result<Self, FluidError> {
         if density <= 0.0 {
             return Err(FluidError::InvalidDensity { value: density });
@@ -36,21 +37,25 @@ impl FluidProperties {
     }
 
     /// Returns a new builder for constructing `FluidProperties`.
+    #[verified_engine::verified]
     pub fn builder() -> FluidPropertiesBuilder {
         FluidPropertiesBuilder::default()
     }
 
     /// Returns the density ($\rho$) in kg/m^3.
+    #[verified_engine::verified]
     pub fn density(&self) -> f64 {
         self.density
     }
 
     /// Returns the dynamic viscosity ($\mu$) in Pa·s.
+    #[verified_engine::verified]
     pub fn dynamic_viscosity(&self) -> f64 {
         self.dynamic_viscosity
     }
 
     /// Calculates the kinematic viscosity ($\nu = \mu / \rho$) in m^2/s.
+    #[verified_engine::verified]
     pub fn kinematic_viscosity(&self) -> f64 {
         self.dynamic_viscosity / self.density
     }
@@ -59,6 +64,7 @@ impl FluidProperties {
     ///
     /// # Panics
     /// Panics if internal values are invalid (should never happen).
+    #[verified_engine::verified]
     pub fn water() -> Self {
         Self::new(998.2, 1.002e-3).expect("Standard water properties should be valid")
     }
@@ -67,6 +73,7 @@ impl FluidProperties {
     ///
     /// # Panics
     /// Panics if internal values are invalid (should never happen).
+    #[verified_engine::verified]
     pub fn air() -> Self {
         Self::new(1.225, 1.81e-5).expect("Standard air properties should be valid")
     }
@@ -81,12 +88,14 @@ pub struct FluidPropertiesBuilder {
 
 impl FluidPropertiesBuilder {
     /// Sets the density ($\rho$) in kg/m^3.
+    #[verified_engine::verified]
     pub fn density(mut self, density: f64) -> Self {
         self.density = Some(density);
         self
     }
 
     /// Sets the dynamic viscosity ($\mu$) in Pa·s.
+    #[verified_engine::verified]
     pub fn dynamic_viscosity(mut self, dynamic_viscosity: f64) -> Self {
         self.dynamic_viscosity = Some(dynamic_viscosity);
         self
@@ -97,6 +106,7 @@ impl FluidPropertiesBuilder {
     /// # Errors
     /// Returns error if density is not set or invalid, or if viscosity is invalid.
     /// If viscosity is not set, it defaults to 0.0 (inviscid).
+    #[verified_engine::verified]
     pub fn build(self) -> Result<FluidProperties, FluidError> {
         let density = self.density.unwrap_or(0.0);
         let dynamic_viscosity = self.dynamic_viscosity.unwrap_or(0.0);
@@ -114,6 +124,7 @@ pub struct FlowState {
 }
 
 impl FlowState {
+    #[verified_engine::verified]
     pub fn new(velocity: Vector3<f64>, pressure: f64) -> Self {
         Self { velocity, pressure }
     }
@@ -121,6 +132,7 @@ impl FlowState {
 
 impl Add for FlowState {
     type Output = Self;
+    #[verified_engine::verified]
     fn add(self, rhs: Self) -> Self {
         Self {
             velocity: self.velocity + rhs.velocity,
@@ -130,6 +142,7 @@ impl Add for FlowState {
 }
 
 impl AddAssign for FlowState {
+    #[verified_engine::verified]
     fn add_assign(&mut self, rhs: Self) {
         self.velocity += rhs.velocity;
         self.pressure += rhs.pressure;
@@ -138,6 +151,7 @@ impl AddAssign for FlowState {
 
 impl Mul<f64> for FlowState {
     type Output = Self;
+    #[verified_engine::verified]
     fn mul(self, scalar: f64) -> Self {
         Self {
             velocity: self.velocity * scalar,
@@ -147,6 +161,7 @@ impl Mul<f64> for FlowState {
 }
 
 impl MulAssign<f64> for FlowState {
+    #[verified_engine::verified]
     fn mul_assign(&mut self, scalar: f64) {
         self.velocity *= scalar;
         self.pressure *= scalar;
@@ -154,11 +169,13 @@ impl MulAssign<f64> for FlowState {
 }
 
 impl VectorOperations for FlowState {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         self.velocity += other.velocity * scale;
         self.pressure += other.pressure * scale;
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         *self = *other;
     }
@@ -179,6 +196,7 @@ pub struct SpatialGradients {
 }
 
 impl SpatialGradients {
+    #[verified_engine::verified]
     pub fn new(
         velocity_gradient: Matrix3<f64>,
         pressure_gradient: Vector3<f64>,

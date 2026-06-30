@@ -21,6 +21,7 @@ impl LayerNorm {
     /// # Returns
     ///
     /// A new `LayerNorm` instance.
+    #[verified_engine::verified]
     pub fn new(d_model: usize) -> Self {
         Self {
             epsilon: 1e-6,
@@ -30,6 +31,7 @@ impl LayerNorm {
     }
 
     /// Applies layer normalization to the input.
+    #[verified_engine::verified]
     pub fn forward_impl(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         let mut output = DMatrix::zeros(x.nrows(), x.ncols());
         for r in 0..x.nrows() {
@@ -50,12 +52,14 @@ impl LayerNorm {
     }
 
     /// Applies layer normalization to the input.
+    #[verified_engine::verified]
     pub fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         self.forward_impl(x)
     }
 }
 
 impl NormalizationLayer for LayerNorm {
+    #[verified_engine::verified]
     fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         self.forward_impl(x)
     }
@@ -67,6 +71,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_layer_norm() {
         let d_model = 4;
         let layer_norm = LayerNorm::new(d_model);

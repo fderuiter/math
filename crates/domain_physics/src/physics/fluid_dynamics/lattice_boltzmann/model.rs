@@ -7,10 +7,15 @@ use verified_engine::Theory;
 /// This uses the **Strategy Pattern** to decouple the solver logic from the
 /// specific lattice arrangement (D2Q9, D2Q5, etc.).
 pub trait Lattice2D<const Q: usize>: Copy + Clone + Send + Sync + 'static {
+    #[verified_engine::verified]
     fn weights() -> [f64; Q];
+    #[verified_engine::verified]
     fn directions_x() -> [i32; Q];
+    #[verified_engine::verified]
     fn directions_y() -> [i32; Q];
+    #[verified_engine::verified]
     fn opposite_indices() -> [usize; Q];
+    #[verified_engine::verified]
     fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; Q];
 }
 
@@ -22,6 +27,7 @@ pub struct D2Q9;
 
 impl Lattice2D<9> for D2Q9 {
     #[inline(always)]
+    #[verified_engine::verified]
     fn weights() -> [f64; 9] {
         [
             4.0 / 9.0,
@@ -37,21 +43,25 @@ impl Lattice2D<9> for D2Q9 {
     }
 
     #[inline(always)]
+    #[verified_engine::verified]
     fn directions_x() -> [i32; 9] {
         [0, 1, 0, -1, 0, 1, -1, -1, 1]
     }
 
     #[inline(always)]
+    #[verified_engine::verified]
     fn directions_y() -> [i32; 9] {
         [0, 0, 1, 0, -1, 1, 1, -1, -1]
     }
 
     #[inline(always)]
+    #[verified_engine::verified]
     fn opposite_indices() -> [usize; 9] {
         [0, 3, 4, 1, 2, 7, 8, 5, 6]
     }
 
     #[inline(always)]
+    #[verified_engine::verified]
     fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; 9] {
         let mut eq = [0.0; 9];
         let u2 = ux * ux + uy * uy;
@@ -70,6 +80,7 @@ impl Lattice2D<9> for D2Q9 {
 /// Trait defining the collision operator strategy.
 pub trait CollisionModel<const Q: usize, L: Lattice2D<Q>> {
     /// Applies the collision operator to the distribution function `f`.
+    #[verified_engine::verified]
     fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64);
 }
 
@@ -82,6 +93,7 @@ pub struct BgkCollision {
 
 impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
     #[inline(always)]
+    #[verified_engine::verified]
     fn apply(&self, f: &mut [f64; Q], rho: f64, ux: f64, uy: f64) {
         let omega = 1.0 / self.tau;
         let eq = L::equilibrium(rho, ux, uy);

@@ -18,6 +18,7 @@ impl Gaussian3D {
     /// Computes the 3D covariance matrix from scale and rotation.
     ///
     /// sigma = R * S * S^T * R^T
+    #[verified_engine::verified]
     pub fn compute_covariance(&self) -> Matrix3<f64> {
         let s = Matrix3::from_diagonal(&self.scale);
         let r = self.rotation.to_rotation_matrix();
@@ -48,6 +49,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_covariance_computation() {
         let scale = Vector3::new(1.0, 2.0, 3.0);
         let rotation = UnitQuaternion::identity();

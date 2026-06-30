@@ -3,6 +3,7 @@ use approx::assert_relative_eq;
 use nalgebra::DMatrix;
 
 #[test]
+#[verified_engine::verified]
 fn test_cfg() {
     let rows = 2;
     let cols = 2;

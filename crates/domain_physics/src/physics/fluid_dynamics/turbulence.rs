@@ -14,10 +14,12 @@ pub struct ReynoldsDecomposition {
 }
 
 impl ReynoldsDecomposition {
+    #[verified_engine::verified]
     pub fn new(mean: f64, fluctuating: f64) -> Self {
         Self { mean, fluctuating }
     }
 
+    #[verified_engine::verified]
     pub fn instantaneous(&self) -> f64 {
         self.mean + self.fluctuating
     }
@@ -39,6 +41,7 @@ impl ReynoldsStressTensor {
     ///
     /// * `rho`: Fluid density.
     /// * `correlations`: Matrix where $C_{ij} = \langle u'_i u'_j \rangle$.
+    #[verified_engine::verified]
     pub fn from_fluctuations(rho: f64, correlations: Matrix3<f64>) -> Self {
         Self {
             tensor: correlations * -rho,

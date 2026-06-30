@@ -17,6 +17,7 @@ pub struct ScoringContext<'a, I: Integrator + ?Sized> {
 }
 
 impl<'a, I: Integrator + ?Sized> ScoringContext<'a, I> {
+    #[verified_engine::verified]
     pub fn new(inputs: &FavoritismInputs, rng: &'a mut dyn RngCore, integrator: &'a I) -> Self {
         let safe_x0 = if inputs.time.x_0.abs() < EPSILON {
             EPSILON
@@ -44,6 +45,7 @@ pub struct UnifiedFavoritismModel<I: Integrator + ?Sized> {
 }
 
 impl<I: Integrator + ?Sized> Default for UnifiedFavoritismModel<I> {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             numerator_strategies: vec![
@@ -64,6 +66,7 @@ impl<I: Integrator + ?Sized> Default for UnifiedFavoritismModel<I> {
 
 impl<I: Integrator + ?Sized> UnifiedFavoritismModel<I> {
     /// Calculates the favoritism score using the composed strategies.
+    #[verified_engine::verified]
     pub fn calculate(
         &self,
         inputs: &FavoritismInputs,
@@ -88,6 +91,7 @@ impl<I: Integrator + ?Sized> UnifiedFavoritismModel<I> {
 
 /// A strategy for calculating a component of the favoritism score.
 pub trait ScoringStrategy<I: Integrator + ?Sized> {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, ctx: &mut ScoringContext<I>) -> f64;
 }
 
@@ -95,6 +99,7 @@ pub trait ScoringStrategy<I: Integrator + ?Sized> {
 
 pub struct ProximityStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for ProximityStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, _inputs: &FavoritismInputs, ctx: &mut ScoringContext<I>) -> f64 {
         ctx.integrator
             .integrate(|_t| 1.0 / ctx.safe_x0, 0.0, ctx.safe_t, EPSILON)
@@ -104,6 +109,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for ProximityStrategy {
 
 pub struct EmotionalSupportStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for EmotionalSupportStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, _inputs: &FavoritismInputs, ctx: &mut ScoringContext<I>) -> f64 {
         ctx.integrator
             .integrate(
@@ -118,6 +124,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for EmotionalSupportStrategy {
 
 pub struct GiftStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for GiftStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, _ctx: &mut ScoringContext<I>) -> f64 {
         let gift_matrix = DMatrix::from_diagonal(&DVector::from_vec(vec![
             inputs.gifts.g_emotional,
@@ -129,6 +136,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for GiftStrategy {
 
 pub struct ComplimentStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for ComplimentStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, _ctx: &mut ScoringContext<I>) -> f64 {
         inputs
             .compliments
@@ -139,6 +147,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for ComplimentStrategy {
 
 pub struct ContactFrequencyStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for ContactFrequencyStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, _ctx: &mut ScoringContext<I>) -> f64 {
         (1.0 + inputs.contact.f_initial).max(EPSILON).ln()
     }
@@ -146,6 +155,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for ContactFrequencyStrategy {
 
 pub struct PersonalityStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for PersonalityStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, _ctx: &mut ScoringContext<I>) -> f64 {
         inputs.personality.w_i * inputs.personality.intelligence
             + inputs.personality.w_es * inputs.personality.emotional_sensitivity
@@ -156,6 +166,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for PersonalityStrategy {
 
 pub struct SocialMultiplierStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for SocialMultiplierStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, _ctx: &mut ScoringContext<I>) -> f64 {
         let mut multiplier = inputs.social.birth_order_weight * inputs.social.major_life_events;
 
@@ -175,6 +186,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for SocialMultiplierStrategy {
 
 pub struct DecayStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for DecayStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, _ctx: &mut ScoringContext<I>) -> f64 {
         (-inputs.contact.decay_constant * inputs.contact.time_since_last_contact).exp()
     }
@@ -182,6 +194,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for DecayStrategy {
 
 pub struct StochasticStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for StochasticStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, _inputs: &FavoritismInputs, ctx: &mut ScoringContext<I>) -> f64 {
         // Rng is implemented for &mut dyn RngCore, so we can call gen_range
         // However, gen_range is in the Rng trait which is not object safe?
@@ -196,6 +209,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for StochasticStrategy {
 
 pub struct SiblingCompetitionStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for SiblingCompetitionStrategy {
+    #[verified_engine::verified]
     fn calculate(&self, inputs: &FavoritismInputs, ctx: &mut ScoringContext<I>) -> f64 {
         let sibling_proximity_integral = ctx
             .integrator

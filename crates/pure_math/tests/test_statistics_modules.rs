@@ -8,6 +8,7 @@ mod glicko2_tests {
     };
 
     #[test]
+    #[verified_engine::verified]
     fn test_glicko2_basic_update() {
         let player = GlickoPlayer::new(
             Rating::new(1500.0).unwrap(),
@@ -43,6 +44,7 @@ mod kelly_tests {
     };
 
     #[test]
+    #[verified_engine::verified]
     fn test_kelly_positive_edge() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -64,6 +66,7 @@ mod tda_tests {
     };
 
     #[test]
+    #[verified_engine::verified]
     fn test_tda_basic() {
         // Three points forming a triangle
         let points = vec![

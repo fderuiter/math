@@ -4,12 +4,15 @@ use nalgebra::Vector3;
 /// Defines how to convert to/from Cartesian and the scale factors.
 pub trait OrthogonalCoordinateSystem {
     /// Converts a point from this coordinate system to Cartesian (x, y, z).
+    #[verified_engine::verified]
     fn local_to_cartesian(&self, point: &Vector3<f64>) -> Vector3<f64>;
 
     /// Converts a point from Cartesian (x, y, z) to this coordinate system.
+    #[verified_engine::verified]
     fn cartesian_to_local(&self, cartesian: &Vector3<f64>) -> Vector3<f64>;
 
     /// Returns the scale factors $(h_1, h_2, h_3)$ at the given point (in this coordinate system).
+    #[verified_engine::verified]
     fn scale_factors(&self, point: &Vector3<f64>) -> Vector3<f64>;
 }
 
@@ -18,14 +21,17 @@ pub trait OrthogonalCoordinateSystem {
 pub struct Cartesian;
 
 impl OrthogonalCoordinateSystem for Cartesian {
+    #[verified_engine::verified]
     fn local_to_cartesian(&self, point: &Vector3<f64>) -> Vector3<f64> {
         *point
     }
 
+    #[verified_engine::verified]
     fn cartesian_to_local(&self, cartesian: &Vector3<f64>) -> Vector3<f64> {
         *cartesian
     }
 
+    #[verified_engine::verified]
     fn scale_factors(&self, _point: &Vector3<f64>) -> Vector3<f64> {
         Vector3::new(1.0, 1.0, 1.0)
     }
@@ -36,6 +42,7 @@ impl OrthogonalCoordinateSystem for Cartesian {
 pub struct Cylindrical;
 
 impl OrthogonalCoordinateSystem for Cylindrical {
+    #[verified_engine::verified]
     fn local_to_cartesian(&self, point: &Vector3<f64>) -> Vector3<f64> {
         let rho = point[0];
         let phi = point[1];
@@ -43,6 +50,7 @@ impl OrthogonalCoordinateSystem for Cylindrical {
         Vector3::new(rho * phi.cos(), rho * phi.sin(), z)
     }
 
+    #[verified_engine::verified]
     fn cartesian_to_local(&self, cartesian: &Vector3<f64>) -> Vector3<f64> {
         let x = cartesian[0];
         let y = cartesian[1];
@@ -52,6 +60,7 @@ impl OrthogonalCoordinateSystem for Cylindrical {
         Vector3::new(rho, phi, z)
     }
 
+    #[verified_engine::verified]
     fn scale_factors(&self, point: &Vector3<f64>) -> Vector3<f64> {
         let rho = point[0];
         Vector3::new(1.0, rho, 1.0)
@@ -64,6 +73,7 @@ impl OrthogonalCoordinateSystem for Cylindrical {
 pub struct Spherical;
 
 impl OrthogonalCoordinateSystem for Spherical {
+    #[verified_engine::verified]
     fn local_to_cartesian(&self, point: &Vector3<f64>) -> Vector3<f64> {
         let r = point[0];
         let theta = point[1];
@@ -76,6 +86,7 @@ impl OrthogonalCoordinateSystem for Spherical {
         )
     }
 
+    #[verified_engine::verified]
     fn cartesian_to_local(&self, cartesian: &Vector3<f64>) -> Vector3<f64> {
         let x = cartesian[0];
         let y = cartesian[1];
@@ -89,6 +100,7 @@ impl OrthogonalCoordinateSystem for Spherical {
         Vector3::new(r, theta, phi)
     }
 
+    #[verified_engine::verified]
     fn scale_factors(&self, point: &Vector3<f64>) -> Vector3<f64> {
         let r = point[0];
         let theta = point[1];

@@ -41,6 +41,7 @@ use crate::error::KellyError;
 ///
 /// Kelly, J. L. (1956). "A New Interpretation of Information Rate."
 /// Bell System Technical Journal, 35(4), 917–926.
+#[verified_engine::verified]
 pub fn kelly_fraction(
     probability: &EdgeProbability,
     odds: &Odds,
@@ -101,6 +102,7 @@ pub fn kelly_fraction(
 /// let half_kelly = fractional_kelly(&p, &odds, 0.5).unwrap();
 /// println!("Half-Kelly fraction: {}", half_kelly.value());
 /// ```
+#[verified_engine::verified]
 pub fn fractional_kelly(
     probability: &EdgeProbability,
     odds: &Odds,
@@ -152,6 +154,7 @@ pub fn fractional_kelly(
 /// let growth = expected_growth_rate(&p, &odds, &kelly);
 /// println!("Expected growth rate: {:.4}", growth);
 /// ```
+#[verified_engine::verified]
 pub fn expected_growth_rate(
     probability: &EdgeProbability,
     odds: &Odds,
@@ -203,6 +206,7 @@ pub fn expected_growth_rate(
 ///     println!("Positive EV: {:.4} per unit staked", ev);
 /// }
 /// ```
+#[verified_engine::verified]
 pub fn expected_value(probability: &EdgeProbability, odds: &Odds) -> f64 {
     let p = probability.value();
     let q = probability.complement();
@@ -218,6 +222,7 @@ pub mod variants {
     /// Computes quarter-Kelly (25% of full Kelly).
     ///
     /// Very conservative approach with minimal drawdowns.
+    #[verified_engine::verified]
     pub fn quarter_kelly(
         probability: &EdgeProbability,
         odds: &Odds,
@@ -228,6 +233,7 @@ pub mod variants {
     /// Computes half-Kelly (50% of full Kelly).
     ///
     /// Balanced approach: 75% of full Kelly growth with 50% of variance.
+    #[verified_engine::verified]
     pub fn half_kelly(
         probability: &EdgeProbability,
         odds: &Odds,
@@ -241,6 +247,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_kelly_fraction_positive_edge() {
         // 55% win probability, 2:1 odds (even money)
         let p = EdgeProbability::new(0.55).unwrap();
@@ -252,6 +259,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_kelly_fraction_no_edge() {
         // Fair coin, even money odds (no edge)
         let p = EdgeProbability::new(0.5).unwrap();
@@ -262,6 +270,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_kelly_fraction_large_edge() {
         // 70% win probability, 2:1 odds
         let p = EdgeProbability::new(0.70).unwrap();
@@ -273,6 +282,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fractional_kelly_half() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -283,6 +293,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fractional_kelly_quarter() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -293,6 +304,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_expected_growth_rate_full_kelly() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -305,6 +317,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_expected_growth_rate_zero_bet() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -317,6 +330,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_expected_growth_rate_overbetting() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -330,6 +344,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_expected_value_positive_edge() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -341,6 +356,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_expected_value_no_edge() {
         let p = EdgeProbability::new(0.5).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -352,6 +368,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_expected_value_negative_edge() {
         let p = EdgeProbability::new(0.45).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -363,6 +380,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_variants_quarter_kelly() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -374,6 +392,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_variants_half_kelly() {
         let p = EdgeProbability::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
@@ -385,6 +404,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_realistic_sports_betting() {
         // Realistic scenario: 53% win rate with -110 odds (American)
         // -110 converts to approximately 1.909 decimal odds
@@ -405,6 +425,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_high_odds_scenario() {
         // Long shot: 20% win probability, 6:1 odds
         let p = EdgeProbability::new(0.20).unwrap();

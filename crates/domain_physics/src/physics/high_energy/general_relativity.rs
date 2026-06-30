@@ -11,6 +11,7 @@ impl SchwarzschildBlackHole {
     ///
     /// # Errors
     /// Returns `HighEnergyError::InvalidMass` if `mass <= 0`.
+    #[verified_engine::verified]
     pub fn new(mass: f64) -> Result<Self, HighEnergyError> {
         if mass <= 0.0 {
             return Err(HighEnergyError::InvalidMass { mass });
@@ -23,6 +24,7 @@ impl SchwarzschildBlackHole {
     ///
     /// # Errors
     /// Returns error if calculation fails (though unlikely with valid mass).
+    #[verified_engine::verified]
     pub fn schwarzschild_radius(&self) -> Result<f64, HighEnergyError> {
         // Technically this can't fail if mass is valid, but keeping Result for consistency/API stability if needed
         Ok((2.0 * G * self.mass) / C.powi(2))
@@ -33,6 +35,7 @@ impl SchwarzschildBlackHole {
     ///
     /// # Errors
     /// Returns `HighEnergyError::InvalidRadius` if `r <= Rs`.
+    #[verified_engine::verified]
     pub fn gravitational_time_dilation(&self, r: f64) -> Result<f64, HighEnergyError> {
         let rs = self.schwarzschild_radius()?;
         if r <= rs {
@@ -46,6 +49,7 @@ impl SchwarzschildBlackHole {
 
     /// Calculates the Innermost Stable Circular Orbit (ISCO).
     /// Formula: R_ISCO = 6GM / c^2
+    #[verified_engine::verified]
     pub fn isco(&self) -> Result<f64, HighEnergyError> {
         Ok((6.0 * G * self.mass) / C.powi(2))
     }
@@ -58,6 +62,7 @@ mod tests {
     use math_commons::constants::SOLAR_MASS;
 
     #[test]
+    #[verified_engine::verified]
     fn test_schwarzschild() {
         let mass = SOLAR_MASS;
         let bh = SchwarzschildBlackHole::new(mass).expect("Failed to create BH");
@@ -78,6 +83,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_errors() {
         assert!(SchwarzschildBlackHole::new(-1.0).is_err());
 

@@ -57,6 +57,7 @@ impl MomentumType {
     /// let momentum_type = MomentumType::classify(theta.value());
     /// assert_eq!(momentum_type, MomentumType::HeatCheck);
     /// ```
+    #[verified_engine::verified]
     pub fn classify(theta: f64) -> Self {
         if theta > 2.0 {
             Self::FlashInPan
@@ -68,6 +69,7 @@ impl MomentumType {
     }
 
     /// Returns a description of the momentum type.
+    #[verified_engine::verified]
     pub fn description(&self) -> &str {
         match self {
             Self::FlashInPan => "Flash in the pan - streaks revert quickly",
@@ -102,6 +104,7 @@ impl OuAnalyzer {
     /// let dt = TimeStep::new(0.01).unwrap();
     /// let analyzer = OuAnalyzer::new(params, dt);
     /// ```
+    #[verified_engine::verified]
     pub fn new(params: OuParams, dt: TimeStep) -> Self {
         Self { params, dt }
     }
@@ -111,6 +114,7 @@ impl OuAnalyzer {
     /// # Returns
     ///
     /// The momentum type classification
+    #[verified_engine::verified]
     pub fn momentum_type(&self) -> MomentumType {
         MomentumType::classify(self.params.theta.value())
     }
@@ -143,6 +147,7 @@ impl OuAnalyzer {
     /// let mut rng = StdRng::seed_from_u64(42);
     /// let stats = analyzer.monte_carlo_forecast(0.50, 1.0, 10000, Some(0.48), &mut rng);
     /// ```
+    #[verified_engine::verified]
     pub fn monte_carlo_forecast<R: Rng>(
         &self,
         x0: f64,
@@ -203,6 +208,7 @@ impl OuAnalyzer {
     /// # Returns
     ///
     /// The probability of reaching the target
+    #[verified_engine::verified]
     pub fn comeback_probability<R: Rng>(
         &self,
         current_score: f64,
@@ -222,6 +228,7 @@ impl OuAnalyzer {
     }
 
     /// Returns the OU parameters.
+    #[verified_engine::verified]
     pub fn params(&self) -> OuParams {
         self.params
     }
@@ -247,6 +254,7 @@ impl OuAnalyzer {
 /// let dt = 1.0;  // One observation per time unit
 /// let params = estimate_ou_params(&observations, dt).unwrap();
 /// ```
+#[verified_engine::verified]
 pub fn estimate_ou_params(observations: &[f64], dt: f64) -> Result<OuParams, OuError> {
     if observations.len() < 3 {
         return Err(OuError::InsufficientData {
@@ -296,6 +304,7 @@ mod tests {
     use rand::rngs::StdRng;
 
     #[test]
+    #[verified_engine::verified]
     fn test_momentum_type_classification() {
         assert_eq!(MomentumType::classify(3.0), MomentumType::FlashInPan);
         assert_eq!(MomentumType::classify(1.0), MomentumType::Normal);
@@ -303,6 +312,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_ou_analyzer_creation() {
         let params = OuParams::from_values(0.45, 1.0, 0.15).unwrap();
         let dt = TimeStep::new(0.01).unwrap();
@@ -312,6 +322,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_monte_carlo_forecast() {
         let params = OuParams::from_values(0.5, 1.0, 0.2).unwrap();
         let dt = TimeStep::new(0.01).unwrap();
@@ -327,6 +338,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_comeback_probability() {
         let params = OuParams::from_values(0.5, 1.0, 0.3).unwrap();
         let dt = TimeStep::new(0.01).unwrap();
@@ -342,6 +354,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_estimate_ou_params() {
         // Generate synthetic data from known OU process
         let true_params = OuParams::from_values(0.5, 1.0, 0.2).unwrap();
@@ -361,6 +374,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_estimate_ou_params_insufficient_data() {
         let observations = vec![0.5, 0.6];
         let result = estimate_ou_params(&observations, 1.0);

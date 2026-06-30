@@ -17,6 +17,7 @@ pub struct IntegrationResult {
 /// A trait for numerical integration strategies.
 pub trait Integrator: Send + Sync {
     /// Integrates the function `f` over the interval `[min, max]` with a target error `eps`.
+    #[verified_engine::verified]
     fn integrate<F>(&self, f: F, min: f64, max: f64, eps: f64) -> IntegrationResult
     where
         F: Fn(f64) -> f64;
@@ -29,6 +30,7 @@ pub trait Integrator: Send + Sync {
 pub struct ClenshawCurtis;
 
 impl Integrator for ClenshawCurtis {
+    #[verified_engine::verified]
     fn integrate<F>(&self, f: F, min: f64, max: f64, eps: f64) -> IntegrationResult
     where
         F: Fn(f64) -> f64,
@@ -53,18 +55,21 @@ pub struct Trapezoidal {
 
 impl Trapezoidal {
     /// Creates a new Trapezoidal integrator with the specified number of steps.
+    #[verified_engine::verified]
     pub fn new(steps: usize) -> Self {
         Self { steps }
     }
 }
 
 impl Default for Trapezoidal {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self { steps: 100 }
     }
 }
 
 impl Integrator for Trapezoidal {
+    #[verified_engine::verified]
     fn integrate<F>(&self, f: F, min: f64, max: f64, _eps: f64) -> IntegrationResult
     where
         F: Fn(f64) -> f64,

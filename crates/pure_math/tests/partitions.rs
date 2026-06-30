@@ -1,6 +1,7 @@
 use pure_math::pure_math::number_theory::partitions::*;
 
 #[test]
+#[verified_engine::verified]
 fn test_qseries_add() {
     let s1 = QSeries::from_vec(vec![1, 2, 3]);
     let s2 = QSeries::from_vec(vec![4, 5, 6, 7]);
@@ -9,6 +10,7 @@ fn test_qseries_add() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_qseries_mul() {
     let s1 = QSeries::from_vec(vec![1, 1]); // 1+q
     let s2 = QSeries::from_vec(vec![1, 1]); // 1+q
@@ -22,6 +24,7 @@ fn test_qseries_mul() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_qseries_div() {
     // (1-q^4) / (1-q^2) = 1+q^2
     let s1 = f_k(1, 10);
@@ -37,6 +40,7 @@ fn test_qseries_div() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_f_k() {
     // f_1 = 1 - q - q^2 + q^5 + q^7 - ... (Euler's pentagonal number theorem)
     let f1 = f_k(1, 10);
@@ -48,6 +52,7 @@ fn test_f_k() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_f1_pow2() {
     let f1 = f_k(1, 10);
     let f1_pow2 = f1.pow(2);
@@ -55,18 +60,21 @@ fn test_f1_pow2() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_gen_p_star() {
     let p_star = gen_p_star(10);
     assert_eq!(p_star.coeffs, vec![1, -4, 2, 8, -5, -8, 6, 0, -23, 20]);
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_gen_m() {
     let m = gen_m(7);
     assert_eq!(m.coeffs, vec![1, 1, -3, -2, 0, -8, 1]);
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_1() {
     let precision = 40;
     let p_star = gen_p_star(precision);
@@ -100,6 +108,7 @@ fn test_theorem_1() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_2() {
     let precision = 40;
     let p_star = gen_p_star(precision);
@@ -120,6 +129,7 @@ fn test_theorem_2() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_corollary_2_alpha_1() {
     let precision = 30;
     let m = gen_m(precision);

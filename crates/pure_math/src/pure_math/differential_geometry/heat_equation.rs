@@ -68,6 +68,7 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
     /// // Heat should have diffused, lowering the peak temperature
     /// assert!(final_max < initial_max);
     /// ```
+    #[verified_engine::verified]
     pub fn new(
         surface: &'a S,
         alpha: f64,
@@ -103,6 +104,7 @@ impl<'a, S: ParametricSurface> HeatEquationSolver<'a, S> {
 
     /// Advances the simulation by time step `dt`.
     /// Uses $\Delta_S f = \frac{1}{\sqrt{g}} [ \partial_u (\frac{G f_u - F f_v}{\sqrt{g}}) + \partial_v (\frac{E f_v - F f_u}{\sqrt{g}}) ]$
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         let (nu, nv) = self.grid_res;
         let du = (self.range_u.1 - self.range_u.0) / (nu as f64 - 1.0);

@@ -16,6 +16,7 @@ pub struct ChemicalState {
 
 impl ChemicalState {
     /// Creates a new zero-initialized chemical state.
+    #[verified_engine::verified]
     pub fn new(num_species: usize, grid_size: usize) -> Self {
         Self {
             num_species,
@@ -26,18 +27,21 @@ impl ChemicalState {
 
     /// Returns the number of chemical species.
     #[inline]
+    #[verified_engine::verified]
     pub fn num_species(&self) -> usize {
         self.num_species
     }
 
     /// Returns the size of the spatial grid.
     #[inline]
+    #[verified_engine::verified]
     pub fn grid_size(&self) -> usize {
         self.grid_size
     }
 
     /// Returns a reference to the concentration slice for a specific species.
     #[inline]
+    #[verified_engine::verified]
     pub fn species(&self, index: usize) -> &[f64] {
         let start = index * self.grid_size;
         &self.concentrations[start..start + self.grid_size]
@@ -45,6 +49,7 @@ impl ChemicalState {
 
     /// Returns a mutable reference to the concentration slice for a specific species.
     #[inline]
+    #[verified_engine::verified]
     pub fn species_mut(&mut self, index: usize) -> &mut [f64] {
         let start = index * self.grid_size;
         &mut self.concentrations[start..start + self.grid_size]
@@ -55,6 +60,7 @@ impl ChemicalState {
 impl Add for ChemicalState {
     type Output = Self;
 
+    #[verified_engine::verified]
     fn add(mut self, rhs: Self) -> Self {
         for (val, r_val) in self
             .concentrations
@@ -68,6 +74,7 @@ impl Add for ChemicalState {
 }
 
 impl AddAssign for ChemicalState {
+    #[verified_engine::verified]
     fn add_assign(&mut self, rhs: Self) {
         for (val, r_val) in self
             .concentrations
@@ -82,6 +89,7 @@ impl AddAssign for ChemicalState {
 impl Mul<f64> for ChemicalState {
     type Output = Self;
 
+    #[verified_engine::verified]
     fn mul(mut self, scalar: f64) -> Self {
         for val in self.concentrations.iter_mut() {
             *val *= scalar;
@@ -91,6 +99,7 @@ impl Mul<f64> for ChemicalState {
 }
 
 impl MulAssign<f64> for ChemicalState {
+    #[verified_engine::verified]
     fn mul_assign(&mut self, scalar: f64) {
         for val in self.concentrations.iter_mut() {
             *val *= scalar;
@@ -99,6 +108,7 @@ impl MulAssign<f64> for ChemicalState {
 }
 
 impl VectorOperations for ChemicalState {
+    #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
         for (val, r_val) in self
             .concentrations
@@ -109,6 +119,7 @@ impl VectorOperations for ChemicalState {
         }
     }
 
+    #[verified_engine::verified]
     fn copy_from(&mut self, other: &Self) {
         if self.num_species != other.num_species || self.grid_size != other.grid_size {
             // Reallocate if dimensions mismatch
@@ -120,6 +131,7 @@ impl VectorOperations for ChemicalState {
         self.concentrations.copy_from_slice(&other.concentrations);
     }
 
+    #[verified_engine::verified]
     fn copy_from_scaled(&mut self, source: &Self, other: &Self, scale: f64) {
         if self.num_species != source.num_species || self.grid_size != source.grid_size {
             // Reallocate if dimensions mismatch.

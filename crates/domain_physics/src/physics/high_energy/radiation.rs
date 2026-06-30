@@ -12,6 +12,7 @@ use math_commons::constants::{C, SIGMA_T};
 /// # Errors
 /// * `HighEnergyError::InvalidEnergyDensity` if `u_b < 0`.
 /// * `HighEnergyError::InvalidLorentzFactor` if `gamma < 1`.
+#[verified_engine::verified]
 pub fn synchrotron_power(u_b: f64, beta: f64, gamma: f64) -> Result<f64, HighEnergyError> {
     if u_b < 0.0 {
         return Err(HighEnergyError::InvalidEnergyDensity { u_b });
@@ -30,6 +31,7 @@ pub fn synchrotron_power(u_b: f64, beta: f64, gamma: f64) -> Result<f64, HighEne
 ///
 /// # Errors
 /// * `HighEnergyError::InvalidPowerLawIndex` if `p <= 1`.
+#[verified_engine::verified]
 pub fn inverse_compton_spectral_index(p: f64) -> Result<f64, HighEnergyError> {
     if p <= 1.0 {
         return Err(HighEnergyError::InvalidPowerLawIndex { p });
@@ -43,6 +45,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_radiation() {
         // Synchrotron
         // beta -> 1, gamma = 2. U_B = 1.
@@ -61,6 +64,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_errors() {
         assert!(synchrotron_power(-1.0, 0.9, 10.0).is_err());
         assert!(synchrotron_power(1.0, 0.9, 0.5).is_err());

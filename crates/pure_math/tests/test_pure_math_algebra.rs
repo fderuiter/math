@@ -5,6 +5,7 @@ use pure_math::pure_math::algebra::traits::{Field, Group, Monoid, Ring, Semigrou
 use pure_math::pure_math::algebra::*;
 
 #[test]
+#[verified_engine::verified]
 fn test_cyclic_group_z5() {
     // Z5 is a group under addition mod 5
     let a = Zn::<5>::new(2);
@@ -21,6 +22,7 @@ fn test_cyclic_group_z5() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_subgroups_z6() {
     // Z6 = {0, 1, 2, 3, 4, 5}
     // H = {0, 2, 4} should be a subgroup
@@ -41,6 +43,7 @@ fn test_subgroups_z6() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_permutation_s3() {
     // S3 perms of {0, 1, 2}
     let p1 = Permutation::new(vec![1, 0, 2]); // (0 1)
@@ -68,6 +71,7 @@ fn test_permutation_s3() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_finite_field_f7() {
     let a = Fp::<7>::new(3);
     let b = Fp::<7>::new(4);
@@ -85,6 +89,7 @@ fn test_finite_field_f7() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_polynomial_arithmetic() {
     // P(x) = 1 + x (in Z_5)
     let p1 = Polynomial::new(vec![Fp::<5>::new(1), Fp::<5>::new(1)]);
@@ -103,6 +108,7 @@ fn test_polynomial_arithmetic() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_lagrange_theorem_check() {
     // Lagrange: |H| divides |G|
     // Z6 has order 6.
@@ -129,6 +135,7 @@ fn test_lagrange_theorem_check() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_normal_subgroup_check() {
     // In Z6 (abelian), all subgroups are normal.
     let h_vals = [0, 2, 4];

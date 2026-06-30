@@ -16,6 +16,7 @@ use nalgebra::DMatrix;
 /// # Returns
 ///
 /// A `DMatrix<f64>` of shape `(sequence_length, d_model)` containing the positional encodings.
+#[verified_engine::verified]
 pub fn generate_positional_encoding(sequence_length: usize, d_model: usize) -> DMatrix<f64> {
     let mut pe_matrix = DMatrix::zeros(sequence_length, d_model);
     let d_model_f64 = d_model as f64;
@@ -48,6 +49,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_positional_encoding_dimensions() {
         let sequence_length = 50;
         let d_model = 512;
@@ -57,6 +59,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_positional_encoding_values_at_pos_0() {
         let pe = generate_positional_encoding(10, 512);
         for i in 0..(512 / 2) {
@@ -68,6 +71,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_positional_encoding_arbitrary_value() {
         let d_model = 512;
         let pe = generate_positional_encoding(100, d_model);

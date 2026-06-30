@@ -12,6 +12,7 @@ pub trait AttentionMechanism {
     ///
     /// # Returns
     /// The context vectors (output matrix).
+    #[verified_engine::verified]
     fn forward(
         &self,
         q: &DMatrix<f64>,
@@ -30,6 +31,7 @@ pub trait FeedForwardNetwork {
     ///
     /// # Returns
     /// The output matrix.
+    #[verified_engine::verified]
     fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64>;
 }
 
@@ -42,5 +44,6 @@ pub trait NormalizationLayer {
     ///
     /// # Returns
     /// The normalized matrix.
+    #[verified_engine::verified]
     fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64>;
 }

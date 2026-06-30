@@ -19,6 +19,7 @@ pub struct FourVector {
 
 impl FourVector {
     /// Creates a new FourVector.
+    #[verified_engine::verified]
     pub fn new(t: f64, x: f64, y: f64, z: f64) -> Self {
         Self { t, x, y, z }
     }
@@ -26,6 +27,7 @@ impl FourVector {
     /// Calculates the spacetime interval s^2.
     /// Formula: s^2 = -(ct)^2 + x^2 + y^2 + z^2.
     /// This assumes `self.t` is time in seconds.
+    #[verified_engine::verified]
     pub fn invariant_interval(&self) -> Result<f64, HighEnergyError> {
         let ct = C * self.t;
         Ok(-(ct * ct) + self.x * self.x + self.y * self.y + self.z * self.z)
@@ -39,6 +41,7 @@ impl FourVector {
     ///
     /// # Errors
     /// * `HighEnergyError::InvalidMass` if `mass < 0`.
+    #[verified_engine::verified]
     pub fn is_valid_momentum(&self, mass: f64) -> Result<bool, HighEnergyError> {
         if mass < 0.0 {
             return Err(HighEnergyError::InvalidMass { mass });
@@ -66,6 +69,7 @@ impl FourVector {
 ///
 /// # Errors
 /// * `HighEnergyError::InvalidVelocity` if `|v| >= c`.
+#[verified_engine::verified]
 pub fn calculate_lorentz_factor(v: f64) -> Result<f64, HighEnergyError> {
     let beta = v / C;
     if beta.abs() >= 1.0 {
@@ -81,6 +85,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_special_relativity() {
         // Lorentz Factor: v = 0.6c => gamma = 1.25
         let v = 0.6 * C;
@@ -115,6 +120,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_errors() {
         assert!(calculate_lorentz_factor(C).is_err());
         assert!(calculate_lorentz_factor(1.1 * C).is_err());

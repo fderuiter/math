@@ -11,6 +11,7 @@ struct UnionFind {
 }
 
 impl UnionFind {
+    #[verified_engine::verified]
     fn new(n: usize) -> Self {
         Self {
             parent: (0..n).collect(),
@@ -18,6 +19,7 @@ impl UnionFind {
         }
     }
 
+    #[verified_engine::verified]
     fn find(&mut self, x: usize) -> usize {
         if self.parent[x] != x {
             self.parent[x] = self.find(self.parent[x]); // Path compression
@@ -25,6 +27,7 @@ impl UnionFind {
         self.parent[x]
     }
 
+    #[verified_engine::verified]
     fn union(&mut self, x: usize, y: usize) {
         let root_x = self.find(x);
         let root_y = self.find(y);
@@ -42,6 +45,7 @@ impl UnionFind {
         }
     }
 
+    #[verified_engine::verified]
     fn count_components(&mut self) -> usize {
         let n = self.parent.len();
         let mut roots = HashSet::new();
@@ -80,6 +84,7 @@ impl UnionFind {
 /// let beta0 = betti_number_0(&complex).unwrap();
 /// assert_eq!(beta0, 2); // Two connected components
 /// ```
+#[verified_engine::verified]
 pub fn betti_number_0(complex: &SimplicialComplex) -> Result<usize, TdaError> {
     let vertices = complex.get_simplices(0);
     if vertices.is_empty() {
@@ -140,6 +145,7 @@ pub fn betti_number_0(complex: &SimplicialComplex) -> Result<usize, TdaError> {
 /// let beta1 = betti_number_1(&complex).unwrap();
 /// assert_eq!(beta1, 1); // One hole
 /// ```
+#[verified_engine::verified]
 pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
     let v = complex.count_simplices(0); // Vertices
     let e = complex.count_simplices(1); // Edges
@@ -215,6 +221,7 @@ pub fn betti_number_1(complex: &SimplicialComplex) -> Result<usize, TdaError> {
 /// println!("Connected components: {}", beta0);
 /// println!("Holes: {}", beta1);
 /// ```
+#[verified_engine::verified]
 pub fn betti_numbers(complex: &SimplicialComplex) -> Result<(usize, usize), TdaError> {
     let beta0 = betti_number_0(complex)?;
     let beta1 = betti_number_1(complex)?;
@@ -228,6 +235,7 @@ mod tests {
     use crate::pure_math::statistics::tda::core::{Point2D, PointCloud, Simplex};
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_number_0_single_vertex() {
         let mut complex = SimplicialComplex::new();
         complex.add_simplex(Simplex::new(vec![0]).unwrap()).unwrap();
@@ -237,6 +245,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_number_0_two_components() {
         let mut complex = SimplicialComplex::new();
         complex.add_simplex(Simplex::new(vec![0]).unwrap()).unwrap();
@@ -248,6 +257,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_number_0_connected() {
         let mut complex = SimplicialComplex::new();
         complex
@@ -259,6 +269,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_number_1_no_cycle() {
         // Simple edge: no cycle
         let mut complex = SimplicialComplex::new();
@@ -271,6 +282,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_number_1_triangle_hollow() {
         // Three edges forming a triangle (hollow - one cycle)
         let mut complex = SimplicialComplex::new();
@@ -289,6 +301,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_number_1_triangle_filled() {
         // Filled triangle (no hole)
         let mut complex = SimplicialComplex::new();
@@ -301,6 +314,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_numbers_two_clusters() {
         let points = vec![
             Point2D::new(0.0, 0.0),
@@ -317,6 +331,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_numbers_circle() {
         // Points arranged in a circle
         let n = 8;
@@ -338,6 +353,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_betti_numbers_line() {
         // Points on a line
         let points = vec![

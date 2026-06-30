@@ -11,6 +11,7 @@ use statrs::distribution::Uniform;
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_equilibrium_integration() {
     let box_set = BoxSet::new(vec![0.0], vec![1.0]);
     assert!(box_set.contains(&DVector::from_vec(vec![0.5])));
@@ -27,6 +28,7 @@ fn test_equilibrium_integration() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_mean_field_integration() {
     let mfg = MeanFieldGame1D::new(0.1, 1.0, 10, 10, -1.0, 1.0);
     // Just ensure it runs without panic
@@ -39,6 +41,7 @@ fn test_mean_field_integration() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_evolutionary_integration() {
     let payoff = DMatrix::from_row_slice(2, 2, &[3.0, 0.0, 5.0, 1.0]); // Prisoner's Dilemma-ish
     let system = ReplicatorDynamics::new(payoff).unwrap();
@@ -48,6 +51,7 @@ fn test_evolutionary_integration() {
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_mechanism_integration() {
     let dist = Uniform::new(0.0, 1.0).unwrap();
     let r = MechanismDesign::optimal_reserve_price(&dist, 0.0, 1.0);

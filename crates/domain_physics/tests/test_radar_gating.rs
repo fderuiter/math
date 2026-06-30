@@ -10,6 +10,7 @@ use domain_physics::physics::medical::radar_gating::{
 use nalgebra::Point3;
 
 #[test]
+#[verified_engine::verified]
 fn test_radar_physics() {
     let config = FmcwConfig::iwr6843_default();
 
@@ -31,6 +32,7 @@ fn test_radar_physics() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_coordinate_transformation() {
     let fft_config = AngleFftConfig {
         n_fft_azimuth: 64,
@@ -68,6 +70,7 @@ fn test_coordinate_transformation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_surface_fitting() {
     // Generate synthetic data on a perfect surface: z = 1 + 0.1x^2 + 0.1y^2
     let mut points = Vec::new();
@@ -94,6 +97,7 @@ fn test_surface_fitting() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_kalman_tracking() {
     let model = ConstantVelocityModel::new(1e-4, 1e-2);
     let mut filter = TrackingFilter::new(0.0, 0.1, model);
@@ -109,6 +113,7 @@ fn test_kalman_tracking() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_gating_logic() {
     let mut gating = GatingLogic::new(10.0, 1.0, 0.0); // Threshold 10, Hysteresis 1
 

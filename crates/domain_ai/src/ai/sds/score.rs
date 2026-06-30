@@ -5,6 +5,7 @@ use nalgebra::DMatrix;
 /// Operation: Pass text through CLIP Text Encoder.
 /// Output: Text Embedding Vectors e_text.
 pub trait TextEncoder {
+    #[verified_engine::verified]
     fn encode(&self, text: &str) -> DMatrix<f64>;
 }
 
@@ -15,6 +16,7 @@ pub trait TextEncoder {
 pub trait DiffusionModel {
     /// Predicts noise given noisy latent, timestep, and text embeddings.
     /// Returns predicted noise epsilon.
+    #[verified_engine::verified]
     fn predict_noise(
         &self,
         latent: &DMatrix<f64>,
@@ -28,6 +30,7 @@ pub trait DiffusionModel {
 /// Operation: Amplify the signal that aligns with the text.
 /// s is the guidance scale.
 /// Output: Guided Noise Prediction.
+#[verified_engine::verified]
 pub fn classifier_free_guidance(
     noise_cond: &DMatrix<f64>,
     noise_uncond: &DMatrix<f64>,

@@ -17,6 +17,7 @@ pub trait MFGSolver {
     ///
     /// # Returns
     /// Tuple `(u, m)` containing the value function and distribution matrices.
+    #[verified_engine::verified]
     fn solve(
         &self,
         config: &MFGConfig,
@@ -37,6 +38,7 @@ pub struct FixedPointSolver<H: Hamiltonian> {
 
 impl FixedPointSolver<QuadraticHamiltonian> {
     /// Creates a new solver with a default Quadratic Hamiltonian ($H = p^2/2$).
+    #[verified_engine::verified]
     pub fn new(iterations: usize) -> Self {
         Self {
             iterations,
@@ -47,6 +49,7 @@ impl FixedPointSolver<QuadraticHamiltonian> {
 
 impl<H: Hamiltonian> FixedPointSolver<H> {
     /// Creates a new solver with a custom Hamiltonian strategy.
+    #[verified_engine::verified]
     pub fn new_with_hamiltonian(iterations: usize, hamiltonian: H) -> Self {
         Self {
             iterations,
@@ -56,6 +59,7 @@ impl<H: Hamiltonian> FixedPointSolver<H> {
 }
 
 impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
+    #[verified_engine::verified]
     fn solve(
         &self,
         config: &MFGConfig,

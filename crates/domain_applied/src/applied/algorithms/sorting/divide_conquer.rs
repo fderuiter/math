@@ -6,6 +6,7 @@ use super::strategy::Sorter;
 pub struct MergeSorter;
 
 impl<T: Ord + Clone> Sorter<T> for MergeSorter {
+    #[verified_engine::verified]
     fn sort(&self, data: &[T]) -> SortingResult<T> {
         let mut stats = SortingStats::default();
         let mut sorted_data = data.to_vec();
@@ -60,10 +61,12 @@ impl<T: Ord + Clone> Sorter<T> for MergeSorter {
 /// * Result: $T(n) = \Theta(n \log n)$.
 ///
 /// **Space Complexity**: $O(n)$ auxiliary space.
+#[verified_engine::verified]
 pub fn merge_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     MergeSorter.sort(data)
 }
 
+#[verified_engine::verified]
 fn merge<T: Ord + Clone>(
     arr: &mut [T],
     temp: &mut [T],
@@ -109,12 +112,26 @@ fn merge<T: Ord + Clone>(
 pub struct QuickSorter;
 
 impl<T: Ord + Clone> Sorter<T> for QuickSorter {
+    #[verified_engine::verified]
     fn sort(&self, data: &[T]) -> SortingResult<T> {
         let mut sorted_data = data.to_vec();
         let mut stats = SortingStats::default();
         if !sorted_data.is_empty() {
             let n = sorted_data.len();
-            quick_sort_recursive(&mut sorted_data, 0, n - 1, &mut stats);
+            let mut stack = Vec::with_capacity(n); // pre-allocate maximum depth
+            stack.push((0, n - 1));
+
+            while let Some((low, high)) = stack.pop() {
+                if low < high {
+                    let p = partition(&mut sorted_data, low, high, &mut stats);
+                    if p > 0 && p - 1 > low {
+                        stack.push((low, p - 1));
+                    }
+                    if p + 1 < high {
+                        stack.push((p + 1, high));
+                    }
+                }
+            }
         }
         SortingResult { sorted_data, stats }
     }
@@ -131,25 +148,12 @@ impl<T: Ord + Clone> Sorter<T> for QuickSorter {
 /// * **Average Case**: Expected depth is $O(\log n)$.
 ///
 /// **Space Complexity**: $O(\log n)$ stack space (average).
+#[verified_engine::verified]
 pub fn quick_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     QuickSorter.sort(data)
 }
 
-fn quick_sort_recursive<T: Ord + Clone>(
-    arr: &mut [T],
-    low: usize,
-    high: usize,
-    stats: &mut SortingStats,
-) {
-    if low < high {
-        let p = partition(arr, low, high, stats);
-        if p > 0 {
-            quick_sort_recursive(arr, low, p - 1, stats);
-        }
-        quick_sort_recursive(arr, p + 1, high, stats);
-    }
-}
-
+#[verified_engine::verified]
 fn partition<T: Ord + Clone>(
     arr: &mut [T],
     low: usize,

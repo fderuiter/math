@@ -19,6 +19,7 @@ pub struct FastFourierTransform {
 
 impl FastFourierTransform {
     /// Creates a new FFT processor.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             planner: FftPlanner::new(),
@@ -27,12 +28,14 @@ impl FastFourierTransform {
 }
 
 impl Default for FastFourierTransform {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
 }
 
 impl SpectralTransform for FastFourierTransform {
+    #[verified_engine::verified]
     fn forward(&mut self, input: &[Complex64]) -> Result<Vec<Complex64>, TransformError> {
         let len = input.len();
         if len == 0 {
@@ -48,6 +51,7 @@ impl SpectralTransform for FastFourierTransform {
         Ok(buffer)
     }
 
+    #[verified_engine::verified]
     fn inverse(&mut self, input: &[Complex64]) -> Result<Vec<Complex64>, TransformError> {
         let len = input.len();
         if len == 0 {
@@ -76,6 +80,7 @@ mod tests {
     use std::f64::consts::PI;
 
     #[test]
+    #[verified_engine::verified]
     fn test_fft_forward_inverse_identity() -> Result<(), TransformError> {
         let mut fft = FastFourierTransform::new();
         // Create a simple signal: sine wave
@@ -102,6 +107,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_fft_impulse() -> Result<(), TransformError> {
         let mut fft = FastFourierTransform::new();
         let n = 8;
