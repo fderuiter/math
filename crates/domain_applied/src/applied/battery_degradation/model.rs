@@ -70,10 +70,9 @@ impl DegradationModel for PowerLawModel {
     /// Calculates the number of equivalent full cycles to reach a target capacity.
     fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles {
         let n70_val = self.n70(d).as_f64();
-        const LN_0_7: f64 = -0.3566749439387324; // ln(0.7)
         let ln_target = target.as_f64().ln();
 
-        let val = (ln_target / LN_0_7) * n70_val;
+        let val = (ln_target / math_commons::constants::LN_0_7) * n70_val;
         Cycles::new_clamped(val)
     }
 }

@@ -1,5 +1,5 @@
-use super::constants::property_constants;
 use super::types::*;
+use math_commons::constants::property_constants;
 use std::f64::consts::PI;
 
 /// Calculates the nuclear radius using the formula R = R0 * A^(1/3).

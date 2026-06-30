@@ -9,4 +9,5 @@ This document logs domain decomposition decisions, module extraction standards, 
 
 ## Recent Domain Changes
 - Baseline domain architecture established.
+- Centralized fundamental physical and mathematical constants into `math_commons` to prevent duplication and ensure consistency across domain crates.
 - Implemented Automated Plugin Discovery for GUI tabs. Domain modules implementing `ExplorerTab` are now automatically discovered at build time via `math_explorer_gui/build.rs`, removing the need for manual registration in centralized host files.

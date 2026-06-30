@@ -1,5 +1,5 @@
-use super::constants::liquid_drop_constants;
 use super::types::*;
+use math_commons::constants::liquid_drop_constants;
 
 /// Trait defining the behavior of a nuclear binding energy model.
 pub trait BindingEnergyModel {
@@ -103,7 +103,7 @@ impl BindingEnergyModel for LiquidDropModel {
 
 /// The Shell Model (Spin-Orbit coupling).
 pub mod shell {
-    use super::super::constants;
+    use math_commons::constants;
 
     /// Calculates the spin-orbit expectation value <L.S>.
     ///
