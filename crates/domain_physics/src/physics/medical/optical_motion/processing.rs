@@ -20,6 +20,7 @@ use rustfft::{FftPlanner, num_complex::Complex};
 /// # Formula
 ///
 /// $V_{resp}(t) \approx \frac{1}{N_{mesh}} \sum_{i=1}^{N_{mesh}} Z_{i}(t)$
+#[verified_engine::verified]
 pub fn weighted_average_height(vertices: &[Point3<f64>]) -> f64 {
     if vertices.is_empty() {
         return 0.0;
@@ -41,6 +42,7 @@ pub fn weighted_average_height(vertices: &[Point3<f64>]) -> f64 {
 /// # Formula
 ///
 /// $\text{Improvement} = \sqrt{N}$
+#[verified_engine::verified]
 pub fn snr_improvement_factor(n_mesh: usize) -> f64 {
     (n_mesh as f64).sqrt()
 }
@@ -54,6 +56,7 @@ pub struct LockInAmplifier {
 
 impl LockInAmplifier {
     /// Creates a new LockInAmplifier configuration.
+    #[verified_engine::verified]
     pub fn new(sensitivity: f64, full_scale_voltage: f64, reference_amplitude: f64) -> Self {
         Self {
             sensitivity,
@@ -80,6 +83,7 @@ impl LockInAmplifier {
     ///
     /// $V_x = \frac{V_s V_r}{2} \cos(\Delta\phi)$
     /// $V_y = \frac{V_s V_r}{2} \sin(\Delta\phi)$
+    #[verified_engine::verified]
     pub fn mix_and_filter(&self, signal_amplitude: f64, phase_difference: f64) -> (f64, f64) {
         let common_factor = (signal_amplitude * self.reference_amplitude) / 2.0;
         let v_x = common_factor * phase_difference.cos();
@@ -97,6 +101,7 @@ impl LockInAmplifier {
     /// # Returns
     ///
     /// * `(f64, f64)` - Tuple of (Magnitude R, Phase $\theta$).
+    #[verified_engine::verified]
     pub fn calculate_magnitude_phase(&self, v_x: f64, v_y: f64) -> (f64, f64) {
         let r = (v_x.powi(2) + v_y.powi(2)).sqrt();
         let theta = v_y.atan2(v_x);
@@ -117,6 +122,7 @@ impl LockInAmplifier {
     /// # Returns
     ///
     /// * `f64` - Scaled output voltage.
+    #[verified_engine::verified]
     pub fn scale_output(&self, raw_magnitude: f64) -> f64 {
         (self.full_scale_voltage / self.sensitivity) * raw_magnitude
     }
@@ -133,6 +139,7 @@ impl LockInAmplifier {
 /// # Returns
 ///
 /// * `f64` - The estimated time delay in seconds (positive means signal_2 lags signal_1).
+#[verified_engine::verified]
 pub fn calculate_time_delay(signal_1: &[f64], signal_2: &[f64], sample_rate: f64) -> f64 {
     let n = signal_1.len().min(signal_2.len());
     let mut planner = FftPlanner::new();
@@ -210,6 +217,7 @@ pub fn calculate_time_delay(signal_1: &[f64], signal_2: &[f64], sample_rate: f64
 /// # Returns
 ///
 /// * `(f64, f64)` - Velocity vector components ($v_x, v_y$).
+#[verified_engine::verified]
 pub fn optical_flow_velocity(spatial_gradient: (f64, f64), temporal_gradient: f64) -> (f64, f64) {
     let (gx, gy) = spatial_gradient;
     let norm_sq = gx.powi(2) + gy.powi(2);
@@ -241,6 +249,7 @@ pub fn optical_flow_velocity(spatial_gradient: (f64, f64), temporal_gradient: f6
 /// # Returns
 ///
 /// * `f64` - The mixed signal value $V_{m1}$.
+#[verified_engine::verified]
 pub fn lock_in_phase_sensitive_detection(
     v_s: f64,
     v_r: f64,

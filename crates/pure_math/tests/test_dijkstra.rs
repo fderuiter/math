@@ -5,6 +5,7 @@ mod tests {
     use pure_math::pure_math::graph_theory::dijkstra::dijkstra;
 
     #[test]
+    #[verified_engine::verified]
     fn test_dijkstra_directed_simple() {
         // Create a simple directed graph
         // (0) --10--> (1)
@@ -51,6 +52,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_dijkstra_undirected() {
         // Simple undirected graph
         // (0) --1-- (1) --2-- (2)
@@ -89,6 +91,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_dijkstra_f64_weights() {
         // Graph with float weights
         // (0) -- 0.5 --> (1) -- 0.5 --> (2)

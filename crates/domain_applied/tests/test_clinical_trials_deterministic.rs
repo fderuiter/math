@@ -5,6 +5,7 @@ use rand::SeedableRng;
 use rand::rngs::StdRng;
 
 #[test]
+#[verified_engine::verified]
 fn test_deterministic_simple_randomization() {
     let mut rng1 = StdRng::seed_from_u64(42);
     let mut rng2 = StdRng::seed_from_u64(42);
@@ -17,6 +18,7 @@ fn test_deterministic_simple_randomization() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_deterministic_block_randomization() {
     let mut rng1 = StdRng::seed_from_u64(12345);
     let mut rng2 = StdRng::seed_from_u64(12345);

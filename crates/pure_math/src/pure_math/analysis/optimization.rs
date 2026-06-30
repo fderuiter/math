@@ -26,6 +26,7 @@ pub struct L1RegularizedLeastSquares {
 }
 
 impl L1RegularizedLeastSquares {
+    #[verified_engine::verified]
     pub fn new(lambda: f64) -> Self {
         Self { lambda }
     }
@@ -33,6 +34,7 @@ impl L1RegularizedLeastSquares {
     /// Evaluates the cost function $J(x)$.
     ///
     /// Assuming simplified linear model $z(Wx) \approx Ax$.
+    #[verified_engine::verified]
     pub fn cost(&self, a: &DMatrix<f64>, x: &DVector<f64>, y: &DVector<f64>) -> f64 {
         let residual = y - (a * x);
         let l2_term = 0.5 * residual.norm_squared();
@@ -52,6 +54,7 @@ impl L1RegularizedLeastSquares {
 /// * `Key`: A unique identifier for the parameter being updated (e.g., `u64`, `String`, or a specialized Enum).
 pub trait Optimizer<T: RealField + Copy, Key = u64> {
     /// Updates a matrix parameter.
+    #[verified_engine::verified]
     fn update_matrix(
         &mut self,
         key: Key,
@@ -59,6 +62,7 @@ pub trait Optimizer<T: RealField + Copy, Key = u64> {
         grad: &DMatrix<T>,
     ) -> Result<(), OptimizationError>;
     /// Updates a vector parameter.
+    #[verified_engine::verified]
     fn update_vector(
         &mut self,
         key: Key,
@@ -76,12 +80,14 @@ pub struct SGD<T> {
 }
 
 impl<T: RealField + Copy> SGD<T> {
+    #[verified_engine::verified]
     pub fn new(learning_rate: T) -> Self {
         Self { learning_rate }
     }
 }
 
 impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
+    #[verified_engine::verified]
     fn update_vector(
         &mut self,
         _key: Key,
@@ -92,6 +98,7 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
         Ok(())
     }
 
+    #[verified_engine::verified]
     fn update_matrix(
         &mut self,
         _key: Key,
@@ -129,6 +136,7 @@ impl<T: RealField + Copy, Key> Adam<T, Key>
 where
     Key: Eq + std::hash::Hash + Clone,
 {
+    #[verified_engine::verified]
     pub fn new(lr: T) -> Result<Self, OptimizationError> {
         Ok(Self {
             learning_rate: lr,
@@ -139,6 +147,7 @@ where
         })
     }
 
+    #[verified_engine::verified]
     fn get_state(&mut self, key: Key, shape: (usize, usize)) -> &mut AdamState<T> {
         self.states.entry(key).or_insert_with(|| AdamState {
             m: DMatrix::zeros(shape.0, shape.1),
@@ -152,6 +161,7 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for Adam<T, Key>
 where
     Key: Eq + std::hash::Hash + Clone,
 {
+    #[verified_engine::verified]
     fn update_matrix(
         &mut self,
         key: Key,
@@ -193,6 +203,7 @@ where
         Ok(())
     }
 
+    #[verified_engine::verified]
     fn update_vector(
         &mut self,
         key: Key,

@@ -21,6 +21,7 @@ macro_rules! theory_verification {
             )*
 
             #[test]
+            #[verified_engine::verified]
             fn test_theory_verification() {
                 // Cross-reference module name with paper name using shared engine
                 if !oxidize_core::traceability::TraceabilityEngine::check_naming_parity($module_name, $paper_name) {

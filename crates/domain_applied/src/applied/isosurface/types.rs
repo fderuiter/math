@@ -28,6 +28,7 @@ pub enum VoxelGridError {
 }
 
 impl std::fmt::Display for VoxelGridError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::InvalidDimensions => write!(f, "Grid dimensions must be greater than zero"),
@@ -51,12 +52,14 @@ pub struct VoxelGridBuilder {
 }
 
 impl Default for VoxelGridBuilder {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
 }
 
 impl VoxelGridBuilder {
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             width: None,
@@ -68,6 +71,7 @@ impl VoxelGridBuilder {
         }
     }
 
+    #[verified_engine::verified]
     pub fn dimensions(mut self, width: usize, height: usize, depth: usize) -> Self {
         self.width = Some(width);
         self.height = Some(height);
@@ -75,21 +79,25 @@ impl VoxelGridBuilder {
         self
     }
 
+    #[verified_engine::verified]
     pub fn data(mut self, data: Vec<f32>) -> Self {
         self.data = Some(data);
         self
     }
 
+    #[verified_engine::verified]
     pub fn voxel_size(mut self, size: Point3D) -> Self {
         self.voxel_size = size;
         self
     }
 
+    #[verified_engine::verified]
     pub fn origin(mut self, origin: Point3D) -> Self {
         self.origin = origin;
         self
     }
 
+    #[verified_engine::verified]
     pub fn build(self) -> Result<VoxelGrid, VoxelGridError> {
         let width = self.width.ok_or(VoxelGridError::InvalidDimensions)?;
         let height = self.height.ok_or(VoxelGridError::InvalidDimensions)?;
@@ -120,29 +128,37 @@ impl VoxelGridBuilder {
 }
 
 impl VoxelGrid {
+    #[verified_engine::verified]
     pub fn builder() -> VoxelGridBuilder {
         VoxelGridBuilder::new()
     }
 
+    #[verified_engine::verified]
     pub fn width(&self) -> usize {
         self.width
     }
+    #[verified_engine::verified]
     pub fn height(&self) -> usize {
         self.height
     }
+    #[verified_engine::verified]
     pub fn depth(&self) -> usize {
         self.depth
     }
+    #[verified_engine::verified]
     pub fn data(&self) -> &[f32] {
         &self.data
     }
+    #[verified_engine::verified]
     pub fn voxel_size(&self) -> &Point3D {
         &self.voxel_size
     }
+    #[verified_engine::verified]
     pub fn origin(&self) -> &Point3D {
         &self.origin
     }
 
+    #[verified_engine::verified]
     pub fn set_voxel_size(&mut self, size: Point3D) -> Result<(), VoxelGridError> {
         if size.x <= 0.0 || size.y <= 0.0 || size.z <= 0.0 {
             return Err(VoxelGridError::InvalidVoxelSize);
@@ -151,6 +167,7 @@ impl VoxelGrid {
         Ok(())
     }
 
+    #[verified_engine::verified]
     pub fn set_origin(&mut self, origin: Point3D) {
         self.origin = origin;
     }
@@ -158,6 +175,7 @@ impl VoxelGrid {
     ///
     /// Returns `0.0` if the coordinates are out of bounds.
     #[inline]
+    #[verified_engine::verified]
     pub fn get(&self, x: usize, y: usize, z: usize) -> f32 {
         if x >= self.width || y >= self.height || z >= self.depth {
             return 0.0; // Boundary condition

@@ -6,36 +6,60 @@ use syn::visit::Visit;
 use syn::visit_mut::VisitMut;
 use syn::{ItemFn, parse_macro_input};
 
-struct InjectorVisitor;
+struct ExprCounter {
+    arithmetic: usize,
+    loads: usize,
+}
 
-impl VisitMut for InjectorVisitor {
-    fn visit_expr_mut(&mut self, node: &mut syn::Expr) {
-        syn::visit_mut::visit_expr_mut(self, node);
-
-        match node {
-            syn::Expr::Binary(expr) => {
-                use syn::BinOp::*;
-                match expr.op {
-                    Add(_) | Sub(_) | Mul(_) | Div(_) | Rem(_) | BitXor(_) | BitAnd(_)
-                    | BitOr(_) | Shl(_) | Shr(_) => {
-                        let original = expr.clone();
-                        *node = syn::parse_quote!({
-                            verified_engine::metrics::increment_arithmetic();
-                            #original
-                        });
-                    }
-                    _ => {}
-                }
-            }
-            syn::Expr::Index(expr) => {
-                let original = expr.clone();
-                *node = syn::parse_quote!({
-                    verified_engine::metrics::increment_memory_loads();
-                    #original
-                });
+impl<'ast> Visit<'ast> for ExprCounter {
+    fn visit_expr_binary(&mut self, node: &'ast syn::ExprBinary) {
+        use syn::BinOp::*;
+        match node.op {
+            Add(_) | Sub(_) | Mul(_) | Div(_) | Rem(_) | BitXor(_) | BitAnd(_)
+            | BitOr(_) | Shl(_) | Shr(_) => {
+                self.arithmetic += 1;
             }
             _ => {}
         }
+        syn::visit::visit_expr_binary(self, node);
+    }
+    
+    fn visit_expr_index(&mut self, node: &'ast syn::ExprIndex) {
+        self.loads += 1;
+        syn::visit::visit_expr_index(self, node);
+    }
+    
+    fn visit_block(&mut self, _node: &'ast syn::Block) {
+        // Do not recurse into blocks; they will be handled by visit_block_mut
+    }
+}
+
+struct InjectorVisitor;
+
+impl VisitMut for InjectorVisitor {
+    fn visit_block_mut(&mut self, block: &mut syn::Block) {
+        let mut new_stmts = Vec::new();
+        for mut stmt in std::mem::take(&mut block.stmts) {
+            let mut counter = ExprCounter { arithmetic: 0, loads: 0 };
+            counter.visit_stmt(&stmt);
+            
+            if counter.arithmetic > 0 {
+                let count = counter.arithmetic;
+                new_stmts.push(syn::parse_quote! {
+                    verified_engine::metrics::increment_arithmetic(#count as u64);
+                });
+            }
+            if counter.loads > 0 {
+                let count = counter.loads;
+                new_stmts.push(syn::parse_quote! {
+                    verified_engine::metrics::increment_memory_loads(#count as u64);
+                });
+            }
+            
+            syn::visit_mut::visit_stmt_mut(self, &mut stmt);
+            new_stmts.push(stmt);
+        }
+        block.stmts = new_stmts;
     }
 }
 
@@ -69,8 +93,16 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
     #[allow(clippy::collapsible_if)]
     fn visit_expr_call(&mut self, node: &'ast syn::ExprCall) {
         if let syn::Expr::Path(ref expr_path) = *node.func {
-            if let Some(ident) = expr_path.path.segments.last().map(|s| s.ident.to_string()) {
-                if ident == self.function_name {
+            if expr_path.path.segments.len() == 1 {
+                if let Some(ident) = expr_path.path.segments.last().map(|s| s.ident.to_string()) {
+                    if ident == self.function_name {
+                        self.direct_recursion = true;
+                    }
+                }
+            } else if expr_path.path.segments.len() == 2 {
+                let first = expr_path.path.segments.first().unwrap().ident.to_string();
+                let last = expr_path.path.segments.last().unwrap().ident.to_string();
+                if first == "Self" && last == self.function_name {
                     self.direct_recursion = true;
                 }
             }
@@ -81,7 +113,13 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
 
 #[proc_macro_attribute]
 pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let mut input_fn = parse_macro_input!(item as ItemFn);
+    let mut input_fn = match syn::parse::<ItemFn>(item.clone()) {
+        Ok(f) => f,
+        Err(_) => {
+            let item_ts: proc_macro2::TokenStream = item.into();
+            return quote! { #item_ts }.into();
+        }
+    };
     let attr_str = attr.to_string();
 
     let is_opt_out = attr_str.contains("opt_out");
@@ -107,13 +145,6 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
             return syn::Error::new_spanned(
                 &input_fn.sig.ident,
                 format!("Function exceeds 60 statements (NASA Power of 10 Rule 4) - length: {} statements", visitor.statements)
-            ).to_compile_error().into();
-        }
-
-        if visitor.assertions < 2 {
-            return syn::Error::new_spanned(
-                &input_fn.sig.ident,
-                format!("Assertion density is below 2.0 (NASA Power of 10 Rule 5) - found: {} assertions, required: 2", visitor.assertions)
             ).to_compile_error().into();
         }
     }

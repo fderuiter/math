@@ -42,6 +42,7 @@ impl HodgkinHuxleyModel {
     /// # Arguments
     /// * `params` - The biophysical parameters (conductances, etc.).
     /// * `i_ext` - The external current being applied at this moment.
+    #[verified_engine::verified]
     pub fn new(params: HodgkinHuxleyParameters, i_ext: f64) -> Self {
         Self { params, i_ext }
     }
@@ -52,6 +53,7 @@ impl OdeSystem<HodgkinHuxleyState> for HodgkinHuxleyModel {
     ///
     /// # Returns
     /// A `HodgkinHuxleyState` representing $[\frac{dV}{dt}, \frac{dn}{dt}, \frac{dm}{dt}, \frac{dh}{dt}]$.
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &HodgkinHuxleyState) -> HodgkinHuxleyState {
         // Unpack parameters
         let p = &self.params;

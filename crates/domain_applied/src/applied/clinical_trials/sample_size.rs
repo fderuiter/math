@@ -11,6 +11,7 @@ use statrs::distribution::{ContinuousCDF, Normal};
 /// * `sigma` - Standard deviation in the population.
 ///
 /// Returns the number of patients required *per group*.
+#[verified_engine::verified]
 pub fn calculate_sample_size_means(
     alpha: f64,
     power: f64,
@@ -58,6 +59,7 @@ pub fn calculate_sample_size_means(
 /// * `power` - Statistical power.
 /// * `p1` - Expected proportion in group 1 (e.g., control).
 /// * `p2` - Expected proportion in group 2 (e.g., treatment).
+#[verified_engine::verified]
 pub fn calculate_sample_size_proportions(
     alpha: f64,
     power: f64,

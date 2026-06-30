@@ -40,6 +40,7 @@ pub trait GradientEstimator {
     /// assert_eq!(grad.y, 1.0); // (grid[1, 2, 0] - grid[1, 0, 0]) / 2.0 = (3.0 - 1.0) / 2.0
     /// assert_eq!(grad.z, -2.0); // Boundary condition fallback: grid[1, 1, 1] - grid[1, 1, 0] = 0.0 - 2.0 = -2.0
     /// ```
+    #[verified_engine::verified]
     fn gradient(&self, grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D;
 
     /// Computes the gradient at a specific linear index using direct memory access.
@@ -62,6 +63,7 @@ pub trait GradientEstimator {
     /// # Panics
     ///
     /// This method will panic if the bounds check fails.
+    #[verified_engine::verified]
     fn gradient_fast(&self, data: &[f32], idx: usize, stride_y: usize, stride_z: usize) -> Point3D;
 }
 
@@ -72,6 +74,7 @@ pub struct CentralDifferenceEstimator;
 
 impl GradientEstimator for CentralDifferenceEstimator {
     #[inline]
+    #[verified_engine::verified]
     fn gradient(&self, grid: &VoxelGrid, x: usize, y: usize, z: usize) -> Point3D {
         let dx = if x == 0 {
             grid.get(x + 1, y, z) - grid.get(x, y, z)
@@ -101,6 +104,7 @@ impl GradientEstimator for CentralDifferenceEstimator {
     }
 
     #[inline(always)]
+    #[verified_engine::verified]
     fn gradient_fast(&self, data: &[f32], idx: usize, stride_y: usize, stride_z: usize) -> Point3D {
         let dx = (data
             .get(idx.checked_add(1).unwrap_or(idx))

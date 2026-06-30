@@ -20,6 +20,7 @@ pub struct BivariateWeibullModel {
 
 impl BivariateWeibullModel {
     /// Creates a new `BivariateWeibullModel`.
+    #[verified_engine::verified]
     pub fn new(lambda1: f64, lambda2: f64, alpha: f64) -> Self {
         Self {
             lambda1,
@@ -29,16 +30,19 @@ impl BivariateWeibullModel {
     }
 
     /// Joint survival function S(t, x).
+    #[verified_engine::verified]
     pub fn joint_survival(&self, t: f64, x: f64) -> f64 {
         (-(self.lambda1 * t + self.lambda2 * x).powf(self.alpha)).exp()
     }
 
     /// Marginal survival function for T, S(t).
+    #[verified_engine::verified]
     pub fn marginal_survival_t(&self, t: f64) -> f64 {
         self.joint_survival(t, 0.0)
     }
 
     /// PDF for T, f(t).
+    #[verified_engine::verified]
     pub fn pdf_t(&self, t: f64) -> f64 {
         if t <= 0.0 {
             return 0.0;
@@ -50,6 +54,7 @@ impl BivariateWeibullModel {
     }
 
     /// Conditional survival function for X given T > c, G(x|c) = S(c, x) / S(c, 0).
+    #[verified_engine::verified]
     pub fn conditional_survival_x_given_t(&self, x: f64, c: f64) -> f64 {
         let s_c_x = self.joint_survival(c, x);
         let s_c_0 = self.marginal_survival_t(c);
@@ -57,6 +62,7 @@ impl BivariateWeibullModel {
     }
 
     /// Conditional PDF for X given T > c, f(x|c).
+    #[verified_engine::verified]
     pub fn pdf_x_given_t(&self, x: f64, c: f64) -> f64 {
         if x < 0.0 {
             return 0.0;
@@ -89,6 +95,7 @@ pub struct SimulationParams {
 
 impl SimulationParams {
     /// Creates a new `SimulationParams`.
+    #[verified_engine::verified]
     pub fn new(lambda1: f64, lambda2: f64, alpha: f64, theta: f64) -> Self {
         Self {
             lambda1,
@@ -99,11 +106,13 @@ impl SimulationParams {
     }
 
     /// Returns the model for the control group.
+    #[verified_engine::verified]
     pub fn control_model(&self) -> BivariateWeibullModel {
         BivariateWeibullModel::new(self.lambda1, self.lambda2, self.alpha)
     }
 
     /// Returns the model for the treatment group.
+    #[verified_engine::verified]
     pub fn treatment_model(&self) -> BivariateWeibullModel {
         BivariateWeibullModel::new(
             self.theta * self.lambda1,
@@ -116,11 +125,13 @@ impl SimulationParams {
 // --- Joint Survival Functions ---
 
 /// Joint survival function for the control group, S0(t,x).
+#[verified_engine::verified]
 pub fn joint_survival_function_control(t: f64, x: f64, params: &SimulationParams) -> f64 {
     params.control_model().joint_survival(t, x)
 }
 
 /// Joint survival function for the treatment group, S1(t,x).
+#[verified_engine::verified]
 pub fn joint_survival_function_treatment(t: f64, x: f64, params: &SimulationParams) -> f64 {
     params.treatment_model().joint_survival(t, x)
 }
@@ -128,6 +139,7 @@ pub fn joint_survival_function_treatment(t: f64, x: f64, params: &SimulationPara
 // --- Win Ratio Parameter ---
 
 /// Win ratio parameter in the absence of censoring, PR_W.
+#[verified_engine::verified]
 pub fn win_ratio_parameter(params: &SimulationParams) -> f64 {
     // This depends on the specific relationship between control and treatment models defined by theta.
     1.0 / params.theta.powf(params.alpha)
@@ -136,21 +148,25 @@ pub fn win_ratio_parameter(params: &SimulationParams) -> f64 {
 // --- Derived Functions for T (Fatal Event) ---
 
 /// Marginal survival function for T in the control group, S0(t).
+#[verified_engine::verified]
 pub fn marginal_survival_t_control(t: f64, params: &SimulationParams) -> f64 {
     params.control_model().marginal_survival_t(t)
 }
 
 /// Marginal survival function for T in the treatment group, S1(t).
+#[verified_engine::verified]
 pub fn marginal_survival_t_treatment(t: f64, params: &SimulationParams) -> f64 {
     params.treatment_model().marginal_survival_t(t)
 }
 
 /// PDF for T in the control group, f0(t).
+#[verified_engine::verified]
 pub fn pdf_t_control(t: f64, params: &SimulationParams) -> f64 {
     params.control_model().pdf_t(t)
 }
 
 /// PDF for T in the treatment group, f1(t).
+#[verified_engine::verified]
 pub fn pdf_t_treatment(t: f64, params: &SimulationParams) -> f64 {
     params.treatment_model().pdf_t(t)
 }
@@ -158,11 +174,13 @@ pub fn pdf_t_treatment(t: f64, params: &SimulationParams) -> f64 {
 // --- Derived Functions for X (Non-Fatal Event) given T > c ---
 
 /// Conditional survival function for X in the control group, G0(x|c).
+#[verified_engine::verified]
 pub fn conditional_survival_x_given_t_control(x: f64, c: f64, params: &SimulationParams) -> f64 {
     params.control_model().conditional_survival_x_given_t(x, c)
 }
 
 /// Conditional survival function for X in the treatment group, G1(x|c).
+#[verified_engine::verified]
 pub fn conditional_survival_x_given_t_treatment(x: f64, c: f64, params: &SimulationParams) -> f64 {
     params
         .treatment_model()
@@ -170,11 +188,13 @@ pub fn conditional_survival_x_given_t_treatment(x: f64, c: f64, params: &Simulat
 }
 
 /// Conditional PDF for X in the control group, f0(x|c).
+#[verified_engine::verified]
 pub fn pdf_x_given_t_control(x: f64, c: f64, params: &SimulationParams) -> f64 {
     params.control_model().pdf_x_given_t(x, c)
 }
 
 /// Conditional PDF for X in the treatment group, f1(x|c).
+#[verified_engine::verified]
 pub fn pdf_x_given_t_treatment(x: f64, c: f64, params: &SimulationParams) -> f64 {
     params.treatment_model().pdf_x_given_t(x, c)
 }

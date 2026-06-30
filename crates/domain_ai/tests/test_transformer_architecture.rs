@@ -6,12 +6,14 @@ use nalgebra::DMatrix;
 struct IdentityNorm;
 
 impl NormalizationLayer for IdentityNorm {
+    #[verified_engine::verified]
     fn forward(&self, x: &DMatrix<f64>) -> DMatrix<f64> {
         x.clone()
     }
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_transformer_dependency_injection() {
     let d_model = 64;
     let h = 4;

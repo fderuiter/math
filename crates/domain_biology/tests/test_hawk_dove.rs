@@ -5,6 +5,7 @@ mod tests {
     use pure_math::pure_math::analysis::ode::RungeKutta4;
 
     #[test]
+    #[verified_engine::verified]
     fn test_hawk_dove_evolution() {
         // 1. Define the environment
         // Value = 2.0, Cost = 10.0 (High cost of fighting)
@@ -26,6 +27,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_hawk_dove_with_rk4() {
         // 1. Define the environment
         let population = HawkDovePopulation::new(2.0, 10.0);

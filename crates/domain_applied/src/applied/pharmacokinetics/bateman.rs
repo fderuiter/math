@@ -11,12 +11,14 @@ pub struct BatemanModel {
 
 impl BatemanModel {
     /// Creates a new Bateman model with the given parameters.
+    #[verified_engine::verified]
     pub fn new(params: PKParameters) -> Self {
         Self { params }
     }
 }
 
 impl PharmacokineticModel for BatemanModel {
+    #[verified_engine::verified]
     fn concentration(&self, t: f64) -> f64 {
         if t < 0.0 {
             return 0.0;
@@ -40,6 +42,7 @@ impl PharmacokineticModel for BatemanModel {
 }
 
 /// Calculates the elimination half-life from the elimination rate constant.
+#[verified_engine::verified]
 pub fn half_life(ke: f64) -> f64 {
     if ke <= 0.0 {
         return f64::INFINITY;
@@ -48,6 +51,7 @@ pub fn half_life(ke: f64) -> f64 {
 }
 
 /// Calculates the time to maximum concentration (T_max).
+#[verified_engine::verified]
 pub fn t_max(ka: f64, ke: f64) -> f64 {
     if ka <= 0.0 || ke <= 0.0 {
         return 0.0; // Invalid input, though PKParameters prevents this.
@@ -69,6 +73,7 @@ pub fn t_max(ka: f64, ke: f64) -> f64 {
 /// * `initial_guess` - Initial guess for ka.
 /// * `max_iter` - Maximum number of iterations.
 /// * `tolerance` - Convergence tolerance.
+#[verified_engine::verified]
 pub fn solve_ka(
     t_max_target: f64,
     ke: f64,

@@ -3,6 +3,7 @@ use domain_physics::physics::medical::radar_gating::super_resolution::MusicEstim
 use num_complex::Complex;
 
 #[test]
+#[verified_engine::verified]
 fn test_music_invalid_construction() {
     // 0 samples
     assert!(matches!(
@@ -30,6 +31,7 @@ fn test_music_invalid_construction() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_music_nan_handling() {
     let mut estimator = MusicEstimator::new(64, 10, 1).unwrap();
 
@@ -52,6 +54,7 @@ fn test_music_nan_handling() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_music_invalid_compute_args() {
     let mut estimator = MusicEstimator::new(64, 10, 1).unwrap();
     // Add dummy data

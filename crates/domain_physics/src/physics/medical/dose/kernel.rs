@@ -3,6 +3,7 @@ use crate::error::DoseFluenceError;
 /// Defines a Point Spread Function (Kernel) for dose calculation.
 pub trait DoseKernel {
     /// Calculates the kernel value at a given radial distance.
+    #[verified_engine::verified]
     fn value_at(&self, radius: f64) -> Result<f64, DoseFluenceError>;
 }
 
@@ -16,12 +17,14 @@ pub struct ExponentialKernel {
 }
 
 impl ExponentialKernel {
+    #[verified_engine::verified]
     pub fn new(amplitude: f64, beta: f64) -> Self {
         Self { amplitude, beta }
     }
 }
 
 impl DoseKernel for ExponentialKernel {
+    #[verified_engine::verified]
     fn value_at(&self, radius: f64) -> Result<f64, DoseFluenceError> {
         if radius.abs() < 1e-6 {
             return Err(DoseFluenceError::Singularity);
@@ -40,6 +43,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_exponential_kernel() {
         let kernel = ExponentialKernel::new(4.0, 0.5);
         assert!(kernel.value_at(0.0).is_err());

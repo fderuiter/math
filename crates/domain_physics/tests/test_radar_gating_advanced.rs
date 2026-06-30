@@ -6,6 +6,7 @@ use num_complex::Complex;
 use std::f64::consts::PI;
 
 #[test]
+#[verified_engine::verified]
 fn test_phase_unwrapping_with_wraps() {
     let wavelength = 1.0; // Simplify math
     let mut unwrapper = PhaseUnwrapper::new(wavelength);
@@ -40,6 +41,7 @@ fn test_phase_unwrapping_with_wraps() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_mimo_beamforming() {
     let lambda = 0.004; // 4mm
     let spacing = lambda / 2.0;
@@ -72,6 +74,7 @@ fn test_mimo_beamforming() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_elliptical_filter_clutter_removal() {
     let mut filter = EllipticalFilter::new(100.0);
 
@@ -92,6 +95,7 @@ fn test_elliptical_filter_clutter_removal() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_czt_config_smoke() {
     let config = SpatialCztConfig {
         start_distance: 0.5,
@@ -109,6 +113,7 @@ fn test_czt_config_smoke() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_music_smoke() {
     // 64 samples per chirp, 10 snapshots, 1 target
     let mut estimator = MusicEstimator::new(64, 10, 1).unwrap();

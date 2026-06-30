@@ -27,6 +27,7 @@ impl EdgeProbability {
     /// let p = EdgeProbability::new(0.55).unwrap();
     /// assert_eq!(p.value(), 0.55);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, KellyError> {
         if !(0.0..=1.0).contains(&value) || !value.is_finite() {
             return Err(KellyError::InvalidProbability { value });
@@ -35,11 +36,13 @@ impl EdgeProbability {
     }
 
     /// Returns the raw probability value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
 
     /// Returns the complementary probability (q = 1 - p).
+    #[verified_engine::verified]
     pub fn complement(&self) -> f64 {
         1.0 - self.0
     }
@@ -76,6 +79,7 @@ impl Odds {
     /// let odds = Odds::new(2.5).unwrap();
     /// assert_eq!(odds.value(), 2.5);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, KellyError> {
         if value <= 1.0 || !value.is_finite() {
             return Err(KellyError::InvalidOdds { value });
@@ -84,6 +88,7 @@ impl Odds {
     }
 
     /// Returns the raw odds value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -92,6 +97,7 @@ impl Odds {
     ///
     /// This is the amount won per unit bet, excluding the returned stake.
     /// For decimal odds of 2.5, the net profit multiplier is 1.5.
+    #[verified_engine::verified]
     pub fn net_profit_multiplier(&self) -> f64 {
         self.0 - 1.0
     }
@@ -113,6 +119,7 @@ impl Odds {
     /// let favorite = Odds::from_american(-150.0).unwrap(); // -150
     /// assert!((favorite.value() - 1.667).abs() < 0.01);
     /// ```
+    #[verified_engine::verified]
     pub fn from_american(american: f64) -> Result<Self, KellyError> {
         if !american.is_finite() || american == 0.0 || (-100.0..100.0).contains(&american) {
             return Err(KellyError::InvalidOdds { value: american });
@@ -140,6 +147,7 @@ impl Odds {
     /// let odds = Odds::from_fractional(5.0, 2.0).unwrap(); // 5/2
     /// assert!((odds.value() - 3.5).abs() < 0.01);
     /// ```
+    #[verified_engine::verified]
     pub fn from_fractional(numerator: f64, denominator: f64) -> Result<Self, KellyError> {
         if denominator <= 0.0
             || numerator < 0.0
@@ -166,6 +174,7 @@ impl Odds {
     /// let odds = Odds::new(2.0).unwrap();
     /// assert!((odds.implied_probability() - 0.5).abs() < 0.01);
     /// ```
+    #[verified_engine::verified]
     pub fn implied_probability(&self) -> f64 {
         1.0 / self.0
     }
@@ -196,6 +205,7 @@ impl BankrollFraction {
     /// let fraction = BankrollFraction::new(0.1).unwrap();
     /// assert_eq!(fraction.value(), 0.1);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, KellyError> {
         if !(0.0..=1.0).contains(&value) || !value.is_finite() {
             return Err(KellyError::InvalidFraction { value });
@@ -204,6 +214,7 @@ impl BankrollFraction {
     }
 
     /// Returns the raw fraction value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -219,6 +230,7 @@ impl BankrollFraction {
     /// let bet = fraction.bet_amount(1000.0).unwrap();
     /// assert_eq!(bet, 100.0);
     /// ```
+    #[verified_engine::verified]
     pub fn bet_amount(&self, bankroll: f64) -> Result<f64, KellyError> {
         if bankroll <= 0.0 || !bankroll.is_finite() {
             return Err(KellyError::InvalidBankroll { value: bankroll });
@@ -232,6 +244,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_edge_probability_valid() {
         let p = EdgeProbability::new(0.55).unwrap();
         assert_eq!(p.value(), 0.55);
@@ -239,6 +252,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_edge_probability_invalid() {
         assert!(EdgeProbability::new(-0.1).is_err());
         assert!(EdgeProbability::new(1.1).is_err());
@@ -246,12 +260,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_edge_probability_boundaries() {
         assert!(EdgeProbability::new(0.0).is_ok());
         assert!(EdgeProbability::new(1.0).is_ok());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_odds_valid() {
         let odds = Odds::new(2.5).unwrap();
         assert_eq!(odds.value(), 2.5);
@@ -259,6 +275,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_odds_invalid() {
         assert!(Odds::new(1.0).is_err()); // Must be > 1.0
         assert!(Odds::new(0.5).is_err());
@@ -266,6 +283,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_odds_from_american() {
         // Underdog (+200)
         let odds = Odds::from_american(200.0).unwrap();
@@ -277,6 +295,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_odds_from_fractional() {
         let odds = Odds::from_fractional(5.0, 2.0).unwrap(); // 5/2
         assert!((odds.value() - 3.5).abs() < 0.01);
@@ -286,6 +305,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_odds_implied_probability() {
         let odds = Odds::new(2.0).unwrap();
         assert!((odds.implied_probability() - 0.5).abs() < 1e-6);
@@ -295,12 +315,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bankroll_fraction_valid() {
         let fraction = BankrollFraction::new(0.1).unwrap();
         assert_eq!(fraction.value(), 0.1);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bankroll_fraction_invalid() {
         assert!(BankrollFraction::new(-0.1).is_err());
         assert!(BankrollFraction::new(1.1).is_err());
@@ -308,6 +330,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bankroll_fraction_bet_amount() {
         let fraction = BankrollFraction::new(0.1).unwrap();
         let bet = fraction.bet_amount(1000.0).unwrap();
@@ -315,6 +338,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bankroll_fraction_boundaries() {
         assert!(BankrollFraction::new(0.0).is_ok());
         assert!(BankrollFraction::new(1.0).is_ok());

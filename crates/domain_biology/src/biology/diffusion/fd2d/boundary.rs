@@ -2,6 +2,7 @@ use super::geometry::GeometryStrategy;
 use math_commons::math_kernel::types::GridIndex;
 
 pub trait BoundaryStrategy {
+    #[verified_engine::verified]
     fn neighbors<G: GeometryStrategy>(
         &self,
         x: usize,
@@ -15,6 +16,7 @@ pub struct NeumannBoundary;
 
 impl BoundaryStrategy for NeumannBoundary {
     #[inline(always)]
+    #[verified_engine::verified]
     fn neighbors<G: GeometryStrategy>(
         &self,
         x: usize,

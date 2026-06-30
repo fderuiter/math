@@ -19,6 +19,7 @@ use nalgebra::{DMatrix, DVector};
 /// # Returns
 ///
 /// * `Option<DVector<f64>>` - The coefficient vector $B$ (n_features x 1).
+#[verified_engine::verified]
 pub fn multivariate_linear_regression(
     features: &DMatrix<f64>,
     targets: &DVector<f64>,
@@ -32,6 +33,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_multivariate_regression() {
         // y = 2x1 + 3x2 + 1
         // x1, x2 -> y

@@ -18,6 +18,7 @@ pub struct HodgkinHuxleyNeuronBuilder {
 }
 
 impl Default for HodgkinHuxleyNeuronBuilder {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             v_initial: -65.0,
@@ -31,11 +32,13 @@ impl Default for HodgkinHuxleyNeuronBuilder {
 
 impl HodgkinHuxleyNeuronBuilder {
     /// Creates a new builder with default settings.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Sets the initial membrane potential (mV). Default is -65.0.
+    #[verified_engine::verified]
     pub fn with_initial_v(mut self, v: f64) -> Self {
         self.v_initial = v;
         self
@@ -45,6 +48,7 @@ impl HodgkinHuxleyNeuronBuilder {
     ///
     /// # Errors
     /// Returns error in `build()` if not between 0 and 1.
+    #[verified_engine::verified]
     pub fn with_n(mut self, n: f64) -> Self {
         self.n_initial = Some(n);
         self
@@ -54,6 +58,7 @@ impl HodgkinHuxleyNeuronBuilder {
     ///
     /// # Errors
     /// Returns error in `build()` if not between 0 and 1.
+    #[verified_engine::verified]
     pub fn with_m(mut self, m: f64) -> Self {
         self.m_initial = Some(m);
         self
@@ -63,12 +68,14 @@ impl HodgkinHuxleyNeuronBuilder {
     ///
     /// # Errors
     /// Returns error in `build()` if not between 0 and 1.
+    #[verified_engine::verified]
     pub fn with_h(mut self, h: f64) -> Self {
         self.h_initial = Some(h);
         self
     }
 
     /// Sets custom parameters for the model.
+    #[verified_engine::verified]
     pub fn with_params(mut self, params: HodgkinHuxleyParameters) -> Self {
         self.params = params;
         self
@@ -79,6 +86,7 @@ impl HodgkinHuxleyNeuronBuilder {
     /// # Returns
     /// - `Ok(neuron)` if all parameters are valid.
     /// - `Err(HodgkinHuxleyError)` if any gating variable is out of range [0, 1].
+    #[verified_engine::verified]
     pub fn build(self) -> Result<HodgkinHuxleyNeuron, HodgkinHuxleyError> {
         let n = self.n_initial.unwrap_or(0.32);
         let m = self.m_initial.unwrap_or(0.05);
@@ -109,6 +117,7 @@ impl HodgkinHuxleyNeuronBuilder {
     }
 }
 
+#[verified_engine::verified]
 fn validate_gating_variable(val: f64) -> Result<(), HodgkinHuxleyError> {
     if !(0.0..=1.0).contains(&val) {
         Err(HodgkinHuxleyError::InvalidGatingVariable(val))
@@ -136,6 +145,7 @@ pub struct HodgkinHuxleyNeuron {
 
 impl HodgkinHuxleyNeuron {
     /// Creates a new builder for constructing a neuron.
+    #[verified_engine::verified]
     pub fn builder() -> HodgkinHuxleyNeuronBuilder {
         HodgkinHuxleyNeuronBuilder::default()
     }
@@ -146,6 +156,7 @@ impl HodgkinHuxleyNeuron {
     ///
     /// # Arguments
     /// * `v_initial` - Initial membrane potential (typically -65.0 mV).
+    #[verified_engine::verified]
     pub fn new(v_initial: f64) -> Self {
         // We bypass the builder to avoid `.expect()` completely.
         // The default gating variables and default parameters are mathematically proven to be valid invariants.
@@ -163,6 +174,7 @@ impl HodgkinHuxleyNeuron {
     /// # Returns
     /// - `Ok(neuron)` if parameters are valid.
     /// - `Err(HodgkinHuxleyError)` if parameters are invalid.
+    #[verified_engine::verified]
     pub fn try_new_with_params(
         v_initial: f64,
         params: HodgkinHuxleyParameters,
@@ -174,16 +186,19 @@ impl HodgkinHuxleyNeuron {
     }
 
     /// Membrane potential (mV).
+    #[verified_engine::verified]
     pub fn v(&self) -> f64 {
         self.v
     }
 
     /// Potassium activation gating variable ($0 \le n \le 1$).
+    #[verified_engine::verified]
     pub fn n(&self) -> f64 {
         self.n
     }
 
     /// Sets the Potassium activation gating variable.
+    #[verified_engine::verified]
     pub fn set_n(&mut self, n: f64) -> Result<(), HodgkinHuxleyError> {
         validate_gating_variable(n)?;
         self.n = n;
@@ -191,11 +206,13 @@ impl HodgkinHuxleyNeuron {
     }
 
     /// Sodium activation gating variable ($0 \le m \le 1$).
+    #[verified_engine::verified]
     pub fn m(&self) -> f64 {
         self.m
     }
 
     /// Sets the Sodium activation gating variable.
+    #[verified_engine::verified]
     pub fn set_m(&mut self, m: f64) -> Result<(), HodgkinHuxleyError> {
         validate_gating_variable(m)?;
         self.m = m;
@@ -203,11 +220,13 @@ impl HodgkinHuxleyNeuron {
     }
 
     /// Sodium inactivation gating variable ($0 \le h \le 1$).
+    #[verified_engine::verified]
     pub fn h(&self) -> f64 {
         self.h
     }
 
     /// Sets the Sodium inactivation gating variable.
+    #[verified_engine::verified]
     pub fn set_h(&mut self, h: f64) -> Result<(), HodgkinHuxleyError> {
         validate_gating_variable(h)?;
         self.h = h;
@@ -215,6 +234,7 @@ impl HodgkinHuxleyNeuron {
     }
 
     /// Parameters for the neuron model.
+    #[verified_engine::verified]
     pub fn params(&self) -> &HodgkinHuxleyParameters {
         &self.params
     }
@@ -226,6 +246,7 @@ impl HodgkinHuxleyNeuron {
     /// # Arguments
     /// * `dt` - Time step in milliseconds (e.g., 0.01).
     /// * `i_ext` - External injected current ($\mu A/cm^2$).
+    #[verified_engine::verified]
     pub fn update(&mut self, dt: f64, i_ext: f64) {
         let state = HodgkinHuxleyState {
             v: self.v,

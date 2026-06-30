@@ -32,6 +32,7 @@ impl PoissonRate {
     /// let lambda = PoissonRate::new(2.5).unwrap();
     /// assert_eq!(lambda.value(), 2.5);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, ZipError> {
         if value <= 0.0 || !value.is_finite() {
             return Err(ZipError::InvalidRate { value });
@@ -40,6 +41,7 @@ impl PoissonRate {
     }
 
     /// Returns the raw rate value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -75,6 +77,7 @@ impl ZeroInflation {
     /// let rho = ZeroInflation::new(0.3).unwrap();
     /// assert_eq!(rho.value(), 0.3);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, ZipError> {
         if !(0.0..=1.0).contains(&value) || !value.is_finite() {
             return Err(ZipError::InvalidProbability {
@@ -86,6 +89,7 @@ impl ZeroInflation {
     }
 
     /// Returns the raw probability value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -97,6 +101,7 @@ pub struct Count(u32);
 
 impl Count {
     /// Creates a new Count from a u32.
+    #[verified_engine::verified]
     pub fn new(value: u32) -> Self {
         Self(value)
     }
@@ -114,6 +119,7 @@ impl Count {
     /// # Errors
     ///
     /// Returns `ZipError::InvalidCount` if the value is negative, non-finite, or has a fractional part.
+    #[verified_engine::verified]
     pub fn from_f64(value: f64) -> Result<Self, ZipError> {
         if value < 0.0 || !value.is_finite() || value.fract() != 0.0 {
             return Err(ZipError::InvalidCount { value });
@@ -122,11 +128,13 @@ impl Count {
     }
 
     /// Returns the count as a u32.
+    #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
 
     /// Returns the count as an f64.
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0 as f64
     }
@@ -162,6 +170,7 @@ impl ZipParams {
     ///     PoissonRate::new(3.0).unwrap()
     /// );
     /// ```
+    #[verified_engine::verified]
     pub fn new(rho: ZeroInflation, lambda: PoissonRate) -> Self {
         Self { rho, lambda }
     }
@@ -180,6 +189,7 @@ impl ZipParams {
     /// # Errors
     ///
     /// Returns `ZipError` if either parameter is invalid according to its constraints.
+    #[verified_engine::verified]
     pub fn from_values(rho: f64, lambda: f64) -> Result<Self, ZipError> {
         Ok(Self {
             rho: ZeroInflation::new(rho)?,
@@ -193,12 +203,14 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_poisson_rate_valid() {
         let rate = PoissonRate::new(2.5).unwrap();
         assert_eq!(rate.value(), 2.5);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_poisson_rate_invalid() {
         assert!(PoissonRate::new(-1.0).is_err());
         assert!(PoissonRate::new(0.0).is_err());
@@ -207,6 +219,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_zero_inflation_valid() {
         let rho = ZeroInflation::new(0.3).unwrap();
         assert_eq!(rho.value(), 0.3);
@@ -219,6 +232,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_zero_inflation_invalid() {
         assert!(ZeroInflation::new(-0.1).is_err());
         assert!(ZeroInflation::new(1.1).is_err());
@@ -226,6 +240,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_count_valid() {
         let count = Count::new(5);
         assert_eq!(count.value(), 5);
@@ -236,6 +251,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_count_invalid() {
         assert!(Count::from_f64(-1.0).is_err());
         assert!(Count::from_f64(2.5).is_err());
@@ -243,6 +259,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_zip_params() {
         let params = ZipParams::from_values(0.2, 3.0).unwrap();
         assert_eq!(params.rho.value(), 0.2);

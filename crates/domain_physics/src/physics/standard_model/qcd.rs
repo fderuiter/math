@@ -18,6 +18,7 @@ use crate::error::StandardModelError;
 /// # Returns
 /// * `Ok(f64)`: The value of $\alpha_s(Q^2)$.
 /// * `Err(StandardModelError)`: If an invalid parameter (e.g., negative energy) is provided.
+#[verified_engine::verified]
 pub fn running_coupling(
     mu: f64,
     alpha_mu: f64,
@@ -59,6 +60,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_asymptotic_freedom() {
         // Test that alpha_s decreases as Q increases for Nf < 16
         let mu = 91.2; // Z mass scale
@@ -79,6 +81,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_errors() {
         assert!(running_coupling(-1.0, 0.1, 10.0, 5.0).is_err());
         assert!(running_coupling(10.0, 0.1, -10.0, 5.0).is_err());

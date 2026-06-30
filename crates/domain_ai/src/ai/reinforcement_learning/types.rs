@@ -15,6 +15,7 @@ pub trait MarkovDecisionProcess {
 
     /// The Transition Probability $P(s' | s, a)$.
     /// Defines the probability of moving to `next_state` given `current_state` and `action`.
+    #[verified_engine::verified]
     fn transition_probability(
         &self,
         next_state: &Self::S,
@@ -24,25 +25,31 @@ pub trait MarkovDecisionProcess {
 
     /// The Reward Function $R(s, a, s')$.
     /// The immediate reward received for a transition.
+    #[verified_engine::verified]
     fn reward(&self, current_state: &Self::S, action: &Self::A, next_state: &Self::S) -> f64;
 
     /// Returns the available actions for a given state.
+    #[verified_engine::verified]
     fn actions(&self, state: &Self::S) -> Vec<Self::A>;
 
     /// The Discount Factor $\gamma$.
     /// Scales the importance of future rewards. $0 \le \gamma \le 1$.
+    #[verified_engine::verified]
     fn discount_factor(&self) -> f64;
 
     /// Checks if a state is terminal.
+    #[verified_engine::verified]
     fn is_terminal(&self, state: &Self::S) -> bool;
 }
 
 /// A Policy $\pi(a|s)$ maps a state to a probability distribution over actions.
 pub trait Policy<S: State, A: Action> {
     /// Returns the probability $\pi(a|s)$ of taking `action` in `state`.
+    #[verified_engine::verified]
     fn probability(&self, state: &S, action: &A) -> f64;
 
     /// Samples an action from the policy distribution for the given state.
+    #[verified_engine::verified]
     fn sample(&self, state: &S) -> A;
 }
 
@@ -55,8 +62,10 @@ pub trait Policy<S: State, A: Action> {
 /// - Deep Neural Networks (DQN)
 pub trait QFunction<S: State, A: Action> {
     /// Returns the Q-value for a given state-action pair.
+    #[verified_engine::verified]
     fn value(&self, state: &S, action: &A) -> f64;
 
     /// Updates the Q-value for a given state-action pair.
+    #[verified_engine::verified]
     fn update(&mut self, state: &S, action: &A, value: f64);
 }

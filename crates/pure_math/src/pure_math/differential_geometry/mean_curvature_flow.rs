@@ -10,6 +10,7 @@ pub struct DiscreteSurface {
 }
 
 impl DiscreteSurface {
+    #[verified_engine::verified]
     pub fn new(points: Vec<Vec<Point3<f64>>>, closed_u: bool, closed_v: bool) -> Self {
         Self {
             points,
@@ -18,6 +19,7 @@ impl DiscreteSurface {
         }
     }
 
+    #[verified_engine::verified]
     fn get(&self, i: i32, j: i32) -> Point3<f64> {
         let nu = self.points.len() as i32;
         let nv = self.points[0].len() as i32;
@@ -42,6 +44,7 @@ impl DiscreteSurface {
     /// Or simpler finite difference on the parameterization if regular grid.
     /// Since we have a structured grid (u, v), we can use the same operator logic as heat equation,
     /// but applied to x, y, z coordinates.
+    #[verified_engine::verified]
     pub fn mean_curvature_vector(&self, i: usize, j: usize) -> Vector3<f64> {
         // We approximate Delta_S r.
         // For a conformal parameterization, Delta_S r ~ Laplacian(r).
@@ -103,6 +106,7 @@ pub struct MeanCurvatureFlow {
 }
 
 impl MeanCurvatureFlow {
+    #[verified_engine::verified]
     pub fn new(surface: DiscreteSurface) -> Self {
         let next_points = surface.points.clone();
         Self {
@@ -111,6 +115,7 @@ impl MeanCurvatureFlow {
         }
     }
 
+    #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         let nu = self.surface.points.len();
         let nv = self.surface.points[0].len();

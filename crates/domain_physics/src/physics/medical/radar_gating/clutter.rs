@@ -21,6 +21,7 @@ use std::collections::VecDeque;
 /// # Formula
 ///
 /// $E = \frac{1}{N} \sum_{i=1}^{N} x_i$
+#[verified_engine::verified]
 pub fn ca_cfar_noise_level(reference_cells: &[f64]) -> f64 {
     if reference_cells.is_empty() {
         return 0.0;
@@ -49,6 +50,7 @@ impl EllipticalFilter {
     /// # Arguments
     ///
     /// * `alpha` - Window size parameter (as f64, cast to usize).
+    #[verified_engine::verified]
     pub fn new(alpha: f64) -> Self {
         Self {
             history: VecDeque::new(),
@@ -67,6 +69,7 @@ impl EllipticalFilter {
     /// # Returns
     ///
     /// * `Complex<f64>` - The signal with clutter removed ($x_{out} = x_{in} - \mu_{clutter}$).
+    #[verified_engine::verified]
     pub fn filter(&mut self, signal: Complex<f64>) -> Complex<f64> {
         self.history.push_back(signal);
         if self.history.len() > self.window_size {
@@ -80,6 +83,7 @@ impl EllipticalFilter {
     /// Returns the current estimated static clutter center.
     ///
     /// Calculated as the mean of the signal history.
+    #[verified_engine::verified]
     pub fn get_clutter_estimate(&self) -> Complex<f64> {
         if self.history.is_empty() {
             return Complex::new(0.0, 0.0);
@@ -95,6 +99,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_ca_cfar() {
         let refs = vec![10.0, 12.0, 8.0, 10.0];
         let noise = ca_cfar_noise_level(&refs);

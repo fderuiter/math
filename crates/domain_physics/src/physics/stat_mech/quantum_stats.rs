@@ -14,6 +14,7 @@ pub enum ParticleType {
 /// Strategy for calculating particle occupancy probability.
 pub trait StatisticalDistribution {
     /// Calculates the occupancy probability / average occupation number.
+    #[verified_engine::verified]
     fn occupancy(
         &self,
         energy: f64,
@@ -27,6 +28,7 @@ pub trait StatisticalDistribution {
 pub struct FermiDirac;
 
 impl StatisticalDistribution for FermiDirac {
+    #[verified_engine::verified]
     fn occupancy(
         &self,
         energy: f64,
@@ -64,6 +66,7 @@ impl StatisticalDistribution for FermiDirac {
 pub struct BoseEinstein;
 
 impl StatisticalDistribution for BoseEinstein {
+    #[verified_engine::verified]
     fn occupancy(
         &self,
         energy: f64,
@@ -111,6 +114,7 @@ impl StatisticalDistribution for BoseEinstein {
 pub struct MaxwellBoltzmann;
 
 impl StatisticalDistribution for MaxwellBoltzmann {
+    #[verified_engine::verified]
     fn occupancy(
         &self,
         energy: f64,
@@ -140,6 +144,7 @@ impl StatisticalDistribution for MaxwellBoltzmann {
 }
 
 /// Generic function to calculate occupancy using a specific strategy.
+#[verified_engine::verified]
 pub fn calculate_occupancy<D: StatisticalDistribution>(
     distribution: D,
     energy: f64,
@@ -166,6 +171,7 @@ pub fn calculate_occupancy<D: StatisticalDistribution>(
 ///
 /// # Returns
 /// * `Result<f64, StatMechError>` - The average occupancy, or error if invalid (e.g. Bosons with mu > epsilon).
+#[verified_engine::verified]
 pub fn occupancy_probability(
     particle_type: ParticleType,
     energy: f64,
@@ -190,6 +196,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_fermion_limit() {
         // T -> 0 (use very small T)
         // E < mu -> prob 1
@@ -216,6 +223,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_strategy_usage() {
         // Test using the Strategy API directly
         let t = 300.0;

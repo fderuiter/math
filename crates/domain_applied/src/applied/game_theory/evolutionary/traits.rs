@@ -11,5 +11,6 @@ pub trait FitnessStrategy {
     /// # Arguments
     /// * `x` - The current population state (proportions of each strategy).
     /// * `out` - The output vector to store the calculated fitness values.
+    #[verified_engine::verified]
     fn fitness(&self, x: &DVector<f64>, out: &mut DVector<f64>);
 }

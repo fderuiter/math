@@ -10,6 +10,7 @@ pub struct Domain {
 
 /// Verifies the Divergence Theorem: $\int_V (\nabla \cdot \mathbf{A}) dV = \oint_S (\mathbf{A} \cdot \mathbf{n}) dS$.
 /// Returns (lhs, rhs, diff).
+#[verified_engine::verified]
 pub fn verify_divergence_theorem<S, F>(
     coords: &S,
     domain: &Domain,
@@ -27,6 +28,7 @@ where
     (lhs, rhs, (lhs - rhs).abs())
 }
 
+#[verified_engine::verified]
 fn integrate_volume<S, F>(coords: &S, domain: &Domain, steps: usize, func: F) -> f64
 where
     S: OrthogonalCoordinateSystem,
@@ -54,6 +56,7 @@ where
 }
 
 #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+#[verified_engine::verified]
 fn integrate_surface_flux<S, F>(coords: &S, domain: &Domain, steps: usize, field: F) -> f64
 where
     S: OrthogonalCoordinateSystem,

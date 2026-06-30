@@ -7,6 +7,7 @@ pub struct WaveEquation1D {
 }
 
 impl WaveEquation1D {
+    #[verified_engine::verified]
     pub fn new(wave_speed: f64) -> Self {
         Self { wave_speed }
     }
@@ -19,6 +20,7 @@ impl WaveEquation1D {
     /// * `g` - Function representing the left-traveling component.
     /// * `x` - Position.
     /// * `t` - Time.
+    #[verified_engine::verified]
     pub fn dalembert_solution<F, G>(&self, f: F, g: G, x: f64, t: f64) -> f64
     where
         F: Fn(f64) -> f64,
@@ -32,6 +34,7 @@ impl WaveEquation1D {
     /// $u(x, t) = (A \cos kx + B \sin kx)(C \cos \omega t + D \sin \omega t)$
     /// where $\omega = c k$.
     #[allow(clippy::too_many_arguments)]
+    #[verified_engine::verified]
     pub fn separated_mode(
         &self,
         k: f64,
@@ -56,6 +59,7 @@ pub struct StringWaveSolution {
 }
 
 impl StringWaveSolution {
+    #[verified_engine::verified]
     pub fn evaluate(&self, x: f64, t: f64) -> f64 {
         let mut u = 0.0;
         let c = self.wave_speed;

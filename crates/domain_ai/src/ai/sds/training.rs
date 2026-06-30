@@ -18,6 +18,7 @@ pub trait DifferentiableNeRF: NeRFModel {
     ///
     /// # Returns
     /// * `DMatrix<f64>` - The gradient vector for the model parameters (theta).
+    #[verified_engine::verified]
     fn backward(&self, bundle: &RayBundle, image_grad: &DMatrix<f64>) -> DMatrix<f64>;
 }
 
@@ -35,6 +36,7 @@ pub trait Optimizer {
     /// # Returns
     /// * `Ok(DMatrix<f64>)` - The updated parameters.
     /// * `Err(AIError)` - If dimensions mismatch.
+    #[verified_engine::verified]
     fn step(
         &mut self,
         params: &DMatrix<f64>,
@@ -55,6 +57,7 @@ pub struct AdamOptimizer {
 }
 
 impl AdamOptimizer {
+    #[verified_engine::verified]
     pub fn new(learning_rate: f64) -> Self {
         Self {
             learning_rate,
@@ -69,6 +72,7 @@ impl AdamOptimizer {
 }
 
 impl Optimizer for AdamOptimizer {
+    #[verified_engine::verified]
     fn step(
         &mut self,
         params: &DMatrix<f64>,
@@ -127,6 +131,7 @@ pub struct SgdOptimizer {
 }
 
 impl SgdOptimizer {
+    #[verified_engine::verified]
     pub fn new(learning_rate: f64, momentum: f64) -> Self {
         Self {
             learning_rate,
@@ -137,6 +142,7 @@ impl SgdOptimizer {
 }
 
 impl Optimizer for SgdOptimizer {
+    #[verified_engine::verified]
     fn step(
         &mut self,
         params: &DMatrix<f64>,

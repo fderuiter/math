@@ -8,6 +8,7 @@
 /// # Returns
 /// The unnormalized posterior probability. The normalization (denominator)
 /// would be the sum of this value over all possible labels.
+#[verified_engine::verified]
 pub fn bayesian_classification(likelihood: f64, prior: f64) -> f64 {
     likelihood * prior
 }

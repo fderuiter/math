@@ -3,6 +3,7 @@ use domain_biology::biology::neuroscience::types::HodgkinHuxleyState;
 use pure_math::pure_math::analysis::ode::RungeKutta4;
 
 #[test]
+#[verified_engine::verified]
 fn test_neuron_rk4() {
     let mut neuron = HodgkinHuxleyNeuron::new(-65.0);
 

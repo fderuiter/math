@@ -8,6 +8,7 @@ mod tests {
     use rand::rngs::StdRng;
 
     #[test]
+    #[verified_engine::verified]
     fn test_hmm_creation() {
         let initial = DVector::from_vec(vec![0.5, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
@@ -20,6 +21,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_hmm_creation_f32() {
         let initial = DVector::from_vec(vec![0.5f32, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7f32, 0.3, 0.4, 0.6]);
@@ -32,6 +34,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_forward_algorithm() {
         // Simple HMM: two states, two observations
         let initial = DVector::from_vec(vec![0.6, 0.4]);
@@ -49,6 +52,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_viterbi() {
         // Classic example: two states (Fair/Loaded dice), two observations (0-5)
         // Simplified to 2 observations for testing
@@ -76,6 +80,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_hot_hand_detection() {
         // Basketball shooting: Cold (0) vs Hot (1)
         // Observations: Miss (0), Make (1)
@@ -118,6 +123,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_posterior_probabilities() {
         let initial = DVector::from_vec(vec![0.6, 0.4]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
@@ -136,6 +142,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_generate_sequence() {
         let initial = DVector::from_vec(vec![0.5, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
@@ -161,6 +168,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_deterministic_generation() {
         let initial = DVector::from_vec(vec![0.5, 0.5]);
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);
@@ -180,6 +188,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_validation_errors() {
         let initial = DVector::from_vec(vec![0.5, 0.4]); // Doesn't sum to 1
         let transitions = DMatrix::from_row_slice(2, 2, &[0.7, 0.3, 0.4, 0.6]);

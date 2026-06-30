@@ -9,6 +9,7 @@ const F64_TOLERANCE: f64 = 1e-9;
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_calculate_log_mass_from_distance() {
     // Test case for GeneralIrregular
     let distance = 10.0; // Mpc
@@ -29,6 +30,7 @@ fn test_calculate_log_mass_from_distance() {
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_calculate_apparent_magnitude_from_distance() {
     let distance = 10.0; // Mpc
 
@@ -49,6 +51,7 @@ fn test_calculate_apparent_magnitude_from_distance() {
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_calculate_log_mass_from_absolute_magnitude() {
     let absolute_magnitude_v = -15.0;
 
@@ -70,6 +73,7 @@ fn test_calculate_log_mass_from_absolute_magnitude() {
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_calculate_redshift_from_log_mass() {
     let log_mass_solar = 10.0;
 

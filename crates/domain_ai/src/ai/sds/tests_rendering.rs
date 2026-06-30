@@ -6,6 +6,7 @@ use nalgebra::{Matrix4, Vector3};
 use std::f64::consts::PI;
 
 #[test]
+#[verified_engine::verified]
 fn test_generate_ray_bundle() {
     let width = 10;
     let height = 10;
@@ -29,6 +30,7 @@ fn test_generate_ray_bundle() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_stratified_sampling() {
     let t_near = 0.0;
     let t_far = 10.0;
@@ -46,6 +48,7 @@ fn test_stratified_sampling() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_volume_integration() {
     // Test with a single opaque sample
     let densities = vec![1000.0]; // Opaque
@@ -62,6 +65,7 @@ fn test_volume_integration() {
 
 struct MockNeRF;
 impl NeRFModel for MockNeRF {
+    #[verified_engine::verified]
     fn query(&self, _pos: &Vector3<f64>, _dir: &Vector3<f64>) -> (f64, Vector3<f64>) {
         // Return constant density and color (Green)
         (10.0, Vector3::new(0.0, 1.0, 0.0))
@@ -69,6 +73,7 @@ impl NeRFModel for MockNeRF {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_render_image() {
     let width = 4;
     let height = 4;

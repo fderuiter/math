@@ -27,6 +27,7 @@ pub type Adam<T> = GenericAdam<T, (usize, ParamType)>;
 /// J(\theta) = \frac{1}{n} \sum_{i=1}^{n} (y^{(i)} - \hat{y}^{(i)})^2
 use crate::error::AIError;
 
+#[verified_engine::verified]
 pub fn mean_squared_error<T: RealField + Copy>(
     y_pred: &DVector<T>,
     y_true: &DVector<T>,
@@ -40,6 +41,7 @@ pub fn mean_squared_error<T: RealField + Copy>(
 
 /// Derivative of MSE with respect to y_pred.
 /// \frac{\partial J}{\partial \hat{y}} = \frac{2}{n} (\hat{y} - y)
+#[verified_engine::verified]
 pub fn mse_prime<T: RealField + Copy>(
     y_pred: &DVector<T>,
     y_true: &DVector<T>,
@@ -59,6 +61,7 @@ pub fn mse_prime<T: RealField + Copy>(
 /// J(\theta) = - \sum_{i} y_i \log(\hat{y}_i)
 ///
 /// Note: This implementation assumes y_true is a one-hot vector or probability distribution.
+#[verified_engine::verified]
 pub fn cross_entropy_loss<T: RealField + Copy>(
     y_pred: &DVector<T>,
     y_true: &DVector<T>,
@@ -77,6 +80,7 @@ pub fn cross_entropy_loss<T: RealField + Copy>(
 ///
 /// If output layer is Softmax and Loss is Cross-Entropy, the gradient w.r.t the logits z is:
 /// \frac{\partial L}{\partial z} = \hat{y} - y
+#[verified_engine::verified]
 pub fn cross_entropy_softmax_prime<T: RealField + Copy>(
     z_logits: &DVector<T>,
     y_true: &DVector<T>,
@@ -86,6 +90,7 @@ pub fn cross_entropy_softmax_prime<T: RealField + Copy>(
 }
 
 /// Helper Softmax function for generic types.
+#[verified_engine::verified]
 fn softmax<T: RealField + Copy>(z: &DVector<T>) -> DVector<T> {
     let max_z = z.max();
     let exps = z.map(|v| (v - max_z).exp());
@@ -100,6 +105,7 @@ fn softmax<T: RealField + Copy>(z: &DVector<T>) -> DVector<T> {
 /// if the type implements it with a compatible Key.
 pub trait Optimizer<T: RealField + Copy>: GenericOptimizer<T, (usize, ParamType)> {
     // Default implementation delegates to the generic one using the tuple key.
+    #[verified_engine::verified]
     fn update_matrix_legacy(
         &mut self,
         layer_idx: usize,
@@ -109,6 +115,7 @@ pub trait Optimizer<T: RealField + Copy>: GenericOptimizer<T, (usize, ParamType)
         self.update_matrix((layer_idx, ParamType::Weight), param, grad)
     }
 
+    #[verified_engine::verified]
     fn update_vector_legacy(
         &mut self,
         layer_idx: usize,

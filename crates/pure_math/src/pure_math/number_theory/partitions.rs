@@ -47,6 +47,7 @@ pub type QSeries = crate::pure_math::number_theory::q_series::QSeries<i64>;
 ///
 /// * `k` - The scaling factor for the power of q.
 /// * `precision` - The number of terms to compute (i.e., maximum power of q + 1).
+#[verified_engine::verified]
 pub fn f_k(k: usize, precision: usize) -> QSeries {
     if k == 0 {
         return QSeries::from_vec(vec![0i64; precision]);
@@ -116,6 +117,7 @@ pub fn f_k(k: usize, precision: usize) -> QSeries {
 /// Generating function for $P^*(n)$.
 ///
 /// $$\sum P^*(n)q^n = f_1^4 f_5^4$$
+#[verified_engine::verified]
 pub fn gen_p_star(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f5 = f_k(5, precision);
@@ -127,6 +129,7 @@ pub fn gen_p_star(precision: usize) -> QSeries {
 /// Generating function for $M(n)$.
 ///
 /// $$\sum M(n)q^n = \frac{f_2^5 f_5^5}{f_1 f_{10}}$$
+#[verified_engine::verified]
 pub fn gen_m(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -145,6 +148,7 @@ pub fn gen_m(precision: usize) -> QSeries {
 /// Generating function for $T^*(n)$.
 ///
 /// $$\sum T^*(n)q^n = \frac{f_1^5 f_{10}^5}{f_2 f_5}$$
+#[verified_engine::verified]
 pub fn gen_t_star(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -163,6 +167,7 @@ pub fn gen_t_star(precision: usize) -> QSeries {
 /// Generating function for $A(n)$.
 ///
 /// $$\sum A(n)q^n = \frac{f_2^6 f_7^6}{f_1^2}$$
+#[verified_engine::verified]
 pub fn gen_a(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -180,6 +185,7 @@ pub fn gen_a(precision: usize) -> QSeries {
 /// Generating function for $B(n)$.
 ///
 /// $$\sum B(n)q^n = \frac{f_1^6 f_{14}^4}{f_2^2 f_7^2}$$
+#[verified_engine::verified]
 pub fn gen_b(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -200,6 +206,7 @@ pub fn gen_b(precision: usize) -> QSeries {
 /// Generating function for $K(n)$.
 ///
 /// $$\sum K(n)q^n = f_1^2 f_2^2 f_7^2 f_{14}^2$$
+#[verified_engine::verified]
 pub fn gen_k(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -217,6 +224,7 @@ pub fn gen_k(precision: usize) -> QSeries {
 /// Generating function for $L(n)$.
 ///
 /// $$\sum L(n)q^n = \frac{f_1^5 f_7^5}{f_2 f_{14}}$$
+#[verified_engine::verified]
 pub fn gen_l(precision: usize) -> QSeries {
     let f1 = f_k(1, precision);
     let f2 = f_k(2, precision);
@@ -237,6 +245,7 @@ mod tests {
     use super::*;
 
     // Re-implementation of the naive O(N^2) algorithm for verification purposes
+    #[verified_engine::verified]
     fn f_k_slow(k: usize, precision: usize) -> QSeries {
         if k == 0 {
             return QSeries::from_vec(vec![0i64; precision]);
@@ -266,6 +275,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_f_k_correctness() {
         let precision = 100;
         let k = 1;
@@ -280,6 +290,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_f_k_large_k() {
         let precision = 100;
         let k = 5; // Pentagonal numbers will be scaled by 5

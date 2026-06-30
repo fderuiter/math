@@ -1,6 +1,7 @@
 use super::surface::Surface;
 
 /// Calculates the shortest Euclidean distance from a point to a surface.
+#[verified_engine::verified]
 fn point_to_surface_distance(point: &[f64; 3], surface: &Surface) -> f64 {
     surface
         .vertices
@@ -24,6 +25,7 @@ fn point_to_surface_distance(point: &[f64; 3], surface: &Surface) -> f64 {
 ///
 /// # Returns
 /// The cortical thickness at that location.
+#[verified_engine::verified]
 pub fn cortical_thickness(
     v_w: &[f64; 3],
     v_p: &[f64; 3],

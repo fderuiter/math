@@ -23,6 +23,7 @@ pub struct Patient {
 /// algorithms to be swapped interchangeably.
 pub trait AllocationStrategy {
     /// Assigns `n_subjects` to groups using the provided RNG.
+    #[verified_engine::verified]
     fn assign<R: Rng + ?Sized>(
         &self,
         rng: &mut R,
@@ -36,6 +37,7 @@ pub trait AllocationStrategy {
 pub struct SimpleRandomizer;
 
 impl AllocationStrategy for SimpleRandomizer {
+    #[verified_engine::verified]
     fn assign<R: Rng + ?Sized>(
         &self,
         rng: &mut R,
@@ -65,6 +67,7 @@ impl BlockRandomizer {
     ///
     /// # Arguments
     /// * `block_size` - The size of each block. Must be even.
+    #[verified_engine::verified]
     pub fn new(block_size: usize) -> Result<Self, ClinicalTrialError> {
         if !block_size.is_multiple_of(2) {
             return Err(ClinicalTrialError::InvalidData(
@@ -106,6 +109,7 @@ impl AllocationStrategy for BlockRandomizer {
     /// let t_count = first_four.iter().filter(|&&g| g == Group::Treatment).count();
     /// assert_eq!(t_count, 2);
     /// ```
+    #[verified_engine::verified]
     fn assign<R: Rng + ?Sized>(
         &self,
         rng: &mut R,
@@ -140,11 +144,13 @@ pub struct StratifiedRandomizer<S: AllocationStrategy> {
 }
 
 impl<S: AllocationStrategy> StratifiedRandomizer<S> {
+    #[verified_engine::verified]
     pub fn new(strategy: S) -> Self {
         Self { strategy }
     }
 
     /// Assigns patients to groups based on their strata.
+    #[verified_engine::verified]
     pub fn assign_stratified<R: Rng + ?Sized>(
         &self,
         rng: &mut R,
@@ -173,12 +179,14 @@ impl<S: AllocationStrategy> StratifiedRandomizer<S> {
 // --- Legacy Wrappers ---
 
 #[deprecated(since = "0.2.0", note = "Use SimpleRandomizer struct instead")]
+#[verified_engine::verified]
 pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
     let mut rng = thread_rng();
     SimpleRandomizer.assign(&mut rng, n_patients).unwrap()
 }
 
 #[deprecated(since = "0.2.0", note = "Use BlockRandomizer struct instead")]
+#[verified_engine::verified]
 pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<Group>, String> {
     let mut rng = thread_rng();
     let randomizer = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
@@ -188,6 +196,7 @@ pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<G
 }
 
 #[deprecated(since = "0.2.0", note = "Use StratifiedRandomizer struct instead")]
+#[verified_engine::verified]
 pub fn stratified_randomization(
     patients: &[Patient],
     block_size: usize,

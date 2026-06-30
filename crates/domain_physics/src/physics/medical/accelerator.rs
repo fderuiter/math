@@ -9,6 +9,7 @@
 /// # Returns
 ///
 /// * `f64` - Average energy in MeV.
+#[verified_engine::verified]
 pub fn beam_loading_energy(beam_current: f64) -> f64 {
     5.925 - beam_current * 0.00808
 }

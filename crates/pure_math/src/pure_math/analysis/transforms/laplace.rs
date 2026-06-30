@@ -23,6 +23,7 @@ use num_complex::Complex64;
 /// * `s` - The complex frequency parameter $s = \sigma + i\omega$.
 /// * `max_t` - The upper limit for integration (approximating infinity). Choose a value where $e^{-st}f(t)$ is negligible.
 /// * `integrator` - The integration strategy.
+#[verified_engine::verified]
 pub fn laplace_transform<F, I>(f: F, s: Complex64, max_t: f64, integrator: &I) -> Complex64
 where
     F: Fn(f64) -> f64 + Copy,
@@ -59,6 +60,7 @@ mod tests {
     use crate::pure_math::analysis::integration::ClenshawCurtis;
 
     #[test]
+    #[verified_engine::verified]
     fn test_laplace_exponential() {
         // f(t) = e^{at}.
         // F(s) = 1 / (s - a).
@@ -79,6 +81,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_laplace_sine() {
         // f(t) = sin(kt).
         // F(s) = k / (s^2 + k^2).
@@ -98,6 +101,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_laplace_complex_s() {
         // f(t) = 1 (unit step).
         // F(s) = 1/s.

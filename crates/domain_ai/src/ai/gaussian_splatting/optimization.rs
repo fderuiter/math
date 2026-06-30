@@ -16,6 +16,7 @@ pub enum DensityAction {
 /// * `grad_threshold`: Threshold for positional gradient (tau_pos).
 /// * `scale_threshold`: Threshold for scale to decide between split vs clone (phi).
 /// * `opacity_threshold`: Minimum opacity threshold for pruning.
+#[verified_engine::verified]
 pub fn determine_density_action(
     grad_magnitude: f64,
     scale_max: f64,
@@ -46,6 +47,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_density_actions() {
         // Prune
         assert_eq!(

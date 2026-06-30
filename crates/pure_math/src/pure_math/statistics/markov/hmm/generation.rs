@@ -15,6 +15,7 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
     /// # Returns
     ///
     /// A pair (state_sequence, observation_sequence).
+    #[verified_engine::verified]
     pub fn generate<R: rand::Rng>(
         &self,
         length: usize,

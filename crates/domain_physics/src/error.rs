@@ -123,9 +123,11 @@ pub enum StatMechError {
 }
 
 impl Diagnostic for ChaosError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "ChaosError".to_string());
@@ -135,9 +137,11 @@ impl Diagnostic for ChaosError {
 }
 
 impl Diagnostic for StandardModelError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "StandardModelError".to_string());
@@ -147,9 +151,11 @@ impl Diagnostic for StandardModelError {
 }
 
 impl Diagnostic for SolidStateError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "SolidStateError".to_string());
@@ -159,9 +165,11 @@ impl Diagnostic for SolidStateError {
 }
 
 impl Diagnostic for DoseFluenceError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "DoseFluenceError".to_string());
@@ -171,9 +179,11 @@ impl Diagnostic for DoseFluenceError {
 }
 
 impl Diagnostic for RadarError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "RadarError".to_string());
@@ -183,9 +193,11 @@ impl Diagnostic for RadarError {
 }
 
 impl Diagnostic for HighEnergyError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "HighEnergyError".to_string());
@@ -195,9 +207,11 @@ impl Diagnostic for HighEnergyError {
 }
 
 impl Diagnostic for FluidError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "FluidError".to_string());
@@ -207,9 +221,11 @@ impl Diagnostic for FluidError {
 }
 
 impl Diagnostic for StatMechError {
+    #[verified_engine::verified]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "StatMechError".to_string());
@@ -219,6 +235,7 @@ impl Diagnostic for StatMechError {
 }
 
 impl std::fmt::Display for ChaosError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -227,6 +244,7 @@ impl std::fmt::Display for ChaosError {
 impl std::error::Error for ChaosError {}
 
 impl std::fmt::Display for StandardModelError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -235,6 +253,7 @@ impl std::fmt::Display for StandardModelError {
 impl std::error::Error for StandardModelError {}
 
 impl std::fmt::Display for HighEnergyError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -243,6 +262,7 @@ impl std::fmt::Display for HighEnergyError {
 impl std::error::Error for HighEnergyError {}
 
 impl std::fmt::Display for FluidError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -251,6 +271,7 @@ impl std::fmt::Display for FluidError {
 impl std::error::Error for FluidError {}
 
 impl std::fmt::Display for StatMechError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }

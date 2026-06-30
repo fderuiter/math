@@ -6,15 +6,18 @@ use super::traits::{OdeSystem, Solver, SolverExt, VectorOperations};
 /// enforcing a consistent interface for time-stepping simulations.
 pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
     /// Returns a reference to the current state.
+    #[verified_engine::verified]
     fn get_state(&self) -> &State;
 
     /// Returns a mutable reference to the current state.
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut State;
 
     /// Advances the system by `dt` using a default strategy.
     ///
     /// Implementors should choose the most appropriate solver for their system
     /// (e.g., RungeKutta4 for smooth ODEs, Euler for simplicity, or custom fused loops).
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64);
 
     /// Advances the system by `dt` using a provided solver.

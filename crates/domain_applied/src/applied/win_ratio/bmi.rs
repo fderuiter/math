@@ -30,6 +30,7 @@
 /// let bmi = calculate_bmi(weight, height);
 /// assert!((bmi - 22.857).abs() < 1e-3);
 /// ```
+#[verified_engine::verified]
 pub fn calculate_bmi(weight_kg: f64, height_m: f64) -> f64 {
     if height_m <= 0.0 {
         return 0.0;

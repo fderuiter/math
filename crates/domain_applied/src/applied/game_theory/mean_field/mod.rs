@@ -72,6 +72,7 @@ pub struct MeanFieldGame1D {
 }
 
 impl MeanFieldGame1D {
+    #[verified_engine::verified]
     pub fn new(
         viscosity: f64,
         time_horizon: f64,
@@ -94,6 +95,7 @@ impl MeanFieldGame1D {
         }
     }
 
+    #[verified_engine::verified]
     pub fn solve(
         &self,
         cost_function: impl Fn(Position, Density) -> f64,
@@ -116,6 +118,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_mfg_run_legacy() {
         let mfg = MeanFieldGame1D::new(0.1, 1.0, 50, 100, -2.0, 2.0);
 
@@ -130,6 +133,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_mfg_with_custom_hamiltonian() {
         use std::num::NonZeroUsize;
         let config = MFGConfigBuilder::new()

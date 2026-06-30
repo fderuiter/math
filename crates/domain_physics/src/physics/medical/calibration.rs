@@ -18,6 +18,7 @@
 ///
 /// - If $HU < 0$: $\rho = 1.0 + (HU / 1000.0)$
 /// - If $HU \geq 0$: $\rho = 1.0 + (HU / 500.0)$
+#[verified_engine::verified]
 pub fn hu_to_density(hu: f64) -> Result<f64, String> {
     let density = if hu < 0.0 {
         1.0 + (hu / 1000.0)
@@ -42,6 +43,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_hu_to_density() {
         // Water
         assert!((hu_to_density(0.0).unwrap() - 1.0).abs() < 1e-6);

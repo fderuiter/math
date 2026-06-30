@@ -26,6 +26,7 @@ impl<const Q: usize> LatticeState<Q> {
     /// - Density = 1.0
     /// - Velocity = 0.0
     /// - f = 0.0 (Caller must initialize equilibrium)
+    #[verified_engine::verified]
     pub fn new(width: usize, height: usize) -> Self {
         let size = width
             .checked_mul(height)
@@ -43,6 +44,7 @@ impl<const Q: usize> LatticeState<Q> {
     }
 
     /// Swaps the current and new distribution function buffers.
+    #[verified_engine::verified]
     pub fn swap_buffers(&mut self) {
         std::mem::swap(&mut self.f, &mut self.f_new);
     }
@@ -50,6 +52,7 @@ impl<const Q: usize> LatticeState<Q> {
     /// Returns the linear index for coordinates (x, y).
     /// Does not check bounds (use with caution or check bounds externally).
     #[inline]
+    #[verified_engine::verified]
     pub fn index(&self, x: usize, y: usize) -> usize {
         y.checked_mul(self.width)
             .and_then(|val| val.checked_add(x))
@@ -58,6 +61,7 @@ impl<const Q: usize> LatticeState<Q> {
 
     /// Checks if the coordinates are within the grid.
     #[inline]
+    #[verified_engine::verified]
     pub fn is_valid(&self, x: usize, y: usize) -> bool {
         x < self.width && y < self.height
     }
@@ -65,31 +69,37 @@ impl<const Q: usize> LatticeState<Q> {
     // --- Public Accessors ---
 
     /// Returns the width of the lattice grid.
+    #[verified_engine::verified]
     pub fn width(&self) -> usize {
         self.width
     }
 
     /// Returns the height of the lattice grid.
+    #[verified_engine::verified]
     pub fn height(&self) -> usize {
         self.height
     }
 
     /// Returns a slice of the macroscopic density field.
+    #[verified_engine::verified]
     pub fn density(&self) -> &[f64] {
         &self.rho
     }
 
     /// Returns a slice of the macroscopic X-velocity field.
+    #[verified_engine::verified]
     pub fn velocity_x(&self) -> &[f64] {
         &self.ux
     }
 
     /// Returns a slice of the macroscopic Y-velocity field.
+    #[verified_engine::verified]
     pub fn velocity_y(&self) -> &[f64] {
         &self.uy
     }
 
     /// Returns a slice of the obstacle mask (true = obstacle).
+    #[verified_engine::verified]
     pub fn obstacles(&self) -> &[bool] {
         &self.obstacles
     }

@@ -11,6 +11,7 @@ pub struct LinearCalibrator {
 
 impl LinearCalibrator {
     /// Creates a new LinearCalibrator with known coefficients.
+    #[verified_engine::verified]
     pub fn new(slope: f64, intercept: f64) -> Self {
         Self { slope, intercept }
     }
@@ -25,6 +26,7 @@ impl LinearCalibrator {
     /// # Returns
     ///
     /// * `Result<LinearCalibrator, String>` - A fitted calibrator or error if data is insufficient.
+    #[verified_engine::verified]
     pub fn fit(voltages: &[f64], distances: &[f64]) -> Result<Self, String> {
         let n = voltages.len().min(distances.len());
         if n < 2 {
@@ -66,6 +68,7 @@ impl LinearCalibrator {
     /// # Formula
     ///
     /// $y = mx + c$
+    #[verified_engine::verified]
     pub fn calibrate(&self, voltage: f64) -> f64 {
         self.slope * voltage + self.intercept
     }

@@ -14,12 +14,14 @@ pub struct FrohlichVertex {
 }
 
 impl FrohlichVertex {
+    #[verified_engine::verified]
     pub fn new(alpha: f64, omega_lo: f64) -> Self {
         Self { alpha, omega_lo }
     }
 
     /// Returns the scattering amplitude M(q).
     /// M_q \propto 1 / q
+    #[verified_engine::verified]
     pub fn amplitude(&self, q: f64) -> Complex<f64> {
         if q.abs() < 1e-12 {
             return Complex::new(0.0, 0.0);

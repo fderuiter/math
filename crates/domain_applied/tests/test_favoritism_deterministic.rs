@@ -6,6 +6,7 @@ use rand::SeedableRng;
 use rand::rngs::StdRng;
 
 #[test]
+#[verified_engine::verified]
 fn test_favoritism_deterministic() {
     let inputs = FavoritismInputs::default();
 
@@ -31,6 +32,7 @@ fn test_favoritism_deterministic() {
 struct MockIntegrator;
 
 impl Integrator for MockIntegrator {
+    #[verified_engine::verified]
     fn integrate<F>(&self, f: F, min: f64, max: f64, _eps: f64) -> IntegrationResult
     where
         F: Fn(f64) -> f64,
@@ -53,6 +55,7 @@ impl Integrator for MockIntegrator {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_favoritism_integrator_swap() {
     let inputs = FavoritismInputs::default();
     let rng = StdRng::seed_from_u64(42);

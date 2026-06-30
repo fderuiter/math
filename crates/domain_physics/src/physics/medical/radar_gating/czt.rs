@@ -23,6 +23,7 @@ use std::f64::consts::PI;
 /// # Returns
 ///
 /// A vector of complex numbers representing the frequency spectrum in the specified band.
+#[verified_engine::verified]
 pub fn chirp_z_transform(
     signal: &[Complex<f64>],
     start_freq: f64,
@@ -87,6 +88,7 @@ impl SpatialCztConfig {
     ///
     /// * `signal` - The time-domain input signal.
     /// * `sample_rate` - ADC sample rate ($f_s$).
+    #[verified_engine::verified]
     pub fn process(&self, signal: &[Complex<f64>], sample_rate: f64) -> Vec<Complex<f64>> {
         // Frequency per meter slope: S_f = (2 * B) / (c * T_c)
         let slope = (2.0 * self.bandwidth) / (self.c * self.chirp_time);

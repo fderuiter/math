@@ -7,6 +7,7 @@ pub trait ReactionModel {
     /// # Arguments
     /// * `concentrations`: The current concentrations of all species at this point.
     /// * `rates`: Output buffer for the computed reaction rates (dC/dt).
+    #[verified_engine::verified]
     fn reaction(&self, concentrations: &[f64], rates: &mut [f64]);
 
     /// Computes and accumulates reaction rates for the entire grid.
@@ -17,6 +18,7 @@ pub trait ReactionModel {
     /// # Arguments
     /// * `state`: Current chemical state (concentrations).
     /// * `out_rates`: Chemical state buffer to accumulate reaction rates into.
+    #[verified_engine::verified]
     fn add_reaction_batch(&self, state: &ChemicalState, out_rates: &mut ChemicalState) {
         let n_species = state.num_species();
         if n_species == 0 {
@@ -51,5 +53,6 @@ pub trait DiffusionModel {
     /// * `state`: Current chemical state.
     /// * `out`: Output buffer for the diffusion term (D * Laplacian).
     /// * `coeffs`: Diffusion coefficients for each species.
+    #[verified_engine::verified]
     fn apply(&self, state: &ChemicalState, out: &mut ChemicalState, coeffs: &[f64]);
 }

@@ -12,17 +12,20 @@ pub struct BQF {
 
 impl BQF {
     /// Creates a new BQF.
+    #[verified_engine::verified]
     pub fn new(a: i64, b: i64, c: i64) -> Self {
         Self { a, b, c }
     }
 
     /// Returns the discriminant of the form.
+    #[verified_engine::verified]
     pub fn discriminant(&self) -> i64 {
         self.b.pow(2) - 4 * self.a * self.c
     }
 
     /// Checks if the form is reduced.
     /// A form is reduced if |b| <= a <= c, and if |b| = a or a = c, then b >= 0.
+    #[verified_engine::verified]
     pub fn is_reduced(&self) -> bool {
         let a_abs = self.a.abs();
         let b_abs = self.b.abs();
@@ -43,6 +46,7 @@ impl BQF {
 /// d must be a negative integer and d.rem_euclid(4) == 0 or d.rem_euclid(4) == 1.
 /// The class number is the number of reduced, primitive, positive-definite
 /// binary quadratic forms of discriminant d.
+#[verified_engine::verified]
 pub fn class_number(d: i64) -> u64 {
     if d >= 0 || (d.rem_euclid(4) != 0 && d.rem_euclid(4) != 1) {
         return 0;
@@ -74,6 +78,7 @@ pub fn class_number(d: i64) -> u64 {
 }
 
 /// Computes the greatest common divisor of two numbers.
+#[verified_engine::verified]
 fn gcd(a: i64, b: i64) -> i64 {
     let mut a = a;
     let mut b = b;

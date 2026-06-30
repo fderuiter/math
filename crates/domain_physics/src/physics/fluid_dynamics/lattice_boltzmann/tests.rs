@@ -7,6 +7,7 @@ mod tests {
     const Q: usize = 9;
 
     #[test]
+    #[verified_engine::verified]
     fn test_bgk_collision() {
         let tau = 1.0;
         let strategy = BgkCollision { tau };
@@ -28,6 +29,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_solver_initialization() {
         let solver = LatticeBoltzmannD2Q9::new(10, 10, 1.0);
         assert_eq!(solver.state.rho.len(), 100);
@@ -38,6 +40,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_gui_compliance_dynamic_inputs() {
         let width = 20;
         let height = 10;

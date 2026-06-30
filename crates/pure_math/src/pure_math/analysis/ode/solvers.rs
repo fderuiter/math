@@ -13,6 +13,7 @@ use super::traits::{OdeSystem, Solver, VectorOperations};
 /// * `y_acc`: The accumulator for the new state ($y_{n+1}$).
 /// * `k`: Scratch buffer for derivatives.
 /// * `tmp`: Scratch buffer for intermediate states.
+#[verified_engine::verified]
 fn rk4_kernel<State, S>(
     system: &S,
     t: f64,
@@ -70,6 +71,7 @@ impl<State: Clone> Euler<State> {
     ///
     /// # Arguments
     /// * `example_state` - A reference to a state vector used to determine buffer size/type.
+    #[verified_engine::verified]
     pub fn new(example_state: &State) -> Self {
         Self {
             buffer: example_state.clone(),
@@ -78,6 +80,7 @@ impl<State: Clone> Euler<State> {
 }
 
 impl<State: VectorOperations> Solver<State> for Euler<State> {
+    #[verified_engine::verified]
     fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized,
@@ -110,6 +113,7 @@ impl<State: Clone> RungeKutta4<State> {
     ///
     /// # Arguments
     /// * `example_state` - A reference to a state vector used to determine buffer size/type.
+    #[verified_engine::verified]
     pub fn new(example_state: &State) -> Self {
         Self {
             k: example_state.clone(),
@@ -122,6 +126,7 @@ impl<State: Clone> RungeKutta4<State> {
     ///
     /// This method allocates a new solver (and thus buffers) on every call.
     /// For performance-critical code, instantiate a `RungeKutta4` struct and reuse it.
+    #[verified_engine::verified]
     pub fn step<S>(system: &S, t: f64, state: &State, dt: f64) -> State
     where
         State: VectorOperations,
@@ -147,6 +152,7 @@ impl<State: Clone> RungeKutta4<State> {
 }
 
 impl<State: VectorOperations> Solver<State> for RungeKutta4<State> {
+    #[verified_engine::verified]
     fn step<S>(&mut self, system: &S, t: f64, state: &mut State, dt: f64)
     where
         S: OdeSystem<State> + ?Sized,

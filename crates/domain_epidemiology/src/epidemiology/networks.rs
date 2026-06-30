@@ -4,6 +4,7 @@ use std::f32::consts::TAU;
 /// Calculates R0 for a heterogeneous network.
 ///
 /// $R_0 = \frac{\beta}{\gamma} \frac{\langle k^2 \rangle - \langle k \rangle}{\langle k \rangle}$
+#[verified_engine::verified]
 pub fn heterogeneous_r0(beta: f64, gamma: f64, mean_degree: f64, degree_variance: f64) -> f64 {
     if mean_degree == 0.0 || gamma == 0.0 {
         return 0.0;
@@ -44,6 +45,7 @@ pub enum NetworkModelError {
 }
 
 impl std::fmt::Display for NetworkModelError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::InvalidNodeCount => write!(f, "Number of nodes must be greater than zero"),
@@ -67,12 +69,14 @@ pub struct NetworkEpidemicModelBuilder {
 }
 
 impl Default for NetworkEpidemicModelBuilder {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self::new()
     }
 }
 
 impl NetworkEpidemicModelBuilder {
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
             num_nodes: None,
@@ -84,32 +88,38 @@ impl NetworkEpidemicModelBuilder {
         }
     }
 
+    #[verified_engine::verified]
     pub fn num_nodes(mut self, num: usize) -> Self {
         self.num_nodes = Some(num);
         self
     }
 
+    #[verified_engine::verified]
     pub fn parameters(mut self, beta: f64, gamma: f64) -> Self {
         self.beta = Some(beta);
         self.gamma = Some(gamma);
         self
     }
 
+    #[verified_engine::verified]
     pub fn states(mut self, states: Vec<NodeState>) -> Self {
         self.states = Some(states);
         self
     }
 
+    #[verified_engine::verified]
     pub fn positions(mut self, positions: Vec<[f32; 2]>) -> Self {
         self.positions = Some(positions);
         self
     }
 
+    #[verified_engine::verified]
     pub fn adjacency(mut self, adjacency: Vec<Vec<usize>>) -> Self {
         self.adjacency = Some(adjacency);
         self
     }
 
+    #[verified_engine::verified]
     pub fn build(self) -> Result<NetworkEpidemicModel, NetworkModelError> {
         let num_nodes = self.num_nodes.ok_or(NetworkModelError::InvalidNodeCount)?;
         let beta = self.beta.unwrap_or(0.0);
@@ -154,32 +164,41 @@ impl NetworkEpidemicModelBuilder {
 }
 
 impl NetworkEpidemicModel {
+    #[verified_engine::verified]
     pub fn builder() -> NetworkEpidemicModelBuilder {
         NetworkEpidemicModelBuilder::new()
     }
 
+    #[verified_engine::verified]
     pub fn num_nodes(&self) -> usize {
         self.num_nodes
     }
+    #[verified_engine::verified]
     pub fn states(&self) -> &[NodeState] {
         &self.states
     }
+    #[verified_engine::verified]
     pub fn states_mut(&mut self) -> &mut Vec<NodeState> {
         &mut self.states
     }
+    #[verified_engine::verified]
     pub fn positions(&self) -> &[[f32; 2]] {
         &self.positions
     }
+    #[verified_engine::verified]
     pub fn adjacency(&self) -> &[Vec<usize>] {
         &self.adjacency
     }
+    #[verified_engine::verified]
     pub fn beta(&self) -> f64 {
         self.beta
     }
+    #[verified_engine::verified]
     pub fn gamma(&self) -> f64 {
         self.gamma
     }
 
+    #[verified_engine::verified]
     pub fn set_num_nodes(&mut self, num: usize) -> Result<(), NetworkModelError> {
         if num == 0 {
             return Err(NetworkModelError::InvalidNodeCount);
@@ -188,6 +207,7 @@ impl NetworkEpidemicModel {
         Ok(())
     }
 
+    #[verified_engine::verified]
     pub fn set_beta(&mut self, beta: f64) -> Result<(), NetworkModelError> {
         if beta < 0.0 {
             return Err(NetworkModelError::InvalidParameters);
@@ -196,6 +216,7 @@ impl NetworkEpidemicModel {
         Ok(())
     }
 
+    #[verified_engine::verified]
     pub fn set_gamma(&mut self, gamma: f64) -> Result<(), NetworkModelError> {
         if gamma < 0.0 {
             return Err(NetworkModelError::InvalidParameters);
@@ -208,6 +229,7 @@ impl NetworkEpidemicModel {
     ///
     /// This method uses the default thread-local RNG. For deterministic behavior,
     /// use `new_with_rng`.
+    #[verified_engine::verified]
     pub fn new(num_nodes: usize, beta: f64, gamma: f64) -> Self {
         let mut rng = rand::thread_rng();
         Self::new_with_rng(num_nodes, beta, gamma, &mut rng)
@@ -215,6 +237,7 @@ impl NetworkEpidemicModel {
 
     /// Creates a new network epidemic model and initializes it with a geometric graph
     /// using an injected RNG.
+    #[verified_engine::verified]
     pub fn new_with_rng<R: Rng>(num_nodes: usize, beta: f64, gamma: f64, rng: &mut R) -> Self {
         let mut model = Self {
             num_nodes,
@@ -229,12 +252,14 @@ impl NetworkEpidemicModel {
     }
 
     /// Initializes a geometric graph. This method uses the default thread-local RNG.
+    #[verified_engine::verified]
     pub fn initialize_geometric_graph(&mut self) {
         let mut rng = rand::thread_rng();
         self.initialize_geometric_graph_with_rng(&mut rng);
     }
 
     /// Initializes a geometric graph using an injected RNG.
+    #[verified_engine::verified]
     pub fn initialize_geometric_graph_with_rng<R: Rng>(&mut self, rng: &mut R) {
         self.states = vec![NodeState::Susceptible; self.num_nodes];
         self.positions = vec![[0.0, 0.0]; self.num_nodes];
@@ -269,12 +294,14 @@ impl NetworkEpidemicModel {
     }
 
     /// Steps the simulation forward using the default thread-local RNG.
+    #[verified_engine::verified]
     pub fn step(&mut self) {
         let mut rng = rand::thread_rng();
         self.step_with_rng(&mut rng);
     }
 
     /// Steps the simulation forward using an injected RNG.
+    #[verified_engine::verified]
     pub fn step_with_rng<R: Rng>(&mut self, rng: &mut R) {
         let mut next_states = self.states.clone();
 
@@ -310,6 +337,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_heterogeneous_r0() {
         let beta = 0.5;
         let gamma = 0.1;

@@ -23,6 +23,7 @@ impl HiggsPotential {
     /// # Returns
     /// * `Ok(f64)`: The VEV if $\mu^2 < 0$.
     /// * `Err(String)`: If $\mu^2 \ge 0$, indicating no symmetry breaking.
+    #[verified_engine::verified]
     pub fn vev(&self) -> Result<f64, String> {
         if self.mu2 >= 0.0 {
             return Err("Symmetry is not broken: mu^2 must be negative.".to_string());
@@ -43,6 +44,7 @@ impl HiggsPotential {
 /// # Formulas
 /// * $M_W = \frac{1}{2} g_2 v$
 /// * $M_Z = \frac{v}{2} \sqrt{g_1^2 + g_2^2}$
+#[verified_engine::verified]
 pub fn boson_masses(vev: f64, couplings: &GaugeCouplings) -> (f64, f64) {
     let m_w = 0.5 * couplings.g2 * vev;
     let m_z = 0.5 * vev * (couplings.g1.powi(2) + couplings.g2.powi(2)).sqrt();
@@ -56,6 +58,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_higgs_boson_masses() {
         // Standard Model approximate values
         let v = 246.0; // GeV

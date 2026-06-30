@@ -59,6 +59,7 @@ pub trait RootFinder {
     /// # Returns
     /// * `Ok(f64)` - The approximate root.
     /// * `Err(AnalysisError)` - If the root cannot be found or parameters are invalid.
+    #[verified_engine::verified]
     fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
     where
         F: Fn(f64) -> f64;
@@ -98,6 +99,7 @@ pub struct Bisection {
 
 impl Bisection {
     /// Creates a new Bisection solver.
+    #[verified_engine::verified]
     pub fn new(max_iterations: usize, tolerance: f64) -> Self {
         Self {
             max_iterations,
@@ -107,6 +109,7 @@ impl Bisection {
 }
 
 impl Default for Bisection {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             max_iterations: 100,
@@ -116,6 +119,7 @@ impl Default for Bisection {
 }
 
 impl RootFinder for Bisection {
+    #[verified_engine::verified]
     fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
     where
         F: Fn(f64) -> f64,
@@ -215,6 +219,7 @@ pub struct NewtonRaphson {
 
 impl NewtonRaphson {
     /// Creates a new Newton-Raphson solver.
+    #[verified_engine::verified]
     pub fn new(max_iterations: usize, tolerance: f64) -> Self {
         Self {
             max_iterations,
@@ -228,6 +233,7 @@ impl NewtonRaphson {
     /// * `f` - The objective function.
     /// * `f_prime` - The derivative of the objective function.
     /// * `guess` - Initial guess for the root.
+    #[verified_engine::verified]
     pub fn find_root_with_derivative<F, D>(
         &self,
         f: F,
@@ -269,6 +275,7 @@ impl NewtonRaphson {
 }
 
 impl Default for NewtonRaphson {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             max_iterations: 100,
@@ -278,6 +285,7 @@ impl Default for NewtonRaphson {
 }
 
 impl RootFinder for NewtonRaphson {
+    #[verified_engine::verified]
     fn find_root<F>(&self, f: F, min: f64, max: f64) -> Result<f64, AnalysisError>
     where
         F: Fn(f64) -> f64,
@@ -300,6 +308,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_newton_raphson_sqrt() -> Result<(), AnalysisError> {
         let solver = NewtonRaphson::default();
         // x^2 - 2 = 0, derivative 2x
@@ -309,6 +318,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_newton_raphson_numerical() -> Result<(), AnalysisError> {
         let solver = NewtonRaphson::default();
         // x^2 - 2 = 0
@@ -318,6 +328,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bisection_square_root() -> Result<(), AnalysisError> {
         let solver = Bisection::default();
         // x^2 - 2 = 0  => x = sqrt(2) approx 1.41421356
@@ -327,6 +338,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_bisection_linear() -> Result<(), AnalysisError> {
         let solver = Bisection::default();
         // 2x - 4 = 0 => x = 2
@@ -336,6 +348,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_not_bracketed() {
         let solver = Bisection::default();
         // x^2 + 1 = 0 has no real roots. And signs are always positive.

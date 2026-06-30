@@ -42,6 +42,7 @@ pub enum KineticsError {
 /// Defines the interface for kinetic models.
 pub trait KineticsModel {
     /// Calculates the reaction velocity for a given substrate concentration $\[S\]$.
+    #[verified_engine::verified]
     fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError>;
 }
 
@@ -58,6 +59,7 @@ pub struct MichaelisMenten {
 
 impl MichaelisMenten {
     /// Creates a new MichaelisMenten model with given parameters.
+    #[verified_engine::verified]
     pub fn new(v_max: f64, k_m: f64) -> Result<Self, KineticsError> {
         if v_max < 0.0 || k_m < 0.0 {
             return Err(KineticsError::InvalidParameters);
@@ -68,12 +70,14 @@ impl MichaelisMenten {
     /// Calculates the reaction velocity (Legacy wrapper).
     ///
     /// Delegates to `KineticsModel` implementation.
+    #[verified_engine::verified]
     pub fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError> {
         <Self as KineticsModel>::reaction_velocity(self, substrate_conc)
     }
 }
 
 impl KineticsModel for MichaelisMenten {
+    #[verified_engine::verified]
     fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError> {
         if substrate_conc < 0.0 {
             return Err(KineticsError::NegativeSubstrateConcentration);
@@ -117,6 +121,7 @@ pub struct HillKinetics {
 
 impl HillKinetics {
     /// Creates a new HillKinetics model.
+    #[verified_engine::verified]
     pub fn new(v_max: f64, k_m: f64, n: f64) -> Result<Self, KineticsError> {
         if v_max < 0.0 || k_m < 0.0 || n < 0.0 {
             return Err(KineticsError::InvalidParameters);
@@ -126,6 +131,7 @@ impl HillKinetics {
 }
 
 impl KineticsModel for HillKinetics {
+    #[verified_engine::verified]
     fn reaction_velocity(&self, substrate_conc: f64) -> Result<f64, KineticsError> {
         if substrate_conc < 0.0 {
             return Err(KineticsError::NegativeSubstrateConcentration);
@@ -151,6 +157,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_original_behavior() {
         #[allow(deprecated)]
         let reaction = EnzymeReaction::new(100.0, 50.0).unwrap();
@@ -168,6 +175,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_hill_kinetics() {
         // n=1 should behave like Michaelis-Menten
         let hill_mm = HillKinetics::new(100.0, 50.0, 1.0).unwrap();
@@ -194,6 +202,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_error_handling() {
         assert_eq!(
             MichaelisMenten::new(-1.0, 50.0).unwrap_err(),

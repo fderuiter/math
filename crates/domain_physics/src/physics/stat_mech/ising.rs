@@ -61,23 +61,27 @@ pub struct SpinLattice {
 impl SpinLattice {
     /// Returns the width of the lattice.
     #[inline]
+    #[verified_engine::verified]
     pub fn width(&self) -> usize {
         self.width
     }
 
     /// Returns the height of the lattice.
     #[inline]
+    #[verified_engine::verified]
     pub fn height(&self) -> usize {
         self.height
     }
 
     /// Creates a new random spin lattice.
+    #[verified_engine::verified]
     pub fn new(width: usize, height: usize) -> Self {
         let mut rng = rand::thread_rng();
         Self::new_with_rng(width, height, &mut rng)
     }
 
     /// Creates a new random spin lattice using the provided RNG.
+    #[verified_engine::verified]
     pub fn new_with_rng<R: Rng + ?Sized>(width: usize, height: usize, rng: &mut R) -> Self {
         let count = width * height;
         let spins = (0..count)
@@ -120,17 +124,20 @@ impl SpinLattice {
     }
 
     /// Gets the spin at (x, y).
+    #[verified_engine::verified]
     pub fn get(&self, x: usize, y: usize) -> i8 {
         self.spins[y * self.width + x]
     }
 
     /// Sets the spin at (x, y).
+    #[verified_engine::verified]
     pub fn set(&mut self, x: usize, y: usize, val: i8) {
         self.spins[y * self.width + x] = val;
     }
 
     /// Returns a reference to the flattened spins array.
     #[inline]
+    #[verified_engine::verified]
     pub fn spins(&self) -> &[i8] {
         &self.spins
     }
@@ -139,6 +146,7 @@ impl SpinLattice {
     ///
     /// Formula: H = -J * sum_<i,j> s_i s_j - h * sum_i s_i
     /// Uses Periodic Boundary Conditions.
+    #[verified_engine::verified]
     pub fn hamiltonian(&self, j_coupling: f64, h_field: f64) -> f64 {
         let mut interaction_sum = 0.0;
         let mut field_sum = 0.0;
@@ -166,6 +174,7 @@ impl SpinLattice {
     /// Calculates the total Magnetization.
     ///
     /// Formula: M = sum_i s_i
+    #[verified_engine::verified]
     pub fn magnetization(&self) -> i64 {
         self.spins.iter().map(|&s| s as i64).sum()
     }
@@ -175,12 +184,14 @@ impl SpinLattice {
     /// 1. Select a random site.
     /// 2. Calculate energy cost to flip Delta E.
     /// 3. Accept flip if Delta E < 0 OR with probability e^(-beta * Delta E).
+    #[verified_engine::verified]
     pub fn metropolis_step(&mut self, temperature: f64, j_coupling: f64, h_field: f64) {
         let mut rng = rand::thread_rng();
         self.metropolis_step_with_rng(temperature, j_coupling, h_field, &mut rng)
     }
 
     /// Performs one Metropolis algorithm step using the provided RNG.
+    #[verified_engine::verified]
     pub fn metropolis_step_with_rng<R: Rng + ?Sized>(
         &mut self,
         temperature: f64,
@@ -229,12 +240,14 @@ impl SpinLattice {
     /// 1. It precomputes Boltzmann factors (`exp(-beta * dE)`) into a lookup table.
     /// 2. It reuses the random number generator, avoiding TLS overhead.
     /// 3. It precomputes neighbor indices to avoid coordinate arithmetic in the loop.
+    #[verified_engine::verified]
     pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
         let mut rng = rand::thread_rng();
         self.evolve_with_rng(steps, temperature, j_coupling, h_field, &mut rng)
     }
 
     /// Performs multiple Metropolis steps efficiently using the provided RNG.
+    #[verified_engine::verified]
     pub fn evolve_with_rng<R: Rng + ?Sized>(
         &mut self,
         steps: usize,
@@ -306,6 +319,7 @@ mod tests {
     use rand::rngs::StdRng;
 
     #[test]
+    #[verified_engine::verified]
     fn test_ising_disordered() {
         // High temperature limit. T >> J/k_B.
         // Magnetization should be near 0 on average.

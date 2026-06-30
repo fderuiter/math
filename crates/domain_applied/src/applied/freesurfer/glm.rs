@@ -9,6 +9,7 @@ use nalgebra::{DMatrix, DVector, RealField};
 ///
 /// # Returns
 /// The estimated beta parameters, or an error if the matrix is not invertible.
+#[verified_engine::verified]
 pub fn estimate_beta<T: RealField>(
     x: &DMatrix<T>,
     y: &DVector<T>,
@@ -31,6 +32,7 @@ pub fn estimate_beta<T: RealField>(
 ///
 /// # Returns
 /// The t-statistic, or an error if matrices are non-conformable or non-invertible.
+#[verified_engine::verified]
 pub fn t_statistic<T: RealField + Copy>(
     c: &DVector<T>,
     beta: &DVector<T>,

@@ -32,6 +32,7 @@ impl Cera<Autoencoder, Predictor> {
     /// # Returns
     ///
     /// A result containing the new `Cera` instance or an error message.
+    #[verified_engine::verified]
     pub fn new(config: CeraConfig) -> Result<Self, String> {
         // Validation logic delegated to new_with_models
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
@@ -53,6 +54,7 @@ impl<P: PredictorModel> Cera<Autoencoder, P> {
     /// # Returns
     ///
     /// A result containing the new `Cera` instance or an error message.
+    #[verified_engine::verified]
     pub fn new_with_predictor(config: CeraConfig, predictor: P) -> Result<Self, String> {
         let autoencoder = Autoencoder::new(config.in_channels, config.latent_channels);
         Self::new_with_models(config, autoencoder, predictor)
@@ -71,6 +73,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     /// # Returns
     ///
     /// A result containing the new `Cera` instance or an error message.
+    #[verified_engine::verified]
     pub fn new_with_models(
         config: CeraConfig,
         autoencoder: A,
@@ -107,6 +110,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     /// # Returns
     ///
     /// The reshaped matrix ready for the predictor.
+    #[verified_engine::verified]
     pub fn reshape_for_predictor(
         &self,
         latent_matrix: &DMatrix<f32>,
@@ -136,6 +140,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     /// # Returns
     ///
     /// The predicted output matrix.
+    #[verified_engine::verified]
     pub fn predict(&self, inputs: &DMatrix<f32>) -> DMatrix<f32> {
         let num_levels = self.config.num_levels;
         let aligned_channels = self.config.aligned_channels;
@@ -159,6 +164,7 @@ mod tests {
     const TEST_IN_CHANNELS: usize = 2;
     const TEST_OUTPUT_SIZE: usize = 148;
 
+    #[verified_engine::verified]
     fn generate_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMatrix<f32>) {
         let inputs = DMatrix::from_fn(n_samples * TEST_NUM_LEVELS, TEST_IN_CHANNELS, |_, _| {
             rand::random::<f32>() + offset
@@ -168,6 +174,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_cera_training_and_prediction() {
         let config = CeraConfig {
             learning_rate: 0.001,
@@ -200,6 +207,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_cera_invalid_config() {
         let config = CeraConfig {
             learning_rate: 0.001,
@@ -217,6 +225,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_cera_with_custom_models() {
         let config = CeraConfig {
             learning_rate: 0.001,

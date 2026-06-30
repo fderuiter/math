@@ -20,6 +20,7 @@
 /// # Returns
 ///
 /// * `f64` - The rate of temperature change (K/s).
+#[verified_engine::verified]
 pub fn bio_heat_transfer_rate(
     density: f64,
     specific_heat: f64,
@@ -56,6 +57,7 @@ pub fn bio_heat_transfer_rate(
 ///
 /// * `(f64, f64)` - The complex permittivity (Real part $\epsilon'$, Imaginary part $\epsilon''$).
 ///   Note: The term $\frac{1}{j}$ is $-j$, so the conductivity term contributes to the imaginary part.
+#[verified_engine::verified]
 pub fn debye_permittivity(
     epsilon_inf: f64,
     epsilon_s: f64,
@@ -89,6 +91,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_bio_heat() {
         let rho = 1000.0;
         let c = 4000.0;

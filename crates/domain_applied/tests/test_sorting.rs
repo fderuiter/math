@@ -6,6 +6,7 @@ fn run_sort<S: Sorter<i32>>(sorter: S, data: &[i32]) -> SortingResult<i32> {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_strategy_pattern_composability() {
     let data = vec![5, 1, 4, 2, 8];
     let expected = vec![1, 2, 4, 5, 8];
@@ -22,6 +23,7 @@ fn test_strategy_pattern_composability() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_information_theoretic_bound() {
     // Test small values
     let n = 10;
@@ -37,6 +39,7 @@ fn test_information_theoretic_bound() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_bubble_sort() {
     let data = vec![5, 1, 4, 2, 8];
     let result = bubble_sort(&data);
@@ -65,6 +68,7 @@ fn test_bubble_sort() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_insertion_sort() {
     let data = vec![5, 1, 4, 2, 8];
     let result = insertion_sort(&data);
@@ -80,6 +84,7 @@ fn test_insertion_sort() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_merge_sort() {
     let data = vec![38, 27, 43, 3, 9, 82, 10];
     let result = merge_sort(&data);
@@ -89,6 +94,7 @@ fn test_merge_sort() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_quick_sort() {
     let data = vec![10, 7, 8, 9, 1, 5];
     let result = quick_sort(&data);
@@ -96,6 +102,7 @@ fn test_quick_sort() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_heap_sort() {
     let data = vec![12, 11, 13, 5, 6, 7];
     let result = heap_sort(&data);
@@ -103,6 +110,7 @@ fn test_heap_sort() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_radix_sort() {
     let data = vec![170, 45, 75, 90, 802, 24, 2, 66];
     let result = radix_sort(&data);
@@ -110,6 +118,7 @@ fn test_radix_sort() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_duplicate_elements() {
     let data = vec![3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5];
     let expected = vec![1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 9];

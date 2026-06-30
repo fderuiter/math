@@ -28,6 +28,7 @@ pub struct GridWorldEnv {
 }
 
 impl GridWorldEnv {
+    #[verified_engine::verified]
     pub fn step(&self, current_state: &GridState, action: &Move) -> GridState {
         let mut expected_next = *current_state;
         match action {
@@ -54,6 +55,7 @@ impl MarkovDecisionProcess for GridWorldEnv {
     type S = GridState;
     type A = Move;
 
+    #[verified_engine::verified]
     fn transition_probability(
         &self,
         next_state: &Self::S,
@@ -64,6 +66,7 @@ impl MarkovDecisionProcess for GridWorldEnv {
         if *next_state == actual_next { 1.0 } else { 0.0 }
     }
 
+    #[verified_engine::verified]
     fn reward(&self, _current_state: &Self::S, _action: &Self::A, next_state: &Self::S) -> f64 {
         if *next_state == self.goal {
             10.0
@@ -74,6 +77,7 @@ impl MarkovDecisionProcess for GridWorldEnv {
         }
     }
 
+    #[verified_engine::verified]
     fn actions(&self, state: &Self::S) -> Vec<Self::A> {
         if self.is_terminal(state) {
             vec![]
@@ -82,10 +86,12 @@ impl MarkovDecisionProcess for GridWorldEnv {
         }
     }
 
+    #[verified_engine::verified]
     fn discount_factor(&self) -> f64 {
         self.gamma
     }
 
+    #[verified_engine::verified]
     fn is_terminal(&self, state: &Self::S) -> bool {
         *state == self.goal || self.traps.contains(state)
     }

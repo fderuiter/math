@@ -5,6 +5,7 @@ pub struct LaplaceEquation2D;
 impl LaplaceEquation2D {
     /// Computes a single separated variable mode in Cartesian coordinates.
     /// $u(x, y) = (A \cos \lambda x + B \sin \lambda x)(C \cosh \lambda y + D \sinh \lambda y)$
+    #[verified_engine::verified]
     pub fn separated_mode_cartesian(
         lambda: f64,
         x_params: (f64, f64), // A, B
@@ -24,6 +25,7 @@ impl LaplaceEquation2D {
     /// Poisson's equation source term check.
     /// Returns $\rho(r)$ given $\nabla^2 u = \rho$.
     /// This is just a placeholder for the concept.
+    #[verified_engine::verified]
     pub fn poisson_source(laplacian_u: f64) -> f64 {
         laplacian_u
     }
@@ -38,6 +40,7 @@ pub struct RectangularLaplaceSolver {
 }
 
 impl RectangularLaplaceSolver {
+    #[verified_engine::verified]
     pub fn evaluate(&self, x: f64, y: f64) -> f64 {
         let mut u = 0.0;
         let a = self.width;

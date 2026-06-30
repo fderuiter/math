@@ -2,6 +2,7 @@
 ///
 /// Equation: $\ln(S_0 / S_\infty) = R_0 (1 - S_\infty / N)$
 /// Rearranged for root finding: $f(x) = \ln(S_0 / x) - R_0 (1 - x / N) = 0$
+#[verified_engine::verified]
 pub fn calculate_final_size(r0: f64, s0: f64, n: f64) -> Result<f64, String> {
     if r0 <= 0.0 {
         return Err("R0 must be positive".to_string());
@@ -58,6 +59,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_final_size_high_r0() {
         // R0 = 5.0
         let r0 = 5.0;

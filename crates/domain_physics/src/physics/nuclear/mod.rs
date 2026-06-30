@@ -37,6 +37,7 @@ pub mod liquid_drop {
     ///
     /// # Returns
     /// * `Result<f64, NuclearError>` - The binding energy in MeV.
+    #[verified_engine::verified]
     pub fn binding_energy(
         atomic_number: AtomicNumber,
         mass_number: MassNumber,
@@ -45,6 +46,7 @@ pub mod liquid_drop {
     }
 
     /// Calculates the Binding Energy per nucleon.
+    #[verified_engine::verified]
     pub fn binding_energy_per_nucleon(
         atomic_number: AtomicNumber,
         mass_number: MassNumber,
@@ -70,6 +72,7 @@ pub mod shell_model {
     ///
     /// # Returns
     /// * `f64` - The energy shift factor.
+    #[verified_engine::verified]
     pub fn spin_orbit_coupling(l: f64, s: f64, j: f64) -> f64 {
         models::shell::spin_orbit_coupling(l, s, j)
     }
@@ -80,6 +83,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_iron_peak() {
         // Fe-56: Z=26.
         let be_fe = liquid_drop::binding_energy_per_nucleon(
@@ -107,6 +111,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_spin_orbit() {
         let val_j3_2 = shell_model::spin_orbit_coupling(1.0, 0.5, 1.5);
         let val_j1_2 = shell_model::spin_orbit_coupling(1.0, 0.5, 0.5);
@@ -118,6 +123,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_resonance() {
         let e_res = 10.0;
         let gamma = 2.0;
@@ -131,11 +137,13 @@ mod tests {
 
     #[test]
     #[allow(clippy::assertions_on_constants)]
+    #[verified_engine::verified]
     fn test_constants() {
         assert!(constants::PROTON_MASS > 900.0);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_decay() {
         let half_life = 10.0;
         let n0 = 100.0;
@@ -145,6 +153,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_liquid_drop_struct_usage() {
         // Test the new Architect-approved way of using the struct
         let model = LiquidDropModel::new();

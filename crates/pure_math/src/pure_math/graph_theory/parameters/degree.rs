@@ -3,6 +3,7 @@ use crate::pure_math::graph_theory::graph::Graph;
 /// Computes the degeneracy of a graph.
 /// The degeneracy of a graph is the smallest integer k such that every
 /// induced subgraph of the graph has a vertex of degree at most k.
+#[verified_engine::verified]
 pub fn degeneracy<N, E>(g: &Graph<N, E>) -> usize
 where
     N: Clone,

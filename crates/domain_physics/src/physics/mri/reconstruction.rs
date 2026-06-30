@@ -11,6 +11,7 @@ use std::f64::consts::PI;
 /// # Arguments
 /// * `matrix` - Input matrix.
 /// * `inverse` - If true, applies IDFT (positive phase). Else DFT (negative phase).
+#[verified_engine::verified]
 fn separable_transform(matrix: &DMatrix<Complex<f64>>, inverse: bool) -> DMatrix<Complex<f64>> {
     let rows = matrix.nrows();
     let cols = matrix.ncols();
@@ -70,6 +71,7 @@ fn separable_transform(matrix: &DMatrix<Complex<f64>>, inverse: bool) -> DMatrix
 ///
 /// # Returns
 /// * 2D matrix of k-space samples (raw signal), same dimensions as density.
+#[verified_engine::verified]
 pub fn simulate_signal_2d(density: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
     separable_transform(density, false)
 }
@@ -86,6 +88,7 @@ pub fn simulate_signal_2d(density: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f6
 /// # Returns
 /// * Reconstructed image density matrix $\rho(x,y)$.
 /// * Note: This implementation does not normalize by 1/N. Scale depends on definition.
+#[verified_engine::verified]
 pub fn inverse_dft_2d(k_space: &DMatrix<Complex<f64>>) -> DMatrix<Complex<f64>> {
     separable_transform(k_space, true)
 }

@@ -24,6 +24,7 @@ struct State<W> {
 }
 
 impl<W: PartialEq> PartialEq for State<W> {
+    #[verified_engine::verified]
     fn eq(&self, other: &Self) -> bool {
         self.cost == other.cost && self.node == other.node
     }
@@ -37,6 +38,7 @@ impl<W: PartialOrd> Eq for State<W> {}
 /// We implement `Ord` for `State` to make it a Min-Heap based on `cost`.
 /// Note: `BinaryHeap` is a Max-Heap, so we reverse the ordering in `cmp`.
 impl<W: PartialOrd> Ord for State<W> {
+    #[verified_engine::verified]
     fn cmp(&self, other: &Self) -> Ordering {
         // We want the smallest cost to be the "greatest" in the heap so it's popped first.
         // If costs are equal, we compare nodes to ensure consistent ordering.
@@ -49,6 +51,7 @@ impl<W: PartialOrd> Ord for State<W> {
 }
 
 impl<W: PartialOrd> PartialOrd for State<W> {
+    #[verified_engine::verified]
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
@@ -97,6 +100,7 @@ impl<W: PartialOrd> PartialOrd for State<W> {
 ///
 /// ## Relaxation Principle
 /// If `d[v] > d[u] + w(u, v)`, then we update `d[v] = d[u] + w(u, v)`.
+#[verified_engine::verified]
 pub fn dijkstra<G, W>(graph: G, start: NodeIndex) -> DijkstraResult<W>
 where
     G: IntoEdges + Visitable<NodeId = NodeIndex> + Data<EdgeWeight = W>,

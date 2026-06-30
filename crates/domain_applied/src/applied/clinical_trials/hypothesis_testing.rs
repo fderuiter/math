@@ -4,6 +4,7 @@ use statrs::distribution::{ChiSquared, ContinuousCDF, StudentsT};
 /// Defines a strategy for performing a hypothesis test.
 pub trait HypothesisTest<Input> {
     /// Performs the test on the given data.
+    #[verified_engine::verified]
     fn test(&self, data: Input) -> Result<TestResult, ClinicalTrialError>;
 }
 
@@ -21,12 +22,14 @@ pub struct TTestIndependent {
 }
 
 impl TTestIndependent {
+    #[verified_engine::verified]
     pub fn new(alpha: f64) -> Self {
         Self { alpha }
     }
 }
 
 impl<'a> HypothesisTest<(&'a GroupData, &'a GroupData)> for TTestIndependent {
+    #[verified_engine::verified]
     fn test(&self, data: (&'a GroupData, &'a GroupData)) -> Result<TestResult, ClinicalTrialError> {
         let (group1, group2) = data;
         let n1 = group1.n();
@@ -84,12 +87,14 @@ pub struct ChiSquare2x2 {
 }
 
 impl ChiSquare2x2 {
+    #[verified_engine::verified]
     pub fn new(alpha: f64) -> Self {
         Self { alpha }
     }
 }
 
 impl<'a> HypothesisTest<&'a ContingencyTable> for ChiSquare2x2 {
+    #[verified_engine::verified]
     fn test(&self, table: &'a ContingencyTable) -> Result<TestResult, ClinicalTrialError> {
         let total = table.total();
         // total == 0 check is done in ContingencyTable constructor.
@@ -143,6 +148,7 @@ impl<'a> HypothesisTest<&'a ContingencyTable> for ChiSquare2x2 {
 /// * `group1` - Data for group 1.
 /// * `group2` - Data for group 2.
 /// * `alpha` - Significance level (e.g., 0.05).
+#[verified_engine::verified]
 pub fn t_test_independent(
     group1: &GroupData,
     group2: &GroupData,
@@ -156,6 +162,7 @@ pub fn t_test_independent(
 /// # Arguments
 /// * `table` - The 2x2 contingency table.
 /// * `alpha` - Significance level.
+#[verified_engine::verified]
 pub fn chi_square_2x2(
     table: &ContingencyTable,
     alpha: f64,

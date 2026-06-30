@@ -16,6 +16,7 @@ use nalgebra::Point3;
 use std::f64::consts::PI;
 
 #[test]
+#[verified_engine::verified]
 fn test_physical_principles() {
     // Lambertian Order
     let phi_half = PI / 3.0; // 60 degrees
@@ -52,6 +53,7 @@ fn test_physical_principles() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_wah_and_snr() {
     let vertices = vec![
         Point3::new(0.0, 0.0, 10.0),
@@ -66,6 +68,7 @@ fn test_wah_and_snr() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_lock_in_amplifier() {
     let lia = LockInAmplifier::new(1.0, 10.0, 1.0);
     // Ideal case: Signal in phase, phase_diff = 0
@@ -88,6 +91,7 @@ fn test_lock_in_amplifier() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_time_delay() {
     // Create a signal and a delayed version
     let sample_rate = 100.0;
@@ -114,6 +118,7 @@ fn test_time_delay() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_validation_metrics() {
     let measured = vec![1.0, 2.0, 3.0];
     let reference = vec![1.1, 1.9, 3.1];
@@ -152,6 +157,7 @@ fn test_validation_metrics() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_calibration() {
     let voltages = vec![1.0, 2.0, 3.0];
     let distances = vec![10.0, 20.0, 30.0];

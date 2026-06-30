@@ -83,6 +83,7 @@ pub struct TimePoint {
 /// assert_eq!(curve[2].time, 4.0);
 /// assert_eq!(curve[2].survival_probability, 0.0);
 /// ```
+#[verified_engine::verified]
 pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     let mut obs = observations.to_vec();
     // ⚡ Bolt Optimization:
@@ -157,6 +158,7 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
 /// # Returns
 /// * `Ok(f64)` - The hazard ratio.
 /// * `Err(ClinicalTrialError)` - If calculation is impossible (e.g. zero total time).
+#[verified_engine::verified]
 pub fn try_estimate_hazard_ratio(
     group1: &[Observation],
     group2: &[Observation],
@@ -202,6 +204,7 @@ pub fn try_estimate_hazard_ratio(
 /// Legacy wrapper for `try_estimate_hazard_ratio`.
 /// Returns `f64::NAN` on error.
 #[deprecated(since = "0.2.0", note = "Use try_estimate_hazard_ratio instead")]
+#[verified_engine::verified]
 pub fn estimate_hazard_ratio_simple(group1: &[Observation], group2: &[Observation]) -> f64 {
     try_estimate_hazard_ratio(group1, group2).unwrap_or(f64::NAN)
 }

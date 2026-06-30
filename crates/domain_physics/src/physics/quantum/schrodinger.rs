@@ -64,6 +64,7 @@ use num_complex::Complex;
 /// assert!(u_matrix[(0, 1)].norm() < 1e-9, "U(0,1) should be 0");
 /// assert!(u_matrix[(1, 0)].norm() < 1e-9, "U(1,0) should be 0");
 /// ```
+#[verified_engine::verified]
 pub fn time_evolution_operator(
     hamiltonian: &QuantumOperator,
     t: f64,
@@ -135,6 +136,7 @@ pub fn time_evolution_operator(
 /// let prob_down = final_state.probability_density()[1];
 /// assert!((prob_down - 1.0).abs() < 1e-4);
 /// ```
+#[verified_engine::verified]
 pub fn evolve_state(
     state: &QuantumState,
     hamiltonian: &QuantumOperator,

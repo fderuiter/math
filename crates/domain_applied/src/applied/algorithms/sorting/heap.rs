@@ -6,6 +6,7 @@ use super::strategy::Sorter;
 pub struct HeapSorter;
 
 impl<T: Ord + Clone> Sorter<T> for HeapSorter {
+    #[verified_engine::verified]
     fn sort(&self, data: &[T]) -> SortingResult<T> {
         let mut sorted_data = data.to_vec();
         let mut stats = SortingStats::default();
@@ -42,32 +43,38 @@ impl<T: Ord + Clone> Sorter<T> for HeapSorter {
 ///
 /// Total Complexity: $O(n) + O(n \log n) = \Theta(n \log n)$.
 /// Space: $O(1)$ (in-place).
+#[verified_engine::verified]
 pub fn heap_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     HeapSorter.sort(data)
 }
 
-fn heapify<T: Ord + Clone>(arr: &mut [T], n: usize, i: usize, stats: &mut SortingStats) {
-    let mut largest = i;
-    let l = 2 * i + 1;
-    let r = 2 * i + 2;
+#[verified_engine::verified]
+fn heapify<T: Ord + Clone>(arr: &mut [T], n: usize, mut i: usize, stats: &mut SortingStats) {
+    loop {
+        let mut largest = i;
+        let l = 2 * i + 1;
+        let r = 2 * i + 2;
 
-    if l < n {
-        stats.comparisons += 1;
-        if arr[l] > arr[largest] {
-            largest = l;
+        if l < n {
+            stats.comparisons += 1;
+            if arr[l] > arr[largest] {
+                largest = l;
+            }
         }
-    }
 
-    if r < n {
-        stats.comparisons += 1;
-        if arr[r] > arr[largest] {
-            largest = r;
+        if r < n {
+            stats.comparisons += 1;
+            if arr[r] > arr[largest] {
+                largest = r;
+            }
         }
-    }
 
-    if largest != i {
-        arr.swap(i, largest);
-        stats.swaps += 1;
-        heapify(arr, n, largest, stats);
+        if largest != i {
+            arr.swap(i, largest);
+            stats.swaps += 1;
+            i = largest;
+        } else {
+            break;
+        }
     }
 }

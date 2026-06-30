@@ -6,6 +6,7 @@ use super::strategy::Sorter;
 pub struct BubbleSorter;
 
 impl<T: Ord + Clone> Sorter<T> for BubbleSorter {
+    #[verified_engine::verified]
     fn sort(&self, data: &[T]) -> SortingResult<T> {
         let mut sorted_data = data.to_vec();
         let mut stats = SortingStats::default();
@@ -45,6 +46,7 @@ impl<T: Ord + Clone> Sorter<T> for BubbleSorter {
 /// * **Swaps (Worst Case)**: Reverse order implies every comparison leads to a swap: $\frac{n(n-1)}{2} = \Theta(n^2)$.
 /// * **Swaps (Best Case)**: Sorted order implies 0 swaps.
 /// * **Stability**: Yes.
+#[verified_engine::verified]
 pub fn bubble_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     BubbleSorter.sort(data)
 }
@@ -54,6 +56,7 @@ pub fn bubble_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
 pub struct InsertionSorter;
 
 impl<T: Ord + Clone> Sorter<T> for InsertionSorter {
+    #[verified_engine::verified]
     fn sort(&self, data: &[T]) -> SortingResult<T> {
         let mut sorted_data = data.to_vec();
         let mut stats = SortingStats::default();
@@ -92,6 +95,7 @@ impl<T: Ord + Clone> Sorter<T> for InsertionSorter {
 ///   Total time: $\sum_{k=2}^{n} (k-1) = \Theta(n^2)$.
 /// * **Best Case**: Sorted order. 1 comparison per element, 0 swaps. $\Theta(n)$.
 /// * **Stability**: Yes.
+#[verified_engine::verified]
 pub fn insertion_sort<T: Ord + Clone>(data: &[T]) -> SortingResult<T> {
     InsertionSorter.sort(data)
 }

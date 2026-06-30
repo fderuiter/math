@@ -2,6 +2,7 @@ use domain_physics::physics::fluid_dynamics::lattice_boltzmann::state::LatticeSt
 
 #[test]
 #[should_panic(expected = "Grid dimensions too large")]
+#[verified_engine::verified]
 fn test_lattice_state_overflow() {
     // 2^32 * 2^32 = 2^64 which overflows u64 (usize on 64-bit)
     // We use slightly larger values to ensure overflow even if usize is larger (unlikely)

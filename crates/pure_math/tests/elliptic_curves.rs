@@ -2,6 +2,7 @@ use pure_math::pure_math::elliptic_curves::*;
 use std::collections::HashMap;
 
 #[test]
+#[verified_engine::verified]
 fn test_prime_factors() {
     let mut factors = HashMap::new();
     factors.insert(2, 2);
@@ -21,6 +22,7 @@ fn test_prime_factors() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_psi_function() {
     assert_eq!(psi(1), 1);
     assert_eq!(psi(2), 3);
@@ -33,6 +35,7 @@ fn test_psi_function() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_1_1_bounds_simple() {
     // For N=5, psi(5) = 6. Let's check a_{1,1} where i+j=2. diff = 4
     let bounds = theorem_1_1_bounds(5, 1, 1).unwrap();
@@ -42,6 +45,7 @@ fn test_theorem_1_1_bounds_simple() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_1_1_bounds_n_is_1_mod_3() {
     // For N=7, psi(7) = 8. N=7 is 1 mod 3. Check a_{2,1} where i+j=3. diff = 5
     let bounds = theorem_1_1_bounds(7, 2, 1).unwrap();
@@ -52,12 +56,14 @@ fn test_theorem_1_1_bounds_n_is_1_mod_3() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_1_1_bounds_panic() {
     // N=5, psi(5)=6. i+j=6, which should panic.
     assert!(theorem_1_1_bounds(5, 3, 3).is_err());
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_1_2_bounds_simple() {
     // For N=11, psi(11) = 12. N=11 is 3 mod 4. Check a_{1,0}. diff = 11
     let bounds = theorem_1_2_bounds(11, 1, 0).unwrap();
@@ -67,6 +73,7 @@ fn test_theorem_1_2_bounds_simple() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_1_2_bounds_n_is_1_mod_4() {
     // For N=5, psi(5) = 6. N=5 is 1 mod 4. Check a_{0,0}. diff = 6
     let bounds = theorem_1_2_bounds(5, 0, 0).unwrap();
@@ -76,6 +83,7 @@ fn test_theorem_1_2_bounds_n_is_1_mod_4() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_theorem_1_2_bounds_panic() {
     // N=5, psi(5)=6. i+j=7, which should panic.
     assert!(theorem_1_2_bounds(5, 4, 3).is_err());

@@ -5,6 +5,7 @@ use nalgebra::Vector2;
 use std::f64::consts::PI;
 
 #[test]
+#[verified_engine::verified]
 fn test_cylinder_flow() {
     let u_inf = 10.0;
     let radius = 2.0;

@@ -31,6 +31,7 @@ pub struct CyclicElement {
 
 impl CyclicElement {
     /// Creates a new element in $Z_n$.
+    #[verified_engine::verified]
     pub fn new(value: usize, modulo: usize) -> Self {
         CyclicElement {
             value: value % modulo,
@@ -40,6 +41,7 @@ impl CyclicElement {
 }
 
 impl Semigroup for CyclicElement {
+    #[verified_engine::verified]
     fn operate(a: &Self, b: &Self) -> Self {
         assert_eq!(
             a.modulo, b.modulo,
@@ -54,6 +56,7 @@ impl Semigroup for CyclicElement {
 
 impl Monoid for CyclicElement {
     /// **Panics:** Use `Zn<N>` if you need `Monoid::identity`.
+    #[verified_engine::verified]
     fn identity() -> Self {
         panic!(
             "Monoid::identity() is not supported for CyclicElement because the modulus is dynamic. \
@@ -89,12 +92,14 @@ pub struct Zn<const N: usize> {
 }
 
 impl<const N: usize> Zn<N> {
+    #[verified_engine::verified]
     pub fn new(value: usize) -> Self {
         Zn { value: value % N }
     }
 }
 
 impl<const N: usize> Semigroup for Zn<N> {
+    #[verified_engine::verified]
     fn operate(a: &Self, b: &Self) -> Self {
         Zn {
             value: (a.value + b.value) % N,
@@ -103,12 +108,14 @@ impl<const N: usize> Semigroup for Zn<N> {
 }
 
 impl<const N: usize> Monoid for Zn<N> {
+    #[verified_engine::verified]
     fn identity() -> Self {
         Zn { value: 0 }
     }
 }
 
 impl<const N: usize> Group for Zn<N> {
+    #[verified_engine::verified]
     fn inverse(&self) -> Self {
         if self.value == 0 {
             Zn { value: 0 }
@@ -131,6 +138,7 @@ pub struct Permutation {
 }
 
 impl Permutation {
+    #[verified_engine::verified]
     pub fn new(map: Vec<usize>) -> Self {
         // Validation: map must contain 0..n
         let n = map.len();
@@ -144,6 +152,7 @@ impl Permutation {
         Permutation { map }
     }
 
+    #[verified_engine::verified]
     pub fn identity(n: usize) -> Self {
         Permutation {
             map: (0..n).collect(),
@@ -152,6 +161,7 @@ impl Permutation {
 }
 
 impl Semigroup for Permutation {
+    #[verified_engine::verified]
     fn operate(a: &Self, b: &Self) -> Self {
         // Function composition: (a * b)(x) = a(b(x))
         assert_eq!(
@@ -175,6 +185,7 @@ impl Semigroup for Permutation {
 /// Checks if a subset H is a subgroup of G.
 /// Requires G to be finite and represented by a list of all elements, or we just check closure/inverse for H.
 /// Here we check if H is closed under operation and inverses.
+#[verified_engine::verified]
 pub fn is_subgroup<G: Group + Eq + Hash>(subgroup: &[G]) -> bool {
     if subgroup.is_empty() {
         return false;
@@ -200,11 +211,13 @@ pub fn is_subgroup<G: Group + Eq + Hash>(subgroup: &[G]) -> bool {
 }
 
 /// Generates a right coset Ha = { h * a : h in H }.
+#[verified_engine::verified]
 pub fn generate_right_coset<G: Group>(subgroup: &[G], a: &G) -> Vec<G> {
     subgroup.iter().map(|h| G::operate(h, a)).collect()
 }
 
 /// Generates a left coset aH = { a * h : h in H }.
+#[verified_engine::verified]
 pub fn generate_left_coset<G: Group>(subgroup: &[G], a: &G) -> Vec<G> {
     subgroup.iter().map(|h| G::operate(a, h)).collect()
 }
@@ -212,6 +225,7 @@ pub fn generate_left_coset<G: Group>(subgroup: &[G], a: &G) -> Vec<G> {
 /// Checks if a subgroup is normal.
 /// A subgroup N is normal if aN = Na for all a in G.
 /// We need the full group G for this check.
+#[verified_engine::verified]
 pub fn is_normal_subgroup<G: Group + Eq + Hash>(group: &[G], subgroup: &[G]) -> bool {
     if !is_subgroup(subgroup) {
         return false;

@@ -32,6 +32,7 @@ pub struct FluidParticleSystem<'a, M: MomentumEquation> {
 
 impl<'a, M: MomentumEquation> FluidParticleSystem<'a, M> {
     /// Creates a new fluid particle system.
+    #[verified_engine::verified]
     pub fn new(
         properties: &'a FluidProperties,
         momentum_equation: M,
@@ -50,6 +51,7 @@ impl<'a, M: MomentumEquation> FluidParticleSystem<'a, M> {
 }
 
 impl<'a, M: MomentumEquation> OdeSystem<FlowState> for FluidParticleSystem<'a, M> {
+    #[verified_engine::verified]
     fn derivative(&self, _t: f64, state: &FlowState) -> FlowState {
         // Compute acceleration d(velocity)/dt
         let acceleration = self.momentum_equation.acceleration(
@@ -69,14 +71,17 @@ impl<'a, M: MomentumEquation> OdeSystem<FlowState> for FluidParticleSystem<'a, M
 }
 
 impl<'a, M: MomentumEquation> TimeStepper<FlowState> for FluidParticleSystem<'a, M> {
+    #[verified_engine::verified]
     fn get_state(&self) -> &FlowState {
         &self.state
     }
 
+    #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut FlowState {
         &mut self.state
     }
 
+    #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         use pure_math::pure_math::analysis::ode::RungeKutta4;
         let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);

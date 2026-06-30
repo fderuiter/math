@@ -17,6 +17,7 @@ use std::f64::consts::PI;
 /// # Formula
 ///
 /// $n = \frac{-\ln(2)}{\ln(\cos(\phi_{1/2}))}$
+#[verified_engine::verified]
 pub fn calculate_lambertian_order(phi_half: f64) -> f64 {
     -2.0f64.ln() / phi_half.cos().ln()
 }
@@ -40,6 +41,7 @@ pub fn calculate_lambertian_order(phi_half: f64) -> f64 {
 /// # Formula
 ///
 /// $P_d = \frac{(n + 1) A P_t}{2 \pi d^\gamma} \cos^n(\phi) \cos(\theta)$
+#[verified_engine::verified]
 pub fn calculate_received_power(
     n: f64,
     a: f64,
@@ -71,6 +73,7 @@ pub fn calculate_received_power(
 /// # Formula
 ///
 /// $i_{pd} = i_d + R_{pd} P_r$
+#[verified_engine::verified]
 pub fn calculate_photocurrent(p_r: f64, i_d: f64, r_pd: f64) -> f64 {
     i_d + r_pd * p_r
 }
@@ -89,6 +92,7 @@ pub fn calculate_photocurrent(p_r: f64, i_d: f64, r_pd: f64) -> f64 {
 /// # Formula
 ///
 /// $V_{sig} = g_{pd} i_{pd}$
+#[verified_engine::verified]
 pub fn calculate_tia_output(i_pd: f64, g_pd: f64) -> f64 {
     g_pd * i_pd
 }

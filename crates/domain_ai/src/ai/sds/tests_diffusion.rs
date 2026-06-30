@@ -3,6 +3,7 @@ use approx::assert_relative_eq;
 use nalgebra::DMatrix;
 
 #[test]
+#[verified_engine::verified]
 fn test_noise_schedule() {
     let steps = 100;
     let schedule = NoiseSchedule::new(steps);
@@ -19,6 +20,7 @@ fn test_noise_schedule() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_inject_noise() {
     let rows = 4;
     let cols = 4;

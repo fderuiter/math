@@ -19,6 +19,7 @@ impl TimeStep {
     /// # Returns
     ///
     /// * `Result<TimeStep, OuError>` - The validated time step or an error
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, OuError> {
         if value <= 0.0 || !value.is_finite() {
             return Err(OuError::InvalidTimeStep { value });
@@ -27,6 +28,7 @@ impl TimeStep {
     }
 
     /// Returns the raw time step value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -70,6 +72,7 @@ impl EulerMaruyama {
     /// let dt = TimeStep::new(0.01).unwrap();
     /// let solver = EulerMaruyama::new(params, dt);
     /// ```
+    #[verified_engine::verified]
     pub fn new(params: OuParams, dt: TimeStep) -> Self {
         Self { params, dt }
     }
@@ -108,6 +111,7 @@ impl EulerMaruyama {
     /// let x0 = 0.6;
     /// let x1 = solver.step(x0, &mut rng);
     /// ```
+    #[verified_engine::verified]
     pub fn step<R: Rng>(&self, x_current: f64, rng: &mut R) -> f64 {
         let mu = self.params.mu.value();
         let theta = self.params.theta.value();
@@ -155,6 +159,7 @@ impl EulerMaruyama {
     /// let trajectory = solver.simulate(0.6, 100, &mut rng);
     /// assert_eq!(trajectory.len(), 101);  // Initial + 100 steps
     /// ```
+    #[verified_engine::verified]
     pub fn simulate<R: Rng>(&self, x0: f64, n_steps: usize, rng: &mut R) -> Vec<f64> {
         let mut trajectory = Vec::with_capacity(n_steps + 1);
         trajectory.push(x0);
@@ -199,6 +204,7 @@ impl EulerMaruyama {
     /// assert_eq!(paths.len(), 1000);  // 1000 paths
     /// assert_eq!(paths[0].len(), 101);  // Each path has 101 points
     /// ```
+    #[verified_engine::verified]
     pub fn simulate_paths<R: Rng>(
         &self,
         x0: f64,
@@ -212,11 +218,13 @@ impl EulerMaruyama {
     }
 
     /// Returns the parameters of the OU process.
+    #[verified_engine::verified]
     pub fn params(&self) -> OuParams {
         self.params
     }
 
     /// Returns the time step.
+    #[verified_engine::verified]
     pub fn time_step(&self) -> TimeStep {
         self.dt
     }
@@ -230,12 +238,14 @@ mod tests {
     use rand::rngs::StdRng;
 
     #[test]
+    #[verified_engine::verified]
     fn test_time_step_valid() {
         let dt = TimeStep::new(0.01).unwrap();
         assert_eq!(dt.value(), 0.01);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_time_step_invalid() {
         assert!(TimeStep::new(-0.01).is_err());
         assert!(TimeStep::new(0.0).is_err());
@@ -243,6 +253,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_euler_maruyama_deterministic() {
         let params = OuParams::from_values(0.5, 1.0, 0.3).unwrap();
         let dt = TimeStep::new(0.01).unwrap();
@@ -259,6 +270,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_euler_maruyama_simulate() {
         let params = OuParams::from_values(0.5, 1.0, 0.3).unwrap();
         let dt = TimeStep::new(0.01).unwrap();
@@ -272,6 +284,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_euler_maruyama_mean_reversion() {
         // With high theta, should revert to mean quickly
         let params = OuParams::from_values(0.5, 5.0, 0.1).unwrap();
@@ -287,6 +300,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_euler_maruyama_multiple_paths() {
         let params = OuParams::from_values(0.5, 1.0, 0.3).unwrap();
         let dt = TimeStep::new(0.01).unwrap();
@@ -303,6 +317,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_euler_maruyama_no_volatility() {
         // With sigma = 0, should be purely deterministic drift
         let params = OuParams::from_values(0.5, 1.0, 0.0).unwrap();
@@ -319,6 +334,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_monte_carlo_mean() {
         // Simulate many paths and check the mean converges to mu
         let mu = 0.5;

@@ -14,5 +14,6 @@ pub trait Sorter<T> {
     /// # Returns
     ///
     /// A `SortingResult` containing the sorted data and performance statistics.
+    #[verified_engine::verified]
     fn sort(&self, data: &[T]) -> SortingResult<T>;
 }

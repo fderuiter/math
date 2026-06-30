@@ -11,6 +11,7 @@ pub enum NuclearError {
 }
 
 impl fmt::Display for NuclearError {
+    #[verified_engine::verified]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             NuclearError::InvalidMassNumber(msg) => write!(f, "Invalid mass number A: {}", msg),
@@ -31,20 +32,24 @@ impl std::error::Error for NuclearError {}
 pub struct AtomicNumber(u32);
 
 impl AtomicNumber {
+    #[verified_engine::verified]
     pub fn new(value: u32) -> Self {
         Self(value)
     }
 
+    #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
 
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0 as f64
     }
 }
 
 impl From<u32> for AtomicNumber {
+    #[verified_engine::verified]
     fn from(value: u32) -> Self {
         Self(value)
     }
@@ -56,6 +61,7 @@ impl From<u32> for AtomicNumber {
 pub struct MassNumber(u32);
 
 impl MassNumber {
+    #[verified_engine::verified]
     pub fn new(value: u32) -> Result<Self, NuclearError> {
         if value == 0 {
             return Err(NuclearError::InvalidMassNumber(
@@ -66,14 +72,17 @@ impl MassNumber {
     }
 
     /// Creates a MassNumber without validation (use with caution).
+    #[verified_engine::verified]
     pub fn new_unchecked(value: u32) -> Self {
         Self(value)
     }
 
+    #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
 
+    #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0 as f64
     }
@@ -82,6 +91,7 @@ impl MassNumber {
 impl TryFrom<u32> for MassNumber {
     type Error = NuclearError;
 
+    #[verified_engine::verified]
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         Self::new(value)
     }

@@ -20,6 +20,7 @@ pub struct RayBundle {
 /// Input: Camera Pose matrix P (4x4), Image resolution (H, W).
 /// Operation: For every pixel (u, v), compute the ray origin o and direction d.
 /// Output: Ray Bundle R (origins and directions).
+#[verified_engine::verified]
 pub fn generate_ray_bundle(
     pose: &Matrix4<f64>,
     width: usize,
@@ -82,12 +83,14 @@ pub fn generate_ray_bundle(
 /// Input: Ray Bundle R, Near plane t_n, Far plane t_f, Number of samples N.
 /// Operation: Divide the ray into N bins and sample a distance t_i uniformly within each bin.
 /// Output: Sample points along rays r(t_i) = o + t_i * d.
+#[verified_engine::verified]
 pub fn stratified_sampling(t_near: f64, t_far: f64, n_samples: usize) -> Vec<f64> {
     let mut rng = rand::thread_rng();
     stratified_sampling_with_rng(t_near, t_far, n_samples, &mut rng)
 }
 
 /// Module 1.2: Stratified Sampling using an injected RNG.
+#[verified_engine::verified]
 pub fn stratified_sampling_with_rng<R: Rng + ?Sized>(
     t_near: f64,
     t_far: f64,
@@ -107,6 +110,7 @@ pub fn stratified_sampling_with_rng<R: Rng + ?Sized>(
 
 /// Module 1.3: MLP Query & Positional Encoding (Helper)
 /// Operation 1 (Encoding): Map inputs to higher dimensions using gamma(.) (Fourier features).
+#[verified_engine::verified]
 pub fn positional_encoding(p: f64, l: usize) -> Vec<f64> {
     let mut encoded = Vec::with_capacity(2 * l);
     for i in 0..l {
@@ -121,12 +125,14 @@ pub fn positional_encoding(p: f64, l: usize) -> Vec<f64> {
 /// Operation 2 (Inference): Pass through MLP.
 /// Output: Raw Density sigma and Color c for every sample point.
 pub trait NeRFModel {
+    #[verified_engine::verified]
     fn query(&self, pos: &Vector3<f64>, dir: &Vector3<f64>) -> (f64, Vector3<f64>);
 }
 
 /// Module 1.4: Volume Integration (Compositing) Helper
 /// Input: Densities sigma_i, Colors c_i, Interval distances delta_i.
 /// Operation: Compute weights w_i and sum.
+#[verified_engine::verified]
 pub fn volume_integration(
     densities: &[f64],
     colors: &[Vector3<f64>],
@@ -165,6 +171,7 @@ pub fn volume_integration(
 /// Output: Rendered Image x_render (HxWx3).
 /// Note: Returns a DMatrix of Vector3 for simplicity in this library context,
 /// representing the HxW grid of RGB colors.
+#[verified_engine::verified]
 pub fn render_image<M: NeRFModel + ?Sized>(
     bundle: &RayBundle,
     model: &M,
@@ -177,6 +184,7 @@ pub fn render_image<M: NeRFModel + ?Sized>(
 }
 
 /// Module 1.4: Volume Integration (Full Image) using an injected RNG.
+#[verified_engine::verified]
 pub fn render_image_with_rng<M: NeRFModel + ?Sized, R: Rng + ?Sized>(
     bundle: &RayBundle,
     model: &M,

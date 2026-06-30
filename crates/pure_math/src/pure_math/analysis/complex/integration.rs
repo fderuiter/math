@@ -10,6 +10,7 @@ use std::f64::consts::PI;
 /// * `t_start` - Start parameter.
 /// * `t_end` - End parameter.
 /// * `steps` - Number of integration steps.
+#[verified_engine::verified]
 pub fn path_integrate<F, G, DG>(
     f: F,
     gamma: G,
@@ -45,6 +46,7 @@ where
 /// Computes $f(z_0)$ using Cauchy's Integral Formula.
 ///
 /// $$ f(z_0) = \frac{1}{2\pi i} \oint_C \frac{f(z)}{z - z_0} \, dz $$
+#[verified_engine::verified]
 pub fn cauchy_integral_value<F>(
     f: F,
     z0: Complex64,
@@ -68,6 +70,7 @@ where
 /// Computes the n-th derivative $f^{(n)}(z_0)$ using generalized Cauchy Integral Formula.
 ///
 /// $$ f^{(n)}(z_0) = \frac{n!}{2\pi i} \oint_C \frac{f(z)}{(z - z_0)^{n+1}} \, dz $$
+#[verified_engine::verified]
 pub fn cauchy_derivative<F>(
     f: F,
     z0: Complex64,
@@ -99,6 +102,7 @@ where
 /// Computes the residue of f at a simple pole z0 using the limit definition.
 ///
 /// $$ \text{Res}(f, z_0) = \lim_{z \to z_0} [(z - z_0)f(z)] $$
+#[verified_engine::verified]
 pub fn residue_simple_limit<F>(f: F, z0: Complex64, epsilon: f64) -> Complex64
 where
     F: Fn(Complex64) -> Complex64,
@@ -111,6 +115,7 @@ where
 /// This works for poles of any order.
 ///
 /// $$ \text{Res}(f, z_0) = \frac{1}{2\pi i} \oint_{C} f(z) \, dz $$
+#[verified_engine::verified]
 pub fn residue_via_integral<F>(f: F, z0: Complex64, r: f64, steps: usize) -> Complex64
 where
     F: Fn(Complex64) -> Complex64,
@@ -128,6 +133,7 @@ mod tests {
     use approx::assert_relative_eq;
 
     #[test]
+    #[verified_engine::verified]
     fn test_path_integrate_z_squared() {
         // Integral of z^2 from 0 to 1+i along straight line
         let f = |z: Complex64| z * z;
@@ -142,6 +148,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_cauchy_integral_value() {
         // f(z) = z^2. f(0) = 0.
         let f = |z: Complex64| z * z;
@@ -158,6 +165,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_cauchy_derivative() {
         // f(z) = z^3. f'(z) = 3z^2. f'(0) = 0. f''(0) = 0. f'''(0) = 6.
         let f = |z: Complex64| z * z * z;
@@ -168,6 +176,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_residue_simple() {
         // f(z) = 1/z. Res at 0 is 1.
         let f = |z: Complex64| Complex64::new(1.0, 0.0) / z;
@@ -176,6 +185,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_residue_via_integral() {
         // f(z) = 1/z^2. Res at 0 is 0.
         // f(z) = 1/z. Res at 0 is 1.

@@ -12,6 +12,7 @@ use std::f64::consts::PI;
 ///
 /// # Arguments
 /// * `n` - The dimension of the Hilbert space.
+#[verified_engine::verified]
 pub fn dft_operator(n: usize) -> QuantumOperator {
     let dim = n as f64;
     let normalization = 1.0 / dim.sqrt();
@@ -32,6 +33,7 @@ pub fn dft_operator(n: usize) -> QuantumOperator {
 /// Creates the Inverse Discrete Fourier Transform (IDFT) operator.
 ///
 /// This operator transforms a state vector from the momentum basis to the position basis.
+#[verified_engine::verified]
 pub fn idft_operator(n: usize) -> QuantumOperator {
     let dft = dft_operator(n);
     // Inverse DFT is the adjoint (conjugate transpose) of DFT matrix, as DFT is unitary.

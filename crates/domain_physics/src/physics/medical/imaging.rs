@@ -10,6 +10,7 @@
 /// # Returns
 ///
 /// * `f64` - The tracking error.
+#[verified_engine::verified]
 pub fn tracking_error(target_center: f64, field_centroid: f64) -> f64 {
     target_center - field_centroid
 }

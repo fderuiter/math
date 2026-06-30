@@ -18,6 +18,7 @@
 /// # Returns
 ///
 /// The rate of change of the number of juvenile individuals.
+#[verified_engine::verified]
 pub fn juvenile_dynamics(i_t: f64, c_a: f64, a_t: f64, n_t_a: f64) -> f64 {
     // This is a placeholder implementation.
     // The actual implementation would involve solving a partial differential equation.
@@ -35,6 +36,7 @@ pub fn juvenile_dynamics(i_t: f64, c_a: f64, a_t: f64, n_t_a: f64) -> f64 {
 /// # Returns
 ///
 /// The rate of change of the number of adult individuals.
+#[verified_engine::verified]
 pub fn adult_dynamics(n_t_alpha: f64, f_i_t: f64, a_t: f64) -> f64 {
     // This is a placeholder implementation.
     n_t_alpha - f_i_t * a_t

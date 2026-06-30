@@ -15,6 +15,7 @@
 /// $$ \log_2(n!) \approx n \log_2 n - 1.44 n $$
 ///
 /// > **Consequence**: No comparison-based sorting algorithm can strictly perform better than $O(n \log n)$ in the worst case.
+#[verified_engine::verified]
 pub fn information_theoretic_bound(n: u64) -> f64 {
     if n == 0 {
         return 0.0;
@@ -28,6 +29,7 @@ pub fn information_theoretic_bound(n: u64) -> f64 {
 /// Computes Stirling's Approximation for $\ln n!$.
 ///
 /// $$ \ln n! \approx n \ln n - n $$
+#[verified_engine::verified]
 pub fn stirling_approximation_ln_factorial(n: u64) -> f64 {
     if n == 0 {
         return 0.0;

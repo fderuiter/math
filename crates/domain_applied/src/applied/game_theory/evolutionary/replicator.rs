@@ -28,6 +28,7 @@ impl ReplicatorDynamics<MatrixPayoff> {
     ///
     /// This constructor is preserved for backward compatibility.
     /// It instantiates the default `MatrixPayoff` strategy.
+    #[verified_engine::verified]
     pub fn new(payoff_matrix: DMatrix<f64>) -> Result<Self, GameTheoryError> {
         Ok(Self {
             strategy: MatrixPayoff::new(payoff_matrix)?,
@@ -37,6 +38,7 @@ impl ReplicatorDynamics<MatrixPayoff> {
     /// Accessor for the underlying payoff matrix.
     ///
     /// Useful for inspecting the game structure.
+    #[verified_engine::verified]
     pub fn payoff_matrix(&self) -> &DMatrix<f64> {
         self.strategy.payoff_matrix()
     }
@@ -44,6 +46,7 @@ impl ReplicatorDynamics<MatrixPayoff> {
 
 impl<S: FitnessStrategy> ReplicatorDynamics<S> {
     /// Creates a new system with a custom fitness strategy.
+    #[verified_engine::verified]
     pub fn new_with_fitness(strategy: S) -> Self {
         Self { strategy }
     }
@@ -51,6 +54,7 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
     /// Computes the time derivative $\dot{x}$ for the population state $x$.
     ///
     /// This is a helper method that delegates to the `OdeSystem` implementation.
+    #[verified_engine::verified]
     pub fn derivative(&self, x: &DVector<f64>) -> DVector<f64> {
         <Self as OdeSystem<DVector<f64>>>::derivative(self, 0.0, x)
     }
@@ -64,6 +68,7 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
     ///
     /// # Returns
     /// A time-series of population states: `Vec<(Time, State)>`.
+    #[verified_engine::verified]
     pub fn simulate(
         &self,
         initial_population: DVector<f64>,
@@ -85,6 +90,7 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
     /// - `time_horizon`: Total time to simulate.
     /// - `dt`: Time step size.
     /// - `solver`: The numerical integrator to use.
+    #[verified_engine::verified]
     pub fn simulate_with_strategy<Solve>(
         &self,
         initial_population: DVector<f64>,
@@ -121,12 +127,14 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
 }
 
 impl<S: FitnessStrategy> OdeSystem<DVector<f64>> for ReplicatorDynamics<S> {
+    #[verified_engine::verified]
     fn derivative(&self, t: f64, x: &DVector<f64>) -> DVector<f64> {
         let mut out = DVector::zeros(x.len());
         self.derivative_in_place(t, x, &mut out);
         out
     }
 
+    #[verified_engine::verified]
     fn derivative_in_place(&self, _t: f64, x: &DVector<f64>, out: &mut DVector<f64>) {
         // 1. Calculate Fitness Vector f(x)
         // Store directly in 'out' to avoid allocation
@@ -149,6 +157,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_rock_paper_scissors() {
         // Rock Paper Scissors matrix (Zero-Sum)
         let payoff =
@@ -169,11 +178,13 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_non_linear_fitness() {
         // Implement a custom non-linear strategy
         // Example: Frequency-dependent selection where fitness depends on x squared.
         struct QuadraticFitness;
         impl FitnessStrategy for QuadraticFitness {
+            #[verified_engine::verified]
             fn fitness(&self, x: &DVector<f64>, out: &mut DVector<f64>) {
                 // f_i = x_i
                 out.copy_from(x);

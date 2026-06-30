@@ -13,6 +13,7 @@
 /// # Returns
 ///
 /// The per capita death rate.
+#[verified_engine::verified]
 pub fn death_rate(nu_a: f64, c_a: f64, k_t: f64, phi_c_t: f64) -> f64 {
     // This is a placeholder implementation.
     nu_a + c_a * k_t * phi_c_t

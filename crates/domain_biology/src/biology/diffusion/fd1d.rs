@@ -23,12 +23,14 @@ pub struct FiniteDifference1D {
 
 impl FiniteDifference1D {
     /// Creates a new 1D finite difference strategy.
+    #[verified_engine::verified]
     pub fn new(dx: StepSize) -> Self {
         Self { dx }
     }
 }
 
 impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
+    #[verified_engine::verified]
     fn apply(
         &self,
         state: &crate::biology::reaction_diffusion::ChemicalState,
@@ -50,6 +52,7 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
 
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[verified_engine::verified]
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)
     where
         F: FnMut(usize, [f64; N], [f64; N]),
@@ -154,6 +157,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
 /// * `dst`: Output buffer for the Laplacian term (D * d2u/dx2).
 /// * `d`: Diffusion coefficient.
 /// * `inv_dx_sq`: Inverse square of grid spacing (1/dx^2).
+#[verified_engine::verified]
 fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
     scan_1d_stencil(src, d, inv_dx_sq, |i, val| {
         // Safety: We rely on the caller to ensure dst is sized correctly.
@@ -166,6 +170,7 @@ fn apply_1d_stencil(src: &[f64], dst: &mut [f64], d: f64, inv_dx_sq: f64) {
 
 /// Helper to apply 1D Finite Difference stencil.
 /// Calls `op` with (index, laplacian_value) for each point.
+#[verified_engine::verified]
 fn scan_1d_stencil<F>(src: &[f64], d: f64, inv_dx_sq: f64, mut op: F)
 where
     F: FnMut(usize, f64),

@@ -5,6 +5,7 @@ use domain_applied::applied::clinical_trials::{
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_simple_randomization() {
     let n = 100;
     let assignments = design::simple_randomization(n);
@@ -14,6 +15,7 @@ fn test_simple_randomization() {
 
 #[test]
 #[allow(deprecated)]
+#[verified_engine::verified]
 fn test_block_randomization() {
     let n = 20;
     let block_size = 4;
@@ -34,6 +36,7 @@ fn test_block_randomization() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_sample_size_calculation() {
     // Example: alpha=0.05, power=0.8, delta=5, sigma=10
     // n = 2 * 100 * (1.96 + 0.84)^2 / 25
@@ -43,6 +46,7 @@ fn test_sample_size_calculation() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_t_test_independent() {
     let raw_group1 = vec![10.0, 12.0, 11.0, 13.0, 10.5]; // Mean 11.3
     let raw_group2 = vec![15.0, 16.0, 14.0, 15.5, 14.5]; // Mean 15.0
@@ -56,6 +60,7 @@ fn test_t_test_independent() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_chi_square_2x2() {
     // 50 cured, 50 not (Control) vs 70 cured, 30 not (Treatment)
     // Should be significant
@@ -72,6 +77,7 @@ fn test_chi_square_2x2() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_risk_metrics() {
     // Treatment: 10 events, 90 no events (Risk = 0.1)
     // Control: 20 events, 80 no events (Risk = 0.2)
@@ -92,6 +98,7 @@ fn test_risk_metrics() {
 }
 
 #[test]
+#[verified_engine::verified]
 fn test_kaplan_meier() {
     use survival_analysis::Observation;
     let obs = vec![

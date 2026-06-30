@@ -29,6 +29,7 @@ impl Rating {
     /// let rating = Rating::new(1500.0).unwrap();
     /// assert_eq!(rating.value(), 1500.0);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, Glicko2Error> {
         if !value.is_finite() {
             return Err(Glicko2Error::InvalidRating { value });
@@ -37,6 +38,7 @@ impl Rating {
     }
 
     /// Returns the raw rating value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -44,6 +46,7 @@ impl Rating {
     /// Converts from Glicko scale to Glicko-2 scale (μ).
     ///
     /// Formula: μ = (r - 1500) / 173.7178
+    #[verified_engine::verified]
     pub fn to_glicko2_scale(&self) -> f64 {
         (self.0 - 1500.0) / 173.7178
     }
@@ -51,6 +54,7 @@ impl Rating {
     /// Creates a rating from Glicko-2 scale (μ).
     ///
     /// Formula: r = 173.7178 * μ + 1500
+    #[verified_engine::verified]
     pub fn from_glicko2_scale(mu: f64) -> Result<Self, Glicko2Error> {
         Self::new(173.7178 * mu + 1500.0)
     }
@@ -58,6 +62,7 @@ impl Rating {
 
 impl Default for Rating {
     /// Default rating for new players (1500 on Glicko scale).
+    #[verified_engine::verified]
     fn default() -> Self {
         Self(1500.0)
     }
@@ -93,6 +98,7 @@ impl RatingDeviation {
     /// let rd = RatingDeviation::new(350.0).unwrap();
     /// assert_eq!(rd.value(), 350.0);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, Glicko2Error> {
         if value <= 0.0 || !value.is_finite() {
             return Err(Glicko2Error::InvalidRatingDeviation { value });
@@ -101,6 +107,7 @@ impl RatingDeviation {
     }
 
     /// Returns the raw RD value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -108,6 +115,7 @@ impl RatingDeviation {
     /// Converts from Glicko scale to Glicko-2 scale (φ).
     ///
     /// Formula: φ = RD / 173.7178
+    #[verified_engine::verified]
     pub fn to_glicko2_scale(&self) -> f64 {
         self.0 / 173.7178
     }
@@ -115,6 +123,7 @@ impl RatingDeviation {
     /// Creates an RD from Glicko-2 scale (φ).
     ///
     /// Formula: RD = 173.7178 * φ
+    #[verified_engine::verified]
     pub fn from_glicko2_scale(phi: f64) -> Result<Self, Glicko2Error> {
         Self::new(173.7178 * phi)
     }
@@ -122,6 +131,7 @@ impl RatingDeviation {
 
 impl Default for RatingDeviation {
     /// Default RD for new players (350 on Glicko scale).
+    #[verified_engine::verified]
     fn default() -> Self {
         Self(350.0)
     }
@@ -156,6 +166,7 @@ impl Volatility {
     /// let vol = Volatility::new(0.06).unwrap();
     /// assert_eq!(vol.value(), 0.06);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, Glicko2Error> {
         if value <= 0.0 || !value.is_finite() {
             return Err(Glicko2Error::InvalidVolatility { value });
@@ -164,6 +175,7 @@ impl Volatility {
     }
 
     /// Returns the raw volatility value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -171,6 +183,7 @@ impl Volatility {
 
 impl Default for Volatility {
     /// Default volatility for new players (0.06).
+    #[verified_engine::verified]
     fn default() -> Self {
         Self(0.06)
     }
@@ -205,6 +218,7 @@ impl SystemConstant {
     /// let tau = SystemConstant::new(0.5).unwrap();
     /// assert_eq!(tau.value(), 0.5);
     /// ```
+    #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, Glicko2Error> {
         if !(0.3..=1.2).contains(&value) || !value.is_finite() {
             return Err(Glicko2Error::InvalidSystemConstant { value });
@@ -213,6 +227,7 @@ impl SystemConstant {
     }
 
     /// Returns the raw τ value.
+    #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         self.0
     }
@@ -220,6 +235,7 @@ impl SystemConstant {
 
 impl Default for SystemConstant {
     /// Default system constant (0.5) as recommended by Glickman.
+    #[verified_engine::verified]
     fn default() -> Self {
         Self(0.5)
     }
@@ -256,6 +272,7 @@ impl GlickoPlayer {
     ///     Volatility::new(0.06).unwrap(),
     /// );
     /// ```
+    #[verified_engine::verified]
     pub fn new(rating: Rating, rating_deviation: RatingDeviation, volatility: Volatility) -> Self {
         Self {
             rating,
@@ -267,6 +284,7 @@ impl GlickoPlayer {
     /// Converts player parameters to Glicko-2 scale (μ, φ, σ).
     ///
     /// Returns (mu, phi, sigma) tuple.
+    #[verified_engine::verified]
     pub fn to_glicko2_scale(&self) -> (f64, f64, f64) {
         (
             self.rating.to_glicko2_scale(),
@@ -282,6 +300,7 @@ impl Default for GlickoPlayer {
     /// - Rating: 1500
     /// - RD: 350
     /// - Volatility: 0.06
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             rating: Rating::default(),
@@ -325,6 +344,7 @@ impl MatchResult {
     /// let opponent = GlickoPlayer::default();
     /// let result = MatchResult::new(opponent, 1.0).unwrap(); // Win
     /// ```
+    #[verified_engine::verified]
     pub fn new(opponent: GlickoPlayer, score: f64) -> Result<Self, Glicko2Error> {
         if !(0.0..=1.0).contains(&score) || !score.is_finite() {
             return Err(Glicko2Error::InvalidScore { value: score });
@@ -338,6 +358,7 @@ impl MatchResult {
 /// Formula: g(φ) = 1 / √(1 + 3φ²/π²)
 ///
 /// This function reduces the impact of games against opponents with high uncertainty.
+#[verified_engine::verified]
 pub fn g_function(phi: f64) -> f64 {
     1.0 / (1.0 + 3.0 * phi * phi / (PI * PI)).sqrt()
 }
@@ -347,6 +368,7 @@ pub fn g_function(phi: f64) -> f64 {
 /// Formula: E = 1 / (1 + exp(-g(φⱼ)(μ - μⱼ)))
 ///
 /// This is the probability that player with rating μ beats opponent with (μⱼ, φⱼ).
+#[verified_engine::verified]
 pub fn expected_outcome(mu: f64, mu_j: f64, phi_j: f64) -> f64 {
     1.0 / (1.0 + (-g_function(phi_j) * (mu - mu_j)).exp())
 }
@@ -356,18 +378,21 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_rating_valid() {
         let r = Rating::new(1500.0).unwrap();
         assert_eq!(r.value(), 1500.0);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_rating_invalid() {
         assert!(Rating::new(f64::NAN).is_err());
         assert!(Rating::new(f64::INFINITY).is_err());
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_rating_scale_conversion() {
         let r = Rating::new(1500.0).unwrap();
         let mu = r.to_glicko2_scale();
@@ -378,12 +403,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_rd_valid() {
         let rd = RatingDeviation::new(350.0).unwrap();
         assert_eq!(rd.value(), 350.0);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_rd_invalid() {
         assert!(RatingDeviation::new(0.0).is_err());
         assert!(RatingDeviation::new(-1.0).is_err());
@@ -391,6 +418,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_rd_scale_conversion() {
         let rd = RatingDeviation::new(173.7178).unwrap();
         let phi = rd.to_glicko2_scale();
@@ -401,12 +429,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_volatility_valid() {
         let vol = Volatility::new(0.06).unwrap();
         assert_eq!(vol.value(), 0.06);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_volatility_invalid() {
         assert!(Volatility::new(0.0).is_err());
         assert!(Volatility::new(-0.1).is_err());
@@ -414,12 +444,14 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_system_constant_valid() {
         let tau = SystemConstant::new(0.5).unwrap();
         assert_eq!(tau.value(), 0.5);
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_system_constant_invalid() {
         assert!(SystemConstant::new(0.2).is_err()); // Too small
         assert!(SystemConstant::new(1.5).is_err()); // Too large
@@ -427,6 +459,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_glicko_player_default() {
         let player = GlickoPlayer::default();
         assert_eq!(player.rating.value(), 1500.0);
@@ -435,6 +468,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_match_result_valid() {
         let opponent = GlickoPlayer::default();
         assert!(MatchResult::new(opponent, 0.0).is_ok()); // Loss
@@ -443,6 +477,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_match_result_invalid() {
         let opponent = GlickoPlayer::default();
         assert!(MatchResult::new(opponent, -0.1).is_err());
@@ -451,6 +486,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_g_function() {
         // When phi = 0, g(phi) = 1
         assert!((g_function(0.0) - 1.0).abs() < 1e-6);
@@ -462,6 +498,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_expected_outcome() {
         // Equal ratings and RD should give 0.5 probability
         let e = expected_outcome(0.0, 0.0, 1.0);

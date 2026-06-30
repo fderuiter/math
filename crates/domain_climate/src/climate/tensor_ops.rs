@@ -16,6 +16,7 @@ use nalgebra::{DMatrix, DVector};
 /// # Returns
 ///
 /// * The output tensor, with shape (N, out_channels).
+#[verified_engine::verified]
 pub fn conv1d(input: &DMatrix<f32>, kernel: &DMatrix<f32>, bias: &DVector<f32>) -> DMatrix<f32> {
     // Check dimensions
     assert_eq!(
@@ -53,6 +54,7 @@ pub fn conv1d(input: &DMatrix<f32>, kernel: &DMatrix<f32>, bias: &DVector<f32>) 
 /// # Returns
 ///
 /// * The output tensor, with shape (N, out_channels).
+#[verified_engine::verified]
 pub fn conv_transpose1d(
     input: &DMatrix<f32>,
     kernel: &DMatrix<f32>, // Shape (out_channels, in_channels) from the original conv
@@ -89,6 +91,7 @@ mod tests {
     use nalgebra::{DMatrix, DVector};
 
     #[test]
+    #[verified_engine::verified]
     fn test_conv1d_basic() {
         // Input: 2 samples, 3 input channels
         let input = DMatrix::from_row_slice(2, 3, &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
@@ -110,6 +113,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_conv_transpose1d_basic() {
         // Input: 2 samples, 4 input channels
         let input = DMatrix::from_row_slice(2, 4, &[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]);

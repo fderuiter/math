@@ -4,6 +4,7 @@ use petgraph::graph::NodeIndex;
 use std::collections::HashMap;
 
 /// Calculates the degree centrality for each node in the graph.
+#[verified_engine::verified]
 pub fn degree_centrality<N, E>(g: &Graph<N, E>) -> HashMap<NodeIndex, f64> {
     let mut centrality = HashMap::new();
     let node_count = g.graph.node_count();
@@ -26,6 +27,7 @@ pub fn degree_centrality<N, E>(g: &Graph<N, E>) -> HashMap<NodeIndex, f64> {
 
 /// Calculates the closeness centrality for each node in the graph.
 /// Assumes unweighted edges (weight = 1.0) for simplicity.
+#[verified_engine::verified]
 pub fn closeness_centrality<N, E>(g: &Graph<N, E>) -> HashMap<NodeIndex, f64> {
     let mut centrality = HashMap::new();
     let node_count = g.graph.node_count();
@@ -54,6 +56,7 @@ pub fn closeness_centrality<N, E>(g: &Graph<N, E>) -> HashMap<NodeIndex, f64> {
 }
 
 /// Calculates the global diameter of the graph (maximum shortest path between any two nodes).
+#[verified_engine::verified]
 pub fn diameter<N, E>(g: &Graph<N, E>) -> usize {
     let mut max_dist = 0;
     for node in g.graph.node_indices() {
@@ -68,6 +71,7 @@ pub fn diameter<N, E>(g: &Graph<N, E>) -> usize {
 }
 
 /// Calculates the local clustering coefficient for each node.
+#[verified_engine::verified]
 pub fn clustering_coefficients<N, E>(g: &Graph<N, E>) -> HashMap<NodeIndex, f64> {
     let mut clustering = HashMap::new();
 
@@ -98,6 +102,7 @@ pub fn clustering_coefficients<N, E>(g: &Graph<N, E>) -> HashMap<NodeIndex, f64>
 }
 
 /// Calculates the average clustering coefficient of the graph.
+#[verified_engine::verified]
 pub fn average_clustering_coefficient<N, E>(g: &Graph<N, E>) -> f64 {
     let coeffs = clustering_coefficients(g);
     if coeffs.is_empty() {

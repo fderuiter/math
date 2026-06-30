@@ -4,6 +4,7 @@ use rand::rngs::StdRng;
 use statrs::distribution::Uniform;
 
 #[test]
+#[verified_engine::verified]
 fn test_revenue_simulation_deterministic() {
     let dist = Uniform::new(0.0, 1.0).unwrap();
     let n_bidders = 2;

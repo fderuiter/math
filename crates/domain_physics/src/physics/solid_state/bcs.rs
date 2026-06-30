@@ -16,6 +16,7 @@ use crate::error::SolidStateError;
 pub trait GapEquation {
     /// Calculates the next iteration of the gap parameter $\Delta_{new}$
     /// based on the current gap value $\Delta_{old}$.
+    #[verified_engine::verified]
     fn calculate_next_gap(
         &self,
         current_gap: ElectronVolts,
@@ -39,6 +40,7 @@ pub struct BcsGapSolver {
 }
 
 impl Default for BcsGapSolver {
+    #[verified_engine::verified]
     fn default() -> Self {
         Self {
             max_iterations: 1000,
@@ -50,23 +52,27 @@ impl Default for BcsGapSolver {
 
 impl BcsGapSolver {
     /// Creates a new solver with default parameters.
+    #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Sets the maximum number of iterations.
+    #[verified_engine::verified]
     pub fn with_max_iterations(mut self, max: usize) -> Self {
         self.max_iterations = max;
         self
     }
 
     /// Sets the convergence tolerance.
+    #[verified_engine::verified]
     pub fn with_tolerance(mut self, tol: f64) -> Self {
         self.tolerance = tol;
         self
     }
 
     /// Sets the mixing parameter.
+    #[verified_engine::verified]
     pub fn with_mixing_param(mut self, param: f64) -> Self {
         self.mixing_param = param;
         self
@@ -77,6 +83,7 @@ impl BcsGapSolver {
     /// # Arguments
     /// * `model` - The physical model implementing `GapEquation`.
     /// * `initial_guess` - Initial value for the gap parameter.
+    #[verified_engine::verified]
     pub fn solve<M: GapEquation>(
         &self,
         model: &M,
@@ -126,6 +133,7 @@ impl IsotropicBCSModel {
     /// * `energies` - Band energies relative to Fermi level.
     /// * `potential` - Magnitude of attractive potential.
     /// * `debye_cutoff` - Debye energy window.
+    #[verified_engine::verified]
     pub fn new(
         energies: Vec<f64>,
         potential: f64,
@@ -142,6 +150,7 @@ impl IsotropicBCSModel {
 }
 
 impl GapEquation for IsotropicBCSModel {
+    #[verified_engine::verified]
     fn calculate_next_gap(
         &self,
         current_gap: ElectronVolts,
@@ -176,6 +185,7 @@ impl GapEquation for IsotropicBCSModel {
 #[deprecated(
     note = "Use BcsGapSolver and IsotropicBCSModel instead for better type safety and error handling"
 )]
+#[verified_engine::verified]
 pub fn solve_gap_equation(
     energies_xi: &[f64],
     potential_v_magnitude: f64,
@@ -207,6 +217,7 @@ pub fn solve_gap_equation(
 ///
 /// v_k^2 = 1/2 (1 - \xi_k / E_k) : Probability of pair occupation
 /// u_k^2 = 1 - v_k^2             : Probability of emptiness
+#[verified_engine::verified]
 pub fn coherence_factors(xi_k: f64, delta: f64) -> (f64, f64) {
     let xi = ElectronVolts(xi_k);
     let d = ElectronVolts(delta);
@@ -215,6 +226,7 @@ pub fn coherence_factors(xi_k: f64, delta: f64) -> (f64, f64) {
 }
 
 /// Strong-typed version of coherence factors.
+#[verified_engine::verified]
 pub fn coherence_factors_strong(xi_k: ElectronVolts, delta: ElectronVolts) -> (f64, f64) {
     let e_k = (xi_k.0.powi(2) + delta.0.powi(2)).sqrt();
     let v_sq = 0.5 * (1.0 - xi_k.0 / e_k);
@@ -230,6 +242,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[verified_engine::verified]
     fn test_bcs_probability_conservation() {
         let xi = 1.5;
         let delta = 0.2;
@@ -239,6 +252,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_solver_convergence() {
         // Mock data
         let energies: Vec<f64> = (0..100).map(|i| (i as f64 - 50.0) * 0.1).collect();
@@ -256,6 +270,7 @@ mod tests {
     }
 
     #[test]
+    #[verified_engine::verified]
     fn test_legacy_wrapper() {
         let energies: Vec<f64> = (0..100).map(|i| (i as f64 - 50.0) * 0.1).collect();
         let potential = 0.5;
