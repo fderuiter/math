@@ -13,7 +13,7 @@ pub struct SpinVisualizer {
     b_field: [f64; 3], // [Bx, By, Bz]
     time: f64,
     paused: bool,
-    view_angle: [f64; 2], // [yaw, pitch] in radians
+    camera: crate::framework::Camera3D,
 }
 
 impl Default for SpinVisualizer {
@@ -26,7 +26,7 @@ impl Default for SpinVisualizer {
             b_field: [0.0, 0.0, 1.0], // Default B field along Z
             time: 0.0,
             paused: true,
-            view_angle: [0.5, 0.5], // Slight angle for 3D effect
+            camera: crate::framework::Camera3D::new(0.5, 0.5, 1.0),
         }
     }
 }
@@ -65,30 +65,7 @@ impl SpinVisualizer {
     }
 
     fn project(&self, point: [f64; 3]) -> [f64; 2] {
-        let x = point[0];
-        let y = point[1];
-        let z = point[2];
-        let yaw = self.view_angle[0];
-        let pitch = self.view_angle[1];
-
-        // Rotate around Z (yaw)
-        let x1 = x * yaw.cos() - y * yaw.sin();
-        let y1 = x * yaw.sin() + y * yaw.cos();
-        let z1 = z;
-
-        // Rotate around X (pitch)
-        let x2 = x1;
-        let y2 = y1 * pitch.cos() - z1 * pitch.sin();
-        // let z2 = y1 * pitch.sin() + z1 * pitch.cos();
-
-        // Project to 2D (orthographic along Z, so take X and Y)
-        // Wait, standard convention: X right, Y up.
-        // In 3D plot, Z is usually up.
-        // So we want to project to screen X, Y.
-        // Screen X = x2, Screen Y = z2 (vertical).
-        // Let's use that convention.
-        // Actually, let's just project x2, y2 for now.
-        [x2, y2]
+        self.camera.project(&point)
     }
 }
 
@@ -136,13 +113,7 @@ impl InteractiveTool for SpinVisualizer {
 
             ui.separator();
             ui.heading("View");
-            ui.add(
-                egui::Slider::new(&mut self.view_angle[0], 0.0..=std::f64::consts::TAU).text("Yaw"),
-            );
-            ui.add(
-                egui::Slider::new(&mut self.view_angle[1], 0.0..=std::f64::consts::TAU)
-                    .text("Pitch"),
-            );
+            self.camera.ui(ui);
 
             ui.separator();
             // Calculate expectation values
@@ -233,6 +204,9 @@ impl InteractiveTool for SpinVisualizer {
                     );
                 })
                 .response;
+            
+            self.camera.handle_interaction(&response, ui);
+            
             response.accessible_theory_hover(&self.psi);
         });
     }
