@@ -1,4 +1,4 @@
-use super::constants::{C, EPSILON};
+use math_commons::constants::{C, EPSILON};
 use crate::error::HighEnergyError;
 
 /// A struct representing a Four-Vector (Time + 3-Space).

@@ -1,4 +1,4 @@
-use super::constants::{C, SIGMA_T};
+use math_commons::constants::{C, SIGMA_T};
 use crate::error::HighEnergyError;
 
 /// Calculates the total synchrotron power radiated by a single electron.

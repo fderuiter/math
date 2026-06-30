@@ -1,4 +1,4 @@
-use super::constants::property_constants;
+use math_commons::constants::property_constants;
 use super::types::*;
 use std::f64::consts::PI;
 

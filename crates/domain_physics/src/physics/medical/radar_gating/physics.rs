@@ -4,9 +4,7 @@
 //! radar systems, specifically focusing on range resolution and Doppler velocity estimation.
 //!
 //! The TI IWR6843 is a mmWave sensor operating in the 60-64 GHz band.
-
-/// The speed of light in vacuum in meters per second (m/s).
-pub const C: f64 = 299_792_458.0;
+use math_commons::constants::C;
 
 /// Configuration for the FMCW Radar system.
 #[derive(Debug, Clone, Copy)]

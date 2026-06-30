@@ -1,4 +1,4 @@
-use super::constants::{C, G};
+use math_commons::constants::{C, G};
 use crate::error::HighEnergyError;
 
 /// Struct representing a Schwarzschild Black Hole.
@@ -53,7 +53,7 @@ impl SchwarzschildBlackHole {
 
 #[cfg(test)]
 mod tests {
-    use super::super::constants::SOLAR_MASS;
+    use math_commons::constants::SOLAR_MASS;
     use super::*;
     use approx::assert_relative_eq;
 

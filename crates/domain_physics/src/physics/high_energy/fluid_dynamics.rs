@@ -1,4 +1,4 @@
-use super::constants::C;
+use math_commons::constants::C;
 use crate::error::HighEnergyError;
 
 /// Calculates the density compression ratio r for a strong relativistic shock.

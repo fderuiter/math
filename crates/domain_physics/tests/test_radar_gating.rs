@@ -2,9 +2,10 @@ use approx::assert_relative_eq;
 use domain_physics::physics::medical::radar_gating::{
     gating::GatingLogic,
     geometry::{AngleFftConfig, SphericalPoint},
-    physics::{C, FmcwConfig},
+    physics::FmcwConfig,
     surface::BiQuadraticSurface,
     tracking::{ConstantVelocityModel, TrackingFilter},
+    C,
 };
 use nalgebra::Point3;
 
