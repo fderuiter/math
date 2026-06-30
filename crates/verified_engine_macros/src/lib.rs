@@ -2,9 +2,9 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::ItemFn;
 use syn::visit::Visit;
 use syn::visit_mut::VisitMut;
-use syn::{ItemFn, parse_macro_input};
 
 struct ExprCounter {
     arithmetic: usize,
@@ -15,20 +15,20 @@ impl<'ast> Visit<'ast> for ExprCounter {
     fn visit_expr_binary(&mut self, node: &'ast syn::ExprBinary) {
         use syn::BinOp::*;
         match node.op {
-            Add(_) | Sub(_) | Mul(_) | Div(_) | Rem(_) | BitXor(_) | BitAnd(_)
-            | BitOr(_) | Shl(_) | Shr(_) => {
+            Add(_) | Sub(_) | Mul(_) | Div(_) | Rem(_) | BitXor(_) | BitAnd(_) | BitOr(_)
+            | Shl(_) | Shr(_) => {
                 self.arithmetic += 1;
             }
             _ => {}
         }
         syn::visit::visit_expr_binary(self, node);
     }
-    
+
     fn visit_expr_index(&mut self, node: &'ast syn::ExprIndex) {
         self.loads += 1;
         syn::visit::visit_expr_index(self, node);
     }
-    
+
     fn visit_block(&mut self, _node: &'ast syn::Block) {
         // Do not recurse into blocks; they will be handled by visit_block_mut
     }
@@ -40,9 +40,12 @@ impl VisitMut for InjectorVisitor {
     fn visit_block_mut(&mut self, block: &mut syn::Block) {
         let mut new_stmts = Vec::new();
         for mut stmt in std::mem::take(&mut block.stmts) {
-            let mut counter = ExprCounter { arithmetic: 0, loads: 0 };
+            let mut counter = ExprCounter {
+                arithmetic: 0,
+                loads: 0,
+            };
             counter.visit_stmt(&stmt);
-            
+
             if counter.arithmetic > 0 {
                 let count = counter.arithmetic;
                 new_stmts.push(syn::parse_quote! {
@@ -55,7 +58,7 @@ impl VisitMut for InjectorVisitor {
                     verified_engine::metrics::increment_memory_loads(#count as u64);
                 });
             }
-            
+
             syn::visit_mut::visit_stmt_mut(self, &mut stmt);
             new_stmts.push(stmt);
         }

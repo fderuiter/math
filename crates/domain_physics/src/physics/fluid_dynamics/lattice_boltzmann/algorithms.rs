@@ -414,9 +414,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// ```
     #[verified_engine::verified]
     pub fn clear_obstacles(&mut self) {
-        for b in &mut self.state.obstacles {
-            *b = false;
-        }
+        self.state.obstacles.fill(false);
     }
 }
 

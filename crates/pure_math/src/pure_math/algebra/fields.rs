@@ -127,15 +127,15 @@ fn extended_gcd(a: i64, b: i64) -> (i64, i64, i64) {
 
     while r != 0 {
         let quotient = old_r / r;
-        
+
         let temp_r = r;
         r = old_r - quotient * r;
         old_r = temp_r;
-        
+
         let temp_s = s;
         s = old_s - quotient * s;
         old_s = temp_s;
-        
+
         let temp_t = t;
         t = old_t - quotient * t;
         old_t = temp_t;
