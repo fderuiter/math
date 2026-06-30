@@ -55,24 +55,7 @@ fn test_theory_verification_coverage_and_parity() {
         }
     }
 
-    // 3. Check for missing implementations for existing papers (warnings)
-    for paper in &papers {
-        let mut found = false;
-        for (_, module) in &target_modules {
-            // Naming parity check or simple mapping
-            if module == paper || paper.starts_with(module) || module.starts_with(paper) {
-                found = true;
-                break;
-            }
-        }
-        if !found {
-            // We only warn for missing implementations
-            println!(
-                "cargo:warning=Missing implementation for paper: {}.tex",
-                paper
-            );
-        }
-    }
+    // Removed soft warning logic for missing implementations as per Requirement 5 and constraints.
 
     // 4. Check that 100% of modules in the `applied` and `physics` domains have a corresponding "Theory Verification" test.
     let mut missing_tests = vec![];

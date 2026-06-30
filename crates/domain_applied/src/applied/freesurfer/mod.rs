@@ -90,7 +90,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "freesurfer",
-    paper = "freesurfer.tex",
     epsilon = 1e-6,
     constants = {
         THICKNESS = 2.5;

@@ -19,10 +19,45 @@ impl<'a> TraceabilityEngine<'a> {
         Self { vfs }
     }
 
-    /// Checks if a module name and paper name follow the naming parity rule.
-    pub fn check_naming_parity(module_name: &str, paper_name: &str) -> bool {
-        let expected = format!("{}.tex", module_name);
-        paper_name == expected
+    pub fn verify_module_registered(module_name: &str) -> bool {
+        let registry_content = include_str!("../../../traceability.toml");
+        if let Ok(value) = registry_content.parse::<toml::Table>()
+            && let Some(links) = value.get("links").and_then(|v| v.as_table())
+            && let Some(paper) = links.get(module_name)
+        {
+            return paper.as_str().is_some();
+        }
+        false
+    }
+
+    fn verify_and_link_registry(
+        &self,
+        valid_papers: &HashSet<String>,
+        report: &mut TraceabilityReport,
+    ) {
+        if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml")
+            && let Ok(value) = registry_content.parse::<toml::Table>()
+            && let Some(links) = value.get("links").and_then(|v| v.as_table())
+        {
+            for (module_name, paper_val) in links {
+                if let Some(paper_name) = paper_val.as_str() {
+                    let paper_name_string = paper_name.to_string();
+                    if valid_papers.contains(&paper_name_string) {
+                        if let Some(linked) = report.paper_coverage.get_mut(&paper_name_string) {
+                            linked.push(module_name.clone());
+                        }
+                    } else {
+                        report
+                            .invalid_links
+                            .push((module_name.clone(), paper_name_string));
+                    }
+                } else {
+                    report
+                        .invalid_links
+                        .push((module_name.clone(), "INVALID_FORMAT".to_string()));
+                }
+            }
+        }
     }
 
     /// Extract citations matching the regex `\[cite:([a-zA-Z0-9_.-]+)\]` manually to avoid heavy regex compilation.
@@ -61,17 +96,30 @@ impl<'a> TraceabilityEngine<'a> {
         if let Ok(entries) = self.vfs.list_dir(papers_dir) {
             for name in entries {
                 if name.ends_with(".tex") {
-                    let paper_name = name.trim_end_matches(".tex").to_string();
+                    let paper_name = name.clone();
                     valid_papers.insert(paper_name.clone());
                     report.paper_coverage.insert(paper_name, Vec::new());
                 }
             }
         }
 
-        // 2. Scan code files
+        // 2. Read registry
+        self.verify_and_link_registry(&valid_papers, &mut report);
+
+        // 3. Scan code files for unlinked code
         let mut code_files = Vec::new();
         for dir in code_dirs {
             self.scan_dir(dir, &mut code_files);
+        }
+
+        let mut registered_modules = HashSet::new();
+        if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml")
+            && let Ok(value) = registry_content.parse::<toml::Table>()
+            && let Some(links) = value.get("links").and_then(|v| v.as_table())
+        {
+            for module_name in links.keys() {
+                registered_modules.insert(module_name.clone());
+            }
         }
 
         for file in code_files {
@@ -79,26 +127,26 @@ impl<'a> TraceabilityEngine<'a> {
             let is_module =
                 file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
 
-            if let Ok(content) = self.vfs.read_to_string(&file) {
-                let cites = Self::extract_citations(&content);
-
-                if cites.is_empty() && is_module {
-                    report.unlinked_code.push(file.clone());
-                }
-
-                for paper_name in cites {
-                    if valid_papers.contains(&paper_name) {
-                        if let Some(linked) = report.paper_coverage.get_mut(&paper_name) {
-                            linked.push(file.clone());
-                        }
-                    } else {
-                        report.invalid_links.push((file.clone(), paper_name));
+            if is_module
+                && let Ok(content) = self.vfs.read_to_string(&file)
+                && content.contains("theory_verification!")
+            {
+                // Very basic check to see if the module name is in the file
+                // The actual macro test will panic if it's missing from registry
+                let mut found = false;
+                for reg_mod in &registered_modules {
+                    if content.contains(&format!("module = \"{}\"", reg_mod)) {
+                        found = true;
+                        break;
                     }
+                }
+                if !found {
+                    report.unlinked_code.push(file.clone());
                 }
             }
         }
 
-        // 3. Find orphans
+        // 4. Find orphans
         for (name, linked_code) in &report.paper_coverage {
             if linked_code.is_empty() {
                 report.orphaned_papers.push(name.clone());
