@@ -30,6 +30,16 @@ fn main() {
             println!("Summary: Scanned {} source files.", report.scanned_files);
 
             let mut failed = false;
+
+            if !report.unlinked_code.is_empty() {
+                println!("\n=== Unlinked Modules ===");
+                println!("The following modules contain a verification macro but are missing from the registry:");
+                for file in &report.unlinked_code {
+                    println!("   [!] UNLINKED module: {}", file);
+                }
+                failed = true;
+            }
+
             if !report.invalid_links.is_empty() {
                 println!("\n=== Validation Failures ===");
                 println!("Invalid citations were found (see details above).");

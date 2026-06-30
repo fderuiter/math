@@ -86,13 +86,6 @@ def main():
             unverified_funcs += funcs
             unverified_asserts += asserts
             
-        # Check Theory Parity for mathematical modules
-        # We define a mathematical module as one in pure_math, applied, physics, etc.
-        if any(domain in filepath for domain in ["pure_math", "applied", "physics", "biology", "climate", "epidemiology", "ai"]):
-            if "mod.rs" in filepath or "lib.rs" in filepath or "theory_verification" in content:
-                # To be strict, if a file has complex math but no theory_verification, flag it
-                # For simplicity, we just check if theory_verification! is in the file or its module
-                pass # We'll do a better check later
             
         # Mock WASM coverage check (as WASM llvm-cov is unsupported natively)
         # We find WASM blocks and check if they are tested via theoretical parity
@@ -107,16 +100,13 @@ def main():
     for fm in feature_modules:
         mod_dir = f"{fm}/src"
         if os.path.exists(mod_dir):
-            has_theory = False
             for root, _, files in os.walk(mod_dir):
                 for f in files:
                     if f.endswith(".rs"):
-                        with open(os.path.join(root, f), 'r') as file:
-                            if "theory_verification!" in file.read():
-                                has_theory = True
-                                break
-            if not has_theory:
-                unverified_modules.append(fm)
+                        file_path = os.path.join(root, f)
+                        with open(file_path, 'r', encoding='utf-8') as file:
+                            if "theory_verification!" not in file.read():
+                                unverified_modules.append(file_path)
                 
     native_cov_pct = (native_lines_covered / native_lines_total * 100) if native_lines_total > 0 else 0
     wasm_cov_pct = (wasm_covered / wasm_paths * 100) if wasm_paths > 0 else 100
