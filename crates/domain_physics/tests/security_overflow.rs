@@ -7,8 +7,8 @@ fn test_lattice_state_overflow() {
     // 2^32 * 2^32 = 2^64 which overflows u64 (usize on 64-bit)
     // We use slightly larger values to ensure overflow even if usize is larger (unlikely)
     // or just large enough to overflow.
-    let width = 1usize << 32;
-    let height = 1usize << 32;
+    let width = usize::MAX / 2;
+    let height = usize::MAX / 2;
     // This should panic due to explicit check we will add.
     // Currently in debug mode it panics with "attempt to multiply with overflow".
     // In release mode without check, it would succeed (return struct with wrapped size).

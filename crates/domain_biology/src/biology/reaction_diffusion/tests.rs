@@ -89,7 +89,7 @@ fn test_reaction_diffusion_system_equivalence() {
     let v_out = system.state.species(1).to_vec();
 
     // Expected values (same as in morphogenesis.rs)
-    let expected_u = vec![
+    let expected_u = [
         0.9798926377401955,
         1.0722504645444493,
         1.1685990805783317,
@@ -101,7 +101,7 @@ fn test_reaction_diffusion_system_equivalence() {
         1.7267186541725483,
         1.8109737170223916,
     ];
-    let expected_v = vec![
+    let expected_v = [
         0.47709091921002866,
         0.4263770084483741,
         0.3750152156844884,
