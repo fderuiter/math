@@ -80,7 +80,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "clinical_trials",
-    paper = "clinical_trials_statistics.tex",
     epsilon = 1e-6,
     constants = {
         ALPHA = 0.05;
