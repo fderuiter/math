@@ -142,9 +142,7 @@ impl InteractiveTool for RiemannIntegrationTool {
             }
 
             ui.add_space(10.0);
-            ui.label("Partitions (N):");
-            if ui
-                .add(egui::Slider::new(&mut self.steps, 1..=200).logarithmic(true))
+            if ui.add(egui::Slider::new(&mut self.steps, 1..=200).logarithmic(true).text("Partitions (N)"))
                 .changed()
             {
                 changed = true;

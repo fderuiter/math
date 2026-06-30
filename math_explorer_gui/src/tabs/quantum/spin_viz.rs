@@ -109,8 +109,7 @@ impl InteractiveTool for SpinVisualizer {
             ui.separator();
 
             ui.group(|ui| {
-                ui.label("Magnetic Field B");
-                ui.add(egui::Slider::new(&mut self.b_field[0], -5.0..=5.0).text("Bx"));
+                ui.add(egui::Slider::new(&mut self.b_field[0], -5.0..=5.0).text("Magnetic Field B - Bx"));
                 ui.add(egui::Slider::new(&mut self.b_field[1], -5.0..=5.0).text("By"));
                 ui.add(egui::Slider::new(&mut self.b_field[2], -5.0..=5.0).text("Bz"));
             });

@@ -94,11 +94,10 @@ impl InteractiveTool for PotentialFlowTool {
 
                 match self.selected_element_type {
                     ElementType::Uniform => {
-                        ui.label("Angle (degrees)");
                         ui.add(egui::Slider::new(
                             &mut self.new_element_angle,
                             -180.0..=180.0,
-                        ));
+                        ).text("Angle (degrees)"));
                     }
                     _ => {
                         ui.label("Position X");
@@ -128,8 +127,7 @@ impl InteractiveTool for PotentialFlowTool {
             }
 
             ui.separator();
-            ui.label("Visualization");
-            ui.add(egui::Slider::new(&mut self.grid_size, 10..=50).text("Grid Density"));
+            ui.add(egui::Slider::new(&mut self.grid_size, 10..=50).text("Visualization - Grid Density"));
             ui.add(egui::Slider::new(&mut self.view_range, 5.0..=50.0).text("View Range"));
         });
 

@@ -45,31 +45,26 @@ impl InteractiveTool for CeraTool {
         );
 
         ui.horizontal(|ui| {
-            ui.label("Input Channels:");
-            ui.add(egui::Slider::new(&mut self.in_channels, 1..=10));
+            ui.add(egui::Slider::new(&mut self.in_channels, 1..=10).text("Input Channels:"));
         });
 
         ui.horizontal(|ui| {
-            ui.label("Latent Channels:");
-            ui.add(egui::Slider::new(&mut self.latent_channels, 1..=20));
+            ui.add(egui::Slider::new(&mut self.latent_channels, 1..=20).text("Latent Channels:"));
         });
 
         ui.horizontal(|ui| {
-            ui.label("Aligned Channels:");
             ui.add(egui::Slider::new(
                 &mut self.aligned_channels,
                 1..=self.latent_channels,
-            ));
+            ).text("Aligned Channels:"));
         });
 
         ui.horizontal(|ui| {
-            ui.label("Number of Levels:");
-            ui.add(egui::Slider::new(&mut self.num_levels, 1..=50));
+            ui.add(egui::Slider::new(&mut self.num_levels, 1..=50).text("Number of Levels:"));
         });
 
         ui.horizontal(|ui| {
-            ui.label("Output Size:");
-            ui.add(egui::Slider::new(&mut self.output_size, 1..=20));
+            ui.add(egui::Slider::new(&mut self.output_size, 1..=20).text("Output Size:"));
         });
 
         if ui

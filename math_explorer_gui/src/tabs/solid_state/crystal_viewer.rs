@@ -144,8 +144,7 @@ impl InteractiveTool for CrystalViewer {
                     );
                 });
 
-            ui.label("Lattice Constant (a)");
-            ui.add(egui::Slider::new(&mut self.lattice_constant, 0.5..=5.0));
+            ui.add(egui::Slider::new(&mut self.lattice_constant, 0.5..=5.0).text("Lattice Constant (a)"));
 
             ui.separator();
             ui.heading("Camera");
@@ -153,8 +152,7 @@ impl InteractiveTool for CrystalViewer {
             ui.drag_angle(&mut self.yaw);
             ui.label("Pitch");
             ui.drag_angle(&mut self.pitch);
-            ui.label("Zoom");
-            ui.add(egui::Slider::new(&mut self.zoom, 10.0..=200.0));
+            ui.add(egui::Slider::new(&mut self.zoom, 10.0..=200.0).text("Zoom"));
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {

@@ -87,8 +87,7 @@ impl InteractiveTool for VietorisRipsTool {
                 }
 
                 let prev_radius = self.radius;
-                ui.label("Radius (ε):");
-                ui.add(egui::Slider::new(&mut self.radius, 0.0..=15.0).text(""));
+                ui.add(egui::Slider::new(&mut self.radius, 0.0..=15.0).text("").text("Radius (ε):"));
                 if (self.radius - prev_radius).abs() > f64::EPSILON {
                     self.update_complex();
                 }
