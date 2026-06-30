@@ -105,7 +105,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "algorithms",
-    paper = "dijkstra.tex",
     epsilon = 1e-6,
     constants = {
         WEIGHT = 1.0;

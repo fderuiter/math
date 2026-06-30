@@ -80,7 +80,6 @@
 //! - **`fluid_dynamics`**: Relativistic Euler equations and shock waves.
 //! - **`statistics`**: Significance calculations (Li & Ma) for signal detection.
 
-pub mod constants;
 pub mod fluid_dynamics;
 pub mod general_relativity;
 pub mod observer;
@@ -88,7 +87,7 @@ pub mod radiation;
 pub mod statistics;
 
 // Re-export constants to match original API
-pub use constants::{C, G, SIGMA_T, SOLAR_MASS};
+pub use math_commons::constants::{C, G, SIGMA_T, SOLAR_MASS};
 
 // Re-export SchwarzschildBlackHole to match original API
 pub use general_relativity::SchwarzschildBlackHole;
@@ -101,7 +100,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "high_energy",
-    paper = "quantum_mechanics.tex",
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

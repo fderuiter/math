@@ -1,3 +1,4 @@
+// @explorer_feature = "biology"
 use crate::accessibility::AccessibleHoverText;
 use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
 use crate::tabs::ExplorerTab;

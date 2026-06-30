@@ -55,6 +55,12 @@ echo "Tests passed."
 # Return to root
 cd ..
 
+# 4. Initialize Personal Journals Directory
+echo ""
+echo "--- Initializing Architectural Records Environment ---"
+mkdir -p .jules/personal
+echo "Personal journal directory initialized at .jules/personal/"
+
 echo ""
 echo "=== Setup Complete ==="
 echo "You are ready to explore math!"

@@ -1,63 +1,40 @@
 use eframe::egui;
 
-#[cfg(feature = "ai")]
-pub mod ai;
-#[cfg(feature = "pure_math")]
-pub mod analysis;
-#[cfg(feature = "applied")]
-pub mod battery_degradation;
-#[cfg(feature = "physics")]
-pub mod chaos;
-#[cfg(feature = "climate")]
-pub mod climate;
-#[cfg(feature = "applied")]
-pub mod clinical_trials;
-#[cfg(feature = "epidemiology")]
-pub mod epidemiology;
-#[cfg(feature = "applied")]
-pub mod favoritism;
-#[cfg(feature = "pure_math")]
-pub mod financial_math;
-#[cfg(feature = "physics")]
-pub mod fluid_dynamics;
-#[cfg(feature = "applied")]
-pub mod game_theory;
-#[cfg(feature = "pure_math")]
-pub mod geometry_topology;
-#[cfg(feature = "pure_math")]
-pub mod graph_theory;
-#[cfg(feature = "physics")]
-pub mod medical;
-#[cfg(feature = "biology")]
-pub mod morphogenesis;
-#[cfg(feature = "physics")]
-pub mod mri;
-#[cfg(feature = "biology")]
-pub mod neuroscience;
-#[cfg(feature = "pure_math")]
-pub mod number_theory;
-#[cfg(feature = "physics")]
-pub mod quantum;
-#[cfg(feature = "physics")]
-pub mod solid_state;
-pub mod traceability;
-
-#[cfg(feature = "pure_math")]
-pub use geometry_topology::GeometryTopologyTab;
-pub use traceability::TraceabilityTab;
+include!(concat!(env!("OUT_DIR"), "/generated_tabs.rs"));
 
 /// A trait for defining a tab in the Math Explorer application.
 ///
 /// This trait serves as the primary extension point for the GUI. Each mathematical domain
 /// (e.g., MRI Physics, Game Theory) should implement this trait as a standalone struct.
 ///
+/// # Automated Plugin Discovery
+/// 
+/// The `math_explorer_gui` application uses an automated build-time plugin discovery mechanism.
+/// To add a new tab to the GUI, you simply need to create a new module file in the `src/tabs` directory
+/// (or in any workspace dependency), and implement the `ExplorerTab` trait for your struct.
+///
+/// You MUST NOT manually edit `app.rs` or `tabs/mod.rs` to register your new tab. The `build.rs` script
+/// will automatically scan for the `impl ExplorerTab for YourStruct` pattern and generate the necessary
+/// inclusion and instantiation logic.
+///
+/// ## Configuration Attributes
+/// 
+/// You can configure how your tab is built and displayed by adding special magic comments at the top of your module file:
+/// 
+/// - `// @explorer_feature = "feature_name"`: Tells the build script that this tab should only be included if the specified Cargo feature is enabled.
+/// - `// @explorer_order = 10`: Defines the order in which this tab appears in the navigation bar. Lower numbers appear first.
+///
 /// # Example
 ///
 /// ```rust,no_run
+/// // @explorer_feature = "pure_math"
+/// // @explorer_order = 1
+/// 
 /// use math_explorer_gui::tabs::ExplorerTab;
 /// use eframe::egui;
 ///
-/// struct MyTab {
+/// #[derive(Default)]
+/// pub struct MyTab {
 ///     counter: i32,
 /// }
 ///
@@ -92,5 +69,3 @@ pub trait ExplorerTab {
     /// * `frame` - The eframe Frame, used for window management (e.g., resizing, closing).
     fn show(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame);
 }
-
-// [cite:graph_parameters_rust]

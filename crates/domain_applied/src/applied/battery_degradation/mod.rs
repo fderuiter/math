@@ -53,7 +53,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "battery_degradation",
-    paper = "algorithmic_information_rust.tex",
     epsilon = 1e-6,
     constants = {
         TARGET_CAP = 0.8;

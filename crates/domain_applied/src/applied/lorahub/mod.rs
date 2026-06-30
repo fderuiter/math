@@ -13,7 +13,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "lorahub",
-    paper = "lorahub.tex",
     epsilon = 1e-6,
     constants = {
         ALPHA = 32.0;

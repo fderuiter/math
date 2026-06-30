@@ -7,7 +7,6 @@
 //! - Radioactive Decay (Activity, Gamow Factor).
 //! - Nuclear Reactions (Q-Value, Breit-Wigner Resonance).
 
-pub mod constants;
 pub mod decay;
 pub mod models;
 pub mod properties;
@@ -17,8 +16,7 @@ pub mod types;
 pub use models::{BindingEnergyModel, LiquidDropModel};
 pub use types::*;
 
-// Explicitly not glob-importing constants to avoid polluting namespace and potential collisions.
-// Users can access them via `nuclear::constants::...`.
+// Constants have been moved to math_commons::constants.
 
 /// The Liquid Drop Model (Semi-Empirical Mass Formula).
 ///
@@ -139,7 +137,7 @@ mod tests {
     #[allow(clippy::assertions_on_constants)]
     #[verified_engine::verified]
     fn test_constants() {
-        assert!(constants::PROTON_MASS > 900.0);
+        assert!(math_commons::constants::PROTON_MASS > 900.0);
     }
 
     #[test]
@@ -170,7 +168,6 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "nuclear",
-    paper = "quantum_mechanics.tex",
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

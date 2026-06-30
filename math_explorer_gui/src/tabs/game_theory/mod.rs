@@ -1,3 +1,4 @@
+// @explorer_feature = "applied"
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 
