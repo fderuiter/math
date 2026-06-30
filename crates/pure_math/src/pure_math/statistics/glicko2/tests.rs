@@ -1,5 +1,4 @@
 use super::*;
-use std::f64::consts::PI;
 
 #[test]
 #[verified_engine::verified]
