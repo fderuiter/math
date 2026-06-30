@@ -1,5 +1,5 @@
-use math_commons::constants::{C, SIGMA_T};
 use crate::error::HighEnergyError;
+use math_commons::constants::{C, SIGMA_T};
 
 /// Calculates the total synchrotron power radiated by a single electron.
 /// Formula: P = (4/3) * sigma_T * c * beta^2 * gamma^2 * U_B

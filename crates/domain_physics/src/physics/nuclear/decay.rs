@@ -1,5 +1,5 @@
-use math_commons::constants;
 use super::types::*;
+use math_commons::constants;
 use std::f64::consts::PI;
 
 /// Calculates the remaining amount of a substance.

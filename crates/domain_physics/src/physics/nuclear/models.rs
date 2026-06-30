@@ -1,5 +1,5 @@
-use math_commons::constants::liquid_drop_constants;
 use super::types::*;
+use math_commons::constants::liquid_drop_constants;
 
 /// Trait defining the behavior of a nuclear binding energy model.
 pub trait BindingEnergyModel {

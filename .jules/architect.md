@@ -9,3 +9,4 @@ This document logs domain decomposition decisions, module extraction standards, 
 
 ## Recent Domain Changes
 - Baseline domain architecture established.
+- Centralized fundamental physical and mathematical constants into `math_commons` to prevent duplication and ensure consistency across domain crates.

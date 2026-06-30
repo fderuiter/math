@@ -1,5 +1,5 @@
-use math_commons::constants::{C, EPSILON};
 use crate::error::HighEnergyError;
+use math_commons::constants::{C, EPSILON};
 
 /// A struct representing a Four-Vector (Time + 3-Space).
 /// The metric signature is -+++.
