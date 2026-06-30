@@ -131,8 +131,8 @@ impl InteractiveTool for NeuralNetworkVizTool {
             ui.heading("External Current (uA/cm^2)");
             for i in 0..self.external_input.len() {
                 ui.horizontal(|ui| {
-                    ui.label(format!("Neuron {}", i));
-                    ui.add(egui::Slider::new(&mut self.external_input[i], -10.0..=50.0));
+                     
+                    ui.add(egui::Slider::new(&mut self.external_input[i], -10.0..=50.0).text(format!("Neuron {}", i)));
                 });
             }
 

@@ -77,8 +77,7 @@ impl InteractiveTool for LossLandscapeTool {
             });
 
             ui.separator();
-            ui.label("Resolution (Grid Size)");
-            ui.add(egui::Slider::new(&mut self.resolution, 10..=50).text("points"));
+            ui.add(egui::Slider::new(&mut self.resolution, 10..=50).text("Resolution (Grid Size) - points"));
 
             ui.separator();
             ui.label("True Model: y = 2x + 1");

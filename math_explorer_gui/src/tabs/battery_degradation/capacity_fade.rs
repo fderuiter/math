@@ -34,15 +34,13 @@ impl InteractiveTool for CapacityFadeTool {
             ui.heading("Parameters");
             ui.add_space(5.0);
 
-            ui.label("Depth of Discharge (DoD)");
-            ui.add(egui::Slider::new(&mut self.dod, 0.0..=100.0).text("%"));
+            ui.add(egui::Slider::new(&mut self.dod, 0.0..=100.0).text("Depth of Discharge (DoD) - %"));
             ui.small("Percentage of battery capacity used per cycle.");
 
             ui.add_space(10.0);
 
-            ui.label("Temperature");
             ui.add_enabled_ui(false, |ui| {
-                ui.add(egui::Slider::new(&mut self.temperature, -20.0..=60.0).text("°C"));
+                ui.add(egui::Slider::new(&mut self.temperature, -20.0..=60.0).text("Temperature (°C)"));
             })
             .response
             .on_disabled_hover_text(
@@ -51,8 +49,7 @@ impl InteractiveTool for CapacityFadeTool {
 
             ui.add_space(10.0);
 
-            ui.label("Simulation Range");
-            ui.add(egui::Slider::new(&mut self.cycles_to_simulate, 100.0..=10000.0).text("Cycles"));
+            ui.add(egui::Slider::new(&mut self.cycles_to_simulate, 100.0..=10000.0).text("Simulation Range - Cycles"));
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {

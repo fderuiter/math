@@ -36,17 +36,15 @@ impl InteractiveTool for DoseCalculationTool {
             ui.heading("Dose Parameters");
             ui.separator();
 
-            ui.label("Source Amplitude");
             if ui
-                .add(egui::Slider::new(&mut self.amplitude, 0.1..=10.0))
+                .add(egui::Slider::new(&mut self.amplitude, 0.1..=10.0).text("Source Amplitude"))
                 .changed()
             {
                 changed = true;
             }
 
-            ui.label("Attenuation (Beta)");
             if ui
-                .add(egui::Slider::new(&mut self.beta, 0.1..=5.0))
+                .add(egui::Slider::new(&mut self.beta, 0.1..=5.0).text("Attenuation (Beta)"))
                 .changed()
             {
                 changed = true;

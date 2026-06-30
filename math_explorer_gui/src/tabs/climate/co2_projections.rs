@@ -25,9 +25,8 @@ impl InteractiveTool for Co2ProjectionsTool {
         });
     }
     fn show_ui(&mut self, ui: &mut egui::Ui) {
-        ui.label("Global CO2 Concentration Projections:");
         ui.add(
-            egui::Slider::new(&mut self.reduction_scenario, 0.0..=1.0)
+            egui::Slider::new(&mut self.reduction_scenario, 0.0..=1.0).text("Global CO2 Concentration Projections")
                 .text("Emission Reduction Scenario"),
         );
 

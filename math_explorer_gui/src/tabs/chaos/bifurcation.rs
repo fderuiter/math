@@ -66,19 +66,13 @@ impl InteractiveTool for BifurcationDiagram {
             ui.separator();
 
             let mut changed = false;
-            ui.label("Min r");
-            changed |= ui
-                .add(egui::Slider::new(&mut self.r_min, 0.0..=4.0))
+            changed |= ui.add(egui::Slider::new(&mut self.r_min, 0.0..=4.0).text("Min r"))
                 .changed();
 
-            ui.label("Max r");
-            changed |= ui
-                .add(egui::Slider::new(&mut self.r_max, self.r_min..=4.0))
+            changed |= ui.add(egui::Slider::new(&mut self.r_max, self.r_min..=4.0).text("Max r"))
                 .changed();
 
-            ui.label("Resolution (steps)");
-            changed |= ui
-                .add(egui::Slider::new(&mut self.steps, 100..=2000))
+            changed |= ui.add(egui::Slider::new(&mut self.steps, 100..=2000).text("Resolution (steps)"))
                 .changed();
 
             if ui

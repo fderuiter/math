@@ -111,14 +111,11 @@ impl InteractiveTool for AttractorPlotter {
             ui.separator();
 
             ui.collapsing("Parameters", |ui| {
-                ui.label("Prandtl Number (σ)");
-                ui.add(egui::Slider::new(&mut self.system.sigma, 0.0..=50.0));
+                ui.add(egui::Slider::new(&mut self.system.sigma, 0.0..=50.0).text("Prandtl Number (σ)"));
 
-                ui.label("Rayleigh Number (ρ)");
-                ui.add(egui::Slider::new(&mut self.system.rho, 0.0..=100.0));
+                ui.add(egui::Slider::new(&mut self.system.rho, 0.0..=100.0).text("Rayleigh Number (ρ)"));
 
-                ui.label("Geometric Factor (β)");
-                ui.add(egui::Slider::new(&mut self.system.beta, 0.0..=10.0));
+                ui.add(egui::Slider::new(&mut self.system.beta, 0.0..=10.0).text("Geometric Factor (β)"));
             });
 
             ui.collapsing("Simulation", |ui| {
@@ -134,14 +131,11 @@ impl InteractiveTool for AttractorPlotter {
                     }
                 });
 
-                ui.label("Speed (steps/frame)");
-                ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=50));
+                ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=50).text("Speed (steps/frame)"));
 
-                ui.label("Time Step (dt)");
-                ui.add(egui::Slider::new(&mut self.dt, 0.001..=0.05));
+                ui.add(egui::Slider::new(&mut self.dt, 0.001..=0.05).text("Time Step (dt)"));
 
-                ui.label("Max Points");
-                ui.add(egui::Slider::new(&mut self.max_points, 100..=10000));
+                ui.add(egui::Slider::new(&mut self.max_points, 100..=10000).text("Max Points"));
             });
 
             ui.collapsing("View", |ui| {
@@ -151,8 +145,7 @@ impl InteractiveTool for AttractorPlotter {
                 ui.label("Pitch (Rotate X)");
                 ui.drag_angle(&mut self.pitch);
 
-                ui.label("Zoom");
-                ui.add(egui::Slider::new(&mut self.zoom, 0.1..=5.0));
+                ui.add(egui::Slider::new(&mut self.zoom, 0.1..=5.0).text("Zoom"));
             });
 
             ui.separator();

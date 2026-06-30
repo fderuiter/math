@@ -147,18 +147,14 @@ impl InteractiveTool for SurfaceViewer {
 
             ui.collapsing("Parameters", |ui| match self.surface_type {
                 SurfaceType::Sphere => {
-                    ui.label("Radius");
-                    ui.add(egui::Slider::new(&mut self.sphere_radius, 0.1..=5.0));
+                    ui.add(egui::Slider::new(&mut self.sphere_radius, 0.1..=5.0).text("Radius"));
                 }
                 SurfaceType::Torus => {
-                    ui.label("Major Radius (R)");
-                    ui.add(egui::Slider::new(&mut self.torus_major_radius, 1.0..=5.0));
-                    ui.label("Minor Radius (r)");
-                    ui.add(egui::Slider::new(&mut self.torus_minor_radius, 0.1..=2.0));
+                    ui.add(egui::Slider::new(&mut self.torus_major_radius, 1.0..=5.0).text("Major Radius (R)"));
+                    ui.add(egui::Slider::new(&mut self.torus_minor_radius, 0.1..=2.0).text("Minor Radius (r)"));
                 }
                 SurfaceType::KleinBottle => {
-                    ui.label("Radius");
-                    ui.add(egui::Slider::new(&mut self.klein_radius, 0.5..=5.0));
+                    ui.add(egui::Slider::new(&mut self.klein_radius, 0.5..=5.0).text("Radius"));
                 }
             });
 
@@ -169,16 +165,13 @@ impl InteractiveTool for SurfaceViewer {
                 ui.label("Pitch");
                 ui.drag_angle(&mut self.pitch);
 
-                ui.label("Zoom");
-                ui.add(egui::Slider::new(&mut self.zoom, 0.1..=5.0));
+                ui.add(egui::Slider::new(&mut self.zoom, 0.1..=5.0).text("Zoom"));
             });
 
             ui.collapsing("Resolution", |ui| {
-                ui.label("Grid Size U");
-                ui.add(egui::Slider::new(&mut self.u_resolution, 10..=100));
+                ui.add(egui::Slider::new(&mut self.u_resolution, 10..=100).text("Grid Size U"));
 
-                ui.label("Grid Size V");
-                ui.add(egui::Slider::new(&mut self.v_resolution, 10..=100));
+                ui.add(egui::Slider::new(&mut self.v_resolution, 10..=100).text("Grid Size V"));
             });
 
             ui.separator();

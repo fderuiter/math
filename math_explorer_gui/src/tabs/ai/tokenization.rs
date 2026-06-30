@@ -95,9 +95,7 @@ impl InteractiveTool for TokenizationTool {
                         ui.label(egui::RichText::new("Parameters").strong());
 
                         ui.horizontal(|ui| {
-                            ui.label("Embedding Dimension (d_model):");
-                            if ui
-                                .add(egui::Slider::new(&mut self.d_model, 4..=32))
+                            if ui.add(egui::Slider::new(&mut self.d_model, 4..=32).text("Embedding Dimension (d_model)"))
                                 .changed()
                             {
                                 params_changed = true;

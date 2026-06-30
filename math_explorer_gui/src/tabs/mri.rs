@@ -97,11 +97,9 @@ impl ExplorerTab for MriTab {
             ui.separator();
 
             ui.collapsing("Relaxation Parameters", |ui| {
-                ui.label("Longitudinal (T1) [s]");
-                ui.add(egui::Slider::new(&mut self.simulator.t1, 0.1..=5.0).logarithmic(true));
+                ui.add(egui::Slider::new(&mut self.simulator.t1, 0.1..=5.0).logarithmic(true).text("Longitudinal (T1) [s]"));
 
-                ui.label("Transverse (T2) [s]");
-                ui.add(egui::Slider::new(&mut self.simulator.t2, 0.01..=2.0).logarithmic(true));
+                ui.add(egui::Slider::new(&mut self.simulator.t2, 0.01..=2.0).logarithmic(true).text("Transverse (T2) [s]"));
 
                 if self.simulator.t2 > self.simulator.t1 {
                     ui.colored_label(egui::Color32::RED, "Warning: T2 > T1 is unphysical!");
@@ -148,8 +146,7 @@ impl ExplorerTab for MriTab {
                 }
             });
 
-            ui.label("Time Scale (Speed)");
-            ui.add(egui::Slider::new(&mut self.time_scale, 1.0..=100.0).logarithmic(true));
+            ui.add(egui::Slider::new(&mut self.time_scale, 1.0..=100.0).logarithmic(true).text("Time Scale (Speed)"));
 
             ui.separator();
             ui.label(format!("Time: {:.3} s", self.current_time));

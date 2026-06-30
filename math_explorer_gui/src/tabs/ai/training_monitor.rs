@@ -144,9 +144,7 @@ impl InteractiveTool for TrainingMonitorTool {
             ui.separator();
             ui.heading("Hyperparameters");
 
-            ui.label("Learning Rate");
-            if ui
-                .add(egui::Slider::new(&mut self.learning_rate, 0.001..=0.1).logarithmic(true))
+            if ui.add(egui::Slider::new(&mut self.learning_rate, 0.001..=0.1).logarithmic(true).text("Learning Rate"))
                 .changed()
             {
                 // Ideally, update optimizer LR immediately, but for simplicity we apply on reset
@@ -155,9 +153,7 @@ impl InteractiveTool for TrainingMonitorTool {
                 ui.label("Note: Requires Reset to apply effectively");
             }
 
-            ui.label("Hidden Neurons");
-            if ui
-                .add(egui::Slider::new(&mut self.hidden_dim, 2..=64))
+            if ui.add(egui::Slider::new(&mut self.hidden_dim, 2..=64).text("Hidden Neurons"))
                 .changed()
             {
                 self.reset();

@@ -103,16 +103,12 @@ impl InteractiveTool for SampleSizeCalculatorTool {
             ui.group(|ui| {
                 ui.heading("Statistical Parameters");
                 egui::Grid::new("common_params_grid").show(ui, |ui| {
-                    ui.label("Type I Error Rate (α):");
-                    changed |= ui
-                        .add(egui::Slider::new(&mut self.alpha, 0.001..=0.20).text("Alpha"))
+                    changed |= ui.add(egui::Slider::new(&mut self.alpha, 0.001..=0.20).text("Type I Error Rate (α): - Alpha"))
                         .accessible_hover_text("Significance level (e.g., 0.05 for 5%)")
                         .changed();
                     ui.end_row();
 
-                    ui.label("Statistical Power (1-β):");
-                    changed |= ui
-                        .add(egui::Slider::new(&mut self.power, 0.5..=0.999).text("Power"))
+                    changed |= ui.add(egui::Slider::new(&mut self.power, 0.5..=0.999).text("Statistical Power (1-β): - Power"))
                         .accessible_hover_text(
                             "Probability of detecting an effect if it exists (e.g., 0.80)",
                         )
@@ -128,16 +124,12 @@ impl InteractiveTool for SampleSizeCalculatorTool {
                 CalculationMode::Means => {
                     ui.heading("Means Parameters");
                     egui::Grid::new("means_params_grid").show(ui, |ui| {
-                        ui.label("Effect Size (δ):");
-                        changed |= ui
-                            .add(egui::Slider::new(&mut self.delta, 0.01..=5.0).text("Delta"))
+                        changed |= ui.add(egui::Slider::new(&mut self.delta, 0.01..=5.0).text("Effect Size (δ): - Delta"))
                             .accessible_hover_text("Minimum difference to detect between groups")
                             .changed();
                         ui.end_row();
 
-                        ui.label("Standard Deviation (σ):");
-                        changed |= ui
-                            .add(egui::Slider::new(&mut self.sigma, 0.1..=10.0).text("Sigma"))
+                        changed |= ui.add(egui::Slider::new(&mut self.sigma, 0.1..=10.0).text("Standard Deviation (σ): - Sigma"))
                             .accessible_hover_text("Assumed standard deviation of the population")
                             .changed();
                         ui.end_row();
@@ -146,16 +138,12 @@ impl InteractiveTool for SampleSizeCalculatorTool {
                 CalculationMode::Proportions => {
                     ui.heading("Proportions Parameters");
                     egui::Grid::new("props_params_grid").show(ui, |ui| {
-                        ui.label("Group 1 Proportion (p1):");
-                        changed |= ui
-                            .add(egui::Slider::new(&mut self.p1, 0.01..=0.99).text("p1"))
+                        changed |= ui.add(egui::Slider::new(&mut self.p1, 0.01..=0.99).text("Group 1 Proportion (p1): - p1"))
                             .accessible_hover_text("Expected proportion in Control group")
                             .changed();
                         ui.end_row();
 
-                        ui.label("Group 2 Proportion (p2):");
-                        changed |= ui
-                            .add(egui::Slider::new(&mut self.p2, 0.01..=0.99).text("p2"))
+                        changed |= ui.add(egui::Slider::new(&mut self.p2, 0.01..=0.99).text("Group 2 Proportion (p2): - p2"))
                             .accessible_hover_text("Expected proportion in Treatment group")
                             .changed();
                         ui.end_row();

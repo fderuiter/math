@@ -54,15 +54,12 @@ impl InteractiveTool for SpikeAnalysisTool {
             ui.heading("Configuration");
             ui.separator();
 
-            ui.label("Input Current (µA/cm²)");
-            ui.add(egui::Slider::new(&mut self.input_current, 0.0..=50.0).text("I_ext"));
+            ui.add(egui::Slider::new(&mut self.input_current, 0.0..=50.0).text("Input Current (µA/cm²) - I_ext"));
 
-            ui.label("Spike Threshold (mV)");
-            ui.add(egui::Slider::new(&mut self.spike_threshold, -50.0..=20.0).text("Threshold"));
+            ui.add(egui::Slider::new(&mut self.spike_threshold, -50.0..=20.0).text("Spike Threshold (mV) - Threshold"));
 
             ui.separator();
-            ui.label("Simulation Speed (steps/frame)");
-            ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=100));
+            ui.add(egui::Slider::new(&mut self.simulation_speed, 1..=100).text("Simulation Speed (steps/frame)"));
 
             ui.separator();
             ui.horizontal(|ui| {

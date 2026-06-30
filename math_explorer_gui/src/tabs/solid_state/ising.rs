@@ -43,23 +43,19 @@ impl InteractiveTool for IsingModelTool {
                 ui.heading("Ising Model Controls");
                 ui.separator();
 
-                ui.label("Temperature (T)");
-                ui.add(egui::Slider::new(&mut self.temperature, 0.1..=10.0).text("K (relative)"));
+                ui.add(egui::Slider::new(&mut self.temperature, 0.1..=10.0).text("Temperature (T) - K (relative)"));
                 ui.small("Critical Temp Tc ≈ 2.269 (for J=1)");
 
-                ui.label("Coupling Constant (J)");
-                ui.add(egui::Slider::new(&mut self.j_coupling, -2.0..=2.0).text("J"));
+                ui.add(egui::Slider::new(&mut self.j_coupling, -2.0..=2.0).text("Coupling Constant (J) - J"));
                 ui.small("Positive: Ferromagnetic\nNegative: Antiferromagnetic");
 
-                ui.label("External Field (H)");
-                ui.add(egui::Slider::new(&mut self.h_field, -2.0..=2.0).text("H"));
+                ui.add(egui::Slider::new(&mut self.h_field, -2.0..=2.0).text("External Field (H) - H"));
 
                 ui.separator();
 
-                ui.label("Simulation Speed");
                 ui.add(
                     egui::Slider::new(&mut self.steps_per_frame, 100..=50000)
-                        .text("Steps/Frame")
+                        .text("Simulation Speed (Steps/Frame)")
                         .logarithmic(true),
                 );
 
