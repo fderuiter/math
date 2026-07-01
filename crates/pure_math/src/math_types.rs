@@ -23,14 +23,14 @@ impl Integer {
     pub fn new() -> Self {
         Integer(IBig::from(0u8))
     }
-    
+
     pub fn from<T>(v: T) -> Self
     where
         IBig: From<T>,
     {
         Integer(IBig::from(v))
     }
-    
+
     pub fn to_f64(&self) -> f64 {
         use dashu::float::round::mode::HalfAway;
         let f: FBig<HalfAway, 2> = FBig::from(self.0.clone());
@@ -67,7 +67,9 @@ impl Integer {
     }
     #[allow(clippy::result_unit_err)]
     pub fn pow_mod(&self, exp: &Integer, m: &Integer) -> Result<Self, ()> {
-        if m.0 == IBig::from(0u8) { return Err(()); }
+        if m.0 == IBig::from(0u8) {
+            return Err(());
+        }
         let mut base = &self.0 % &m.0;
         let mut exp_val = exp.0.clone();
         if exp_val < IBig::from(0u8) {
