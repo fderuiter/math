@@ -51,6 +51,10 @@ impl TheoryDescribable for FractalViewer {
         )
     }
 
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
+    }
+
     fn theory_citation(&self) -> String {
         "[cite:graph_parameters_rust]".to_string()
     }

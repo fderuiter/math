@@ -1,4 +1,3 @@
-use crate::accessibility::AccessibleHoverText;
 use crate::framework::{InputMode, InteractiveTool};
 use eframe::egui;
 use math_commons::theory::TheoryDescribable;
@@ -202,6 +201,10 @@ impl TheoryDescribable for AttentionMapsTool {
             encoder: Encoder::new(1, 4, 1, 4),
             decoder: Decoder::new(1, 4, 1, 4),
         }.theory_description()
+    }
+
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
     }
     fn theory_citation(&self) -> String {
         Transformer {

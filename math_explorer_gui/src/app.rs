@@ -45,8 +45,25 @@ impl eframe::App for MathExplorerApp {
             crate::accessibility::announce_status(&msg);
         }
 
+        if let Some(msg) = ctx.data_mut(|d| {
+            let msg = d.get_temp::<String>(egui::Id::new("aria_live_assertive_message"));
+            d.remove::<String>(egui::Id::new("aria_live_assertive_message"));
+            msg
+        }) {
+            crate::accessibility::announce_status_with_priority(&msg, "assertive");
+        }
+
         // Fetch new events
-        self.diagnostic_events.extend(global_bus().try_recv_all());
+        let new_events = global_bus().try_recv_all();
+        for event in &new_events {
+            if matches!(event.severity, Severity::Error | Severity::Fatal) {
+                crate::accessibility::announce_status_with_priority(
+                    &format!("{}: {}", event.severity, event.message),
+                    "assertive",
+                );
+            }
+        }
+        self.diagnostic_events.extend(new_events);
 
         // Issues & Diagnostics Panel
         egui::TopBottomPanel::bottom("issues_panel")

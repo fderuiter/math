@@ -384,7 +384,16 @@ impl Widget for &mut LegendWidget {
                                 // Handle interactions. Alt-clicking must be deferred to end of loop
                                 // since it may affect all entries.
                                 handle_interaction_on_legend_item(&response, entry);
-                                if response.clicked() && ui.input(|r| r.modifiers.alt) {
+                                if crate::commands::CommandRegistryData::register_and_check(
+                                    ui.ctx(),
+                                    "Isolate Plot",
+                                    "Alt-click to isolate a plot line",
+                                    crate::commands::CommandTrigger::AltClick,
+                                    true,
+                                    "Plot Legend",
+                                    Some(ui),
+                                    Some(&response),
+                                ) {
                                     focus_on_item = Some(entry.id);
                                 }
 

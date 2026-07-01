@@ -177,6 +177,7 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let mut description = String::new();
+    let mut phonetic = String::new();
     let mut citation = String::new();
 
     for attr in &input.attrs {
@@ -186,6 +187,10 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
                     let value = meta.value()?;
                     let s: syn::LitStr = value.parse()?;
                     description = s.value();
+                } else if meta.path.is_ident("phonetic") {
+                    let value = meta.value()?;
+                    let s: syn::LitStr = value.parse()?;
+                    phonetic = s.value();
                 } else if meta.path.is_ident("citation") {
                     let value = meta.value()?;
                     let s: syn::LitStr = value.parse()?;
@@ -194,6 +199,11 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
                 Ok(())
             });
         }
+    }
+
+    // Fallback if phonetic is not explicitly provided
+    if phonetic.is_empty() {
+        phonetic.clone_from(&description);
     }
 
     let mut field_params = Vec::new();
@@ -246,6 +256,9 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
         impl #impl_generics math_commons::theory::TheoryDescribable for #name #ty_generics #where_clause {
             fn theory_description(&self) -> String {
                 #description.to_string()
+            }
+            fn phonetic_description(&self) -> String {
+                #phonetic.to_string()
             }
             fn theory_citation(&self) -> String {
                 math_commons::citation_registry::CitationRegistry::register(stringify!(#name).to_string(), #citation.to_string());

@@ -14,6 +14,9 @@ pub trait TheoryDescribable {
     /// Returns the verified human-readable description for accessibility.
     fn theory_description(&self) -> String;
 
+    /// Returns the human-verified phonetic string for screen readers.
+    fn phonetic_description(&self) -> String;
+
     /// Returns the citation for the mathematical model.
     fn theory_citation(&self) -> String;
 

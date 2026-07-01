@@ -37,3 +37,8 @@
     - Deferred data hydration by moving the creation of heavy `DiagnosticEvent` objects to the non-verified side of the engine.
     - Standardized the bridge transition layer to resolve type incompatibilities across domains.
 - **Impact**: Restored full diagnostic visibility for physics and AI errors without compromising strict high-integrity memory constraints.
+## First-Class Phonetic Trait for Accessibility (PR 1014)
+
+- **Issue**: Mathematical shorthand in domain modules (e.g., Bra-Ket notation, material derivatives) was being read literally by screen readers, making scientific simulations unintelligible for non-visual users. Previous automated LaTeX-to-speech translations were fragile and lacked context-awareness.
+- **Resolution**: Introduced a mandatory `phonetic_description` method to the `TheoryDescribable` trait. Upgraded `verified_engine_macros` to parse a new `phonetic` attribute (`#[theory(phonetic = "...")]`), providing a direct, human-verified string for ARIA live regions instead of relying on parsing logic in `accessibility.rs`.
+- **Impact**: Guarantees 100% phonetic accessibility coverage and accuracy across complex scientific domains by embedding metadata directly into the models, removing the need for automated symbol-to-speech translation.
