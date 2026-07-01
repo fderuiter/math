@@ -183,6 +183,10 @@ impl InteractiveTool for LatticeBoltzmannTool {
         "Lattice Boltzmann (Demo)"
     }
 
+    fn theory(&self) -> Option<&dyn TheoryDescribable> {
+        Some(self)
+    }
+
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         // Update state from background simulation
@@ -200,10 +204,7 @@ impl InteractiveTool for LatticeBoltzmannTool {
 
         // Controls
         egui::SidePanel::left("lbm_controls").show(ctx, |ui| {
-            let dummy_lbm: LatticeBoltzmannD2Q9<BgkCollision> =
-                LatticeBoltzmannD2Q9::new(1, 1, 1.0);
-            ui.heading("Lattice Boltzmann")
-                .accessible_hover_text(dummy_lbm.theory_description());
+            ui.heading("Lattice Boltzmann");
             ui.separator();
 
             if ui
@@ -319,6 +320,18 @@ impl InteractiveTool for LatticeBoltzmannTool {
                     });
             }
         });
+    }
+}
+
+impl TheoryDescribable for LatticeBoltzmannTool {
+    fn theory_description(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_description()
+    }
+    fn theory_citation(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_citation()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).available_descriptions()
     }
 }
 

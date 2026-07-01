@@ -92,7 +92,7 @@ impl SimulationRunner for MorphogenesisRunner {
 }
 
 #[allow(dead_code)]
-pub struct MorphogenesisTab {
+pub struct MorphogenesisTool {
     controller: SimulationController,
     texture: Option<egui::TextureHandle>,
     // Simulation parameters
@@ -107,7 +107,7 @@ pub struct MorphogenesisTab {
     selected_preset: Option<PatternPreset>,
 }
 
-impl Default for MorphogenesisTab {
+impl Default for MorphogenesisTool {
     fn default() -> Self {
         let width = 100;
         let height = 100;
@@ -178,27 +178,42 @@ fn initialize_system(
     }
 }
 
+pub struct MorphogenesisTab {
+    framework: crate::framework::SimulationFramework,
+}
+
+impl Default for MorphogenesisTab {
+    fn default() -> Self {
+        Self {
+            framework: crate::framework::SimulationFramework::new(vec![Box::new(MorphogenesisTool::default())]),
+        }
+    }
+}
+
 impl ExplorerTab for MorphogenesisTab {
     fn name(&self) -> &'static str {
         "Morphogenesis"
     }
 
+    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.framework.show(ctx, "morphogenesis");
+    }
+}
+
+impl crate::framework::InteractiveTool for MorphogenesisTool {
+    fn name(&self) -> &'static str {
+        "Morphogenesis (Turing Patterns)"
+    }
+
+    fn theory(&self) -> Option<&dyn TheoryDescribable> {
+        Some(self)
+    }
+
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     #[allow(clippy::field_reassign_with_default)]
-    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("morphogenesis_controls").show(ctx, |ui| {
-            let dummy_model = ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
-                reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
-                diffusion: FiniteDifference2D::new(
-                    math_explorer::math_kernel::types::Dimension(1),
-                    math_explorer::math_kernel::types::Dimension(1),
-                    math_explorer::math_kernel::types::StepSize(1.0),
-                    math_explorer::math_kernel::types::StepSize(1.0),
-                ),
-                diffusion_coeffs: vec![],
-            };
-            ui.heading("Turing Patterns")
-                .accessible_hover_text(dummy_model.theory_description());
+            ui.heading("Turing Patterns");
             ui.label("Schnakenberg Kinetics");
             ui.separator();
 
@@ -294,6 +309,45 @@ impl ExplorerTab for MorphogenesisTab {
                 ui.image((texture.id(), texture.size_vec2()));
             }
         });
+    }
+}
+
+impl TheoryDescribable for MorphogenesisTool {
+    fn theory_description(&self) -> String {
+        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
+            diffusion: FiniteDifference2D::new(
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::StepSize(1.0),
+                math_explorer::math_kernel::types::StepSize(1.0),
+            ),
+            diffusion_coeffs: vec![],
+        }.theory_description()
+    }
+    fn theory_citation(&self) -> String {
+        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
+            diffusion: FiniteDifference2D::new(
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::StepSize(1.0),
+                math_explorer::math_kernel::types::StepSize(1.0),
+            ),
+            diffusion_coeffs: vec![],
+        }.theory_citation()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
+            diffusion: FiniteDifference2D::new(
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::StepSize(1.0),
+                math_explorer::math_kernel::types::StepSize(1.0),
+            ),
+            diffusion_coeffs: vec![],
+        }.available_descriptions()
     }
 }
 
