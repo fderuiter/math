@@ -2,11 +2,8 @@
 //!
 //! This module provides functions related to the coupling of angular momenta
 //! in quantum mechanics.
-#[cfg(target_arch = "wasm32")]
 // theory_verification!
-use wigner_mock::ClebschGordan;
-#[cfg(not(target_arch = "wasm32"))]
-use wigner_symbols::ClebschGordan;
+use math_commons::wigner::ClebschGordan;
 
 /// Calculates the Clebsch-Gordan coefficient for coupling two angular momenta.
 ///
