@@ -137,7 +137,8 @@ impl<const Q: usize, L: Lattice2D<Q>> CollisionModel<Q, L> for BgkCollision {
 /// ```
 #[derive(Theory)]
 #[theory(
-    description = "The Lattice Boltzmann Method (LBM) is a discrete computational fluid dynamics approach that simulates Newtonian fluid flows by modeling the microscopic behavior of fictitious fluid particles on a regular grid.",
+    description = "The Lattice Boltzmann Method (LBM) is a discrete computational fluid dynamics approach that simulates Newtonian fluid flows by modeling the microscopic behavior of fictitious fluid particles on a regular grid. It approximates the Navier-Stokes equations and the material derivative D/Dt.",
+    phonetic = "The Lattice Boltzmann Method is a discrete computational fluid dynamics approach that simulates Newtonian fluid flows by modeling the microscopic behavior of fictitious fluid particles on a regular grid. It approximates the Navier-Stokes equations and the Material derivative with respect to time.",
     citation = "Lattice Boltzmann equation for fluid dynamics and beyond (Succi, 2001)"
 )]
 pub struct LatticeBoltzmann<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> {

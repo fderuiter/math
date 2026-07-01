@@ -48,6 +48,13 @@ impl TheoryDescribable for ClebschGordanTool {
         )
     }
 
+    fn phonetic_description(&self) -> String {
+        format!(
+            "Clebsch-Gordan coefficient, Bra j1 equals {}, m1 equals {}, j2 equals {}, m2 equals {}, Ket J equals {}, M equals {}. The result is {:.6}",
+            self.j1, self.m1, self.j2, self.m2, self.j, self.m, self.result
+        )
+    }
+
     fn theory_citation(&self) -> String {
         "[cite:quantum_mechanics]".to_string()
     }
