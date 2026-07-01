@@ -30,9 +30,15 @@ pub fn init_accessibility_bridge() {}
 #[cfg(target_arch = "wasm32")]
 // theory_verification!
 pub fn announce_status(message: &str) {
+    announce_status_with_priority(message, "polite");
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn announce_status_with_priority(message: &str, priority: &str) {
     if let Some(window) = web_sys::window() {
         if let Some(document) = window.document() {
             if let Some(el) = document.get_element_by_id("aria-live-region") {
+                let _ = el.set_attribute("aria-live", priority);
                 if el.text_content().as_deref() != Some(message) {
                     el.set_text_content(Some(message));
                 }
@@ -43,6 +49,9 @@ pub fn announce_status(message: &str) {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn announce_status(_message: &str) {}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn announce_status_with_priority(_message: &str, _priority: &str) {}
 
 pub trait AccessibleHoverText {
     fn accessible_hover_text(self, text: impl Into<WidgetText>) -> Self;
