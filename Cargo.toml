@@ -13,10 +13,10 @@ members = [
     "crates/domain_epidemiology",
     "math_explorer",
     "math_explorer_gui",
-    "crates/rug_mock",
-    "crates/wigner_mock",
     "crates/markdown_tests"
-, "crates/unified_verification"]
+, "apps/xtask",
+    "crates/unified_verification"
+]
 exclude = ["experimental/generative-turbulence-experimental"]
 resolver = "2"
 

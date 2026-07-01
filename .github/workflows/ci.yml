@@ -48,23 +48,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install PyTorch (Linux)
-        if: runner.os == 'Linux'
-        run: pip install setuptools "numpy<2" torch==2.2.0 --break-system-packages
-
-      - name: Install PyTorch (Windows)
-        if: runner.os == 'Windows'
-        run: pip install setuptools "numpy<2" torch==2.2.0
-
-      - name: Install PyTorch (macOS)
-        if: runner.os == 'macOS'
-        run: pip install setuptools "numpy<2" torch==2.2.0
-
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -112,32 +95,14 @@ jobs:
       - name: Build (Native)
         if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo build --workspace --verbose --all-features
-        env:
-          LIBTORCH_USE_PYTORCH: 1
-          LIBTORCH_BYPASS_VERSION_CHECK: 1
 
       - name: Run Tests (Native)
         if: matrix.target != 'wasm32-unknown-unknown'
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            export PATH="$(cygpath -u "$(python -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')")"):$PATH"
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            export DYLD_LIBRARY_PATH=$(python3 -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')"):$DYLD_LIBRARY_PATH
-          else
-            export LD_LIBRARY_PATH=$(python3 -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
-          fi
-          cargo test --workspace --verbose --all-features
-        env:
-          LIBTORCH_USE_PYTORCH: 1
-          LIBTORCH_BYPASS_VERSION_CHECK: 1
+        run: cargo test --workspace --verbose --all-features
 
       - name: Run Clippy (Native)
         if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo clippy --workspace --all-features -- -D warnings -D clippy::too_many_lines -D clippy::cognitive_complexity
-        env:
-          LIBTORCH_USE_PYTORCH: 1
-          LIBTORCH_BYPASS_VERSION_CHECK: 1
 
       - name: Install cargo-llvm-cov
         if: matrix.target != 'wasm32-unknown-unknown'
@@ -150,9 +115,6 @@ jobs:
       - name: Run Integrity Verified Suite
         if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo run -p unified_verification --release -- verify-suite
-        env:
-          LIBTORCH_USE_PYTORCH: 1
-          LIBTORCH_BYPASS_VERSION_CHECK: 1
 
       - name: Check Workspace (WASM)
         if: matrix.target == 'wasm32-unknown-unknown'
@@ -218,16 +180,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install PyTorch (AI only)
-        if: matrix.feature == 'ai'
-        run: pip install setuptools "numpy<2" torch==2.2.0 --break-system-packages
-
-
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -248,14 +200,9 @@ jobs:
 
       - name: Run Tests
         run: |
-          if [ "${{ matrix.feature }}" = "ai" ]; then
-            export LD_LIBRARY_PATH=$(python3 -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
-            export LIBTORCH_USE_PYTORCH=1
-            export LIBTORCH_BYPASS_VERSION_CHECK=1
-          fi
-          
           if [ -n "${{ matrix.feature }}" ]; then
-            cargo test -p math_explorer --no-default-features --features ${{ matrix.feature }}
+            cargo run -p xtask -- test-features ${{ matrix.feature }}
           else
-            cargo test -p math_explorer --no-default-features
-          fi
+            cargo run -p xtask -- test-features core-only
+          fi          
+

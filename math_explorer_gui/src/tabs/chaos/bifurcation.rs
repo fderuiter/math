@@ -41,6 +41,10 @@ impl TheoryDescribable for BifurcationDiagram {
         )
     }
 
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
+    }
+
     fn theory_citation(&self) -> String {
         "[cite:algorithmic_information_rust]".to_string()
     }
