@@ -9,6 +9,7 @@
 //!
 
 mod axis;
+pub mod commands;
 mod items;
 mod legend;
 mod memory;
@@ -1473,14 +1474,35 @@ let prepared = PreparedPlot {
             let mut changed = false;
             let num_items = accessible_datasets.len();
             if num_items > 0 {
-                if ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
+                let down_triggered = crate::commands::CommandRegistryData::register_and_check(
+                    ui.ctx(),
+                    "Next Dataset",
+                    "Navigate to the next dataset",
+                    crate::commands::CommandTrigger::Key(egui::Key::ArrowDown),
+                    false,
+                    "Plot Accessibility",
+                    Some(ui),
+                    None,
+                );
+                if down_triggered {
                     if access_state.focused_item + 1 < num_items {
                         access_state.focused_item += 1;
                         access_state.focused_point = 0;
                         changed = true;
                     }
                 }
-                if ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
+                
+                let up_triggered = crate::commands::CommandRegistryData::register_and_check(
+                    ui.ctx(),
+                    "Previous Dataset",
+                    "Navigate to the previous dataset",
+                    crate::commands::CommandTrigger::Key(egui::Key::ArrowUp),
+                    false,
+                    "Plot Accessibility",
+                    Some(ui),
+                    None,
+                );
+                if up_triggered {
                     if access_state.focused_item > 0 {
                         access_state.focused_item -= 1;
                         access_state.focused_point = 0;
@@ -1491,13 +1513,34 @@ let prepared = PreparedPlot {
                 if let Some((_, pts)) = accessible_datasets.get(access_state.focused_item) {
                     let num_pts = pts.len();
                     if num_pts > 0 {
-                        if ui.input(|i| i.key_pressed(egui::Key::ArrowRight)) {
+                        let right_triggered = crate::commands::CommandRegistryData::register_and_check(
+                            ui.ctx(),
+                            "Next Point",
+                            "Navigate to the next point in the dataset",
+                            crate::commands::CommandTrigger::Key(egui::Key::ArrowRight),
+                            false,
+                            "Plot Accessibility",
+                            Some(ui),
+                            None,
+                        );
+                        if right_triggered {
                             if access_state.focused_point + 1 < num_pts {
                                 access_state.focused_point += 1;
                                 changed = true;
                             }
                         }
-                        if ui.input(|i| i.key_pressed(egui::Key::ArrowLeft)) {
+                        
+                        let left_triggered = crate::commands::CommandRegistryData::register_and_check(
+                            ui.ctx(),
+                            "Previous Point",
+                            "Navigate to the previous point in the dataset",
+                            crate::commands::CommandTrigger::Key(egui::Key::ArrowLeft),
+                            false,
+                            "Plot Accessibility",
+                            Some(ui),
+                            None,
+                        );
+                        if left_triggered {
                             if access_state.focused_point > 0 {
                                 access_state.focused_point -= 1;
                                 changed = true;
