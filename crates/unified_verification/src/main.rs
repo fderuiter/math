@@ -161,45 +161,8 @@ fn check_file_lengths() {
 }
 
 fn get_llvm_cov_output() -> std::process::Output {
-    let python_cmd = if cfg!(target_os = "windows") {
-        "python"
-    } else {
-        "python3"
-    };
-    let py_out = Command::new(python_cmd)
-        .args(["-c", "import torch; print(torch.__path__[0] + '/lib')"])
-        .output();
-
     let mut cmd = Command::new("cargo");
     cmd.args(["llvm-cov", "--all-features", "--workspace", "--json"]);
-    cmd.env("LIBTORCH_USE_PYTORCH", "1");
-    cmd.env("LIBTORCH_BYPASS_VERSION_CHECK", "1");
-
-    if let Ok(out) = py_out {
-        if out.status.success() {
-            let ld_path = String::from_utf8_lossy(&out.stdout).trim().to_string();
-            if cfg!(target_os = "windows") {
-                if let Ok(val) = env::var("PATH") {
-                    cmd.env("PATH", format!("{};{}", ld_path, val));
-                } else {
-                    cmd.env("PATH", ld_path);
-                }
-            } else if cfg!(target_os = "macos") {
-                if let Ok(val) = env::var("DYLD_LIBRARY_PATH") {
-                    cmd.env("DYLD_LIBRARY_PATH", format!("{}:{}", ld_path, val));
-                } else {
-                    cmd.env("DYLD_LIBRARY_PATH", ld_path);
-                }
-            } else {
-                if let Ok(val) = env::var("LD_LIBRARY_PATH") {
-                    cmd.env("LD_LIBRARY_PATH", format!("{}:{}", ld_path, val));
-                } else {
-                    cmd.env("LD_LIBRARY_PATH", ld_path);
-                }
-            }
-        }
-    }
-
     cmd.output().expect("Failed to run cargo llvm-cov")
 }
 

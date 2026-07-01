@@ -75,14 +75,14 @@ jobs:
 
       - name: Verify Architectural Records Updates
         if: matrix.target != 'wasm32-unknown-unknown'
-        run: cargo run -p unified_verification --release -- verify-records
+        run: cargo run -p xtask -- verify-records
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
       - name: Check Traceability
         if: matrix.target != 'wasm32-unknown-unknown'
-        run: cargo run -p unified_verification --release -- traceability
+        run: cargo run -p xtask -- traceability
 
       - name: Check Formatting
         if: matrix.target != 'wasm32-unknown-unknown'
@@ -90,7 +90,7 @@ jobs:
 
       - name: Check File Lengths (500 lines limit)
         if: matrix.target != 'wasm32-unknown-unknown'
-        run: cargo run -p unified_verification --release -- check-file-lengths
+        run: cargo run -p xtask -- check-file-lengths
 
       - name: Build (Native)
         if: matrix.target != 'wasm32-unknown-unknown'
@@ -114,7 +114,7 @@ jobs:
 
       - name: Run Integrity Verified Suite
         if: matrix.target != 'wasm32-unknown-unknown'
-        run: cargo run -p unified_verification --release -- verify-suite
+        run: cargo run -p xtask -- verify-suite
 
       - name: Check Workspace (WASM)
         if: matrix.target == 'wasm32-unknown-unknown'
