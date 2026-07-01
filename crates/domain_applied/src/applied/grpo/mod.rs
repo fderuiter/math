@@ -9,7 +9,7 @@ pub mod rewards;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "grpo",
+    module = grpo,
     epsilon = 1e-6,
     constants = {
         BETA = 0.01;

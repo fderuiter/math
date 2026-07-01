@@ -167,7 +167,7 @@ mod tests {
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "nuclear",
+    module = nuclear,
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

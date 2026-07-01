@@ -69,7 +69,7 @@ pub mod mechanism_design;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "game_theory",
+    module = game_theory,
     epsilon = 1e-6,
     constants = {
         PAYOFF = 5.0;

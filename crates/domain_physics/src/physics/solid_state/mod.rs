@@ -28,7 +28,7 @@ pub mod types;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "solid_state",
+    module = solid_state,
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

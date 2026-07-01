@@ -5,7 +5,7 @@ pub mod sensing;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "optics",
+    module = optics,
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

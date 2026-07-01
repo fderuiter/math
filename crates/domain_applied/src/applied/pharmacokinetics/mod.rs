@@ -113,7 +113,7 @@ pub fn concentration_superposition(params: &PKParameters, dose_times: &[f64], t:
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "pharmacokinetics",
+    module = pharmacokinetics,
     epsilon = 1e-6,
     constants = {
         DOSE = 100.0;

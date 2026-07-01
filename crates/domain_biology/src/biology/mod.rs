@@ -81,7 +81,7 @@ pub mod reaction_diffusion;
 
 use pure_math::theory_verification;
 theory_verification!(
-    module = "biology",
+    module = biology,
     epsilon = 1e-6,
     constants = {
         TEST = 1.0;

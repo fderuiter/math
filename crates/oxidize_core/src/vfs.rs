@@ -4,6 +4,10 @@ pub trait VirtualFileSystem {
     fn list_dir(&self, path: &str) -> Result<Vec<String>, std::io::Error>;
 }
 
+pub mod vfs_data {
+    include!(concat!(env!("OUT_DIR"), "/vfs_data.rs"));
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 pub struct DefaultVfs;
 
@@ -31,19 +35,12 @@ impl VirtualFileSystem for DefaultVfs {
 }
 
 #[cfg(target_arch = "wasm32")]
-// theory_verification!
-#[rustfmt::skip]
-include!(concat!(env!("OUT_DIR"), "/vfs_data.rs"));
-
-#[cfg(target_arch = "wasm32")]
-// theory_verification!
 pub struct WasmVfs;
 
 #[cfg(target_arch = "wasm32")]
-// theory_verification!
 impl VirtualFileSystem for WasmVfs {
     fn read_to_string(&self, path: &str) -> Result<String, std::io::Error> {
-        if let Some(content) = get_file_content(path) {
+        if let Some(content) = vfs_data::get_file_content(path) {
             Ok(content.to_string())
         } else {
             Err(std::io::Error::new(
@@ -59,7 +56,7 @@ impl VirtualFileSystem for WasmVfs {
     }
 
     fn list_dir(&self, path: &str) -> Result<Vec<String>, std::io::Error> {
-        if let Some(children) = get_dir_children(path) {
+        if let Some(children) = vfs_data::get_dir_children(path) {
             Ok(children.iter().map(|s| s.to_string()).collect())
         } else {
             Err(std::io::Error::new(
@@ -71,7 +68,6 @@ impl VirtualFileSystem for WasmVfs {
 }
 
 #[cfg(target_arch = "wasm32")]
-// theory_verification!
 pub fn trigger_download(filename: &str, content: &[u8]) {
     use wasm_bindgen::JsCast;
     let window = web_sys::window().unwrap();
@@ -94,4 +90,3 @@ pub fn trigger_download(filename: &str, content: &[u8]) {
     a.click();
     web_sys::Url::revoke_object_url(&url).unwrap();
 }
-// theory_verification!

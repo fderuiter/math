@@ -16,7 +16,7 @@ pub use uart::*;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "engineering",
+    module = engineering,
     epsilon = 1e-6,
     constants = {
         TOLERANCE = 0.001;

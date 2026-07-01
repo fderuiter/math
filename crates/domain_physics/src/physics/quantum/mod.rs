@@ -90,7 +90,7 @@ pub use types::{QuantumOperator, QuantumState};
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "quantum",
+    module = quantum,
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

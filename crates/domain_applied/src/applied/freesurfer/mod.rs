@@ -89,7 +89,7 @@ pub use thickness::cortical_thickness;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "freesurfer",
+    module = freesurfer,
     epsilon = 1e-6,
     constants = {
         THICKNESS = 2.5;

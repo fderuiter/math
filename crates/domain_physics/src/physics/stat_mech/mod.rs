@@ -17,7 +17,7 @@ pub mod quantum_stats;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "stat_mech",
+    module = stat_mech,
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

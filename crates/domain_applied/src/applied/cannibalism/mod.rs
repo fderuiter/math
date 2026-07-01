@@ -11,7 +11,7 @@ pub use two_dimensional_ode::*;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "cannibalism",
+    module = cannibalism,
     epsilon = 1e-6,
     constants = {
         BETA_N = 1.0;

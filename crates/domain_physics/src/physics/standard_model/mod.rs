@@ -19,7 +19,7 @@ pub mod qcd;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "standard_model",
+    module = standard_model,
     epsilon = 1e-6,
     constants = {
         DUMMY = 1.0;

@@ -12,7 +12,7 @@ pub use types::LoraStateDict;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "lorahub",
+    module = lorahub,
     epsilon = 1e-6,
     constants = {
         ALPHA = 32.0;

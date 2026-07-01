@@ -52,7 +52,7 @@ pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "battery_degradation",
+    module = battery_degradation,
     epsilon = 1e-6,
     constants = {
         TARGET_CAP = 0.8;

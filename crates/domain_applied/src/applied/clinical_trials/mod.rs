@@ -79,7 +79,7 @@ pub mod types;
 use pure_math::theory_verification;
 
 theory_verification!(
-    module = "clinical_trials",
+    module = clinical_trials,
     epsilon = 1e-6,
     constants = {
         ALPHA = 0.05;
