@@ -22,7 +22,6 @@ pub trait InteractiveTool {
     /// The default implementation delegates to `show_ui` and then sets up a CentralPanel
     /// with an allocated painter to call the normalized event hooks and `draw`.
     fn show(&mut self, ctx: &egui::Context) {
-
         egui::SidePanel::left(format!("{}_controls", self.name())).show(ctx, |ui| {
             self.show_ui(ui);
         });
@@ -82,6 +81,48 @@ impl SimulationFramework {
         }
     }
 
+    fn show_theory_portal(&self, ctx: &egui::Context, id_source: &str) {
+        if !self.show_theory_portal {
+            return;
+        }
+        egui::SidePanel::right(format!("{}_theory_portal", id_source))
+            .resizable(true)
+            .show(ctx, |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    if let Some(tool) = self.tools.get(self.selected_tool_index) {
+                        ui.heading(format!("Theory: {}", tool.name()));
+                        ui.separator();
+
+                        if let Some(theory) = tool.theory() {
+                            // Requirement 5: Screen readers can successfully navigate the theory text and citations
+                            use crate::accessibility::AccessibleHoverText;
+
+                            ui.label(theory.theory_description())
+                                .accessible_hover_text("Theoretical background description");
+
+                            ui.separator();
+                            ui.heading("Citations");
+                            ui.label(theory.theory_citation())
+                                .accessible_hover_text("Academic citations");
+
+                            let available = theory.available_descriptions();
+                            if !available.is_empty() {
+                                ui.separator();
+                                ui.heading("Additional Context");
+                                for (key, desc) in available {
+                                    ui.label(format!("{}: {}", key, desc)).accessible_hover_text(
+                                        format!("Additional context for {}", key),
+                                    );
+                                }
+                            }
+                        } else {
+                            ui.label("No theoretical context available for this tool.");
+                        }
+                    }
+                });
+            });
+    }
+
     pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
         egui::SidePanel::right(format!("{}_tool_selector", id_source))
             .resizable(false)
@@ -102,43 +143,7 @@ impl SimulationFramework {
                 ui.checkbox(&mut self.show_theory_portal, "Theory Context Portal");
             });
 
-        if self.show_theory_portal {
-            egui::SidePanel::right(format!("{}_theory_portal", id_source))
-                .resizable(true)
-                .show(ctx, |ui| {
-                    egui::ScrollArea::vertical().show(ui, |ui| {
-                        if let Some(tool) = self.tools.get(self.selected_tool_index) {
-                            ui.heading(format!("Theory: {}", tool.name()));
-                            ui.separator();
-
-                            if let Some(theory) = tool.theory() {
-                                // Requirement 5: Screen readers can successfully navigate the theory text and citations
-                                use crate::accessibility::AccessibleHoverText;
-
-                                ui.label(theory.theory_description())
-                                    .accessible_hover_text("Theoretical background description");
-                                
-                                ui.separator();
-                                ui.heading("Citations");
-                                ui.label(theory.theory_citation())
-                                    .accessible_hover_text("Academic citations");
-
-                                let available = theory.available_descriptions();
-                                if !available.is_empty() {
-                                    ui.separator();
-                                    ui.heading("Additional Context");
-                                    for (key, desc) in available {
-                                        ui.label(format!("{}: {}", key, desc))
-                                            .accessible_hover_text(format!("Additional context for {}", key));
-                                    }
-                                }
-                            } else {
-                                ui.label("No theoretical context available for this tool.");
-                            }
-                        }
-                    });
-                });
-        }
+        self.show_theory_portal(ctx, id_source);
 
         if let Some(tool) = self.tools.get_mut(self.selected_tool_index) {
             tool.show(ctx);
