@@ -8,6 +8,7 @@ pub struct TraceabilityTab {
     orphaned_papers: Vec<String>,
     unlinked_code: Vec<String>,
     invalid_links: Vec<(String, String)>, // code_file, paper_name
+    repo_path: Option<String>,
 }
 
 #[derive(Clone)]
@@ -25,6 +26,7 @@ impl Default for TraceabilityTab {
             orphaned_papers: Vec::new(),
             unlinked_code: Vec::new(),
             invalid_links: Vec::new(),
+            repo_path: None,
         };
         tab.refresh();
         tab
@@ -46,23 +48,32 @@ impl TraceabilityTab {
 
         let engine = oxidize_core::traceability::TraceabilityEngine::new(&vfs);
 
+        let base_dir = match &self.repo_path {
+            Some(p) => format!("{}/", p),
+            None => "".to_string(),
+        };
+
         // Scan the standard directories
-        let code_dirs = vec!["math_explorer/src", "math_explorer_gui/src/tabs"];
+        let code_dirs = vec![
+            format!("{}math_explorer/src", base_dir),
+            format!("{}math_explorer_gui/src/tabs", base_dir),
+        ];
 
         // We simulate reading the crates directories
         let mut crate_dirs = Vec::new();
-        if let Ok(crates) = vfs.list_dir("crates") {
+        if let Ok(crates) = vfs.list_dir(&format!("{}crates", base_dir)) {
             for crate_name in crates {
-                crate_dirs.push(format!("crates/{}/src", crate_name));
+                crate_dirs.push(format!("{}crates/{}/src", base_dir, crate_name));
             }
         }
 
-        let mut all_dirs: Vec<&str> = code_dirs.into_iter().collect();
+        let mut all_dirs: Vec<&str> = code_dirs.iter().map(|s| s.as_str()).collect();
         for dir in &crate_dirs {
             all_dirs.push(dir.as_str());
         }
 
-        if let Ok(report) = engine.scan_repository(&all_dirs, "papers") {
+        let papers_dir = format!("{}papers", base_dir);
+        if let Ok(report) = engine.scan_repository(&all_dirs, &papers_dir) {
             self.orphaned_papers = report.orphaned_papers;
             self.unlinked_code = report.unlinked_code;
             self.invalid_links = report.invalid_links;
@@ -93,6 +104,22 @@ impl ExplorerTab for TraceabilityTab {
                 ui.heading("Theory-to-Code Traceability Portal");
                 if ui.button("Refresh").clicked() {
                     self.refresh();
+                }
+                
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    if ui.button("Select Codebase Directory...").clicked() {
+                        if let Some(path) = rfd::FileDialog::new().pick_folder() {
+                            self.repo_path = Some(path.display().to_string());
+                            self.refresh();
+                        }
+                    }
+                }
+                
+                if let Some(path) = &self.repo_path {
+                    ui.label(format!("Scanning: {}", path));
+                } else {
+                    ui.label("Scanning: default workspace");
                 }
             });
             ui.separator();

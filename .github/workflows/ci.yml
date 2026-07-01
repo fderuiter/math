@@ -214,3 +214,66 @@ jobs:
           else
             cargo test -p math_explorer --no-default-features
           fi
+
+  package:
+    name: Package Installers (${{ matrix.os }})
+    needs: build-and-test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: deb
+          - os: macos-latest
+            target: dmg
+          - os: windows-latest
+            target: wix
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxdo-dev build-essential
+
+      - name: Install PyTorch (Ubuntu/macOS)
+        if: matrix.os != 'windows-latest'
+        run: pip install setuptools "numpy<2" torch==2.2.0 --break-system-packages || pip install setuptools "numpy<2" torch==2.2.0
+
+      - name: Install PyTorch (Windows)
+        if: matrix.os == 'windows-latest'
+        run: pip install setuptools "numpy<2" torch==2.2.0
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Install cargo-packager
+        run: cargo install cargo-packager
+
+      - name: Build and Package
+        shell: bash
+        run: |
+          export LIBTORCH_USE_PYTORCH=1
+          export LIBTORCH_BYPASS_VERSION_CHECK=1
+          if [ "${{ matrix.os }}" != "windows-latest" ]; then
+            export LD_LIBRARY_PATH=$(python -c "import torch; print(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
+            export DYLD_LIBRARY_PATH=$(python -c "import torch; print(torch.__path__[0] + '/lib')"):$DYLD_LIBRARY_PATH
+          else
+            export LIB=($(python -c "import torch; print(torch.__path__[0] + '/lib')"))
+          fi
+          cargo packager --release -p math_explorer_gui -f ${{ matrix.target }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: math_explorer-${{ matrix.target }}
+          path: dist/*

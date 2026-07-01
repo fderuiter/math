@@ -159,15 +159,19 @@ impl InteractiveTool for SurfaceViewer {
                 );
                 let obj = oxidize_core::mesh::export_mesh_to_obj_string(&mesh)
                     .unwrap_or_else(|_| String::new());
-                let filename = "surface.obj";
                 #[cfg(not(target_arch = "wasm32"))]
                 {
-                    use oxidize_core::vfs::VirtualFileSystem;
-                    let vfs = oxidize_core::vfs::DefaultVfs;
-                    let _ = vfs.write_to_file(filename, obj.as_bytes());
+                    if let Some(path) = rfd::FileDialog::new()
+                        .set_file_name("surface.obj")
+                        .add_filter("OBJ File", &["obj"])
+                        .save_file()
+                    {
+                        let _ = std::fs::write(path, obj);
+                    }
                 }
                 #[cfg(target_arch = "wasm32")]
                 {
+                    let filename = "surface.obj";
                     use oxidize_core::vfs::VirtualFileSystem;
                     let vfs = oxidize_core::vfs::WasmVfs;
                     let _ = vfs.write_to_file(filename, obj.as_bytes());
