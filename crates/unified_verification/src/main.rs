@@ -79,6 +79,7 @@ fn verify_records() {
         return;
     }
 
+    let changed_files = changed_files.replace("\\", "/");
     println!("Changed files:\n{}", changed_files);
 
     let changed_lines: Vec<&str> = changed_files.lines().collect();

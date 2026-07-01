@@ -121,11 +121,11 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            export PATH=$(python -c "import torch; print(torch.__path__[0] + '/lib')"):$PATH
+            export PATH=$(python -c "import sys, torch; sys.stdout.write((torch.__path__[0] + '/lib').replace('\\\\', '/'))"):$PATH
           elif [ "$RUNNER_OS" == "macOS" ]; then
-            export DYLD_LIBRARY_PATH=$(python3 -c "import torch; print(torch.__path__[0] + '/lib')"):$DYLD_LIBRARY_PATH
+            export DYLD_LIBRARY_PATH=$(python3 -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')"):$DYLD_LIBRARY_PATH
           else
-            export LD_LIBRARY_PATH=$(python3 -c "import torch; print(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
+            export LD_LIBRARY_PATH=$(python3 -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
           fi
           cargo test --workspace --verbose --all-features
         env:
@@ -248,7 +248,7 @@ jobs:
       - name: Run Tests
         run: |
           if [ "${{ matrix.feature }}" = "ai" ]; then
-            export LD_LIBRARY_PATH=$(python3 -c "import torch; print(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
+            export LD_LIBRARY_PATH=$(python3 -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
             export LIBTORCH_USE_PYTORCH=1
             export LIBTORCH_BYPASS_VERSION_CHECK=1
           fi
