@@ -16,6 +16,8 @@ pub struct InteractionContext<'a> {
     pub response: &'a egui::Response,
     pub input_mode: InputMode,
     pub multi_touch: Option<egui::MultiTouchInfo>,
+    pub keys_down: std::collections::HashSet<egui::Key>,
+    pub modifiers: egui::Modifiers,
 }
 
 pub trait InteractiveTool {
@@ -45,6 +47,9 @@ pub trait InteractiveTool {
                     .unwrap_or(InputMode::Mouse)
             });
 
+            let keys_down = ui.input(|i| i.keys_down.clone());
+            let modifiers = ui.input(|i| i.modifiers);
+
             let interaction_ctx = InteractionContext {
                 pointer_pos: response.interact_pointer_pos(),
                 delta: response.drag_delta(),
@@ -53,7 +58,13 @@ pub trait InteractiveTool {
                 response: &response,
                 input_mode,
                 multi_touch,
+                keys_down,
+                modifiers,
             };
+
+            if interaction_ctx.response.has_focus() {
+                self.on_keyboard(&interaction_ctx);
+            }
 
             if interaction_ctx.multi_touch.is_some() {
                 self.on_gesture(&interaction_ctx);
@@ -84,6 +95,7 @@ pub trait InteractiveTool {
     fn on_click(&mut self, _ctx: &InteractionContext) {}
     fn on_brush(&mut self, _ctx: &InteractionContext) {}
     fn on_gesture(&mut self, _ctx: &InteractionContext) {}
+    fn on_keyboard(&mut self, _ctx: &InteractionContext) {}
 }
 
 pub struct SimulationFramework {
@@ -243,6 +255,25 @@ impl Camera3D {
         if scroll != 0.0 && response.hovered() && multi_touch.is_none() {
             self.zoom *= 1.0 + (scroll * 0.001);
             self.zoom = self.zoom.clamp(0.01, 100.0);
+        }
+
+        if response.has_focus() {
+            let mut yaw_delta = 0.0;
+            let mut pitch_delta = 0.0;
+            if ui.input(|i| i.key_down(egui::Key::ArrowLeft)) {
+                yaw_delta += 0.05;
+            }
+            if ui.input(|i| i.key_down(egui::Key::ArrowRight)) {
+                yaw_delta -= 0.05;
+            }
+            if ui.input(|i| i.key_down(egui::Key::ArrowUp)) {
+                pitch_delta += 0.05;
+            }
+            if ui.input(|i| i.key_down(egui::Key::ArrowDown)) {
+                pitch_delta -= 0.05;
+            }
+            self.yaw -= yaw_delta;
+            self.pitch -= pitch_delta;
         }
     }
 
