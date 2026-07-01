@@ -9,7 +9,7 @@ pub enum SimCommand {
     Pause,
     Reset,
     SetSpeed(usize),
-    UpdateParam(String, f64),
+    UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand),
     ApplyBrush {
         cx: i32,
         cy: i32,

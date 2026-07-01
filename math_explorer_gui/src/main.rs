@@ -4,6 +4,10 @@ pub mod async_sim;
 pub mod framework;
 mod tabs;
 
+pub mod generated_ui {
+    include!(concat!(env!("OUT_DIR"), "/generated_ui.rs"));
+}
+
 use app::MathExplorerApp;
 
 #[cfg(not(target_arch = "wasm32"))]

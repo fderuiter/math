@@ -1,0 +1,12 @@
+{
+  "id": "HodgkinHuxley",
+  "name": "Hodgkin-Huxley Model",
+  "description": "Hodgkin-Huxley Model",
+  "citation": "Hodgkin, A. L., & Huxley, A. F. (1952).",
+  "parameters": [
+    { "id": "g_na", "label": "Na+ (Sodium)", "type": "f64", "default": 120.0, "min": 0.0, "max": 200.0, "unit": "mS/cm^2" },
+    { "id": "g_k", "label": "K+ (Potassium)", "type": "f64", "default": 36.0, "min": 0.0, "max": 100.0, "unit": "mS/cm^2" },
+    { "id": "g_l", "label": "Leak", "type": "f64", "default": 0.3, "min": 0.0, "max": 5.0, "unit": "mS/cm^2" },
+    { "id": "i_ext", "label": "I_ext (Current)", "type": "f64", "default": 10.0, "min": 0.0, "max": 50.0, "unit": "uA/cm^2" }
+  ]
+}

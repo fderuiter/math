@@ -1,0 +1,9 @@
+{
+  "id": "LatticeBoltzmann",
+  "name": "Lattice Boltzmann Fluid Dynamics",
+  "description": "Lattice Boltzmann Method",
+  "citation": "McNamara, G. R., & Zanetti, G. (1988).",
+  "parameters": [
+    { "id": "viscosity", "label": "Viscosity", "type": "f64", "default": 0.02, "min": 0.001, "max": 0.5, "unit": "m^2/s" }
+  ]
+}

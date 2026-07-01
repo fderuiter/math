@@ -52,13 +52,28 @@ impl SimulationRunner for MorphogenesisRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) => match name.as_str() {
-                "a" => self.system.kinetics.a = val,
-                "b" => self.system.kinetics.b = val,
-                "d_u" => self.system.diffusion_coeffs[0] = val,
-                "d_v" => self.system.diffusion_coeffs[1] = val,
-                _ => {}
-            },
+            SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::Morphogenesis(p)) => {
+                self.system.kinetics.a = p.a;
+                self.system.kinetics.b = p.b;
+                // For diffusion coeffs, we'd need to re-init the system or add setters.
+                // Re-initialize the system with new parameters
+                let kinetics = SchnakenbergKinetics { a: p.a, b: p.b };
+                let diffusion = FiniteDifference2D::new(
+                    math_explorer::math_kernel::types::Dimension(self.width),
+                    math_explorer::math_kernel::types::Dimension(self.height),
+                    math_explorer::math_kernel::types::StepSize(1.0),
+                    math_explorer::math_kernel::types::StepSize(1.0),
+                );
+                let mut system = TuringSystem::new_with_kinetics(
+                    math_explorer::math_kernel::types::Dimension(self.width * self.height),
+                    math_explorer::biology::morphogenesis::DiffusionCoeff(p.d_u),
+                    math_explorer::biology::morphogenesis::DiffusionCoeff(p.d_v),
+                    kinetics,
+                    diffusion,
+                );
+                // Copy current state if possible, or just let it reset
+                self.system = system;
+            }
             SimCommand::Reset => initialize_system(&mut self.system, self.width, self.height),
             _ => {}
         }
@@ -96,10 +111,7 @@ pub struct MorphogenesisTab {
     controller: SimulationController,
     texture: Option<egui::TextureHandle>,
     // Simulation parameters
-    a: f64,
-    b: f64,
-    d_u: f64,
-    d_v: f64,
+    schema_params: math_commons::generated_schemas::MorphogenesisParams,
     dt: f64,
     width: usize,
     height: usize,
@@ -144,10 +156,7 @@ impl Default for MorphogenesisTab {
         Self {
             controller,
             texture: None,
-            a: 0.1,
-            b: 0.9,
-            d_u,
-            d_v,
+            schema_params: math_commons::generated_schemas::MorphogenesisParams { a: 0.1, b: 0.9, d_u, d_v },
             dt: 0.05,
             width,
             height,
@@ -213,15 +222,12 @@ impl ExplorerTab for MorphogenesisTab {
                     let selected = self.selected_preset == Some(preset);
                     if ui.selectable_label(selected, preset.label()).clicked() {
                         let (a, b, d_u, d_v) = preset.params();
-                        self.a = a;
-                        self.b = b;
-                        self.d_u = d_u;
-                        self.d_v = d_v;
+                        self.schema_params.a = a;
+                        self.schema_params.b = b;
+                        self.schema_params.d_u = d_u;
+                        self.schema_params.d_v = d_v;
 
-                        self.controller.send_command(SimCommand::UpdateParam("a".to_string(), a));
-                        self.controller.send_command(SimCommand::UpdateParam("b".to_string(), b));
-                        self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), d_u));
-                        self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), d_v));
+                        self.controller.send_command(SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::Morphogenesis(self.schema_params)));
 
                         self.controller.send_command(SimCommand::Reset);
                         self.selected_preset = Some(preset);
@@ -231,19 +237,8 @@ impl ExplorerTab for MorphogenesisTab {
             ui.separator();
 
             ui.collapsing("Parameters", |ui| {
-                let mut changed = false;
-                changed |= ui.add(egui::Slider::new(&mut self.a, 0.0..=1.0).text("a (Feed)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.b, 0.0..=2.0).text("b (Kill)")).changed();
-
-                ui.separator();
-                changed |= ui.add(egui::Slider::new(&mut self.d_u, 0.1..=5.0).text("D_u (Activator)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.d_v, 10.0..=200.0).text("D_v (Inhibitor)")).changed();
-
-                if changed {
-                    self.controller.send_command(SimCommand::UpdateParam("a".to_string(), self.a));
-                    self.controller.send_command(SimCommand::UpdateParam("b".to_string(), self.b));
-                    self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), self.d_u));
-                    self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), self.d_v));
+                if let Some(cmd) = crate::generated_ui::generate_ui_Morphogenesis(ui, &mut self.schema_params) {
+                    self.controller.send_command(SimCommand::UpdateTypedParam(cmd));
                     self.selected_preset = None;
                 }
             });

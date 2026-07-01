@@ -1,0 +1,12 @@
+{
+  "id": "Morphogenesis",
+  "name": "Turing Morphogenesis",
+  "description": "Turing Morphogenesis",
+  "citation": "Turing, A. M. (1952).",
+  "parameters": [
+    { "id": "a", "label": "Parameter a", "type": "f64", "default": 3.0, "min": 0.0, "max": 10.0, "unit": "" },
+    { "id": "b", "label": "Parameter b", "type": "f64", "default": 8.0, "min": 0.0, "max": 20.0, "unit": "" },
+    { "id": "d_u", "label": "Diffusion u", "type": "f64", "default": 1.0, "min": 0.0, "max": 5.0, "unit": "" },
+    { "id": "d_v", "label": "Diffusion v", "type": "f64", "default": 10.0, "min": 0.0, "max": 20.0, "unit": "" }
+  ]
+}

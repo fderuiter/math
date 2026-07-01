@@ -44,6 +44,71 @@ fn main() {
     generated_code.push_str("}\n");
 
     fs::write(&dest_path, generated_code).unwrap();
+
+    // 3. Generate UI from schemas
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let root_dir = Path::new(&manifest_dir).parent().unwrap();
+    let schemas_dir = root_dir.join("schemas");
+    
+    println!("cargo:rerun-if-changed={}", schemas_dir.display());
+
+    #[derive(serde::Deserialize)]
+    struct Schema {
+        id: String,
+        parameters: Vec<Parameter>,
+    }
+
+    #[derive(serde::Deserialize)]
+    struct Parameter {
+        id: String,
+        label: String,
+        #[serde(rename = "type")]
+        type_name: String,
+        min: f64,
+        max: f64,
+    }
+
+    let mut ui_code = String::new();
+    
+    if let Ok(entries) = fs::read_dir(&schemas_dir) {
+        let mut schemas = Vec::new();
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|s| s.to_str()) == Some("json") {
+                if let Ok(content) = fs::read_to_string(&path) {
+                    if let Ok(schema) = serde_json::from_str::<Schema>(&content) {
+                        schemas.push(schema);
+                    }
+                }
+            }
+        }
+
+        for schema in schemas {
+            ui_code.push_str(&format!(
+                "pub fn generate_ui_{}(ui: &mut eframe::egui::Ui, params: &mut math_commons::generated_schemas::{}Params) -> Option<math_commons::generated_schemas::TypedModelCommand> {{\n",
+                schema.id, schema.id
+            ));
+            ui_code.push_str("    let mut updated = None;\n");
+            
+            for param in &schema.parameters {
+                ui_code.push_str(&format!(
+                    "    if ui.add(eframe::egui::Slider::new(&mut params.{}, {}f64..={}f64).text(\"{}\")).changed() {{\n",
+                    param.id, param.min, param.max, param.label
+                ));
+                ui_code.push_str(&format!(
+                    "        updated = Some(math_commons::generated_schemas::TypedModelCommand::{}(*params));\n",
+                    schema.id
+                ));
+                ui_code.push_str("    }\n");
+            }
+            
+            ui_code.push_str("    updated\n");
+            ui_code.push_str("}\n\n");
+        }
+    }
+
+    let ui_dest_path = Path::new(&out_dir).join("generated_ui.rs");
+    fs::write(&ui_dest_path, ui_code).unwrap();
 }
 
 fn scan_local_tabs(

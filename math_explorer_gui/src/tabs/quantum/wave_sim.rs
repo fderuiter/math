@@ -43,15 +43,15 @@ impl SimulationRunner for WaveRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) if name.as_str() == "potential_type" => {
-                self.potential_type = if val == 0.0 {
+            SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::WaveSim(p)) => {
+                self.potential_type = if p.potential_type == 0.0 {
                     PotentialType::InfiniteWell
                 } else {
                     PotentialType::HarmonicOscillator
                 };
                 self.init_system();
             }
-            SimCommand::UpdateParam(_, _) => {}
+            SimCommand::UpdateTypedParam(_) => {}
             SimCommand::Reset => self.init_system(),
             _ => {}
         }
@@ -234,8 +234,7 @@ impl InteractiveTool for WaveSimulator {
                 } else {
                     1.0
                 };
-                self.controller
-                    .send_command(SimCommand::UpdateParam("potential_type".to_string(), val));
+                self.controller.send_command(SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::WaveSim(math_commons::generated_schemas::WaveSimParams { potential_type: self.potential_type as usize as f64 })));
                 self.controller.send_command(SimCommand::Reset);
             }
 

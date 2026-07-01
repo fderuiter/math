@@ -24,13 +24,12 @@ impl SimulationRunner for HodgkinHuxleyRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(ref name, val) => match name.as_str() {
-                "g_na" => self.params.g_na = val,
-                "g_k" => self.params.g_k = val,
-                "g_l" => self.params.g_l = val,
-                "i_ext" => self.i_ext = val,
-                _ => {}
-            },
+            SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::HodgkinHuxley(p)) => {
+                self.params.g_na = p.g_na;
+                self.params.g_k = p.g_k;
+                self.params.g_l = p.g_l;
+                self.i_ext = p.i_ext;
+            }
             SimCommand::Reset => {
                 self.neuron = HodgkinHuxleyNeuron::new(-65.0);
                 self.time = 0.0;
@@ -40,18 +39,16 @@ impl SimulationRunner for HodgkinHuxleyRunner {
         }
 
         // Reconstruct neuron if parameters changed
-        if let SimCommand::UpdateParam(name, _) = cmd {
-            if name != "i_ext" {
-                let builder = HodgkinHuxleyNeuron::builder()
-                    .with_initial_v(self.neuron.v())
-                    .with_n(self.neuron.n())
-                    .with_m(self.neuron.m())
-                    .with_h(self.neuron.h())
-                    .with_params(self.params.clone());
+        if let SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::HodgkinHuxley(_)) = cmd {
+            let builder = HodgkinHuxleyNeuron::builder()
+                .with_initial_v(self.neuron.v())
+                .with_n(self.neuron.n())
+                .with_m(self.neuron.m())
+                .with_h(self.neuron.h())
+                .with_params(self.params.clone());
 
-                if let Ok(new_neuron) = builder.build() {
-                    self.neuron = new_neuron;
-                }
+            if let Ok(new_neuron) = builder.build() {
+                self.neuron = new_neuron;
             }
         }
     }
@@ -66,21 +63,12 @@ impl SimulationRunner for HodgkinHuxleyRunner {
     }
 
     fn get_snapshot(&self) -> StateSnapshot {
-        // Flatten history and push current time/voltage as the last two elements
-        let mut custom_data = Vec::with_capacity(self.history.len() * 2 + 2);
-        for &[t, v] in &self.history {
-            custom_data.push(t);
-            custom_data.push(v);
-        }
-        custom_data.push(self.time);
-        custom_data.push(self.neuron.v());
-
         StateSnapshot {
             width: 0,
             height: 0,
             pixels: Arc::new(Vec::new()),
-            custom_data,
-            structured_data: None,
+            custom_data: Vec::new(),
+            structured_data: Some(Box::new((self.time, self.neuron.v(), self.history.clone()))),
         }
     }
 
@@ -96,10 +84,7 @@ pub struct HodgkinHuxleyTool {
     voltage: f64,
 
     // UI State for sliders (to avoid modifying params directly every frame)
-    g_na: f64,
-    g_k: f64,
-    g_l: f64,
-    i_ext: f64,
+    schema_params: math_commons::generated_schemas::HodgkinHuxleyParams,
 }
 
 impl Default for HodgkinHuxleyTool {
@@ -119,13 +104,10 @@ impl Default for HodgkinHuxleyTool {
 
         Self {
             controller: SimulationController::new(runner),
-            g_na: params.g_na,
-            g_k: params.g_k,
-            g_l: params.g_l,
-            history: VecDeque::new(),
-            time: 0.0,
-            voltage: -65.0,
-            i_ext: 10.0, // Default injection
+            schema_params: math_commons::generated_schemas::HodgkinHuxleyParams::default(),
+history: VecDeque::new(),
+time: 0.0,
+voltage: -65.0, // Default injection
         }
     }
 }
@@ -143,37 +125,8 @@ impl InteractiveTool for HodgkinHuxleyTool {
                 .accessible_hover_text(dummy_model.theory_description());
             ui.separator();
 
-            ui.label("Conductances (mS/cm²)");
-            if ui
-                .add(egui::Slider::new(&mut self.g_na, 0.0..=200.0).text("Na+ (Sodium)"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("g_na".to_string(), self.g_na));
-            }
-            if ui
-                .add(egui::Slider::new(&mut self.g_k, 0.0..=100.0).text("K+ (Potassium)"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("g_k".to_string(), self.g_k));
-            }
-            if ui
-                .add(egui::Slider::new(&mut self.g_l, 0.0..=5.0).text("Leak"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("g_l".to_string(), self.g_l));
-            }
-
-            ui.separator();
-            ui.label("Input");
-            if ui
-                .add(egui::Slider::new(&mut self.i_ext, 0.0..=50.0).text("I_ext (Current)"))
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::UpdateParam("i_ext".to_string(), self.i_ext));
+            if let Some(cmd) = crate::generated_ui::generate_ui_HodgkinHuxley(ui, &mut self.schema_params) {
+                self.controller.send_command(SimCommand::UpdateTypedParam(cmd));
             }
 
             ui.separator();
@@ -207,13 +160,9 @@ impl InteractiveTool for HodgkinHuxleyTool {
 
                     // Re-apply current slider values
                     self.controller
-                        .send_command(SimCommand::UpdateParam("g_na".to_string(), self.g_na));
-                    self.controller
-                        .send_command(SimCommand::UpdateParam("g_k".to_string(), self.g_k));
-                    self.controller
-                        .send_command(SimCommand::UpdateParam("g_l".to_string(), self.g_l));
-                    self.controller
-                        .send_command(SimCommand::UpdateParam("i_ext".to_string(), self.i_ext));
+                        .send_command(SimCommand::UpdateTypedParam(
+                            math_commons::generated_schemas::TypedModelCommand::HodgkinHuxley(self.schema_params)
+                        ));
                 }
             });
 
@@ -224,15 +173,11 @@ impl InteractiveTool for HodgkinHuxleyTool {
         egui::CentralPanel::default().show(ctx, |ui| {
             // Update from background thread
             if let Some(snapshot) = self.controller.update() {
-                if snapshot.custom_data.len() >= 2 {
-                    self.voltage = *snapshot.custom_data.last().unwrap();
-                    self.time = snapshot.custom_data[snapshot.custom_data.len() - 2];
-
-                    // Reconstruct history
-                    self.history.clear();
-                    for i in (0..snapshot.custom_data.len() - 2).step_by(2) {
-                        self.history
-                            .push_back([snapshot.custom_data[i], snapshot.custom_data[i + 1]]);
+                if let Some(data) = &snapshot.structured_data {
+                    if let Some((t, v, hist)) = data.downcast_ref::<(f64, f64, std::collections::VecDeque<[f64; 2]>)>() {
+                        self.time = *t;
+                        self.voltage = *v;
+                        self.history = hist.clone();
                     }
                 }
             }

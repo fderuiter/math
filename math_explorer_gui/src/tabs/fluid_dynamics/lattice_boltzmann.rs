@@ -18,7 +18,7 @@ enum DrawMode {
 pub struct LbmRunner {
     solver: LatticeBoltzmannD2Q9<BgkCollision>,
     steps_per_frame: usize,
-    viscosity: f64,
+    schema_params: math_commons::generated_schemas::LatticeBoltzmannParams,
 }
 
 impl LbmRunner {
@@ -49,7 +49,7 @@ impl LbmRunner {
         Self {
             solver,
             steps_per_frame: 5,
-            viscosity,
+            schema_params: math_commons::generated_schemas::LatticeBoltzmannParams { viscosity },
         }
     }
 }
@@ -58,11 +58,11 @@ impl SimulationRunner for LbmRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) if name == "viscosity" => {
-                self.viscosity = val;
-                self.solver.collision_model.tau = 3.0 * self.viscosity + 0.5;
+            SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::LatticeBoltzmann(p)) => {
+                self.schema_params.viscosity = p.viscosity;
+                self.solver.collision_model.tau = 3.0 * self.schema_params.viscosity + 0.5;
             }
-            SimCommand::UpdateParam(_, _) => {}
+            SimCommand::UpdateTypedParam(_) => {}
             SimCommand::ApplyBrush {
                 cx,
                 cy,
@@ -91,7 +91,7 @@ impl SimulationRunner for LbmRunner {
             SimCommand::Reset => {
                 let width = self.solver.width();
                 let height = self.solver.height();
-                self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.viscosity + 0.5);
+                self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.schema_params.viscosity + 0.5);
                 self.solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
             }
             _ => {}
@@ -146,7 +146,7 @@ pub struct LatticeBoltzmannTool {
     // UI State
     texture: Option<egui::TextureHandle>,
     draw_mode: DrawMode,
-    viscosity: f64,
+    schema_params: math_commons::generated_schemas::LatticeBoltzmannParams,
     draw_radius: usize,
     steps_per_frame: usize,
 
@@ -166,7 +166,7 @@ impl Default for LatticeBoltzmannTool {
             controller,
             texture: None,
             draw_mode: DrawMode::Obstacle,
-            viscosity,
+            schema_params: math_commons::generated_schemas::LatticeBoltzmannParams { viscosity },
             draw_radius: 2,
             steps_per_frame: 5,
             last_width: 100,
@@ -240,14 +240,8 @@ impl InteractiveTool for LatticeBoltzmannTool {
 
             ui.separator();
             ui.label("Simulation Parameters");
-            if ui
-                .add(egui::Slider::new(&mut self.viscosity, 0.005..=0.2).text("Viscosity"))
-                .changed()
-            {
-                self.controller.send_command(SimCommand::UpdateParam(
-                    "viscosity".to_string(),
-                    self.viscosity,
-                ));
+            if let Some(cmd) = crate::generated_ui::generate_ui_LatticeBoltzmann(ui, &mut self.schema_params) {
+                self.controller.send_command(SimCommand::UpdateTypedParam(cmd));
             }
             if ui
                 .add(
