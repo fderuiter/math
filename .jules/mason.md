@@ -29,3 +29,11 @@
 - **Issue**: The updated traceability and verification tools were failing CI by falsely flagging non-core files and breaking on new macros.
 - **Resolution**: Refined the traceability engine in `oxidize_core` to correctly identify target macros, and updated `verify_suite.py` to support the `stochastic_signature_verification!` macro.
 - **Impact**: Restored CI pipeline stability and accurate integrity reporting.
+
+## High-Integrity Diagnostic Bridge (PR 1019)
+
+- **Issue**: Standard diagnostic bus relied on heap-allocated types (`String`, `HashMap`), which violated the zero-allocation constraints of the `VerifiedAllocator` during safety-critical simulation loops, leading to silent failures.
+- **Resolution**: Implemented the `NoAllocBridge` using a lock-free, zero-allocation ring buffer.
+    - Deferred data hydration by moving the creation of heavy `DiagnosticEvent` objects to the non-verified side of the engine.
+    - Standardized the bridge transition layer to resolve type incompatibilities across domains.
+- **Impact**: Restored full diagnostic visibility for physics and AI errors without compromising strict high-integrity memory constraints.
