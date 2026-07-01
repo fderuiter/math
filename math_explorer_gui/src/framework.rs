@@ -110,9 +110,11 @@ impl SimulationFramework {
                                 ui.separator();
                                 ui.heading("Additional Context");
                                 for (key, desc) in available {
-                                    ui.label(format!("{}: {}", key, desc)).accessible_hover_text(
-                                        format!("Additional context for {}", key),
-                                    );
+                                    ui.label(format!("{}: {}", key, desc))
+                                        .accessible_hover_text(format!(
+                                            "Additional context for {}",
+                                            key
+                                        ));
                                 }
                             }
                         } else {
