@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::framework::InteractiveTool;
+use crate::framework::{InputMode, InteractiveTool};
 use eframe::egui;
 use math_commons::theory::TheoryDescribable;
 use math_explorer::ai::transformer::{Decoder, Encoder, Transformer};
@@ -70,8 +70,13 @@ impl AttentionMapsTool {
         changed
     }
 
-    fn draw_heatmap(ui: &mut egui::Ui, name: &str, matrix: &DMatrix<f64>) {
+    fn draw_heatmap(ui: &mut egui::Ui, name: &str, matrix: &DMatrix<f64>, input_mode: InputMode) {
         ui.label(name);
+
+        let cell_size = match input_mode {
+            InputMode::Touch => 44.0,
+            InputMode::Mouse => 40.0,
+        };
 
         let (min_val, max_val) = matrix
             .iter()
@@ -102,7 +107,7 @@ impl AttentionMapsTool {
                         );
 
                         let (rect, _response) =
-                            ui.allocate_exact_size(egui::vec2(40.0, 40.0), egui::Sense::hover());
+                            ui.allocate_exact_size(egui::vec2(cell_size, cell_size), egui::Sense::hover());
 
                         ui.painter().rect_filled(rect, 2.0, color);
 
@@ -132,6 +137,11 @@ impl InteractiveTool for AttentionMapsTool {
     }
 
     fn show(&mut self, ctx: &egui::Context) {
+        let input_mode = ctx.data(|d| {
+            d.get_temp(egui::Id::new("INPUT_MODE"))
+                .unwrap_or(InputMode::Mouse)
+        });
+
         egui::CentralPanel::default().show(ctx, |ui| {
             let dummy_transformer = Transformer {
                 encoder: Encoder::new(1, 4, 1, 4),
@@ -172,13 +182,14 @@ impl InteractiveTool for AttentionMapsTool {
                                 ui,
                                 "Attention Weights (softmax(Q * K^T / sqrt(d_k)))",
                                 &self.attention_weights,
+                                input_mode,
                             );
                         });
 
                         ui.add_space(20.0);
 
                         ui.group(|ui| {
-                            Self::draw_heatmap(ui, "Output (Weights * V)", &self.output_matrix);
+                            Self::draw_heatmap(ui, "Output (Weights * V)", &self.output_matrix, input_mode);
                         });
                     });
                 });
