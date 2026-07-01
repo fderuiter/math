@@ -367,6 +367,10 @@ impl TheoryDescribable for MorphogenesisTool {
             diffusion_coeffs: vec![],
         }.theory_description()
     }
+
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
+    }
     fn theory_citation(&self) -> String {
         ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
             reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },

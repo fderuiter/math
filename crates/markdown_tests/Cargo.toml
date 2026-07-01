@@ -16,8 +16,6 @@ domain_biology = { path = "../domain_biology" }
 domain_applied = { path = "../domain_applied" }
 domain_climate = { path = "../domain_climate" }
 domain_epidemiology = { path = "../domain_epidemiology" }
-rug_mock = { path = "../rug_mock" }
-wigner_mock = { path = "../wigner_mock" }
 math_explorer = { path = "../../math_explorer", features = ["pure_math", "applied", "ai", "biology", "climate", "epidemiology", "physics"] }
 
 nalgebra = "0.34.0"

@@ -202,6 +202,10 @@ impl TheoryDescribable for AttentionMapsTool {
             decoder: Decoder::new(1, 4, 1, 4),
         }.theory_description()
     }
+
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
+    }
     fn theory_citation(&self) -> String {
         Transformer {
             encoder: Encoder::new(1, 4, 1, 4),

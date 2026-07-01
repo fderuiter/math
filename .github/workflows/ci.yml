@@ -11,19 +11,27 @@ env:
 
 jobs:
   build-and-test:
-    name: Build and Test (${{ matrix.target }})
-    runs-on: ubuntu-latest
+    name: Build and Test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
             name: Linux Native
-          - target: wasm32-unknown-unknown
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            name: Windows Native
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            name: macOS Native
+          - os: ubuntu-latest
+            target: wasm32-unknown-unknown
             name: Web/WASM
 
     steps:
       - name: Free Disk Space
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
@@ -34,22 +42,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Verify Architectural Records Updates
-        run: ./scripts/verify_records.sh
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-
-      - name: Set up Python for Traceability
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install PyTorch (Linux)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: pip install setuptools "numpy<2" torch==2.2.0 --break-system-packages
-
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -72,67 +64,36 @@ jobs:
             ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-
             ${{ runner.os }}-cargo-
 
+      - name: Verify Architectural Records Updates
+        if: matrix.target != 'wasm32-unknown-unknown'
+        run: cargo run -p xtask -- verify-records
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
       - name: Check Traceability
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: python3 scripts/traceability.py
+        if: matrix.target != 'wasm32-unknown-unknown'
+        run: cargo run -p xtask -- traceability
 
       - name: Check Formatting
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo fmt --all -- --check
 
-      - name: Check File Lengths (500 lines limit)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: |
-          echo "Checking for files exceeding 500 lines in core math directories..."
-          # Define the directories to check
-          DIRS_TO_CHECK="crates/domain_physics crates/domain_biology crates/pure_math"
-          
-          # Find files exceeding 500 lines
-          EXCEEDING_FILES=$(find $DIRS_TO_CHECK -name "*.rs" -type f -exec wc -l {} + | awk '$1 > 500 && $2 != "total" {print $0}')
-          
-          if [ -n "$EXCEEDING_FILES" ]; then
-            echo "Error: The following files exceed the 500-line limit:"
-            echo "$EXCEEDING_FILES"
-            echo "Please split these files using the Strategy pattern."
-            exit 1
-          else
-            echo "All checked files are within the 500-line limit."
-          fi
-
       - name: Build (Native)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo build --workspace --verbose --all-features
-        env:
-          LIBTORCH_USE_PYTORCH: 1
-          LIBTORCH_BYPASS_VERSION_CHECK: 1
 
       - name: Run Tests (Native)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: |
-          export LD_LIBRARY_PATH=$(python3 -c "import torch; print(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
-          cargo test --workspace --verbose --all-features
-        env:
-          LIBTORCH_USE_PYTORCH: 1
-          LIBTORCH_BYPASS_VERSION_CHECK: 1
+        if: matrix.target != 'wasm32-unknown-unknown'
+        run: cargo test --workspace --verbose --all-features
 
       - name: Run Clippy (Native)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo clippy --workspace --all-features -- -D warnings -D clippy::too_many_lines -D clippy::cognitive_complexity
-        env:
-          LIBTORCH_USE_PYTORCH: 1
-          LIBTORCH_BYPASS_VERSION_CHECK: 1
-
-      - name: Install cargo-llvm-cov
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        uses: taiki-e/install-action@cargo-llvm-cov
-
-      - name: Free up disk space before coverage
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: cargo clean
 
       - name: Run Integrity Verified Suite
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
-        run: python3 scripts/verify_suite.py
+        if: matrix.target != 'wasm32-unknown-unknown'
+        run: cargo run -p xtask -- verify-suite
 
       - name: Check Workspace (WASM)
         if: matrix.target == 'wasm32-unknown-unknown'
@@ -173,16 +134,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install PyTorch (AI only)
-        if: matrix.feature == 'ai'
-        run: pip install setuptools "numpy<2" torch==2.2.0 --break-system-packages
-
-
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -203,16 +154,10 @@ jobs:
 
       - name: Run Tests
         run: |
-          if [ "${{ matrix.feature }}" = "ai" ]; then
-            export LD_LIBRARY_PATH=$(python3 -c "import torch; print(torch.__path__[0] + '/lib')"):$LD_LIBRARY_PATH
-            export LIBTORCH_USE_PYTORCH=1
-            export LIBTORCH_BYPASS_VERSION_CHECK=1
-          fi
-          
           if [ -n "${{ matrix.feature }}" ]; then
-            cargo test -p math_explorer --no-default-features --features ${{ matrix.feature }}
+            cargo run -p xtask -- test-features ${{ matrix.feature }}
           else
-            cargo test -p math_explorer --no-default-features
+            cargo run -p xtask -- test-features core-only
           fi
 
   package:

@@ -16,6 +16,8 @@ pub struct InteractionContext<'a> {
     pub response: &'a egui::Response,
     pub input_mode: InputMode,
     pub multi_touch: Option<egui::MultiTouchInfo>,
+    pub keys_down: std::collections::HashSet<egui::Key>,
+    pub modifiers: egui::Modifiers,
 }
 
 pub trait InteractiveTool {
@@ -45,6 +47,9 @@ pub trait InteractiveTool {
                     .unwrap_or(InputMode::Mouse)
             });
 
+            let keys_down = ui.input(|i| i.keys_down.clone());
+            let modifiers = ui.input(|i| i.modifiers);
+
             let interaction_ctx = InteractionContext {
                 pointer_pos: response.interact_pointer_pos(),
                 delta: response.drag_delta(),
@@ -53,7 +58,13 @@ pub trait InteractiveTool {
                 response: &response,
                 input_mode,
                 multi_touch,
+                keys_down,
+                modifiers,
             };
+
+            if interaction_ctx.response.has_focus() {
+                self.on_keyboard(&interaction_ctx);
+            }
 
             if interaction_ctx.multi_touch.is_some() {
                 self.on_gesture(&interaction_ctx);
@@ -84,6 +95,7 @@ pub trait InteractiveTool {
     fn on_click(&mut self, _ctx: &InteractionContext) {}
     fn on_brush(&mut self, _ctx: &InteractionContext) {}
     fn on_gesture(&mut self, _ctx: &InteractionContext) {}
+    fn on_keyboard(&mut self, _ctx: &InteractionContext) {}
 }
 
 pub struct SimulationFramework {
@@ -91,6 +103,7 @@ pub struct SimulationFramework {
     pub selected_tool_index: usize,
     pub input_mode: InputMode,
     pub show_theory_portal: bool,
+    pub show_help_menu: bool,
 }
 
 impl SimulationFramework {
@@ -100,6 +113,7 @@ impl SimulationFramework {
             selected_tool_index: 0,
             input_mode: InputMode::Mouse,
             show_theory_portal: false,
+            show_help_menu: false,
         }
     }
 
@@ -147,18 +161,7 @@ impl SimulationFramework {
             });
     }
 
-    pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
-        // Update global input mode
-        ctx.input(|i| {
-            if i.any_touches() || i.multi_touch().is_some() {
-                self.input_mode = InputMode::Touch;
-            } else if i.pointer.is_moving() && !i.any_touches() {
-                // Heuristic: if pointer is moving but no touches, likely mouse
-                self.input_mode = InputMode::Mouse;
-            }
-        });
-        ctx.data_mut(|d| d.insert_temp(egui::Id::new("INPUT_MODE"), self.input_mode));
-
+    fn show_side_panel(&mut self, ctx: &egui::Context, id_source: &str) {
         egui::SidePanel::right(format!("{}_tool_selector", id_source))
             .resizable(false)
             .show(ctx, |ui| {
@@ -176,8 +179,83 @@ impl SimulationFramework {
                 });
                 ui.separator();
                 ui.checkbox(&mut self.show_theory_portal, "Theory Context Portal");
+                if ui.button("Show Help Menu").clicked() {
+                    self.show_help_menu = !self.show_help_menu;
+                }
             });
+    }
 
+    fn show_help_menu_window(&mut self, ctx: &egui::Context) {
+        if self.show_help_menu {
+            egui::Window::new("Help Menu")
+                .open(&mut self.show_help_menu)
+                .resizable(true)
+                .show(ctx, |ui| {
+                    ui.heading("Available Commands");
+                    ui.separator();
+
+                    let registry_data = ctx.data(|d| {
+                        d.get_temp::<egui_plot::commands::CommandRegistryData>(egui::Id::new(
+                            "CMD_REGISTRY",
+                        ))
+                        .unwrap_or_default()
+                    });
+
+                    if registry_data.commands.is_empty() {
+                        ui.label("No commands available for the current context.");
+                    } else {
+                        for cmd in registry_data.commands {
+                            ui.group(|ui| {
+                                ui.label(egui::RichText::new(&cmd.name).strong());
+                                ui.label(&cmd.description);
+
+                                let trigger_str = match &cmd.trigger {
+                                    egui_plot::commands::CommandTrigger::Key(k) => {
+                                        format!("Key: {:?}", k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::Shortcut(m, k) => {
+                                        format!("Shortcut: {:?} + {:?}", m, k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::AltClick => {
+                                        "Alt-Click".to_string()
+                                    }
+                                };
+                                ui.label(egui::RichText::new(trigger_str).code());
+
+                                if cmd.desktop_only {
+                                    ui.label(egui::RichText::new("Desktop Only").italics());
+                                }
+                            });
+                        }
+                    }
+                });
+        }
+    }
+
+    pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
+        // Update global input mode
+        ctx.input(|i| {
+            if i.any_touches() || i.multi_touch().is_some() {
+                self.input_mode = InputMode::Touch;
+            } else if i.pointer.is_moving() && !i.any_touches() {
+                // Heuristic: if pointer is moving but no touches, likely mouse
+                self.input_mode = InputMode::Mouse;
+            }
+        });
+        ctx.data_mut(|d| {
+            d.insert_temp(egui::Id::new("INPUT_MODE"), self.input_mode);
+            d.insert_temp(
+                egui::Id::new("INPUT_MODE_TOUCH"),
+                self.input_mode == InputMode::Touch,
+            );
+            // Clear CMD_REGISTRY at start of frame
+            d.insert_temp(
+                egui::Id::new("CMD_REGISTRY"),
+                egui_plot::commands::CommandRegistryData::default(),
+            );
+        });
+
+        self.show_side_panel(ctx, id_source);
         self.show_theory_portal(ctx, id_source);
 
         if let Some(tool) = self.tools.get_mut(self.selected_tool_index) {
@@ -189,6 +267,8 @@ impl SimulationFramework {
                 });
             });
         }
+
+        self.show_help_menu_window(ctx);
     }
 }
 
@@ -243,6 +323,25 @@ impl Camera3D {
         if scroll != 0.0 && response.hovered() && multi_touch.is_none() {
             self.zoom *= 1.0 + (scroll * 0.001);
             self.zoom = self.zoom.clamp(0.01, 100.0);
+        }
+
+        if response.has_focus() {
+            let mut yaw_delta = 0.0;
+            let mut pitch_delta = 0.0;
+            if ui.input(|i| i.key_down(egui::Key::ArrowLeft)) {
+                yaw_delta += 0.05;
+            }
+            if ui.input(|i| i.key_down(egui::Key::ArrowRight)) {
+                yaw_delta -= 0.05;
+            }
+            if ui.input(|i| i.key_down(egui::Key::ArrowUp)) {
+                pitch_delta += 0.05;
+            }
+            if ui.input(|i| i.key_down(egui::Key::ArrowDown)) {
+                pitch_delta -= 0.05;
+            }
+            self.yaw -= yaw_delta;
+            self.pitch -= pitch_delta;
         }
     }
 
