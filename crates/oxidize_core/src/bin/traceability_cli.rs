@@ -33,7 +33,9 @@ fn main() {
 
             if !report.unlinked_code.is_empty() {
                 println!("\n=== Unlinked Modules ===");
-                println!("The following modules contain a verification macro but are missing from the registry:");
+                println!(
+                    "The following modules contain a verification macro but are missing from the registry:"
+                );
                 for file in &report.unlinked_code {
                     println!("   [!] UNLINKED module: {}", file);
                 }

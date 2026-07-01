@@ -203,3 +203,4 @@ impl InteractiveTool for SurfaceViewer {
 
 // [cite:modular_polynomials_review]
 // theory_verification!
+// module = "modular_polynomials_review_mod"
