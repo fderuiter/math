@@ -41,11 +41,11 @@
 //!
 //! Emit the error to the bus using `diagnostics::emit_error(&my_error)`.
 
+use std::cell::UnsafeCell;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU8, AtomicUsize, Ordering};
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex, OnceLock};
-use std::cell::UnsafeCell;
-use std::sync::atomic::{AtomicUsize, AtomicU8, Ordering};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Severity {
@@ -75,7 +75,7 @@ impl Severity {
             _ => Severity::Fatal,
         }
     }
-    
+
     pub fn to_u8(&self) -> u8 {
         match self {
             Severity::Info => 0,
@@ -128,12 +128,24 @@ pub struct NoAllocBridge {
 unsafe impl Send for NoAllocBridge {}
 unsafe impl Sync for NoAllocBridge {}
 
+impl Default for NoAllocBridge {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NoAllocBridge {
     pub const fn new() -> Self {
         Self {
             head: AtomicUsize::new(0),
             tail: AtomicUsize::new(0),
-            buffer: [const { UnsafeCell::new(BridgeEvent { severity: 0, error_code: 0, message: "" }) }; QUEUE_SIZE],
+            buffer: [const {
+                UnsafeCell::new(BridgeEvent {
+                    severity: 0,
+                    error_code: 0,
+                    message: "",
+                })
+            }; QUEUE_SIZE],
             ready: [const { AtomicU8::new(0) }; QUEUE_SIZE],
         }
     }
@@ -145,7 +157,11 @@ impl NoAllocBridge {
             if next == self.tail.load(Ordering::Acquire) {
                 return;
             }
-            if self.head.compare_exchange_weak(idx, next, Ordering::AcqRel, Ordering::Relaxed).is_ok() {
+            if self
+                .head
+                .compare_exchange_weak(idx, next, Ordering::AcqRel, Ordering::Relaxed)
+                .is_ok()
+            {
                 while self.ready[idx].load(Ordering::Acquire) != 0 {
                     std::hint::spin_loop();
                 }
@@ -164,7 +180,7 @@ impl NoAllocBridge {
         let mut events = Vec::new();
         let tail = self.tail.load(Ordering::Relaxed);
         let head = self.head.load(Ordering::Acquire);
-        
+
         let mut idx = tail;
         while idx != head {
             if self.ready[idx].load(Ordering::Acquire) == 1 {
@@ -185,7 +201,6 @@ pub fn global_bridge() -> &'static NoAllocBridge {
     static BRIDGE: NoAllocBridge = NoAllocBridge::new();
     &BRIDGE
 }
-
 
 pub struct DiagnosticBus {
     sender: Sender<DiagnosticEvent>,
@@ -219,7 +234,7 @@ impl DiagnosticBus {
 
     pub fn try_recv_all(&self) -> Vec<DiagnosticEvent> {
         let mut events = Vec::new();
-        
+
         // Hydrate from bridge
         let bridge_events = global_bridge().pop_all();
         for be in bridge_events {
@@ -232,7 +247,7 @@ impl DiagnosticBus {
                 thread_name: Some("verified_thread".to_string()),
             });
         }
-        
+
         if let Ok(rx) = self.receiver.lock() {
             while let Ok(event) = rx.try_recv() {
                 events.push(event);

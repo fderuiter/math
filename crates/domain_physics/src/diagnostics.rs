@@ -19,7 +19,7 @@ pub fn emit_error<E: Diagnostic>(err: &E) {
     let severity = err.severity();
     let message = err.static_message();
     let error_code = err.error_code();
-    
+
     math_commons::diagnostics::global_bridge().push(math_commons::diagnostics::BridgeEvent {
         severity: severity.to_u8(),
         error_code,
