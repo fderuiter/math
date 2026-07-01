@@ -3,6 +3,10 @@ use crate::metrics::{
     ComplexityMetrics, disable_verification, enable_verification, get_metrics, reset_metrics,
 };
 
+pub fn register_cpp_dependency(dep: &str) {
+    println!("[Traceability] Tracking external C++ dependency: {}", dep);
+}
+
 pub struct VerifiedEngine;
 
 impl VerifiedEngine {

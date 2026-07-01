@@ -129,7 +129,7 @@ impl<'a> TraceabilityEngine<'a> {
 
             if is_module
                 && let Ok(content) = self.vfs.read_to_string(&file)
-                && content.contains("theory_verification!")
+                && (content.contains("theory_verification!") || content.contains("stochastic_signature_verification!"))
             {
                 // Very basic check to see if the module name is in the file
                 // The actual macro test will panic if it's missing from registry
