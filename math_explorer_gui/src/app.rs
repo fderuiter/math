@@ -34,22 +34,23 @@ impl MathExplorerApp {
 
         #[cfg(target_os = "macos")]
         {
-            use muda::{Menu, Submenu, MenuItem, PredefinedMenuItem, MenuId};
+            use muda::{Menu, MenuId, MenuItem, PredefinedMenuItem, Submenu};
             let menu = Menu::new();
-            
+
             // App Menu
             let app_menu = Submenu::new("Math Explorer", true);
             app_menu.append(&PredefinedMenuItem::quit(None)).unwrap();
             menu.append(&app_menu).unwrap();
-            
+
             // View Menu
             let view_menu = Submenu::new("View", true);
             for (i, tab) in app.tabs.iter().enumerate() {
-                let item = MenuItem::with_id(MenuId::new(format!("tab_{}", i)), tab.name(), true, None);
+                let item =
+                    MenuItem::with_id(MenuId::new(format!("tab_{}", i)), tab.name(), true, None);
                 view_menu.append(&item).unwrap();
             }
             menu.append(&view_menu).unwrap();
-            
+
             let _ = menu.init_for_nsapp();
         }
 
@@ -176,7 +177,10 @@ impl eframe::App for MathExplorerApp {
                 });
                 ui.menu_button("View", |ui| {
                     for (i, tab) in self.tabs.iter().enumerate() {
-                        if ui.radio_value(&mut self.selected_tab, i, tab.name()).clicked() {
+                        if ui
+                            .radio_value(&mut self.selected_tab, i, tab.name())
+                            .clicked()
+                        {
                             ui.close();
                         }
                     }
