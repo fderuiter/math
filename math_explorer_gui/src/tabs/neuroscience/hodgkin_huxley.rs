@@ -135,12 +135,14 @@ impl InteractiveTool for HodgkinHuxleyTool {
         "Hodgkin-Huxley Model"
     }
 
+    fn theory(&self) -> Option<&dyn TheoryDescribable> {
+        Some(self)
+    }
+
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("hh_controls").show(ctx, |ui| {
-            let dummy_model = HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0);
-            ui.heading("Parameters")
-                .accessible_hover_text(dummy_model.theory_description());
+            ui.heading("Parameters");
             ui.separator();
 
             ui.label("Conductances (mS/cm²)");
@@ -257,6 +259,18 @@ impl InteractiveTool for HodgkinHuxleyTool {
                     plot_ui.line(line);
                 });
         });
+    }
+}
+
+impl TheoryDescribable for HodgkinHuxleyTool {
+    fn theory_description(&self) -> String {
+        HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0).theory_description()
+    }
+    fn theory_citation(&self) -> String {
+        HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0).theory_citation()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0).available_descriptions()
     }
 }
 

@@ -186,6 +186,9 @@ impl TheoryDescribable for WaveSimulator {
 }
 
 impl InteractiveTool for WaveSimulator {
+    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
+        Some(self)
+    }
     fn name(&self) -> &'static str {
         "Wave Simulator"
     }
