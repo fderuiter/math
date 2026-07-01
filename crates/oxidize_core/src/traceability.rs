@@ -135,7 +135,9 @@ impl<'a> TraceabilityEngine<'a> {
                 // The actual macro test will panic if it's missing from registry
                 let mut found = false;
                 for reg_mod in &registered_modules {
-                    if content.contains(&format!("module = \"{}\"", reg_mod)) || content.contains(&format!("module = {}", reg_mod)) {
+                    if content.contains(&format!("module = \"{}\"", reg_mod))
+                        || content.contains(&format!("module = {}", reg_mod))
+                    {
                         found = true;
                         break;
                     }

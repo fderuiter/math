@@ -1,8 +1,8 @@
+use regex::Regex;
+use std::collections::HashSet;
 use std::env;
 use std::fs;
 use std::path::Path;
-use std::collections::HashSet;
-use regex::Regex;
 
 #[allow(clippy::too_many_lines)]
 fn main() {
@@ -19,12 +19,12 @@ fn main() {
 
     let num_regex = r"([+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)";
     let ident = r"([A-Za-z_][A-Za-z0-9_]*)";
-    
+
     let p1 = format!(r"\\newcommand\{{\\{}\}}\{{{}\}}", ident, num_regex);
     let p2 = format!(r"\\def\\{}\s*\{{{}\}}", ident, num_regex);
     let p3 = format!(r"{}\s*=\s*{}", ident, num_regex);
     let pattern = format!("{}|{}|{}", p1, p2, p3);
-    
+
     let re = Regex::new(&pattern).unwrap();
 
     let root_dirs = vec![
@@ -69,7 +69,7 @@ fn main() {
                                 "{:?} => Some({:?}),\n",
                                 relative_path, content
                             ));
-                            
+
                             // If it's a .tex file, extract constants
                             if relative_path.ends_with(".tex") {
                                 let module_name = path.file_stem().unwrap().to_str().unwrap();
@@ -86,20 +86,29 @@ fn main() {
                                     } else {
                                         continue;
                                     };
-                                    
+
                                     if seen.insert(name.to_string()) {
-                                        let val_str = if val.contains('.') || val.contains('e') || val.contains('E') {
+                                        let val_str = if val.contains('.')
+                                            || val.contains('e')
+                                            || val.contains('E')
+                                        {
                                             val.to_string()
                                         } else {
                                             format!("{}.0", val)
                                         };
-                                        constants_code.push_str(&format!("            pub const {}: f64 = {};\n", name, val_str));
+                                        constants_code.push_str(&format!(
+                                            "            pub const {}: f64 = {};\n",
+                                            name, val_str
+                                        ));
                                     }
                                 }
-                                theory_constants_map.push_str(&format!("
+                                theory_constants_map.push_str(&format!(
+                                    "
         pub mod {} {{
 {}
-        }}\n", module_name, constants_code));
+        }}\n",
+                                    module_name, constants_code
+                                ));
                             }
                         } else {
                             map_entries.push_str(&format!("{:?} => Some(\"\"),\n", relative_path));
