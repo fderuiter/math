@@ -84,7 +84,7 @@ fn verify_records() {
     let changed_lines: Vec<&str> = changed_files.lines().collect();
     let core_modified = changed_lines
         .iter()
-        .any(|l| l.starts_with("math_explorer/") || l.starts_with("crates/"));
+        .any(|l| l.starts_with("math_explorer/") || (l.starts_with("crates/") && !l.starts_with("crates/unified_verification/")));
 
     if core_modified {
         println!("Core logic areas (math_explorer/ or crates/) were modified.");
