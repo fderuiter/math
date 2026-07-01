@@ -11,9 +11,9 @@ pub fn render_theory_parameter<T: TheoryDescribable>(
     value: &mut f64,
 ) -> egui::Response {
     let params = model.theory_parameters();
-    let constraint = params.get(param_name).unwrap_or_else(|| {
-        panic!("Parameter '{}' not found in theory metadata", param_name)
-    });
+    let constraint = params
+        .get(param_name)
+        .unwrap_or_else(|| panic!("Parameter '{}' not found in theory metadata", param_name));
 
     let slider = egui::Slider::new(value, constraint.min..=constraint.max)
         .step_by(constraint.step)

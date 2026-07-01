@@ -169,6 +169,7 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_derive(Theory, attributes(theory))]
+#[allow(clippy::too_many_lines, clippy::collapsible_if)]
 pub fn derive_theory(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
     let name = input.ident;
