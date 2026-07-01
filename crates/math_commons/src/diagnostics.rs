@@ -44,6 +44,8 @@
 use std::collections::HashMap;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex, OnceLock};
+use std::cell::UnsafeCell;
+use std::sync::atomic::{AtomicUsize, AtomicU8, Ordering};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Severity {
@@ -64,12 +66,38 @@ impl std::fmt::Display for Severity {
     }
 }
 
+impl Severity {
+    pub fn from_u8(val: u8) -> Self {
+        match val {
+            0 => Severity::Info,
+            1 => Severity::Warning,
+            2 => Severity::Error,
+            _ => Severity::Fatal,
+        }
+    }
+    
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            Severity::Info => 0,
+            Severity::Warning => 1,
+            Severity::Error => 2,
+            Severity::Fatal => 3,
+        }
+    }
+}
+
 pub trait Diagnostic: std::error::Error + Send + Sync + 'static {
     fn severity(&self) -> Severity {
         Severity::Error
     }
     fn metadata(&self) -> HashMap<String, String> {
         HashMap::new()
+    }
+    fn error_code(&self) -> u32 {
+        0
+    }
+    fn static_message(&self) -> &'static str {
+        std::any::type_name::<Self>()
     }
 }
 
@@ -80,6 +108,84 @@ pub struct DiagnosticEvent {
     pub metadata: HashMap<String, String>,
     pub thread_name: Option<String>,
 }
+
+#[derive(Clone, Copy)]
+pub struct BridgeEvent {
+    pub severity: u8,
+    pub error_code: u32,
+    pub message: &'static str,
+}
+
+const QUEUE_SIZE: usize = 1024;
+
+pub struct NoAllocBridge {
+    head: AtomicUsize,
+    tail: AtomicUsize,
+    buffer: [UnsafeCell<BridgeEvent>; QUEUE_SIZE],
+    ready: [AtomicU8; QUEUE_SIZE],
+}
+
+unsafe impl Send for NoAllocBridge {}
+unsafe impl Sync for NoAllocBridge {}
+
+impl NoAllocBridge {
+    pub const fn new() -> Self {
+        Self {
+            head: AtomicUsize::new(0),
+            tail: AtomicUsize::new(0),
+            buffer: [const { UnsafeCell::new(BridgeEvent { severity: 0, error_code: 0, message: "" }) }; QUEUE_SIZE],
+            ready: [const { AtomicU8::new(0) }; QUEUE_SIZE],
+        }
+    }
+
+    pub fn push(&self, event: BridgeEvent) {
+        let mut idx = self.head.load(Ordering::Relaxed);
+        loop {
+            let next = (idx + 1) % QUEUE_SIZE;
+            if next == self.tail.load(Ordering::Acquire) {
+                return;
+            }
+            if self.head.compare_exchange_weak(idx, next, Ordering::AcqRel, Ordering::Relaxed).is_ok() {
+                while self.ready[idx].load(Ordering::Acquire) != 0 {
+                    std::hint::spin_loop();
+                }
+                unsafe {
+                    *self.buffer[idx].get() = event;
+                }
+                self.ready[idx].store(1, Ordering::Release);
+                break;
+            } else {
+                idx = self.head.load(Ordering::Relaxed);
+            }
+        }
+    }
+
+    pub fn pop_all(&self) -> Vec<BridgeEvent> {
+        let mut events = Vec::new();
+        let tail = self.tail.load(Ordering::Relaxed);
+        let head = self.head.load(Ordering::Acquire);
+        
+        let mut idx = tail;
+        while idx != head {
+            if self.ready[idx].load(Ordering::Acquire) == 1 {
+                let event = unsafe { *self.buffer[idx].get() };
+                events.push(event);
+                self.ready[idx].store(0, Ordering::Release);
+                idx = (idx + 1) % QUEUE_SIZE;
+            } else {
+                break;
+            }
+        }
+        self.tail.store(idx, Ordering::Release);
+        events
+    }
+}
+
+pub fn global_bridge() -> &'static NoAllocBridge {
+    static BRIDGE: NoAllocBridge = NoAllocBridge::new();
+    &BRIDGE
+}
+
 
 pub struct DiagnosticBus {
     sender: Sender<DiagnosticEvent>,
@@ -113,6 +219,20 @@ impl DiagnosticBus {
 
     pub fn try_recv_all(&self) -> Vec<DiagnosticEvent> {
         let mut events = Vec::new();
+        
+        // Hydrate from bridge
+        let bridge_events = global_bridge().pop_all();
+        for be in bridge_events {
+            let mut metadata = HashMap::new();
+            metadata.insert("error_code".to_string(), be.error_code.to_string());
+            events.push(DiagnosticEvent {
+                severity: Severity::from_u8(be.severity),
+                message: be.message.to_string(),
+                metadata,
+                thread_name: Some("verified_thread".to_string()),
+            });
+        }
+        
         if let Ok(rx) = self.receiver.lock() {
             while let Ok(event) = rx.try_recv() {
                 events.push(event);
