@@ -1,4 +1,4 @@
-use crate::accessibility::AccessibleHoverText;
+
 use crate::framework::{InputMode, InteractiveTool};
 use eframe::egui;
 use math_commons::theory::TheoryDescribable;

@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 use regex::Regex;
 use serde::Serialize;
 use std::env;
@@ -41,19 +42,19 @@ fn verify_records() {
 
     let (commit_msgs, changed_files) = if let (Some(base), Some(head)) = (base_sha, head_sha) {
         let msg_out = Command::new("git")
-            .args(&["log", "--format=%B", &format!("{}..{}", base, head)])
+            .args(["log", "--format=%B", &format!("{}..{}", base, head)])
             .output()
             .unwrap();
         let msgs = String::from_utf8_lossy(&msg_out.stdout).to_string();
 
         let diff_out = Command::new("git")
-            .args(&["diff", "--name-only", &base, &head])
+            .args(["diff", "--name-only", &base, &head])
             .output()
             .unwrap();
         let mut diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
         if diffs.trim().is_empty() {
             let diff_out = Command::new("git")
-                .args(&["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
+                .args(["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
                 .output()
                 .unwrap();
             diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
@@ -61,13 +62,13 @@ fn verify_records() {
         (msgs, diffs)
     } else {
         let msg_out = Command::new("git")
-            .args(&["log", "-1", "--pretty=%B"])
+            .args(["log", "-1", "--pretty=%B"])
             .output()
             .unwrap();
         let msgs = String::from_utf8_lossy(&msg_out.stdout).to_string();
 
         let diff_out = Command::new("git")
-            .args(&["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
+            .args(["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
             .output()
             .unwrap();
         let diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
@@ -111,7 +112,7 @@ fn traceability() {
     println!("Delegating to unified Rust Traceability Engine...");
 
     let status = Command::new("cargo")
-        .args(&["run", "--bin", "traceability_cli"])
+        .args(["run", "--bin", "traceability_cli"])
         .status()
         .expect("Failed to run traceability_cli");
 
@@ -132,17 +133,13 @@ fn check_file_lengths() {
     for dir in dirs {
         if Path::new(dir).exists() {
             for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-                if entry.file_type().is_file() {
-                    if entry.path().extension().and_then(|s| s.to_str()) == Some("rs") {
-                        if let Ok(content) = fs::read_to_string(entry.path()) {
-                            let lines = content.lines().count();
-                            if lines > 500 {
-                                exceeding.push(format!(
-                                    "{} ({} lines)",
-                                    entry.path().display(),
-                                    lines
-                                ));
-                            }
+                if entry.file_type().is_file()
+                    && entry.path().extension().and_then(|s| s.to_str()) == Some("rs")
+                {
+                    if let Ok(content) = fs::read_to_string(entry.path()) {
+                        let lines = content.lines().count();
+                        if lines > 500 {
+                            exceeding.push(format!("{} ({} lines)", entry.path().display(), lines));
                         }
                     }
                 }
@@ -162,21 +159,18 @@ fn check_file_lengths() {
     }
 }
 
-fn verify_suite() {
-    println!("=== High-Integrity Verified Suite ===");
-    println!("Gathering native execution coverage...");
-
+fn get_llvm_cov_output() -> std::process::Output {
     let python_cmd = if cfg!(target_os = "windows") {
         "python"
     } else {
         "python3"
     };
     let py_out = Command::new(python_cmd)
-        .args(&["-c", "import torch; print(torch.__path__[0] + '/lib')"])
+        .args(["-c", "import torch; print(torch.__path__[0] + '/lib')"])
         .output();
 
     let mut cmd = Command::new("cargo");
-    cmd.args(&["llvm-cov", "--all-features", "--workspace", "--json"]);
+    cmd.args(["llvm-cov", "--all-features", "--workspace", "--json"]);
     cmd.env("LIBTORCH_USE_PYTORCH", "1");
     cmd.env("LIBTORCH_BYPASS_VERSION_CHECK", "1");
 
@@ -205,18 +199,10 @@ fn verify_suite() {
         }
     }
 
-    let output = cmd.output().expect("Failed to run cargo llvm-cov");
-    if !output.status.success() {
-        eprintln!(
-            "Error running llvm-cov:\n{}",
-            String::from_utf8_lossy(&output.stderr)
-        );
-        std::process::exit(1);
-    }
+    cmd.output().expect("Failed to run cargo llvm-cov")
+}
 
-    let cov_json: serde_json::Value =
-        serde_json::from_slice(&output.stdout).expect("Failed to parse coverage JSON");
-
+fn collect_rs_files() -> Vec<std::path::PathBuf> {
     let mut rs_files = Vec::new();
     for entry in WalkDir::new(".").into_iter().filter_map(|e| e.ok()) {
         let path_str = entry.path().to_string_lossy().replace("\\", "/");
@@ -234,37 +220,55 @@ fn verify_suite() {
         }
     }
     rs_files.sort();
+    rs_files
+}
 
-    let mut wasm_paths = 0;
-    let mut wasm_covered = 0;
+fn parse_coverage(cov_json: &serde_json::Value) -> (f64, f64) {
     let mut native_lines_total = 0.0;
     let mut native_lines_covered = 0.0;
 
-    if let Some(data) = cov_json
+    if let Some(files) = cov_json
         .get("data")
         .and_then(|d| d.as_array())
         .and_then(|a| a.first())
+        .and_then(|data| data.get("files"))
+        .and_then(|f| f.as_array())
     {
-        if let Some(files) = data.get("files").and_then(|f| f.as_array()) {
-            for f in files {
-                if let Some(summary) = f.get("summary").and_then(|s| s.get("lines")) {
-                    native_lines_total +=
-                        summary.get("count").and_then(|c| c.as_f64()).unwrap_or(0.0);
-                    native_lines_covered += summary
-                        .get("covered")
-                        .and_then(|c| c.as_f64())
-                        .unwrap_or(0.0);
-                }
+        for f in files {
+            if let Some(summary) = f.get("summary").and_then(|s| s.get("lines")) {
+                native_lines_total += summary.get("count").and_then(|c| c.as_f64()).unwrap_or(0.0);
+                native_lines_covered +=
+                    summary.get("covered").and_then(|c| c.as_f64()).unwrap_or(0.0);
             }
         }
     }
+    (native_lines_total, native_lines_covered)
+}
 
-    let mut total_funcs = 0.0;
-    let mut total_asserts = 0.0;
-    let mut verified_funcs = 0.0;
-    let mut verified_asserts = 0.0;
-    let mut unverified_funcs = 0.0;
-    let mut unverified_asserts = 0.0;
+struct FileMetrics {
+    wasm_paths: usize,
+    wasm_covered: usize,
+    total_funcs: f64,
+    total_asserts: f64,
+    verified_funcs: f64,
+    verified_asserts: f64,
+    unverified_funcs: f64,
+    unverified_asserts: f64,
+    opt_outs: Vec<(String, String)>,
+}
+
+fn analyze_files(rs_files: &[std::path::PathBuf]) -> FileMetrics {
+    let mut m = FileMetrics {
+        wasm_paths: 0,
+        wasm_covered: 0,
+        total_funcs: 0.0,
+        total_asserts: 0.0,
+        verified_funcs: 0.0,
+        verified_asserts: 0.0,
+        unverified_funcs: 0.0,
+        unverified_asserts: 0.0,
+        opt_outs: Vec::new(),
+    };
 
     let assert_re = Regex::new(r"\b(assert|assert_eq|assert_ne|debug_assert)!\s*\(").unwrap();
     let fn_re = Regex::new(r"\bfn\s+\w+\s*(?:<[^>]*>)?\s*\(").unwrap();
@@ -273,9 +277,7 @@ fn verify_suite() {
     let wasm_re =
         Regex::new(r#"#\[cfg\(target_arch\s*=\s*"wasm32"\)\]\s*(.*?)(?:#\[cfg|$)"#).unwrap();
 
-    let mut opt_outs = Vec::new();
-
-    for filepath in &rs_files {
+    for filepath in rs_files {
         if let Ok(content) = fs::read_to_string(filepath) {
             let is_verified =
                 content.contains("#[verified") || content.contains("#[verified_engine::verified");
@@ -288,36 +290,39 @@ fn verify_suite() {
                 if norm.starts_with("./") {
                     norm = norm[2..].to_string();
                 }
-                opt_outs.push((norm, cap[1].to_string()));
+                m.opt_outs.push((norm, cap[1].to_string()));
             }
 
-            total_funcs += funcs;
-            total_asserts += asserts;
+            m.total_funcs += funcs;
+            m.total_asserts += asserts;
 
             if is_verified {
-                verified_funcs += funcs;
-                verified_asserts += asserts;
+                m.verified_funcs += funcs;
+                m.verified_asserts += asserts;
             } else {
-                unverified_funcs += funcs;
-                unverified_asserts += asserts;
+                m.unverified_funcs += funcs;
+                m.unverified_asserts += asserts;
             }
 
             let content_str = content.replace("\r\n", "\n").replace("\n", " ");
             for cap in wasm_re.captures_iter(&content_str) {
-                wasm_paths += 1;
+                m.wasm_paths += 1;
                 let block = &cap[1];
                 if block.contains("theory_verification!")
                     || content.contains("theory_verification!")
                     || block.contains("stochastic_signature_verification!")
                     || content.contains("stochastic_signature_verification!")
                 {
-                    wasm_covered += 1;
+                    m.wasm_covered += 1;
                 }
             }
         }
     }
-    opt_outs.sort();
+    m.opt_outs.sort();
+    m
+}
 
+fn check_unverified_modules() -> Vec<String> {
     let feature_modules = vec![
         "crates/domain_ai",
         "crates/domain_applied",
@@ -354,30 +359,49 @@ fn verify_suite() {
         }
     }
     unverified_modules.sort();
+    unverified_modules
+}
 
-    let native_cov_pct = if native_lines_total > 0.0 {
-        native_lines_covered / native_lines_total * 100.0
-    } else {
-        0.0
-    };
-    let wasm_cov_pct = if wasm_paths > 0 {
-        (wasm_covered as f64 / wasm_paths as f64) * 100.0
-    } else {
-        100.0
-    };
+fn save_report(report: &IntegrityReport, avg_cov: f64) {
+    let json_report = serde_json::to_string_pretty(&report).unwrap();
+    fs::write("Verification_Certificate.json", json_report).unwrap();
+    println!("Generated Verification_Certificate.json");
 
-    let total_density = if total_funcs > 0.0 {
-        total_asserts / total_funcs
+    if let Ok(mut readme) = fs::read_to_string("README.md") {
+        let badge_color = if avg_cov >= 90.0 {
+            "brightgreen"
+        } else {
+            "yellow"
+        };
+        let new_badge = format!(
+            "![Coverage](https://img.shields.io/badge/coverage-{:.1}%25-{})",
+            avg_cov, badge_color
+        );
+        let badge_re = Regex::new(r"!\[Coverage\]\(.*?\)").unwrap();
+        readme = badge_re.replace(&readme, new_badge.as_str()).to_string();
+        fs::write("README.md", readme).unwrap();
+        println!("README static badge updated with dynamic metric.");
+    }
+}
+
+fn print_report(
+    native_cov_pct: f64,
+    wasm_cov_pct: f64,
+    m: &FileMetrics,
+    unverified_modules: &[String],
+) -> bool {
+    let total_density = if m.total_funcs > 0.0 {
+        m.total_asserts / m.total_funcs
     } else {
         0.0
     };
-    let verified_density = if verified_funcs > 0.0 {
-        verified_asserts / verified_funcs
+    let verified_density = if m.verified_funcs > 0.0 {
+        m.verified_asserts / m.verified_funcs
     } else {
         0.0
     };
-    let unverified_density = if unverified_funcs > 0.0 {
-        unverified_asserts / unverified_funcs
+    let unverified_density = if m.unverified_funcs > 0.0 {
+        m.unverified_asserts / m.unverified_funcs
     } else {
         0.0
     };
@@ -388,17 +412,10 @@ fn verify_suite() {
 
     println!("\n--- High-Integrity Dashboard ---");
     println!("Total Assertion Density: {:.2} asserts/fn", total_density);
-    println!(
-        "Verified Modules Density: {:.2} asserts/fn",
-        verified_density
-    );
-    println!(
-        "Unverified Modules Density: {:.2} asserts/fn",
-        unverified_density
-    );
+    println!("Verified Modules Density: {:.2} asserts/fn", verified_density);
+    println!("Unverified Modules Density: {:.2} asserts/fn", unverified_density);
 
     let mut passed = true;
-
     if verified_density < 0.0 {
         println!(
             "\n[!] Assertion Density Failure: Verified modules have a density of {:.2} asserts/fn, which is below the minimum required 0.0 asserts/fn.",
@@ -407,17 +424,17 @@ fn verify_suite() {
         passed = false;
     }
 
-    if !opt_outs.is_empty() {
+    if !m.opt_outs.is_empty() {
         println!("\n--- High-Integrity Debt ---");
-        for (idx, (file, reason)) in opt_outs.iter().enumerate() {
+        for (idx, (file, reason)) in m.opt_outs.iter().enumerate() {
             println!("[{}] {} bypassed: '{}'", idx + 1, file, reason);
         }
     }
 
     if !unverified_modules.is_empty() {
         println!("\n[!] Unverified Modules (Missing theory_verification!):");
-        for m in &unverified_modules {
-            println!("  - {}", m);
+        for md in unverified_modules {
+            println!("  - {}", md);
         }
         println!("\nThreshold not met: False Green detected!");
         passed = false;
@@ -438,30 +455,46 @@ fn verify_suite() {
         passed,
     };
 
-    let json_report = serde_json::to_string_pretty(&report).unwrap();
-    fs::write("Verification_Certificate.json", json_report).unwrap();
-    println!("Generated Verification_Certificate.json");
+    save_report(&report, avg_cov);
+    passed
+}
+
+fn verify_suite() {
+    println!("=== High-Integrity Verified Suite ===");
+    println!("Gathering native execution coverage...");
+
+    let output = get_llvm_cov_output();
+    if !output.status.success() {
+        eprintln!(
+            "Error running llvm-cov:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+
+    let cov_json: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("Failed to parse coverage JSON");
+
+    let rs_files = collect_rs_files();
+    let (native_lines_total, native_lines_covered) = parse_coverage(&cov_json);
+    let m = analyze_files(&rs_files);
+    let unverified_modules = check_unverified_modules();
+
+    let native_cov_pct = if native_lines_total > 0.0 {
+        native_lines_covered / native_lines_total * 100.0
+    } else {
+        0.0
+    };
+    let wasm_cov_pct = if m.wasm_paths > 0 {
+        (m.wasm_covered as f64 / m.wasm_paths as f64) * 100.0
+    } else {
+        100.0
+    };
+
+    let passed = print_report(native_cov_pct, wasm_cov_pct, &m, &unverified_modules);
 
     if !passed {
         std::process::exit(1);
     }
     println!("\nAll integrity checks passed!");
-
-    if let Ok(mut readme) = fs::read_to_string("README.md") {
-        let badge_color = if avg_cov >= 90.0 {
-            "brightgreen"
-        } else {
-            "yellow"
-        };
-        let new_badge = format!(
-            "![Coverage](https://img.shields.io/badge/coverage-{:.1}%25-{})",
-            avg_cov, badge_color
-        );
-
-        let badge_re = Regex::new(r"!\[Coverage\]\(.*?\)").unwrap();
-        readme = badge_re.replace(&readme, new_badge.as_str()).to_string();
-
-        fs::write("README.md", readme).unwrap();
-        println!("README static badge updated with dynamic metric.");
-    }
 }
