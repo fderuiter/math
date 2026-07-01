@@ -4,7 +4,10 @@ use std::path::Path;
 /// It handles converting backslashes to forward slashes for cross-platform compatibility.
 #[allow(dead_code)]
 pub fn normalize_path<P: AsRef<Path>>(path: P) -> String {
-    let path_str = path.as_ref().to_str().unwrap_or("");
+    let mut path_str = path.as_ref().to_str().unwrap_or("");
+    if path_str.starts_with(r"\\?\") {
+        path_str = &path_str[4..];
+    }
     path_str.replace('\\', "/")
 }
 
