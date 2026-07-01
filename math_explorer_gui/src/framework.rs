@@ -33,7 +33,7 @@ pub trait InteractiveTool {
                 ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
 
             let multi_touch = ui.input(|i| i.multi_touch());
-            
+
             let input_mode = ctx.data(|d| {
                 d.get_temp(egui::Id::new("INPUT_MODE"))
                     .unwrap_or(InputMode::Mouse)
@@ -165,7 +165,7 @@ impl Camera3D {
 
     pub fn handle_interaction(&mut self, response: &egui::Response, ui: &egui::Ui) {
         let multi_touch = ui.input(|i| i.multi_touch());
-        
+
         if let Some(touch) = multi_touch {
             if touch.zoom_delta != 1.0 {
                 // Dampen zoom velocity

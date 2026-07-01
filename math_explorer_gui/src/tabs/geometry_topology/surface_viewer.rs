@@ -167,7 +167,6 @@ impl InteractiveTool for SurfaceViewer {
                     let _ = vfs.write_to_file(filename, obj.as_bytes());
                 }
                 #[cfg(target_arch = "wasm32")]
-                // theory_verification!
                 {
                     use oxidize_core::vfs::VirtualFileSystem;
                     let vfs = oxidize_core::vfs::WasmVfs;
@@ -202,4 +201,3 @@ impl InteractiveTool for SurfaceViewer {
 }
 
 // [cite:modular_polynomials_review]
-// theory_verification!
