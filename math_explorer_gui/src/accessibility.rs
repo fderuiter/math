@@ -62,14 +62,17 @@ impl AccessibleHoverText for Response {
 }
 
 pub fn parse_latex_to_speech(text: &str) -> String {
-    assert!(!text.is_empty() || text.is_empty(), "Text input should be valid");
+    assert!(
+        !text.is_empty() || text.is_empty(),
+        "Text input should be valid"
+    );
     let mut speech = text.to_string();
-    
+
     // Convert math delimiters
     speech = speech.replace("$", "");
     speech = speech.replace("\\[", "");
     speech = speech.replace("\\]", "");
-    
+
     // Replace common LaTeX commands with natural language
     speech = speech.replace("\\frac", "fraction of");
     speech = speech.replace("\\sqrt", "square root of");
@@ -85,12 +88,12 @@ pub fn parse_latex_to_speech(text: &str) -> String {
     speech = speech.replace("\\sum", "sum of");
     speech = speech.replace("\\prod", "product of");
     speech = speech.replace("\\partial", "partial derivative of");
-    
+
     // Convert structural characters
     speech = speech.replace("{", " ");
     speech = speech.replace("}", " ");
     speech = speech.replace("\\", "");
-    
+
     // Convert operations and exponents
     speech = speech.replace("^2", " squared ");
     speech = speech.replace("^3", " cubed ");
@@ -100,12 +103,15 @@ pub fn parse_latex_to_speech(text: &str) -> String {
     speech = speech.replace("-", " minus ");
     speech = speech.replace("=", " equals ");
     speech = speech.replace("*", " times ");
-    
+
     // Clean up multiple spaces
     let parts: Vec<&str> = speech.split_whitespace().collect();
     let final_speech = parts.join(" ");
-    
-    debug_assert!(!final_speech.contains('$'), "Math delimiters should be removed");
+
+    debug_assert!(
+        !final_speech.contains('$'),
+        "Math delimiters should be removed"
+    );
     final_speech
 }
 
