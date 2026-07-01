@@ -123,7 +123,7 @@ stochastic_signature_verification!(
         let x = nalgebra::DMatrix::<f64>::zeros(seq_len, d_model);
         let ffn = transformer::FeedForward::new(d_model, 2048);
         let output = ffn.forward(&x);
-        
+
         let mean = output.iter().sum::<f64>() / (seq_len * d_model) as f64;
     }
 );
