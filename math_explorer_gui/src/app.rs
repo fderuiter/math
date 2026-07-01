@@ -169,7 +169,7 @@ impl eframe::App for MathExplorerApp {
         // Render Menu Bar (Native fallback for non-macOS or inside the app)
         #[cfg(not(target_os = "macos"))]
         egui::TopBottomPanel::top("main_menu").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Quit").clicked() {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
@@ -178,7 +178,7 @@ impl eframe::App for MathExplorerApp {
                 ui.menu_button("View", |ui| {
                     for (i, tab) in self.tabs.iter().enumerate() {
                         if ui.radio_value(&mut self.selected_tab, i, tab.name()).clicked() {
-                            ui.close_menu();
+                            ui.close();
                         }
                     }
                 });
