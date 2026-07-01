@@ -16,7 +16,7 @@ members = [
     "crates/rug_mock",
     "crates/wigner_mock",
     "crates/markdown_tests"
-]
+, "crates/unified_verification"]
 exclude = ["experimental/generative-turbulence-experimental"]
 resolver = "2"
 
