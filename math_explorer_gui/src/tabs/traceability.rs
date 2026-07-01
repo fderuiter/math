@@ -54,7 +54,7 @@ impl TraceabilityTab {
         };
 
         // Scan the standard directories
-        let code_dirs = vec![
+        let code_dirs = [
             format!("{}math_explorer/src", base_dir),
             format!("{}math_explorer_gui/src/tabs", base_dir),
         ];
