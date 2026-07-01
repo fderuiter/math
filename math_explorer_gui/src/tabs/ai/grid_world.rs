@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::framework::InteractiveTool;
+use crate::framework::{InputMode, InteractiveTool};
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::{
     algorithms::TabularQAgent,
@@ -84,6 +84,11 @@ impl InteractiveTool for GridWorldTool {
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
+        let input_mode = ctx.data(|d| {
+            d.get_temp(egui::Id::new("INPUT_MODE"))
+                .unwrap_or(InputMode::Mouse)
+        });
+
         egui::Window::new("Grid World Navigation (Q-Learning)").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if ui
@@ -124,7 +129,7 @@ impl InteractiveTool for GridWorldTool {
                 ui.label(format!("Reward: {:.2}", self.total_reward));
             });
 
-            let cell_size = 40.0;
+            let cell_size = if input_mode == InputMode::Touch { 44.0 } else { 40.0 };
             let grid_size = egui::vec2(
                 self.env.width as f32 * cell_size,
                 self.env.height as f32 * cell_size,

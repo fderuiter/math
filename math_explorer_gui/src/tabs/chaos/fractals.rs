@@ -184,10 +184,10 @@ impl InteractiveTool for FractalViewer {
                 self.dirty = true;
             }
 
-            ui.separator();
             ui.label("Navigation:");
-            ui.label("- Drag to Pan");
-            ui.label("- Scroll to Zoom");
+            ui.label("- Drag to Pan (Single Touch/Mouse)");
+            ui.label("- Scroll/Pinch to Zoom");
+            ui.label("- Two-Finger Pan (Touch)");
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -222,8 +222,31 @@ impl InteractiveTool for FractalViewer {
                 // Display the image
                 let response = ui.image(texture).accessible_theory_hover(self);
 
-                // Handle basic drag to pan
-                if response.dragged() {
+                let multi_touch = ui.input(|i| i.multi_touch());
+
+                // Handle multi-touch pinch-to-zoom and panning
+                if let Some(touch) = multi_touch {
+                    if touch.zoom_delta != 1.0 {
+                        // Dampen zoom velocity to prevent erratic zooming on high-refresh screens
+                        let dampened_zoom = 1.0 + (touch.zoom_delta - 1.0) * 0.5;
+                        self.zoom *= dampened_zoom as f64;
+                        self.dirty = true;
+                    }
+
+                    if touch.translation_delta != egui::Vec2::ZERO {
+                        let aspect = width as f64 / height as f64;
+                        let scale_y = 3.0 / self.zoom;
+                        let scale_x = scale_y * aspect;
+
+                        let dx = -touch.translation_delta.x as f64 / width as f64 * scale_x;
+                        let dy = touch.translation_delta.y as f64 / height as f64 * scale_y;
+
+                        self.center.re += dx;
+                        self.center.im += dy;
+                        self.dirty = true;
+                    }
+                } else if response.dragged() {
+                    // Handle single-pointer drag to pan
                     let delta = response.drag_delta();
                     // Map pixel delta to complex delta
                     let aspect = width as f64 / height as f64;

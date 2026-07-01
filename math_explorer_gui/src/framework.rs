@@ -1,6 +1,12 @@
 use eframe::egui;
 use math_commons::theory::TheoryDescribable;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InputMode {
+    Mouse,
+    Touch,
+}
+
 /// Event context provided to interaction hooks.
 pub struct InteractionContext<'a> {
     pub pointer_pos: Option<egui::Pos2>,
@@ -8,6 +14,8 @@ pub struct InteractionContext<'a> {
     pub is_dragging: bool,
     pub is_clicked: bool,
     pub response: &'a egui::Response,
+    pub input_mode: InputMode,
+    pub multi_touch: Option<egui::MultiTouchInfo>,
 }
 
 pub trait InteractiveTool {
@@ -30,15 +38,26 @@ pub trait InteractiveTool {
             let (response, painter) =
                 ui.allocate_painter(ui.available_size(), egui::Sense::click_and_drag());
 
+            let multi_touch = ui.input(|i| i.multi_touch());
+
+            let input_mode = ctx.data(|d| {
+                d.get_temp(egui::Id::new("INPUT_MODE"))
+                    .unwrap_or(InputMode::Mouse)
+            });
+
             let interaction_ctx = InteractionContext {
                 pointer_pos: response.interact_pointer_pos(),
                 delta: response.drag_delta(),
                 is_dragging: response.dragged(),
                 is_clicked: response.clicked(),
                 response: &response,
+                input_mode,
+                multi_touch,
             };
 
-            if let Some(_pos) = interaction_ctx.pointer_pos {
+            if interaction_ctx.multi_touch.is_some() {
+                self.on_gesture(&interaction_ctx);
+            } else if let Some(_pos) = interaction_ctx.pointer_pos {
                 if interaction_ctx.is_dragging {
                     self.on_drag(&interaction_ctx);
                     self.on_brush(&interaction_ctx);
@@ -64,11 +83,13 @@ pub trait InteractiveTool {
     fn on_drag(&mut self, _ctx: &InteractionContext) {}
     fn on_click(&mut self, _ctx: &InteractionContext) {}
     fn on_brush(&mut self, _ctx: &InteractionContext) {}
+    fn on_gesture(&mut self, _ctx: &InteractionContext) {}
 }
 
 pub struct SimulationFramework {
     pub tools: Vec<Box<dyn InteractiveTool>>,
     pub selected_tool_index: usize,
+    pub input_mode: InputMode,
     pub show_theory_portal: bool,
 }
 
@@ -77,6 +98,7 @@ impl SimulationFramework {
         Self {
             tools,
             selected_tool_index: 0,
+            input_mode: InputMode::Mouse,
             show_theory_portal: false,
         }
     }
@@ -126,6 +148,17 @@ impl SimulationFramework {
     }
 
     pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
+        // Update global input mode
+        ctx.input(|i| {
+            if i.any_touches() || i.multi_touch().is_some() {
+                self.input_mode = InputMode::Touch;
+            } else if i.pointer.is_moving() && !i.any_touches() {
+                // Heuristic: if pointer is moving but no touches, likely mouse
+                self.input_mode = InputMode::Mouse;
+            }
+        });
+        ctx.data_mut(|d| d.insert_temp(egui::Id::new("INPUT_MODE"), self.input_mode));
+
         egui::SidePanel::right(format!("{}_tool_selector", id_source))
             .resizable(false)
             .show(ctx, |ui| {
@@ -187,14 +220,27 @@ impl Camera3D {
     }
 
     pub fn handle_interaction(&mut self, response: &egui::Response, ui: &egui::Ui) {
-        if response.dragged() {
+        let multi_touch = ui.input(|i| i.multi_touch());
+
+        if let Some(touch) = multi_touch {
+            if touch.zoom_delta != 1.0 {
+                // Dampen zoom velocity
+                let zoom_factor = 1.0 + (touch.zoom_delta - 1.0) * 0.5;
+                self.zoom *= zoom_factor;
+                self.zoom = self.zoom.clamp(0.01, 100.0);
+            }
+            if touch.translation_delta != egui::Vec2::ZERO {
+                self.yaw -= touch.translation_delta.x * 0.01;
+                self.pitch -= touch.translation_delta.y * 0.01;
+            }
+        } else if response.dragged() {
             let delta = response.drag_delta();
             self.yaw -= delta.x * 0.01;
             self.pitch -= delta.y * 0.01;
         }
 
         let scroll = ui.input(|i| i.raw_scroll_delta.y);
-        if scroll != 0.0 && response.hovered() {
+        if scroll != 0.0 && response.hovered() && multi_touch.is_none() {
             self.zoom *= 1.0 + (scroll * 0.001);
             self.zoom = self.zoom.clamp(0.01, 100.0);
         }

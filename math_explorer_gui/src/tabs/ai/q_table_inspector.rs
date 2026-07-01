@@ -1,5 +1,5 @@
 use crate::accessibility::AccessibleHoverText;
-use crate::framework::InteractiveTool;
+use crate::framework::{InputMode, InteractiveTool};
 use eframe::egui;
 use math_explorer::ai::reinforcement_learning::grid_world::{GridState, GridWorldEnv, Move};
 use math_explorer::ai::reinforcement_learning::{algorithms::TabularQAgent, MarkovDecisionProcess};
@@ -99,6 +99,14 @@ impl InteractiveTool for QTableInspectorTool {
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {
+        let input_mode = ctx.data(|d| {
+            d.get_temp(egui::Id::new("INPUT_MODE"))
+                .unwrap_or(InputMode::Mouse)
+        });
+        let touch_min = 44.0;
+        let legend_size = if input_mode == InputMode::Touch { 15.0_f32.max(touch_min) } else { 15.0 };
+        let cell_size = if input_mode == InputMode::Touch { 60.0_f32.max(touch_min) } else { 60.0 };
+
         egui::SidePanel::left("q_table_controls").show(ctx, |ui| {
             ui.heading("Training Controls");
             ui.separator();
@@ -141,13 +149,13 @@ impl InteractiveTool for QTableInspectorTool {
             ui.horizontal(|ui| {
                 ui.label("Goal:");
                 let (response, painter) =
-                    ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
+                    ui.allocate_painter(egui::vec2(legend_size, legend_size), egui::Sense::hover());
                 painter.rect_filled(response.rect, 0.0, egui::Color32::GREEN);
             });
             ui.horizontal(|ui| {
                 ui.label("Trap:");
                 let (response, painter) =
-                    ui.allocate_painter(egui::vec2(15.0, 15.0), egui::Sense::hover());
+                    ui.allocate_painter(egui::vec2(legend_size, legend_size), egui::Sense::hover());
                 painter.rect_filled(response.rect, 0.0, egui::Color32::RED);
             });
         });
@@ -155,7 +163,6 @@ impl InteractiveTool for QTableInspectorTool {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Q-Value Heatmap");
 
-            let cell_size = 60.0;
             let grid_size = egui::vec2(
                 self.env.width as f32 * cell_size,
                 self.env.height as f32 * cell_size,

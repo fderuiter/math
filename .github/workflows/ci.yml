@@ -22,6 +22,14 @@ jobs:
             name: Web/WASM
 
     steps:
+      - name: Free Disk Space
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -155,6 +163,13 @@ jobs:
           - '' # This tests --no-default-features
 
     steps:
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+
       - name: Checkout code
         uses: actions/checkout@v4
 
