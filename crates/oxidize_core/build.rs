@@ -120,6 +120,7 @@ fn main() {
 
     let code = format!(
         "
+#[allow(clippy::too_many_lines)]
 pub fn get_file_content(path: &str) -> Option<&'static str> {{
     match path {{
         {}
@@ -135,6 +136,7 @@ pub fn get_dir_children(path: &str) -> Option<&'static [&'static str]> {{
 }}
 
 pub mod theory_constants {{
+    #![allow(non_upper_case_globals, clippy::too_many_lines)]
 {}
 }}
 ",
