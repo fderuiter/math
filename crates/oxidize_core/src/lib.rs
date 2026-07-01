@@ -94,5 +94,6 @@ mod tests {
     }
 }
 pub mod mesh;
+pub mod path_utils;
 pub mod traceability;
 pub mod vfs;

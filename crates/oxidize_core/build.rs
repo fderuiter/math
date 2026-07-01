@@ -1,3 +1,6 @@
+#[path = "src/path_utils.rs"]
+mod path_utils;
+
 use std::env;
 use std::fs;
 use std::path::Path;
@@ -28,12 +31,7 @@ fn main() {
 
         let mut stack = vec![root_path.to_path_buf()];
         while let Some(current) = stack.pop() {
-            let relative_dir = current
-                .strip_prefix("../../")
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
+            let relative_dir = path_utils::strip_and_normalize(&current, "../../").unwrap();
 
             if let Ok(entries) = fs::read_dir(&current) {
                 let mut children = Vec::new();
@@ -42,12 +40,7 @@ fn main() {
                     let name = entry.file_name().to_str().unwrap().to_string();
                     children.push(name.clone());
 
-                    let relative_path = path
-                        .strip_prefix("../../")
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .to_string();
+                    let relative_path = path_utils::strip_and_normalize(&path, "../../").unwrap();
 
                     if path.is_file() {
                         if relative_path.ends_with(".tex") || relative_path.ends_with(".rs") {
