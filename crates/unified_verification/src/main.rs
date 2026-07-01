@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 #![allow(clippy::all)]
 use regex::Regex;
 use serde::Serialize;
