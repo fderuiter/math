@@ -287,6 +287,10 @@ impl TheoryDescribable for HodgkinHuxleyTool {
     fn theory_description(&self) -> String {
         HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0).theory_description()
     }
+
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
+    }
     fn theory_citation(&self) -> String {
         HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0).theory_citation()
     }

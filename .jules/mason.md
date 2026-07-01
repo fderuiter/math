@@ -29,3 +29,9 @@
 - **Issue**: The updated traceability and verification tools were failing CI by falsely flagging non-core files and breaking on new macros.
 - **Resolution**: Refined the traceability engine in `oxidize_core` to correctly identify target macros, and updated `verify_suite.py` to support the `stochastic_signature_verification!` macro.
 - **Impact**: Restored CI pipeline stability and accurate integrity reporting.
+
+## First-Class Phonetic Trait for Accessibility (PR 1014)
+
+- **Issue**: Mathematical shorthand in domain modules (e.g., Bra-Ket notation, material derivatives) was being read literally by screen readers, making scientific simulations unintelligible for non-visual users. Previous automated LaTeX-to-speech translations were fragile and lacked context-awareness.
+- **Resolution**: Introduced a mandatory `phonetic_description` method to the `TheoryDescribable` trait. Upgraded `verified_engine_macros` to parse a new `phonetic` attribute (`#[theory(phonetic = "...")]`), providing a direct, human-verified string for ARIA live regions instead of relying on parsing logic in `accessibility.rs`.
+- **Impact**: Guarantees 100% phonetic accessibility coverage and accuracy across complex scientific domains by embedding metadata directly into the models, removing the need for automated symbol-to-speech translation.

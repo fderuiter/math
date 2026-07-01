@@ -358,6 +358,10 @@ impl TheoryDescribable for LatticeBoltzmannTool {
     fn theory_description(&self) -> String {
         LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_description()
     }
+
+    fn phonetic_description(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).phonetic_description()
+    }
     fn theory_citation(&self) -> String {
         LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_citation()
     }

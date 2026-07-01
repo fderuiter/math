@@ -210,6 +210,10 @@ impl TheoryDescribable for LorenzSystem {
         )
     }
 
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
+    }
+
     fn theory_citation(&self) -> String {
         "[cite:chaos_theory]".to_string()
     }

@@ -34,6 +34,20 @@ impl TheoryDescribable for QuantumState {
     }
 
     #[verified_engine::verified]
+    fn phonetic_description(&self) -> String {
+        if self.vector.len() == 2
+            && self.vector[0].re == 1.0
+            && self.vector[0].im == 0.0
+            && self.vector[1].re == 0.0
+            && self.vector[1].im == 0.0
+        {
+            "Ket zero spin state".to_string()
+        } else {
+            "Quantum state vector".to_string()
+        }
+    }
+
+    #[verified_engine::verified]
     fn theory_citation(&self) -> String {
         "[cite:quantum_mechanics]".to_string()
     }

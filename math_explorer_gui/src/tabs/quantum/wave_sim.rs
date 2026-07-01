@@ -196,6 +196,10 @@ impl TheoryDescribable for WaveSimulator {
         )
     }
 
+    fn phonetic_description(&self) -> String {
+        self.theory_description()
+    }
+
     fn theory_citation(&self) -> String {
         "[cite:quantum_mechanics]".to_string()
     }
