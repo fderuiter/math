@@ -35,3 +35,9 @@
 - **Issue**: Mathematical shorthand in domain modules (e.g., Bra-Ket notation, material derivatives) was being read literally by screen readers, making scientific simulations unintelligible for non-visual users. Previous automated LaTeX-to-speech translations were fragile and lacked context-awareness.
 - **Resolution**: Introduced a mandatory `phonetic_description` method to the `TheoryDescribable` trait. Upgraded `verified_engine_macros` to parse a new `phonetic` attribute (`#[theory(phonetic = "...")]`), providing a direct, human-verified string for ARIA live regions instead of relying on parsing logic in `accessibility.rs`.
 - **Impact**: Guarantees 100% phonetic accessibility coverage and accuracy across complex scientific domains by embedding metadata directly into the models, removing the need for automated symbol-to-speech translation.
+
+## Centralized Path Normalization (PR 1021)
+
+- **Issue**: The system relied on manual string manipulation and hardcoded path separators (`.replace("\\", "/")`) in build scripts, causing inconsistent VFS generation and traceability mapping failures on Windows environments.
+- **Resolution**: Extracted path normalization logic into a shared utility (`path_utils.rs` in `oxidize_core`). Refactored `traceability.rs`, `oxidize_core/build.rs`, and `markdown_tests/build.rs` to use this canonical utility for all file path resolution.
+- **Impact**: Guaranteed consistent forward-slash path keys for WASM VFS compatibility and traceability mappings regardless of the host OS, eliminating cyclical build script failures on Windows.
