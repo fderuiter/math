@@ -34,14 +34,22 @@ fn main() {
 
     for dir in dirs {
         let abs_dir = fs::canonicalize(&dir).unwrap();
-        let abs_dir_str = abs_dir.to_str().unwrap().replace("\\", "/");
+        let mut abs_dir_str = abs_dir.to_str().unwrap().to_string();
+        if abs_dir_str.starts_with(r"\\?\") {
+            abs_dir_str = abs_dir_str[4..].to_string();
+        }
+        let abs_dir_str = abs_dir_str.replace("\\", "/");
         println!("cargo:rerun-if-changed={}", abs_dir_str);
     }
 
     let mut generated_code = String::new();
     for (i, path) in files.iter().enumerate() {
         let abs_path = fs::canonicalize(path).unwrap();
-        let abs_path_str = abs_path.to_str().unwrap().replace("\\", "/");
+        let mut abs_path_str = abs_path.to_str().unwrap().to_string();
+        if abs_path_str.starts_with(r"\\?\") {
+            abs_path_str = abs_path_str[4..].to_string();
+        }
+        let abs_path_str = abs_path_str.replace("\\", "/");
 
         println!("cargo:rerun-if-changed={}", abs_path_str);
 
