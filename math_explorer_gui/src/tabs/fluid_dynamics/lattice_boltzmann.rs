@@ -240,10 +240,29 @@ impl InteractiveTool for LatticeBoltzmannTool {
 
             ui.separator();
             ui.label("Simulation Parameters");
-            if ui
-                .add(egui::Slider::new(&mut self.viscosity, 0.005..=0.2).text("Viscosity"))
-                .changed()
-            {
+            
+            let dummy_bgk = BgkCollision { tau: 1.0 };
+            let tau_constraint = crate::reflective_ui::get_theory_constraint(&dummy_bgk, "tau");
+            
+            let min_viscosity = (tau_constraint.min - 0.5) / 3.0;
+            let max_viscosity = (tau_constraint.max - 0.5) / 3.0;
+            let step_viscosity = tau_constraint.step / 3.0;
+            
+            let slider_response = ui.add(
+                egui::Slider::new(&mut self.viscosity, min_viscosity..=max_viscosity)
+                    .step_by(step_viscosity)
+                    .text("Viscosity")
+            );
+            
+            let tooltip = format!(
+                "{}\n\nCitation: {}",
+                dummy_bgk.theory_description(),
+                dummy_bgk.theory_citation()
+            );
+            
+            let slider_response = slider_response.accessible_hover_text(tooltip);
+
+            if slider_response.changed() {
                 self.controller.send_command(SimCommand::UpdateParam(
                     "viscosity".to_string(),
                     self.viscosity,

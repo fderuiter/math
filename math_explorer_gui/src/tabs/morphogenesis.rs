@@ -232,8 +232,25 @@ impl ExplorerTab for MorphogenesisTab {
 
             ui.collapsing("Parameters", |ui| {
                 let mut changed = false;
-                changed |= ui.add(egui::Slider::new(&mut self.a, 0.0..=1.0).text("a (Feed)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.b, 0.0..=2.0).text("b (Kill)")).changed();
+                let dummy_kinetics = SchnakenbergKinetics { a: 1.0, b: 1.0 };
+
+                let a_res = crate::reflective_ui::render_theory_parameter(
+                    ui,
+                    &dummy_kinetics,
+                    "a",
+                    "a (Feed)",
+                    &mut self.a,
+                );
+                changed |= a_res.changed();
+
+                let b_res = crate::reflective_ui::render_theory_parameter(
+                    ui,
+                    &dummy_kinetics,
+                    "b",
+                    "b (Kill)",
+                    &mut self.b,
+                );
+                changed |= b_res.changed();
 
                 ui.separator();
                 changed |= ui.add(egui::Slider::new(&mut self.d_u, 0.1..=5.0).text("D_u (Activator)")).changed();

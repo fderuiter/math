@@ -2,6 +2,7 @@ pub mod accessibility;
 mod app;
 pub mod async_sim;
 pub mod framework;
+pub mod reflective_ui;
 mod tabs;
 
 use app::MathExplorerApp;

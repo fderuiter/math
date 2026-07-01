@@ -85,9 +85,11 @@ pub trait CollisionModel<const Q: usize, L: Lattice2D<Q>> {
 }
 
 /// BGK Collision Model.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Theory)]
+#[theory(description = "Bhatnagar-Gross-Krook (BGK) collision operator for single relaxation time.", citation = "Bhatnagar, P. L., Gross, E. P., & Krook, M. (1954).")]
 pub struct BgkCollision {
     /// Relaxation time.
+    #[theory(min = 0.515, max = 1.1, step = 0.005)]
     pub tau: f64,
 }
 

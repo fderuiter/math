@@ -1,3 +1,4 @@
+use verified_engine::Theory;
 use crate::biology::reaction_diffusion::ReactionModel;
 
 /// Defines the reaction kinetics for an N-component reaction-diffusion system.
@@ -26,11 +27,14 @@ pub trait ReactionKinetics<const N: usize = 2> {
 /// - $a$: Production rate of the activator.
 /// - $b$: Production rate of the inhibitor.
 /// - $u^2 v$: Non-linear autocatalysis term (Activator requires Inhibitor to grow, but consumes it).
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Theory)]
+#[theory(description = "Schnakenberg kinetics (often used for Turing patterns).", citation = "Schnakenberg, J. (1979). Simple chemical reaction systems with limit cycle behaviour. Journal of theoretical biology, 81(3), 389-400.")]
 pub struct SchnakenbergKinetics {
     /// Production rate of activator ($a$).
+    #[theory(min = 0.0, max = 1.0, step = 0.01)]
     pub a: f64,
     /// Production rate of inhibitor ($b$).
+    #[theory(min = 0.0, max = 2.0, step = 0.01)]
     pub b: f64,
 }
 
