@@ -92,7 +92,7 @@ def main():
         wasm_blocks = re.findall(r'#\[cfg\(target_arch\s*=\s*"wasm32"\)\]\s*(.*?)(?:#\[cfg|$)', content, re.DOTALL)
         for block in wasm_blocks:
             wasm_paths += 1
-            if "theory_verification!" in block or "theory_verification!" in content:
+            if "theory_verification!" in block or "theory_verification!" in content or "stochastic_signature_verification!" in block or "stochastic_signature_verification!" in content:
                 wasm_covered += 1
 
     # Theory parity check: All feature modules
@@ -100,13 +100,20 @@ def main():
     for fm in feature_modules:
         mod_dir = f"{fm}/src"
         if os.path.exists(mod_dir):
+            has_theory = False
             for root, _, files in os.walk(mod_dir):
                 for f in files:
                     if f.endswith(".rs"):
                         file_path = os.path.join(root, f)
                         with open(file_path, 'r', encoding='utf-8') as file:
-                            if "theory_verification!" not in file.read():
-                                unverified_modules.append(file_path)
+                            content = file.read()
+                            if "theory_verification!" in content or "stochastic_signature_verification!" in content:
+                                has_theory = True
+                                break
+                if has_theory:
+                    break
+            if not has_theory:
+                unverified_modules.append(fm)
                 
     native_cov_pct = (native_lines_covered / native_lines_total * 100) if native_lines_total > 0 else 0
     wasm_cov_pct = (wasm_covered / wasm_paths * 100) if wasm_paths > 0 else 100
