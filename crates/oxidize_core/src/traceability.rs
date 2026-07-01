@@ -93,7 +93,8 @@ impl<'a> TraceabilityEngine<'a> {
         let mut report = TraceabilityReport::default();
 
         // 1. Scan papers
-        if let Ok(entries) = self.vfs.list_dir(papers_dir) {
+        let normalized_papers_dir = crate::path_utils::normalize_path(papers_dir);
+        if let Ok(entries) = self.vfs.list_dir(&normalized_papers_dir) {
             for name in entries {
                 if name.ends_with(".tex") {
                     let paper_name = name.clone();
@@ -162,12 +163,13 @@ impl<'a> TraceabilityEngine<'a> {
     }
 
     fn scan_dir(&self, dir: &str, files: &mut Vec<String>) {
-        if let Ok(entries) = self.vfs.list_dir(dir) {
+        let normalized_dir = crate::path_utils::normalize_path(dir);
+        if let Ok(entries) = self.vfs.list_dir(&normalized_dir) {
             for entry in entries {
-                let path = format!("{}/{}", dir, entry);
+                let path = crate::path_utils::join_and_normalize(&normalized_dir, &entry);
                 if entry.contains('.') {
                     if path.ends_with(".rs") {
-                        files.push(path.clone());
+                        files.push(path);
                     }
                 } else {
                     self.scan_dir(&path, files);

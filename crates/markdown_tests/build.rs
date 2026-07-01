@@ -1,3 +1,6 @@
+#[path = "../oxidize_core/src/path_utils.rs"]
+mod path_utils;
+
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -34,14 +37,14 @@ fn main() {
 
     for dir in dirs {
         let abs_dir = fs::canonicalize(&dir).unwrap();
-        let abs_dir_str = abs_dir.to_str().unwrap().replace("\\", "/");
+        let abs_dir_str = path_utils::normalize_path(&abs_dir);
         println!("cargo:rerun-if-changed={}", abs_dir_str);
     }
 
     let mut generated_code = String::new();
     for (i, path) in files.iter().enumerate() {
         let abs_path = fs::canonicalize(path).unwrap();
-        let abs_path_str = abs_path.to_str().unwrap().replace("\\", "/");
+        let abs_path_str = path_utils::normalize_path(&abs_path);
 
         println!("cargo:rerun-if-changed={}", abs_path_str);
 
