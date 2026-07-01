@@ -9,6 +9,7 @@ pub struct MathExplorerApp {
     show_info: bool,
     show_warnings: bool,
     show_errors: bool,
+    show_help_menu: bool,
 }
 
 impl Default for MathExplorerApp {
@@ -23,6 +24,7 @@ impl Default for MathExplorerApp {
             show_info: true,
             show_warnings: true,
             show_errors: true,
+            show_help_menu: false,
         }
     }
 }
@@ -162,6 +164,8 @@ impl eframe::App for MathExplorerApp {
                     if let Ok(idx) = event.id.0[4..].parse::<usize>() {
                         self.selected_tab = idx;
                     }
+                } else if event.id.0 == "help_commands" {
+                    self.show_help_menu = !self.show_help_menu;
                 }
             }
         }
@@ -169,9 +173,38 @@ impl eframe::App for MathExplorerApp {
         // Render Menu Bar (Native fallback for non-macOS or inside the app)
         #[cfg(not(target_os = "macos"))]
         egui::TopBottomPanel::top("main_menu").show(ctx, |ui| {
+            let modifiers = if cfg!(target_os = "macos") {
+                egui::Modifiers::MAC_CMD
+            } else {
+                egui::Modifiers::CTRL
+            };
+
+            let quit_triggered = egui_plot::commands::CommandRegistryData::register_and_check(
+                ctx,
+                "Quit",
+                "Quit the application",
+                egui_plot::commands::CommandTrigger::Shortcut(modifiers, egui::Key::Q),
+                true,
+                "Global",
+                Some(ui),
+                None,
+            );
+
+            if quit_triggered {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+
             egui::MenuBar::new().ui(ui, |ui| {
                 ui.menu_button("File", |ui| {
-                    if ui.button("Quit").clicked() {
+                    let shortcut_text = if cfg!(target_os = "macos") {
+                        "Cmd+Q"
+                    } else {
+                        "Ctrl+Q"
+                    };
+                    if ui
+                        .add(egui::Button::new("Quit").shortcut_text(shortcut_text))
+                        .clicked()
+                    {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                     }
                 });
@@ -183,6 +216,14 @@ impl eframe::App for MathExplorerApp {
                         {
                             ui.close();
                         }
+                    }
+                });
+                ui.menu_button("Help", |ui| {
+                    if ui
+                        .checkbox(&mut self.show_help_menu, "Command Framework")
+                        .clicked()
+                    {
+                        ui.close();
                     }
                 });
             });
@@ -197,6 +238,51 @@ impl eframe::App for MathExplorerApp {
                     ui.label("No module selected.");
                 });
             });
+        }
+
+        if self.show_help_menu {
+            egui::Window::new("Help Menu")
+                .open(&mut self.show_help_menu)
+                .resizable(true)
+                .show(ctx, |ui| {
+                    ui.heading("Available Commands");
+                    ui.separator();
+
+                    let registry_data = ctx.data(|d| {
+                        d.get_temp::<egui_plot::commands::CommandRegistryData>(egui::Id::new(
+                            "CMD_REGISTRY",
+                        ))
+                        .unwrap_or_default()
+                    });
+
+                    if registry_data.commands.is_empty() {
+                        ui.label("No commands available for the current context.");
+                    } else {
+                        for cmd in registry_data.commands {
+                            ui.group(|ui| {
+                                ui.label(egui::RichText::new(&cmd.name).strong());
+                                ui.label(&cmd.description);
+
+                                let trigger_str = match &cmd.trigger {
+                                    egui_plot::commands::CommandTrigger::Key(k) => {
+                                        format!("Key: {:?}", k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::Shortcut(m, k) => {
+                                        format!("Shortcut: {:?} + {:?}", m, k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::AltClick => {
+                                        "Alt-Click".to_string()
+                                    }
+                                };
+                                ui.label(egui::RichText::new(trigger_str).code());
+
+                                if cmd.desktop_only {
+                                    ui.label(egui::RichText::new("Desktop Only").italics());
+                                }
+                            });
+                        }
+                    }
+                });
         }
     }
 }
