@@ -57,7 +57,7 @@ fn test_features(args: &[String]) {
         println!("All feature combinations passed successfully!");
     } else {
         let feature = &args[0];
-        if feature == "core-only" || feature == "" {
+        if feature == "core-only" || feature.is_empty() {
             run_cmd("cargo", &["test", "-p", "math_explorer", "--no-default-features"]);
         } else {
             run_cmd("cargo", &["test", "-p", "math_explorer", "--no-default-features", "--features", feature]);

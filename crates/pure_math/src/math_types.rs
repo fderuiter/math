@@ -2,7 +2,6 @@ use dashu::base::Abs;
 use dashu::float::FBig;
 use dashu::integer::IBig;
 use dashu::rational::RBig;
-use num_traits::ToPrimitive;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
