@@ -9,7 +9,6 @@ pub enum SimCommand {
     Pause,
     Reset,
     SetSpeed(usize),
-    UpdateParam(String, f64),
     ApplyBrush {
         cx: i32,
         cy: i32,

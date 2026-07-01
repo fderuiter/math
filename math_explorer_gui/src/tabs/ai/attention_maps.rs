@@ -1,4 +1,3 @@
-use crate::accessibility::AccessibleHoverText;
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_commons::theory::TheoryDescribable;
@@ -131,15 +130,13 @@ impl InteractiveTool for AttentionMapsTool {
         "Attention Maps"
     }
 
+    fn theory(&self) -> Option<&dyn TheoryDescribable> {
+        Some(self)
+    }
+
     fn show(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            let dummy_transformer = Transformer {
-                encoder: Encoder::new(1, 4, 1, 4),
-                decoder: Decoder::new(1, 4, 1, 4),
-            };
-
-            ui.heading("Self-Attention Mechanism")
-                .accessible_hover_text(dummy_transformer.theory_description());
+            ui.heading("Self-Attention Mechanism");
 
             ui.label("Explore how Queries (Q), Keys (K), and Values (V) interact.");
 
@@ -184,6 +181,27 @@ impl InteractiveTool for AttentionMapsTool {
                 });
             });
         });
+    }
+}
+
+impl TheoryDescribable for AttentionMapsTool {
+    fn theory_description(&self) -> String {
+        Transformer {
+            encoder: Encoder::new(1, 4, 1, 4),
+            decoder: Decoder::new(1, 4, 1, 4),
+        }.theory_description()
+    }
+    fn theory_citation(&self) -> String {
+        Transformer {
+            encoder: Encoder::new(1, 4, 1, 4),
+            decoder: Decoder::new(1, 4, 1, 4),
+        }.theory_citation()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        Transformer {
+            encoder: Encoder::new(1, 4, 1, 4),
+            decoder: Decoder::new(1, 4, 1, 4),
+        }.available_descriptions()
     }
 }
 

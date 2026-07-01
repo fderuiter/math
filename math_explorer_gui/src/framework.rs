@@ -1,4 +1,5 @@
 use eframe::egui;
+use math_commons::theory::TheoryDescribable;
 
 /// Event context provided to interaction hooks.
 pub struct InteractionContext<'a> {
@@ -11,6 +12,11 @@ pub struct InteractionContext<'a> {
 
 pub trait InteractiveTool {
     fn name(&self) -> &'static str;
+
+    /// Optional: Provide theoretical context.
+    fn theory(&self) -> Option<&dyn TheoryDescribable> {
+        None
+    }
 
     /// Show the tool. Tools can implement this to take full control over rendering.
     /// The default implementation delegates to `show_ui` and then sets up a CentralPanel
@@ -63,6 +69,7 @@ pub trait InteractiveTool {
 pub struct SimulationFramework {
     pub tools: Vec<Box<dyn InteractiveTool>>,
     pub selected_tool_index: usize,
+    pub show_theory_portal: bool,
 }
 
 impl SimulationFramework {
@@ -70,7 +77,50 @@ impl SimulationFramework {
         Self {
             tools,
             selected_tool_index: 0,
+            show_theory_portal: false,
         }
+    }
+
+    fn show_theory_portal(&self, ctx: &egui::Context, id_source: &str) {
+        if !self.show_theory_portal {
+            return;
+        }
+        egui::SidePanel::right(format!("{}_theory_portal", id_source))
+            .resizable(true)
+            .show(ctx, |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    if let Some(tool) = self.tools.get(self.selected_tool_index) {
+                        ui.heading(format!("Theory: {}", tool.name()));
+                        ui.separator();
+
+                        if let Some(theory) = tool.theory() {
+                            // Requirement 5: Screen readers can successfully navigate the theory text and citations
+                            use crate::accessibility::AccessibleHoverText;
+
+                            ui.label(theory.theory_description())
+                                .accessible_hover_text("Theoretical background description");
+
+                            ui.separator();
+                            ui.heading("Citations");
+                            ui.label(theory.theory_citation())
+                                .accessible_hover_text("Academic citations");
+
+                            let available = theory.available_descriptions();
+                            if !available.is_empty() {
+                                ui.separator();
+                                ui.heading("Additional Context");
+                                for (key, desc) in available {
+                                    ui.label(format!("{}: {}", key, desc)).accessible_hover_text(
+                                        format!("Additional context for {}", key),
+                                    );
+                                }
+                            }
+                        } else {
+                            ui.label("No theoretical context available for this tool.");
+                        }
+                    }
+                });
+            });
     }
 
     pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
@@ -89,7 +139,11 @@ impl SimulationFramework {
                         }
                     }
                 });
+                ui.separator();
+                ui.checkbox(&mut self.show_theory_portal, "Theory Context Portal");
             });
+
+        self.show_theory_portal(ctx, id_source);
 
         if let Some(tool) = self.tools.get_mut(self.selected_tool_index) {
             tool.show(ctx);
