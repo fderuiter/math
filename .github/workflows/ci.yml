@@ -121,7 +121,7 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            export PATH=$(python -c "import sys, torch; sys.stdout.write((torch.__path__[0] + '/lib').replace('\\\\', '/'))"):$PATH
+            export PATH="$(cygpath -u "$(python -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')")"):$PATH"
           elif [ "$RUNNER_OS" == "macOS" ]; then
             export DYLD_LIBRARY_PATH=$(python3 -c "import sys, torch; sys.stdout.write(torch.__path__[0] + '/lib')"):$DYLD_LIBRARY_PATH
           else
@@ -168,6 +168,7 @@ jobs:
 
       - name: Code Signing (Windows)
         if: runner.os == 'Windows'
+        shell: bash
         run: |
           echo "Simulating hardware security module (HSM) signing process for Windows installer..."
           echo "Windows installers are correctly signed and do not trigger Microsoft Defender SmartScreen warnings."
