@@ -212,3 +212,4 @@ impl InteractiveTool for SpinVisualizer {
 }
 
 // [cite:quantum_mechanics]
+// module = "quantum"

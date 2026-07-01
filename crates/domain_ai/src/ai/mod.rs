@@ -107,12 +107,23 @@ pub use transformer::positional_encoding;
 
 // [cite:graph_parameters_rust]
 
-use pure_math::theory_verification;
-theory_verification!(
+use pure_math::stochastic_signature_verification;
+stochastic_signature_verification!(
     module = "ai",
-    epsilon = 1e-6,
-    constants = {
-        TEST = 1.0;
+    external_dependencies = ["LibTorch", "CUDA"],
+    signatures = {
+        output => (10, 512);
     },
-    test = {}
+    statistical_bounds = {
+        mean in [-0.01, 0.01];
+    },
+    stochastic_test = {
+        let seq_len = 10;
+        let d_model = 512;
+        let x = nalgebra::DMatrix::<f64>::zeros(seq_len, d_model);
+        let ffn = transformer::FeedForward::new(d_model, 2048);
+        let output = ffn.forward(&x);
+
+        let mean = output.iter().sum::<f64>() / (seq_len * d_model) as f64;
+    }
 );

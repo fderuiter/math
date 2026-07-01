@@ -14,3 +14,9 @@
 - **Issue**: 3D visualization modules (Attractors, Surface Viewer, Spin Viz) independently implemented manual projection and rotation logic, causing inconsistent coordinate systems (Y-up vs Z-up) and navigation behaviors.
 - **Resolution**: Extracted 3D camera and projection logic into `math_explorer_gui::framework::Camera3D`. Refactored target modules to use this standardized camera, ensuring a consistent Z-up coordinate system and unified direct-manipulation controls (drag-to-rotate, scroll-to-zoom).
 - **Impact**: Zero duplicated projection/rotation logic across 3D modules. Consistent navigation UX.
+
+## Traceability and Verification Fixes (PR 1008)
+
+- **Issue**: The updated traceability and verification tools were failing CI by falsely flagging non-core files and breaking on new macros.
+- **Resolution**: Refined the traceability engine in `oxidize_core` to correctly identify target macros, and updated `verify_suite.py` to support the `stochastic_signature_verification!` macro.
+- **Impact**: Restored CI pipeline stability and accurate integrity reporting.
