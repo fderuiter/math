@@ -181,9 +181,14 @@ impl SimulationFramework {
                 .show(ctx, |ui| {
                     ui.heading("Available Commands");
                     ui.separator();
-                    
-                    let registry_data = ctx.data(|d| d.get_temp::<egui_plot::commands::CommandRegistryData>(egui::Id::new("CMD_REGISTRY")).unwrap_or_default());
-                    
+
+                    let registry_data = ctx.data(|d| {
+                        d.get_temp::<egui_plot::commands::CommandRegistryData>(egui::Id::new(
+                            "CMD_REGISTRY",
+                        ))
+                        .unwrap_or_default()
+                    });
+
                     if registry_data.commands.is_empty() {
                         ui.label("No commands available for the current context.");
                     } else {
@@ -191,14 +196,20 @@ impl SimulationFramework {
                             ui.group(|ui| {
                                 ui.label(egui::RichText::new(&cmd.name).strong());
                                 ui.label(&cmd.description);
-                                
+
                                 let trigger_str = match &cmd.trigger {
-                                    egui_plot::commands::CommandTrigger::Key(k) => format!("Key: {:?}", k),
-                                    egui_plot::commands::CommandTrigger::Shortcut(m, k) => format!("Shortcut: {:?} + {:?}", m, k),
-                                    egui_plot::commands::CommandTrigger::AltClick => "Alt-Click".to_string(),
+                                    egui_plot::commands::CommandTrigger::Key(k) => {
+                                        format!("Key: {:?}", k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::Shortcut(m, k) => {
+                                        format!("Shortcut: {:?} + {:?}", m, k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::AltClick => {
+                                        "Alt-Click".to_string()
+                                    }
                                 };
                                 ui.label(egui::RichText::new(trigger_str).code());
-                                
+
                                 if cmd.desktop_only {
                                     ui.label(egui::RichText::new("Desktop Only").italics());
                                 }
@@ -221,9 +232,15 @@ impl SimulationFramework {
         });
         ctx.data_mut(|d| {
             d.insert_temp(egui::Id::new("INPUT_MODE"), self.input_mode);
-            d.insert_temp(egui::Id::new("INPUT_MODE_TOUCH"), self.input_mode == InputMode::Touch);
+            d.insert_temp(
+                egui::Id::new("INPUT_MODE_TOUCH"),
+                self.input_mode == InputMode::Touch,
+            );
             // Clear CMD_REGISTRY at start of frame
-            d.insert_temp(egui::Id::new("CMD_REGISTRY"), egui_plot::commands::CommandRegistryData::default());
+            d.insert_temp(
+                egui::Id::new("CMD_REGISTRY"),
+                egui_plot::commands::CommandRegistryData::default(),
+            );
         });
 
         self.show_side_panel(ctx, id_source);
@@ -238,7 +255,7 @@ impl SimulationFramework {
                 });
             });
         }
-        
+
         self.show_help_menu_window(ctx);
     }
 }
