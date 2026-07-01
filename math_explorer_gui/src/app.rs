@@ -45,8 +45,7 @@ impl MathExplorerApp {
             // View Menu
             let view_menu = Submenu::new("View", true);
             for (i, tab) in app.tabs.iter().enumerate() {
-                let item = MenuItem::new(tab.name(), true, None);
-                item.set_id(MenuId::new(format!("tab_{}", i)));
+                let item = MenuItem::with_id(MenuId::new(format!("tab_{}", i)), tab.name(), true, None);
                 view_menu.append(&item).unwrap();
             }
             menu.append(&view_menu).unwrap();
