@@ -30,7 +30,31 @@ impl Default for MathExplorerApp {
 impl MathExplorerApp {
     #[allow(clippy::vec_init_then_push)]
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
-        Self::default()
+        let app = Self::default();
+
+        #[cfg(target_os = "macos")]
+        {
+            use muda::{Menu, Submenu, MenuItem, PredefinedMenuItem, MenuId};
+            let menu = Menu::new();
+            
+            // App Menu
+            let app_menu = Submenu::new("Math Explorer", true);
+            app_menu.append(&PredefinedMenuItem::quit(None)).unwrap();
+            menu.append(&app_menu).unwrap();
+            
+            // View Menu
+            let view_menu = Submenu::new("View", true);
+            for (i, tab) in app.tabs.iter().enumerate() {
+                let item = MenuItem::new(tab.name(), true, None);
+                item.set_id(MenuId::new(format!("tab_{}", i)));
+                view_menu.append(&item).unwrap();
+            }
+            menu.append(&view_menu).unwrap();
+            
+            let _ = menu.init_for_nsapp();
+        }
+
+        app
     }
 }
 
@@ -131,16 +155,30 @@ impl eframe::App for MathExplorerApp {
                 });
             });
 
-        // Render Tab Bar
+        #[cfg(target_os = "macos")]
+        {
+            if let Ok(event) = muda::MenuEvent::receiver().try_recv() {
+                if event.id.0.starts_with("tab_") {
+                    if let Ok(idx) = event.id.0[4..].parse::<usize>() {
+                        self.selected_tab = idx;
+                    }
+                }
+            }
+        }
+
+        // Render Menu Bar (Native fallback for non-macOS or inside the app)
+        #[cfg(not(target_os = "macos"))]
         egui::TopBottomPanel::top("main_menu").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.heading("Math Explorer");
-                ui.separator();
-                egui::ScrollArea::horizontal().show(ui, |ui| {
+            egui::menu::bar(ui, |ui| {
+                ui.menu_button("File", |ui| {
+                    if ui.button("Quit").clicked() {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                });
+                ui.menu_button("View", |ui| {
                     for (i, tab) in self.tabs.iter().enumerate() {
-                        let name = tab.name();
-                        if ui.selectable_label(self.selected_tab == i, name).clicked() {
-                            self.selected_tab = i;
+                        if ui.radio_value(&mut self.selected_tab, i, tab.name()).clicked() {
+                            ui.close_menu();
                         }
                     }
                 });
