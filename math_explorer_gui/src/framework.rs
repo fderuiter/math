@@ -103,6 +103,7 @@ pub struct SimulationFramework {
     pub selected_tool_index: usize,
     pub input_mode: InputMode,
     pub show_theory_portal: bool,
+    pub show_help_menu: bool,
 }
 
 impl SimulationFramework {
@@ -112,6 +113,7 @@ impl SimulationFramework {
             selected_tool_index: 0,
             input_mode: InputMode::Mouse,
             show_theory_portal: false,
+            show_help_menu: false,
         }
     }
 
@@ -159,18 +161,7 @@ impl SimulationFramework {
             });
     }
 
-    pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
-        // Update global input mode
-        ctx.input(|i| {
-            if i.any_touches() || i.multi_touch().is_some() {
-                self.input_mode = InputMode::Touch;
-            } else if i.pointer.is_moving() && !i.any_touches() {
-                // Heuristic: if pointer is moving but no touches, likely mouse
-                self.input_mode = InputMode::Mouse;
-            }
-        });
-        ctx.data_mut(|d| d.insert_temp(egui::Id::new("INPUT_MODE"), self.input_mode));
-
+    fn show_side_panel(&mut self, ctx: &egui::Context, id_source: &str) {
         egui::SidePanel::right(format!("{}_tool_selector", id_source))
             .resizable(false)
             .show(ctx, |ui| {
@@ -188,8 +179,83 @@ impl SimulationFramework {
                 });
                 ui.separator();
                 ui.checkbox(&mut self.show_theory_portal, "Theory Context Portal");
+                if ui.button("Show Help Menu").clicked() {
+                    self.show_help_menu = !self.show_help_menu;
+                }
             });
+    }
 
+    fn show_help_menu_window(&mut self, ctx: &egui::Context) {
+        if self.show_help_menu {
+            egui::Window::new("Help Menu")
+                .open(&mut self.show_help_menu)
+                .resizable(true)
+                .show(ctx, |ui| {
+                    ui.heading("Available Commands");
+                    ui.separator();
+
+                    let registry_data = ctx.data(|d| {
+                        d.get_temp::<egui_plot::commands::CommandRegistryData>(egui::Id::new(
+                            "CMD_REGISTRY",
+                        ))
+                        .unwrap_or_default()
+                    });
+
+                    if registry_data.commands.is_empty() {
+                        ui.label("No commands available for the current context.");
+                    } else {
+                        for cmd in registry_data.commands {
+                            ui.group(|ui| {
+                                ui.label(egui::RichText::new(&cmd.name).strong());
+                                ui.label(&cmd.description);
+
+                                let trigger_str = match &cmd.trigger {
+                                    egui_plot::commands::CommandTrigger::Key(k) => {
+                                        format!("Key: {:?}", k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::Shortcut(m, k) => {
+                                        format!("Shortcut: {:?} + {:?}", m, k)
+                                    }
+                                    egui_plot::commands::CommandTrigger::AltClick => {
+                                        "Alt-Click".to_string()
+                                    }
+                                };
+                                ui.label(egui::RichText::new(trigger_str).code());
+
+                                if cmd.desktop_only {
+                                    ui.label(egui::RichText::new("Desktop Only").italics());
+                                }
+                            });
+                        }
+                    }
+                });
+        }
+    }
+
+    pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
+        // Update global input mode
+        ctx.input(|i| {
+            if i.any_touches() || i.multi_touch().is_some() {
+                self.input_mode = InputMode::Touch;
+            } else if i.pointer.is_moving() && !i.any_touches() {
+                // Heuristic: if pointer is moving but no touches, likely mouse
+                self.input_mode = InputMode::Mouse;
+            }
+        });
+        ctx.data_mut(|d| {
+            d.insert_temp(egui::Id::new("INPUT_MODE"), self.input_mode);
+            d.insert_temp(
+                egui::Id::new("INPUT_MODE_TOUCH"),
+                self.input_mode == InputMode::Touch,
+            );
+            // Clear CMD_REGISTRY at start of frame
+            d.insert_temp(
+                egui::Id::new("CMD_REGISTRY"),
+                egui_plot::commands::CommandRegistryData::default(),
+            );
+        });
+
+        self.show_side_panel(ctx, id_source);
         self.show_theory_portal(ctx, id_source);
 
         if let Some(tool) = self.tools.get_mut(self.selected_tool_index) {
@@ -201,6 +267,8 @@ impl SimulationFramework {
                 });
             });
         }
+
+        self.show_help_menu_window(ctx);
     }
 }
 
