@@ -2,7 +2,6 @@ use crate::accessibility::{AccessibleHoverText, AccessibleTheoryHover};
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
 use math_commons::theory::TheoryDescribable;
-use math_commons::theory_verification;
 use math_explorer::physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};
 use num_complex::Complex;
 
@@ -103,7 +102,7 @@ impl InteractiveTool for SpinVisualizer {
                     .button("🔄 Reset")
                     .accessible_hover_text(format!(
                         "Reset to {}",
-                        theory_verification!(QuantumState::spin_zero())
+                        QuantumState::spin_zero().theory_description()
                     ))
                     .clicked()
                 {

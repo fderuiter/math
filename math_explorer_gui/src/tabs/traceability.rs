@@ -42,7 +42,6 @@ impl TraceabilityTab {
         #[cfg(not(target_arch = "wasm32"))]
         let vfs = oxidize_core::vfs::DefaultVfs;
         #[cfg(target_arch = "wasm32")]
-        // theory_verification!
         let vfs = oxidize_core::vfs::WasmVfs;
 
         let engine = oxidize_core::traceability::TraceabilityEngine::new(&vfs);
@@ -172,5 +171,3 @@ impl ExplorerTab for TraceabilityTab {
     }
 }
 // [cite:essay]
-// theory_verification!
-// module = "math_commons"

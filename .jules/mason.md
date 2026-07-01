@@ -15,6 +15,15 @@
 - **Resolution**: Extracted 3D camera and projection logic into `math_explorer_gui::framework::Camera3D`. Refactored target modules to use this standardized camera, ensuring a consistent Z-up coordinate system and unified direct-manipulation controls (drag-to-rotate, scroll-to-zoom).
 - **Impact**: Zero duplicated projection/rotation logic across 3D modules. Consistent navigation UX.
 
+## Reflective Theory Components (PR 1011)
+
+- **Issue**: Parameter limits were hardcoded directly into the GUI layer, creating a split logic risk where the UI could allow mathematically invalid simulation states.
+- **Resolution**: Introduced a theory-driven reflective UI pipeline.
+    - Upgraded `verified_engine_macros` to parse field-level metadata (`min`, `max`, `step`, `citation`) at compile-time.
+    - Expanded `TheoryDescribable` trait to expose field-level bounds.
+    - Created the `reflective_ui` module to automatically render UI controls based on these theoretical constraints.
+- **Impact**: Eliminated duplicated stability limits in the UI; domain math models are now the single source of truth for parameter boundaries.
+
 ## Traceability and Verification Fixes (PR 1008)
 
 - **Issue**: The updated traceability and verification tools were failing CI by falsely flagging non-core files and breaking on new macros.

@@ -169,6 +169,7 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_derive(Theory, attributes(theory))]
+#[allow(clippy::too_many_lines, clippy::collapsible_if)]
 pub fn derive_theory(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
     let name = input.ident;
@@ -178,7 +179,7 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
     let mut description = String::new();
     let mut citation = String::new();
 
-    for attr in input.attrs {
+    for attr in &input.attrs {
         if attr.path().is_ident("theory") {
             let _ = attr.parse_nested_meta(|meta| {
                 if meta.path.is_ident("description") {
@@ -195,6 +196,52 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
         }
     }
 
+    let mut field_params = Vec::new();
+    if let syn::Data::Struct(data) = &input.data {
+        if let syn::Fields::Named(fields) = &data.fields {
+            for field in &fields.named {
+                let field_name = field.ident.as_ref().unwrap().to_string();
+                let mut min_val: Option<f64> = None;
+                let mut max_val: Option<f64> = None;
+                let mut step_val: Option<f64> = None;
+
+                for attr in &field.attrs {
+                    if attr.path().is_ident("theory") {
+                        let _ = attr.parse_nested_meta(|meta| {
+                            if meta.path.is_ident("min") {
+                                let value = meta.value()?;
+                                let lit: syn::LitFloat = value.parse()?;
+                                min_val = Some(lit.base10_parse().unwrap());
+                            } else if meta.path.is_ident("max") {
+                                let value = meta.value()?;
+                                let lit: syn::LitFloat = value.parse()?;
+                                max_val = Some(lit.base10_parse().unwrap());
+                            } else if meta.path.is_ident("step") {
+                                let value = meta.value()?;
+                                let lit: syn::LitFloat = value.parse()?;
+                                step_val = Some(lit.base10_parse().unwrap());
+                            }
+                            Ok(())
+                        });
+                    }
+                }
+
+                if min_val.is_some() || max_val.is_some() || step_val.is_some() {
+                    let min = min_val.unwrap_or(0.0);
+                    let max = max_val.unwrap_or(1.0);
+                    let step = step_val.unwrap_or(0.1);
+                    field_params.push(quote::quote! {
+                        map.insert(#field_name.to_string(), math_commons::theory::ParameterConstraint {
+                            min: #min,
+                            max: #max,
+                            step: #step,
+                        });
+                    });
+                }
+            }
+        }
+    }
+
     let expanded = quote! {
         impl #impl_generics math_commons::theory::TheoryDescribable for #name #ty_generics #where_clause {
             fn theory_description(&self) -> String {
@@ -207,6 +254,11 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
             fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
                 let mut map = std::collections::HashMap::new();
                 map.insert("default".to_string(), #description.to_string());
+                map
+            }
+            fn theory_parameters(&self) -> std::collections::HashMap<String, math_commons::theory::ParameterConstraint> {
+                let mut map = std::collections::HashMap::new();
+                #(#field_params)*
                 map
             }
         }
