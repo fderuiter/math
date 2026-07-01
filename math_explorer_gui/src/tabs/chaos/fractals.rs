@@ -63,6 +63,9 @@ impl TheoryDescribable for FractalViewer {
 }
 
 impl InteractiveTool for FractalViewer {
+    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
+        Some(self)
+    }
     fn name(&self) -> &'static str {
         "Fractal Viewer"
     }

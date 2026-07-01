@@ -8,7 +8,26 @@ use math_commons::theory::TheoryDescribable;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use math_explorer::biology::reaction_diffusion::ReactionDiffusionModel;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+
+pub struct MorphogenesisParams {
+    pub a: AtomicU64,
+    pub b: AtomicU64,
+    pub d_u: AtomicU64,
+    pub d_v: AtomicU64,
+}
+
+impl MorphogenesisParams {
+    pub fn new(a: f64, b: f64, d_u: f64, d_v: f64) -> Self {
+        Self {
+            a: AtomicU64::new(a.to_bits()),
+            b: AtomicU64::new(b.to_bits()),
+            d_u: AtomicU64::new(d_u.to_bits()),
+            d_v: AtomicU64::new(d_v.to_bits()),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum PatternPreset {
@@ -46,25 +65,24 @@ struct MorphogenesisRunner {
     width: usize,
     height: usize,
     steps_per_frame: usize,
+    params: Arc<MorphogenesisParams>,
 }
 
 impl SimulationRunner for MorphogenesisRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) => match name.as_str() {
-                "a" => self.system.kinetics.a = val,
-                "b" => self.system.kinetics.b = val,
-                "d_u" => self.system.diffusion_coeffs[0] = val,
-                "d_v" => self.system.diffusion_coeffs[1] = val,
-                _ => {}
-            },
             SimCommand::Reset => initialize_system(&mut self.system, self.width, self.height),
             _ => {}
         }
     }
 
     fn step(&mut self) {
+        self.system.kinetics.a = f64::from_bits(self.params.a.load(Ordering::Relaxed));
+        self.system.kinetics.b = f64::from_bits(self.params.b.load(Ordering::Relaxed));
+        self.system.diffusion_coeffs[0] = f64::from_bits(self.params.d_u.load(Ordering::Relaxed));
+        self.system.diffusion_coeffs[1] = f64::from_bits(self.params.d_v.load(Ordering::Relaxed));
+        
         self.system.step(self.dt);
     }
 
@@ -92,7 +110,7 @@ impl SimulationRunner for MorphogenesisRunner {
 }
 
 #[allow(dead_code)]
-pub struct MorphogenesisTab {
+pub struct MorphogenesisTool {
     controller: SimulationController,
     texture: Option<egui::TextureHandle>,
     // Simulation parameters
@@ -100,6 +118,7 @@ pub struct MorphogenesisTab {
     b: f64,
     d_u: f64,
     d_v: f64,
+    params: Arc<MorphogenesisParams>,
     dt: f64,
     width: usize,
     height: usize,
@@ -107,13 +126,15 @@ pub struct MorphogenesisTab {
     selected_preset: Option<PatternPreset>,
 }
 
-impl Default for MorphogenesisTab {
+impl Default for MorphogenesisTool {
     fn default() -> Self {
         let width = 100;
         let height = 100;
+        let a = 0.1;
+        let b = 0.9;
         let d_u = 1.0;
         let d_v = 100.0; // Needs significant difference for Turing patterns
-        let kinetics = SchnakenbergKinetics { a: 0.1, b: 0.9 }; // Classic spot/stripe params
+        let kinetics = SchnakenbergKinetics { a, b }; // Classic spot/stripe params
         let diffusion = FiniteDifference2D::new(
             math_explorer::math_kernel::types::Dimension(width),
             math_explorer::math_kernel::types::Dimension(height),
@@ -132,22 +153,26 @@ impl Default for MorphogenesisTab {
         // Initialize with noise
         initialize_system(&mut system, width, height);
 
+        let params = Arc::new(MorphogenesisParams::new(a, b, d_u, d_v));
+
         let runner = MorphogenesisRunner {
             system,
             dt: 0.05,
             width,
             height,
             steps_per_frame: 10,
+            params: Arc::clone(&params),
         };
         let controller = SimulationController::new(runner);
 
         Self {
             controller,
             texture: None,
-            a: 0.1,
-            b: 0.9,
+            a,
+            b,
             d_u,
             d_v,
+            params,
             dt: 0.05,
             width,
             height,
@@ -178,27 +203,42 @@ fn initialize_system(
     }
 }
 
+pub struct MorphogenesisTab {
+    framework: crate::framework::SimulationFramework,
+}
+
+impl Default for MorphogenesisTab {
+    fn default() -> Self {
+        Self {
+            framework: crate::framework::SimulationFramework::new(vec![Box::new(MorphogenesisTool::default())]),
+        }
+    }
+}
+
 impl ExplorerTab for MorphogenesisTab {
     fn name(&self) -> &'static str {
         "Morphogenesis"
     }
 
+    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.framework.show(ctx, "morphogenesis");
+    }
+}
+
+impl crate::framework::InteractiveTool for MorphogenesisTool {
+    fn name(&self) -> &'static str {
+        "Morphogenesis (Turing Patterns)"
+    }
+
+    fn theory(&self) -> Option<&dyn TheoryDescribable> {
+        Some(self)
+    }
+
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     #[allow(clippy::field_reassign_with_default)]
-    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn show(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("morphogenesis_controls").show(ctx, |ui| {
-            let dummy_model = ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
-                reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
-                diffusion: FiniteDifference2D::new(
-                    math_explorer::math_kernel::types::Dimension(1),
-                    math_explorer::math_kernel::types::Dimension(1),
-                    math_explorer::math_kernel::types::StepSize(1.0),
-                    math_explorer::math_kernel::types::StepSize(1.0),
-                ),
-                diffusion_coeffs: vec![],
-            };
-            ui.heading("Turing Patterns")
-                .accessible_hover_text(dummy_model.theory_description());
+            ui.heading("Turing Patterns");
             ui.label("Schnakenberg Kinetics");
             ui.separator();
 
@@ -218,10 +258,10 @@ impl ExplorerTab for MorphogenesisTab {
                         self.d_u = d_u;
                         self.d_v = d_v;
 
-                        self.controller.send_command(SimCommand::UpdateParam("a".to_string(), a));
-                        self.controller.send_command(SimCommand::UpdateParam("b".to_string(), b));
-                        self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), d_u));
-                        self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), d_v));
+                        self.params.a.store(a.to_bits(), Ordering::Relaxed);
+                        self.params.b.store(b.to_bits(), Ordering::Relaxed);
+                        self.params.d_u.store(d_u.to_bits(), Ordering::Relaxed);
+                        self.params.d_v.store(d_v.to_bits(), Ordering::Relaxed);
 
                         self.controller.send_command(SimCommand::Reset);
                         self.selected_preset = Some(preset);
@@ -240,10 +280,10 @@ impl ExplorerTab for MorphogenesisTab {
                 changed |= ui.add(egui::Slider::new(&mut self.d_v, 10.0..=200.0).text("D_v (Inhibitor)")).changed();
 
                 if changed {
-                    self.controller.send_command(SimCommand::UpdateParam("a".to_string(), self.a));
-                    self.controller.send_command(SimCommand::UpdateParam("b".to_string(), self.b));
-                    self.controller.send_command(SimCommand::UpdateParam("d_u".to_string(), self.d_u));
-                    self.controller.send_command(SimCommand::UpdateParam("d_v".to_string(), self.d_v));
+                    self.params.a.store(self.a.to_bits(), Ordering::Relaxed);
+                    self.params.b.store(self.b.to_bits(), Ordering::Relaxed);
+                    self.params.d_u.store(self.d_u.to_bits(), Ordering::Relaxed);
+                    self.params.d_v.store(self.d_v.to_bits(), Ordering::Relaxed);
                     self.selected_preset = None;
                 }
             });
@@ -294,6 +334,45 @@ impl ExplorerTab for MorphogenesisTab {
                 ui.image((texture.id(), texture.size_vec2()));
             }
         });
+    }
+}
+
+impl TheoryDescribable for MorphogenesisTool {
+    fn theory_description(&self) -> String {
+        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
+            diffusion: FiniteDifference2D::new(
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::StepSize(1.0),
+                math_explorer::math_kernel::types::StepSize(1.0),
+            ),
+            diffusion_coeffs: vec![],
+        }.theory_description()
+    }
+    fn theory_citation(&self) -> String {
+        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
+            diffusion: FiniteDifference2D::new(
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::StepSize(1.0),
+                math_explorer::math_kernel::types::StepSize(1.0),
+            ),
+            diffusion_coeffs: vec![],
+        }.theory_citation()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
+            diffusion: FiniteDifference2D::new(
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::Dimension(1),
+                math_explorer::math_kernel::types::StepSize(1.0),
+                math_explorer::math_kernel::types::StepSize(1.0),
+            ),
+            diffusion_coeffs: vec![],
+        }.available_descriptions()
     }
 }
 

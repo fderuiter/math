@@ -10,6 +10,8 @@ use nalgebra::DVector;
 use num_complex::Complex;
 use std::any::Any;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 
 use crate::framework::InteractiveTool;
 
@@ -17,6 +19,18 @@ use crate::framework::InteractiveTool;
 enum PotentialType {
     InfiniteWell,
     HarmonicOscillator,
+}
+
+pub struct WaveParams {
+    pub potential_type: AtomicU64,
+}
+
+impl WaveParams {
+    pub fn new(potential_type: f64) -> Self {
+        Self {
+            potential_type: AtomicU64::new(potential_type.to_bits()),
+        }
+    }
 }
 
 pub struct WaveData {
@@ -31,6 +45,7 @@ struct WaveRunner {
     hamiltonian: QuantumOperator,
     potential_type: PotentialType,
     potential: DVector<f64>,
+    params: Arc<WaveParams>,
     x_axis: Vec<f64>,
     time: f64,
     n_points: usize,
@@ -43,21 +58,23 @@ impl SimulationRunner for WaveRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) if name.as_str() == "potential_type" => {
-                self.potential_type = if val == 0.0 {
-                    PotentialType::InfiniteWell
-                } else {
-                    PotentialType::HarmonicOscillator
-                };
-                self.init_system();
-            }
-            SimCommand::UpdateParam(_, _) => {}
             SimCommand::Reset => self.init_system(),
             _ => {}
         }
     }
 
     fn step(&mut self) {
+        let val = f64::from_bits(self.params.potential_type.load(Ordering::Relaxed));
+        let new_potential_type = if val == 0.0 {
+            PotentialType::InfiniteWell
+        } else {
+            PotentialType::HarmonicOscillator
+        };
+        if self.potential_type != new_potential_type {
+            self.potential_type = new_potential_type;
+            self.init_system();
+        }
+
         let dt = 0.05;
         self.psi = evolve_state(&self.psi, &self.hamiltonian, dt, 1.0);
         self.time += dt;
@@ -118,6 +135,7 @@ impl WaveRunner {
 pub struct WaveSimulator {
     controller: SimulationController,
     potential_type: PotentialType,
+    params: Arc<WaveParams>,
     cached_x: Vec<f64>,
     cached_prob: Vec<f64>,
     cached_pot: Vec<f64>,
@@ -134,11 +152,14 @@ impl Default for WaveSimulator {
         let hamiltonian = construct_1d_hamiltonian(&potential, 1.0, 1.0, 1.0);
         let psi = QuantumState::new(DVector::from_element(n_points, Complex::new(0.0, 0.0)));
 
+        let params = Arc::new(WaveParams::new(0.0));
+
         let mut runner = WaveRunner {
             psi,
             hamiltonian,
             potential_type: PotentialType::InfiniteWell,
             potential,
+            params: Arc::clone(&params),
             x_axis: Vec::new(),
             time: 0.0,
             n_points,
@@ -153,6 +174,7 @@ impl Default for WaveSimulator {
         Self {
             controller,
             potential_type: PotentialType::InfiniteWell,
+            params,
             cached_x: Vec::new(),
             cached_prob: Vec::new(),
             cached_pot: Vec::new(),
@@ -186,6 +208,9 @@ impl TheoryDescribable for WaveSimulator {
 }
 
 impl InteractiveTool for WaveSimulator {
+    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
+        Some(self)
+    }
     fn name(&self) -> &'static str {
         "Wave Simulator"
     }
@@ -229,13 +254,12 @@ impl InteractiveTool for WaveSimulator {
                 .clicked();
 
             if changed {
-                let val = if self.potential_type == PotentialType::InfiniteWell {
+                let val: f64 = if self.potential_type == PotentialType::InfiniteWell {
                     0.0
                 } else {
                     1.0
                 };
-                self.controller
-                    .send_command(SimCommand::UpdateParam("potential_type".to_string(), val));
+                self.params.potential_type.store(val.to_bits(), Ordering::Relaxed);
                 self.controller.send_command(SimCommand::Reset);
             }
 

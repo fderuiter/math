@@ -74,7 +74,9 @@ fn test_theory_verification_coverage_and_parity() {
                     } else if path.extension().and_then(|e| e.to_str()) == Some("rs") {
                         if let Ok(content) = fs::read_to_string(&path) {
                             if content.contains("theory_verification!")
+                                || content.contains("stochastic_signature_verification!")
                                 || content.contains("mod theory_verification")
+                                || content.contains("mod stochastic_verification")
                             {
                                 has_test = true;
                                 break;
