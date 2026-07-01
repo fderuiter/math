@@ -7,7 +7,20 @@ use math_commons::theory::TheoryDescribable;
 use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
     BgkCollision, LatticeBoltzmannD2Q9,
 };
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+
+pub struct LbmParams {
+    pub viscosity: AtomicU64,
+}
+
+impl LbmParams {
+    pub fn new(viscosity: f64) -> Self {
+        Self {
+            viscosity: AtomicU64::new(viscosity.to_bits()),
+        }
+    }
+}
 
 #[derive(PartialEq, Clone, Copy)]
 enum DrawMode {
@@ -18,11 +31,12 @@ enum DrawMode {
 pub struct LbmRunner {
     solver: LatticeBoltzmannD2Q9<BgkCollision>,
     steps_per_frame: usize,
-    viscosity: f64,
+    params: Arc<LbmParams>,
 }
 
 impl LbmRunner {
-    pub fn new(viscosity: f64) -> Self {
+    pub fn new(params: Arc<LbmParams>) -> Self {
+        let viscosity = f64::from_bits(params.viscosity.load(Ordering::Relaxed));
         let width = 100;
         let height = 50;
         let tau = 3.0 * viscosity + 0.5;
@@ -49,7 +63,7 @@ impl LbmRunner {
         Self {
             solver,
             steps_per_frame: 5,
-            viscosity,
+            params,
         }
     }
 }
@@ -58,11 +72,6 @@ impl SimulationRunner for LbmRunner {
     fn process_command(&mut self, cmd: SimCommand) {
         match cmd {
             SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::UpdateParam(name, val) if name == "viscosity" => {
-                self.viscosity = val;
-                self.solver.collision_model.tau = 3.0 * self.viscosity + 0.5;
-            }
-            SimCommand::UpdateParam(_, _) => {}
             SimCommand::ApplyBrush {
                 cx,
                 cy,
@@ -91,7 +100,8 @@ impl SimulationRunner for LbmRunner {
             SimCommand::Reset => {
                 let width = self.solver.width();
                 let height = self.solver.height();
-                self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * self.viscosity + 0.5);
+                let viscosity = f64::from_bits(self.params.viscosity.load(Ordering::Relaxed));
+                self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * viscosity + 0.5);
                 self.solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
             }
             _ => {}
@@ -99,6 +109,9 @@ impl SimulationRunner for LbmRunner {
     }
 
     fn step(&mut self) {
+        let viscosity = f64::from_bits(self.params.viscosity.load(Ordering::Relaxed));
+        self.solver.collision_model.tau = 3.0 * viscosity + 0.5;
+
         self.solver
             .set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
         self.solver.step();
@@ -147,6 +160,7 @@ pub struct LatticeBoltzmannTool {
     texture: Option<egui::TextureHandle>,
     draw_mode: DrawMode,
     viscosity: f64,
+    params: Arc<LbmParams>,
     draw_radius: usize,
     steps_per_frame: usize,
 
@@ -159,7 +173,8 @@ pub struct LatticeBoltzmannTool {
 impl Default for LatticeBoltzmannTool {
     fn default() -> Self {
         let viscosity = 0.02;
-        let runner = LbmRunner::new(viscosity);
+        let params = Arc::new(LbmParams::new(viscosity));
+        let runner = LbmRunner::new(Arc::clone(&params));
         let controller = SimulationController::new(runner);
 
         Self {
@@ -167,6 +182,7 @@ impl Default for LatticeBoltzmannTool {
             texture: None,
             draw_mode: DrawMode::Obstacle,
             viscosity,
+            params,
             draw_radius: 2,
             steps_per_frame: 5,
             last_width: 100,
@@ -245,10 +261,7 @@ impl InteractiveTool for LatticeBoltzmannTool {
                 .add(egui::Slider::new(&mut self.viscosity, 0.005..=0.2).text("Viscosity"))
                 .changed()
             {
-                self.controller.send_command(SimCommand::UpdateParam(
-                    "viscosity".to_string(),
-                    self.viscosity,
-                ));
+                self.params.viscosity.store(self.viscosity.to_bits(), Ordering::Relaxed);
             }
             if ui
                 .add(
