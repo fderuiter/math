@@ -229,11 +229,6 @@ impl InteractiveTool for WaveSimulator {
                 .clicked();
 
             if changed {
-                let val = if self.potential_type == PotentialType::InfiniteWell {
-                    0.0
-                } else {
-                    1.0
-                };
                 self.controller.send_command(SimCommand::UpdateTypedParam(math_commons::generated_schemas::TypedModelCommand::WaveSim(math_commons::generated_schemas::WaveSimParams { potential_type: self.potential_type as usize as f64 })));
                 self.controller.send_command(SimCommand::Reset);
             }

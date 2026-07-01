@@ -64,7 +64,7 @@ impl SimulationRunner for MorphogenesisRunner {
                     math_explorer::math_kernel::types::StepSize(1.0),
                     math_explorer::math_kernel::types::StepSize(1.0),
                 );
-                let mut system = TuringSystem::new_with_kinetics(
+                let system = TuringSystem::new_with_kinetics(
                     math_explorer::math_kernel::types::Dimension(self.width * self.height),
                     math_explorer::biology::morphogenesis::DiffusionCoeff(p.d_u),
                     math_explorer::biology::morphogenesis::DiffusionCoeff(p.d_v),
