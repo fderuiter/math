@@ -98,6 +98,10 @@ mod tests {
     }
 }
 pub mod ast_visitor;
+pub mod boundary;
+pub mod double_buffer;
+pub mod grid;
+pub mod iteration;
 pub mod mesh;
 pub mod path_utils;
 pub mod rng;
