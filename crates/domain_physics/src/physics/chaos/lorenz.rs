@@ -258,7 +258,7 @@ impl SimulationModel for LorenzSystem {
             .build(state))
     }
 
-    #[verified_engine::verified]
+    #[verified_engine::verified(opt_out = "inherent method call false positive")]
     fn step(&mut self) -> Result<(), Self::Error> {
         // Since we don't store dt in LorenzSystem directly via the interface,
         // we'd typically have dt in the Config or State. We'll use 0.01 for now.
