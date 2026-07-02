@@ -2,8 +2,6 @@ use domain_applied::applied::favoritism::{
     FavoritismInputs, calculate_favoritism_score_full, calculate_favoritism_score_with_rng,
 };
 use pure_math::pure_math::analysis::integration::{ClenshawCurtis, IntegrationResult, Integrator};
-use rand::SeedableRng;
-use rand::rngs::StdRng;
 
 #[test]
 #[verified_engine::verified]
@@ -11,15 +9,15 @@ fn test_favoritism_deterministic() {
     let inputs = FavoritismInputs::default();
 
     // Seed 1
-    let mut rng1 = StdRng::seed_from_u64(42);
+    let mut rng1 = oxidize_core::rng::OxidizeRng::default();
     let score1 = calculate_favoritism_score_with_rng(&inputs, &mut rng1);
 
     // Seed 2 (same seed)
-    let mut rng2 = StdRng::seed_from_u64(42);
+    let mut rng2 = oxidize_core::rng::OxidizeRng::default();
     let score2 = calculate_favoritism_score_with_rng(&inputs, &mut rng2);
 
     // Seed 3 (different seed)
-    let mut rng3 = StdRng::seed_from_u64(999);
+    let mut rng3 = oxidize_core::rng::OxidizeRng::new(999);
     let score3 = calculate_favoritism_score_with_rng(&inputs, &mut rng3);
 
     // Check consistency
@@ -58,7 +56,7 @@ impl Integrator for MockIntegrator {
 #[verified_engine::verified]
 fn test_favoritism_integrator_swap() {
     let inputs = FavoritismInputs::default();
-    let rng = StdRng::seed_from_u64(42);
+    let rng = oxidize_core::rng::OxidizeRng::default();
 
     // Use default Clenshaw-Curtis
     let score_cc = calculate_favoritism_score_full(&inputs, &mut rng.clone(), &ClenshawCurtis);

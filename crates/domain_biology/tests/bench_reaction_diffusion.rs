@@ -25,9 +25,12 @@ fn bench_turing_2d_step() {
     );
 
     // Initialize with some values
+    use oxidize_core::rng::OxidizeRng;
+    use rand::Rng;
+    let mut rng = OxidizeRng::default();
     for i in 0..width * height {
-        system.u_mut()[i] = 1.0 + (i as f64 * 0.01).sin();
-        system.v_mut()[i] = 0.5 + (i as f64 * 0.02).cos();
+        system.u_mut()[i] = 1.0 + rng.gen_range(-0.1..0.1);
+        system.v_mut()[i] = 0.5 + rng.gen_range(-0.1..0.1);
     }
 
     let iterations = 100;

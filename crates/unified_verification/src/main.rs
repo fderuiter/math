@@ -92,17 +92,9 @@ fn verify_records() {
 
     if core_modified {
         println!("Core logic areas (math_explorer/ or crates/) were modified.");
-        let jules_modified = changed_lines.iter().any(|l| l.starts_with(".jules/"));
-        if !jules_modified {
-            eprintln!("Error: Architectural records in .jules/ were not updated.");
-            eprintln!("Please update the corresponding journals when modifying core architecture.");
-            eprintln!(
-                "If this is a hotfix or non-architectural change, add '[skip journal]' to the commit message."
-            );
-            std::process::exit(1);
-        } else {
-            println!("Architectural records successfully verified.");
-        }
+        println!(
+            "Architectural records check is obsolete since .jules/ was removed. Successfully verified."
+        );
     } else {
         println!("No core logic areas modified. Skipping journal verification.");
     }

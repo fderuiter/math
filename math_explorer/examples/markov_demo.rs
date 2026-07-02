@@ -6,8 +6,6 @@ use math_explorer::pure_math::statistics::markov::dtmc::{MarkovChain, StateType}
 use math_explorer::pure_math::statistics::markov::hmm::HiddenMarkovModel;
 use math_explorer::pure_math::statistics::markov::tensor::TransitionTensor;
 use nalgebra::{DMatrix, DVector};
-use rand::SeedableRng;
-use rand::rngs::StdRng;
 
 fn demo_epv() {
     println!("1. Expected Possession Value (DTMC with Rewards)");
@@ -135,7 +133,7 @@ fn demo_birth_death() {
     let p_t = chain.transition_probabilities(1.0).unwrap();
     println!("   P(0→1, t=1) = {:.3}", p_t[(0, 1)]);
 
-    let mut rng = StdRng::seed_from_u64(42);
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     let trajectory = chain.simulate_trajectory(0, 10.0, &mut rng).unwrap();
     println!("   Trajectory length: {}\n", trajectory.len());
 }

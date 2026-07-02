@@ -345,7 +345,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
     ///      2.0, -2.0
     /// ]);
     /// let chain = ContinuousMarkovChain::new(generator).unwrap();
-    /// let mut rng = StdRng::seed_from_u64(42);
+    /// let mut rng = oxidize_core::rng::OxidizeRng::default();
     ///
     /// let trajectory = chain.simulate_trajectory(0, 10.0, &mut rng).unwrap();
     /// assert!(!trajectory.is_empty());
