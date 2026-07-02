@@ -3,7 +3,7 @@
 ![CI/CD](https://github.com/fderuiter/math-explorer/actions/workflows/rust.yml/badge.svg)
 ![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)
 ![License](https://img.shields.io/badge/license-AGPL-blue.svg)
-![Coverage](https://img.shields.io/badge/coverage-50.3%25-yellow.svg)
+![Coverage](https://img.shields.io/badge/coverage-43.7%25-yellow)
 
 **Math Explorer** is a comprehensive Rust library that bridges the gap between rigorous academic theory and executable code. From simulating Quantum Mechanics to modeling Social Favoritism, this repository serves as a verifiable playground for complex algorithms.
 

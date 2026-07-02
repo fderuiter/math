@@ -114,6 +114,13 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
     }
 }
 
+mod embed_theory;
+
+#[proc_macro_attribute]
+pub fn embed_theory(attr: TokenStream, item: TokenStream) -> TokenStream {
+    embed_theory::embed_theory_impl(attr.into(), item.into()).into()
+}
+
 #[proc_macro_attribute]
 pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut input_fn = match syn::parse::<ItemFn>(item.clone()) {
