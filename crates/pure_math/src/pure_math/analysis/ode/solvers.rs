@@ -124,8 +124,29 @@ impl<State: Clone> RungeKutta4<State> {
 
     /// Performs a single integration step using a temporary solver.
     ///
-    /// This method allocates a new solver (and thus buffers) on every call.
-    /// For performance-critical code, instantiate a `RungeKutta4` struct and reuse it.
+    /// # Deprecation Notice
+    /// This static method performs 3 redundant heap allocations (clones) per call,
+    /// significantly slowing down high-frequency simulation loops.
+    ///
+    /// **Migration Guide**
+    /// To achieve zero-allocation performance, instantiate a solver once
+    /// and reuse its internal buffers for all subsequent steps using the [`Solver`] trait.
+    ///
+    /// **Old (Deprecated):**
+    /// ```rust,ignore
+    /// let new_state = RungeKutta4::step(system, 0.0, state, 0.01);
+    /// ```
+    ///
+    /// **New (Recommended):**
+    /// ```rust,ignore
+    /// let mut solver = RungeKutta4::new(state);
+    /// // In your simulation loop:
+    /// solver.step(system, t, state, 0.01);
+    /// ```
+    #[deprecated(
+        note = "This method performs 3 redundant heap allocations (clones) per call. Please instantiate a solver instance and use the `Solver` trait for zero-allocation performance."
+    )]
+    #[doc(hidden)]
     #[verified_engine::verified]
     pub fn step<S>(system: &S, t: f64, state: &State, dt: f64) -> State
     where

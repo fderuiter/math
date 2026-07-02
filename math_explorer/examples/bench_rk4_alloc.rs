@@ -1,4 +1,4 @@
-use math_explorer::pure_math::analysis::ode::{OdeSystem, TimeStepper, VectorOperations};
+use math_explorer::pure_math::analysis::ode::{OdeSystem, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 use std::time::Instant;
 
@@ -75,9 +75,7 @@ impl MulAssign<f64> for SimpleState {
     }
 }
 
-struct BenchmarkSystem {
-    state: SimpleState,
-}
+struct BenchmarkSystem;
 
 impl OdeSystem<SimpleState> for BenchmarkSystem {
     fn derivative(&self, _t: f64, state: &SimpleState) -> SimpleState {
@@ -97,32 +95,19 @@ impl OdeSystem<SimpleState> for BenchmarkSystem {
     }
 }
 
-impl TimeStepper<SimpleState> for BenchmarkSystem {
-    fn get_state(&self) -> &SimpleState {
-        &self.state
-    }
-    fn get_state_mut(&mut self) -> &mut SimpleState {
-        &mut self.state
-    }
-
-    fn step(&mut self, dt: f64) {
-        use math_explorer::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
-        *self.get_state_mut() = new_state;
-    }
-}
-
 fn main() {
     let size = 1_000_000;
-    let mut system = BenchmarkSystem {
-        state: SimpleState {
-            data: vec![1.0; size],
-        },
+    let system = BenchmarkSystem;
+    let mut state = SimpleState {
+        data: vec![1.0; size],
     };
+
+    use math_explorer::pure_math::analysis::ode::{RungeKutta4, Solver};
+    let mut solver = RungeKutta4::new(&state);
 
     // Warmup
     for _ in 0..2 {
-        system.step(0.01);
+        solver.step(&system, 0.0, &mut state, 0.01);
     }
 
     let start = Instant::now();
@@ -130,7 +115,7 @@ fn main() {
     let dt = 0.01;
 
     for _ in 0..steps {
-        system.step(dt);
+        solver.step(&system, 0.0, &mut state, dt);
     }
 
     let duration = start.elapsed();

@@ -84,7 +84,9 @@ impl<'a, M: MomentumEquation> TimeStepper<FlowState> for FluidParticleSystem<'a,
     #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         use pure_math::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
+        use pure_math::pure_math::analysis::ode::SolverExt;
+        let mut solver = RungeKutta4::new(self.get_state());
+        let new_state = solver.solve(self, 0.0, self.get_state(), dt);
         *self.get_state_mut() = new_state;
     }
 }
