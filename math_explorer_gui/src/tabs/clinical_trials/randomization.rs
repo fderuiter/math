@@ -4,7 +4,6 @@ use eframe::egui;
 use math_explorer::applied::clinical_trials::design::{
     AllocationStrategy, BlockRandomizer, Group, SimpleRandomizer,
 };
-use rand::thread_rng;
 
 #[derive(PartialEq)]
 enum RandomizationType {
@@ -84,7 +83,7 @@ impl InteractiveTool for RandomizationTool {
                 self.error_message = None;
                 self.assignments.clear();
 
-                let mut rng = thread_rng();
+                let mut rng = oxidize_core::rng::OxidizeRng::default();
 
                 match self.randomization_type {
                     RandomizationType::Simple => {

@@ -110,7 +110,7 @@ where
     /// This method uses the default thread-local RNG.
     #[verified_engine::verified]
     pub fn select_action(&self, state: &S, available_actions: &[A]) -> Option<A> {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         self.select_action_with_rng(state, available_actions, &mut rng)
     }
 

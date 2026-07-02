@@ -231,7 +231,7 @@ impl NetworkEpidemicModel {
     /// use `new_with_rng`.
     #[verified_engine::verified]
     pub fn new(num_nodes: usize, beta: f64, gamma: f64) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         Self::new_with_rng(num_nodes, beta, gamma, &mut rng)
     }
 
@@ -254,7 +254,7 @@ impl NetworkEpidemicModel {
     /// Initializes a geometric graph. This method uses the default thread-local RNG.
     #[verified_engine::verified]
     pub fn initialize_geometric_graph(&mut self) {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         self.initialize_geometric_graph_with_rng(&mut rng);
     }
 
@@ -296,7 +296,7 @@ impl NetworkEpidemicModel {
     /// Steps the simulation forward using the default thread-local RNG.
     #[verified_engine::verified]
     pub fn step(&mut self) {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         self.step_with_rng(&mut rng);
     }
 

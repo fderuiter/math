@@ -20,7 +20,7 @@ impl Default for NetworkPropagationTool {
 
 impl NetworkPropagationTool {
     fn reset_network(&mut self) {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         self.model.initialize_geometric_graph_with_rng(&mut rng);
         self.is_running = false;
     }
@@ -40,7 +40,7 @@ impl InteractiveTool for NetworkPropagationTool {
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show_ui(&mut self, ui: &mut egui::Ui) {
         if self.is_running {
-            let mut rng = rand::thread_rng();
+            let mut rng = oxidize_core::rng::OxidizeRng::default();
             self.model.step_with_rng(&mut rng);
             ui.ctx().request_repaint();
         }

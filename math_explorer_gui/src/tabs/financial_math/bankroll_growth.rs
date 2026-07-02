@@ -56,7 +56,7 @@ impl BankrollGrowthTool {
 
                 match (full_kelly_res, half_kelly_res, quarter_kelly_res) {
                     (Ok(fk), Ok(hk), Ok(qk)) => {
-                        let mut rng = rand::thread_rng();
+                        let mut rng = oxidize_core::rng::OxidizeRng::default();
 
                         let mut fk_bankroll = self.initial_bankroll;
                         let mut hk_bankroll = self.initial_bankroll;

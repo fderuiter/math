@@ -85,7 +85,7 @@ pub fn generate_ray_bundle(
 /// Output: Sample points along rays r(t_i) = o + t_i * d.
 #[verified_engine::verified]
 pub fn stratified_sampling(t_near: f64, t_far: f64, n_samples: usize) -> Vec<f64> {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     stratified_sampling_with_rng(t_near, t_far, n_samples, &mut rng)
 }
 
@@ -179,7 +179,7 @@ pub fn render_image<M: NeRFModel + ?Sized>(
     t_far: f64,
     n_samples: usize,
 ) -> DMatrix<Vector3<f64>> {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     render_image_with_rng(bundle, model, t_near, t_far, n_samples, &mut rng)
 }
 
