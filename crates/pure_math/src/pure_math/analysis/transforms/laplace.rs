@@ -31,7 +31,7 @@ where
 {
     let min = 0.0;
     let max = max_t;
-    let eps = 1e-6;
+    let eps = math_commons::registry::TOLERANCE_FAST;
 
     // integrand = f(t) * e^{-s t}
     // e^{-s t} = e^{-(sigma + i omega) t} = e^{-sigma t} * (cos(omega t) - i sin(omega t))

@@ -42,7 +42,7 @@ pub fn bessel_y(_nu: f64, _x: f64) -> f64 {
 /// Defined as $j_\ell(x) = \sqrt{\frac{\pi}{2x}} J_{\ell+1/2}(x)$.
 #[verified_engine::verified]
 pub fn spherical_bessel_j(l: u64, x: f64) -> f64 {
-    if x.abs() < 1e-10 {
+    if x.abs() < math_commons::registry::TOLERANCE_HIGH {
         if l == 0 {
             return 1.0;
         } else {

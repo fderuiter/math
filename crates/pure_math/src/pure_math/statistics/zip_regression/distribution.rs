@@ -152,7 +152,7 @@ impl ZipDistribution {
     ///
     /// let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
     /// let mean = dist.mean();
-    /// assert!((mean - 2.4).abs() < 1e-9);  // (1-0.2)*3.0 = 2.4
+    /// assert!((mean - 2.4).abs() < math_commons::registry::TOLERANCE_STANDARD);  // (1-0.2)*3.0 = 2.4
     /// ```
     #[verified_engine::verified]
     pub fn mean(&self) -> f64 {
@@ -234,7 +234,7 @@ mod tests {
         let prob = dist.pmf(Count::new(0));
 
         let expected = 0.2 + 0.8 * (-3.0_f64).exp();
-        assert!((prob - expected).abs() < 1e-9);
+        assert!((prob - expected).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -248,7 +248,7 @@ mod tests {
         let lambda = 3.0_f64;
         let poisson_prob = lambda * (-lambda).exp();
         let expected = 0.8 * poisson_prob;
-        assert!((prob - expected).abs() < 1e-6);
+        assert!((prob - expected).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -257,7 +257,7 @@ mod tests {
         let dist = ZipDistribution::from_values(0.2, 3.0).unwrap();
         let mean = dist.mean();
         // E[Y] = (1-0.2)*3.0 = 2.4
-        assert!((mean - 2.4).abs() < 1e-9);
+        assert!((mean - 2.4).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -267,7 +267,7 @@ mod tests {
         let variance = dist.variance();
         // Var[Y] = (1-0.2)*3.0*(1 + 0.2*3.0) = 0.8*3.0*1.6 = 3.84
         let expected = 0.8 * 3.0 * 1.6;
-        assert!((variance - expected).abs() < 1e-9);
+        assert!((variance - expected).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -291,8 +291,8 @@ mod tests {
         let variance = dist.variance();
 
         // For standard Poisson, mean = variance = lambda
-        assert!((mean - 2.0).abs() < 1e-9);
-        assert!((variance - 2.0).abs() < 1e-9);
+        assert!((mean - 2.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
+        assert!((variance - 2.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]

@@ -22,7 +22,7 @@ fn test_physical_principles() {
     let phi_half = PI / 3.0; // 60 degrees
     let n = calculate_lambertian_order(phi_half);
     // cos(60) = 0.5. -ln(2) / ln(0.5) = -ln(2) / -ln(2) = 1.0.
-    assert!((n - 1.0).abs() < 1e-6);
+    assert!((n - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
     // Received Power
     let a = 1e-4; // 1 cm^2 = 1e-4 m^2
@@ -36,20 +36,20 @@ fn test_physical_principles() {
     // Pd = 1e-5 / pi
     let pd = calculate_received_power(n, a, p_t, d, phi, theta, gamma);
     let expected_pd = (a * p_t) / PI;
-    assert!((pd - expected_pd).abs() < 1e-9);
+    assert!((pd - expected_pd).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     // Photocurrent
-    // i_d = 1e-9 (1 nA), R_pd = 0.5 A/W, Pr = 1e-6 (1 uW)
-    let i_d = 1e-9;
+    // i_d = math_commons::registry::TOLERANCE_STANDARD (1 nA), R_pd = 0.5 A/W, Pr = math_commons::registry::TOLERANCE_FAST (1 uW)
+    let i_d = math_commons::registry::TOLERANCE_STANDARD;
     let r_pd = 0.5;
-    let p_r = 1e-6;
+    let p_r = math_commons::registry::TOLERANCE_FAST;
     let i_pd = calculate_photocurrent(p_r, i_d, r_pd);
-    assert!((i_pd - (1e-9 + 0.5e-6)).abs() < 1e-12);
+    assert!((i_pd - (math_commons::registry::TOLERANCE_STANDARD + 0.5e-6)).abs() < 1e-12);
 
     // TIA Output
     let g_pd = 1e5; // 100 kOhm
     let v_sig = calculate_tia_output(i_pd, g_pd);
-    assert!((v_sig - (i_pd * 1e5)).abs() < 1e-9);
+    assert!((v_sig - (i_pd * 1e5)).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]
@@ -61,10 +61,10 @@ fn test_wah_and_snr() {
         Point3::new(0.0, 1.0, 8.0),
     ];
     let wah = weighted_average_height(&vertices);
-    assert!((wah - 10.0).abs() < 1e-6);
+    assert!((wah - 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
     let snr_boost = snr_improvement_factor(400);
-    assert!((snr_boost - 20.0).abs() < 1e-6);
+    assert!((snr_boost - 20.0).abs() < math_commons::registry::TOLERANCE_FAST);
 }
 
 #[test]
@@ -77,17 +77,17 @@ fn test_lock_in_amplifier() {
     let (vx, vy) = lia.mix_and_filter(v_s, 0.0);
     // Vx = (2*1)/2 * cos(0) = 1.0
     // Vy = (2*1)/2 * sin(0) = 0.0
-    assert!((vx - 1.0).abs() < 1e-6);
-    assert!(vy.abs() < 1e-6);
+    assert!((vx - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+    assert!(vy.abs() < math_commons::registry::TOLERANCE_FAST);
 
     let (r, theta) = lia.calculate_magnitude_phase(vx, vy);
-    assert!((r - 1.0).abs() < 1e-6);
-    assert!(theta.abs() < 1e-6);
+    assert!((r - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+    assert!(theta.abs() < math_commons::registry::TOLERANCE_FAST);
 
     // Scaled Output
     // R_scaled = (Vfs/S) * R = (10/1) * 1 = 10.0
     let output = lia.scale_output(r);
-    assert!((output - 10.0).abs() < 1e-6);
+    assert!((output - 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
 }
 
 #[test]
@@ -126,13 +126,13 @@ fn test_validation_metrics() {
     // Percentage Error (using single value function for demonstration)
     let pe = percentage_error(measured[0], reference[0]);
     // (1.0 - 1.1) / 1.0 * 100 = -10%
-    assert!((pe + 10.0).abs() < 1e-6);
+    assert!((pe + 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
     // RMSE
     // Errors: -0.1, 0.1, -0.1
     // Sq Errors: 0.01, 0.01, 0.01. Mean: 0.01. Sqrt: 0.1
     let rmse = root_mean_square_error(&measured, &reference);
-    assert!((rmse - 0.1).abs() < 1e-6);
+    assert!((rmse - 0.1).abs() < math_commons::registry::TOLERANCE_FAST);
 
     // Pearson
     // Perfect correlation despite scaling/shifting?
@@ -148,12 +148,12 @@ fn test_validation_metrics() {
     // Size A: 2, Size B: 2.
     // DSC = 2*1 / (2+2) = 0.5.
     let dsc = dice_similarity_coefficient(&mask_a, &mask_b);
-    assert!((dsc - 0.5).abs() < 1e-6);
+    assert!((dsc - 0.5).abs() < math_commons::registry::TOLERANCE_FAST);
 
     // Time Shift Error
     let err = time_shift_error(&measured, &reference);
     // Sum sq diffs: 0.01 + 0.01 + 0.01 = 0.03
-    assert!((err - 0.03).abs() < 1e-6);
+    assert!((err - 0.03).abs() < math_commons::registry::TOLERANCE_FAST);
 }
 
 #[test]
@@ -164,5 +164,5 @@ fn test_calibration() {
     // y = 10x
     let calibrator = LinearCalibrator::fit(&voltages, &distances).unwrap();
     let d = calibrator.calibrate(1.5);
-    assert!((d - 15.0).abs() < 1e-6);
+    assert!((d - 15.0).abs() < math_commons::registry::TOLERANCE_FAST);
 }

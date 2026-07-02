@@ -90,11 +90,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "freesurfer",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         THICKNESS = 2.5;
     },
     test = {
-        assert_relative_eq!(THICKNESS, 2.5, epsilon = 1e-6);
+        assert_relative_eq!(THICKNESS, 2.5, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

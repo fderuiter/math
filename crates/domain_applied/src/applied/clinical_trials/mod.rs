@@ -80,12 +80,12 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "clinical_trials",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         ALPHA = 0.05;
     },
     test = {
         // Just verify it compiles and runs.
-        assert_relative_eq!(ALPHA, 0.05, epsilon = 1e-6);
+        assert_relative_eq!(ALPHA, 0.05, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

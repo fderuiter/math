@@ -52,7 +52,7 @@ fn test_sgd_step() {
     assert!(new_params_result.is_ok());
     let new_params = new_params_result.unwrap();
 
-    assert_relative_eq!(new_params[(0, 0)], 0.49, epsilon = 1e-6);
+    assert_relative_eq!(new_params[(0, 0)], 0.49, epsilon = math_commons::registry::TOLERANCE_FAST);
 
     // Second step
     // grads = 0.1
@@ -63,5 +63,5 @@ fn test_sgd_step() {
     assert!(new_params_result_2.is_ok());
     let new_params_2 = new_params_result_2.unwrap();
 
-    assert_relative_eq!(new_params_2[(0, 0)], 0.471, epsilon = 1e-6);
+    assert_relative_eq!(new_params_2[(0, 0)], 0.471, epsilon = math_commons::registry::TOLERANCE_FAST);
 }

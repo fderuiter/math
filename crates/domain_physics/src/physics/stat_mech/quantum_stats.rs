@@ -97,7 +97,7 @@ impl StatisticalDistribution for BoseEinstein {
         let beta = 1.0 / (KB * temperature);
         let exponent = beta * (energy - chemical_potential);
         // Check for singularity if exponent is 0 (E=mu)
-        if exponent.abs() < 1e-9 {
+        if exponent.abs() < math_commons::registry::TOLERANCE_STANDARD {
             return Ok(f64::INFINITY);
         }
         // Avoid overflow
@@ -201,7 +201,7 @@ mod tests {
         // T -> 0 (use very small T)
         // E < mu -> prob 1
         // E > mu -> prob 0
-        let t = 1e-9; // effectively 0
+        let t = math_commons::registry::TOLERANCE_STANDARD; // effectively 0
         // Actually, formulas use raw Joules.
         // Let's use E in Joules.
         let mu_j = 1.0e-20;
@@ -213,11 +213,11 @@ mod tests {
         let prob_above = occupancy_probability(ParticleType::Fermion, e_above, mu_j, t).unwrap();
 
         assert!(
-            (prob_below - 1.0).abs() < 1e-6,
+            (prob_below - 1.0).abs() < math_commons::registry::TOLERANCE_FAST,
             "Fermion below mu should be occupied at T~0"
         );
         assert!(
-            prob_above.abs() < 1e-6,
+            prob_above.abs() < math_commons::registry::TOLERANCE_FAST,
             "Fermion above mu should be empty at T~0"
         );
     }
@@ -234,12 +234,12 @@ mod tests {
         let fd = FermiDirac;
         let prob_fd = calculate_occupancy(fd, e, mu, t).unwrap();
         let expected_fd = 1.0 / (std::f64::consts::E + 1.0);
-        assert!((prob_fd - expected_fd).abs() < 1e-9);
+        assert!((prob_fd - expected_fd).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // Maxwell-Boltzmann: e^-1
         let mb = MaxwellBoltzmann;
         let prob_mb = calculate_occupancy(mb, e, mu, t).unwrap();
         let expected_mb = (-1.0_f64).exp();
-        assert!((prob_mb - expected_mb).abs() < 1e-9);
+        assert!((prob_mb - expected_mb).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 }

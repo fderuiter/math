@@ -49,7 +49,7 @@
 //!
 //!     // Kelly says: bet 10% of your bankroll
 //!     // f = (bp - q) / b = (1.0*0.55 - 0.45) / 1.0 = 0.10
-//!     assert!((fraction.value() - 0.10).abs() < 1e-6);
+//!     assert!((fraction.value() - 0.10).abs() < math_commons::registry::TOLERANCE_FAST);
 //!     println!("Optimal bet size: {:.1}%", fraction.value() * 100.0);
 //!
 //!     Ok(())

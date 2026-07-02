@@ -251,7 +251,7 @@ mod tests {
         let p2 = Point2D::new(3.0, 4.0);
 
         let d = p1.distance(&p2);
-        assert!((d - 5.0).abs() < 1e-6);
+        assert!((d - 5.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -273,9 +273,9 @@ mod tests {
         let dist = cloud.distance_matrix();
 
         assert_eq!(dist.len(), 3);
-        assert!((dist[0][1] - 1.0).abs() < 1e-6);
-        assert!((dist[0][2] - 1.0).abs() < 1e-6);
-        assert!((dist[1][2] - 2.0_f64.sqrt()).abs() < 1e-6);
+        assert!((dist[0][1] - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((dist[0][2] - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((dist[1][2] - 2.0_f64.sqrt()).abs() < math_commons::registry::TOLERANCE_FAST);
 
         // Symmetry
         assert_eq!(dist[0][1], dist[1][0]);
@@ -342,6 +342,6 @@ mod tests {
         let diameter = triangle.diameter(&dist);
 
         // Maximum distance is between points 1 and 2
-        assert!((diameter - 2.0_f64.sqrt()).abs() < 1e-6);
+        assert!((diameter - 2.0_f64.sqrt()).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

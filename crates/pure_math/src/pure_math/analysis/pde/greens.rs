@@ -45,7 +45,7 @@ impl<I: Integrator> GreenFunctionSolver1D<I> {
         // integrand = G(x, xi) * f(xi)
         let integrand = |xi: f64| g(x, xi) * source(xi);
 
-        let result = self.integrator.integrate(integrand, min, max, 1e-6);
+        let result = self.integrator.integrate(integrand, min, max, math_commons::registry::TOLERANCE_FAST);
         result.value
     }
 }
@@ -77,7 +77,7 @@ impl MethodOfImages {
         let d_source = dist(r, r_prime);
         let d_image = dist(r, r_image);
 
-        if d_source.abs() < 1e-9 {
+        if d_source.abs() < math_commons::registry::TOLERANCE_STANDARD {
             return f64::INFINITY; // Singularity
         }
 

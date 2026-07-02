@@ -48,8 +48,8 @@ mod tests {
 
         let b = multivariate_linear_regression(&x, &y).unwrap();
         // Expect [1, 2, 3]
-        assert!((b[0] - 1.0).abs() < 1e-6);
-        assert!((b[1] - 2.0).abs() < 1e-6);
-        assert!((b[2] - 3.0).abs() < 1e-6);
+        assert!((b[0] - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((b[1] - 2.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((b[2] - 3.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

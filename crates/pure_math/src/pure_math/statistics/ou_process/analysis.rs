@@ -282,7 +282,7 @@ pub fn estimate_ou_params(observations: &[f64], dt: f64) -> Result<OuParams, OuE
         denominator += diff_current * diff_current;
     }
 
-    let rho1 = if denominator > 1e-10 {
+    let rho1 = if denominator > math_commons::registry::TOLERANCE_HIGH {
         numerator / denominator
     } else {
         0.5 // Default if variance is too small

@@ -144,9 +144,9 @@ impl InteractiveTool for SurfaceViewer {
             });
 
             ui.collapsing("Resolution", |ui| {
-                ui.add(egui::Slider::new(&mut self.u_resolution, 10..=100).text("Grid Size U"));
+                ui.add(egui::Slider::new(&mut self.u_resolution, 10..=math_commons::registry::MAX_GRID_SIZE).text("Grid Size U"));
 
-                ui.add(egui::Slider::new(&mut self.v_resolution, 10..=100).text("Grid Size V"));
+                ui.add(egui::Slider::new(&mut self.v_resolution, 10..=math_commons::registry::MAX_GRID_SIZE).text("Grid Size V"));
             });
 
             ui.separator();

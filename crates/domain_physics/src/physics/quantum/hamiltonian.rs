@@ -100,12 +100,12 @@ mod tests {
         // Off-diagonal: - h_bar^2 / (2m * dx^2) = -0.5
 
         for i in 0..n {
-            assert!((mat[(i, i)].re - 1.0).abs() < 1e-10);
+            assert!((mat[(i, i)].re - 1.0).abs() < math_commons::registry::TOLERANCE_HIGH);
             if i > 0 {
-                assert!((mat[(i, i - 1)].re + 0.5).abs() < 1e-10);
+                assert!((mat[(i, i - 1)].re + 0.5).abs() < math_commons::registry::TOLERANCE_HIGH);
             }
             if i < n - 1 {
-                assert!((mat[(i, i + 1)].re + 0.5).abs() < 1e-10);
+                assert!((mat[(i, i + 1)].re + 0.5).abs() < math_commons::registry::TOLERANCE_HIGH);
             }
         }
     }
@@ -115,6 +115,6 @@ mod tests {
     fn test_gaussian_wavepacket_normalization() {
         let x_grid: Vec<f64> = (0..100).map(|i| i as f64 * 0.1 - 5.0).collect();
         let psi = gaussian_wavepacket(&x_grid, 0.0, 1.0, 1.0);
-        assert!((psi.norm() - 1.0).abs() < 1e-10);
+        assert!((psi.norm() - 1.0).abs() < math_commons::registry::TOLERANCE_HIGH);
     }
 }

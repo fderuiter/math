@@ -10,7 +10,7 @@ use crate::error::Glicko2Error;
 const MAX_VOLATILITY_ITERATIONS: usize = 100;
 
 /// Convergence tolerance for volatility iteration.
-const VOLATILITY_TOLERANCE: f64 = 1e-6;
+const VOLATILITY_TOLERANCE: f64 = math_commons::registry::TOLERANCE_FAST;
 
 /// Updates a player's rating after a rating period with match results.
 ///

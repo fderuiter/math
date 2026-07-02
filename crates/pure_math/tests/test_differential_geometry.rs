@@ -83,7 +83,7 @@ fn test_laplace_beltrami_constant() {
     let constant_func = |_: f64, _: f64| 1.0;
 
     let lb = laplace_beltrami(&sphere, 0.0, PI / 2.0, &constant_func);
-    assert!(lb.abs() < 1e-6);
+    assert!(lb.abs() < math_commons::registry::TOLERANCE_FAST);
 }
 
 #[test]

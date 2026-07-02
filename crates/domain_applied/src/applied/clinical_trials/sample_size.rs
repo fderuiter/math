@@ -81,7 +81,7 @@ pub fn calculate_sample_size_proportions(
             "Proportions must be between 0 and 1".to_string(),
         ));
     }
-    if (p1 - p2).abs() < 1e-9 {
+    if (p1 - p2).abs() < math_commons::registry::TOLERANCE_STANDARD {
         return Err(ClinicalTrialError::InvalidData(
             "Proportions cannot be equal".to_string(),
         ));

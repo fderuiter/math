@@ -80,7 +80,7 @@ pub use compartmental::{SEIRModel, SEIRState, SIRModel, SIRState};
 use pure_math::theory_verification;
 theory_verification!(
     module = "epidemiology",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         TEST = 1.0;
     },

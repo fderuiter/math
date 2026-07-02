@@ -117,7 +117,7 @@ impl FlowElement for Source {
         let dx = x - self.x;
         let dy = y - self.y;
         let r2 = dx * dx + dy * dy;
-        if r2 < 1e-10 {
+        if r2 < math_commons::registry::TOLERANCE_HIGH {
             return Vector2::zeros();
         }
         let u = (self.strength * dx) / (2.0 * PI * r2);
@@ -187,7 +187,7 @@ impl FlowElement for Vortex {
         let dx = x - self.x;
         let dy = y - self.y;
         let r2 = dx * dx + dy * dy;
-        if r2 < 1e-10 {
+        if r2 < math_commons::registry::TOLERANCE_HIGH {
             return Vector2::zeros();
         }
         // u = -Gamma/(2*pi*r) * sin(theta) = -Gamma*y / (2*pi*r^2)
@@ -202,7 +202,7 @@ impl FlowElement for Vortex {
         let dx = x - self.x;
         let dy = y - self.y;
         let r = (dx * dx + dy * dy).sqrt();
-        if r < 1e-10 {
+        if r < math_commons::registry::TOLERANCE_HIGH {
             return 0.0;
         }
         (self.strength / (2.0 * PI)) * r.ln()
@@ -263,7 +263,7 @@ impl FlowElement for Doublet {
         let dy = y - self.y;
         let r2 = dx * dx + dy * dy;
         let r4 = r2 * r2;
-        if r2 < 1e-10 {
+        if r2 < math_commons::registry::TOLERANCE_HIGH {
             return Vector2::zeros();
         }
 
@@ -293,7 +293,7 @@ impl FlowElement for Doublet {
         let dx = x - self.x;
         let dy = y - self.y;
         let r2 = dx * dx + dy * dy;
-        if r2 < 1e-10 {
+        if r2 < math_commons::registry::TOLERANCE_HIGH {
             return 0.0;
         }
         // psi = - (kappa * y) / (2*pi*r^2)
@@ -305,7 +305,7 @@ impl FlowElement for Doublet {
         let dx = x - self.x;
         let dy = y - self.y;
         let r2 = dx * dx + dy * dy;
-        if r2 < 1e-10 {
+        if r2 < math_commons::registry::TOLERANCE_HIGH {
             return 0.0;
         }
         // phi = - (kappa * x) / (2*pi*r^2)

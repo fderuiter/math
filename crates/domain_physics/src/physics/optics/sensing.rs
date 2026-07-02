@@ -70,6 +70,6 @@ mod tests {
         // n=1 (Lambertian), phi=0 (cos=1), P=2pi, r=1
         // I = (2 * 2pi) / (2pi * 1) = 2
         let i = lambertian_intensity(2.0 * std::f64::consts::PI, 1.0, 0.0, 1.0);
-        assert!((i - 2.0).abs() < 1e-6);
+        assert!((i - 2.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

@@ -90,13 +90,13 @@ mod tests {
         // Lorentz Factor: v = 0.6c => gamma = 1.25
         let v = 0.6 * C;
         let gamma = calculate_lorentz_factor(v).expect("Failed to calc Lorentz factor");
-        assert_relative_eq!(gamma, 1.25, epsilon = 1e-6);
+        assert_relative_eq!(gamma, 1.25, epsilon = math_commons::registry::TOLERANCE_FAST);
 
         // Invariant Interval: ct=3, x=4, y=0, z=0 => s^2 = -9 + 16 = 7
         // t = 3/c.
         let fv = FourVector::new(3.0 / C, 4.0, 0.0, 0.0);
         let s2 = fv.invariant_interval().expect("Failed to calc interval");
-        assert_relative_eq!(s2, 7.0, epsilon = 1e-6);
+        assert_relative_eq!(s2, 7.0, epsilon = math_commons::registry::TOLERANCE_FAST);
 
         // Momentum Invariance
         // m=1. p^mu = (gamma mc, gamma mv, 0, 0) / c?

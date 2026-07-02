@@ -62,7 +62,7 @@ impl BiQuadraticSurface {
         // (e.g. if points are collinear or not spread out).
         // A * x = b  =>  x = A_pseudo_inv * b
         // nalgebra's SVD solve handles this.
-        let epsilon = 1e-9;
+        let epsilon = math_commons::registry::TOLERANCE_STANDARD;
         match a.svd(true, true).solve(&b, epsilon) {
             Ok(coefficients) => Some(Self { coefficients }),
             Err(_) => None,

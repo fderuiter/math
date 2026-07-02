@@ -88,7 +88,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
 
         // Normalize initial distribution
         let sum_0: f64 = m.column(0).sum();
-        if sum_0 > 1e-9 {
+        if sum_0 > math_commons::registry::TOLERANCE_STANDARD {
             m.column_mut(0).scale_mut(1.0 / sum_0);
         }
 
@@ -160,7 +160,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
 
                 // Normalize mass to prevent explosion/vanishing
                 let sum: f64 = m_next.sum();
-                if sum > 1e-9 {
+                if sum > math_commons::registry::TOLERANCE_STANDARD {
                     m_next.scale_mut(1.0 / sum);
                 }
 

@@ -12,7 +12,7 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "cannibalism",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         BETA_N = 1.0;
         BETA_C = 0.5;
@@ -23,12 +23,12 @@ theory_verification!(
     },
     test = {
         let model = CannibalismModel::new(BETA_N, BETA_C, K_N, PHI, MU_N, MU_C);
-        assert_relative_eq!(model.beta_n, BETA_N, epsilon = 1e-6);
-        assert_relative_eq!(model.beta_c, BETA_C, epsilon = 1e-6);
-        assert_relative_eq!(model.k_n, K_N, epsilon = 1e-6);
-        assert_relative_eq!(model.phi_n_c, PHI, epsilon = 1e-6);
-        assert_relative_eq!(model.mu_n, MU_N, epsilon = 1e-6);
-        assert_relative_eq!(model.mu_c, MU_C, epsilon = 1e-6);
+        assert_relative_eq!(model.beta_n, BETA_N, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(model.beta_c, BETA_C, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(model.k_n, K_N, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(model.phi_n_c, PHI, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(model.mu_n, MU_N, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(model.mu_c, MU_C, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );
 // [cite:cannibalism]

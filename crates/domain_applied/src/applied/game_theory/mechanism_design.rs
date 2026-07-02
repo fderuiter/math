@@ -26,7 +26,7 @@ pub trait ValuationDistribution:
     fn virtual_valuation(&self, v: f64) -> f64 {
         let pdf = self.pdf(v);
         let cdf = self.cdf(v);
-        if pdf.abs() < 1e-9 {
+        if pdf.abs() < math_commons::registry::TOLERANCE_STANDARD {
             // Handle edge case where density is 0 (shouldn't happen in support)
             v
         } else {
@@ -225,11 +225,11 @@ mod tests {
 
         let v = 0.5;
         let j = dist.virtual_valuation(v);
-        assert!((j - (2.0 * v - 1.0)).abs() < 1e-9); // J(0.5) = 0.
+        assert!((j - (2.0 * v - 1.0)).abs() < math_commons::registry::TOLERANCE_STANDARD); // J(0.5) = 0.
 
         let v = 0.8;
         let j = dist.virtual_valuation(v);
-        assert!((j - (2.0 * v - 1.0)).abs() < 1e-9); // J(0.8) = 0.6.
+        assert!((j - (2.0 * v - 1.0)).abs() < math_commons::registry::TOLERANCE_STANDARD); // J(0.8) = 0.6.
     }
 
     #[test]

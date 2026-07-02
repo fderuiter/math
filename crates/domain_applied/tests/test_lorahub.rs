@@ -28,10 +28,10 @@ fn test_lorahub_linear_combination() {
     let combined = ensemble.combine(&weights).expect("Combination failed");
     let result_matrix = combined.get("weight").expect("Missing key");
 
-    assert!((result_matrix[(0, 0)] - 1.5).abs() < 1e-6);
-    assert!((result_matrix[(1, 0)] - 3.0).abs() < 1e-6);
-    assert!((result_matrix[(0, 1)] - 4.5).abs() < 1e-6);
-    assert!((result_matrix[(1, 1)] - 6.0).abs() < 1e-6);
+    assert!((result_matrix[(0, 0)] - 1.5).abs() < math_commons::registry::TOLERANCE_FAST);
+    assert!((result_matrix[(1, 0)] - 3.0).abs() < math_commons::registry::TOLERANCE_FAST);
+    assert!((result_matrix[(0, 1)] - 4.5).abs() < math_commons::registry::TOLERANCE_FAST);
+    assert!((result_matrix[(1, 1)] - 6.0).abs() < math_commons::registry::TOLERANCE_FAST);
 }
 
 #[test]
@@ -49,5 +49,5 @@ fn test_lorahub_objective() {
     // total = 10.0 + 0.2 = 10.2
 
     let score = ensemble.evaluate_objective(&weights, mock_loss, alpha);
-    assert!((score - 10.2).abs() < 1e-6);
+    assert!((score - 10.2).abs() < math_commons::registry::TOLERANCE_FAST);
 }

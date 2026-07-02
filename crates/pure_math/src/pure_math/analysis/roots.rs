@@ -31,13 +31,13 @@ pub enum AnalysisError {
 ///     // Use Bisection (bracketing method)
 ///     let bisection = Bisection::default();
 ///     let root = bisection.find_root(f, 0.0, 5.0)?;
-///     assert!((root - 2.0).abs() < 1e-6);
+///     assert!((root - 2.0).abs() < math_commons::registry::TOLERANCE_FAST);
 ///
 ///     // Use Newton-Raphson (open method)
 ///     let newton = NewtonRaphson::default();
 ///     // Note: For open methods, min/max are used to determine the initial guess.
 ///     let root = newton.find_root(f, 0.0, 5.0)?;
-///     assert!((root - 2.0).abs() < 1e-6);
+///     assert!((root - 2.0).abs() < math_commons::registry::TOLERANCE_FAST);
 ///
 ///     Ok(())
 /// }
@@ -80,7 +80,7 @@ pub trait RootFinder {
 ///
 ///     // Find root of x^2 - 2 = 0 in [1, 2]
 ///     let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0)?;
-///     assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+///     assert!((root - std::f64::consts::SQRT_2).abs() < math_commons::registry::TOLERANCE_FAST);
 ///
 ///     // Error if root is not bracketed (signs at endpoints must differ)
 ///     let result = solver.find_root(|x| x * x + 1.0, -2.0, 2.0);
@@ -112,8 +112,8 @@ impl Default for Bisection {
     #[verified_engine::verified]
     fn default() -> Self {
         Self {
-            max_iterations: 100,
-            tolerance: 1e-6,
+            max_iterations: math_commons::registry::MAX_ITERATIONS,
+            tolerance: math_commons::registry::TOLERANCE_FAST,
         }
     }
 }
@@ -199,12 +199,12 @@ impl RootFinder for Bisection {
 ///     // Find root of x^2 - 2 = 0
 ///     // Initial guess will be (1.0 + 2.0) / 2.0 = 1.5
 ///     let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0)?;
-///     assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+///     assert!((root - std::f64::consts::SQRT_2).abs() < math_commons::registry::TOLERANCE_FAST);
 ///
 ///     // Example where root is outside the initial "interval"
 ///     // Root of x - 10 = 0 is 10. Initial guess is 2.5.
 ///     let root = solver.find_root(|x| x - 10.0, 0.0, 5.0)?;
-///     assert!((root - 10.0).abs() < 1e-6);
+///     assert!((root - 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
 ///
 ///     Ok(())
 /// }
@@ -278,8 +278,8 @@ impl Default for NewtonRaphson {
     #[verified_engine::verified]
     fn default() -> Self {
         Self {
-            max_iterations: 100,
-            tolerance: 1e-6,
+            max_iterations: math_commons::registry::MAX_ITERATIONS,
+            tolerance: math_commons::registry::TOLERANCE_FAST,
         }
     }
 }
@@ -313,7 +313,7 @@ mod tests {
         let solver = NewtonRaphson::default();
         // x^2 - 2 = 0, derivative 2x
         let root = solver.find_root_with_derivative(|x| x * x - 2.0, |x| 2.0 * x, 1.5)?;
-        assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+        assert!((root - std::f64::consts::SQRT_2).abs() < math_commons::registry::TOLERANCE_FAST);
         Ok(())
     }
 
@@ -333,7 +333,7 @@ mod tests {
         let solver = Bisection::default();
         // x^2 - 2 = 0  => x = sqrt(2) approx 1.41421356
         let root = solver.find_root(|x| x * x - 2.0, 1.0, 2.0)?;
-        assert!((root - std::f64::consts::SQRT_2).abs() < 1e-6);
+        assert!((root - std::f64::consts::SQRT_2).abs() < math_commons::registry::TOLERANCE_FAST);
         Ok(())
     }
 
@@ -343,7 +343,7 @@ mod tests {
         let solver = Bisection::default();
         // 2x - 4 = 0 => x = 2
         let root = solver.find_root(|x| 2.0 * x - 4.0, 0.0, 5.0)?;
-        assert!((root - 2.0).abs() < 1e-6);
+        assert!((root - 2.0).abs() < math_commons::registry::TOLERANCE_FAST);
         Ok(())
     }
 

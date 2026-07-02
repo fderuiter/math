@@ -18,7 +18,7 @@ fn test_kolmogorov_approx() {
         (prefix_kolmogorov_approx(&Integer::from(10))
             - (10.0f64.log2() + 2.0 * 10.0f64.log2().log2() + 1.0))
             .abs()
-            < 1e-9
+            < math_commons::registry::TOLERANCE_STANDARD
     );
 }
 

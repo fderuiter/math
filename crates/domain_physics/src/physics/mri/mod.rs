@@ -136,7 +136,7 @@ mod tests {
         assert_relative_eq!(bloch.magnetization.x, 0.0);
         // z should recover towards m0=1 from 0? No, initial z=0.
         // dMz/dt = (M0 - Mz)/T1 approx 0.
-        assert_relative_eq!(bloch.magnetization.z, 0.0, epsilon = 1e-6);
+        assert_relative_eq!(bloch.magnetization.z, 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -199,11 +199,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "mri",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         DUMMY = 1.0;
     },
     test = {
-        assert_relative_eq!(DUMMY, 1.0, epsilon = 1e-6);
+        assert_relative_eq!(DUMMY, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

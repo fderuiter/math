@@ -122,7 +122,7 @@ mod tests {
         // Sum of squared differences is 2.
         // MSE = 2 / 4 = 0.5.
         let loss = mse_loss(&y_true, &y_pred);
-        assert!((loss - 0.5).abs() < 1e-6);
+        assert!((loss - 0.5).abs() < math_commons::registry::TOLERANCE_FAST_F32);
     }
 
     #[test]
@@ -140,6 +140,6 @@ mod tests {
 
         // Average EMD = (4 + 4) / 2 = 4.
         let emd = earth_movers_distance(&z1, &z2);
-        assert!((emd - 4.0).abs() < 1e-6);
+        assert!((emd - 4.0).abs() < math_commons::registry::TOLERANCE_FAST_F32);
     }
 }

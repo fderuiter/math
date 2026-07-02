@@ -83,7 +83,7 @@
 //!     kf.predict();
 //!
 //!     // Predicted State: Pos = 5.0, Vel = 5.0
-//!     assert!((kf.state[0] - 5.0).abs() < 1e-6);
+//!     assert!((kf.state[0] - 5.0).abs() < math_commons::registry::TOLERANCE_FAST);
 //!
 //!     // 3. Update Step (New Measurement arrives)
 //!     // Sensor says Position = 5.2 (slightly off due to noise)
@@ -105,11 +105,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "algorithms",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         WEIGHT = 1.0;
     },
     test = {
-        assert_relative_eq!(WEIGHT, 1.0, epsilon = 1e-6);
+        assert_relative_eq!(WEIGHT, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );
