@@ -106,39 +106,98 @@ fn extract_label(tex_content: &str, target_label: &str) -> Option<String> {
     None
 }
 
-pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let args = match syn::parse2::<EmbedTheoryArgs>(attr) {
-        Ok(args) => args,
-        Err(err) => return err.to_compile_error(),
-    };
-    
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
-    
-    // Resolve absolute path
-    // We assume the path given is relative to the workspace root
-    let mut abs_path = PathBuf::from(&manifest_dir);
-    // Since crates/verified_engine_macros is inside workspace, workspace root is ../../
-    abs_path.push("../../");
-    abs_path.push(&args.file_path);
-    
-    if !abs_path.exists() {
-        // Try fallback to just relative to manifest
-        let fallback = PathBuf::from(&manifest_dir).join(&args.file_path);
-        if fallback.exists() {
-            abs_path = fallback;
-        } else {
-            // Also try absolute if the user passed an absolute path
-            let abs_direct = PathBuf::from(&args.file_path);
-            if abs_direct.exists() {
-                abs_path = abs_direct;
-            } else {
-                let err_msg = format!("LaTeX file not found: {}", args.file_path);
-                return syn::Error::new(proc_macro2::Span::call_site(), err_msg).to_compile_error();
-            }
+fn check_shadow_mirroring(attrs: &[syn::Attribute]) -> Result<(), syn::Error> {
+    for attr in attrs {
+        if !attr.path().is_ident("doc") {
+            continue;
+        }
+        let syn::Meta::NameValue(nv) = &attr.meta else { continue };
+        let syn::Expr::Lit(expr_lit) = &nv.value else { continue };
+        let syn::Lit::Str(lit_str) = &expr_lit.lit else { continue };
+        let doc_val = lit_str.value();
+        if doc_val.contains("$$") || doc_val.contains("\\begin{equation}") || doc_val.contains("\\begin{align}") {
+            return Err(syn::Error::new(
+                attr.path().segments[0].ident.span(),
+                "Manual docstring content for mathematical sections is strictly forbidden in modules using #[embed_theory] to prevent shadow-mirroring."
+            ));
         }
     }
+    Ok(())
+}
+
+fn resolve_tex_path(file_path: &str) -> Result<PathBuf, String> {
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
+    let mut abs_path = PathBuf::from(&manifest_dir);
+    abs_path.push("../../");
+    abs_path.push(file_path);
     
-    let canonical_path = abs_path.canonicalize().unwrap_or(abs_path.clone());
+    if abs_path.exists() {
+        return Ok(abs_path);
+    }
+    
+    let fallback = PathBuf::from(&manifest_dir).join(file_path);
+    if fallback.exists() {
+        return Ok(fallback);
+    }
+    
+    let abs_direct = PathBuf::from(file_path);
+    if abs_direct.exists() {
+        return Ok(abs_direct);
+    }
+    
+    Err(format!("LaTeX file not found: {}", file_path))
+}
+
+fn extract_all_labels(tex_content: &str, labels: &[String], file_path: &str) -> Result<String, String> {
+    let mut docs = Vec::new();
+    for label in labels {
+        if let Some(md) = extract_label(tex_content, label) {
+            docs.push(md);
+        } else {
+            return Err(format!("Label `{}` not found or not in a supported environment in {}", label, file_path));
+        }
+    }
+    Ok(docs.join("\n\n"))
+}
+
+fn get_item_attrs(item: &TokenStream) -> Option<Vec<syn::Attribute>> {
+    if let Ok(parsed) = syn::parse2::<syn::Item>(item.clone()) {
+        Some(match parsed {
+            syn::Item::Fn(f) => f.attrs,
+            syn::Item::Struct(s) => s.attrs,
+            syn::Item::Enum(e) => e.attrs,
+            syn::Item::Mod(m) => m.attrs,
+            syn::Item::Impl(i) => i.attrs,
+            syn::Item::Trait(t) => t.attrs,
+            syn::Item::Type(t) => t.attrs,
+            syn::Item::Const(c) => c.attrs,
+            syn::Item::Static(s) => s.attrs,
+            _ => vec![],
+        })
+    } else if let Ok(parsed) = syn::parse2::<syn::ImplItem>(item.clone()) {
+        Some(match parsed {
+            syn::ImplItem::Fn(f) => f.attrs,
+            syn::ImplItem::Const(c) => c.attrs,
+            syn::ImplItem::Type(t) => t.attrs,
+            _ => vec![],
+        })
+    } else {
+        None
+    }
+}
+
+pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let args = match syn::parse2::<EmbedTheoryArgs>(attr) {
+        Ok(a) => a,
+        Err(e) => return e.to_compile_error(),
+    };
+    
+    let abs_path = match resolve_tex_path(&args.file_path) {
+        Ok(p) => p,
+        Err(e) => return syn::Error::new(proc_macro2::Span::call_site(), e).to_compile_error(),
+    };
+    
+    let canonical_path = abs_path.canonicalize().unwrap_or(abs_path);
     let canonical_path_str = canonical_path.to_string_lossy().to_string();
     
     let tex_content = match fs::read_to_string(&canonical_path) {
@@ -149,87 +208,23 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     };
     
-    // Check for manual mathematical content in existing docstrings to prevent shadow-mirroring
-    if let Ok(parsed_item) = syn::parse2::<syn::Item>(item.clone()) {
-        let attrs = match &parsed_item {
-            syn::Item::Fn(f) => &f.attrs,
-            syn::Item::Struct(s) => &s.attrs,
-            syn::Item::Enum(e) => &e.attrs,
-            syn::Item::Mod(m) => &m.attrs,
-            syn::Item::Impl(i) => &i.attrs,
-            syn::Item::Trait(t) => &t.attrs,
-            syn::Item::Type(t) => &t.attrs,
-            syn::Item::Const(c) => &c.attrs,
-            syn::Item::Static(s) => &s.attrs,
-            _ => &[] as &[syn::Attribute],
-        };
-        for attr in attrs {
-            if attr.path().is_ident("doc") {
-                if let syn::Meta::NameValue(nv) = &attr.meta {
-                    if let syn::Expr::Lit(expr_lit) = &nv.value {
-                        if let syn::Lit::Str(lit_str) = &expr_lit.lit {
-                            let doc_val = lit_str.value();
-                            if doc_val.contains("$$") || doc_val.contains("\\begin{equation}") || doc_val.contains("\\begin{align}") {
-                                return syn::Error::new(
-                                    attr.path().segments[0].ident.span(),
-                                    "Manual docstring content for mathematical sections is strictly forbidden in modules using #[embed_theory] to prevent shadow-mirroring."
-                                ).to_compile_error();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    } else if let Ok(parsed_impl_item) = syn::parse2::<syn::ImplItem>(item.clone()) {
-        let attrs = match &parsed_impl_item {
-            syn::ImplItem::Fn(f) => &f.attrs,
-            syn::ImplItem::Const(c) => &c.attrs,
-            syn::ImplItem::Type(t) => &t.attrs,
-            _ => &[] as &[syn::Attribute],
-        };
-        for attr in attrs {
-            if attr.path().is_ident("doc") {
-                if let syn::Meta::NameValue(nv) = &attr.meta {
-                    if let syn::Expr::Lit(expr_lit) = &nv.value {
-                        if let syn::Lit::Str(lit_str) = &expr_lit.lit {
-                            let doc_val = lit_str.value();
-                            if doc_val.contains("$$") || doc_val.contains("\\begin{equation}") || doc_val.contains("\\begin{align}") {
-                                return syn::Error::new(
-                                    attr.path().segments[0].ident.span(),
-                                    "Manual docstring content for mathematical sections is strictly forbidden in modules using #[embed_theory] to prevent shadow-mirroring."
-                                ).to_compile_error();
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    if let Some(err) = get_item_attrs(&item).and_then(|attrs| check_shadow_mirroring(&attrs).err()) {
+        return err.to_compile_error();
     }
     
-    let mut docs = Vec::new();
-    for label in &args.labels {
-        if let Some(md) = extract_label(&tex_content, label) {
-            docs.push(md);
-        } else {
-            let err_msg = format!("Label `{}` not found or not in a supported environment in {}", label, args.file_path);
-            return syn::Error::new(proc_macro2::Span::call_site(), err_msg).to_compile_error();
-        }
-    }
-    
-    let doc_str = docs.join("\n\n");
+    let doc_str = match extract_all_labels(&tex_content, &args.labels, &args.file_path) {
+        Ok(docs) => docs,
+        Err(e) => return syn::Error::new(proc_macro2::Span::call_site(), e).to_compile_error(),
+    };
     
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     canonical_path_str.hash(&mut hasher);
-    for l in &args.labels {
-        l.hash(&mut hasher);
-    }
-    let hash = hasher.finish();
-    let track_ident = quote::format_ident!("_TRACK_THEORY_{:x}", hash);
+    for l in &args.labels { l.hash(&mut hasher); }
+    let track_ident = quote::format_ident!("_TRACK_THEORY_{:x}", hasher.finish());
     
     quote! {
         #[doc = #doc_str]
         #item
-        
         #[allow(dead_code)]
         const #track_ident: &str = include_str!(#canonical_path_str);
     }
