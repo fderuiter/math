@@ -9,7 +9,7 @@ use rand::Rng;
 /// * `f64` - Final position.
 #[verified_engine::verified]
 pub fn random_walk_1d(steps: usize) -> f64 {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     random_walk_1d_with_rng(steps, &mut rng)
 }
 
@@ -39,7 +39,7 @@ pub fn random_walk_1d_with_rng<R: Rng + ?Sized>(steps: usize, rng: &mut R) -> f6
 /// * `f64` - Estimated Diffusion Coefficient D.
 #[verified_engine::verified]
 pub fn estimate_diffusion_coefficient(num_walks: usize, time_steps: usize) -> f64 {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     estimate_diffusion_coefficient_with_rng(num_walks, time_steps, &mut rng)
 }
 

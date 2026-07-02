@@ -6,7 +6,7 @@ use rand::Rng;
 /// Returns a vector of [year, anomaly] pairs.
 #[verified_engine::verified]
 pub fn get_temperature_anomalies() -> Vec<[f64; 2]> {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     get_temperature_anomalies_with_rng(&mut rng)
 }
 
@@ -33,7 +33,7 @@ pub fn get_temperature_anomalies_with_rng<R: Rng + ?Sized>(rng: &mut R) -> Vec<[
 /// Returns a tuple of (historical_data, projected_data).
 #[verified_engine::verified]
 pub fn get_co2_projections(reduction_scenario: f64) -> (Vec<[f64; 2]>, Vec<[f64; 2]>) {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     get_co2_projections_with_rng(&mut rng, reduction_scenario)
 }
 

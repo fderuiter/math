@@ -9,6 +9,7 @@ use std::process::Command;
 use walkdir::WalkDir;
 
 mod ast_visitor;
+mod entropy_guard;
 mod profile;
 mod vulnerabilities;
 
@@ -463,6 +464,10 @@ fn verify_suite() {
     }
 
     if !ast_visitor::run_ast_visitor() {
+        passed_security = false;
+    }
+
+    if !entropy_guard::check_entropy() {
         passed_security = false;
     }
 

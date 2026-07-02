@@ -1,3 +1,4 @@
+use rand::Rng;
 use math_explorer::climate::cera::Cera;
 use math_explorer::climate::config::CeraConfig;
 use math_explorer::climate::training::CeraTrainer;
@@ -23,9 +24,9 @@ fn main() {
     let mut trainer = CeraTrainer::new(&mut model);
 
     // 3. Train on synthetic data (Batch Size * Num Levels, Channels)
-    let inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
-    let targets = DMatrix::<f32>::from_fn(2, 5, |_, _| rand::random());
-    let warm_inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| rand::random());
+    let inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| oxidize_core::rng::OxidizeRng::default().gen());
+    let targets = DMatrix::<f32>::from_fn(2, 5, |_, _| oxidize_core::rng::OxidizeRng::default().gen());
+    let warm_inputs = DMatrix::<f32>::from_fn(20, 2, |_, _| oxidize_core::rng::OxidizeRng::default().gen());
 
     trainer.train(&inputs, &targets, &warm_inputs);
 }
