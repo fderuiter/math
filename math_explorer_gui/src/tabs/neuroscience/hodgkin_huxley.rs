@@ -160,13 +160,12 @@ impl Default for HodgkinHuxleyTool {
 }
 
 impl InteractiveTool for HodgkinHuxleyTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Hodgkin-Huxley Model"
     }
 
-    fn theory(&self) -> Option<&dyn TheoryDescribable> {
-        Some(self)
-    }
+    
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {

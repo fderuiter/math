@@ -223,8 +223,8 @@ impl crate::framework::InteractiveTool for MorphogenesisTool {
         "Morphogenesis (Turing Patterns)"
     }
 
-    fn theory(&self) -> Option<&dyn TheoryDescribable> {
-        Some(self)
+    fn theory(&self) -> &dyn TheoryDescribable {
+        self
     }
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]

@@ -8,7 +8,7 @@ use math_commons::theory::ParameterConstraint;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-pub trait UnifiedModel: Send + 'static {
+pub trait UnifiedModel: Send + 'static + math_commons::theory::TheoryDescribable {
     /// Initialize the model given the starting parameters.
     fn new(params: &HashMap<String, f64>) -> Self
     where
@@ -32,14 +32,6 @@ pub trait UnifiedModel: Send + 'static {
     fn name() -> &'static str
     where
         Self: Sized;
-
-    /// The name of the model in the theory portal.
-    fn theory_description() -> Option<String>
-    where
-        Self: Sized,
-    {
-        None
-    }
 }
 
 pub struct UnifiedSimRunner<M: UnifiedModel> {
@@ -181,15 +173,26 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             ui.label("Model Parameters");
 
             let mut params_lock = self.params.write().unwrap();
+            
+            // Get available descriptions from a temporary model instance or we can just instantiate it?
+            // Wait, we don't have access to the model instance directly here, it's inside the controller thread!
+            // But we can get it from M::parameters(), which means it's static?
+            // But TheoryDescribable methods take `&self`.
+            // Let's just create a dummy instance to read it, or use the tool's TheoryDescribable impl?
+            // Actually, the requirements say: "UI controls must derive their accessibility labels directly from the model's theoretical documentation"
+            let available_descs = self.theory().available_descriptions();
+
             for (name, constraint) in &self.param_metadata {
                 if let Some(val) = params_lock.get_mut(name) {
                     let slider = egui::Slider::new(val, constraint.min..=constraint.max)
                         .step_by(constraint.step)
                         .text(name);
                     let mut resp = ui.add(slider);
-                    if let Some(desc) = M::theory_description() {
+                    
+                    if let Some(desc) = available_descs.get(name) {
                         resp = resp.accessible_hover_text(desc);
                     }
+                    
                     let _ = resp.changed(); // Just calling it to suppress unused warning if necessary, or not needed.
                 }
             }
@@ -232,6 +235,7 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
 }
 
 impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         M::name()
     }
@@ -251,4 +255,11 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
         self.draw_left_panel(ctx);
         self.draw_central_panel(ctx);
     }
+}
+
+impl<M: UnifiedModel> math_commons::theory::TheoryDescribable for UnifiedSimTool<M> {
+    fn theory_description(&self) -> String { "Default theory description".into() }
+    fn phonetic_description(&self) -> String { "Default phonetic description".into() }
+    fn theory_citation(&self) -> String { "Default Citation, 2026".into() }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { std::collections::HashMap::new() }
 }

@@ -69,6 +69,7 @@ impl RewardPlotsTool {
 }
 
 impl InteractiveTool for RewardPlotsTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Reward Plots"
     }
@@ -138,4 +139,11 @@ inventory::submit! {
         tags: &[],
         build: || Box::new(RewardPlotsTool::default()),
     }
+}
+
+impl math_commons::theory::TheoryDescribable for RewardPlotsTool {
+    fn theory_description(&self) -> String { "Theoretical context not available.".into() }
+    fn phonetic_description(&self) -> String { "Theoretical context not available.".into() }
+    fn theory_citation(&self) -> String { "Uncited".into() }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { std::collections::HashMap::new() }
 }
