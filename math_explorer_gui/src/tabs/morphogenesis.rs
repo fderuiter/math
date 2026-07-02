@@ -164,8 +164,8 @@ impl Default for MorphogenesisTool {
         "Morphogenesis (Turing Patterns)"
     }
 
-    fn create_theory() -> Option<Box<dyn TheoryDescribable>> {
-        Some(Box::new(ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
+    fn create_theory() -> Box<dyn TheoryDescribable> {
+        Box::new(ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
             reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
             diffusion: FiniteDifference2D::new(
                 math_explorer::math_kernel::types::Dimension(1),
@@ -174,7 +174,7 @@ impl Default for MorphogenesisTool {
                 math_explorer::math_kernel::types::StepSize(1.0),
             ),
             diffusion_coeffs: vec![],
-        }))
+        })
     }
 }
 

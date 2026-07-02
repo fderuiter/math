@@ -28,18 +28,31 @@ pub trait UnifiedModel: Send + 'static {
     where
         Self: Sized;
 
+    /// Optional predefined presets for parameters.
+    fn presets() -> Vec<(&'static str, HashMap<String, f64>)>
+    where
+        Self: Sized,
+    {
+        Vec::new()
+    }
+
+    /// Optional custom actions for the simulation control panel.
+    fn custom_actions() -> Vec<(&'static str, &'static str, SimCommand)>
+    where
+        Self: Sized,
+    {
+        Vec::new()
+    }
+
     /// The name of the tool.
     fn name() -> &'static str
     where
         Self: Sized;
 
     /// Return the theoretical context.
-    fn create_theory() -> Option<Box<dyn math_commons::theory::TheoryDescribable>>
+    fn create_theory() -> Box<dyn math_commons::theory::TheoryDescribable>
     where
-        Self: Sized,
-    {
-        None
-    }
+        Self: Sized;
 }
 
 pub struct UnifiedSimRunner<M: UnifiedModel> {
@@ -99,7 +112,7 @@ pub struct UnifiedSimTool<M: UnifiedModel> {
     steps_per_frame: usize,
     last_snapshot: Option<CachedSnapshot>,
     texture: Option<egui::TextureHandle>,
-    theory_instance: Option<Box<dyn math_commons::theory::TheoryDescribable>>,
+    theory_instance: Box<dyn math_commons::theory::TheoryDescribable>,
     _marker: std::marker::PhantomData<M>,
 }
 
@@ -136,6 +149,7 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn draw_left_panel(&mut self, ctx: &egui::Context) {
         let is_running = self.controller.running;
 
@@ -167,6 +181,12 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
                 self.controller.send_command(SimCommand::Reset);
             }
 
+            for (label, tooltip, cmd) in M::custom_actions() {
+                if ui.button(label).accessible_hover_text(tooltip).clicked() {
+                    self.controller.send_command(cmd);
+                }
+            }
+
             ui.separator();
             ui.label("Simulation Constants");
             if ui
@@ -180,6 +200,24 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
                     .send_command(SimCommand::SetSpeed(self.steps_per_frame));
             }
 
+            let presets = M::presets();
+            if !presets.is_empty() {
+                ui.separator();
+                ui.label("Presets");
+                ui.horizontal_wrapped(|ui| {
+                    for (preset_name, preset_params) in presets {
+                        if ui.button(preset_name).clicked() {
+                            if let Ok(mut params_lock) = self.params.write() {
+                                for (k, v) in &preset_params {
+                                    params_lock.insert(k.clone(), *v);
+                                }
+                            }
+                            self.controller.send_command(SimCommand::Reset);
+                        }
+                    }
+                });
+            }
+
             ui.separator();
             ui.label("Model Parameters");
 
@@ -190,9 +228,7 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
                         .step_by(constraint.step)
                         .text(name);
                     let mut resp = ui.add(slider);
-                    if let Some(theory) = &self.theory_instance {
-                        resp = resp.accessible_hover_text(theory.theory_description());
-                    }
+                    resp = resp.accessible_hover_text(self.theory_instance.theory_description());
                     let _ = resp.changed(); // Just calling it to suppress unused warning if necessary, or not needed.
                 }
             }
@@ -292,8 +328,8 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
         M::name()
     }
 
-    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
-        self.theory_instance.as_deref()
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable {
+        self.theory_instance.as_ref()
     }
 
     fn show(&mut self, ctx: &egui::Context) {

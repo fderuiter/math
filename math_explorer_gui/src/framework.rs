@@ -32,10 +32,8 @@ pub struct InteractionContext<'a> {
 pub trait InteractiveTool {
     fn name(&self) -> &'static str;
 
-    /// Optional: Provide theoretical context.
-    fn theory(&self) -> Option<&dyn TheoryDescribable> {
-        None
-    }
+    /// Provide theoretical context.
+    fn theory(&self) -> &dyn TheoryDescribable;
 
     /// Show the tool. Tools can implement this to take full control over rendering.
     /// The default implementation delegates to `show_ui` and then sets up a CentralPanel
@@ -146,32 +144,29 @@ impl SimulationFramework {
                         ui.heading(format!("Theory: {}", tool.name()));
                         ui.separator();
 
-                        if let Some(theory) = tool.theory() {
-                            // Requirement 5: Screen readers can successfully navigate the theory text and citations
-                            use crate::accessibility::AccessibleHoverText;
+                        let theory = tool.theory();
+                        // Requirement 5: Screen readers can successfully navigate the theory text and citations
+                        use crate::accessibility::AccessibleHoverText;
 
-                            ui.label(theory.theory_description())
-                                .accessible_hover_text("Theoretical background description");
+                        ui.label(theory.theory_description())
+                            .accessible_hover_text("Theoretical background description");
 
+                        ui.separator();
+                        ui.heading("Citations");
+                        ui.label(theory.theory_citation())
+                            .accessible_hover_text("Academic citations");
+
+                        let available = theory.available_descriptions();
+                        if !available.is_empty() {
                             ui.separator();
-                            ui.heading("Citations");
-                            ui.label(theory.theory_citation())
-                                .accessible_hover_text("Academic citations");
-
-                            let available = theory.available_descriptions();
-                            if !available.is_empty() {
-                                ui.separator();
-                                ui.heading("Additional Context");
-                                for (key, desc) in available {
-                                    ui.label(format!("{}: {}", key, desc))
-                                        .accessible_hover_text(format!(
-                                            "Additional context for {}",
-                                            key
-                                        ));
-                                }
+                            ui.heading("Additional Context");
+                            for (key, desc) in available {
+                                ui.label(format!("{}: {}", key, desc))
+                                    .accessible_hover_text(format!(
+                                        "Additional context for {}",
+                                        key
+                                    ));
                             }
-                        } else {
-                            ui.label("No theoretical context available for this tool.");
                         }
                     }
                 });

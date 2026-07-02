@@ -20,14 +20,19 @@ pub fn render_theory_parameter<T: TheoryDescribable>(
         .text(label);
 
     let response = ui.add(slider);
+    let available_descs = model.available_descriptions();
 
-    let tooltip = format!(
-        "{}\n\nCitation: {}",
-        model.theory_description(),
-        model.theory_citation()
-    );
+    if let Some(param_desc) = available_descs.get(param_name) {
+        response.accessible_hover_text(param_desc)
+    } else {
+        let tooltip = format!(
+            "{}\n\nCitation: {}",
+            model.theory_description(),
+            model.theory_citation()
+        );
 
-    response.accessible_hover_text(tooltip)
+        response.accessible_hover_text(tooltip)
+    }
 }
 
 /// Fallback mechanism for complex parameters that require a custom UI layout
@@ -61,13 +66,19 @@ pub fn render_all_theory_parameters<T: TheoryDescribable>(
                 .step_by(constraint.step)
                 .text(&param_name);
 
-            let response = ui.add(slider);
-            let tooltip = format!(
-                "{}\n\nCitation: {}",
-                model.theory_description(),
-                model.theory_citation()
-            );
-            let response = response.accessible_hover_text(tooltip);
+            let mut response = ui.add(slider);
+            let available_descs = model.available_descriptions();
+            
+            if let Some(param_desc) = available_descs.get(&param_name) {
+                response = response.accessible_hover_text(param_desc);
+            } else {
+                let tooltip = format!(
+                    "{}\n\nCitation: {}",
+                    model.theory_description(),
+                    model.theory_citation()
+                );
+                response = response.accessible_hover_text(tooltip);
+            }
 
             if response.changed() {
                 model.set_parameter(&param_name, value);
