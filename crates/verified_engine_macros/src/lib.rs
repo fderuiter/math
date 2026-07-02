@@ -118,14 +118,12 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
     }
 
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
-        if node.method.to_string() == self.function_name {
-            if let syn::Expr::Path(ref expr_path) = *node.receiver {
-                if expr_path.path.is_ident("self") {
-                    if self.direct_recursion.is_none() {
-                        self.direct_recursion = Some(syn::spanned::Spanned::span(node));
-                    }
-                }
-            }
+        if node.method == self.function_name
+            && let syn::Expr::Path(ref expr_path) = *node.receiver
+            && expr_path.path.is_ident("self")
+            && self.direct_recursion.is_none()
+        {
+            self.direct_recursion = Some(syn::spanned::Spanned::span(node));
         }
         syn::visit::visit_expr_method_call(self, node);
     }
