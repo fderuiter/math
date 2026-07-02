@@ -68,7 +68,7 @@ impl FmcwConfig {
     /// Estimates target range ($R$) from the IF beat frequency ($\hat{f}_{FFT}$).
     ///
     /// Equation (1) from the Bressler et al. framework:
-    #[verified_engine::embed_theory("papers/mmwave_radiotherapy_setup.tex", label="eq:range")]
+    #[verified_engine::embed_theory("papers/mmwave_radiotherapy_setup.tex", label = "eq:range")]
     #[verified_engine::verified]
     pub fn range_from_beat_frequency(&self, beat_frequency: f64) -> f64 {
         (beat_frequency * C * self.chirp_time) / (2.0 * self.bandwidth)

@@ -10,7 +10,7 @@ use std::f64::consts::PI;
 /// Calculates the Chirp Z-Transform (CZT) for a specific frequency band.
 ///
 /// This implementation corresponds to the corrected Equation (2) from the Bressler verification:
-#[verified_engine::embed_theory("papers/mmwave_radiotherapy_setup.tex", label="eq:czt")]
+#[verified_engine::embed_theory("papers/mmwave_radiotherapy_setup.tex", label = "eq:czt")]
 ///
 /// # Arguments
 ///
