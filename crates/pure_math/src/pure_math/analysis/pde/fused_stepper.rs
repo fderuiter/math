@@ -133,7 +133,7 @@ impl FusedStencilStepper {
             let next = if n > 1 { get_state(1) } else { curr };
             let rhs = op(0, prev, curr, next, &self.ops);
             for s in 0..N {
-                if 0 < dst[s].len() {
+                if !dst[s].is_empty() {
                     dst[s][0] = curr[s] + dir * dt * rhs[s];
                 }
             }
@@ -170,6 +170,7 @@ impl FusedStencilStepper {
     }
 
     /// Applies a 2D fused stencil pass over multiple coupled arrays with Neumann boundaries.
+    #[allow(clippy::too_many_arguments)]
     #[verified_engine::verified]
     pub fn step_2d_coupled_neumann<const N: usize, F>(
         &self,
