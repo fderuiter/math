@@ -13,6 +13,8 @@ pub struct TraceabilityReport {
     pub total_asserts: usize,
     pub verified_funcs: usize,
     pub verified_asserts: usize,
+    pub invalid_tiers: Vec<String>,
+    pub vacuous_bypasses: Vec<String>,
 }
 
 pub struct TraceabilityEngine<'a> {
@@ -47,7 +49,15 @@ impl<'a> TraceabilityEngine<'a> {
             for (module_name, paper_val) in links {
                 if let Some(paper_name) = paper_val.as_str() {
                     let paper_name_string = paper_name.to_string();
-                    if valid_papers.contains(&paper_name_string) {
+                    if valid_papers.contains(&paper_name_string)
+                        || paper_name_string.starts_with("spec:")
+                        || paper_name_string.starts_with("registry:")
+                    {
+                        if !valid_papers.contains(&paper_name_string) {
+                            report
+                                .paper_coverage
+                                .insert(paper_name_string.clone(), Vec::new());
+                        }
                         if let Some(linked) = report.paper_coverage.get_mut(&paper_name_string) {
                             linked.push(module_name.clone());
                         }
@@ -174,6 +184,18 @@ impl<'a> TraceabilityEngine<'a> {
                 report.total_asserts += visitor.total_asserts;
                 report.verified_funcs += visitor.verified_funcs;
                 report.verified_asserts += visitor.verified_asserts;
+
+                if visitor.has_vacuous_bypass && file.contains("domain_ai") {
+                    report.vacuous_bypasses.push(file.clone());
+                }
+
+                for (module, tier) in &visitor.module_tiers {
+                    if file.contains("pure_math") && tier != "Deterministic" {
+                        report
+                            .invalid_tiers
+                            .push(format!("{} in {} used tier {}", module, file, tier));
+                    }
+                }
 
                 if is_module {
                     for module in &visitor.verified_modules {

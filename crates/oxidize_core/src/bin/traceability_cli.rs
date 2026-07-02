@@ -46,6 +46,22 @@ fn check_and_print_errors(report: &oxidize_core::traceability::TraceabilityRepor
         failed = true;
     }
 
+    if !report.invalid_tiers.is_empty() {
+        println!("\n[!] Invalid Verification Tiers Detected:");
+        for err in &report.invalid_tiers {
+            println!("  - {}", err);
+        }
+        failed = true;
+    }
+
+    if !report.vacuous_bypasses.is_empty() {
+        println!("\n[!] Vacuous Bypasses Detected in AI Modules (Zero Initializations):");
+        for file in &report.vacuous_bypasses {
+            println!("  - {}", file);
+        }
+        failed = true;
+    }
+
     failed
 }
 

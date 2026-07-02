@@ -1418,7 +1418,7 @@ let prepared = PreparedPlot {
         let focus_response = response.interact(egui::Sense::focusable_noninteractive());
         
         let overlay_rect = egui::Rect::from_min_size(plot_rect.min, egui::vec2(plot_rect.width(), 30.0));
-        ui.allocate_ui_at_rect(overlay_rect, |ui| {
+        ui.scope_builder(egui::UiBuilder::new().max_rect(overlay_rect), |ui| {
             ui.horizontal(|ui| {
                 if ui.button("Table View").clicked() {
                     access_state.show_table = !access_state.show_table;
