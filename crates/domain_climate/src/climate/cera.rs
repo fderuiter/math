@@ -1,4 +1,3 @@
-use rand::Rng;
 //! This module defines the core CERA framework, integrating the autoencoder and predictor.
 
 use crate::climate::autoencoder::{Autoencoder, AutoencoderModel};
@@ -159,6 +158,7 @@ mod tests {
     use super::*;
     use crate::climate::training::CeraTrainer;
     use nalgebra::DMatrix; // Import Trainer
+    use rand::Rng;
 
     // Helper constant for tests
     const TEST_NUM_LEVELS: usize = 30;
@@ -168,9 +168,9 @@ mod tests {
     #[verified_engine::verified]
     fn generate_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMatrix<f32>) {
         let inputs = DMatrix::from_fn(n_samples * TEST_NUM_LEVELS, TEST_IN_CHANNELS, |_, _| {
-            oxidize_core::rng::OxidizeRng::default().gen::<f32>() + offset
+            oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() + offset
         });
-        let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| oxidize_core::rng::OxidizeRng::default().gen());
+        let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
         (inputs, targets)
     }
 

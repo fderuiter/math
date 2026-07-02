@@ -1,4 +1,3 @@
-use rand::Rng;
 //! # Climate Modeling: CERA Framework
 //!
 //! The `climate` module implements the **Climate-invariant Encoding through Representation Alignment (CERA)**
@@ -67,6 +66,7 @@ use rand::Rng;
 //! use domain_climate::climate::config::CeraConfig;
 //! use domain_climate::climate::training::CeraTrainer;
 //! use nalgebra::DMatrix;
+//! use rand::Rng;
 //!
 //! // 1. Configure the model
 //! let config = CeraConfig {
@@ -87,9 +87,9 @@ use rand::Rng;
 //!
 //! // 3. Create dummy data (Batch size * Num Levels, Channels)
 //! // In reality, this would be your climate simulation data.
-//! let inputs = DMatrix::from_fn(20, 2, |_, _| oxidize_core::rng::OxidizeRng::default().gen());
-//! let targets = DMatrix::from_fn(2, 5, |_, _| oxidize_core::rng::OxidizeRng::default().gen());
-//! let warm_inputs = DMatrix::from_fn(20, 2, |_, _| oxidize_core::rng::OxidizeRng::default().gen()); // Different climate
+//! let inputs = DMatrix::from_fn(20, 2, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
+//! let targets = DMatrix::from_fn(2, 5, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
+//! let warm_inputs = DMatrix::from_fn(20, 2, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen()); // Different climate
 //!
 //! // 4. Train (using the mock optimizer)
 //! let mut trainer = CeraTrainer::new(&mut model);
