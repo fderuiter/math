@@ -36,6 +36,7 @@ impl Default for BetSizeCalculatorTool {
 }
 
 impl InteractiveTool for BetSizeCalculatorTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Bet Size Calculator"
     }
@@ -230,4 +231,11 @@ inventory::submit! {
         tags: &[],
         build: || Box::new(BetSizeCalculatorTool::default()),
     }
+}
+
+impl math_commons::theory::TheoryDescribable for BetSizeCalculatorTool {
+    fn theory_description(&self) -> String { "Theoretical context not available.".into() }
+    fn phonetic_description(&self) -> String { "Theoretical context not available.".into() }
+    fn theory_citation(&self) -> String { "Uncited".into() }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { std::collections::HashMap::new() }
 }

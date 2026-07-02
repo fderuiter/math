@@ -83,7 +83,7 @@ impl UnifiedModel for WaveUnified {
         "Wave Simulator"
     }
 
-    fn create_theory() -> Option<Box<dyn math_commons::theory::TheoryDescribable>> {
+    fn create_theory() -> Box<dyn math_commons::theory::TheoryDescribable> {
         struct WaveTheory;
         impl math_commons::theory::TheoryDescribable for WaveTheory {
             fn theory_description(&self) -> String {
@@ -99,7 +99,7 @@ impl UnifiedModel for WaveUnified {
                 HashMap::new()
             }
         }
-        Some(Box::new(WaveTheory))
+        Box::new(WaveTheory)
     }
 }
 

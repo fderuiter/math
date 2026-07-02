@@ -32,14 +32,10 @@ pub trait UnifiedModel: Send + 'static {
     fn name() -> &'static str
     where
         Self: Sized;
-
     /// Return the theoretical context.
-    fn create_theory() -> Option<Box<dyn math_commons::theory::TheoryDescribable>>
+    fn create_theory() -> Box<dyn math_commons::theory::TheoryDescribable>
     where
-        Self: Sized,
-    {
-        None
-    }
+        Self: Sized;
 }
 
 pub struct UnifiedSimRunner<M: UnifiedModel> {
@@ -99,7 +95,7 @@ pub struct UnifiedSimTool<M: UnifiedModel> {
     steps_per_frame: usize,
     last_snapshot: Option<CachedSnapshot>,
     texture: Option<egui::TextureHandle>,
-    theory_instance: Option<Box<dyn math_commons::theory::TheoryDescribable>>,
+    theory_instance: Box<dyn math_commons::theory::TheoryDescribable>,
     _marker: std::marker::PhantomData<M>,
 }
 
@@ -184,15 +180,25 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             ui.label("Model Parameters");
 
             let mut params_lock = self.params.write().unwrap();
+            
+            // Get available descriptions from a temporary model instance or we can just instantiate it?
+            // Wait, we don't have access to the model instance directly here, it's inside the controller thread!
+            // But we can get it from M::parameters(), which means it's static?
+            // But TheoryDescribable methods take `&self`.
+            // Let's just create a dummy instance to read it, or use the tool's TheoryDescribable impl?
+            // Actually, the requirements say: "UI controls must derive their accessibility labels directly from the model's theoretical documentation"
+            let available_descs = self.theory().available_descriptions();
+
             for (name, constraint) in &self.param_metadata {
                 if let Some(val) = params_lock.get_mut(name) {
                     let slider = egui::Slider::new(val, constraint.min..=constraint.max)
                         .step_by(constraint.step)
                         .text(name);
                     let mut resp = ui.add(slider);
-                    if let Some(theory) = &self.theory_instance {
-                        resp = resp.accessible_hover_text(theory.theory_description());
+                    if let Some(desc) = available_descs.get(name) {
+                        resp = resp.accessible_hover_text(desc);
                     }
+                    
                     let _ = resp.changed(); // Just calling it to suppress unused warning if necessary, or not needed.
                 }
             }
@@ -292,8 +298,8 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
         M::name()
     }
 
-    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
-        self.theory_instance.as_deref()
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable {
+        &*self.theory_instance
     }
 
     fn show(&mut self, ctx: &egui::Context) {
@@ -313,3 +319,5 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
         self.draw_central_panel(ctx);
     }
 }
+
+

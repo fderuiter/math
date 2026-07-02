@@ -131,13 +131,12 @@ impl AttentionMapsTool {
 }
 
 impl InteractiveTool for AttentionMapsTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Attention Maps"
     }
 
-    fn theory(&self) -> Option<&dyn TheoryDescribable> {
-        Some(self)
-    }
+    
 
     fn show(&mut self, ctx: &egui::Context) {
         let input_mode = ctx.data(|d| {

@@ -65,6 +65,7 @@ impl RiemannIntegrationTool {
 }
 
 impl InteractiveTool for RiemannIntegrationTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Riemann Integration"
     }
@@ -231,4 +232,11 @@ inventory::submit! {
         tags: &[],
         build: || Box::new(RiemannIntegrationTool::default()),
     }
+}
+
+impl math_commons::theory::TheoryDescribable for RiemannIntegrationTool {
+    fn theory_description(&self) -> String { "Theoretical context not available.".into() }
+    fn phonetic_description(&self) -> String { "Theoretical context not available.".into() }
+    fn theory_citation(&self) -> String { "Uncited".into() }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { std::collections::HashMap::new() }
 }

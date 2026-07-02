@@ -107,8 +107,8 @@ impl UnifiedModel for HodgkinHuxleyUnified {
         "Hodgkin-Huxley Model"
     }
 
-    fn create_theory() -> Option<Box<dyn TheoryDescribable>> {
-        Some(Box::new(HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0)))
+    fn create_theory() -> Box<dyn TheoryDescribable> {
+        Box::new(HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0))
     }
 }
 

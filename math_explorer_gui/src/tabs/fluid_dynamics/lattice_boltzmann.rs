@@ -109,8 +109,8 @@ impl UnifiedModel for LbmUnified {
         "Lattice Boltzmann (Demo)"
     }
 
-    fn create_theory() -> Option<Box<dyn TheoryDescribable>> {
-        Some(Box::new(LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0)))
+    fn create_theory() -> Box<dyn TheoryDescribable> {
+        Box::new(LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0))
     }
 }
 

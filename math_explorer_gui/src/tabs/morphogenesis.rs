@@ -76,78 +76,9 @@ impl UnifiedModel for MorphogenesisUnified {
         }
     }
 
-<<<<<<< HEAD
     fn process_command(&mut self, cmd: SimCommand, _params: &HashMap<String, f64>) {
         if let SimCommand::Reset = cmd {
             initialize_system(&mut self.system, self.width, self.height);
-=======
-    fn get_steps_per_frame(&self) -> usize {
-        self.steps_per_frame
-    }
-}
-
-#[allow(dead_code)]
-pub struct MorphogenesisTool {
-    controller: SimulationController,
-    texture: Option<egui::TextureHandle>,
-    // Simulation parameters
-    params: Arc<RwLock<MorphogenesisConfig>>,
-    dt: f64,
-    width: usize,
-    height: usize,
-    simulation_speed: usize,
-    selected_preset: Option<PatternPreset>,
-}
-
-impl Default for MorphogenesisTool {
-    fn default() -> Self {
-        let width = math_commons::registry::MAX_GRID_SIZE;
-        let height = math_commons::registry::MAX_GRID_SIZE;
-        let a = 0.1;
-        let b = 0.9;
-        let d_u = 1.0;
-        let d_v = 100.0; // Needs significant difference for Turing patterns
-        let kinetics = SchnakenbergKinetics { a, b }; // Classic spot/stripe params
-        let diffusion = FiniteDifference2D::new(
-            math_explorer::math_kernel::types::Dimension(width),
-            math_explorer::math_kernel::types::Dimension(height),
-            math_explorer::math_kernel::types::StepSize(1.0),
-            math_explorer::math_kernel::types::StepSize(1.0),
-        );
-
-        let mut system = TuringSystem::new_with_kinetics(
-            math_explorer::math_kernel::types::Dimension(width * height),
-            math_explorer::biology::morphogenesis::DiffusionCoeff(d_u),
-            math_explorer::biology::morphogenesis::DiffusionCoeff(d_v),
-            kinetics,
-            diffusion,
-        );
-
-        // Initialize with noise
-        initialize_system(&mut system, width, height);
-
-        let params = Arc::new(RwLock::new(MorphogenesisConfig { a, b, d_u, d_v }));
-
-        let runner = MorphogenesisRunner {
-            system,
-            dt: 0.05,
-            width,
-            height,
-            steps_per_frame: 10,
-            params: Arc::clone(&params),
-        };
-        let controller = SimulationController::new(runner);
-
-        Self {
-            controller,
-            texture: None,
-            params,
-            dt: 0.05,
-            width,
-            height,
-            simulation_speed: 10,
-            selected_preset: None,
->>>>>>> origin/main
         }
     }
 
