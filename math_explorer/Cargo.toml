@@ -6,6 +6,7 @@ license = "AGPL-3.0-or-later"
 
 [dependencies]
 math_commons = { path = "../crates/math_commons" }
+diagnostics = { path = "../crates/diagnostics", features = ["federated"] }
 pure_math = { path = "../crates/pure_math" }
 domain_applied = { path = "../crates/domain_applied", optional = true }
 domain_ai = { path = "../crates/domain_ai", optional = true }
