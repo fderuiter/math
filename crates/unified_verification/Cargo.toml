@@ -10,6 +10,7 @@ regex = "1.10"
 walkdir = "2.4"
 syn = { version = "2.0.118", features = ["full", "visit"] }
 toml = "1.1.2"
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ureq = { version = "2.9.6", features = ["json"] }
 
 [profile.release]

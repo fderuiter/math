@@ -432,10 +432,10 @@ fn print_report(
 
 fn verify_suite() {
     println!("=== High-Integrity Verified Suite ===");
-    
+
     println!("Running security checks...");
     let mut passed_security = true;
-    
+
     if !profile::check_profiles(&[
         "crates/federated_registry",
         "crates/oxidize_core",
@@ -453,24 +453,24 @@ fn verify_suite() {
         "math_explorer_gui",
         "crates/markdown_tests",
         "apps/xtask",
-        "crates/unified_verification"
+        "crates/unified_verification",
     ]) {
         passed_security = false;
     }
-    
+
     if !vulnerabilities::check_osv_vulnerabilities() {
         passed_security = false;
     }
-    
+
     if !ast_visitor::run_ast_visitor() {
         passed_security = false;
     }
-    
+
     if !passed_security {
         eprintln!("Security verification failed!");
         std::process::exit(1);
     }
-    
+
     println!("Gathering native execution coverage...");
 
     let output = get_llvm_cov_output();

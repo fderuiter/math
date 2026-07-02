@@ -15,15 +15,19 @@ pub fn check_profiles(workspace_members: &[&str]) -> bool {
                     continue;
                 }
             };
-            
-            let has_overflow_checks = parsed.get("profile")
+
+            let has_overflow_checks = parsed
+                .get("profile")
                 .and_then(|p| p.get("release"))
                 .and_then(|r| r.get("overflow-checks"))
                 .and_then(|v| v.as_bool())
                 .unwrap_or(false);
-                
+
             if !has_overflow_checks {
-                eprintln!("[!] Profile mismatch in {}: missing or incorrect [profile.release] overflow-checks = true", path.display());
+                eprintln!(
+                    "[!] Profile mismatch in {}: missing or incorrect [profile.release] overflow-checks = true",
+                    path.display()
+                );
                 passed = false;
             }
         }
