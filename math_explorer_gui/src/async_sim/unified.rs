@@ -33,8 +33,8 @@ pub trait UnifiedModel: Send + 'static {
     where
         Self: Sized;
 
-    /// The name of the model in the theory portal.
-    fn theory_description() -> Option<String>
+    /// Return the theoretical context.
+    fn create_theory() -> Option<Box<dyn math_commons::theory::TheoryDescribable>>
     where
         Self: Sized,
     {
@@ -99,6 +99,7 @@ pub struct UnifiedSimTool<M: UnifiedModel> {
     steps_per_frame: usize,
     last_snapshot: Option<CachedSnapshot>,
     texture: Option<egui::TextureHandle>,
+    theory_instance: Option<Box<dyn math_commons::theory::TheoryDescribable>>,
     _marker: std::marker::PhantomData<M>,
 }
 
@@ -130,6 +131,7 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             steps_per_frame: 5,
             last_snapshot: None,
             texture: None,
+            theory_instance: M::create_theory(),
             _marker: std::marker::PhantomData,
         }
     }
@@ -188,8 +190,8 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
                         .step_by(constraint.step)
                         .text(name);
                     let mut resp = ui.add(slider);
-                    if let Some(desc) = M::theory_description() {
-                        resp = resp.accessible_hover_text(desc);
+                    if let Some(theory) = &self.theory_instance {
+                        resp = resp.accessible_hover_text(theory.theory_description());
                     }
                     let _ = resp.changed(); // Just calling it to suppress unused warning if necessary, or not needed.
                 }
@@ -288,6 +290,10 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
 impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
     fn name(&self) -> &'static str {
         M::name()
+    }
+
+    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
+        self.theory_instance.as_deref()
     }
 
     fn show(&mut self, ctx: &egui::Context) {
