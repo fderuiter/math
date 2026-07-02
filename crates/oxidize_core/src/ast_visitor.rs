@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use syn::visit::{self, Visit};
 use syn::{ItemFn, ItemMacro, Macro, Meta};
-use std::collections::HashMap;
 
 pub struct AstVisitor {
     pub verified_modules: Vec<String>,
@@ -71,9 +71,13 @@ impl<'ast> Visit<'ast> for AstVisitor {
 
             if let Some(tier_name) = tier {
                 let tokens = node.mac.tokens.to_string();
-                
+
                 // Detect vacuous bypass: zero initializations in stochastic/empirical
-                if tokens.contains("zeros(") || tokens.contains("zeros_like") || tokens.contains("0.0") || tokens.contains("fill(0)") {
+                if tokens.contains("zeros(")
+                    || tokens.contains("zeros_like")
+                    || tokens.contains("0.0")
+                    || tokens.contains("fill(0)")
+                {
                     self.has_vacuous_bypass = true;
                 }
 
@@ -82,7 +86,8 @@ impl<'ast> Visit<'ast> for AstVisitor {
                     if let Some(end) = tokens[start..].find('"') {
                         let module_name = &tokens[start..start + end];
                         self.verified_modules.push(module_name.to_string());
-                        self.module_tiers.insert(module_name.to_string(), tier_name.to_string());
+                        self.module_tiers
+                            .insert(module_name.to_string(), tier_name.to_string());
                     }
                 }
             }

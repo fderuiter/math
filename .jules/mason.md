@@ -41,3 +41,9 @@
 - **Issue**: The system relied on manual string manipulation and hardcoded path separators (`.replace("\\", "/")`) in build scripts, causing inconsistent VFS generation and traceability mapping failures on Windows environments.
 - **Resolution**: Extracted path normalization logic into a shared utility (`path_utils.rs` in `oxidize_core`). Refactored `traceability.rs`, `oxidize_core/build.rs`, and `markdown_tests/build.rs` to use this canonical utility for all file path resolution.
 - **Impact**: Guaranteed consistent forward-slash path keys for WASM VFS compatibility and traceability mappings regardless of the host OS, eliminating cyclical build script failures on Windows.
+
+## Tiered Integrity Framework (PR 1028)
+
+- **Issue**: Rigid mathematical verification forced developers to use "zero-weight" vacuous tests (like zero initializations) to bypass verification logic in non-deterministic AI and stochastic modules.
+- **Resolution**: Introduced a domain-specific Tiered Integrity Framework (Deterministic, Stochastic, Empirical). Updated the AST visitor to detect and reject vacuous bypass patterns (e.g., `zeros(`). Added support for `spec:` and `registry:` prefix links in traceability to allow domain-appropriate verification velocity without LaTeX overhead.
+- **Impact**: Removed all vacuous AI test patterns, ensuring domain-appropriate verification strictness and eliminating zero-weight workarounds while enforcing 100% traceability coverage.

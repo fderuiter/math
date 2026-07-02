@@ -49,9 +49,14 @@ impl<'a> TraceabilityEngine<'a> {
             for (module_name, paper_val) in links {
                 if let Some(paper_name) = paper_val.as_str() {
                     let paper_name_string = paper_name.to_string();
-                    if valid_papers.contains(&paper_name_string) || paper_name_string.starts_with("spec:") || paper_name_string.starts_with("registry:") {
+                    if valid_papers.contains(&paper_name_string)
+                        || paper_name_string.starts_with("spec:")
+                        || paper_name_string.starts_with("registry:")
+                    {
                         if !valid_papers.contains(&paper_name_string) {
-                            report.paper_coverage.insert(paper_name_string.clone(), Vec::new());
+                            report
+                                .paper_coverage
+                                .insert(paper_name_string.clone(), Vec::new());
                         }
                         if let Some(linked) = report.paper_coverage.get_mut(&paper_name_string) {
                             linked.push(module_name.clone());
@@ -186,7 +191,9 @@ impl<'a> TraceabilityEngine<'a> {
 
                 for (module, tier) in &visitor.module_tiers {
                     if file.contains("pure_math") && tier != "Deterministic" {
-                        report.invalid_tiers.push(format!("{} in {} used tier {}", module, file, tier));
+                        report
+                            .invalid_tiers
+                            .push(format!("{} in {} used tier {}", module, file, tier));
                     }
                 }
 

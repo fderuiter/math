@@ -101,8 +101,13 @@ macro_rules! empirical_verification {
             #[test]
             #[verified_engine::verified]
             fn test_empirical_verification() {
-                if !oxidize_core::traceability::TraceabilityEngine::verify_module_registered($module_name) {
-                    panic!("Traceability mismatch: module '{}' is not registered to any paper", $module_name);
+                if !oxidize_core::traceability::TraceabilityEngine::verify_module_registered(
+                    $module_name,
+                ) {
+                    panic!(
+                        "Traceability mismatch: module '{}' is not registered to any paper",
+                        $module_name
+                    );
                 }
 
                 $test_body
