@@ -53,7 +53,10 @@ mod tests {
         type State = BooleanMaskState;
         type Error = SimulationError;
 
-        fn initialize(config: Self::Config, _provider: rng::OxidizeRng) -> Result<Self, Self::Error> {
+        fn initialize(
+            config: Self::Config,
+            _provider: rng::OxidizeRng,
+        ) -> Result<Self, Self::Error> {
             let state = BooleanMaskState {
                 grid: vec![false; config.width * config.height],
                 width: config.width,
@@ -94,9 +97,9 @@ mod tests {
         assert!(sim.get_state().grid.iter().all(|&x| x));
     }
 }
+pub mod ast_visitor;
 pub mod mesh;
 pub mod path_utils;
+pub mod rng;
 pub mod traceability;
 pub mod vfs;
-pub mod ast_visitor;
-pub mod rng;
