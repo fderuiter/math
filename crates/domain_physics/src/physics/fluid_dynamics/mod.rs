@@ -118,6 +118,7 @@ pub mod potential_flow;
 pub mod regimes;
 pub mod solver;
 pub mod turbulence;
+#[doc(hidden)]
 pub mod types;
 
 #[cfg(test)]
