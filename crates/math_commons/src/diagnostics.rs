@@ -87,7 +87,7 @@ pub struct DiagnosticBus {
 }
 
 impl DiagnosticBus {
-        pub fn new() -> Self {
+    pub fn new() -> Self {
         federated_registry::global_registry().register_source(env!("CARGO_PKG_NAME"));
         let (sender, receiver) = channel();
         Self {
@@ -96,7 +96,7 @@ impl DiagnosticBus {
         }
     }
 
-        pub fn emit(&self, event: DiagnosticEvent) {
+    pub fn emit(&self, event: DiagnosticEvent) {
         let _ = self.sender.send(event.clone());
         let fed_severity = match event.severity {
             Severity::Info => federated_registry::Severity::Info,

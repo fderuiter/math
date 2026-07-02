@@ -1,6 +1,6 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use federated_registry::{global_registry, TelemetryEvent, Severity};
+use federated_registry::{global_registry, Severity, TelemetryEvent};
 
 pub struct MathExplorerApp {
     tabs: Vec<Box<dyn ExplorerTab>>,
@@ -129,9 +129,12 @@ impl eframe::App for MathExplorerApp {
                         ui.group(|ui| {
                             ui.horizontal(|ui| {
                                 ui.label(
-                                    egui::RichText::new(format!("[{} - {}]", event.source, event.severity))
-                                        .color(color)
-                                        .strong(),
+                                    egui::RichText::new(format!(
+                                        "[{} - {}]",
+                                        event.source, event.severity
+                                    ))
+                                    .color(color)
+                                    .strong(),
                                 );
                                 if let Some(thread) = &event.thread_name {
                                     ui.label(
