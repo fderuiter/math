@@ -97,3 +97,4 @@ pub mod mesh;
 pub mod path_utils;
 pub mod traceability;
 pub mod vfs;
+pub mod ast_visitor;

@@ -7,7 +7,12 @@ pub struct TraceabilityReport {
     pub invalid_links: Vec<(String, String)>,
     pub orphaned_papers: Vec<String>,
     pub unlinked_code: Vec<String>,
+    pub unverified_modules: Vec<String>,
     pub paper_coverage: HashMap<String, Vec<String>>,
+    pub total_funcs: usize,
+    pub total_asserts: usize,
+    pub verified_funcs: usize,
+    pub verified_asserts: usize,
 }
 
 pub struct TraceabilityEngine<'a> {
@@ -107,12 +112,6 @@ impl<'a> TraceabilityEngine<'a> {
         // 2. Read registry
         self.verify_and_link_registry(&valid_papers, &mut report);
 
-        // 3. Scan code files for unlinked code
-        let mut code_files = Vec::new();
-        for dir in code_dirs {
-            self.scan_dir(dir, &mut code_files);
-        }
-
         let mut registered_modules = HashSet::new();
         if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml")
             && let Ok(value) = registry_content.parse::<toml::Table>()
@@ -123,28 +122,49 @@ impl<'a> TraceabilityEngine<'a> {
             }
         }
 
+        let mut active_files = HashSet::new();
+        for dir in code_dirs {
+            let normalized = crate::path_utils::normalize_path(dir);
+            let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
+            let main = crate::path_utils::join_and_normalize(&normalized, "main.rs");
+            if self.vfs.read_to_string(&lib).is_ok() {
+                self.parse_module_tree(&lib, &mut active_files);
+            }
+            if self.vfs.read_to_string(&main).is_ok() {
+                self.parse_module_tree(&main, &mut active_files);
+            }
+        }
+
+        let mut code_files: Vec<String> = active_files.into_iter().collect();
+        code_files.sort();
+
         for file in code_files {
             report.scanned_files += 1;
             let is_module =
                 file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
 
-            if is_module
-                && let Ok(content) = self.vfs.read_to_string(&file)
-                && (content.contains("theory_verification!")
-                    || content.contains("stochastic_signature_verification!"))
-                && content.contains("module =")
-            {
-                // Very basic check to see if the module name is in the file
-                // The actual macro test will panic if it's missing from registry
-                let mut found = false;
-                for reg_mod in &registered_modules {
-                    if content.contains(&format!("module = \"{}\"", reg_mod)) {
-                        found = true;
-                        break;
+            if let Ok(content) = self.vfs.read_to_string(&file) {
+                // Parse with syn
+                if let Ok(ast) = syn::parse_file(&content) {
+                    let mut visitor = crate::ast_visitor::AstVisitor::new();
+                    syn::visit::Visit::visit_file(&mut visitor, &ast);
+                    
+                    report.total_funcs += visitor.total_funcs;
+                    report.total_asserts += visitor.total_asserts;
+                    report.verified_funcs += visitor.verified_funcs;
+                    report.verified_asserts += visitor.verified_asserts;
+
+                    if is_module {
+                        for module in &visitor.verified_modules {
+                            if !registered_modules.contains(module) {
+                                report.unlinked_code.push(file.clone());
+                            }
+                        }
                     }
-                }
-                if !found {
-                    report.unlinked_code.push(file.clone());
+
+                    if visitor.total_funcs > 0 && visitor.verified_funcs == 0 && visitor.verified_modules.is_empty() && !visitor.opted_out {
+                        report.unverified_modules.push(file.clone());
+                    }
                 }
             }
         }
@@ -162,17 +182,35 @@ impl<'a> TraceabilityEngine<'a> {
         Ok(report)
     }
 
-    fn scan_dir(&self, dir: &str, files: &mut Vec<String>) {
-        let normalized_dir = crate::path_utils::normalize_path(dir);
-        if let Ok(entries) = self.vfs.list_dir(&normalized_dir) {
-            for entry in entries {
-                let path = crate::path_utils::join_and_normalize(&normalized_dir, &entry);
-                if entry.contains('.') {
-                    if path.ends_with(".rs") {
-                        files.push(path);
+    fn parse_module_tree(&self, file_path: &str, active_files: &mut HashSet<String>) {
+        if active_files.contains(file_path) {
+            return;
+        }
+        if let Ok(content) = self.vfs.read_to_string(file_path) {
+            active_files.insert(file_path.to_string());
+            if let Ok(ast) = syn::parse_file(&content) {
+                let mut visitor = crate::ast_visitor::AstVisitor::new();
+                syn::visit::Visit::visit_file(&mut visitor, &ast);
+                
+                let mut dir_parts: Vec<&str> = file_path.split('/').collect();
+                let is_mod_rs = file_path.ends_with("mod.rs") || file_path.ends_with("lib.rs") || file_path.ends_with("main.rs");
+                if is_mod_rs {
+                    dir_parts.pop();
+                } else if let Some(stem) = dir_parts.pop().map(|s| s.strip_suffix(".rs").unwrap_or(s)) {
+                    dir_parts.push(stem);
+                }
+                
+                let dir_path = dir_parts.join("/");
+                
+                for submodule in visitor.active_submodules {
+                    let path1 = crate::path_utils::join_and_normalize(&dir_path, &format!("{}.rs", submodule));
+                    let path2 = crate::path_utils::join_and_normalize(&dir_path, &format!("{}/mod.rs", submodule));
+                    
+                    if self.vfs.read_to_string(&path1).is_ok() {
+                        self.parse_module_tree(&path1, active_files);
+                    } else if self.vfs.read_to_string(&path2).is_ok() {
+                        self.parse_module_tree(&path2, active_files);
                     }
-                } else {
-                    self.scan_dir(&path, files);
                 }
             }
         }
