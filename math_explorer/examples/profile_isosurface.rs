@@ -1,15 +1,11 @@
 use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 use std::time::Instant;
 
-fn main() {
-    println!("⏱️  Profiler Benchmark Starting...");
-
-    // 1. Micro-benchmark: Point3D::normalize
+fn run_micro_benchmark() {
     println!("\n[Micro-benchmark] Point3D::normalize");
     let count = 50_000_000;
     let mut vectors = Vec::with_capacity(count);
 
-    // Generate deterministic vectors
     let mut seed: u64 = 0xDEADBEEF;
     for _ in 0..count {
         seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
@@ -22,7 +18,7 @@ fn main() {
     }
 
     let start_micro = Instant::now();
-    let mut checksum = 0.0; // Prevent optimization
+    let mut checksum = 0.0;
     for v in &vectors {
         let n = v.normalize();
         checksum += n.x + n.y + n.z;
@@ -33,12 +29,13 @@ fn main() {
         "Average time per vector: {:.4} ns",
         (duration_micro.as_nanos() as f64) / (count as f64)
     );
-    println!("Checksum: {}", checksum); // Ensure result is used
+    println!("Checksum: {}", checksum);
+}
 
-    // 2. Macro-benchmark: extract_isosurface
+fn run_macro_benchmark() {
     println!("\n[Macro-benchmark] extract_isosurface (Sphere SDF)");
 
-    let size = 128; // 128^3 = ~2 million voxels
+    let size = 128;
     println!("Grid size: {}x{}x{}", size, size, size);
 
     let mut data = Vec::with_capacity(size * size * size);
@@ -46,7 +43,6 @@ fn main() {
     let radius = size as f32 / 3.0;
     let radius_sq = radius * radius;
 
-    // Generate Sphere SDF
     for z in 0..size {
         for y in 0..size {
             for x in 0..size {
@@ -54,7 +50,6 @@ fn main() {
                 let dy = y as f32 - center;
                 let dz = z as f32 - center;
                 let dist_sq = dx * dx + dy * dy + dz * dz;
-                // Value is negative inside, positive outside (or vice versa, just needs to cross 0)
                 data.push(dist_sq - radius_sq);
             }
         }
@@ -68,7 +63,6 @@ fn main() {
         .build()
         .unwrap();
 
-    // Warmup
     let _ = extract_isosurface(&grid, 0.0);
 
     let start_macro = Instant::now();
@@ -80,4 +74,10 @@ fn main() {
         mesh.triangles.len(),
         duration_macro
     );
+}
+
+fn main() {
+    println!("⏱️  Profiler Benchmark Starting...");
+    run_micro_benchmark();
+    run_macro_benchmark();
 }

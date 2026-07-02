@@ -25,9 +25,7 @@ impl fmt::Display for Color {
     }
 }
 
-fn main() {
-    // 1. Clear Screen & Header
-    // (Optional: clear screen usually done by user, so just banner)
+fn print_banner() {
     println!();
     println!(
         "{}   __  __       _   _      {}",
@@ -64,8 +62,9 @@ fn main() {
     );
     println!("This example demonstrates quantum mechanics calculations.");
     println!();
+}
 
-    // 2. Context
+fn print_parameters(j1: f64, m1: f64, j2: f64, m2: f64, j: f64, m: f64) {
     println!(
         "{}🧮 Calculating Clebsch-Gordan Coefficient...{}",
         Color::Yellow,
@@ -73,16 +72,6 @@ fn main() {
     );
     println!("   Coupling angular momenta states.");
     println!();
-
-    // Coupling j1=1.5, m1=-0.5 with j2=1.0, m2=1.0 to J=2.5, M=0.5
-    let j1 = 1.5;
-    let m1 = -0.5;
-    let j2 = 1.0;
-    let m2 = 1.0;
-    let j = 2.5;
-    let m = 0.5;
-
-    // 3. Parameters Display (Table-like)
     println!("   {}Parameters:{}", Color::Bold, Color::Reset);
     println!("   ┌──────┬───────┬───────┐");
     println!("   │ Var  │   j   │   m   │");
@@ -92,11 +81,10 @@ fn main() {
     println!("   │ Tot  │ {:5.1} │ {:5.1} │", j, m);
     println!("   └──────┴───────┴───────┘");
     println!();
+}
 
-    // 4. Calculation
+fn calculate_and_print_result(j1: f64, m1: f64, j2: f64, m2: f64, j: f64, m: f64) {
     let coeff = clebsch_gordan(j1, m1, j2, m2, j, m);
-
-    // 5. Result
     println!("{}Result:{}", Color::Bold, Color::Reset);
     println!(
         "   <j1 m1; j2 m2 | J M> = {}{:.6}{}",
@@ -104,8 +92,6 @@ fn main() {
         coeff,
         Color::Reset
     );
-
-    // 6. Verification
     println!();
     if coeff.abs() > 1e-10 {
         println!(
@@ -121,4 +107,18 @@ fn main() {
         );
     }
     println!();
+}
+
+fn main() {
+    print_banner();
+
+    let j1 = 1.5;
+    let m1 = -0.5;
+    let j2 = 1.0;
+    let m2 = 1.0;
+    let j = 2.5;
+    let m = 0.5;
+
+    print_parameters(j1, m1, j2, m2, j, m);
+    calculate_and_print_result(j1, m1, j2, m2, j, m);
 }

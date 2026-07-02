@@ -15,10 +15,7 @@ use nalgebra::{DMatrix, DVector};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
-fn main() {
-    println!("=== Sports Analytics Framework Demo ===\n");
-
-    // 1. ZIP Regression: Model player blocks (discrete counts with excess zeros)
+fn demo_zip_regression() {
     println!("1. ZIP REGRESSION - Player Block Modeling");
     let zip_params = ZipParams::from_values(0.25, 1.5).unwrap();
     let zip_dist = ZipDistribution::new(zip_params);
@@ -29,8 +26,9 @@ fn main() {
         zip_dist.mean(),
         zip_dist.variance()
     );
+}
 
-    // 2. OU Process: Model shooting percentage momentum
+fn demo_ou_process() {
     println!("\n2. OU PROCESS - Shooting Percentage Momentum");
     let ou_params = OuParams::from_values(0.45, 1.0, 0.15).unwrap();
     let dt = TimeStep::new(0.01).unwrap();
@@ -42,8 +40,9 @@ fn main() {
         "   After 100 possessions: {:.1}%",
         trajectory.last().unwrap() * 100.0
     );
+}
 
-    // 3. Copula: Same Game Parlay pricing
+fn demo_copula() {
     println!("\n3. GAUSSIAN COPULA - Same Game Parlay");
     let p_star_50 = Probability::new(0.99).unwrap();
     let p_win = Probability::new(0.60).unwrap();
@@ -53,8 +52,9 @@ fn main() {
     println!("   Event A: Star scores 50+ (99th percentile)");
     println!("   Event B: Team wins (60% base)");
     println!("   Naive: {:.4}, Copula: {:.4}", 0.99 * 0.60, joint.value());
+}
 
-    // 4. Glicko-2: Team rating update
+fn demo_glicko2() {
     println!("\n4. GLICKO-2 RATING - Team Ranking");
     let mut player = GlickoPlayer::new(
         Rating::new(1500.0).unwrap(),
@@ -63,11 +63,8 @@ fn main() {
     );
     let opponent_rating = Rating::new(1400.0).unwrap();
     let opponent_rd = RatingDeviation::new(30.0).unwrap();
-    // Create an opponent player with the given rating/RD and default volatility
     let opponent = GlickoPlayer::new(opponent_rating, opponent_rd, Volatility::default());
-    // Create match result (win = 1.0)
     let results = vec![MatchResult::new(opponent, 1.0).unwrap()];
-    // Update rating with system constant tau = 0.5
     let tau = SystemConstant::new(0.5).unwrap();
     player = update_rating(&player, &results, &tau).unwrap();
     println!("   Before: R=1500, RD=200");
@@ -76,8 +73,9 @@ fn main() {
         player.rating.value(),
         player.rating_deviation.value()
     );
+}
 
-    // 5. Kelly Criterion: Optimal bet sizing
+fn demo_kelly() {
     println!("\n5. KELLY CRITERION - Bet Sizing");
     let prob = EdgeProbability::new(0.55).unwrap();
     let odds = Odds::new(2.0).unwrap();
@@ -88,8 +86,9 @@ fn main() {
         "   Quarter Kelly: {:.1}% (recommended)",
         kelly.value() * 25.0
     );
+}
 
-    // 6. Markov Chain: Expected Possession Value
+fn demo_markov_chain() {
     println!("\n6. MARKOV CHAIN - Expected Possession Value");
     let states = vec![
         StateType::Transient,
@@ -104,12 +103,20 @@ fn main() {
             0.3, 0.5, 0.1, 0.1, 0.2, 0.4, 0.3, 0.1, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
         ],
     );
-    // Correct order: Matrix, then State Types
     let chain = MarkovChain::new(p, states).unwrap();
     let rewards = DVector::from_vec(vec![3.0, 0.0]);
     let epv = chain.expected_possession_value(&rewards).unwrap();
     println!("   State 0 EPV: {:.2} points", epv[0]);
     println!("   State 1 EPV: {:.2} points", epv[1]);
+}
 
+fn main() {
+    println!("=== Sports Analytics Framework Demo ===\n");
+    demo_zip_regression();
+    demo_ou_process();
+    demo_copula();
+    demo_glicko2();
+    demo_kelly();
+    demo_markov_chain();
     println!("\n✅ All 6 sports analytics modules demonstrated successfully!");
 }
