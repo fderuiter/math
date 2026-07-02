@@ -33,19 +33,23 @@ impl SimplicialComplex {
     /// (e.g., due to duplicate vertices or other invalid structural states).
     #[verified_engine::verified]
     pub fn add_simplex(&mut self, simplex: Simplex) -> Result<(), TdaError> {
-        let dim = simplex.dimension();
+        let mut stack = vec![simplex];
 
-        // Ensure we have enough dimension levels
-        while self.simplices.len() <= dim {
-            self.simplices.push(HashSet::new());
-        }
+        while let Some(current) = stack.pop() {
+            let dim = current.dimension();
 
-        // Add the simplex
-        self.simplices[dim].insert(simplex.clone());
+            // Ensure we have enough dimension levels
+            while self.simplices.len() <= dim {
+                self.simplices.push(HashSet::new());
+            }
 
-        // Recursively add all faces
-        for face in simplex.faces()? {
-            self.add_simplex(face)?;
+            // Add the simplex
+            if self.simplices[dim].insert(current.clone()) {
+                // Recursively add all faces (push in reverse to maintain order if it matters, though HashSet doesn't care)
+                for face in current.faces()? {
+                    stack.push(face);
+                }
+            }
         }
         Ok(())
     }
