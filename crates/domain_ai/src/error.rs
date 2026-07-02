@@ -1,4 +1,4 @@
-use math_commons::diagnostics::{Diagnostic, Severity};
+use diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -31,8 +31,8 @@ impl Diagnostic for AIError {
     fn severity(&self) -> Severity {
         match self {
             Self::Math(e) => {
-                use math_commons::diagnostics::Severity as MS;
-                match math_commons::diagnostics::Diagnostic::severity(e) {
+                use diagnostics::Severity as MS;
+                match diagnostics::Diagnostic::severity(e) {
                     MS::Info => Severity::Info,
                     MS::Warning => Severity::Warning,
                     MS::Error => Severity::Error,
@@ -45,7 +45,7 @@ impl Diagnostic for AIError {
     #[verified_engine::verified]
     fn metadata(&self) -> HashMap<String, String> {
         match self {
-            Self::Math(e) => math_commons::diagnostics::Diagnostic::metadata(e),
+            Self::Math(e) => diagnostics::Diagnostic::metadata(e),
             _ => {
                 let mut map = HashMap::new();
                 map.insert("error_type".to_string(), "AIError".to_string());
