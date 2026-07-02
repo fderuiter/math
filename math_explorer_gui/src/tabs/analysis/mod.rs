@@ -13,11 +13,7 @@ pub struct AnalysisTab {
 impl Default for AnalysisTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(riemann::RiemannIntegrationTool::default()),
-                Box::new(ode::OdeSolverTool::default()),
-                Box::new(complex_mapping::ComplexMappingTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("analysis"),
         }
     }
 }

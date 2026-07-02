@@ -170,3 +170,13 @@ impl InteractiveTool for VietorisRipsTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "VietorisRipsTool",
+        domain: "geometry_topology",
+        tags: &[],
+        build: || Box::new(VietorisRipsTool::default()),
+    }
+}

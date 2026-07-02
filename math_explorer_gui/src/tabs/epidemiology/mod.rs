@@ -15,10 +15,7 @@ pub struct EpidemiologyTab {
 impl Default for EpidemiologyTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(SirTool::default()),
-                Box::new(NetworkPropagationTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("epidemiology"),
         }
     }
 }

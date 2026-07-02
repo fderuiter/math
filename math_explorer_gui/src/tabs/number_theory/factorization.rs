@@ -112,3 +112,13 @@ impl InteractiveTool for FactorizationTool {
 }
 
 // [cite:algorithmic_information_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "FactorizationTool",
+        domain: "number_theory",
+        tags: &[],
+        build: || Box::new(FactorizationTool::default()),
+    }
+}

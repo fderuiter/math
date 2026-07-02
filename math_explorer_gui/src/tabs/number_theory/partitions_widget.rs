@@ -182,3 +182,13 @@ impl InteractiveTool for PartitionsWidget {
 }
 
 // [cite:partitions_implementation]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "PartitionsWidget",
+        domain: "number_theory",
+        tags: &[],
+        build: || Box::new(PartitionsWidget::default()),
+    }
+}

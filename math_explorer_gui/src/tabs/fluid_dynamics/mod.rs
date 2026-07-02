@@ -17,11 +17,7 @@ pub struct FluidDynamicsTab {
 impl Default for FluidDynamicsTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(PotentialFlowTool::default()),
-                Box::new(TurbulenceTool::default()),
-                Box::new(LatticeBoltzmannTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("fluid_dynamics"),
         }
     }
 }

@@ -112,3 +112,13 @@ impl InteractiveTool for CapacityFadeTool {
 }
 
 // [cite:mmwave_radiotherapy_setup]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "CapacityFadeTool",
+        domain: "battery_degradation",
+        tags: &[],
+        build: || Box::new(CapacityFadeTool::default()),
+    }
+}

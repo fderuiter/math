@@ -17,11 +17,7 @@ pub struct ClinicalTrialsTab {
 impl Default for ClinicalTrialsTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(SurvivalAnalysisTool::default()),
-                Box::new(SampleSizeCalculatorTool::default()),
-                Box::new(RandomizationTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("clinical_trials"),
         }
     }
 }

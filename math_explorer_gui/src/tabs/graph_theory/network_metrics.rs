@@ -224,3 +224,13 @@ impl InteractiveTool for NetworkMetricsTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "NetworkMetricsTool",
+        domain: "graph_theory",
+        tags: &[],
+        build: || Box::new(NetworkMetricsTool::default()),
+    }
+}

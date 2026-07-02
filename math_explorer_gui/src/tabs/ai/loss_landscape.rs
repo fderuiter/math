@@ -167,3 +167,13 @@ impl InteractiveTool for LossLandscapeTool {
 }
 
 // [cite:modular_polynomials_review]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "LossLandscapeTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(LossLandscapeTool::default()),
+    }
+}

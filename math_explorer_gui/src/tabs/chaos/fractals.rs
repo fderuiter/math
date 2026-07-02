@@ -347,3 +347,13 @@ impl FractalViewer {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "FractalViewer",
+        domain: "chaos",
+        tags: &[],
+        build: || Box::new(FractalViewer::default()),
+    }
+}

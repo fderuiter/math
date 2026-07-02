@@ -146,3 +146,13 @@ fn map_value_to_color(t: f64) -> Color32 {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "DoseCalculationTool",
+        domain: "medical",
+        tags: &[],
+        build: || Box::new(DoseCalculationTool::default()),
+    }
+}

@@ -210,7 +210,7 @@ pub struct MorphogenesisTab {
 impl Default for MorphogenesisTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![Box::new(MorphogenesisTool::default())]),
+            framework: crate::framework::SimulationFramework::new("morphogenesis"),
         }
     }
 }
@@ -477,3 +477,13 @@ impl SimpleRng {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "MorphogenesisTool",
+        domain: "morphogenesis",
+        tags: &[],
+        build: || Box::new(MorphogenesisTool::default()),
+    }
+}

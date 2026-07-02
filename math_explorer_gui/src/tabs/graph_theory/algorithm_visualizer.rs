@@ -357,3 +357,13 @@ impl InteractiveTool for AlgorithmVisualizerTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "AlgorithmVisualizerTool",
+        domain: "graph_theory",
+        tags: &[],
+        build: || Box::new(AlgorithmVisualizerTool::default()),
+    }
+}

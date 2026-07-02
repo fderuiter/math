@@ -165,3 +165,13 @@ impl InteractiveTool for IsingModelTool {
 }
 
 // [cite:clinical_trials_statistics]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "IsingModelTool",
+        domain: "solid_state",
+        tags: &[],
+        build: || Box::new(IsingModelTool::default()),
+    }
+}

@@ -17,11 +17,7 @@ pub struct NeuroscienceTab {
 impl Default for NeuroscienceTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(HodgkinHuxleyTool::default()),
-                Box::new(SpikeAnalysisTool::default()),
-                Box::new(NeuralNetworkVizTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("neuroscience"),
         }
     }
 }

@@ -1,6 +1,15 @@
 use eframe::egui;
 use math_commons::theory::TheoryDescribable;
 
+pub struct ToolMetadata {
+    pub name: &'static str,
+    pub domain: &'static str,
+    pub tags: &'static [&'static str],
+    pub build: fn() -> Box<dyn InteractiveTool>,
+}
+
+inventory::collect!(ToolMetadata);
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum InputMode {
     Mouse,
@@ -99,17 +108,27 @@ pub trait InteractiveTool {
 }
 
 pub struct SimulationFramework {
-    pub tools: Vec<Box<dyn InteractiveTool>>,
-    pub selected_tool_index: usize,
+    pub available_tools: Vec<&'static ToolMetadata>,
+    pub active_tool: Option<Box<dyn InteractiveTool>>,
+    pub selected_tool_index: Option<usize>,
     pub input_mode: InputMode,
     pub show_theory_portal: bool,
 }
 
 impl SimulationFramework {
-    pub fn new(tools: Vec<Box<dyn InteractiveTool>>) -> Self {
+    pub fn new(domain: &str) -> Self {
+        let mut available_tools: Vec<&'static ToolMetadata> = inventory::iter::<ToolMetadata>
+            .into_iter()
+            .filter(|t| t.domain == domain)
+            .collect();
+            
+        // Sort by name for deterministic order
+        available_tools.sort_by_key(|t| t.name);
+        
         Self {
-            tools,
-            selected_tool_index: 0,
+            available_tools,
+            active_tool: None,
+            selected_tool_index: None,
             input_mode: InputMode::Mouse,
             show_theory_portal: false,
         }
@@ -123,7 +142,7 @@ impl SimulationFramework {
             .resizable(true)
             .show(ctx, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    if let Some(tool) = self.tools.get(self.selected_tool_index) {
+                    if let Some(tool) = &self.active_tool {
                         ui.heading(format!("Theory: {}", tool.name()));
                         ui.separator();
 
@@ -166,12 +185,15 @@ impl SimulationFramework {
                 ui.heading("Tools");
                 ui.separator();
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    for (i, tool) in self.tools.iter().enumerate() {
+                    for (i, meta) in self.available_tools.iter().enumerate() {
                         if ui
-                            .selectable_label(self.selected_tool_index == i, tool.name())
+                            .selectable_label(self.selected_tool_index == Some(i), meta.name)
                             .clicked()
                         {
-                            self.selected_tool_index = i;
+                            if self.selected_tool_index != Some(i) {
+                                self.selected_tool_index = Some(i);
+                                self.active_tool = Some((meta.build)());
+                            }
                         }
                     }
                 });
@@ -206,7 +228,7 @@ impl SimulationFramework {
         self.show_side_panel(ctx, id_source);
         self.show_theory_portal(ctx, id_source);
 
-        if let Some(tool) = self.tools.get_mut(self.selected_tool_index) {
+        if let Some(tool) = &mut self.active_tool {
             tool.show(ctx);
         } else {
             egui::CentralPanel::default().show(ctx, |ui| {

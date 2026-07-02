@@ -13,11 +13,7 @@ pub struct SolidStateTab {
 impl Default for SolidStateTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(crystal_viewer::CrystalViewer::default()),
-                Box::new(ising::IsingModelTool::default()),
-                Box::new(band_structure::BandStructureTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("solid_state"),
         }
     }
 }

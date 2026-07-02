@@ -15,10 +15,7 @@ pub struct MedicalTab {
 impl Default for MedicalTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(DoseCalculationTool::default()),
-                Box::new(BeamProfilingTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("medical"),
         }
     }
 }

@@ -306,3 +306,13 @@ impl InteractiveTool for CurvatureHeatmap {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "CurvatureHeatmap",
+        domain: "geometry_topology",
+        tags: &[],
+        build: || Box::new(CurvatureHeatmap::default()),
+    }
+}

@@ -11,9 +11,7 @@ pub struct GameTheoryTab {
 impl Default for GameTheoryTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![Box::new(
-                replicator::ReplicatorDynamicsTool::default(),
-            )]),
+            framework: crate::framework::SimulationFramework::new("game_theory"),
         }
     }
 }

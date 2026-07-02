@@ -161,3 +161,13 @@ impl InteractiveTool for SurvivalAnalysisTool {
 }
 
 // [cite:clinical_trials_statistics]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "SurvivalAnalysisTool",
+        domain: "clinical_trials",
+        tags: &[],
+        build: || Box::new(SurvivalAnalysisTool::default()),
+    }
+}

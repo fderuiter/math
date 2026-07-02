@@ -15,10 +15,7 @@ pub struct BatteryDegradationTab {
 impl Default for BatteryDegradationTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(CapacityFadeTool::default()),
-                Box::new(LifetimeEstimatorTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("battery_degradation"),
         }
     }
 }

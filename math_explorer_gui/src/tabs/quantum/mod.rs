@@ -16,11 +16,7 @@ pub struct QuantumTab {
 impl Default for QuantumTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(WaveSimulator::default()),
-                Box::new(ClebschGordanTool::default()),
-                Box::new(spin_viz::SpinVisualizer::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("quantum"),
         }
     }
 }
