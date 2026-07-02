@@ -173,3 +173,6 @@ required-features = ["pure_math"]
 [[example]]
 name = "lorenz_chaos"
 required-features = ["physics"]
+
+[profile.release]
+overflow-checks = true
