@@ -5,6 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -12,6 +13,7 @@ env:
 jobs:
   build-and-test:
     name: Build and Test (${{ matrix.name }})
+    if: matrix.name == 'Web/WASM' || github.event_name != 'pull_request'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -208,6 +210,7 @@ jobs:
 
   package:
     name: Package Installers (${{ matrix.os }})
+    if: github.event_name != 'pull_request'
     needs: build-and-test
     runs-on: ${{ matrix.os }}
     strategy:

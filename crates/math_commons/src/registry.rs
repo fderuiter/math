@@ -22,4 +22,3 @@ pub const TOLERANCE_FAST_F32: f32 = 1e-6;
 /// Common grid sizes and iteration limits.
 pub const MAX_GRID_SIZE: usize = 1000;
 pub const MAX_ITERATIONS: usize = 5000;
-

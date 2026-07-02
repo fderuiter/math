@@ -159,7 +159,11 @@ mod tests {
         let result = kinetics.alpha_n(v_singular, v_rest);
 
         // Expected limit: 0.1
-        assert!((result - 0.1).abs() < math_commons::registry::TOLERANCE_STANDARD, "Expected 0.1, got {}", result);
+        assert!(
+            (result - 0.1).abs() < math_commons::registry::TOLERANCE_STANDARD,
+            "Expected 0.1, got {}",
+            result
+        );
         assert!(result.is_finite(), "Result should be finite");
     }
 
@@ -173,7 +177,11 @@ mod tests {
         let result = kinetics.alpha_m(v_singular, v_rest);
 
         // Expected limit: 1.0
-        assert!((result - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD, "Expected 1.0, got {}", result);
+        assert!(
+            (result - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD,
+            "Expected 1.0, got {}",
+            result
+        );
         assert!(result.is_finite(), "Result should be finite");
     }
 }

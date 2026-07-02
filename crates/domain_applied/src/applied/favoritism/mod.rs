@@ -103,6 +103,10 @@ theory_verification!(
         BASE_SCORE = 1.0;
     },
     test = {
-        assert_relative_eq!(BASE_SCORE, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            BASE_SCORE,
+            1.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 );

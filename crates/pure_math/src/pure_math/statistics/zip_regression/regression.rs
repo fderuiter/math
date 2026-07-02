@@ -316,12 +316,20 @@ mod tests {
         // eta = 1.0*0.5 + 2.0*0.3 = 1.1
         // lambda = exp(1.1)
         let expected_lambda = 1.1_f64.exp();
-        assert_relative_eq!(params.lambda.value(), expected_lambda, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+        assert_relative_eq!(
+            params.lambda.value(),
+            expected_lambda,
+            epsilon = math_commons::registry::TOLERANCE_STANDARD
+        );
 
         // gamma = 1.0*(-1.0) + 0.5*0.2 = -0.9
         // rho = expit(-0.9)
         let expected_rho = LogitLink::link(-0.9);
-        assert_relative_eq!(params.rho.value(), expected_rho, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+        assert_relative_eq!(
+            params.rho.value(),
+            expected_rho,
+            epsilon = math_commons::registry::TOLERANCE_STANDARD
+        );
     }
 
     #[test]

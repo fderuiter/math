@@ -1,53 +1,27 @@
-use crate::accessibility::AccessibleHoverText;
-use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
-use eframe::egui;
-use egui::{Color32, ColorImage, TextureOptions};
-use egui_plot::{Plot, PlotImage, PlotPoint};
-use math_commons::theory::TheoryDescribable;
+use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
+use crate::async_sim::{SimCommand, StateSnapshot};
+use eframe::egui::Color32;
+use math_commons::theory::{ParameterConstraint, TheoryDescribable};
 use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
     BgkCollision, LatticeBoltzmannD2Q9,
 };
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, RwLock};
+use std::collections::HashMap;
+use std::sync::Arc;
 
-pub struct LbmParams {
-    pub viscosity: AtomicU64,
-}
-
-impl LbmParams {
-    pub fn new(viscosity: f64) -> Self {
-        Self {
-            viscosity: AtomicU64::new(viscosity.to_bits()),
-        }
-    }
-}
-
-#[derive(PartialEq, Clone, Copy)]
-enum DrawMode {
-    Obstacle,
-    Clear,
-}
-
-pub struct LbmRunner {
+pub struct LbmUnified {
     solver: LatticeBoltzmannD2Q9<BgkCollision>,
-    steps_per_frame: usize,
-    params: Arc<LbmParams>,
-    shared_pixels: Arc<RwLock<Vec<Color32>>>,
 }
 
-impl LbmRunner {
-    pub fn new(params: Arc<LbmParams>) -> Self {
-        let viscosity = f64::from_bits(params.viscosity.load(Ordering::Relaxed));
+impl UnifiedModel for LbmUnified {
+    fn new(params: &HashMap<String, f64>) -> Self {
+        let viscosity = *params.get("viscosity").unwrap_or(&0.02);
         let width = 100;
         let height = 50;
         let tau = 3.0 * viscosity + 0.5;
 
         let mut solver = LatticeBoltzmannD2Q9::new(width, height, tau);
-
-        // Initial setup: flow from left
         solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
 
-        // Some initial obstacles (cylinder-ish)
         let center_x = 30;
         let center_y = 25;
         let radius = 5;
@@ -60,64 +34,14 @@ impl LbmRunner {
                 }
             }
         }
-        
-        let shared_pixels = Arc::new(RwLock::new(vec![Color32::BLACK; width * height]));
 
-        Self {
-            solver,
-            steps_per_frame: 5,
-            params,
-            shared_pixels,
-        }
-    }
-}
-
-impl SimulationRunner for LbmRunner {
-    fn process_command(&mut self, cmd: SimCommand) {
-        match cmd {
-            SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::ApplyBrush {
-                cx,
-                cy,
-                r,
-                is_obstacle,
-            } => {
-                let width = self.solver.width() as i32;
-                let height = self.solver.height() as i32;
-                for y in (cy - r)..=(cy + r) {
-                    for x in (cx - r)..=(cx + r) {
-                        if x >= 0
-                            && x < width
-                            && y >= 0
-                            && y < height
-                            && (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r
-                        {
-                            self.solver
-                                .set_obstacle(x as usize, y as usize, is_obstacle);
-                        }
-                    }
-                }
-            }
-            SimCommand::ClearObstacles => {
-                self.solver.clear_obstacles();
-            }
-            SimCommand::Reset => {
-                let width = self.solver.width();
-                let height = self.solver.height();
-                let viscosity = f64::from_bits(self.params.viscosity.load(Ordering::Relaxed));
-                self.solver = LatticeBoltzmannD2Q9::new(width, height, 3.0 * viscosity + 0.5);
-                self.solver.set_inlet(0, 20, 5, 10, 0.1, 0.0);
-            }
-            _ => {}
-        }
+        Self { solver }
     }
 
-    fn step(&mut self) {
-        let viscosity = f64::from_bits(self.params.viscosity.load(Ordering::Relaxed));
+    fn step(&mut self, params: &HashMap<String, f64>) {
+        let viscosity = *params.get("viscosity").unwrap_or(&0.02);
         self.solver.collision_model.tau = 3.0 * viscosity + 0.5;
-
-        self.solver
-            .set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
+        self.solver.set_inlet(0, 0, 2, self.solver.height(), 0.1, 0.0);
         self.solver.step();
     }
 
@@ -125,24 +49,20 @@ impl SimulationRunner for LbmRunner {
         let width = self.solver.width();
         let height = self.solver.height();
         
-        if let Ok(mut pixels) = self.shared_pixels.try_write() {
-            if pixels.len() != width * height {
-                *pixels = vec![Color32::BLACK; width * height];
-            }
-            for y in 0..height {
-                for x in 0..width {
-                    let pixel_idx = y * width + x;
-                    if self.solver.is_obstacle(x, height - 1 - y) {
-                        pixels[pixel_idx] = Color32::from_gray(50);
-                    } else {
-                        let v = self.solver.get_velocity_magnitude(x, height - 1 - y);
-                        let intensity = (v * 1000.0).clamp(0.0, 255.0) as u8;
-                        pixels[pixel_idx] = Color32::from_rgb(
-                            intensity,
-                            (intensity as f32 * 0.5) as u8,
-                            255 - intensity,
-                        );
-                    }
+        let mut pixels = vec![Color32::BLACK; width * height];
+        for y in 0..height {
+            for x in 0..width {
+                let pixel_idx = y * width + x;
+                if self.solver.is_obstacle(x, height - 1 - y) {
+                    pixels[pixel_idx] = Color32::from_gray(50);
+                } else {
+                    let v = self.solver.get_velocity_magnitude(x, height - 1 - y);
+                    let intensity = (v * 1000.0).clamp(0.0, 255.0) as u8;
+                    pixels[pixel_idx] = Color32::from_rgb(
+                        intensity,
+                        (intensity as f32 * 0.5) as u8,
+                        255 - intensity,
+                    );
                 }
             }
         }
@@ -150,245 +70,76 @@ impl SimulationRunner for LbmRunner {
         StateSnapshot {
             width,
             height,
-            pixels: Arc::clone(&self.shared_pixels),
+            pixels: Arc::new(std::sync::RwLock::new(pixels)),
             custom_data: Vec::new(),
             structured_data: None,
         }
     }
 
-    fn get_steps_per_frame(&self) -> usize {
-        self.steps_per_frame
-    }
-}
-
-pub struct LatticeBoltzmannTool {
-    controller: SimulationController,
-
-    // UI State
-    texture: Option<egui::TextureHandle>,
-    draw_mode: DrawMode,
-    viscosity: f64,
-    params: Arc<LbmParams>,
-    draw_radius: usize,
-    steps_per_frame: usize,
-
-    // Cached snapshot info for rendering
-    last_width: usize,
-    last_height: usize,
-    last_pixels: Option<Arc<RwLock<Vec<Color32>>>>,
-}
-
-impl Default for LatticeBoltzmannTool {
-    fn default() -> Self {
-        let viscosity = 0.02;
-        let params = Arc::new(LbmParams::new(viscosity));
-        let runner = LbmRunner::new(Arc::clone(&params));
-        let controller = SimulationController::new(runner);
-
-        Self {
-            controller,
-            texture: None,
-            draw_mode: DrawMode::Obstacle,
-            viscosity,
-            params,
-            draw_radius: 2,
-            steps_per_frame: 5,
-            last_width: 100,
-            last_height: 50,
-            last_pixels: None,
-        }
-    }
-}
-
-use crate::framework::InteractiveTool;
-
-impl InteractiveTool for LatticeBoltzmannTool {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
-    fn name(&self) -> &'static str {
-        "Lattice Boltzmann (Demo)"
-    }
-
-    
-
-    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ctx: &egui::Context) {
-        // Update state from background simulation
-        if let Some(snapshot) = self.controller.update() {
-            self.last_width = snapshot.width;
-            self.last_height = snapshot.height;
-            self.last_pixels = Some(Arc::clone(&snapshot.pixels));
-            ctx.request_repaint(); // Keep repainting if we're receiving new frames
-        } else if self.controller.running {
-            // Still request repaint while running even if no new snapshot this exact frame
-            ctx.request_repaint();
-        }
-
-        let is_running = self.controller.running;
-
-        // Controls
-        egui::SidePanel::left("lbm_controls").show(ctx, |ui| {
-            ui.heading("Lattice Boltzmann");
-            ui.separator();
-
-            if ui
-                .button(if is_running { "⏸ Pause" } else { "▶ Run" })
-                .accessible_hover_text(if is_running {
-                    "Pause the fluid simulation"
-                } else {
-                    "Start the fluid simulation"
-                })
-                .clicked()
-            {
-                if is_running {
-                    self.controller.send_command(SimCommand::Pause);
-                } else {
-                    self.controller.send_command(SimCommand::Start);
-                }
-            }
-
-            if ui
-                .button("↻ Reset")
-                .accessible_hover_text("Reset the fluid field and re-initialize the simulation")
-                .clicked()
-            {
-                self.controller.send_command(SimCommand::Reset);
-            }
-
-            if ui
-                .button("🔄 Clear Obstacles")
-                .accessible_hover_text("Remove all obstacles from the fluid field")
-                .clicked()
-            {
-                self.controller.send_command(SimCommand::ClearObstacles);
-            }
-
-            ui.separator();
-            ui.label("Simulation Parameters");
-            let dummy_bgk = BgkCollision { tau: 1.0 };
-            let tau_constraint = crate::reflective_ui::get_theory_constraint(&dummy_bgk, "tau");
-            
-            let min_viscosity = (tau_constraint.min - 0.5) / 3.0;
-            let max_viscosity = (tau_constraint.max - 0.5) / 3.0;
-            let step_viscosity = tau_constraint.step / 3.0;
-            
-            let slider_response = ui.add(
-                egui::Slider::new(&mut self.viscosity, min_viscosity..=max_viscosity)
-                    .step_by(step_viscosity)
-                    .text("Viscosity")
-            );
-            
-            let tooltip = format!(
-                "{}\n\nCitation: {}",
-                dummy_bgk.theory_description(),
-                dummy_bgk.theory_citation()
-            );
-            
-            let slider_response = slider_response.accessible_hover_text(tooltip);
-
-            if slider_response.changed() {
-                self.params.viscosity.store(self.viscosity.to_bits(), Ordering::Relaxed);
-            }
-            if ui
-                .add(
-                    egui::Slider::new(&mut self.steps_per_frame, 1..=20)
-                        .text("Speed (Steps/Frame)"),
-                )
-                .changed()
-            {
-                self.controller
-                    .send_command(SimCommand::SetSpeed(self.steps_per_frame));
-            }
-
-            ui.separator();
-            ui.label("Drawing");
-            ui.horizontal(|ui| {
-                ui.radio_value(&mut self.draw_mode, DrawMode::Obstacle, "Draw Wall");
-                ui.radio_value(&mut self.draw_mode, DrawMode::Clear, "Erase");
-            });
-            ui.add(egui::Slider::new(&mut self.draw_radius, 1..=5).text("Brush Size"));
-
-            ui.label("Instructions:");
-            ui.small("Left Click + Drag on plot to draw/erase obstacles.");
-        });
-
-        // Visualization
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let width = self.last_width;
-            let height = self.last_height;
-
-            if let Some(pixels) = &self.last_pixels {
-                // Update texture if we have new pixels
-                if let Ok(guard) = pixels.try_read() {
-                    if guard.len() == width * height {
-                        let image = ColorImage::new([width, height], guard.clone());
-                        let texture = ctx.load_texture("fluid_field", image, TextureOptions::NEAREST);
-                        self.texture = Some(texture);
+    fn process_command(&mut self, cmd: SimCommand, _params: &HashMap<String, f64>) {
+        match cmd {
+            SimCommand::ApplyBrush { cx, cy, r, is_obstacle } => {
+                let width = self.solver.width() as i32;
+                let height = self.solver.height() as i32;
+                for y in (cy - r)..=(cy + r) {
+                    for x in (cx - r)..=(cx + r) {
+                        if x >= 0 && x < width && y >= 0 && y < height && (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r {
+                            self.solver.set_obstacle(x as usize, y as usize, is_obstacle);
+                        }
                     }
                 }
             }
-
-            // Render Plot
-            if let Some(texture) = &self.texture {
-                let _plot_response = Plot::new("lbm_plot")
-                    .data_aspect(1.0)
-                    .view_aspect(1.0)
-                    .show_grid(false)
-                    .show_axes([false, false])
-                    .allow_drag(false)
-                    .allow_zoom(false)
-                    .allow_scroll(false)
-                    .show(ui, |plot_ui| {
-                        plot_ui.image(PlotImage::new(
-                            "fluid_field",
-                            texture.id(),
-                            PlotPoint::new(width as f64 / 2.0, height as f64 / 2.0),
-                            [width as f32, height as f32],
-                        ));
-
-                        // Interaction: Get pointer coordinates
-                        if plot_ui.response().hovered() && ctx.input(|i| i.pointer.primary_down()) {
-                            if let Some(pos) = plot_ui.pointer_coordinate() {
-                                let grid_x = pos.x.round() as i32;
-                                let grid_y = pos.y.round() as i32;
-
-                                self.controller.send_command(SimCommand::ApplyBrush {
-                                    cx: grid_x,
-                                    cy: grid_y,
-                                    r: self.draw_radius as i32,
-                                    is_obstacle: self.draw_mode == DrawMode::Obstacle,
-                                });
-                            }
-                        }
-                    });
+            SimCommand::ClearObstacles => {
+                self.solver.clear_obstacles();
             }
-        });
+            SimCommand::Custom(ref action) if action == "Clear Obstacles" => {
+                self.solver.clear_obstacles();
+            }
+            _ => {}
+        }
+    }
+
+    fn custom_actions() -> Vec<&'static str> {
+        vec!["Clear Obstacles"]
+    }
+
+    fn parameters() -> HashMap<String, ParameterConstraint> {
+        let mut map = HashMap::new();
+
+        // We will just hardcode constraint based on tau [0.51, 2.0] -> visc = (tau-0.5)/3.0
+        // visc min = 0.00333, max = 0.5
+        map.insert("viscosity".to_string(), ParameterConstraint { min: 0.00333, max: 0.5, step: 0.01 });
+        map
+    }
+
+    fn name() -> &'static str {
+        "Lattice Boltzmann (Demo)"
     }
 }
-
-impl TheoryDescribable for LatticeBoltzmannTool {
-    fn theory_description(&self) -> String {
-        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_description()
-    }
-
-    fn phonetic_description(&self) -> String {
-        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).phonetic_description()
-    }
-    fn theory_citation(&self) -> String {
-        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_citation()
-    }
-    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
-        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).available_descriptions()
-    }
-}
-
-// [cite:graph_parameters_rust]
-
 
 inventory::submit! {
     crate::framework::ToolMetadata {
         name: "LatticeBoltzmannTool",
         domain: "fluid_dynamics",
         tags: &[],
-        build: || Box::new(LatticeBoltzmannTool::default()),
+        build: || Box::new(UnifiedSimTool::<LbmUnified>::new()),
+    }
+}
+
+impl TheoryDescribable for LbmUnified {
+    fn theory_description(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_description()
+    }
+    
+    fn phonetic_description(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).phonetic_description()
+    }
+    
+    fn theory_citation(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_citation()
+    }
+    
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).available_descriptions()
     }
 }

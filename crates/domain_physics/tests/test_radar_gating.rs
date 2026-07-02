@@ -88,12 +88,36 @@ fn test_surface_fitting() {
 
     // z = c0 + c1*x + c2*y + c3*xy + c4*x^2 + c5*y^2
     // Expect: c0=1, c4=0.1, c5=0.1, others 0
-    assert_relative_eq!(coeffs[0], 1.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c0
-    assert_relative_eq!(coeffs[1], 0.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c1
-    assert_relative_eq!(coeffs[2], 0.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c2
-    assert_relative_eq!(coeffs[3], 0.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c3
-    assert_relative_eq!(coeffs[4], 0.1, epsilon = math_commons::registry::TOLERANCE_FAST); // c4
-    assert_relative_eq!(coeffs[5], 0.1, epsilon = math_commons::registry::TOLERANCE_FAST); // c5
+    assert_relative_eq!(
+        coeffs[0],
+        1.0,
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    ); // c0
+    assert_relative_eq!(
+        coeffs[1],
+        0.0,
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    ); // c1
+    assert_relative_eq!(
+        coeffs[2],
+        0.0,
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    ); // c2
+    assert_relative_eq!(
+        coeffs[3],
+        0.0,
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    ); // c3
+    assert_relative_eq!(
+        coeffs[4],
+        0.1,
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    ); // c4
+    assert_relative_eq!(
+        coeffs[5],
+        0.1,
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    ); // c5
 }
 
 #[test]

@@ -16,7 +16,11 @@ fn test_wave_equation_dalembert() {
     // u(x,t) = f(x-ct) + g(x+ct)
     // At x=1, t=1: f(1-2) + g(1+2) = f(-1) + g(3) = (-1)^2 + 3 = 1 + 3 = 4
     let val = wave.dalembert_solution(f, g, 1.0, 1.0);
-    assert_abs_diff_eq!(val, 4.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+    assert_abs_diff_eq!(
+        val,
+        4.0,
+        epsilon = math_commons::registry::TOLERANCE_STANDARD
+    );
 }
 
 #[test]
@@ -31,7 +35,11 @@ fn test_heat_equation_separated() {
     let val = heat.separated_mode(2.0, (1.0, 0.0), 0.0, 1.0);
     // x=0 => cos(0) = 1.
     // t=1 => exp(-2) = 0.135335
-    assert_abs_diff_eq!(val, (-2.0f64).exp(), epsilon = math_commons::registry::TOLERANCE_FAST);
+    assert_abs_diff_eq!(
+        val,
+        (-2.0f64).exp(),
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    );
 }
 
 #[test]
@@ -46,7 +54,11 @@ fn test_laplace_equation() {
         1.0,
     );
     // sin(pi/2) = 1. sinh(1) = 1.1752
-    assert_abs_diff_eq!(val, 1.0f64.sinh(), epsilon = math_commons::registry::TOLERANCE_FAST);
+    assert_abs_diff_eq!(
+        val,
+        1.0f64.sinh(),
+        epsilon = math_commons::registry::TOLERANCE_FAST
+    );
 }
 
 #[test]

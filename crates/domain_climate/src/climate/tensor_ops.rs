@@ -2,7 +2,7 @@
 //! A 1D convolution with kernel size 1 is equivalent to a linear transformation (dense layer)
 //! applied at each position.
 
-use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
+use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
 
 /// Performs a 1D convolution with kernel size 1.
 /// This is equivalent to a matrix multiplication.
@@ -17,7 +17,11 @@ use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
 ///
 /// * The output tensor, with shape (N, out_channels).
 #[verified_engine::verified]
-pub fn conv1d<S: Storage<f32, Dyn, Dyn>>(input: &Matrix<f32, Dyn, Dyn, S>, kernel: &DMatrix<f32>, bias: &DVector<f32>) -> DMatrix<f32> {
+pub fn conv1d<S: Storage<f32, Dyn, Dyn>>(
+    input: &Matrix<f32, Dyn, Dyn, S>,
+    kernel: &DMatrix<f32>,
+    bias: &DVector<f32>,
+) -> DMatrix<f32> {
     // Check dimensions
     assert_eq!(
         input.ncols(),
@@ -109,7 +113,9 @@ mod tests {
         let expected_output =
             DMatrix::from_row_slice(2, 4, &[1.1, 2.2, 3.3, 6.4, 4.1, 5.2, 6.3, 15.4]);
 
-        assert!((output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32);
+        assert!(
+            (output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32
+        );
     }
 
     #[test]
@@ -131,6 +137,8 @@ mod tests {
         // Corrected expected output based on my manual calculation in the previous turn.
         let expected_output = DMatrix::from_row_slice(2, 3, &[5.1, 6.2, 7.3, 13.1, 14.2, 15.3]);
 
-        assert!((output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32);
+        assert!(
+            (output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32
+        );
     }
 }

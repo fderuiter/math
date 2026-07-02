@@ -17,6 +17,7 @@ pub enum SimCommand {
         is_obstacle: bool,
     },
     ClearObstacles,
+    Custom(String),
 }
 
 pub struct StateSnapshot {
@@ -188,6 +189,10 @@ impl SimulationController {
 
     pub fn send_command(&self, cmd: SimCommand) {
         let _ = self.cmd_tx.send(cmd);
+    }
+
+    pub fn latest_snapshot(&self) -> Option<&StateSnapshot> {
+        self.latest_snapshot.as_ref()
     }
 
     pub fn update(&mut self) -> Option<&StateSnapshot> {

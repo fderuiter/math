@@ -3,7 +3,7 @@ use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, State
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::{ColorImage, TextureOptions};
-use egui_plot::{Plot, PlotImage, PlotPoint};
+use egui_plot::{Line, Plot, PlotImage, PlotPoint, PlotPoints};
 use math_commons::theory::ParameterConstraint;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -32,6 +32,31 @@ pub trait UnifiedModel: Send + 'static + math_commons::theory::TheoryDescribable
     fn name() -> &'static str
     where
         Self: Sized;
+
+    /// Return presets that the model supports.
+    fn presets() -> Vec<(&'static str, HashMap<String, f64>)>
+    where
+        Self: Sized,
+    {
+        Vec::new()
+    }
+
+    /// Return custom actions that the model supports.
+    fn custom_actions() -> Vec<&'static str>
+    where
+        Self: Sized,
+    {
+        Vec::new()
+    }
+
+    /// Allow the model to draw custom visualization in the central panel.
+    /// Return true if custom rendering was performed.
+    fn custom_central_panel(_ui: &mut eframe::egui::Ui, _snapshot: Option<&StateSnapshot>) -> bool
+    where
+        Self: Sized,
+    {
+        false
+    }
 }
 
 pub struct UnifiedSimRunner<M: UnifiedModel> {
@@ -77,19 +102,16 @@ impl<M: UnifiedModel> SimulationRunner for UnifiedSimRunner<M> {
     }
 }
 
-struct CachedSnapshot {
-    width: usize,
-    height: usize,
-    pixels: Arc<std::sync::RwLock<Vec<egui::Color32>>>,
-}
-
 pub struct UnifiedSimTool<M: UnifiedModel> {
     controller: SimulationController,
     params: Arc<RwLock<HashMap<String, f64>>>,
     param_metadata: Vec<(String, ParameterConstraint)>,
     steps_per_frame: usize,
-    last_snapshot: Option<CachedSnapshot>,
     texture: Option<egui::TextureHandle>,
+    cached_theory_desc: String,
+    cached_phonetic: String,
+    cached_citation: String,
+    cached_descs: HashMap<String, String>,
     _marker: std::marker::PhantomData<M>,
 }
 
@@ -110,18 +132,72 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             initial_params.insert(name.clone(), (constraint.min + constraint.max) / 2.0);
         }
 
-        let params = Arc::new(RwLock::new(initial_params));
+        let params = Arc::new(RwLock::new(initial_params.clone()));
         let runner = UnifiedSimRunner::<M>::new(Arc::clone(&params));
         let controller = SimulationController::new(runner);
+
+        let temp_model = M::new(&initial_params);
 
         Self {
             controller,
             params,
             param_metadata,
             steps_per_frame: 5,
-            last_snapshot: None,
             texture: None,
+            cached_theory_desc: temp_model.theory_description(),
+            cached_phonetic: temp_model.phonetic_description(),
+            cached_citation: temp_model.theory_citation(),
+            cached_descs: temp_model.available_descriptions(),
             _marker: std::marker::PhantomData,
+        }
+    }
+
+    fn draw_model_parameters(&mut self, ui: &mut egui::Ui) {
+        ui.separator();
+        ui.label("Model Parameters");
+
+        let mut params_lock = self.params.write().unwrap();
+
+        let presets = M::presets();
+        if !presets.is_empty() {
+            ui.horizontal(|ui| {
+                ui.label("Presets:");
+                for (name, preset_params) in presets {
+                    if ui.button(name).clicked() {
+                        for (k, v) in &preset_params {
+                            params_lock.insert(k.clone(), *v);
+                        }
+                        self.controller.send_command(SimCommand::Reset);
+                    }
+                }
+            });
+            ui.separator();
+        }
+
+        let custom_actions = M::custom_actions();
+        if !custom_actions.is_empty() {
+            ui.horizontal(|ui| {
+                ui.label("Actions:");
+                for action in custom_actions {
+                    if ui.button(action).clicked() {
+                        self.controller
+                            .send_command(SimCommand::Custom(action.to_string()));
+                    }
+                }
+            });
+            ui.separator();
+        }
+
+        for (name, constraint) in &self.param_metadata {
+            if let Some(val) = params_lock.get_mut(name) {
+                let slider = egui::Slider::new(val, constraint.min..=constraint.max)
+                    .step_by(constraint.step)
+                    .text(name);
+                let mut resp = ui.add(slider);
+                if let Some(desc) = self.cached_descs.get(name) {
+                    resp = resp.accessible_hover_text(desc);
+                }
+            }
         }
     }
 
@@ -169,86 +245,113 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
                     .send_command(SimCommand::SetSpeed(self.steps_per_frame));
             }
 
-            ui.separator();
-            ui.label("Model Parameters");
-
-            let mut params_lock = self.params.write().unwrap();
-            
-            // Get available descriptions from a temporary model instance or we can just instantiate it?
-            // Wait, we don't have access to the model instance directly here, it's inside the controller thread!
-            // But we can get it from M::parameters(), which means it's static?
-            // But TheoryDescribable methods take `&self`.
-            // Let's just create a dummy instance to read it, or use the tool's TheoryDescribable impl?
-            // Actually, the requirements say: "UI controls must derive their accessibility labels directly from the model's theoretical documentation"
-            let available_descs = self.theory().available_descriptions();
-
-            for (name, constraint) in &self.param_metadata {
-                if let Some(val) = params_lock.get_mut(name) {
-                    let slider = egui::Slider::new(val, constraint.min..=constraint.max)
-                        .step_by(constraint.step)
-                        .text(name);
-                    let mut resp = ui.add(slider);
-                    
-                    if let Some(desc) = available_descs.get(name) {
-                        resp = resp.accessible_hover_text(desc);
-                    }
-                    
-                    let _ = resp.changed(); // Just calling it to suppress unused warning if necessary, or not needed.
-                }
-            }
+            self.draw_model_parameters(ui);
         });
+    }
+
+    fn draw_image_plot(
+        &mut self,
+        ui: &mut egui::Ui,
+        ctx: &egui::Context,
+        texture: &egui::TextureHandle,
+    ) {
+        let width = texture.size()[0] as f32;
+        let height = texture.size()[1] as f32;
+
+        Plot::new(format!("{}_plot_img", M::name()))
+            .data_aspect(1.0)
+            .view_aspect(1.0)
+            .show_grid(false)
+            .show_axes([false, false])
+            .allow_drag(false)
+            .allow_zoom(false)
+            .allow_scroll(false)
+            .show(ui, |plot_ui| {
+                plot_ui.image(PlotImage::new(
+                    format!("{}_image", M::name()),
+                    texture.id(),
+                    PlotPoint::new(width as f64 / 2.0, height as f64 / 2.0),
+                    [width, height],
+                ));
+
+                if plot_ui.response().hovered()
+                    && ctx.input(|i| i.pointer.primary_down() || i.pointer.secondary_down())
+                {
+                    if let Some(pos) = plot_ui.pointer_coordinate() {
+                        let grid_x = pos.x.round() as i32;
+                        let grid_y = pos.y.round() as i32;
+                        self.controller.send_command(SimCommand::ApplyBrush {
+                            cx: grid_x,
+                            cy: grid_y,
+                            r: 2,
+                            is_obstacle: ctx.input(|i| i.pointer.primary_down()),
+                        });
+                    }
+                }
+            });
+    }
+
+    fn draw_line_plot(&self, ui: &mut egui::Ui, snapshot: &StateSnapshot) {
+        if snapshot.custom_data.is_empty() {
+            return;
+        }
+        let mut points = Vec::new();
+        for i in (0..snapshot.custom_data.len()).step_by(2) {
+            if i + 1 < snapshot.custom_data.len() {
+                points.push([snapshot.custom_data[i], snapshot.custom_data[i + 1]]);
+            }
+        }
+        let line = Line::new(M::name(), PlotPoints::from_iter(points))
+            .color(egui::Color32::from_rgb(100, 200, 255));
+
+        Plot::new(format!("{}_plot_line", M::name()))
+            .view_aspect(2.0)
+            .show(ui, |plot_ui| {
+                plot_ui.line(line);
+            });
     }
 
     fn draw_central_panel(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            if let Some(snapshot) = &self.last_snapshot {
+            if M::custom_central_panel(ui, self.controller.latest_snapshot()) {
+                return;
+            }
+
+            let mut has_image = false;
+            if let Some(snapshot) = self.controller.latest_snapshot() {
                 if let Ok(guard) = snapshot.pixels.try_read() {
-                    let image = ColorImage::new([snapshot.width, snapshot.height], guard.clone());
-                    let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
-                    self.texture = Some(texture);
+                    if !guard.is_empty() {
+                        let image =
+                            ColorImage::new([snapshot.width, snapshot.height], guard.clone());
+                        let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
+                        self.texture = Some(texture);
+                        has_image = true;
+                    }
                 }
             }
 
-            if let Some(texture) = &self.texture {
-                let width = texture.size()[0] as f32;
-                let height = texture.size()[1] as f32;
-
-                Plot::new(format!("{}_plot", M::name()))
-                    .data_aspect(1.0)
-                    .view_aspect(1.0)
-                    .show_grid(false)
-                    .show_axes([false, false])
-                    .allow_drag(false)
-                    .allow_zoom(false)
-                    .allow_scroll(false)
-                    .show(ui, |plot_ui| {
-                        plot_ui.image(PlotImage::new(
-                            format!("{}_image", M::name()),
-                            texture.id(),
-                            PlotPoint::new(width as f64 / 2.0, height as f64 / 2.0),
-                            [width, height],
-                        ));
-                    });
+            if has_image || self.texture.is_some() {
+                if let Some(texture) = self.texture.clone() {
+                    self.draw_image_plot(ui, ctx, &texture);
+                }
+            } else if let Some(snapshot) = self.controller.latest_snapshot() {
+                self.draw_line_plot(ui, snapshot);
             }
         });
     }
 }
 
 impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable {
+        self
+    }
     fn name(&self) -> &'static str {
         M::name()
     }
 
     fn show(&mut self, ctx: &egui::Context) {
-        if let Some(snapshot) = self.controller.update() {
-            self.last_snapshot = Some(CachedSnapshot {
-                width: snapshot.width,
-                height: snapshot.height,
-                pixels: Arc::clone(&snapshot.pixels),
-            });
-            ctx.request_repaint();
-        } else if self.controller.running {
+        let has_update = self.controller.update().is_some();
+        if has_update || self.controller.running {
             ctx.request_repaint();
         }
 
@@ -258,8 +361,16 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
 }
 
 impl<M: UnifiedModel> math_commons::theory::TheoryDescribable for UnifiedSimTool<M> {
-    fn theory_description(&self) -> String { "Default theory description".into() }
-    fn phonetic_description(&self) -> String { "Default phonetic description".into() }
-    fn theory_citation(&self) -> String { "Default Citation, 2026".into() }
-    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { std::collections::HashMap::new() }
+    fn theory_description(&self) -> String {
+        self.cached_theory_desc.clone()
+    }
+    fn phonetic_description(&self) -> String {
+        self.cached_phonetic.clone()
+    }
+    fn theory_citation(&self) -> String {
+        self.cached_citation.clone()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        self.cached_descs.clone()
+    }
 }

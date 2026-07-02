@@ -11,7 +11,9 @@ use walkdir::WalkDir;
 mod ast_visitor;
 mod entropy_guard;
 mod profile;
+mod utils;
 mod vulnerabilities;
+use utils::check_file_lengths;
 
 #[derive(Serialize)]
 struct IntegrityReport {
@@ -25,7 +27,8 @@ struct IntegrityReport {
 
 fn get_workspace_members() -> Vec<String> {
     let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
-    let parsed: toml::Value = toml::from_str(&content).unwrap_or_else(|_| toml::Value::Table(Default::default()));
+    let parsed: toml::Value =
+        toml::from_str(&content).unwrap_or_else(|_| toml::Value::Table(Default::default()));
     let mut members = Vec::new();
     if let Some(workspace) = parsed.get("workspace") {
         if let Some(mems) = workspace.get("members") {
@@ -58,7 +61,7 @@ fn main() {
             for d in debt {
                 println!("{}", d);
             }
-        },
+        }
         _ => {
             eprintln!("Unknown command: {}", args[1]);
             std::process::exit(1);
@@ -141,32 +144,6 @@ fn traceability() {
     if !status.success() {
         std::process::exit(status.code().unwrap_or(1));
     }
-}
-
-fn check_file_lengths(members: &[String]) -> Vec<String> {
-    let mut exceeding = Vec::new();
-
-    for dir in members {
-        if Path::new(dir).exists() {
-            for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-                let path_str = entry.path().to_string_lossy();
-                if path_str.contains("/target/") || path_str.contains("\\target\\") {
-                    continue;
-                }
-                if entry.file_type().is_file()
-                    && entry.path().extension().and_then(|s| s.to_str()) == Some("rs")
-                {
-                    if let Ok(content) = fs::read_to_string(entry.path()) {
-                        let lines = content.lines().count();
-                        if lines > 500 {
-                            exceeding.push(format!("File length violation: {} ({} lines)", entry.path().display(), lines));
-                        }
-                    }
-                }
-            }
-        }
-    }
-    exceeding
 }
 
 fn get_llvm_cov_output() -> std::process::Output {
@@ -273,7 +250,8 @@ fn analyze_files(rs_files: &[std::path::PathBuf]) -> FileMetrics {
                 if norm.starts_with("./") {
                     norm = norm[2..].to_string();
                 }
-                m.opt_outs.push((norm, format!("Legacy function call: {}", &cap[1])));
+                m.opt_outs
+                    .push((norm, format!("Legacy function call: {}", &cap[1])));
             }
 
             m.total_funcs += funcs;

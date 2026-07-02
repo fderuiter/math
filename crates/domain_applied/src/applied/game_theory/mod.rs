@@ -75,6 +75,10 @@ theory_verification!(
         PAYOFF = 5.0;
     },
     test = {
-        assert_relative_eq!(PAYOFF, 5.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            PAYOFF,
+            5.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 );

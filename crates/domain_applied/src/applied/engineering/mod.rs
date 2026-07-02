@@ -22,6 +22,10 @@ theory_verification!(
         TOLERANCE = 0.001;
     },
     test = {
-        assert_relative_eq!(TOLERANCE, 0.001, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            TOLERANCE,
+            0.001,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 );

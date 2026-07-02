@@ -300,7 +300,9 @@ mod tests {
         let quarter = fractional_kelly(&p, &odds, 0.25).unwrap();
 
         let full = kelly_fraction(&p, &odds).unwrap();
-        assert!((quarter.value() - full.value() * 0.25).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            (quarter.value() - full.value() * 0.25).abs() < math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]
@@ -388,7 +390,9 @@ mod tests {
         let quarter = variants::quarter_kelly(&p, &odds).unwrap();
         let full = kelly_fraction(&p, &odds).unwrap();
 
-        assert!((quarter.value() - full.value() * 0.25).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            (quarter.value() - full.value() * 0.25).abs() < math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]

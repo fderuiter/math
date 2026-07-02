@@ -9,7 +9,8 @@ pub trait SimulationModel: Sized {
     type State: ModelState;
     type Error: std::error::Error + Send + Sync + 'static;
 
-    fn initialize<R: rand::RngCore>(config: Self::Config, provider: R) -> Result<Self, Self::Error>;
+    fn initialize<R: rand::RngCore>(config: Self::Config, provider: R)
+    -> Result<Self, Self::Error>;
     fn step(&mut self) -> Result<(), Self::Error>;
     fn get_state(&self) -> Self::State;
 }

@@ -60,9 +60,11 @@ impl NormalTransform {
     /// ```
     #[verified_engine::verified]
     pub fn new(mean: f64, std_dev: f64) -> Result<Self, CopulaError> {
-        let normal = Normal::new(mean, std_dev).map_err(|e| crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
-            reason: format!("Failed to create normal distribution: {}", e),
-        }))?;
+        let normal = Normal::new(mean, std_dev).map_err(|e| {
+            crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
+                reason: format!("Failed to create normal distribution: {}", e),
+            })
+        })?;
         Ok(Self { normal })
     }
 
@@ -110,9 +112,11 @@ impl ProbabilityTransform for NormalTransform {
 /// ```
 #[verified_engine::verified]
 pub fn inverse_standard_normal(u: Probability) -> Result<f64, CopulaError> {
-    let normal = Normal::new(0.0, 1.0).map_err(|e| crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
-        reason: format!("Failed to create standard normal: {}", e),
-    }))?;
+    let normal = Normal::new(0.0, 1.0).map_err(|e| {
+        crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
+            reason: format!("Failed to create standard normal: {}", e),
+        })
+    })?;
     Ok(normal.inverse_cdf(u.value()))
 }
 
@@ -139,9 +143,11 @@ pub fn inverse_standard_normal(u: Probability) -> Result<f64, CopulaError> {
 /// ```
 #[verified_engine::verified]
 pub fn standard_normal_cdf(z: f64) -> Result<Probability, CopulaError> {
-    let normal = Normal::new(0.0, 1.0).map_err(|e| crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
-        reason: format!("Failed to create standard normal: {}", e),
-    }))?;
+    let normal = Normal::new(0.0, 1.0).map_err(|e| {
+        crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
+            reason: format!("Failed to create standard normal: {}", e),
+        })
+    })?;
     Probability::new(normal.cdf(z))
 }
 
@@ -157,7 +163,11 @@ mod tests {
 
         // Test median (z=0 -> u=0.5)
         let u = transform.to_uniform(0.0).unwrap();
-        assert_relative_eq!(u.value(), 0.5, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            u.value(),
+            0.5,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
 
         // Test inverse
         let u = Probability::new(0.5).unwrap();
@@ -172,7 +182,11 @@ mod tests {
 
         // At mean, CDF should be 0.5
         let u = transform.to_uniform(10.0).unwrap();
-        assert_relative_eq!(u.value(), 0.5, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            u.value(),
+            0.5,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]
@@ -181,7 +195,11 @@ mod tests {
         // Test known values
         let u_median = Probability::new(0.5).unwrap();
         let z_median = inverse_standard_normal(u_median).unwrap();
-        assert_relative_eq!(z_median, 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            z_median,
+            0.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
 
         // 97.5th percentile ≈ 1.96
         let u_975 = Probability::new(0.975).unwrap();
@@ -194,7 +212,11 @@ mod tests {
     fn test_standard_normal_cdf() {
         // Test z=0 -> p=0.5
         let p = standard_normal_cdf(0.0).unwrap();
-        assert_relative_eq!(p.value(), 0.5, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            p.value(),
+            0.5,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
 
         // Test z=1.96 -> p≈0.975
         let p = standard_normal_cdf(1.96).unwrap();
@@ -209,7 +231,11 @@ mod tests {
         for &value in &[-2.0, -1.0, 0.0, 1.0, 2.0] {
             let u = transform.to_uniform(value).unwrap();
             let recovered = transform.inverse_transform(u);
-            assert_relative_eq!(recovered, value, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+            assert_relative_eq!(
+                recovered,
+                value,
+                epsilon = math_commons::registry::TOLERANCE_STANDARD
+            );
         }
     }
 }

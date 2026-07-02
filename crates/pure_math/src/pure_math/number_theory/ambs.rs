@@ -134,7 +134,9 @@ impl AmbsDsp {
 
                     if next_abundancy * next_h_max >= 2.0 {
                         let mut next_idx = i + 1;
-                        while next_idx < self.valid_powers.len() && self.valid_powers[next_idx].0 == p {
+                        while next_idx < self.valid_powers.len()
+                            && self.valid_powers[next_idx].0 == p
+                        {
                             next_idx += 1;
                         }
                         stack.push((next_p, next_idx, next_h_max));

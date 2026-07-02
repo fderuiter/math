@@ -38,7 +38,7 @@ impl Diagnostic for AIError {
                     MS::Error => Severity::Error,
                     MS::Fatal => Severity::Fatal,
                 }
-            },
+            }
             _ => Severity::Error,
         }
     }

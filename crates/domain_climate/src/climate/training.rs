@@ -82,13 +82,11 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
                 // --- Create batches ---
                 let input_start = i * batch_size * num_levels;
                 let input_rows = batch_size * num_levels;
-                let control_input_batch =
-                    control_inputs.rows(input_start, input_rows);
+                let control_input_batch = control_inputs.rows(input_start, input_rows);
                 let warm_input_batch = warm_inputs.rows(input_start, input_rows);
 
                 let target_start = i * batch_size;
-                let control_target_batch =
-                    control_targets.rows(target_start, batch_size);
+                let control_target_batch = control_targets.rows(target_start, batch_size);
 
                 // --- Forward pass ---
                 let (control_latent, control_recon) =
@@ -96,8 +94,7 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
                 let (warm_latent, warm_recon) = self.model.autoencoder.forward(&warm_input_batch);
 
                 // --- Reshape and predict ---
-                let control_aligned_latent =
-                    control_latent.columns(0, aligned_channels);
+                let control_aligned_latent = control_latent.columns(0, aligned_channels);
                 // Reuse the method from Cera
                 let predictor_input = self
                     .model

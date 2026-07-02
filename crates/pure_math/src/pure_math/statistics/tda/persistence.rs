@@ -374,7 +374,9 @@ mod tests {
         barcode.add_interval(PersistenceInterval::new(1.0, 2.0, 1).unwrap()); // persistence 1.0
 
         let most_persistent = barcode.most_persistent(1).unwrap();
-        assert!((most_persistent.persistence() - 2.5).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            (most_persistent.persistence() - 2.5).abs() < math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]

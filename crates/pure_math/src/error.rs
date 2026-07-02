@@ -49,8 +49,6 @@ pub enum MarkovError {
         value: f64,
     },
 
-    
-
     /// Matrix is not stochastic (rows don't sum to 1).
     NotStochastic {
         /// Description of the issue.
@@ -62,8 +60,6 @@ pub enum MarkovError {
         /// Description of the issue.
         reason: String,
     },
-
-    
 
     /// Invalid state specification.
     InvalidState {
@@ -148,15 +144,18 @@ pub enum TdaError {
 #[derive(Debug, Clone, PartialEq)]
 pub enum CopulaError {
     /// Invalid probability (must be in [0, 1]).
-    InvalidProbability { value: f64 },
+    InvalidProbability {
+        value: f64,
+    },
     /// Invalid correlation (must be in [-1, 1]).
-    InvalidCorrelation { value: f64 },
-    
+    InvalidCorrelation {
+        value: f64,
+    },
+
     /// Matrix is not positive definite.
     NotPositiveDefinite,
     /// Matrix is not symmetric.
     NotSymmetric,
-    
 
     Math(math_commons::error::MathError),
 }
@@ -337,7 +336,6 @@ impl std::fmt::Display for Glicko2Error {
 }
 
 impl std::error::Error for Glicko2Error {}
-
 
 impl From<math_commons::error::MathError> for MarkovError {
     fn from(err: math_commons::error::MathError) -> Self {

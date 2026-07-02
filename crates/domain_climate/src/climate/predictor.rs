@@ -3,7 +3,7 @@ use rand::Rng;
 
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
 use domain_ai::ai::optimization::{Optimizer, ParamType};
-use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
+use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
 
 /// A trait representing the predictor model interface.
 /// This allows for different predictor architectures and decouples the training loop.
@@ -107,7 +107,9 @@ impl PredictorModel for Predictor {
             let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
                 oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
             });
-            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5);
+            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| {
+                oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
+            });
 
             // Use the optimizer strategy to update weights
             optimizer.update_matrix((i, ParamType::Weight), &mut layer.kernel, &grad_k)?;
@@ -132,7 +134,9 @@ mod tests {
 
         let predictor = Predictor::new(input_size, output_size);
 
-        let input = DMatrix::from_fn(batch_size, input_size, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
+        let input = DMatrix::from_fn(batch_size, input_size, |_, _| {
+            oxidize_core::rng::OxidizeRng::default().r#gen()
+        });
 
         let output = predictor.forward(&input);
 

@@ -148,7 +148,10 @@ mod tests {
         assert!((LogLink::link(0.0) - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // exp(1) ≈ 2.718
-        assert!((LogLink::link(1.0) - std::f64::consts::E).abs() < math_commons::registry::TOLERANCE_STANDARD);
+        assert!(
+            (LogLink::link(1.0) - std::f64::consts::E).abs()
+                < math_commons::registry::TOLERANCE_STANDARD
+        );
 
         // exp(2) ≈ 7.389
         assert!((LogLink::link(2.0) - 7.389056099).abs() < math_commons::registry::TOLERANCE_FAST);
@@ -220,7 +223,9 @@ mod tests {
         let rates = LogLink::link_vector(&predictors);
 
         assert!((rates[0] - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
-        assert!((rates[1] - std::f64::consts::E).abs() < math_commons::registry::TOLERANCE_STANDARD);
+        assert!(
+            (rates[1] - std::f64::consts::E).abs() < math_commons::registry::TOLERANCE_STANDARD
+        );
         assert!((rates[2] - 7.389056099).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 

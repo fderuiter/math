@@ -119,6 +119,10 @@ theory_verification!(
         DOSE = 100.0;
     },
     test = {
-        assert_relative_eq!(DOSE, 100.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            DOSE,
+            100.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 );

@@ -18,6 +18,10 @@ theory_verification!(
         ALPHA = 32.0;
     },
     test = {
-        assert_relative_eq!(ALPHA, 32.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            ALPHA,
+            32.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 );

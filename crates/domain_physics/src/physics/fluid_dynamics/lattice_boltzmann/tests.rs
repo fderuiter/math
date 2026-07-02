@@ -72,6 +72,8 @@ mod tests {
         assert!(!solver.is_obstacle(obs_x, obs_y));
 
         solver = LatticeBoltzmannD2Q9::new(width, height, 0.6);
-        assert!((solver.collision_model.tau - 0.6).abs() < math_commons::registry::TOLERANCE_STANDARD);
+        assert!(
+            (solver.collision_model.tau - 0.6).abs() < math_commons::registry::TOLERANCE_STANDARD
+        );
     }
 }

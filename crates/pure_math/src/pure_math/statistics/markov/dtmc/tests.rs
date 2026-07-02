@@ -55,7 +55,11 @@ fn test_simple_absorbing_chain() {
     for i in 0..2 {
         for j in 0..2 {
             let expected = if i == j { 1.0 } else { 0.0 };
-            assert_relative_eq!(product[(i, j)], expected, epsilon = math_commons::registry::TOLERANCE_HIGH);
+            assert_relative_eq!(
+                product[(i, j)],
+                expected,
+                epsilon = math_commons::registry::TOLERANCE_HIGH
+            );
         }
     }
 }
@@ -95,16 +99,40 @@ fn test_absorption_probabilities() {
     // and probability of reaching 4 is i/4
 
     // Transient state 1 (index 0 in absorption matrix)
-    assert_relative_eq!(absorption[(0, 0)], 0.75, epsilon = math_commons::registry::TOLERANCE_HIGH); // Reach 0
-    assert_relative_eq!(absorption[(0, 1)], 0.25, epsilon = math_commons::registry::TOLERANCE_HIGH); // Reach 4
+    assert_relative_eq!(
+        absorption[(0, 0)],
+        0.75,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    ); // Reach 0
+    assert_relative_eq!(
+        absorption[(0, 1)],
+        0.25,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    ); // Reach 4
 
     // Transient state 2 (index 1 in absorption matrix)
-    assert_relative_eq!(absorption[(1, 0)], 0.5, epsilon = math_commons::registry::TOLERANCE_HIGH);
-    assert_relative_eq!(absorption[(1, 1)], 0.5, epsilon = math_commons::registry::TOLERANCE_HIGH);
+    assert_relative_eq!(
+        absorption[(1, 0)],
+        0.5,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    );
+    assert_relative_eq!(
+        absorption[(1, 1)],
+        0.5,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    );
 
     // Transient state 3 (index 2 in absorption matrix)
-    assert_relative_eq!(absorption[(2, 0)], 0.25, epsilon = math_commons::registry::TOLERANCE_HIGH);
-    assert_relative_eq!(absorption[(2, 1)], 0.75, epsilon = math_commons::registry::TOLERANCE_HIGH);
+    assert_relative_eq!(
+        absorption[(2, 0)],
+        0.25,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    );
+    assert_relative_eq!(
+        absorption[(2, 1)],
+        0.75,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    );
 }
 
 #[test]
@@ -169,7 +197,11 @@ fn test_n_step_transition() {
     let p2_direct = &p * &p;
     for i in 0..2 {
         for j in 0..2 {
-            assert_relative_eq!(p2[(i, j)], p2_direct[(i, j)], epsilon = math_commons::registry::TOLERANCE_HIGH);
+            assert_relative_eq!(
+                p2[(i, j)],
+                p2_direct[(i, j)],
+                epsilon = math_commons::registry::TOLERANCE_HIGH
+            );
         }
     }
 }
@@ -186,17 +218,33 @@ fn test_stationary_distribution_ergodic() {
     let pi = chain.stationary_distribution().unwrap();
 
     // Should sum to 1
-    assert_relative_eq!(pi.sum(), 1.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+    assert_relative_eq!(
+        pi.sum(),
+        1.0,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    );
 
     // Should satisfy π·P = π
     let pi_p = chain.transition_matrix().transpose() * &pi;
     for i in 0..2 {
-        assert_relative_eq!(pi[i], pi_p[i], epsilon = math_commons::registry::TOLERANCE_HIGH);
+        assert_relative_eq!(
+            pi[i],
+            pi_p[i],
+            epsilon = math_commons::registry::TOLERANCE_HIGH
+        );
     }
 
     // For this specific chain, the stationary distribution is [4/7, 3/7]
-    assert_relative_eq!(pi[0], 4.0 / 7.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
-    assert_relative_eq!(pi[1], 3.0 / 7.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+    assert_relative_eq!(
+        pi[0],
+        4.0 / 7.0,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    );
+    assert_relative_eq!(
+        pi[1],
+        3.0 / 7.0,
+        epsilon = math_commons::registry::TOLERANCE_HIGH
+    );
 }
 
 #[test]
