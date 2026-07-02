@@ -83,12 +83,12 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
                 let input_start = i * batch_size * num_levels;
                 let input_rows = batch_size * num_levels;
                 let control_input_batch =
-                    control_inputs.rows(input_start, input_rows).clone_owned();
-                let warm_input_batch = warm_inputs.rows(input_start, input_rows).clone_owned();
+                    control_inputs.rows(input_start, input_rows);
+                let warm_input_batch = warm_inputs.rows(input_start, input_rows);
 
                 let target_start = i * batch_size;
                 let control_target_batch =
-                    control_targets.rows(target_start, batch_size).clone_owned();
+                    control_targets.rows(target_start, batch_size);
 
                 // --- Forward pass ---
                 let (control_latent, control_recon) =
@@ -97,7 +97,7 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
 
                 // --- Reshape and predict ---
                 let control_aligned_latent =
-                    control_latent.columns(0, aligned_channels).clone_owned();
+                    control_latent.columns(0, aligned_channels);
                 // Reuse the method from Cera
                 let predictor_input = self
                     .model
@@ -111,7 +111,7 @@ impl<'a, A: AutoencoderModel, P: PredictorModel, O: Optimizer<f32>> CeraTrainer<
 
                 let prediction_loss = mse_loss(&control_target_batch, &prediction);
 
-                let warm_aligned_latent = warm_latent.columns(0, aligned_channels).clone_owned();
+                let warm_aligned_latent = warm_latent.columns(0, aligned_channels);
                 let emd_loss = earth_movers_distance(&control_aligned_latent, &warm_aligned_latent);
 
                 let loss = cera_loss(
