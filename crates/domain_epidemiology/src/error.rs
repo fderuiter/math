@@ -1,4 +1,4 @@
-use crate::diagnostics::{Diagnostic, Severity};
+use math_commons::diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
