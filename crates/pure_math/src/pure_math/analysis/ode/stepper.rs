@@ -15,10 +15,18 @@ pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
 
     /// Advances the system by `dt` using a default strategy.
     ///
-    /// Implementors should choose the most appropriate solver for their system
-    /// (e.g., RungeKutta4 for smooth ODEs, Euler for simplicity, or custom fused loops).
+    /// The default implementation uses Runge-Kutta 4 (RK4).
     #[verified_engine::verified]
-    fn step(&mut self, dt: f64);
+    fn step(&mut self, dt: f64) {
+        use super::solvers::RungeKutta4;
+        let new_state = RungeKutta4::step(
+            self,
+            0.0,
+            self.get_state(),
+            dt,
+        );
+        *self.get_state_mut() = new_state;
+    }
 
     /// Advances the system by `dt` using a provided solver.
     fn step_with<S: Solver<State>>(&mut self, solver: &mut S, dt: f64) {

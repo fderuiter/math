@@ -16,6 +16,10 @@ pub struct BlochSimulator {
     pub t2: f64,
     /// External magnetic field vector $\vec{B}$ in Tesla.
     pub b_field: Vector3<f64>,
+    /// Time step `dt`.
+    pub dt: f64,
+    /// Numerical integration method.
+    pub integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod,
 }
 
 impl OdeSystem<Vector3<f64>> for BlochSimulator {
@@ -56,18 +60,6 @@ impl TimeStepper<Vector3<f64>> for BlochSimulator {
     fn get_state_mut(&mut self) -> &mut Vector3<f64> {
         &mut self.magnetization
     }
-
-    #[verified_engine::verified]
-    fn step(&mut self, dt: f64) {
-        use pure_math::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(
-            self,
-            0.0,
-            <Self as TimeStepper<Vector3<f64>>>::get_state(self),
-            dt,
-        );
-        *self.get_state_mut() = new_state;
-    }
 }
 
 impl BlochSimulator {
@@ -84,6 +76,8 @@ impl BlochSimulator {
             t1: f64::INFINITY,
             t2: f64::INFINITY,
             b_field: Vector3::zeros(),
+            dt: 0.01,
+            integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod::RungeKutta4,
         }
     }
 
@@ -161,6 +155,8 @@ pub struct BlochConfig {
     pub b0: f64, // Not directly used in simple relaxation, but typical
     pub dt: f64,
     pub m0: f64,
+    #[serde(default)]
+    pub integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod,
 }
 
 impl ModelConfig for BlochConfig {}
@@ -187,14 +183,23 @@ impl SimulationModel for BlochSimulator {
         let initial_m = Vector3::new(0.0, 1.0, 0.0); // Default 90 deg flipped
         let mut sim = BlochSimulator::new(initial_m, config.m0);
         sim.set_relaxation(config.t1, config.t2);
-        // Storing dt isn't strictly supported by BlochSimulator. We'll add a dt to the struct if needed,
-        // or just use a fixed 0.01 for the interface wrapper since we can't easily change the struct here.
+        sim.dt = config.dt;
+        sim.integration_method = config.integration_method;
         Ok(sim)
     }
 
     #[verified_engine::verified]
     fn step(&mut self) -> Result<(), Self::Error> {
-        <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(self, 0.01);
+        let dt = self.dt;
+        match self.integration_method {
+            pure_math::pure_math::analysis::ode::IntegrationMethod::Euler => {
+                let mut solver = pure_math::pure_math::analysis::ode::Euler::new(&self.magnetization);
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step_with(self, &mut solver, dt);
+            }
+            pure_math::pure_math::analysis::ode::IntegrationMethod::RungeKutta4 => {
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(self, dt);
+            }
+        }
         Ok(())
     }
 
