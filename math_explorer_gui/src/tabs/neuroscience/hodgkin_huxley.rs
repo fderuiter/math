@@ -1,8 +1,8 @@
 use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::StateSnapshot;
-use math_commons::theory::{ParameterConstraint, TheoryDescribable};
+use math_commons::theory::ParameterConstraint;
 use math_explorer::biology::neuroscience::{
-    HodgkinHuxleyModel, HodgkinHuxleyNeuron, HodgkinHuxleyParameters,
+    HodgkinHuxleyNeuron, HodgkinHuxleyParameters,
 };
 use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
