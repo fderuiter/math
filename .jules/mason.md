@@ -41,3 +41,9 @@
 - **Issue**: The system relied on manual string manipulation and hardcoded path separators (`.replace("\\", "/")`) in build scripts, causing inconsistent VFS generation and traceability mapping failures on Windows environments.
 - **Resolution**: Extracted path normalization logic into a shared utility (`path_utils.rs` in `oxidize_core`). Refactored `traceability.rs`, `oxidize_core/build.rs`, and `markdown_tests/build.rs` to use this canonical utility for all file path resolution.
 - **Impact**: Guaranteed consistent forward-slash path keys for WASM VFS compatibility and traceability mappings regardless of the host OS, eliminating cyclical build script failures on Windows.
+
+## Automated UI Generation and Type-Safe State Sharing (PR 1030)
+
+- **Issue**: Developers had to manually synchronize UI sliders with simulation state using brittle `AtomicU64` bit-casting, which was repetitive, error-prone, and required UI-specific boilerplate for every new parameter.
+- **Resolution**: Implemented a zero-boilerplate GUI engine. Extended `TheoryDescribable` to include dynamic `get_parameter` and `set_parameter` methods. Updated `#[derive(Theory)]` macro to generate getter/setter mapping logic for fields annotated with `#[theory(...)]`. Transitioned state synchronization from manual atomics to a shared `Arc<RwLock<Config>>` pattern.
+- **Impact**: Significant reduction in UI boilerplate. Changes to parameter ranges in the model definition automatically update the GUI, ensuring domain math models remain the single source of truth.
