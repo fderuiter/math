@@ -239,3 +239,28 @@ impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N>
         self.solver.step(dynamics, 0.0, next_state, dt);
     }
 }
+
+
+use pure_math::pure_math::analysis::evolution::{EvolutionEngine, EvolutionError};
+use rand::RngCore;
+
+/// A wrapper to use FusedEulerSolver within the unified EvolutionEngine interface.
+pub struct FusedEulerEvolution<'a, const N: usize, K, D> {
+    pub solver: FusedEulerSolver,
+    pub dynamics: &'a TuringDynamics<'a, N, K, D>,
+}
+
+impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> EvolutionEngine<TuringState<N>, TuringState<N>> for FusedEulerEvolution<'a, N, K, D> {
+    fn step<R: RngCore + ?Sized>(
+        &mut self,
+        state: &mut TuringState<N>,
+        aux: &mut TuringState<N>,
+        _rng: &mut R,
+        dt: f64,
+    ) -> Result<(), EvolutionError> {
+        self.solver.step(state, aux, self.dynamics, dt);
+        // aux holds the next state. To make it standard, we should copy it back to state.
+        state.copy_from(aux);
+        Ok(())
+    }
+}

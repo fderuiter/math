@@ -453,3 +453,22 @@ impl SimulationModel for LatticeBoltzmannD2Q9<BgkCollision> {
         self.state.clone()
     }
 }
+
+
+use pure_math::pure_math::analysis::evolution::{EvolutionEngine, EvolutionError};
+use rand::RngCore;
+
+impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> EvolutionEngine<LatticeState<Q>, ()> for LatticeBoltzmann<Q, L, C> {
+    fn step<R: RngCore + ?Sized>(
+        &mut self,
+        state: &mut LatticeState<Q>,
+        _aux: &mut (),
+        _rng: &mut R,
+        _dt: f64,
+    ) -> Result<(), EvolutionError> {
+        std::mem::swap(&mut self.state, state);
+        self.step();
+        std::mem::swap(&mut self.state, state);
+        Ok(())
+    }
+}
