@@ -218,7 +218,7 @@ impl HLine {
         Self {
             base: PlotItemBase::new(name.into()),
             y: y.into(),
-            stroke: Stroke::new(1.0, Color32::TRANSPARENT),
+            stroke: Stroke::new(1.0_f32, Color32::TRANSPARENT),
             style: LineStyle::Solid,
         }
     }
@@ -316,7 +316,7 @@ impl VLine {
         Self {
             base: PlotItemBase::new(name.into()),
             x: x.into(),
-            stroke: Stroke::new(1.0, Color32::TRANSPARENT),
+            stroke: Stroke::new(1.0_f32, Color32::TRANSPARENT),
             style: LineStyle::Solid,
         }
     }
@@ -417,7 +417,7 @@ impl<'a> Line<'a> {
         Self {
             base: PlotItemBase::new(name.into()),
             series: series.into(),
-            stroke: Stroke::new(1.5, Color32::TRANSPARENT), // Note: a stroke of 1.0 (or less) can look bad on low-dpi-screens
+            stroke: Stroke::new(1.5_f32, Color32::TRANSPARENT), // Note: a stroke of 1.0 (or less) can look bad on low-dpi-screens
             fill: None,
             fill_alpha: DEFAULT_FILL_ALPHA,
             gradient_color: None,
@@ -628,7 +628,7 @@ impl<'a> Polygon<'a> {
         Self {
             base: PlotItemBase::new(name.into()),
             series: series.into(),
-            stroke: Stroke::new(1.0, Color32::TRANSPARENT),
+            stroke: Stroke::new(1.0_f32, Color32::TRANSPARENT),
             fill_color: None,
             style: LineStyle::Solid,
         }
@@ -787,7 +787,7 @@ impl PlotItem for Text {
             shapes.push(Shape::rect_stroke(
                 rect.expand(1.0),
                 1.0,
-                Stroke::new(0.5, color),
+                Stroke::new(0.5_f32, color),
                 egui::StrokeKind::Outside,
             ));
         }
@@ -1097,7 +1097,7 @@ impl PlotItem for Arrows<'_> {
             base,
             ..
         } = self;
-        let stroke = Stroke::new(if base.highlight { 2.0 } else { 1.0 }, *color);
+        let stroke = Stroke::new(if base.highlight { 2.0_f32 } else { 1.0_f32 }, *color);
         origins
             .points()
             .iter()
@@ -1275,7 +1275,7 @@ impl PlotItem for PlotImage {
             .collect();
             shapes.push(Shape::closed_line(
                 outline,
-                Stroke::new(1.0, ui.visuals().strong_text_color()),
+                Stroke::new(1.0_f32, ui.visuals().strong_text_color()),
             ));
         }
     }
@@ -1324,7 +1324,7 @@ pub struct BarChart {
     default_color: Color32,
 
     /// A custom element formatter
-    pub(super) element_formatter: Option<Box<dyn Fn(&Bar, &BarChart) -> String>>,
+    pub(super) element_formatter: Option<Box<dyn Fn(&Bar, &Self) -> String>>,
 }
 
 impl BarChart {
@@ -1483,7 +1483,7 @@ pub struct BoxPlot {
     default_color: Color32,
 
     /// A custom element formatter
-    pub(super) element_formatter: Option<Box<dyn Fn(&BoxElem, &BoxPlot) -> String>>,
+    pub(super) element_formatter: Option<Box<dyn Fn(&BoxElem, &Self) -> String>>,
 }
 
 impl BoxPlot {

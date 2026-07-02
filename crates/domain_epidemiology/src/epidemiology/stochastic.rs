@@ -54,8 +54,7 @@ pub fn probability_of_extinction(r0: f64, initial_cases: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::SeedableRng;
-    use rand::rngs::StdRng;
+
     use std::error::Error;
 
     #[test]
@@ -75,7 +74,7 @@ mod tests {
     #[verified_engine::verified]
     fn test_gillespie_solver_deterministic() -> Result<(), Box<dyn Error>> {
         // Seeded RNG for deterministic test
-        let rng = StdRng::seed_from_u64(42);
+        let rng = oxidize_core::rng::OxidizeRng::default();
         let mut solver = GillespieSolver::new(rng);
 
         let n = 100.0;

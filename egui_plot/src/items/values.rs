@@ -153,16 +153,13 @@ impl std::fmt::Display for LineStyle {
 
 /// Determines whether a plot element is vertically or horizontally oriented.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Default)]
 pub enum Orientation {
     Horizontal,
+    #[default]
     Vertical,
 }
 
-impl Default for Orientation {
-    fn default() -> Self {
-        Self::Vertical
-    }
-}
 
 // ----------------------------------------------------------------------------
 
