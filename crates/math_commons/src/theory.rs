@@ -27,6 +27,14 @@ pub trait TheoryDescribable {
     fn theory_parameters(&self) -> HashMap<String, ParameterConstraint> {
         HashMap::new()
     }
+
+    /// Dynamically gets a parameter by name
+    fn get_parameter(&self, _name: &str) -> Option<f64> {
+        None
+    }
+
+    /// Dynamically sets a parameter by name
+    fn set_parameter(&mut self, _name: &str, _value: f64) {}
 }
 
 /// A macro active within the GUI crate context to fetch the theoretical description.

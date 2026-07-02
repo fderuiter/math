@@ -42,3 +42,39 @@ pub fn get_theory_constraint<T: TheoryDescribable>(
         .cloned()
         .unwrap_or_else(|| panic!("Parameter '{}' not found in theory metadata", param_name))
 }
+
+/// Dynamically renders UI sliders for all properties defined in the model metadata.
+pub fn render_all_theory_parameters<T: TheoryDescribable>(
+    ui: &mut egui::Ui,
+    model: &mut T,
+) -> bool {
+    let mut changed = false;
+
+    let params = model.theory_parameters();
+    let mut param_names: Vec<String> = params.keys().cloned().collect();
+    param_names.sort();
+
+    for param_name in param_names {
+        if let Some(mut value) = model.get_parameter(&param_name) {
+            let constraint = params.get(&param_name).unwrap();
+            let slider = egui::Slider::new(&mut value, constraint.min..=constraint.max)
+                .step_by(constraint.step)
+                .text(&param_name);
+
+            let response = ui.add(slider);
+            let tooltip = format!(
+                "{}\n\nCitation: {}",
+                model.theory_description(),
+                model.theory_citation()
+            );
+            let response = response.accessible_hover_text(tooltip);
+
+            if response.changed() {
+                model.set_parameter(&param_name, value);
+                changed = true;
+            }
+        }
+    }
+
+    changed
+}

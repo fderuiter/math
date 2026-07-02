@@ -8,25 +8,24 @@ use math_commons::theory::TheoryDescribable;
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use math_explorer::biology::reaction_diffusion::ReactionDiffusionModel;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::RwLock;
 use std::sync::Arc;
+use verified_engine::Theory;
 
-pub struct MorphogenesisParams {
-    pub a: AtomicU64,
-    pub b: AtomicU64,
-    pub d_u: AtomicU64,
-    pub d_v: AtomicU64,
-}
-
-impl MorphogenesisParams {
-    pub fn new(a: f64, b: f64, d_u: f64, d_v: f64) -> Self {
-        Self {
-            a: AtomicU64::new(a.to_bits()),
-            b: AtomicU64::new(b.to_bits()),
-            d_u: AtomicU64::new(d_u.to_bits()),
-            d_v: AtomicU64::new(d_v.to_bits()),
-        }
-    }
+#[derive(Debug, Clone, Copy, Theory)]
+#[theory(
+    description = "Morphogenesis Turing Pattern Parameters",
+    citation = "Turing, A. M. (1952). The chemical basis of morphogenesis. Philosophical Transactions of the Royal Society of London. Series B, Biological Sciences, 237(641), 37-72."
+)]
+pub struct MorphogenesisConfig {
+    #[theory(min = 0.0, max = 1.0, step = 0.01)]
+    pub a: f64,
+    #[theory(min = 0.0, max = 2.0, step = 0.01)]
+    pub b: f64,
+    #[theory(min = 0.1, max = 5.0, step = 0.1)]
+    pub d_u: f64,
+    #[theory(min = 10.0, max = 200.0, step = 1.0)]
+    pub d_v: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -65,7 +64,7 @@ struct MorphogenesisRunner {
     width: usize,
     height: usize,
     steps_per_frame: usize,
-    params: Arc<MorphogenesisParams>,
+    params: Arc<RwLock<MorphogenesisConfig>>,
 }
 
 impl SimulationRunner for MorphogenesisRunner {
@@ -78,10 +77,12 @@ impl SimulationRunner for MorphogenesisRunner {
     }
 
     fn step(&mut self) {
-        self.system.kinetics.a = f64::from_bits(self.params.a.load(Ordering::Relaxed));
-        self.system.kinetics.b = f64::from_bits(self.params.b.load(Ordering::Relaxed));
-        self.system.diffusion_coeffs[0] = f64::from_bits(self.params.d_u.load(Ordering::Relaxed));
-        self.system.diffusion_coeffs[1] = f64::from_bits(self.params.d_v.load(Ordering::Relaxed));
+        if let Ok(config) = self.params.read() {
+            self.system.kinetics.a = config.a;
+            self.system.kinetics.b = config.b;
+            self.system.diffusion_coeffs[0] = config.d_u;
+            self.system.diffusion_coeffs[1] = config.d_v;
+        }
         
         self.system.step(self.dt);
     }
@@ -114,11 +115,7 @@ pub struct MorphogenesisTool {
     controller: SimulationController,
     texture: Option<egui::TextureHandle>,
     // Simulation parameters
-    a: f64,
-    b: f64,
-    d_u: f64,
-    d_v: f64,
-    params: Arc<MorphogenesisParams>,
+    params: Arc<RwLock<MorphogenesisConfig>>,
     dt: f64,
     width: usize,
     height: usize,
@@ -153,7 +150,7 @@ impl Default for MorphogenesisTool {
         // Initialize with noise
         initialize_system(&mut system, width, height);
 
-        let params = Arc::new(MorphogenesisParams::new(a, b, d_u, d_v));
+        let params = Arc::new(RwLock::new(MorphogenesisConfig { a, b, d_u, d_v }));
 
         let runner = MorphogenesisRunner {
             system,
@@ -168,10 +165,6 @@ impl Default for MorphogenesisTool {
         Self {
             controller,
             texture: None,
-            a,
-            b,
-            d_u,
-            d_v,
             params,
             dt: 0.05,
             width,
@@ -253,15 +246,13 @@ impl crate::framework::InteractiveTool for MorphogenesisTool {
                     let selected = self.selected_preset == Some(preset);
                     if ui.selectable_label(selected, preset.label()).clicked() {
                         let (a, b, d_u, d_v) = preset.params();
-                        self.a = a;
-                        self.b = b;
-                        self.d_u = d_u;
-                        self.d_v = d_v;
-
-                        self.params.a.store(a.to_bits(), Ordering::Relaxed);
-                        self.params.b.store(b.to_bits(), Ordering::Relaxed);
-                        self.params.d_u.store(d_u.to_bits(), Ordering::Relaxed);
-                        self.params.d_v.store(d_v.to_bits(), Ordering::Relaxed);
+                        
+                        if let Ok(mut config) = self.params.write() {
+                            config.a = a;
+                            config.b = b;
+                            config.d_u = d_u;
+                            config.d_v = d_v;
+                        }
 
                         self.controller.send_command(SimCommand::Reset);
                         self.selected_preset = Some(preset);
@@ -271,37 +262,10 @@ impl crate::framework::InteractiveTool for MorphogenesisTool {
             ui.separator();
 
             ui.collapsing("Parameters", |ui| {
-                let mut changed = false;
-                let dummy_kinetics = SchnakenbergKinetics { a: 1.0, b: 1.0 };
-
-                let a_res = crate::reflective_ui::render_theory_parameter(
-                    ui,
-                    &dummy_kinetics,
-                    "a",
-                    "a (Feed)",
-                    &mut self.a,
-                );
-                changed |= a_res.changed();
-
-                let b_res = crate::reflective_ui::render_theory_parameter(
-                    ui,
-                    &dummy_kinetics,
-                    "b",
-                    "b (Kill)",
-                    &mut self.b,
-                );
-                changed |= b_res.changed();
-
-                ui.separator();
-                changed |= ui.add(egui::Slider::new(&mut self.d_u, 0.1..=5.0).text("D_u (Activator)")).changed();
-                changed |= ui.add(egui::Slider::new(&mut self.d_v, 10.0..=200.0).text("D_v (Inhibitor)")).changed();
-
-                if changed {
-                    self.params.a.store(self.a.to_bits(), Ordering::Relaxed);
-                    self.params.b.store(self.b.to_bits(), Ordering::Relaxed);
-                    self.params.d_u.store(self.d_u.to_bits(), Ordering::Relaxed);
-                    self.params.d_v.store(self.d_v.to_bits(), Ordering::Relaxed);
-                    self.selected_preset = None;
+                if let Ok(mut config) = self.params.write() {
+                    if crate::reflective_ui::render_all_theory_parameters(ui, &mut *config) {
+                        self.selected_preset = None;
+                    }
                 }
             });
 
