@@ -1,8 +1,6 @@
 use super::*;
 use approx::assert_relative_eq;
 use nalgebra::DMatrix;
-use rand::SeedableRng;
-use rand::rngs::StdRng;
 
 #[test]
 #[verified_engine::verified]
@@ -59,7 +57,7 @@ fn test_simulation() {
     let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 2.0, -2.0]);
 
     let chain = ContinuousMarkovChain::new(generator).unwrap();
-    let mut rng = StdRng::seed_from_u64(42);
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
 
     let trajectory = chain.simulate_trajectory(0, 10.0, &mut rng).unwrap();
 
@@ -131,10 +129,10 @@ fn test_deterministic_simulation() {
     let generator = DMatrix::from_row_slice(2, 2, &[-1.0, 1.0, 1.0, -1.0]);
     let chain = ContinuousMarkovChain::new(generator).unwrap();
 
-    let mut rng1 = StdRng::seed_from_u64(12345);
+    let mut rng1 = oxidize_core::rng::OxidizeRng::new(12345);
     let traj1 = chain.simulate_trajectory(0, 5.0, &mut rng1).unwrap();
 
-    let mut rng2 = StdRng::seed_from_u64(12345);
+    let mut rng2 = oxidize_core::rng::OxidizeRng::new(12345);
     let traj2 = chain.simulate_trajectory(0, 5.0, &mut rng2).unwrap();
 
     // Same seed should produce same trajectory

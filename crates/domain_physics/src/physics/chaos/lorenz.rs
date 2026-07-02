@@ -245,7 +245,10 @@ impl SimulationModel for LorenzSystem {
     type Error = std::io::Error;
 
     #[verified_engine::verified]
-    fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
+    fn initialize(
+        config: Self::Config,
+        _provider: oxidize_core::rng::OxidizeRng,
+    ) -> Result<Self, Self::Error> {
         // We initialize to an arbitrary point, maybe near the attractor.
         let state = LorenzState::new(10.0, 10.0, 10.0);
         Ok(LorenzBuilder::new()

@@ -107,7 +107,7 @@ impl EulerMaruyama {
     /// let dt = TimeStep::new(0.01).unwrap();
     /// let solver = EulerMaruyama::new(params, dt);
     ///
-    /// let mut rng = StdRng::seed_from_u64(42);
+    /// let mut rng = oxidize_core::rng::OxidizeRng::default();
     /// let x0 = 0.6;
     /// let x1 = solver.step(x0, &mut rng);
     /// ```
@@ -155,7 +155,7 @@ impl EulerMaruyama {
     /// let dt = TimeStep::new(0.01).unwrap();
     /// let solver = EulerMaruyama::new(params, dt);
     ///
-    /// let mut rng = StdRng::seed_from_u64(42);
+    /// let mut rng = oxidize_core::rng::OxidizeRng::default();
     /// let trajectory = solver.simulate(0.6, 100, &mut rng);
     /// assert_eq!(trajectory.len(), 101);  // Initial + 100 steps
     /// ```
@@ -199,7 +199,7 @@ impl EulerMaruyama {
     /// let dt = TimeStep::new(0.01).unwrap();
     /// let solver = EulerMaruyama::new(params, dt);
     ///
-    /// let mut rng = StdRng::seed_from_u64(42);
+    /// let mut rng = oxidize_core::rng::OxidizeRng::default();
     /// let paths = solver.simulate_paths(0.6, 100, 1000, &mut rng);
     /// assert_eq!(paths.len(), 1000);  // 1000 paths
     /// assert_eq!(paths[0].len(), 101);  // Each path has 101 points
@@ -234,8 +234,6 @@ impl EulerMaruyama {
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
-    use rand::SeedableRng;
-    use rand::rngs::StdRng;
 
     #[test]
     #[verified_engine::verified]
@@ -259,8 +257,8 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let solver = EulerMaruyama::new(params, dt);
 
-        let mut rng1 = StdRng::seed_from_u64(42);
-        let mut rng2 = StdRng::seed_from_u64(42);
+        let mut rng1 = oxidize_core::rng::OxidizeRng::default();
+        let mut rng2 = oxidize_core::rng::OxidizeRng::default();
 
         let x1 = solver.step(0.6, &mut rng1);
         let x2 = solver.step(0.6, &mut rng2);
@@ -276,7 +274,7 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let solver = EulerMaruyama::new(params, dt);
 
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let trajectory = solver.simulate(0.6, 100, &mut rng);
 
         assert_eq!(trajectory.len(), 101);
@@ -291,7 +289,7 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let solver = EulerMaruyama::new(params, dt);
 
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let trajectory = solver.simulate(1.0, 1000, &mut rng);
 
         // Final value should be close to mean (0.5)
@@ -306,7 +304,7 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let solver = EulerMaruyama::new(params, dt);
 
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let paths = solver.simulate_paths(0.6, 100, 10, &mut rng);
 
         assert_eq!(paths.len(), 10);
@@ -324,7 +322,7 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let solver = EulerMaruyama::new(params, dt);
 
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let x0 = 0.6;
         let x1 = solver.step(x0, &mut rng);
 
@@ -342,7 +340,7 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let solver = EulerMaruyama::new(params, dt);
 
-        let mut rng = StdRng::seed_from_u64(12345);
+        let mut rng = oxidize_core::rng::OxidizeRng::new(12345);
         let n_steps = 500; // Long enough to reach equilibrium
         let n_paths = 5000;
 

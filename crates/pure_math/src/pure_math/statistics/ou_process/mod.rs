@@ -78,7 +78,7 @@
 //! let solver = EulerMaruyama::new(params, dt);
 //!
 //! // Simulate rest of game (100 possessions)
-//! let mut rng = StdRng::seed_from_u64(42);
+//! let mut rng = oxidize_core::rng::OxidizeRng::default();
 //! let trajectory = solver.simulate(0.60, 100, &mut rng);
 //!
 //! // Analyze final shooting percentage
@@ -98,7 +98,7 @@
 //! let dt = TimeStep::new(0.01).unwrap();
 //! let analyzer = OuAnalyzer::new(params, dt);
 //!
-//! let mut rng = StdRng::seed_from_u64(42);
+//! let mut rng = oxidize_core::rng::OxidizeRng::default();
 //!
 //! // What's the probability of a comeback?
 //! let current_deficit = -10.0;

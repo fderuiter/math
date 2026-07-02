@@ -97,7 +97,7 @@ impl AllocationStrategy for BlockRandomizer {
     /// use rand::SeedableRng;
     /// use rand::rngs::StdRng;
     ///
-    /// let mut rng = StdRng::seed_from_u64(42);
+    /// let mut rng = oxidize_core::rng::OxidizeRng::default();
     /// let randomizer = BlockRandomizer::new(4).unwrap();
     ///
     /// // Request 5 subjects (1 full block + 1 partial block)

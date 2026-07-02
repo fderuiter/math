@@ -104,12 +104,32 @@ fn test_features(args: &[String]) {
 
 fn verify_suite() {
     println!("=== High-Integrity Verified Suite ===");
-    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "verify-suite"]);
+    run_cmd(
+        "cargo",
+        &[
+            "run",
+            "-p",
+            "unified_verification",
+            "--release",
+            "--",
+            "verify-suite",
+        ],
+    );
 }
 
 fn verify_records() {
     println!("=== Verify Records ===");
-    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "verify-records"]);
+    run_cmd(
+        "cargo",
+        &[
+            "run",
+            "-p",
+            "unified_verification",
+            "--release",
+            "--",
+            "verify-records",
+        ],
+    );
 }
 
 fn compile_papers() {
@@ -118,10 +138,30 @@ fn compile_papers() {
 
 fn traceability() {
     println!("=== Traceability Report ===");
-    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "traceability"]);
+    run_cmd(
+        "cargo",
+        &[
+            "run",
+            "-p",
+            "unified_verification",
+            "--release",
+            "--",
+            "traceability",
+        ],
+    );
 }
 
 fn check_file_lengths() {
     println!("=== Check File Lengths ===");
-    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "check-file-lengths"]);
+    run_cmd(
+        "cargo",
+        &[
+            "run",
+            "-p",
+            "unified_verification",
+            "--release",
+            "--",
+            "check-file-lengths",
+        ],
+    );
 }

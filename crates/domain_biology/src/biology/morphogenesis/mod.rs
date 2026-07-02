@@ -45,9 +45,12 @@
 //!
 //! // 2. Initialize with Random Noise
 //! // A uniform state would be stable without noise
+//! use oxidize_core::rng::OxidizeRng;
+//! use rand::Rng;
+//! let mut rng = OxidizeRng::default();
 //! for i in 0..n {
-//!     system.u_mut()[i] = 1.0 + (i as f64 * 0.01).sin(); // Add some perturbation
-//!     system.v_mut()[i] = 0.5 + (i as f64 * 0.02).cos();
+//!     system.u_mut()[i] = 1.0 + rng.gen_range(-0.1..0.1); // Add some perturbation
+//!     system.v_mut()[i] = 0.5 + rng.gen_range(-0.1..0.1);
 //! }
 //!
 //! // 3. Run Simulation
