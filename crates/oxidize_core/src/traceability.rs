@@ -103,6 +103,7 @@ impl<'a> TraceabilityEngine<'a> {
         &self,
         code_dirs: &[&str],
         papers_dir: &str,
+        auto_fix: bool,
     ) -> Result<TraceabilityReport, std::io::Error> {
         let mut valid_papers = HashSet::new();
         let mut report = TraceabilityReport::default();
@@ -123,12 +124,16 @@ impl<'a> TraceabilityEngine<'a> {
         self.verify_and_link_registry(&valid_papers, &mut report);
 
         let mut registered_modules = HashSet::new();
+        let mut registry_links = HashMap::new();
         if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml")
             && let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
         {
-            for module_name in links.keys() {
+            for (module_name, paper_val) in links {
                 registered_modules.insert(module_name.clone());
+                if let Some(paper_str) = paper_val.as_str() {
+                    registry_links.insert(module_name.clone(), paper_str.to_string());
+                }
             }
         }
 
@@ -148,7 +153,7 @@ impl<'a> TraceabilityEngine<'a> {
         let mut code_files: Vec<String> = active_files.into_iter().collect();
         code_files.sort();
 
-        self.process_code_files(code_files, &registered_modules, &mut report);
+        self.process_code_files(code_files, &registered_modules, &registry_links, &mut report, auto_fix);
 
         // 4. Find orphans
         for (name, linked_code) in &report.paper_coverage {
@@ -167,18 +172,61 @@ impl<'a> TraceabilityEngine<'a> {
         &self,
         code_files: Vec<String>,
         registered_modules: &HashSet<String>,
+        registry_links: &HashMap<String, String>,
         report: &mut TraceabilityReport,
+        auto_fix: bool,
     ) {
         for file in code_files {
             report.scanned_files += 1;
             let is_module =
                 file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
 
-            if let Ok(content) = self.vfs.read_to_string(&file)
-                && let Ok(ast) = syn::parse_file(&content)
-            {
-                let mut visitor = crate::ast_visitor::AstVisitor::new();
-                syn::visit::Visit::visit_file(&mut visitor, &ast);
+            if let Ok(mut content) = self.vfs.read_to_string(&file) {
+                let mut file_modified = false;
+                let citations = Self::extract_citations(&content);
+                let mut final_citations = Vec::new();
+
+                for cite in citations {
+                    if !registered_modules.contains(&cite) {
+                        if auto_fix {
+                            let mut best_key = None;
+                            let mut sorted_registry: Vec<_> = registry_links.iter().collect();
+                            sorted_registry.sort_by_key(|(k, _)| *k);
+
+                            for (key, val) in sorted_registry {
+                                let base_val = val.replace(".tex", "").replace("spec:", "");
+                                if base_val == cite || val == &cite {
+                                    best_key = Some(key.clone());
+                                    if file.contains(key) {
+                                        break;
+                                    }
+                                }
+                            }
+                            if let Some(key) = best_key {
+                                let old_tag = format!("[cite:{}]", cite);
+                                let new_tag = format!("[cite:{}]", key);
+                                content = content.replace(&old_tag, &new_tag);
+                                file_modified = true;
+                                final_citations.push(key);
+                            } else {
+                                report.invalid_links.push((file.clone(), cite.clone()));
+                            }
+                        } else {
+                            report.invalid_links.push((file.clone(), cite.clone()));
+                        }
+                    } else {
+                        final_citations.push(cite.clone());
+                    }
+                }
+
+                if file_modified {
+                    let _ = self.vfs.write_to_file(&file, content.as_bytes());
+                }
+
+                if let Ok(ast) = syn::parse_file(&content) {
+                    let mut visitor = crate::ast_visitor::AstVisitor::new();
+                    visitor.verified_modules.extend(final_citations);
+                    syn::visit::Visit::visit_file(&mut visitor, &ast);
 
                 report.total_funcs += visitor.total_funcs;
                 report.total_asserts += visitor.total_asserts;
@@ -211,6 +259,7 @@ impl<'a> TraceabilityEngine<'a> {
                     && !visitor.opted_out
                 {
                     report.unverified_modules.push(file.clone());
+                }
                 }
             }
         }

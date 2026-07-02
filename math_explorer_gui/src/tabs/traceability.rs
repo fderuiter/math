@@ -73,7 +73,7 @@ impl TraceabilityTab {
         }
 
         let papers_dir = format!("{}papers", base_dir);
-        if let Ok(report) = engine.scan_repository(&all_dirs, &papers_dir) {
+        if let Ok(report) = engine.scan_repository(&all_dirs, &papers_dir, false) {
             self.orphaned_papers = report.orphaned_papers;
             self.unlinked_code = report.unlinked_code;
             self.invalid_links = report.invalid_links;

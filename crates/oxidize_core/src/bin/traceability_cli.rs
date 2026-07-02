@@ -106,6 +106,9 @@ fn print_dashboard(report: &oxidize_core::traceability::TraceabilityReport) {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let auto_fix = args.iter().any(|arg| arg == "--auto-fix");
+
     let vfs = DefaultVfs;
     let engine = TraceabilityEngine::new(&vfs);
 
@@ -123,7 +126,7 @@ fn main() {
 
     let all_dirs: Vec<&str> = code_dirs.iter().map(|s| s.as_str()).collect();
 
-    match engine.scan_repository(&all_dirs, "papers") {
+    match engine.scan_repository(&all_dirs, "papers", auto_fix) {
         Ok(report) => {
             println!("=== Traceability Report ===");
             println!("Summary: Scanned {} source files.", report.scanned_files);
