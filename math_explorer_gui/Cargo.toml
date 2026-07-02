@@ -46,7 +46,7 @@ console_error_panic_hook = "0.1.7"
 getrandom = { version = "0.2.17", features = ["js"] }
 wasm-bindgen = "0.2.100"
 js-sys = "0.3.60"
-web-sys = { version = "0.3.60", features = ["Window", "Document", "HtmlCanvasElement", "Element", "Node"] }
+web-sys = { version = "0.3.60", features = ["Window", "Document", "HtmlCanvasElement", "Element", "Node", "Worker", "MessageEvent", "DedicatedWorkerGlobalScope", "ErrorEvent"] }
 
 [target.wasm32-unknown-unknown.dependencies]
 wasm-bindgen-futures = "0.4.72"

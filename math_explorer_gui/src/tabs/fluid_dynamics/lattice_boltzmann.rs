@@ -8,7 +8,7 @@ use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
     BgkCollision, LatticeBoltzmannD2Q9,
 };
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 pub struct LbmParams {
     pub viscosity: AtomicU64,
@@ -32,6 +32,7 @@ pub struct LbmRunner {
     solver: LatticeBoltzmannD2Q9<BgkCollision>,
     steps_per_frame: usize,
     params: Arc<LbmParams>,
+    shared_pixels: Arc<RwLock<Vec<Color32>>>,
 }
 
 impl LbmRunner {
@@ -59,11 +60,14 @@ impl LbmRunner {
                 }
             }
         }
+        
+        let shared_pixels = Arc::new(RwLock::new(vec![Color32::BLACK; width * height]));
 
         Self {
             solver,
             steps_per_frame: 5,
             params,
+            shared_pixels,
         }
     }
 }
@@ -120,21 +124,25 @@ impl SimulationRunner for LbmRunner {
     fn get_snapshot(&self) -> StateSnapshot {
         let width = self.solver.width();
         let height = self.solver.height();
-        let mut pixels = vec![Color32::BLACK; width * height];
-
-        for y in 0..height {
-            for x in 0..width {
-                let pixel_idx = y * width + x;
-                if self.solver.is_obstacle(x, height - 1 - y) {
-                    pixels[pixel_idx] = Color32::from_gray(50);
-                } else {
-                    let v = self.solver.get_velocity_magnitude(x, height - 1 - y);
-                    let intensity = (v * 1000.0).clamp(0.0, 255.0) as u8;
-                    pixels[pixel_idx] = Color32::from_rgb(
-                        intensity,
-                        (intensity as f32 * 0.5) as u8,
-                        255 - intensity,
-                    );
+        
+        if let Ok(mut pixels) = self.shared_pixels.try_write() {
+            if pixels.len() != width * height {
+                *pixels = vec![Color32::BLACK; width * height];
+            }
+            for y in 0..height {
+                for x in 0..width {
+                    let pixel_idx = y * width + x;
+                    if self.solver.is_obstacle(x, height - 1 - y) {
+                        pixels[pixel_idx] = Color32::from_gray(50);
+                    } else {
+                        let v = self.solver.get_velocity_magnitude(x, height - 1 - y);
+                        let intensity = (v * 1000.0).clamp(0.0, 255.0) as u8;
+                        pixels[pixel_idx] = Color32::from_rgb(
+                            intensity,
+                            (intensity as f32 * 0.5) as u8,
+                            255 - intensity,
+                        );
+                    }
                 }
             }
         }
@@ -142,7 +150,7 @@ impl SimulationRunner for LbmRunner {
         StateSnapshot {
             width,
             height,
-            pixels: Arc::new(pixels),
+            pixels: Arc::clone(&self.shared_pixels),
             custom_data: Vec::new(),
             structured_data: None,
         }
@@ -167,7 +175,7 @@ pub struct LatticeBoltzmannTool {
     // Cached snapshot info for rendering
     last_width: usize,
     last_height: usize,
-    last_pixels: Option<Arc<Vec<Color32>>>,
+    last_pixels: Option<Arc<RwLock<Vec<Color32>>>>,
 }
 
 impl Default for LatticeBoltzmannTool {
@@ -311,9 +319,13 @@ impl InteractiveTool for LatticeBoltzmannTool {
 
             if let Some(pixels) = &self.last_pixels {
                 // Update texture if we have new pixels
-                let image = ColorImage::new([width, height], pixels.as_ref().clone());
-                let texture = ctx.load_texture("fluid_field", image, TextureOptions::NEAREST);
-                self.texture = Some(texture);
+                if let Ok(guard) = pixels.try_read() {
+                    if guard.len() == width * height {
+                        let image = ColorImage::new([width, height], guard.clone());
+                        let texture = ctx.load_texture("fluid_field", image, TextureOptions::NEAREST);
+                        self.texture = Some(texture);
+                    }
+                }
             }
 
             // Render Plot

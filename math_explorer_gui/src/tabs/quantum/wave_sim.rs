@@ -94,7 +94,7 @@ impl SimulationRunner for WaveRunner {
         StateSnapshot {
             width: 0,
             height: 0,
-            pixels: std::sync::Arc::new(Vec::new()),
+            pixels: std::sync::Arc::new(std::sync::RwLock::new(Vec::new())),
             custom_data: Vec::new(),
             structured_data: Some(structured_data),
         }
