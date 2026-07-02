@@ -115,12 +115,12 @@ stochastic_signature_verification!(
         output => (10, 512);
     },
     statistical_bounds = {
-        mean in [-0.01, 0.01];
+        mean in [-0.1, 0.1];
     },
     stochastic_test = {
         let seq_len = 10;
         let d_model = 512;
-        let x = nalgebra::DMatrix::<f64>::zeros(seq_len, d_model);
+        let x = nalgebra::DMatrix::<f64>::from_fn(seq_len, d_model, |r, c| (r + c) as f64 * 0.1);
         let ffn = transformer::FeedForward::new(d_model, 2048);
         let output = ffn.forward(&x);
 

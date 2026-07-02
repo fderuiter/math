@@ -85,3 +85,28 @@ macro_rules! stochastic_signature_verification {
         }
     };
 }
+
+#[macro_export]
+macro_rules! empirical_verification {
+    (
+        module = $module_name:expr,
+        observation_source = $obs:expr,
+        empirical_test = $test_body:block
+    ) => {
+        #[cfg(test)]
+        #[allow(unused_imports, clippy::all)]
+        mod empirical_verification {
+            use super::*;
+
+            #[test]
+            #[verified_engine::verified]
+            fn test_empirical_verification() {
+                if !oxidize_core::traceability::TraceabilityEngine::verify_module_registered($module_name) {
+                    panic!("Traceability mismatch: module '{}' is not registered to any paper", $module_name);
+                }
+
+                $test_body
+            }
+        }
+    };
+}

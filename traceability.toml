@@ -1,6 +1,6 @@
 [links]
 generative_turbulence = "generative_turbulence.tex"
-ai = "graph_parameters_rust.tex"
+ai = "spec:transformer_v1"
 optics = "graph_parameters_rust.tex"
 standard_model = "graph_parameters_rust.tex"
 stat_mech = "graph_parameters_rust.tex"

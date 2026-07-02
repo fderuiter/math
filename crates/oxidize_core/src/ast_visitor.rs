@@ -1,8 +1,11 @@
 use syn::visit::{self, Visit};
 use syn::{ItemFn, ItemMacro, Macro, Meta};
+use std::collections::HashMap;
 
 pub struct AstVisitor {
     pub verified_modules: Vec<String>,
+    pub module_tiers: HashMap<String, String>,
+    pub has_vacuous_bypass: bool,
     pub total_funcs: usize,
     pub total_asserts: usize,
     pub verified_funcs: usize,
@@ -21,6 +24,8 @@ impl AstVisitor {
     pub fn new() -> Self {
         Self {
             verified_modules: Vec::new(),
+            module_tiers: HashMap::new(),
+            has_vacuous_bypass: false,
             total_funcs: 0,
             total_asserts: 0,
             verified_funcs: 0,
@@ -54,14 +59,30 @@ impl<'ast> Visit<'ast> for AstVisitor {
     fn visit_item_macro(&mut self, node: &'ast ItemMacro) {
         if let Some(ident) = node.mac.path.segments.last().map(|s| &s.ident) {
             let name = ident.to_string();
-            if name == "theory_verification" || name == "stochastic_signature_verification" {
-                // Try to extract `module = "..."`
+            let tier = if name == "theory_verification" {
+                Some("Deterministic")
+            } else if name == "stochastic_signature_verification" {
+                Some("Stochastic")
+            } else if name == "empirical_verification" {
+                Some("Empirical")
+            } else {
+                None
+            };
+
+            if let Some(tier_name) = tier {
                 let tokens = node.mac.tokens.to_string();
+                
+                // Detect vacuous bypass: zero initializations in stochastic/empirical
+                if tokens.contains("zeros(") || tokens.contains("zeros_like") || tokens.contains("0.0") || tokens.contains("fill(0)") {
+                    self.has_vacuous_bypass = true;
+                }
+
                 if let Some(idx) = tokens.find("module = \"") {
                     let start = idx + 10;
                     if let Some(end) = tokens[start..].find('"') {
                         let module_name = &tokens[start..start + end];
                         self.verified_modules.push(module_name.to_string());
+                        self.module_tiers.insert(module_name.to_string(), tier_name.to_string());
                     }
                 }
             }
