@@ -66,9 +66,13 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
         coeffs: [f64; N],
         kinetics: &K,
     ) {
-        if N == 0 { return; }
+        if N == 0 {
+            return;
+        }
         let n = state[0].len();
-        if n == 0 { return; }
+        if n == 0 {
+            return;
+        }
 
         SpatialDiffusion::<N>::stepper(self).step_1d_coupled_neumann(
             n,
@@ -84,7 +88,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
                     rhs[s] = coeffs[s] * d2u + rates[s];
                 }
                 rhs
-            }
+            },
         );
     }
 

@@ -184,7 +184,7 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
             std::array::from_fn(|i| state.concentrations[i].as_slice());
 
         let mut next_slices_arr: [&mut [f64]; N] = std::array::from_fn(|_| &mut [] as &mut [f64]);
-        
+
         let mut iter = next_state.concentrations.iter_mut();
         for slice in &mut next_slices_arr {
             if let Some(vec) = iter.next() {

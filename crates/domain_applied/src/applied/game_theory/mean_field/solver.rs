@@ -1,8 +1,8 @@
 use super::physics::{Hamiltonian, QuadraticHamiltonian};
 use super::types::{Density, MFGConfig, Position};
+use math_commons::math_kernel::types::StepSize;
 use nalgebra::DMatrix;
 use pure_math::pure_math::analysis::pde::fused_stepper::FusedStencilStepper;
-use math_commons::math_kernel::types::StepSize;
 
 /// Strategy trait for solving Mean Field Games.
 ///
@@ -97,7 +97,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
         for n in 1..=nt {
             m.column_mut(n).copy_from(&m0);
         }
-        
+
         let stepper = FusedStencilStepper::new(StepSize(config.dx));
 
         for _iter in 0..self.iterations {
@@ -111,7 +111,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
             for n in (0..nt).rev() {
                 let u_next = u.column(n + 1).clone_owned();
                 let mut u_curr = u.column(n).clone_owned();
-                
+
                 stepper.step_1d_slice(
                     u_next.as_slice(),
                     u_curr.as_mut_slice(),
@@ -123,9 +123,9 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
                         let hamiltonian = self.hamiltonian.evaluate(du_dx);
                         let running_cost = cost_function(Position(xs[i]), Density(m[(i, n + 1)]));
                         hamiltonian - config.viscosity * d2u_dx2 - running_cost
-                    }
+                    },
                 );
-                
+
                 // Boundary conditions (Neumann 0)
                 u_curr[0] = u_curr[1];
                 u_curr[nx - 1] = u_curr[nx - 2];
@@ -137,7 +137,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
                 let m_curr = m.column(n).clone_owned();
                 let mut m_next = m.column(n + 1).clone_owned();
                 let u_curr = u.column(n).clone_owned();
-                
+
                 stepper.step_1d_slice(
                     m_curr.as_slice(),
                     m_next.as_mut_slice(),
@@ -151,7 +151,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
                         let drift_flux = ops.upwind_flux(v, prev, curr, next);
                         let d2m_dx2 = ops.central_diff_2nd(prev, curr, next);
                         -drift_flux + config.viscosity * d2m_dx2
-                    }
+                    },
                 );
 
                 // Boundary conditions
@@ -163,7 +163,7 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
                 if sum > 1e-9 {
                     m_next.scale_mut(1.0 / sum);
                 }
-                
+
                 m.column_mut(n + 1).copy_from(&m_next);
             }
         }
