@@ -9,3 +9,6 @@ serde_json = "1.0.150"
 verified_engine_macros = { version = "0.1.0", path = "../verified_engine_macros" }
 [dev-dependencies]
 approx = "0.5.1"
+
+[profile.release]
+overflow-checks = true

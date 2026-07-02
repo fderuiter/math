@@ -29,3 +29,6 @@ dashu = { version = "0.4.4", features = ["num-traits_v02"] }
 
 [dev-dependencies]
 approx = "0.5.1"
+
+[profile.release]
+overflow-checks = true
