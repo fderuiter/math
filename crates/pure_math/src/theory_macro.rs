@@ -20,10 +20,10 @@ macro_rules! theory_verification {
             )*
 
             #[test]
-            #[verified_engine::verified]
+            #[$crate::__macro_deps::verified_engine::verified]
             fn test_theory_verification() {
                 // Check that the module is registered in the shared engine registry
-                if !oxidize_core::traceability::TraceabilityEngine::verify_module_registered($module_name) {
+                if !$crate::__macro_deps::oxidize_core::traceability::TraceabilityEngine::verify_module_registered($module_name) {
                     panic!("Traceability mismatch: module '{}' is not registered to any paper", $module_name);
                 }
 
@@ -52,16 +52,16 @@ macro_rules! stochastic_signature_verification {
             use super::*;
 
             #[test]
-            #[verified_engine::verified]
+            #[$crate::__macro_deps::verified_engine::verified]
             fn test_stochastic_verification() {
                 // 1. Check that the module is registered in the shared engine registry
-                if !oxidize_core::traceability::TraceabilityEngine::verify_module_registered($module_name) {
+                if !$crate::__macro_deps::oxidize_core::traceability::TraceabilityEngine::verify_module_registered($module_name) {
                     panic!("Traceability mismatch: module '{}' is not registered to any paper", $module_name);
                 }
 
                 // 2. Register/track dependencies to external C++ libraries
                 $(
-                    verified_engine::engine::register_cpp_dependency($dep);
+                    $crate::__macro_deps::verified_engine::engine::register_cpp_dependency($dep);
                 )*
 
                 // 3. Run the stochastic tests to generate variables
@@ -99,9 +99,9 @@ macro_rules! empirical_verification {
             use super::*;
 
             #[test]
-            #[verified_engine::verified]
+            #[$crate::__macro_deps::verified_engine::verified]
             fn test_empirical_verification() {
-                if !oxidize_core::traceability::TraceabilityEngine::verify_module_registered(
+                if !$crate::__macro_deps::oxidize_core::traceability::TraceabilityEngine::verify_module_registered(
                     $module_name,
                 ) {
                     panic!(
