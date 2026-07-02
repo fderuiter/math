@@ -22,11 +22,13 @@ impl LorenzState {
 }
 
 /// A builder for the `LorenzSystem`.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct LorenzBuilder {
     sigma: f64,
     rho: f64,
     beta: f64,
+    dt: f64,
+    integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod,
 }
 
 impl Default for LorenzBuilder {
@@ -36,6 +38,8 @@ impl Default for LorenzBuilder {
             sigma: 10.0,
             rho: 28.0,
             beta: 8.0 / 3.0,
+            dt: 0.01,
+            integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod::RungeKutta4,
         }
     }
 }
@@ -68,6 +72,20 @@ impl LorenzBuilder {
         self
     }
 
+    /// Sets the time step `dt`.
+    #[verified_engine::verified]
+    pub fn dt(mut self, val: f64) -> Self {
+        self.dt = val;
+        self
+    }
+
+    /// Sets the numerical integration method.
+    #[verified_engine::verified]
+    pub fn integration_method(mut self, val: pure_math::pure_math::analysis::ode::IntegrationMethod) -> Self {
+        self.integration_method = val;
+        self
+    }
+
     /// Builds the `LorenzSystem` with the configured parameters and initial state.
     #[verified_engine::verified]
     pub fn build(self, state: LorenzState) -> LorenzSystem {
@@ -76,6 +94,8 @@ impl LorenzBuilder {
             rho: self.rho,
             beta: self.beta,
             state,
+            dt: self.dt,
+            integration_method: self.integration_method,
         }
     }
 }
@@ -116,7 +136,7 @@ impl LorenzBuilder {
 /// let new_state = lorenz.state.vec;
 /// println!("New State: ({:.2}, {:.2}, {:.2})", new_state.x, new_state.y, new_state.z);
 /// ```
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct LorenzSystem {
     /// The Prandtl number $\sigma$, representing the ratio of momentum diffusivity to thermal diffusivity.
     pub sigma: f64,
@@ -126,6 +146,10 @@ pub struct LorenzSystem {
     pub beta: f64,
     /// The current state of the system.
     pub state: LorenzState,
+    /// The time step `dt`.
+    pub dt: f64,
+    /// The integration method to use.
+    pub integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod,
 }
 
 impl TimeStepper<Vector3<f64>> for LorenzSystem {
@@ -137,18 +161,6 @@ impl TimeStepper<Vector3<f64>> for LorenzSystem {
     #[verified_engine::verified]
     fn get_state_mut(&mut self) -> &mut Vector3<f64> {
         &mut self.state.vec
-    }
-
-    #[verified_engine::verified]
-    fn step(&mut self, dt: f64) {
-        use pure_math::pure_math::analysis::ode::RungeKutta4;
-        let new_state = RungeKutta4::step(
-            self,
-            0.0,
-            <Self as TimeStepper<Vector3<f64>>>::get_state(self),
-            dt,
-        );
-        *self.get_state_mut() = new_state;
     }
 }
 
@@ -234,6 +246,8 @@ pub struct LorenzConfig {
     pub rho: f64,
     pub beta: f64,
     pub dt: f64,
+    #[serde(default)]
+    pub integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod,
 }
 
 impl ModelConfig for LorenzConfig {}
@@ -255,15 +269,23 @@ impl SimulationModel for LorenzSystem {
             .sigma(config.sigma)
             .rho(config.rho)
             .beta(config.beta)
+            .dt(config.dt)
+            .integration_method(config.integration_method)
             .build(state))
     }
 
     #[verified_engine::verified(opt_out = "inherent method call false positive")]
     fn step(&mut self) -> Result<(), Self::Error> {
-        // Since we don't store dt in LorenzSystem directly via the interface,
-        // we'd typically have dt in the Config or State. We'll use 0.01 for now.
-        // Wait, the interface doesn't pass dt. Let's assume dt = 0.01 or we store it in LorenzSystem.
-        self.step(0.01);
+        let dt = self.dt;
+        match self.integration_method {
+            pure_math::pure_math::analysis::ode::IntegrationMethod::Euler => {
+                let mut solver = pure_math::pure_math::analysis::ode::Euler::new(&self.state.vec);
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step_with(self, &mut solver, dt);
+            }
+            pure_math::pure_math::analysis::ode::IntegrationMethod::RungeKutta4 => {
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(self, dt);
+            }
+        }
         Ok(())
     }
 
