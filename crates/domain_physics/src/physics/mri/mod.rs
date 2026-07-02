@@ -136,7 +136,11 @@ mod tests {
         assert_relative_eq!(bloch.magnetization.x, 0.0);
         // z should recover towards m0=1 from 0? No, initial z=0.
         // dMz/dt = (M0 - Mz)/T1 approx 0.
-        assert_relative_eq!(bloch.magnetization.z, 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            bloch.magnetization.z,
+            0.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]

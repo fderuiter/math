@@ -83,7 +83,15 @@ mod tests {
         // After normalization (before gamma/beta), mean should be ~0 and std dev ~1.
         // Since gamma=1 and beta=0 by default, the output should be normalized.
         let output_row = output.row(0);
-        assert_relative_eq!(output_row.mean(), 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
-        assert_relative_eq!(output_row.variance().sqrt(), 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            output_row.mean(),
+            0.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
+        assert_relative_eq!(
+            output_row.variance().sqrt(),
+            1.0,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 }

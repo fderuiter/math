@@ -1,6 +1,6 @@
 //! This module implements the loss functions for the CERA framework.
 
-use nalgebra::{Matrix, Dyn, Storage};
+use nalgebra::{Dyn, Matrix, Storage};
 
 /// Computes the Mean Squared Error (MSE) between two matrices.
 ///
@@ -13,7 +13,10 @@ use nalgebra::{Matrix, Dyn, Storage};
 ///
 /// The mean squared error.
 #[verified_engine::verified]
-pub fn mse_loss<S1: Storage<f32, Dyn, Dyn>, S2: Storage<f32, Dyn, Dyn>>(y_true: &Matrix<f32, Dyn, Dyn, S1>, y_pred: &Matrix<f32, Dyn, Dyn, S2>) -> f32 {
+pub fn mse_loss<S1: Storage<f32, Dyn, Dyn>, S2: Storage<f32, Dyn, Dyn>>(
+    y_true: &Matrix<f32, Dyn, Dyn, S1>,
+    y_pred: &Matrix<f32, Dyn, Dyn, S2>,
+) -> f32 {
     assert_eq!(
         y_true.shape(),
         y_pred.shape(),
@@ -37,7 +40,10 @@ pub fn mse_loss<S1: Storage<f32, Dyn, Dyn>, S2: Storage<f32, Dyn, Dyn>>(y_true: 
 ///
 /// The average Earth Mover's Distance.
 #[verified_engine::verified]
-pub fn earth_movers_distance<S1: Storage<f32, Dyn, Dyn>, S2: Storage<f32, Dyn, Dyn>>(z1: &Matrix<f32, Dyn, Dyn, S1>, z2: &Matrix<f32, Dyn, Dyn, S2>) -> f32 {
+pub fn earth_movers_distance<S1: Storage<f32, Dyn, Dyn>, S2: Storage<f32, Dyn, Dyn>>(
+    z1: &Matrix<f32, Dyn, Dyn, S1>,
+    z2: &Matrix<f32, Dyn, Dyn, S2>,
+) -> f32 {
     assert_eq!(
         z1.shape(),
         z2.shape(),

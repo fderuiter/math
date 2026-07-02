@@ -402,7 +402,9 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             for j in 0..self.num_states {
                 if j != current_state {
                     let transition_rate = self.generator[(current_state, j)];
-                    if transition_rate > T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap() {
+                    if transition_rate
+                        > T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap()
+                    {
                         weights.push(transition_rate.to_f64().unwrap_or(0.0));
                         next_states.push(j);
                     }

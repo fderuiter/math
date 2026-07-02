@@ -168,7 +168,10 @@ mod tests {
             &[],
         );
         // Q(Path, Fwd) += 0.1 * (10.0 + 0.9*0 - 0) = 1.0
-        assert!((agent.get_q_value(&GridState::Path, &Move::Forward) - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            (agent.get_q_value(&GridState::Path, &Move::Forward) - 1.0).abs()
+                < math_commons::registry::TOLERANCE_FAST
+        );
 
         // Now update Start again
         // Max Q(Path) is now 1.0 (from Forward action)
@@ -180,7 +183,10 @@ mod tests {
             &next_state,
             &[Move::Forward, Move::Stay],
         );
-        assert!((agent.get_q_value(&state, &action) - 0.09).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            (agent.get_q_value(&state, &action) - 0.09).abs()
+                < math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]

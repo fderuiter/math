@@ -1,5 +1,5 @@
-use diagnostics::{Diagnostic, Severity};
 use crate::math_kernel::types::Dimension;
+use diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use thiserror::Error;
 

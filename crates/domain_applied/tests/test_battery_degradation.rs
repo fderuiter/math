@@ -35,7 +35,10 @@ mod tests {
         assert!((cap.as_f64() - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
 
         let calculated_cycles = model.cycles_to_capacity(Capacity::new(0.7).unwrap(), dod);
-        assert!((calculated_cycles.as_f64() - cycles.as_f64()).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            (calculated_cycles.as_f64() - cycles.as_f64()).abs()
+                < math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]

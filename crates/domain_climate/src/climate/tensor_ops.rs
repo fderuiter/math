@@ -113,7 +113,9 @@ mod tests {
         let expected_output =
             DMatrix::from_row_slice(2, 4, &[1.1, 2.2, 3.3, 6.4, 4.1, 5.2, 6.3, 15.4]);
 
-        assert!((output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32);
+        assert!(
+            (output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32
+        );
     }
 
     #[test]
@@ -135,6 +137,8 @@ mod tests {
         // Corrected expected output based on my manual calculation in the previous turn.
         let expected_output = DMatrix::from_row_slice(2, 3, &[5.1, 6.2, 7.3, 13.1, 14.2, 15.3]);
 
-        assert!((output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32);
+        assert!(
+            (output - expected_output).abs().max() < math_commons::registry::TOLERANCE_FAST_F32
+        );
     }
 }

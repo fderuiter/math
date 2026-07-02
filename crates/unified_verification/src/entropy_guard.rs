@@ -60,4 +60,3 @@ pub fn check_entropy(members: &[String]) -> Vec<String> {
 
     violations
 }
-

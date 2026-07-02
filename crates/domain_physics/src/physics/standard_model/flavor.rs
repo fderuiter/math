@@ -76,11 +76,27 @@ mod tests {
             for j in 0..3 {
                 let val = identity[(i, j)];
                 if i == j {
-                    assert_relative_eq!(val.re, 1.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
-                    assert_relative_eq!(val.im, 0.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+                    assert_relative_eq!(
+                        val.re,
+                        1.0,
+                        epsilon = math_commons::registry::TOLERANCE_HIGH
+                    );
+                    assert_relative_eq!(
+                        val.im,
+                        0.0,
+                        epsilon = math_commons::registry::TOLERANCE_HIGH
+                    );
                 } else {
-                    assert_relative_eq!(val.re, 0.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
-                    assert_relative_eq!(val.im, 0.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+                    assert_relative_eq!(
+                        val.re,
+                        0.0,
+                        epsilon = math_commons::registry::TOLERANCE_HIGH
+                    );
+                    assert_relative_eq!(
+                        val.im,
+                        0.0,
+                        epsilon = math_commons::registry::TOLERANCE_HIGH
+                    );
                 }
             }
         }

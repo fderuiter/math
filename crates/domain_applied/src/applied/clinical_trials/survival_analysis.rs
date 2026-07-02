@@ -121,7 +121,9 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
         let mut n_censored = 0;
 
         // Process all events at this time t
-        while i < obs.len() && (obs[i].time.as_f64() - t).abs() < math_commons::registry::TOLERANCE_STANDARD {
+        while i < obs.len()
+            && (obs[i].time.as_f64() - t).abs() < math_commons::registry::TOLERANCE_STANDARD
+        {
             if obs[i].event_occurred {
                 n_events += 1;
             } else {

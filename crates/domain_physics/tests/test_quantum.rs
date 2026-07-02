@@ -14,10 +14,18 @@ fn test_normalization() {
     let state = QuantumState::new(vec);
 
     let norm = state.norm();
-    assert_relative_eq!(norm, 5.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+    assert_relative_eq!(
+        norm,
+        5.0,
+        epsilon = math_commons::registry::TOLERANCE_STANDARD
+    );
 
     let normalized_state = state.normalize();
-    assert_relative_eq!(normalized_state.norm(), 1.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+    assert_relative_eq!(
+        normalized_state.norm(),
+        1.0,
+        epsilon = math_commons::registry::TOLERANCE_STANDARD
+    );
 }
 
 #[test]
@@ -35,11 +43,23 @@ fn test_inner_product() {
     ]));
 
     let prod = zero.inner_product(&one);
-    assert_relative_eq!(prod.re, 0.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
-    assert_relative_eq!(prod.im, 0.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+    assert_relative_eq!(
+        prod.re,
+        0.0,
+        epsilon = math_commons::registry::TOLERANCE_STANDARD
+    );
+    assert_relative_eq!(
+        prod.im,
+        0.0,
+        epsilon = math_commons::registry::TOLERANCE_STANDARD
+    );
 
     let prod_self = zero.inner_product(&zero);
-    assert_relative_eq!(prod_self.re, 1.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+    assert_relative_eq!(
+        prod_self.re,
+        1.0,
+        epsilon = math_commons::registry::TOLERANCE_STANDARD
+    );
 }
 
 #[test]

@@ -25,7 +25,8 @@ struct IntegrityReport {
 
 fn get_workspace_members() -> Vec<String> {
     let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
-    let parsed: toml::Value = toml::from_str(&content).unwrap_or_else(|_| toml::Value::Table(Default::default()));
+    let parsed: toml::Value =
+        toml::from_str(&content).unwrap_or_else(|_| toml::Value::Table(Default::default()));
     let mut members = Vec::new();
     if let Some(workspace) = parsed.get("workspace") {
         if let Some(mems) = workspace.get("members") {
@@ -58,7 +59,7 @@ fn main() {
             for d in debt {
                 println!("{}", d);
             }
-        },
+        }
         _ => {
             eprintln!("Unknown command: {}", args[1]);
             std::process::exit(1);
@@ -159,7 +160,11 @@ fn check_file_lengths(members: &[String]) -> Vec<String> {
                     if let Ok(content) = fs::read_to_string(entry.path()) {
                         let lines = content.lines().count();
                         if lines > 500 {
-                            exceeding.push(format!("File length violation: {} ({} lines)", entry.path().display(), lines));
+                            exceeding.push(format!(
+                                "File length violation: {} ({} lines)",
+                                entry.path().display(),
+                                lines
+                            ));
                         }
                     }
                 }
@@ -273,7 +278,8 @@ fn analyze_files(rs_files: &[std::path::PathBuf]) -> FileMetrics {
                 if norm.starts_with("./") {
                     norm = norm[2..].to_string();
                 }
-                m.opt_outs.push((norm, format!("Legacy function call: {}", &cap[1])));
+                m.opt_outs
+                    .push((norm, format!("Legacy function call: {}", &cap[1])));
             }
 
             m.total_funcs += funcs;

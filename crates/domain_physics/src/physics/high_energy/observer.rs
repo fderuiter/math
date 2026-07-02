@@ -90,7 +90,11 @@ mod tests {
         // Lorentz Factor: v = 0.6c => gamma = 1.25
         let v = 0.6 * C;
         let gamma = calculate_lorentz_factor(v).expect("Failed to calc Lorentz factor");
-        assert_relative_eq!(gamma, 1.25, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            gamma,
+            1.25,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
 
         // Invariant Interval: ct=3, x=4, y=0, z=0 => s^2 = -9 + 16 = 7
         // t = 3/c.

@@ -86,6 +86,10 @@ theory_verification!(
     },
     test = {
         // Just verify it compiles and runs.
-        assert_relative_eq!(ALPHA, 0.05, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            ALPHA,
+            0.05,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 );

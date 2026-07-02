@@ -19,7 +19,9 @@ mod tests {
     fn test_fluid_properties() {
         let water = FluidProperties::water();
         assert!((water.density() - 998.2).abs() < math_commons::registry::TOLERANCE_FAST);
-        assert!((water.dynamic_viscosity() - 1.002e-3).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            (water.dynamic_viscosity() - 1.002e-3).abs() < math_commons::registry::TOLERANCE_FAST
+        );
 
         let nu = water.kinematic_viscosity();
         assert!((nu - 1.002e-3 / 998.2).abs() < math_commons::registry::TOLERANCE_STANDARD);
@@ -193,6 +195,8 @@ mod tests {
 
         let expected_accel = 100.0 / 998.2;
         assert!((next_state.velocity.x - expected_accel).abs() < 1e-4);
-        assert!((next_state.pressure - 101325.0).abs() < math_commons::registry::TOLERANCE_STANDARD); // Pressure should be constant
+        assert!(
+            (next_state.pressure - 101325.0).abs() < math_commons::registry::TOLERANCE_STANDARD
+        ); // Pressure should be constant
     }
 }

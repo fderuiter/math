@@ -64,9 +64,17 @@ mod tests {
         let pe = generate_positional_encoding(10, 512);
         for i in 0..(512 / 2) {
             // sin(0) = 0
-            assert_relative_eq!(pe[(0, 2 * i)], 0.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+            assert_relative_eq!(
+                pe[(0, 2 * i)],
+                0.0,
+                epsilon = math_commons::registry::TOLERANCE_STANDARD
+            );
             // cos(0) = 1
-            assert_relative_eq!(pe[(0, 2 * i + 1)], 1.0, epsilon = math_commons::registry::TOLERANCE_STANDARD);
+            assert_relative_eq!(
+                pe[(0, 2 * i + 1)],
+                1.0,
+                epsilon = math_commons::registry::TOLERANCE_STANDARD
+            );
         }
     }
 
@@ -83,7 +91,15 @@ mod tests {
         let div_term = (10000.0f64).powf((2.0 * i as f64) / d_model_f64);
         let angle = pos as f64 / div_term;
 
-        assert_relative_eq!(pe[(pos, 2 * i)], angle.sin(), epsilon = math_commons::registry::TOLERANCE_STANDARD);
-        assert_relative_eq!(pe[(pos, 2 * i + 1)], angle.cos(), epsilon = math_commons::registry::TOLERANCE_STANDARD);
+        assert_relative_eq!(
+            pe[(pos, 2 * i)],
+            angle.sin(),
+            epsilon = math_commons::registry::TOLERANCE_STANDARD
+        );
+        assert_relative_eq!(
+            pe[(pos, 2 * i + 1)],
+            angle.cos(),
+            epsilon = math_commons::registry::TOLERANCE_STANDARD
+        );
     }
 }

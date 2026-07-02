@@ -45,7 +45,9 @@ impl<I: Integrator> GreenFunctionSolver1D<I> {
         // integrand = G(x, xi) * f(xi)
         let integrand = |xi: f64| g(x, xi) * source(xi);
 
-        let result = self.integrator.integrate(integrand, min, max, math_commons::registry::TOLERANCE_FAST);
+        let result =
+            self.integrator
+                .integrate(integrand, min, max, math_commons::registry::TOLERANCE_FAST);
         result.value
     }
 }

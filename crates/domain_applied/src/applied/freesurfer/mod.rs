@@ -95,6 +95,10 @@ theory_verification!(
         THICKNESS = 2.5;
     },
     test = {
-        assert_relative_eq!(THICKNESS, 2.5, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(
+            THICKNESS,
+            2.5,
+            epsilon = math_commons::registry::TOLERANCE_FAST
+        );
     }
 );
