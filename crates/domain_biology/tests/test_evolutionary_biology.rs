@@ -4,11 +4,11 @@ use domain_biology::biology::evolution::HawkDovePopulation;
 #[verified_engine::verified]
 fn test_hawk_dove_update() {
     let pop = HawkDovePopulation::new(2.0, 4.0); // v=2, c=4
-    let p_h = 0.8;
+    let p_h = math_commons::primitives::UnitInterval::new(0.8).unwrap();
     let dt = 0.1;
 
     let next_p_h = pop.update_frequencies(p_h, dt).unwrap();
-    println!("Next p_h: {:.10}", next_p_h);
+    println!("Next p_h: {:.10}", next_p_h.value());
 
     // Captured value from manual inspection (conceptually)
     // Payoff:
@@ -24,8 +24,8 @@ fn test_hawk_dove_update() {
     // new_p_H = 0.8 + (-0.096) * 0.1 = 0.8 - 0.0096 = 0.7904
 
     assert!(
-        (next_p_h - 0.7904).abs() < 1e-6,
+        (next_p_h.value() - 0.7904).abs() < 1e-6,
         "Expected 0.7904, got {}",
-        next_p_h
+        next_p_h.value()
     );
 }

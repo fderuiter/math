@@ -40,7 +40,7 @@ fn demo_kelly() -> f64 {
     println!("   (Optimal bet sizing)");
     println!("   --------------------");
 
-    let prob = kelly::EdgeProbability::new(0.55).unwrap();
+    let prob = kelly::UnitInterval::new(0.55).unwrap();
     let odds = kelly::Odds::new(2.0).unwrap();
 
     let ev = kelly::expected_value(&prob, &odds);

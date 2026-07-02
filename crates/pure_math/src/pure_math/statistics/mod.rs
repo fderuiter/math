@@ -36,12 +36,12 @@
 //!
 //! ```rust
 //! use pure_math::pure_math::statistics::kelly::{
-//!     kelly_fraction, EdgeProbability, Odds
+//!     kelly_fraction, UnitInterval, Odds
 //! };
 //!
 //! fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     // Scenario: A coin toss that lands heads 55% of the time, paying 2.0 (even money).
-//!     let probability = EdgeProbability::new(0.55)?;
+//!     let probability = UnitInterval::new(0.55)?;
 //!     let odds = Odds::new(2.0)?;
 //!
 //!     // Calculate full Kelly fraction

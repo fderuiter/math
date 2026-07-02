@@ -37,6 +37,7 @@
 //!
 //! ```rust
 //! use domain_ai::ai::reinforcement_learning::{QLearningAgent, State, Action, TabularQFunction};
+//! use math_commons::primitives::UnitInterval;
 //!
 //! // 1. Define State and Action
 //! #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -49,7 +50,11 @@
 //!
 //! // 2. Initialize Agent
 //! // Learning Rate = 0.1, Discount Factor = 0.9, Epsilon = 0.1
-//! let mut agent = QLearningAgent::<GridState, Move, TabularQFunction<GridState, Move>>::new(0.1, 0.9, 0.1);
+//! let mut agent = QLearningAgent::<GridState, Move, TabularQFunction<GridState, Move>>::new(
+//!     UnitInterval::new(0.1).unwrap(),
+//!     UnitInterval::new(0.9).unwrap(),
+//!     UnitInterval::new(0.1).unwrap(),
+//! );
 //!
 //! // 3. Training Loop (Simplified)
 //! let state = GridState(0);

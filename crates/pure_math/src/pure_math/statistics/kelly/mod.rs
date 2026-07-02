@@ -68,11 +68,11 @@
 //!
 //! ```rust
 //! use pure_math::pure_math::statistics::kelly::{
-//!     kelly_fraction, expected_value, EdgeProbability, Odds
+//!     kelly_fraction, expected_value, UnitInterval, Odds
 //! };
 //!
 //! // You estimate 55% chance of winning at even money odds
-//! let prob = EdgeProbability::new(0.55).unwrap();
+//! let prob = UnitInterval::new(0.55).unwrap();
 //! let odds = Odds::new(2.0).unwrap();
 //!
 //! // Check if there's an edge
@@ -94,10 +94,10 @@
 //! ```rust
 //! use pure_math::pure_math::statistics::kelly::{
 //!     kelly_fraction, fractional_kelly, expected_growth_rate,
-//!     EdgeProbability, Odds, variants
+//!     UnitInterval, Odds, variants
 //! };
 //!
-//! let prob = EdgeProbability::new(0.55).unwrap();
+//! let prob = UnitInterval::new(0.55).unwrap();
 //! let odds = Odds::new(2.0).unwrap();
 //!
 //! // Compare growth rates for different strategies
@@ -137,12 +137,12 @@
 //!
 //! ```rust
 //! use pure_math::pure_math::statistics::kelly::{
-//!     kelly_fraction, expected_value, EdgeProbability, Odds, variants
+//!     kelly_fraction, expected_value, UnitInterval, Odds, variants
 //! };
 //!
 //! // You've modeled a game and think Team A has 52% win probability
 //! // The sportsbook offers -110 odds (American) on Team A
-//! let your_prob = EdgeProbability::new(0.52).unwrap();
+//! let your_prob = UnitInterval::new(0.52).unwrap();
 //! let odds = Odds::from_american(-110.0).unwrap();
 //!
 //! let ev = expected_value(&your_prob, &odds);
@@ -196,7 +196,7 @@ pub mod core;
 pub mod criterion;
 
 // Re-export main types and functions
-pub use core::{BankrollFraction, EdgeProbability, Odds};
+pub use core::{BankrollFraction, Odds, UnitInterval};
 pub use criterion::{
     expected_growth_rate, expected_value, fractional_kelly, kelly_fraction, variants,
 };

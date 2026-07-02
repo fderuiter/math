@@ -1,5 +1,6 @@
 use crate::ai::sds::training::{AdamOptimizer, Optimizer, SgdOptimizer};
 use approx::assert_relative_eq;
+use math_commons::primitives::{PositiveFloat, UnitInterval};
 use nalgebra::DMatrix;
 
 #[test]
@@ -7,7 +8,7 @@ use nalgebra::DMatrix;
 fn test_adam_step() {
     let rows = 2;
     let cols = 2;
-    let mut optimizer = AdamOptimizer::new(0.1);
+    let mut optimizer = AdamOptimizer::new(PositiveFloat::new(0.1).unwrap());
 
     let params = DMatrix::from_element(rows, cols, 0.5);
     let grads = DMatrix::from_element(rows, cols, 0.1);
@@ -35,7 +36,10 @@ fn test_sgd_step() {
     let rows = 2;
     let cols = 2;
     // SGD with momentum 0.9, lr 0.1
-    let mut optimizer = SgdOptimizer::new(0.1, 0.9);
+    let mut optimizer = SgdOptimizer::new(
+        PositiveFloat::new(0.1).unwrap(),
+        UnitInterval::new(0.9).unwrap(),
+    );
 
     let params = DMatrix::from_element(rows, cols, 0.5);
     let grads = DMatrix::from_element(rows, cols, 0.1);

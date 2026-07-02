@@ -3,7 +3,7 @@ use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use math_explorer::pure_math::statistics::kelly::{
-    kelly_fraction, variants, BankrollFraction, EdgeProbability, Odds,
+    kelly_fraction, variants, BankrollFraction, UnitInterval, Odds,
 };
 use rand::Rng;
 
@@ -45,7 +45,7 @@ impl BankrollGrowthTool {
         self.quarter_kelly_points.clear();
         self.error_msg = None;
 
-        let prob_result = EdgeProbability::new(self.probability);
+        let prob_result = UnitInterval::new(self.probability);
         let odds_result = Odds::new(self.odds);
 
         match (prob_result, odds_result) {

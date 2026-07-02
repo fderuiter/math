@@ -1,7 +1,7 @@
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_explorer::pure_math::statistics::kelly::{
-    expected_value, kelly_fraction, variants, EdgeProbability, Odds,
+    expected_value, kelly_fraction, variants, UnitInterval, Odds,
 };
 
 #[derive(PartialEq)]
@@ -125,7 +125,7 @@ impl InteractiveTool for BetSizeCalculatorTool {
         ui.heading("Results");
 
         // Compute mathematical values safely
-        let prob_result = EdgeProbability::new(self.probability_input / 100.0);
+        let prob_result = UnitInterval::new(self.probability_input / 100.0);
 
         let odds_result = match self.odds_format {
             OddsFormat::Decimal => Odds::new(self.decimal_odds),

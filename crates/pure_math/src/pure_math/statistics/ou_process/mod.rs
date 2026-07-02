@@ -128,7 +128,7 @@ pub mod core;
 pub mod solver;
 
 pub use analysis::{MomentumType, OuAnalyzer, PerformanceStats, estimate_ou_params};
-pub use core::{LongTermMean, MeanReversionRate, OuParams, Volatility};
+pub use core::{LongTermMean, OuParams};
 pub use solver::{EulerMaruyama, TimeStep};
 
 // [cite:clinical_trials_statistics]

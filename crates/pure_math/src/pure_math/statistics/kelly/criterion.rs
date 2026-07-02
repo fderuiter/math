@@ -1,6 +1,6 @@
 //! Kelly Criterion calculations for optimal bet sizing.
 
-use super::core::{BankrollFraction, EdgeProbability, Odds};
+use super::core::{BankrollFraction, Odds, UnitInterval};
 use crate::error::KellyError;
 
 /// Computes the optimal Kelly fraction for a bet.
@@ -27,10 +27,10 @@ use crate::error::KellyError;
 ///
 /// ```
 /// use pure_math::pure_math::statistics::kelly::{
-///     kelly_fraction, EdgeProbability, Odds
+///     kelly_fraction, UnitInterval, Odds
 /// };
 ///
-/// let p = EdgeProbability::new(0.55).unwrap();
+/// let p = UnitInterval::new(0.55).unwrap();
 /// let odds = Odds::new(2.0).unwrap();
 /// let kelly = kelly_fraction(&p, &odds).unwrap();
 ///
@@ -43,7 +43,7 @@ use crate::error::KellyError;
 /// Bell System Technical Journal, 35(4), 917–926.
 #[verified_engine::verified]
 pub fn kelly_fraction(
-    probability: &EdgeProbability,
+    probability: &UnitInterval,
     odds: &Odds,
 ) -> Result<BankrollFraction, KellyError> {
     let p = probability.value();
@@ -93,10 +93,10 @@ pub fn kelly_fraction(
 ///
 /// ```
 /// use pure_math::pure_math::statistics::kelly::{
-///     fractional_kelly, EdgeProbability, Odds
+///     fractional_kelly, UnitInterval, Odds
 /// };
 ///
-/// let p = EdgeProbability::new(0.55).unwrap();
+/// let p = UnitInterval::new(0.55).unwrap();
 /// let odds = Odds::new(2.0).unwrap();
 ///
 /// let half_kelly = fractional_kelly(&p, &odds, 0.5).unwrap();
@@ -104,7 +104,7 @@ pub fn kelly_fraction(
 /// ```
 #[verified_engine::verified]
 pub fn fractional_kelly(
-    probability: &EdgeProbability,
+    probability: &UnitInterval,
     odds: &Odds,
     fraction: f64,
 ) -> Result<BankrollFraction, KellyError> {
@@ -144,10 +144,10 @@ pub fn fractional_kelly(
 ///
 /// ```
 /// use pure_math::pure_math::statistics::kelly::{
-///     expected_growth_rate, kelly_fraction, EdgeProbability, Odds
+///     expected_growth_rate, kelly_fraction, UnitInterval, Odds
 /// };
 ///
-/// let p = EdgeProbability::new(0.55).unwrap();
+/// let p = UnitInterval::new(0.55).unwrap();
 /// let odds = Odds::new(2.0).unwrap();
 /// let kelly = kelly_fraction(&p, &odds).unwrap();
 ///
@@ -156,7 +156,7 @@ pub fn fractional_kelly(
 /// ```
 #[verified_engine::verified]
 pub fn expected_growth_rate(
-    probability: &EdgeProbability,
+    probability: &UnitInterval,
     odds: &Odds,
     fraction: &BankrollFraction,
 ) -> f64 {
@@ -195,10 +195,10 @@ pub fn expected_growth_rate(
 ///
 /// ```
 /// use pure_math::pure_math::statistics::kelly::{
-///     expected_value, EdgeProbability, Odds
+///     expected_value, UnitInterval, Odds
 /// };
 ///
-/// let p = EdgeProbability::new(0.55).unwrap();
+/// let p = UnitInterval::new(0.55).unwrap();
 /// let odds = Odds::new(2.0).unwrap();
 ///
 /// let ev = expected_value(&p, &odds);
@@ -207,7 +207,7 @@ pub fn expected_growth_rate(
 /// }
 /// ```
 #[verified_engine::verified]
-pub fn expected_value(probability: &EdgeProbability, odds: &Odds) -> f64 {
+pub fn expected_value(probability: &UnitInterval, odds: &Odds) -> f64 {
     let p = probability.value();
     let q = probability.complement();
     let b = odds.net_profit_multiplier();
@@ -224,7 +224,7 @@ pub mod variants {
     /// Very conservative approach with minimal drawdowns.
     #[verified_engine::verified]
     pub fn quarter_kelly(
-        probability: &EdgeProbability,
+        probability: &UnitInterval,
         odds: &Odds,
     ) -> Result<BankrollFraction, KellyError> {
         fractional_kelly(probability, odds, 0.25)
@@ -235,7 +235,7 @@ pub mod variants {
     /// Balanced approach: 75% of full Kelly growth with 50% of variance.
     #[verified_engine::verified]
     pub fn half_kelly(
-        probability: &EdgeProbability,
+        probability: &UnitInterval,
         odds: &Odds,
     ) -> Result<BankrollFraction, KellyError> {
         fractional_kelly(probability, odds, 0.5)
@@ -250,7 +250,7 @@ mod tests {
     #[verified_engine::verified]
     fn test_kelly_fraction_positive_edge() {
         // 55% win probability, 2:1 odds (even money)
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
         let kelly = kelly_fraction(&p, &odds).unwrap();
 
@@ -262,7 +262,7 @@ mod tests {
     #[verified_engine::verified]
     fn test_kelly_fraction_no_edge() {
         // Fair coin, even money odds (no edge)
-        let p = EdgeProbability::new(0.5).unwrap();
+        let p = UnitInterval::new(0.5).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         // Should return error (no positive edge)
@@ -273,7 +273,7 @@ mod tests {
     #[verified_engine::verified]
     fn test_kelly_fraction_large_edge() {
         // 70% win probability, 2:1 odds
-        let p = EdgeProbability::new(0.70).unwrap();
+        let p = UnitInterval::new(0.70).unwrap();
         let odds = Odds::new(2.0).unwrap();
         let kelly = kelly_fraction(&p, &odds).unwrap();
 
@@ -284,7 +284,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_fractional_kelly_half() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
         let half = fractional_kelly(&p, &odds, 0.5).unwrap();
 
@@ -295,7 +295,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_fractional_kelly_quarter() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
         let quarter = fractional_kelly(&p, &odds, 0.25).unwrap();
 
@@ -306,7 +306,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_expected_growth_rate_full_kelly() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
         let kelly = kelly_fraction(&p, &odds).unwrap();
 
@@ -319,7 +319,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_expected_growth_rate_zero_bet() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
         let zero = BankrollFraction::new(0.0).unwrap();
 
@@ -332,7 +332,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_expected_growth_rate_overbetting() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         // Bet 100% of bankroll (too much)
@@ -346,7 +346,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_expected_value_positive_edge() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         let ev = expected_value(&p, &odds);
@@ -358,7 +358,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_expected_value_no_edge() {
-        let p = EdgeProbability::new(0.5).unwrap();
+        let p = UnitInterval::new(0.5).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         let ev = expected_value(&p, &odds);
@@ -370,7 +370,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_expected_value_negative_edge() {
-        let p = EdgeProbability::new(0.45).unwrap();
+        let p = UnitInterval::new(0.45).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         let ev = expected_value(&p, &odds);
@@ -382,7 +382,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_variants_quarter_kelly() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         let quarter = variants::quarter_kelly(&p, &odds).unwrap();
@@ -394,7 +394,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_variants_half_kelly() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         let half = variants::half_kelly(&p, &odds).unwrap();
@@ -408,7 +408,7 @@ mod tests {
     fn test_realistic_sports_betting() {
         // Realistic scenario: 53% win rate with -110 odds (American)
         // -110 converts to approximately 1.909 decimal odds
-        let p = EdgeProbability::new(0.53).unwrap();
+        let p = UnitInterval::new(0.53).unwrap();
         let odds = Odds::from_american(-110.0).unwrap();
 
         let ev = expected_value(&p, &odds);
@@ -428,7 +428,7 @@ mod tests {
     #[verified_engine::verified]
     fn test_high_odds_scenario() {
         // Long shot: 20% win probability, 6:1 odds
-        let p = EdgeProbability::new(0.20).unwrap();
+        let p = UnitInterval::new(0.20).unwrap();
         let odds = Odds::new(6.0).unwrap();
 
         let kelly = kelly_fraction(&p, &odds).unwrap();

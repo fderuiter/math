@@ -40,13 +40,13 @@ mod glicko2_tests {
 #[cfg(test)]
 mod kelly_tests {
     use pure_math::pure_math::statistics::kelly::{
-        EdgeProbability, Odds, expected_value, kelly_fraction,
+        Odds, UnitInterval, expected_value, kelly_fraction,
     };
 
     #[test]
     #[verified_engine::verified]
     fn test_kelly_positive_edge() {
-        let p = EdgeProbability::new(0.55).unwrap();
+        let p = UnitInterval::new(0.55).unwrap();
         let odds = Odds::new(2.0).unwrap();
 
         let ev = expected_value(&p, &odds);

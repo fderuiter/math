@@ -51,9 +51,10 @@ impl MomentumType {
     /// # Example
     ///
     /// ```
-    /// use pure_math::pure_math::statistics::ou_process::{MomentumType, MeanReversionRate};
+    /// use pure_math::pure_math::statistics::ou_process::MomentumType;
+    /// use math_commons::primitives::PositiveFloat;
     ///
-    /// let theta = MeanReversionRate::new(0.3).unwrap();
+    /// let theta = PositiveFloat::new(0.3).unwrap();
     /// let momentum_type = MomentumType::classify(theta.value());
     /// assert_eq!(momentum_type, MomentumType::HeatCheck);
     /// ```

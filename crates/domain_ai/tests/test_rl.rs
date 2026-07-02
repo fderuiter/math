@@ -5,6 +5,7 @@ mod tests {
     use domain_ai::ai::reinforcement_learning::types::{
         Action, MarkovDecisionProcess, Policy, State,
     };
+    use math_commons::primitives::UnitInterval;
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     enum GridState {
@@ -134,7 +135,11 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_q_learning_agent() {
-        let mut agent = TabularQAgent::new(0.1, 0.9, 0.1);
+        let mut agent = TabularQAgent::new(
+            UnitInterval::new(0.1).unwrap(),
+            UnitInterval::new(0.9).unwrap(),
+            UnitInterval::new(0.1).unwrap(),
+        );
         let state = GridState::Start;
         let action = Move::Forward;
         let next_state = GridState::Path;
@@ -185,7 +190,11 @@ mod tests {
         use rand::rngs::StdRng;
 
         // Epsilon 0.5 to trigger both exploration and exploitation
-        let agent = TabularQAgent::new(0.1, 0.9, 0.5);
+        let agent = TabularQAgent::new(
+            UnitInterval::new(0.1).unwrap(),
+            UnitInterval::new(0.9).unwrap(),
+            UnitInterval::new(0.5).unwrap(),
+        );
         let state = GridState::Start;
 
         let mut rng1 = StdRng::seed_from_u64(42);
