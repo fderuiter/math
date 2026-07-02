@@ -112,7 +112,7 @@ impl Default for Bisection {
     #[verified_engine::verified]
     fn default() -> Self {
         Self {
-            max_iterations: math_commons::registry::MAX_ITERATIONS as usize,
+            max_iterations: math_commons::registry::MAX_ITERATIONS,
             tolerance: math_commons::registry::TOLERANCE_FAST,
         }
     }
@@ -278,7 +278,7 @@ impl Default for NewtonRaphson {
     #[verified_engine::verified]
     fn default() -> Self {
         Self {
-            max_iterations: math_commons::registry::MAX_ITERATIONS as usize,
+            max_iterations: math_commons::registry::MAX_ITERATIONS,
             tolerance: math_commons::registry::TOLERANCE_FAST,
         }
     }

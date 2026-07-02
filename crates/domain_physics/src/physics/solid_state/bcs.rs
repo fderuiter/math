@@ -43,7 +43,7 @@ impl Default for BcsGapSolver {
     #[verified_engine::verified]
     fn default() -> Self {
         Self {
-            max_iterations: math_commons::registry::MAX_ITERATIONS as usize,
+            max_iterations: math_commons::registry::MAX_ITERATIONS,
             tolerance: math_commons::registry::TOLERANCE_STANDARD,
             mixing_param: 0.5,
         }
