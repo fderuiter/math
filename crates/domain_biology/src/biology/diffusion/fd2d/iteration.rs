@@ -1,6 +1,7 @@
 use super::boundary::BoundaryStrategy;
 use super::geometry::GeometryStrategy;
 use math_commons::math_kernel::types::GridIndex;
+use oxidize_core::iteration::IterationPattern;
 
 pub trait IterationStrategy {
     #[verified_engine::verified]
@@ -27,73 +28,27 @@ impl IterationStrategy for LoopSplittingIteration {
         let width = *geom.width();
         let height = *geom.height();
 
-        // Fallback for small grids
-        if width < 3 || height < 3 {
-            for y in 0..height {
-                for x in 0..width {
-                    let idx = GridIndex(y * width + x);
-                    let (idx_l, idx_r, idx_u, idx_d) = boundary.neighbors(x, y, geom);
-                    op(idx, idx_l, idx_r, idx_u, idx_d);
-                }
-            }
-            return;
-        }
+        // Boundary points
+        IterationPattern::for_each_boundary(width, height, |x, y| {
+            let idx = GridIndex(y * width + x);
+            let (idx_l, idx_r, idx_u, idx_d) = boundary.neighbors(x, y, geom);
+            op(idx, idx_l, idx_r, idx_u, idx_d);
+        });
 
-        // 1. Top Row (y=0)
-        {
-            let y = 0;
-            for x in 0..width {
-                let idx = GridIndex(x);
-                let (idx_l, idx_r, idx_u, idx_d) = boundary.neighbors(x, y, geom);
-                op(idx, idx_l, idx_r, idx_u, idx_d);
-            }
-        }
-
-        // 2. Interior Rows
-        for y in 1..height - 1 {
-            let row_offset = y * width;
-
-            // Left Col
-            {
-                let x = 0;
-                let idx = GridIndex(row_offset);
-                let (idx_l, idx_r, idx_u, idx_d) = boundary.neighbors(x, y, geom);
-                op(idx, idx_l, idx_r, idx_u, idx_d);
-            }
-
-            // Interior (Fast path, no boundary checks)
-            for x in 1..width - 1 {
-                let idx = row_offset + x;
-                let idx_l = idx - 1;
-                let idx_r = idx + 1;
-                let idx_u = idx - width;
-                let idx_d = idx + width;
-                op(
-                    GridIndex(idx),
-                    GridIndex(idx_l),
-                    GridIndex(idx_r),
-                    GridIndex(idx_u),
-                    GridIndex(idx_d),
-                );
-            }
-
-            // Right Col
-            {
-                let x = width - 1;
-                let idx = GridIndex(row_offset + x);
-                let (idx_l, idx_r, idx_u, idx_d) = boundary.neighbors(x, y, geom);
-                op(idx, idx_l, idx_r, idx_u, idx_d);
-            }
-        }
-
-        // 3. Bottom Row
-        {
-            let y = height - 1;
-            for x in 0..width {
-                let idx = GridIndex(y * width + x);
-                let (idx_l, idx_r, idx_u, idx_d) = boundary.neighbors(x, y, geom);
-                op(idx, idx_l, idx_r, idx_u, idx_d);
-            }
-        }
+        // Interior points
+        IterationPattern::for_each_interior(width, height, |x, y| {
+            let idx = y * width + x;
+            let idx_l = idx - 1;
+            let idx_r = idx + 1;
+            let idx_u = idx - width;
+            let idx_d = idx + width;
+            op(
+                GridIndex(idx),
+                GridIndex(idx_l),
+                GridIndex(idx_r),
+                GridIndex(idx_u),
+                GridIndex(idx_d),
+            );
+        });
     }
 }

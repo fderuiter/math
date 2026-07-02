@@ -46,6 +46,32 @@ pub trait EvolutionEngine<State, AuxState> {
     }
 }
 
+pub trait DoubleBufferedState {
+    fn swap_buffers(&mut self);
+}
+
+pub trait DoubleBufferedEvolutionEngine<State: DoubleBufferedState, AuxState>: EvolutionEngine<State, AuxState> {
+    /// Native double buffered step: delegates to step and then swaps buffers.
+    fn step_buffered<R: RngCore + ?Sized>(
+        &mut self,
+        state: &mut State,
+        aux: &mut AuxState,
+        rng: &mut R,
+        dt: f64,
+    ) -> Result<(), EvolutionError> {
+        self.step(state, aux, rng, dt)?;
+        state.swap_buffers();
+        Ok(())
+    }
+}
+
+// Blanket implementation for any engine that works on a DoubleBufferedState
+impl<E, State, AuxState> DoubleBufferedEvolutionEngine<State, AuxState> for E
+where
+    E: EvolutionEngine<State, AuxState>,
+    State: DoubleBufferedState,
+{}
+
 use super::ode::traits::{OdeSystem, Solver, VectorOperations};
 
 /// A unified wrapper that turns any OdeSystem and Solver pair into an EvolutionEngine.

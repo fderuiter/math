@@ -1,3 +1,6 @@
+use oxidize_core::grid::Grid2D;
+use pure_math::pure_math::analysis::evolution::DoubleBufferedState;
+
 /// State container for Lattice Boltzmann Simulation.
 ///
 /// Holds the distribution functions and macroscopic variables.
@@ -7,17 +10,23 @@ pub struct LatticeState<const Q: usize> {
     pub(crate) width: usize,
     pub(crate) height: usize,
     /// Distribution functions (flattened: y * width + x). Each cell holds [f64; Q].
-    pub(crate) f: Vec<[f64; Q]>,
+    pub(crate) f: Grid2D<[f64; Q]>,
     /// Buffer for streaming step.
-    pub(crate) f_new: Vec<[f64; Q]>,
+    pub(crate) f_new: Grid2D<[f64; Q]>,
     /// Macroscopic density.
-    pub(crate) rho: Vec<f64>,
+    pub(crate) rho: Grid2D<f64>,
     /// Macroscopic velocity X.
-    pub(crate) ux: Vec<f64>,
+    pub(crate) ux: Grid2D<f64>,
     /// Macroscopic velocity Y.
-    pub(crate) uy: Vec<f64>,
+    pub(crate) uy: Grid2D<f64>,
     /// Boolean grid for obstacles (true = solid).
-    pub(crate) obstacles: Vec<bool>,
+    pub(crate) obstacles: Grid2D<bool>,
+}
+
+impl<const Q: usize> DoubleBufferedState for LatticeState<Q> {
+    fn swap_buffers(&mut self) {
+        std::mem::swap(&mut self.f, &mut self.f_new);
+    }
 }
 
 impl<const Q: usize> LatticeState<Q> {
@@ -28,25 +37,16 @@ impl<const Q: usize> LatticeState<Q> {
     /// - f = 0.0 (Caller must initialize equilibrium)
     #[verified_engine::verified]
     pub fn new(width: usize, height: usize) -> Self {
-        let size = width
-            .checked_mul(height)
-            .expect("Grid dimensions too large");
         Self {
             width,
             height,
-            f: vec![[0.0; Q]; size],
-            f_new: vec![[0.0; Q]; size],
-            rho: vec![1.0; size],
-            ux: vec![0.0; size],
-            uy: vec![0.0; size],
-            obstacles: vec![false; size],
+            f: Grid2D::new(width, height, [0.0; Q]),
+            f_new: Grid2D::new(width, height, [0.0; Q]),
+            rho: Grid2D::new(width, height, 1.0),
+            ux: Grid2D::new(width, height, 0.0),
+            uy: Grid2D::new(width, height, 0.0),
+            obstacles: Grid2D::new(width, height, false),
         }
-    }
-
-    /// Swaps the current and new distribution function buffers.
-    #[verified_engine::verified]
-    pub fn swap_buffers(&mut self) {
-        std::mem::swap(&mut self.f, &mut self.f_new);
     }
 
     /// Returns the linear index for coordinates (x, y).
@@ -54,9 +54,7 @@ impl<const Q: usize> LatticeState<Q> {
     #[inline]
     #[verified_engine::verified]
     pub fn index(&self, x: usize, y: usize) -> usize {
-        y.checked_mul(self.width)
-            .and_then(|val| val.checked_add(x))
-            .expect("Index calculation overflow")
+        self.f.index_1d(x, y)
     }
 
     /// Checks if the coordinates are within the grid.
@@ -83,24 +81,24 @@ impl<const Q: usize> LatticeState<Q> {
     /// Returns a slice of the macroscopic density field.
     #[verified_engine::verified]
     pub fn density(&self) -> &[f64] {
-        &self.rho
+        &self.rho.data
     }
 
     /// Returns a slice of the macroscopic X-velocity field.
     #[verified_engine::verified]
     pub fn velocity_x(&self) -> &[f64] {
-        &self.ux
+        &self.ux.data
     }
 
     /// Returns a slice of the macroscopic Y-velocity field.
     #[verified_engine::verified]
     pub fn velocity_y(&self) -> &[f64] {
-        &self.uy
+        &self.uy.data
     }
 
     /// Returns a slice of the obstacle mask (true = obstacle).
     #[verified_engine::verified]
     pub fn obstacles(&self) -> &[bool] {
-        &self.obstacles
+        &self.obstacles.data
     }
 }
