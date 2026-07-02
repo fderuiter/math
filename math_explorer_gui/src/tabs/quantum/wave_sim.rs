@@ -1,13 +1,23 @@
 use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::{SimCommand, StateSnapshot};
+use eframe::egui;
+use egui_plot::{Legend, Line, Plot, PlotPoints};
 use math_commons::theory::ParameterConstraint;
 use math_explorer::physics::quantum::{
     construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
 };
 use nalgebra::DVector;
 use num_complex::Complex;
+use std::any::Any;
 use std::collections::HashMap;
 use std::sync::Arc;
+
+pub struct WaveData {
+    pub time: f64,
+    pub x_axis: Vec<f64>,
+    pub prob_density: Vec<f64>,
+    pub potential: Vec<f64>,
+}
 
 pub struct WaveUnified {
     psi: QuantumState,
@@ -50,18 +60,20 @@ impl UnifiedModel for WaveUnified {
 
     fn get_snapshot(&self) -> StateSnapshot {
         let prob_density = self.psi.probability_density();
-        let mut custom_data = Vec::with_capacity(self.n_points * 2);
-        for i in 0..self.n_points {
-            custom_data.push(self.x_axis[i]);
-            custom_data.push(prob_density[i]);
-        }
+        
+        let structured_data = Box::new(WaveData {
+            time: self.time,
+            x_axis: self.x_axis.clone(),
+            prob_density: prob_density.iter().copied().collect(),
+            potential: self.potential.iter().copied().collect(),
+        }) as Box<dyn Any + Send>;
 
         StateSnapshot {
             width: 0,
             height: 0,
             pixels: Arc::new(std::sync::RwLock::new(Vec::new())),
-            custom_data,
-            structured_data: None,
+            custom_data: Vec::new(),
+            structured_data: Some(structured_data),
         }
     }
 
@@ -81,6 +93,51 @@ impl UnifiedModel for WaveUnified {
 
     fn name() -> &'static str {
         "Wave Simulator"
+    }
+
+    fn custom_central_panel(ui: &mut egui::Ui, snapshot_opt: Option<&StateSnapshot>) -> bool {
+        if let Some(snap) = snapshot_opt {
+            if let Some(any_data) = &snap.structured_data {
+                if let Some(wave_data) = any_data.downcast_ref::<WaveData>() {
+                    ui.label(format!("Time: {:.2}", wave_data.time));
+                    ui.label("White: |ψ(x)|² (Probability)");
+                    ui.colored_label(
+                        egui::Color32::from_rgb(100, 100, 255),
+                        "Blue: V(x) (Potential)",
+                    );
+
+                    let mut psi_points = Vec::new();
+                    let mut v_points = Vec::new();
+
+                    for i in 0..wave_data.x_axis.len() {
+                        let x = wave_data.x_axis[i];
+                        let p = wave_data.prob_density[i];
+                        let v = wave_data.potential[i];
+                        psi_points.push([x, p]);
+                        v_points.push([x, v * 0.2]); // Scale potential for display
+                    }
+
+                    Plot::new("quantum_plot")
+                        .legend(Legend::default())
+                        .x_axis_label("Position (x)")
+                        .y_axis_label("Probability Density / Potential")
+                        .view_aspect(2.0)
+                        .show(ui, |plot_ui| {
+                            plot_ui.line(
+                                Line::new("Probability |ψ|²", PlotPoints::new(psi_points))
+                                    .color(egui::Color32::WHITE)
+                                    .width(2.0_f32),
+                            );
+                            plot_ui.line(
+                                Line::new("Potential V(x) (scaled)", PlotPoints::new(v_points))
+                                    .color(egui::Color32::from_rgb(100, 100, 255)),
+                            );
+                        });
+                    return true;
+                }
+            }
+        }
+        false
     }
 }
 

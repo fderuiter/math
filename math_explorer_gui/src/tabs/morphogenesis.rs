@@ -79,6 +79,10 @@ impl UnifiedModel for MorphogenesisUnified {
     fn process_command(&mut self, cmd: SimCommand, _params: &HashMap<String, f64>) {
         if let SimCommand::Reset = cmd {
             initialize_system(&mut self.system, self.width, self.height);
+        } else if let SimCommand::Custom(action) = cmd {
+            if action == "Reset Map" {
+                initialize_system(&mut self.system, self.width, self.height);
+            }
         }
     }
 
@@ -89,6 +93,30 @@ impl UnifiedModel for MorphogenesisUnified {
         map.insert("d_u".to_string(), ParameterConstraint { min: 0.1, max: 5.0, step: 0.1 });
         map.insert("d_v".to_string(), ParameterConstraint { min: 10.0, max: 200.0, step: 1.0 });
         map
+    }
+
+    fn presets() -> Vec<(&'static str, HashMap<String, f64>)> {
+        let mut p = Vec::new();
+        
+        let mut spots = HashMap::new();
+        spots.insert("a".to_string(), 0.1);
+        spots.insert("b".to_string(), 0.9);
+        spots.insert("d_u".to_string(), 1.0);
+        spots.insert("d_v".to_string(), 100.0);
+        p.push(("Spots", spots));
+
+        let mut stripes = HashMap::new();
+        stripes.insert("a".to_string(), 0.14);
+        stripes.insert("b".to_string(), 0.86);
+        stripes.insert("d_u".to_string(), 1.0);
+        stripes.insert("d_v".to_string(), 50.0);
+        p.push(("Stripes", stripes));
+
+        p
+    }
+
+    fn custom_actions() -> Vec<&'static str> {
+        vec!["Reset Map"]
     }
 
     fn name() -> &'static str {

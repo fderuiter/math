@@ -92,8 +92,15 @@ impl UnifiedModel for LbmUnified {
             SimCommand::ClearObstacles => {
                 self.solver.clear_obstacles();
             }
+            SimCommand::Custom(ref action) if action == "Clear Obstacles" => {
+                self.solver.clear_obstacles();
+            }
             _ => {}
         }
+    }
+
+    fn custom_actions() -> Vec<&'static str> {
+        vec!["Clear Obstacles"]
     }
 
     fn parameters() -> HashMap<String, ParameterConstraint> {
