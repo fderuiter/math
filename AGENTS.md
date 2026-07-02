@@ -10,10 +10,10 @@ This document outlines the mandatory procedure for developing a Rust implementat
 
 Before generating code or text, you must ground your work in the project's existing engineering standards.
 
-* **Consult the Engineering Journals (`.jules/`)**: 
-    * Review `systems_core.md` for established design patterns (e.g., Strategy Pattern for solvers, Builder Pattern for complex structs).
-    * Review `architect.md` to understand domain decomposition and module extraction standards.
-    * Review `mason.md` for architectural constraints (e.g., Dependency Injection for RNG).
+* **Consult the Architectural Guidelines**: 
+    * Review established design patterns (e.g., Strategy Pattern for solvers, Builder Pattern for complex structs).
+    * Review domain decomposition and module extraction standards.
+    * Review architectural constraints (e.g., Dependency Injection for RNG).
 * **Analyze the Source Material**: Deconstruct the provided mathematical framework into core components (State, Dynamics, Solvers, Statistics).
 * **Identify Reusable Abstractions**: Determine if existing traits (e.g., `OdeSystem`, `Solver`, `VectorOperations`, `ReactionKinetics`) can be leveraged or extended.
 
@@ -123,12 +123,8 @@ Your work is not complete until it is proven correct and robust.
 
 ---
 
-### **6. Journaling & Documentation**
+### **6. Documentation**
 
 You must document your engineering decisions to maintain the project's historical continuity.
 
-* **Update Engineering Records**:
-    * **`systems_core.md`**: Log any major refactors, pattern adoptions (e.g., "Extracted X Strategy"), or trade-offs made during implementation.
-    * **`architect.md`**: Log any new domain modules or structural decompositions.
-    * **`mason.md`**: Record any architectural violations found and fixed (e.g., "Decoupled Physics from Solver").
 * **Documentation**: Ensure all public Rust items have docstrings (`///`).
