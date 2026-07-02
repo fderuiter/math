@@ -2,7 +2,7 @@
 
 use crate::climate::autoencoder::{Autoencoder, AutoencoderModel};
 use crate::climate::predictor::{Predictor, PredictorModel};
-use nalgebra::DMatrix;
+use nalgebra::{DMatrix, Matrix, Dyn, Storage};
 // Re-export CeraConfig for backward compatibility (or convenience)
 pub use crate::climate::config::CeraConfig;
 use verified_engine::Theory;
@@ -111,11 +111,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     ///
     /// The reshaped matrix ready for the predictor.
     #[verified_engine::verified]
-    pub fn reshape_for_predictor(
-        &self,
-        latent_matrix: &DMatrix<f32>,
-        batch_size: usize,
-    ) -> DMatrix<f32> {
+    pub fn reshape_for_predictor<S: Storage<f32, Dyn, Dyn>>(&self, latent_matrix: &Matrix<f32, Dyn, Dyn, S>, batch_size: usize) -> DMatrix<f32> {
         let num_levels = self.config.num_levels;
         let aligned_channels = self.config.aligned_channels;
         let mut reshaped_data = Vec::with_capacity(batch_size * num_levels * aligned_channels);
@@ -141,7 +137,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     ///
     /// The predicted output matrix.
     #[verified_engine::verified]
-    pub fn predict(&self, inputs: &DMatrix<f32>) -> DMatrix<f32> {
+    pub fn predict<S: Storage<f32, Dyn, Dyn>>(&self, inputs: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
         let num_levels = self.config.num_levels;
         let aligned_channels = self.config.aligned_channels;
         let batch_size = inputs.nrows() / num_levels;
@@ -157,8 +153,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
 mod tests {
     use super::*;
     use crate::climate::training::CeraTrainer;
-    use rand::Rng;
-    use nalgebra::DMatrix; // Import Trainer
+    use nalgebra::{DMatrix, Matrix, Dyn, Storage}; // Import Trainer
     use rand::Rng;
 
     // Helper constant for tests
@@ -243,8 +238,9 @@ mod tests {
         };
 
         // Create custom components (using default factory for simplicity, but could be manual)
-        let encoder_layers = vec![
+        let encoder_layers = [
             crate::climate::autoencoder::ConvLayer::new(config.in_channels, 32),
+            crate::climate::autoencoder::ConvLayer::new(32, 32),
             crate::climate::autoencoder::ConvLayer::new(32, config.latent_channels),
         ];
         let encoder = crate::climate::autoencoder::Encoder::new_from_layers(encoder_layers);
