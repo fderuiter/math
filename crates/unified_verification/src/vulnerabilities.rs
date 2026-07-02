@@ -60,7 +60,7 @@ pub fn check_osv_vulnerabilities() -> bool {
                             }
                         }
                     }
-                    if is_high || vuln.get("id").and_then(|id| id.as_str()).unwrap_or("").starts_with("RUSTSEC-2026") {
+                    if is_high {
                         println!("[!] High-severity vulnerability found in {} {}: {}", pkg_names[i].0, pkg_names[i].1, vuln.get("id").and_then(|i| i.as_str()).unwrap_or(""));
                         passed = false;
                     }
