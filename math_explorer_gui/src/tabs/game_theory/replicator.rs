@@ -345,3 +345,13 @@ impl InteractiveTool for ReplicatorDynamicsTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "ReplicatorDynamicsTool",
+        domain: "game_theory",
+        tags: &[],
+        build: || Box::new(ReplicatorDynamicsTool::default()),
+    }
+}

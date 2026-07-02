@@ -263,3 +263,13 @@ impl SpikeAnalysisTool {
 }
 
 // [cite:dwarf_galaxy_empirical_dependencies]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "SpikeAnalysisTool",
+        domain: "neuroscience",
+        tags: &[],
+        build: || Box::new(SpikeAnalysisTool::default()),
+    }
+}

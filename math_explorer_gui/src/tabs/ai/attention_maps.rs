@@ -221,3 +221,13 @@ impl TheoryDescribable for AttentionMapsTool {
 }
 
 // [cite:attention_is_all_you_need_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "AttentionMapsTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(AttentionMapsTool::default()),
+    }
+}

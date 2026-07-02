@@ -126,3 +126,13 @@ impl InteractiveTool for SirTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "SirTool",
+        domain: "epidemiology",
+        tags: &[],
+        build: || Box::new(SirTool::default()),
+    }
+}

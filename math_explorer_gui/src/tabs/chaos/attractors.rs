@@ -152,3 +152,13 @@ impl InteractiveTool for AttractorPlotter {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "AttractorPlotter",
+        domain: "chaos",
+        tags: &[],
+        build: || Box::new(AttractorPlotter::default()),
+    }
+}

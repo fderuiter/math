@@ -331,3 +331,13 @@ impl InteractiveTool for WaveSimulator {
     }
 }
 // [cite:quantum_mechanics]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "WaveSimulator",
+        domain: "quantum",
+        tags: &[],
+        build: || Box::new(WaveSimulator::default()),
+    }
+}

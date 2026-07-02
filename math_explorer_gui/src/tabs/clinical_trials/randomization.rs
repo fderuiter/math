@@ -155,3 +155,13 @@ impl InteractiveTool for RandomizationTool {
 }
 
 // [cite:clinical_trials_statistics]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "RandomizationTool",
+        domain: "clinical_trials",
+        tags: &[],
+        build: || Box::new(RandomizationTool::default()),
+    }
+}

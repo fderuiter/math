@@ -248,3 +248,13 @@ impl InteractiveTool for QTableInspectorTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "QTableInspectorTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(QTableInspectorTool::default()),
+    }
+}

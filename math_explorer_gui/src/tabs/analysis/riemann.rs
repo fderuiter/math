@@ -222,3 +222,13 @@ impl InteractiveTool for RiemannIntegrationTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "RiemannIntegrationTool",
+        domain: "analysis",
+        tags: &[],
+        build: || Box::new(RiemannIntegrationTool::default()),
+    }
+}

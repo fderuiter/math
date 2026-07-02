@@ -221,3 +221,13 @@ impl InteractiveTool for BetSizeCalculatorTool {
 }
 
 // [cite:modular_polynomials_review]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "BetSizeCalculatorTool",
+        domain: "financial_math",
+        tags: &[],
+        build: || Box::new(BetSizeCalculatorTool::default()),
+    }
+}

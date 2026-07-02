@@ -12,10 +12,7 @@ pub struct FinancialMathTab {
 impl Default for FinancialMathTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(bankroll_growth::BankrollGrowthTool::default()),
-                Box::new(bet_size::BetSizeCalculatorTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("financial_math"),
         }
     }
 }

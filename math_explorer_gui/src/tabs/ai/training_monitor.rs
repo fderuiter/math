@@ -276,3 +276,13 @@ fn argmax(v: &Vector) -> usize {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "TrainingMonitorTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(TrainingMonitorTool::default()),
+    }
+}

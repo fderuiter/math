@@ -13,11 +13,7 @@ pub struct GraphTheoryTab {
 impl Default for GraphTheoryTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(graph_editor::GraphEditorTool::default()),
-                Box::new(algorithm_visualizer::AlgorithmVisualizerTool::default()),
-                Box::new(network_metrics::NetworkMetricsTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("graph_theory"),
         }
     }
 }

@@ -113,3 +113,13 @@ impl InteractiveTool for UalbfWidget {
 }
 
 // [cite:ualbf_quasiperfect]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "UalbfWidget",
+        domain: "number_theory",
+        tags: &[],
+        build: || Box::new(UalbfWidget::default()),
+    }
+}

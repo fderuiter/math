@@ -124,3 +124,13 @@ impl InteractiveTool for CeraTool {
 }
 
 // [cite:cera_framework]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "CeraTool",
+        domain: "climate",
+        tags: &[],
+        build: || Box::new(CeraTool::default()),
+    }
+}

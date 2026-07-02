@@ -212,3 +212,13 @@ impl PotentialFlowTool {
 }
 
 // [cite:modular_polynomials_review]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "PotentialFlowTool",
+        domain: "fluid_dynamics",
+        tags: &[],
+        build: || Box::new(PotentialFlowTool::default()),
+    }
+}

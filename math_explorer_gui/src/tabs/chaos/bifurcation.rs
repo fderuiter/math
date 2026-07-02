@@ -117,3 +117,13 @@ impl InteractiveTool for BifurcationDiagram {
 }
 
 // [cite:algorithmic_information_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "BifurcationDiagram",
+        domain: "chaos",
+        tags: &[],
+        build: || Box::new(BifurcationDiagram::default()),
+    }
+}

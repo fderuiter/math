@@ -213,3 +213,13 @@ impl InteractiveTool for SpinVisualizer {
 
 // [cite:quantum_mechanics]
 // module = "quantum"
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "SpinVisualizer",
+        domain: "quantum",
+        tags: &[],
+        build: || Box::new(SpinVisualizer::default()),
+    }
+}

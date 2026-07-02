@@ -42,3 +42,13 @@ impl InteractiveTool for TemperatureAnomaliesTool {
 }
 
 // [cite:dwarf_galaxy_empirical_dependencies]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "TemperatureAnomaliesTool",
+        domain: "climate",
+        tags: &[],
+        build: || Box::new(TemperatureAnomaliesTool::default()),
+    }
+}

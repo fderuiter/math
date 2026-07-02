@@ -191,3 +191,13 @@ impl InteractiveTool for BankrollGrowthTool {
 }
 
 // [cite:clinical_trials_statistics]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "BankrollGrowthTool",
+        domain: "financial_math",
+        tags: &[],
+        build: || Box::new(BankrollGrowthTool::default()),
+    }
+}

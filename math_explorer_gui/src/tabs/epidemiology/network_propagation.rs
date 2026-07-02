@@ -162,3 +162,13 @@ impl InteractiveTool for NetworkPropagationTool {
 }
 
 // [cite:algorithmic_information_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "NetworkPropagationTool",
+        domain: "epidemiology",
+        tags: &[],
+        build: || Box::new(NetworkPropagationTool::default()),
+    }
+}

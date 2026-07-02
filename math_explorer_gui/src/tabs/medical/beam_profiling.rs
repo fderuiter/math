@@ -58,3 +58,13 @@ impl InteractiveTool for BeamProfilingTool {
 }
 
 // [cite:dwarf_galaxy_empirical_dependencies]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "BeamProfilingTool",
+        domain: "medical",
+        tags: &[],
+        build: || Box::new(BeamProfilingTool::default()),
+    }
+}

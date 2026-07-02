@@ -14,11 +14,7 @@ pub struct GeometryTopologyTab {
 impl Default for GeometryTopologyTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(surface_viewer::SurfaceViewer::default()),
-                Box::new(curvature_heatmap::CurvatureHeatmap::default()),
-                Box::new(vietoris_rips::VietorisRipsTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("geometry_topology"),
         }
     }
 }

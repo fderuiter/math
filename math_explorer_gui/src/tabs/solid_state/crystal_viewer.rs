@@ -182,3 +182,13 @@ impl InteractiveTool for CrystalViewer {
 }
 
 // [cite:modular_polynomials_review]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "CrystalViewer",
+        domain: "solid_state",
+        tags: &[],
+        build: || Box::new(CrystalViewer::default()),
+    }
+}

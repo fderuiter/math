@@ -147,3 +147,13 @@ impl InteractiveTool for ActivationFunctionsTool {
 }
 
 // [cite:algorithmic_information_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "ActivationFunctionsTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(ActivationFunctionsTool::default()),
+    }
+}

@@ -254,3 +254,13 @@ impl InteractiveTool for ComplexMappingTool {
 }
 
 // [cite:partitions_implementation]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "ComplexMappingTool",
+        domain: "analysis",
+        tags: &[],
+        build: || Box::new(ComplexMappingTool::default()),
+    }
+}

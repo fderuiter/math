@@ -129,3 +129,13 @@ impl InteractiveTool for RewardPlotsTool {
 }
 
 // [cite:modular_polynomials_review]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "RewardPlotsTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(RewardPlotsTool::default()),
+    }
+}
