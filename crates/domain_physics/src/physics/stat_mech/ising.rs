@@ -76,7 +76,7 @@ impl SpinLattice {
     /// Creates a new random spin lattice.
     #[verified_engine::verified]
     pub fn new(width: usize, height: usize) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         Self::new_with_rng(width, height, &mut rng)
     }
 
@@ -186,7 +186,7 @@ impl SpinLattice {
     /// 3. Accept flip if Delta E < 0 OR with probability e^(-beta * Delta E).
     #[verified_engine::verified]
     pub fn metropolis_step(&mut self, temperature: f64, j_coupling: f64, h_field: f64) {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         self.metropolis_step_with_rng(temperature, j_coupling, h_field, &mut rng)
     }
 
@@ -242,7 +242,7 @@ impl SpinLattice {
     /// 3. It precomputes neighbor indices to avoid coordinate arithmetic in the loop.
     #[verified_engine::verified]
     pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         self.evolve_with_rng(steps, temperature, j_coupling, h_field, &mut rng)
     }
 

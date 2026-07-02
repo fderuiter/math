@@ -1,3 +1,4 @@
+use rand::Rng;
 //! This module defines the autoencoder architecture for the CERA framework.
 
 use crate::climate::tensor_ops::conv1d;
@@ -64,9 +65,9 @@ impl ConvLayer {
     pub fn new(in_channels: usize, out_channels: usize) -> Self {
         // Simple random initialization using from_fn
         let kernel = DMatrix::from_fn(out_channels, in_channels, |_, _| {
-            rand::random::<f32>() * 2.0 - 1.0
+            oxidize_core::rng::OxidizeRng::default().gen::<f32>() * 2.0 - 1.0
         });
-        let bias = DVector::from_fn(out_channels, |_, _| rand::random::<f32>() * 2.0 - 1.0);
+        let bias = DVector::from_fn(out_channels, |_, _| oxidize_core::rng::OxidizeRng::default().gen::<f32>() * 2.0 - 1.0);
         Self {
             kernel,
             bias,
@@ -84,9 +85,9 @@ impl ConvLayer {
         layer_idx: usize,
     ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
         let grad_k = DMatrix::from_fn(self.kernel.nrows(), self.kernel.ncols(), |_, _| {
-            rand::random::<f32>() - 0.5
+            oxidize_core::rng::OxidizeRng::default().gen::<f32>() - 0.5
         });
-        let grad_b = DVector::from_fn(self.bias.len(), |_, _| rand::random::<f32>() - 0.5);
+        let grad_b = DVector::from_fn(self.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().gen::<f32>() - 0.5);
 
         optimizer.update_matrix_legacy(layer_idx, &mut self.kernel, &grad_k)?;
         optimizer.update_vector_legacy(layer_idx, &mut self.bias, &grad_b)?;
@@ -348,7 +349,7 @@ mod tests {
 
         let autoencoder = Autoencoder::new(in_channels, latent_channels);
 
-        let input = DMatrix::from_fn(n_samples, in_channels, |_, _| rand::random());
+        let input = DMatrix::from_fn(n_samples, in_channels, |_, _| oxidize_core::rng::OxidizeRng::default().gen());
 
         let (latent, reconstruction) = autoencoder.forward(&input);
 

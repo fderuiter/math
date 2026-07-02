@@ -8,14 +8,6 @@ First off, thank you for considering contributing to Math Explorer! It's people 
 
 When you submit a PR, you aren't just merging code; you are merging knowledge. Ensure your contributions are accessible to others.
 
-## Architectural Records
-
-All core architectural decisions, constraints, and system designs must be documented in our version-controlled architectural journals located in the [`.jules/`](./.jules/) directory. 
-- When modifying core system logic or architectural patterns, you **must** update the corresponding records (`systems_core.md`, `architect.md`, or `mason.md`).
-- Our CI pipeline automatically verifies that these records are updated when changes occur in critical logic areas (`crates/` or `math_explorer/`).
-- Personal or user-specific logs should be placed in `.jules/personal/` (which is excluded from version control).
-- For non-architectural hotfixes, you can bypass the CI check by adding `[skip journal]` to your commit message.
-
 ##  Getting Started
 
 1.  **Fork the repository** on GitHub.

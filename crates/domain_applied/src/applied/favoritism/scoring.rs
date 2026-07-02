@@ -36,7 +36,7 @@ use rand::Rng;
 /// ```
 #[verified_engine::verified]
 pub fn calculate_favoritism_score(inputs: &FavoritismInputs) -> f64 {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     calculate_favoritism_score_with_rng(inputs, &mut rng)
 }
 

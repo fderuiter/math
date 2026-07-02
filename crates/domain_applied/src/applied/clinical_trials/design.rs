@@ -1,6 +1,6 @@
 use super::types::ClinicalTrialError;
 use rand::seq::SliceRandom;
-use rand::{Rng, thread_rng};
+use rand::Rng;
 use std::collections::HashMap;
 
 /// Represents the group assignment for a patient in a clinical trial.
@@ -181,14 +181,14 @@ impl<S: AllocationStrategy> StratifiedRandomizer<S> {
 #[deprecated(since = "0.2.0", note = "Use SimpleRandomizer struct instead")]
 #[verified_engine::verified]
 pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
-    let mut rng = thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     SimpleRandomizer.assign(&mut rng, n_patients).unwrap()
 }
 
 #[deprecated(since = "0.2.0", note = "Use BlockRandomizer struct instead")]
 #[verified_engine::verified]
 pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<Group>, String> {
-    let mut rng = thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     let randomizer = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
     randomizer
         .assign(&mut rng, n_patients)
@@ -201,7 +201,7 @@ pub fn stratified_randomization(
     patients: &[Patient],
     block_size: usize,
 ) -> Result<HashMap<String, Group>, String> {
-    let mut rng = thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     let base_strategy = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
     let randomizer = StratifiedRandomizer::new(base_strategy);
     randomizer

@@ -257,7 +257,7 @@ fn generate_spiral_data(points_per_class: usize) -> Vec<(Vector, Vector)> {
 
     // Shuffle data (simple shuffle)
     use rand::seq::SliceRandom;
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     data.shuffle(&mut rng);
 
     data

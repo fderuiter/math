@@ -42,7 +42,6 @@ fn setup() {
     println!("=== Math Explorer Setup Script ===");
     run_cmd("cargo", &["build"]);
     run_cmd("cargo", &["test"]);
-    fs::create_dir_all(".jules/personal").unwrap();
 
     let hook_path = ".git/hooks/pre-commit";
     let hook_content = r#"#!/bin/sh

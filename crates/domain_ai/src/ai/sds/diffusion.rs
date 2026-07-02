@@ -11,7 +11,7 @@ const DEFAULT_BETA_END: f64 = 0.02;
 /// Output: Timestep scalar t.
 #[verified_engine::verified]
 pub fn sample_timestep(max_timesteps: usize) -> usize {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     sample_timestep_with_rng(max_timesteps, &mut rng)
 }
 
@@ -92,7 +92,7 @@ pub fn inject_noise(
 /// Helper to generate Gaussian noise matching image dimensions
 #[verified_engine::verified]
 pub fn generate_noise(rows: usize, cols: usize) -> Result<DMatrix<f64>, crate::error::AIError> {
-    let mut rng = rand::thread_rng();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     generate_noise_with_rng(rows, cols, &mut rng)
 }
 

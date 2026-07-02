@@ -176,3 +176,5 @@ required-features = ["physics"]
 
 [profile.release]
 overflow-checks = true
+[lints]
+workspace = true

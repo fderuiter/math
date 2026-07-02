@@ -52,7 +52,7 @@ impl DenseLayer {
     /// This method uses the default thread-local RNG.
     #[verified_engine::verified]
     pub fn new(input_dim: usize, output_dim: usize) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         Self::new_with_rng(input_dim, output_dim, &mut rng)
     }
 

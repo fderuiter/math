@@ -7,3 +7,5 @@ edition = "2021"
 
 [profile.release]
 overflow-checks = true
+[lints]
+workspace = true
