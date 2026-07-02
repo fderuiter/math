@@ -71,7 +71,10 @@ fn run_simulation() {
     simulate_systems(&mut sys1, &mut sys2);
 }
 
-fn simulate_systems(sys1: &mut math_explorer::physics::chaos::lorenz::LorenzSystem, sys2: &mut math_explorer::physics::chaos::lorenz::LorenzSystem) {
+fn simulate_systems(
+    sys1: &mut math_explorer::physics::chaos::lorenz::LorenzSystem,
+    sys2: &mut math_explorer::physics::chaos::lorenz::LorenzSystem,
+) {
     let dt = 0.01;
     let steps = 3000;
     let print_interval = 200;
