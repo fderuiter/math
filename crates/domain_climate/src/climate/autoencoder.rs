@@ -365,6 +365,6 @@ mod tests {
         let mut matrix = DMatrix::from_row_slice(2, 2, &[-1.0, 2.0, -3.0, 0.0]);
         leaky_relu(&mut matrix, 0.1);
         let expected = DMatrix::from_row_slice(2, 2, &[-0.1, 2.0, -0.3, 0.0]);
-        assert!((matrix - expected).abs().max() < math_commons::registry::TOLERANCE_FAST);
+        assert!((matrix - expected).abs().max() < math_commons::registry::TOLERANCE_FAST_F32);
     }
 }
