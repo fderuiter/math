@@ -2,8 +2,6 @@
 
 use crate::error::FluidError;
 use nalgebra::{Matrix3, Vector3};
-use pure_math::pure_math::analysis::ode::VectorOperations;
-use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 /// Physical properties of the fluid.
 #[derive(Debug, Clone, Copy)]
@@ -130,56 +128,7 @@ impl FlowState {
     }
 }
 
-impl Add for FlowState {
-    type Output = Self;
-    #[verified_engine::verified]
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            velocity: self.velocity + rhs.velocity,
-            pressure: self.pressure + rhs.pressure,
-        }
-    }
-}
-
-impl AddAssign for FlowState {
-    #[verified_engine::verified]
-    fn add_assign(&mut self, rhs: Self) {
-        self.velocity += rhs.velocity;
-        self.pressure += rhs.pressure;
-    }
-}
-
-impl Mul<f64> for FlowState {
-    type Output = Self;
-    #[verified_engine::verified]
-    fn mul(self, scalar: f64) -> Self {
-        Self {
-            velocity: self.velocity * scalar,
-            pressure: self.pressure * scalar,
-        }
-    }
-}
-
-impl MulAssign<f64> for FlowState {
-    #[verified_engine::verified]
-    fn mul_assign(&mut self, scalar: f64) {
-        self.velocity *= scalar;
-        self.pressure *= scalar;
-    }
-}
-
-impl VectorOperations for FlowState {
-    #[verified_engine::verified]
-    fn scale_add(&mut self, other: &Self, scale: f64) {
-        self.velocity += other.velocity * scale;
-        self.pressure += other.pressure * scale;
-    }
-
-    #[verified_engine::verified]
-    fn copy_from(&mut self, other: &Self) {
-        *self = *other;
-    }
-}
+pure_math::impl_vector_operations!(FlowState, velocity, pressure);
 
 /// Encapsulates spatial derivatives required for momentum equations.
 ///

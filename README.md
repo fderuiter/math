@@ -3,7 +3,7 @@
 ![CI/CD](https://github.com/fderuiter/math-explorer/actions/workflows/rust.yml/badge.svg)
 ![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)
 ![License](https://img.shields.io/badge/license-AGPL-blue.svg)
-![Coverage](https://img.shields.io/badge/coverage-43.7%25-yellow)
+![Coverage](https://img.shields.io/badge/coverage-43.8%25-yellow)
 
 **Math Explorer** is a comprehensive Rust library that bridges the gap between rigorous academic theory and executable code. From simulating Quantum Mechanics to modeling Social Favoritism, this repository serves as a verifiable playground for complex algorithms.
 
@@ -17,9 +17,9 @@
 git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer
 
-# Check prerequisites, build the core library, and run tests
+# Check prerequisites, build the core library, run tests, and automatically configure Git hooks
 # Note: To compile academic papers, ensure pdflatex (e.g., via TeX Live) is installed.
-./setup.sh
+cargo run -p xtask -- setup
 ```
 
 Alternatively, you can manually build the library using Cargo:
@@ -28,6 +28,8 @@ Alternatively, you can manually build the library using Cargo:
 # Build the core library manually
 cargo build --release --package math_explorer
 ```
+
+**Note:** The setup process automatically installs Git hooks that enforce project standards (e.g., file-length constraints in core directories) at the commit level. This provides immediate local feedback and prevents compliance bypasses without manual intervention.
 
 ## Usage
 

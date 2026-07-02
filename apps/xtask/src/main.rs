@@ -43,6 +43,50 @@ fn setup() {
     run_cmd("cargo", &["build"]);
     run_cmd("cargo", &["test"]);
     fs::create_dir_all(".jules/personal").unwrap();
+
+    let hook_path = ".git/hooks/pre-commit";
+    let hook_content = r#"#!/bin/sh
+# auto-generated pre-commit hook
+
+echo "Running centralized verification suite..."
+cargo run -p xtask -- check-file-lengths
+
+if [ $? -ne 0 ]; then
+    echo "Verification failed! Commit blocked due to file-length constraints."
+    exit 1
+fi
+"#;
+
+    if std::path::Path::new(hook_path).exists() {
+        let existing = fs::read_to_string(hook_path).unwrap_or_default();
+        if !existing.contains("auto-generated pre-commit hook") {
+            println!("Warning: A custom pre-commit hook exists at {}. Please merge the verification check manually or remove it to allow auto-installation.", hook_path);
+        } else {
+            fs::write(hook_path, hook_content).unwrap();
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = fs::metadata(hook_path).unwrap().permissions();
+                perms.set_mode(0o755);
+                fs::set_permissions(hook_path, perms).unwrap();
+            }
+            println!("Pre-commit hook updated.");
+        }
+    } else {
+        if let Some(parent) = std::path::Path::new(hook_path).parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+        fs::write(hook_path, hook_content).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(hook_path).unwrap().permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(hook_path, perms).unwrap();
+        }
+        println!("Pre-commit hook installed.");
+    }
+
     println!("=== Setup Complete ===");
 }
 
