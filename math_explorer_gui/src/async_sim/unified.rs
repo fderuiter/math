@@ -200,10 +200,7 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
         egui::CentralPanel::default().show(ctx, |ui| {
             if let Some(snapshot) = &self.last_snapshot {
                 if let Ok(guard) = snapshot.pixels.try_read() {
-                    let image = ColorImage::new(
-                        [snapshot.width, snapshot.height],
-                        guard.clone(),
-                    );
+                    let image = ColorImage::new([snapshot.width, snapshot.height], guard.clone());
                     let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
                     self.texture = Some(texture);
                 }

@@ -140,18 +140,34 @@ impl SimulationController {
             cmd_rx,
             state_tx,
         });
-        
+
         let ptr = Box::into_raw(ctx) as u32;
 
         let mut opt_worker = None;
         // Try to initialize a Web Worker
         if let Ok(worker) = web_sys::Worker::new("worker.js") {
             let msg = js_sys::Object::new();
-            let _ = js_sys::Reflect::set(&msg, &wasm_bindgen::JsValue::from_str("type"), &wasm_bindgen::JsValue::from_str("init"));
-            let _ = js_sys::Reflect::set(&msg, &wasm_bindgen::JsValue::from_str("module"), &wasm_bindgen::module());
-            let _ = js_sys::Reflect::set(&msg, &wasm_bindgen::JsValue::from_str("memory"), &wasm_bindgen::memory());
-            let _ = js_sys::Reflect::set(&msg, &wasm_bindgen::JsValue::from_str("ptr"), &wasm_bindgen::JsValue::from_f64(ptr as f64));
-            
+            let _ = js_sys::Reflect::set(
+                &msg,
+                &wasm_bindgen::JsValue::from_str("type"),
+                &wasm_bindgen::JsValue::from_str("init"),
+            );
+            let _ = js_sys::Reflect::set(
+                &msg,
+                &wasm_bindgen::JsValue::from_str("module"),
+                &wasm_bindgen::module(),
+            );
+            let _ = js_sys::Reflect::set(
+                &msg,
+                &wasm_bindgen::JsValue::from_str("memory"),
+                &wasm_bindgen::memory(),
+            );
+            let _ = js_sys::Reflect::set(
+                &msg,
+                &wasm_bindgen::JsValue::from_str("ptr"),
+                &wasm_bindgen::JsValue::from_f64(ptr as f64),
+            );
+
             let _ = worker.post_message(&msg);
             opt_worker = Some(worker);
         } else {
