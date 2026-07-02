@@ -1,52 +1,7 @@
 //! Core types for Kelly Criterion.
 
 use crate::error::KellyError;
-
-/// Win probability p (must be between 0 and 1).
-///
-/// Represents the probability of winning a bet.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct EdgeProbability(f64);
-
-impl EdgeProbability {
-    /// Creates a new edge probability.
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The probability value (must be between 0 and 1)
-    ///
-    /// # Returns
-    ///
-    /// * `Result<EdgeProbability, KellyError>` - The validated probability or an error
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use pure_math::pure_math::statistics::kelly::EdgeProbability;
-    ///
-    /// let p = EdgeProbability::new(0.55).unwrap();
-    /// assert_eq!(p.value(), 0.55);
-    /// ```
-    #[verified_engine::verified]
-    pub fn new(value: f64) -> Result<Self, KellyError> {
-        if !(0.0..=1.0).contains(&value) || !value.is_finite() {
-            return Err(KellyError::InvalidProbability { value });
-        }
-        Ok(Self(value))
-    }
-
-    /// Returns the raw probability value.
-    #[verified_engine::verified]
-    pub fn value(&self) -> f64 {
-        self.0
-    }
-
-    /// Returns the complementary probability (q = 1 - p).
-    #[verified_engine::verified]
-    pub fn complement(&self) -> f64 {
-        1.0 - self.0
-    }
-}
+pub use math_commons::primitives::UnitInterval;
 
 /// Decimal odds b (must be > 1.0).
 ///
@@ -242,29 +197,6 @@ impl BankrollFraction {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    #[verified_engine::verified]
-    fn test_edge_probability_valid() {
-        let p = EdgeProbability::new(0.55).unwrap();
-        assert_eq!(p.value(), 0.55);
-        assert!((p.complement() - 0.45).abs() < 1e-10);
-    }
-
-    #[test]
-    #[verified_engine::verified]
-    fn test_edge_probability_invalid() {
-        assert!(EdgeProbability::new(-0.1).is_err());
-        assert!(EdgeProbability::new(1.1).is_err());
-        assert!(EdgeProbability::new(f64::NAN).is_err());
-    }
-
-    #[test]
-    #[verified_engine::verified]
-    fn test_edge_probability_boundaries() {
-        assert!(EdgeProbability::new(0.0).is_ok());
-        assert!(EdgeProbability::new(1.0).is_ok());
-    }
 
     #[test]
     #[verified_engine::verified]

@@ -218,23 +218,23 @@ pub fn solve_gap_equation(
 /// v_k^2 = 1/2 (1 - \xi_k / E_k) : Probability of pair occupation
 /// u_k^2 = 1 - v_k^2             : Probability of emptiness
 #[verified_engine::verified]
-pub fn coherence_factors(xi_k: f64, delta: f64) -> (f64, f64) {
+pub fn coherence_factors(xi_k: f64, delta: f64) -> Result<(f64, f64), String> {
     let xi = ElectronVolts(xi_k);
     let d = ElectronVolts(delta);
-    let (u, v) = coherence_factors_strong(xi, d);
-    (u, v)
+    coherence_factors_strong(xi, d)
 }
 
 /// Strong-typed version of coherence factors.
 #[verified_engine::verified]
-pub fn coherence_factors_strong(xi_k: ElectronVolts, delta: ElectronVolts) -> (f64, f64) {
+pub fn coherence_factors_strong(xi_k: ElectronVolts, delta: ElectronVolts) -> Result<(f64, f64), String> {
     let e_k = (xi_k.0.powi(2) + delta.0.powi(2)).sqrt();
-    let v_sq = 0.5 * (1.0 - xi_k.0 / e_k);
-    // Ensure within [0, 1] for numerical safety
-    let v_sq = v_sq.clamp(0.0, 1.0);
-    let u_sq = 1.0 - v_sq;
+    let raw_v_sq = 0.5 * (1.0 - xi_k.0 / e_k);
+    
+    // Use UnitInterval to enforce invariants explicitly without manual clamping
+    let v_sq = math_commons::primitives::UnitInterval::new(raw_v_sq)?;
+    let u_sq = v_sq.complement();
 
-    (u_sq.sqrt(), v_sq.sqrt())
+    Ok((u_sq.sqrt(), v_sq.value().sqrt()))
 }
 
 #[cfg(test)]
@@ -246,7 +246,7 @@ mod tests {
     fn test_bcs_probability_conservation() {
         let xi = 1.5;
         let delta = 0.2;
-        let (u, v) = coherence_factors(xi, delta);
+        let (u, v) = coherence_factors(xi, delta).unwrap();
         let prob = u * u + v * v;
         assert!((prob - 1.0).abs() < 1e-9);
     }

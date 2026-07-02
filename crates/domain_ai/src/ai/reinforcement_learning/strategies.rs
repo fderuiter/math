@@ -1,5 +1,6 @@
 use super::types::{Action, State};
 use rand::Rng;
+use math_commons::primitives::UnitInterval;
 
 /// Strategy for selecting an action based on Q-values.
 pub trait ExplorationStrategy<S, A> {
@@ -19,12 +20,12 @@ pub trait ExplorationStrategy<S, A> {
 /// Epsilon-Greedy Exploration Strategy.
 /// Selects a random action with probability epsilon, and the best action with probability 1-epsilon.
 pub struct EpsilonGreedy {
-    epsilon: f64,
+    epsilon: UnitInterval,
 }
 
 impl EpsilonGreedy {
     #[verified_engine::verified]
-    pub fn new(epsilon: f64) -> Self {
+    pub fn new(epsilon: UnitInterval) -> Self {
         Self { epsilon }
     }
 }
@@ -46,7 +47,7 @@ where
             return None;
         }
 
-        if rng.r#gen::<f64>() < self.epsilon {
+        if rng.r#gen::<f64>() < self.epsilon.value() {
             // Explore: Random action
             let index = rng.gen_range(0..available_actions.len());
             Some(available_actions[index].clone())

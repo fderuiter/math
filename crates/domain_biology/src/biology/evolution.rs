@@ -27,13 +27,14 @@
 //!
 //! ```rust
 //! use domain_biology::biology::evolution::HawkDovePopulation;
+//! use math_commons::primitives::UnitInterval;
 //!
 //! // 1. Define the environment
 //! // Value = 2.0, Cost = 10.0 (High cost of fighting)
 //! let population = HawkDovePopulation::new(2.0, 10.0);
 //!
 //! // 2. Initial State: Mostly Hawks (90%)
-//! let mut hawk_freq = 0.9;
+//! let mut hawk_freq = UnitInterval::new(0.9).unwrap();
 //! let dt = 0.1;
 //!
 //! // 3. Evolve over time
@@ -43,10 +44,11 @@
 //!
 //! // 4. Check convergence
 //! // Theoretical Equilibrium: p = V/C = 2/10 = 0.2
-//! println!("Final Hawk Frequency: {:.3}", hawk_freq);
-//! assert!((hawk_freq - 0.2).abs() < 0.05);
+//! println!("Final Hawk Frequency: {:.3}", hawk_freq.value());
+//! assert!((hawk_freq.value() - 0.2).abs() < 0.05);
 //! ```
 
+use math_commons::primitives::UnitInterval;
 use domain_applied::applied::game_theory::evolutionary::ReplicatorDynamics;
 use domain_applied::error::GameTheoryError;
 use nalgebra::{DMatrix, DVector};
@@ -100,27 +102,21 @@ impl HawkDovePopulation {
     /// # Returns
     /// The new frequency of Hawks.
     #[verified_engine::verified]
-    pub fn update_frequencies(&self, hawk_freq: f64, dt: f64) -> Result<f64, GameTheoryError> {
-        if !(0.0..=1.0).contains(&hawk_freq) {
-            return Err(GameTheoryError::InvalidParameter {
-                name: "hawk_freq".to_string(),
-                value: hawk_freq,
-            });
-        }
-
+    pub fn update_frequencies(&self, hawk_freq: UnitInterval, dt: f64) -> Result<UnitInterval, GameTheoryError> {
         // Use ArrayState (stack allocated) for zero-overhead simulation
-        let current_state = ArrayState([hawk_freq]);
+        let current_state = ArrayState([hawk_freq.value()]);
         let mut solver = Euler::new(&current_state);
 
         // Solve using the efficient OdeSystem<ArrayState<1>> implementation
         let next_state = solver.solve(self, 0.0, &current_state, dt);
 
-        let mut new_p_h = next_state.0[0];
+        let new_p_h = next_state.0[0];
 
-        // Clamp to [0, 1] to handle numerical drift
-        new_p_h = new_p_h.clamp(0.0, 1.0);
-
-        Ok(new_p_h)
+        // Return error if out of bounds instead of manual clamping
+        UnitInterval::new(new_p_h).map_err(|_| GameTheoryError::InvalidParameter {
+            name: "hawk_freq".to_string(),
+            value: new_p_h,
+        })
     }
 
     /// Updates the frequency of the Hawk strategy using a provided solver strategy.
@@ -135,21 +131,14 @@ impl HawkDovePopulation {
     #[verified_engine::verified]
     pub fn update_frequencies_with_solver<S>(
         &self,
-        hawk_freq: f64,
+        hawk_freq: UnitInterval,
         dt: f64,
         solver: &mut S,
-    ) -> Result<f64, GameTheoryError>
+    ) -> Result<UnitInterval, GameTheoryError>
     where
         S: Solver<DVector<f64>>,
     {
-        if !(0.0..=1.0).contains(&hawk_freq) {
-            return Err(GameTheoryError::InvalidParameter {
-                name: "hawk_freq".to_string(),
-                value: hawk_freq,
-            });
-        }
-
-        let p_h = hawk_freq;
+        let p_h = hawk_freq.value();
         let p_d = 1.0 - p_h;
 
         let current_state = DVector::from_vec(vec![p_h, p_d]);
@@ -157,12 +146,13 @@ impl HawkDovePopulation {
 
         // Use the injected solver strategy
         let next_state = solver.solve(&system, 0.0, &current_state, dt);
-        let mut new_p_h = next_state[0];
+        let new_p_h = next_state[0];
 
-        // Clamp to [0, 1] to handle numerical drift
-        new_p_h = new_p_h.clamp(0.0, 1.0);
-
-        Ok(new_p_h)
+        // Return error if out of bounds instead of manual clamping
+        UnitInterval::new(new_p_h).map_err(|_| GameTheoryError::InvalidParameter {
+            name: "hawk_freq".to_string(),
+            value: new_p_h,
+        })
     }
 }
 

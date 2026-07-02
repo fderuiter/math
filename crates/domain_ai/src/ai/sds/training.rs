@@ -1,5 +1,6 @@
 use crate::ai::sds::rendering::{NeRFModel, RayBundle};
 use crate::error::AIError;
+use math_commons::primitives::{PositiveFloat, UnitInterval};
 use nalgebra::DMatrix;
 
 /// Module 5.1: Jacobian-Vector Product
@@ -47,10 +48,10 @@ pub trait Optimizer {
 /// Simplified Adam implementation for a single parameter tensor (e.g., NeRF weights).
 /// theta_{t+1} = theta_t - eta * m_t / (sqrt(v_t) + epsilon)
 pub struct AdamOptimizer {
-    pub learning_rate: f64,
-    pub beta1: f64,
-    pub beta2: f64,
-    pub epsilon: f64,
+    pub learning_rate: PositiveFloat,
+    pub beta1: UnitInterval,
+    pub beta2: UnitInterval,
+    pub epsilon: PositiveFloat,
     pub m: Option<DMatrix<f64>>,
     pub v: Option<DMatrix<f64>>,
     pub t: usize,
@@ -58,12 +59,12 @@ pub struct AdamOptimizer {
 
 impl AdamOptimizer {
     #[verified_engine::verified]
-    pub fn new(learning_rate: f64) -> Self {
+    pub fn new(learning_rate: PositiveFloat) -> Self {
         Self {
             learning_rate,
-            beta1: 0.9,
-            beta2: 0.999,
-            epsilon: 1e-8,
+            beta1: UnitInterval::new(0.9).unwrap(),
+            beta2: UnitInterval::new(0.999).unwrap(),
+            epsilon: PositiveFloat::new(1e-8).unwrap(),
             m: None,
             v: None,
             t: 0,
@@ -101,23 +102,23 @@ impl Optimizer for AdamOptimizer {
         })?;
 
         // Update biased first moment estimate: m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
-        *m = &*m * self.beta1 + grads * (1.0 - self.beta1);
+        *m = &*m * self.beta1.value() + grads * (1.0 - self.beta1.value());
 
         // Update biased second raw moment estimate: v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2
         // Element-wise square of gradients
         let grads_sq = grads.map(|x| x * x);
-        *v = &*v * self.beta2 + grads_sq * (1.0 - self.beta2);
+        *v = &*v * self.beta2.value() + grads_sq * (1.0 - self.beta2.value());
 
         // Compute bias-corrected first moment estimate
-        let m_hat = &*m / (1.0 - self.beta1.powi(self.t as i32));
+        let m_hat = &*m / (1.0 - self.beta1.value().powi(self.t as i32));
 
         // Compute bias-corrected second raw moment estimate
-        let v_hat = &*v / (1.0 - self.beta2.powi(self.t as i32));
+        let v_hat = &*v / (1.0 - self.beta2.value().powi(self.t as i32));
 
         // Update parameters: theta = theta - lr * m_hat / (sqrt(v_hat) + epsilon)
-        let update_term = m_hat.component_div(&v_hat.map(|x| x.sqrt() + self.epsilon));
+        let update_term = m_hat.component_div(&v_hat.map(|x| x.sqrt() + self.epsilon.value()));
 
-        Ok(params - update_term * self.learning_rate)
+        Ok(params - update_term * self.learning_rate.value())
     }
 }
 
@@ -125,14 +126,14 @@ impl Optimizer for AdamOptimizer {
 /// v_{t+1} = momentum * v_t + g_t
 /// theta_{t+1} = theta_t - lr * v_{t+1}
 pub struct SgdOptimizer {
-    pub learning_rate: f64,
-    pub momentum: f64,
+    pub learning_rate: PositiveFloat,
+    pub momentum: UnitInterval,
     pub velocity: Option<DMatrix<f64>>,
 }
 
 impl SgdOptimizer {
     #[verified_engine::verified]
-    pub fn new(learning_rate: f64, momentum: f64) -> Self {
+    pub fn new(learning_rate: PositiveFloat, momentum: UnitInterval) -> Self {
         Self {
             learning_rate,
             momentum,
@@ -168,10 +169,10 @@ impl Optimizer for SgdOptimizer {
         // Note: Some implementations use v_{t+1} = momentum * v_t - lr * g_t.
         // We stick to the additive accumulation of gradients, then subtract.
         // v = mu * v + g
-        *v = &*v * self.momentum + grads;
+        *v = &*v * self.momentum.value() + grads;
 
         // Update parameters: theta = theta - lr * v
-        Ok(params - &*v * self.learning_rate)
+        Ok(params - &*v * self.learning_rate.value())
     }
 }
 

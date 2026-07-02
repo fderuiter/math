@@ -12,7 +12,7 @@ fn main() {
     let c = 10.0;
     let population = HawkDovePopulation::new(v, c);
 
-    let mut hawk_freq = 0.9;
+    let mut hawk_freq = math_commons::primitives::UnitInterval::new(0.9).unwrap();
     let dt = 0.0001; // Small dt for stability
 
     println!(
@@ -30,7 +30,7 @@ fn main() {
 
     let duration = start.elapsed();
 
-    println!("Final Hawk Frequency: {:.6}", hawk_freq);
+    println!("Final Hawk Frequency: {:.6}", hawk_freq.value());
     println!("Total Time: {:?}", duration);
     println!("Time per iteration: {:?}", duration / iterations as u32);
 }

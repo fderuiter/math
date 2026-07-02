@@ -1,6 +1,7 @@
 use super::q_function::TabularQFunction;
 use super::strategies::{EpsilonGreedy, ExplorationStrategy};
 use super::types::{Action, QFunction, State};
+use math_commons::primitives::UnitInterval;
 use rand::RngCore;
 use std::hash::Hash;
 
@@ -11,11 +12,11 @@ pub fn q_learning_update(
     current_q: f64,
     reward: f64,
     max_next_q: f64,
-    alpha: f64,
-    gamma: f64,
+    alpha: UnitInterval,
+    gamma: UnitInterval,
 ) -> f64 {
-    let target = reward + gamma * max_next_q;
-    current_q + alpha * (target - current_q)
+    let target = reward + gamma.value() * max_next_q;
+    current_q + alpha.value() * (target - current_q)
 }
 
 /// A generic Q-Learning Agent using the Strategy Pattern for Q-Function storage.
@@ -30,8 +31,8 @@ where
     Q: QFunction<S, A>,
 {
     pub q_func: Q,
-    learning_rate: f64,
-    discount_factor: f64,
+    learning_rate: UnitInterval,
+    discount_factor: UnitInterval,
     strategy: Box<dyn ExplorationStrategy<S, A>>,
 }
 
@@ -50,8 +51,8 @@ where
     #[verified_engine::verified]
     pub fn new_generic(
         q_func: Q,
-        learning_rate: f64,
-        discount_factor: f64,
+        learning_rate: UnitInterval,
+        discount_factor: UnitInterval,
         strategy: Box<dyn ExplorationStrategy<S, A>>,
     ) -> Self {
         Self {
@@ -140,7 +141,7 @@ where
 {
     /// Creates a new Tabular Q-Agent.
     #[verified_engine::verified]
-    pub fn new(learning_rate: f64, discount_factor: f64, epsilon: f64) -> Self {
+    pub fn new(learning_rate: UnitInterval, discount_factor: UnitInterval, epsilon: UnitInterval) -> Self {
         Self {
             q_func: TabularQFunction::new(),
             learning_rate,
@@ -152,8 +153,8 @@ where
     /// Creates a new Tabular Q-Agent with a custom exploration strategy.
     #[verified_engine::verified]
     pub fn new_with_strategy(
-        learning_rate: f64,
-        discount_factor: f64,
+        learning_rate: UnitInterval,
+        discount_factor: UnitInterval,
         strategy: Box<dyn ExplorationStrategy<S, A>>,
     ) -> Self {
         Self {
@@ -172,9 +173,9 @@ where
 /// * `return_gt`: The cumulative return $G_t$.
 /// * `grad_log_pi`: The gradient of the log probability of the action taken.
 #[verified_engine::verified]
-pub fn policy_gradient_step(return_gt: f64, grad_log_pi: &[f64], learning_rate: f64) -> Vec<f64> {
+pub fn policy_gradient_step(return_gt: f64, grad_log_pi: &[f64], learning_rate: UnitInterval) -> Vec<f64> {
     grad_log_pi
         .iter()
-        .map(|g| learning_rate * return_gt * g)
+        .map(|g| learning_rate.value() * return_gt * g)
         .collect()
 }

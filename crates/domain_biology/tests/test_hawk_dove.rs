@@ -12,7 +12,7 @@ mod tests {
         let population = HawkDovePopulation::new(2.0, 10.0);
 
         // 2. Initial State: Mostly Hawks (90%)
-        let mut hawk_freq = 0.9;
+        let mut hawk_freq = math_commons::primitives::UnitInterval::new(0.9).unwrap();
         let dt = 0.1;
 
         // 3. Evolve over time
@@ -22,8 +22,8 @@ mod tests {
 
         // 4. Check convergence
         // Theoretical Equilibrium: p = V/C = 2/10 = 0.2
-        println!("Final Hawk Frequency: {:.3}", hawk_freq);
-        assert!((hawk_freq - 0.2).abs() < 0.05);
+        println!("Final Hawk Frequency: {:.3}", hawk_freq.value());
+        assert!((hawk_freq.value() - 0.2).abs() < 0.05);
     }
 
     #[test]
@@ -33,7 +33,7 @@ mod tests {
         let population = HawkDovePopulation::new(2.0, 10.0);
 
         // 2. Initial State
-        let mut hawk_freq = 0.9;
+        let mut hawk_freq = math_commons::primitives::UnitInterval::new(0.9).unwrap();
         let dt = 0.1;
 
         // 3. Evolve using RK4
@@ -41,7 +41,7 @@ mod tests {
         // but here we just re-create it per step for simplicity or create one solver.
         // Ideally, for RK4, we should reuse the solver to avoid allocation.
 
-        let initial_state = DVector::from_vec(vec![hawk_freq, 1.0 - hawk_freq]);
+        let initial_state = DVector::from_vec(vec![hawk_freq.value(), hawk_freq.complement()]);
         let mut solver = RungeKutta4::new(&initial_state);
 
         for _ in 0..100 {
@@ -51,7 +51,7 @@ mod tests {
         }
 
         // 4. Check convergence
-        println!("Final Hawk Frequency (RK4): {:.3}", hawk_freq);
-        assert!((hawk_freq - 0.2).abs() < 0.05);
+        println!("Final Hawk Frequency (RK4): {:.3}", hawk_freq.value());
+        assert!((hawk_freq.value() - 0.2).abs() < 0.05);
     }
 }

@@ -6,7 +6,7 @@ use math_explorer::pure_math::statistics::{
         GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
         update_rating,
     },
-    kelly::{EdgeProbability, Odds, kelly_fraction},
+    kelly::{UnitInterval, Odds, kelly_fraction},
     markov::dtmc::{MarkovChain, StateType},
     ou_process::{EulerMaruyama, OuParams, TimeStep},
     zip_regression::{Count, ZipDistribution, ZipParams},
@@ -79,7 +79,7 @@ fn main() {
 
     // 5. Kelly Criterion: Optimal bet sizing
     println!("\n5. KELLY CRITERION - Bet Sizing");
-    let prob = EdgeProbability::new(0.55).unwrap();
+    let prob = UnitInterval::new(0.55).unwrap();
     let odds = Odds::new(2.0).unwrap();
     let kelly = kelly_fraction(&prob, &odds).unwrap();
     println!("   Win probability: 55%, Odds: 2.0");

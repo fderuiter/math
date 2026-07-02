@@ -5,3 +5,4 @@ pub mod error;
 pub mod math_kernel;
 pub mod theory;
 pub mod wigner;
+pub mod primitives;
