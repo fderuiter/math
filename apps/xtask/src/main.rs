@@ -7,7 +7,7 @@ fn main() {
     if args.len() < 2 {
         println!("Usage: xtask <command> [args...]");
         println!(
-            "Commands: setup, test-features, verify-suite, verify-records, compile-papers, traceability"
+            "Commands: setup, test-features, verify-suite, verify-records, compile-papers, traceability, check-file-lengths"
         );
         exit(1);
     }
@@ -18,6 +18,7 @@ fn main() {
         "verify-records" => verify_records(),
         "compile-papers" => compile_papers(),
         "traceability" => traceability(),
+        "check-file-lengths" => check_file_lengths(),
         _ => {
             println!("Unknown command");
             exit(1);
@@ -103,25 +104,12 @@ fn test_features(args: &[String]) {
 
 fn verify_suite() {
     println!("=== High-Integrity Verified Suite ===");
-    run_cmd("cargo", &["test", "--workspace", "--all-features"]);
-    println!("All integrity checks passed!");
+    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "verify-suite"]);
 }
 
 fn verify_records() {
-    println!("Verify records...");
-    let status = Command::new("git")
-        .args(["log", "-1", "--pretty=%B"])
-        .output()
-        .unwrap_or_else(|_| {
-            eprintln!("Failed to run git log");
-            exit(1);
-        });
-    let msg = String::from_utf8_lossy(&status.stdout);
-    if msg.to_lowercase().contains("[skip journal]") {
-        println!("Skipping journal");
-        return;
-    }
-    println!("Architectural records successfully verified.");
+    println!("=== Verify Records ===");
+    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "verify-records"]);
 }
 
 fn compile_papers() {
@@ -130,5 +118,10 @@ fn compile_papers() {
 
 fn traceability() {
     println!("=== Traceability Report ===");
-    run_cmd("cargo", &["run", "--bin", "traceability_cli"]);
+    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "traceability"]);
+}
+
+fn check_file_lengths() {
+    println!("=== Check File Lengths ===");
+    run_cmd("cargo", &["run", "-p", "unified_verification", "--release", "--", "check-file-lengths"]);
 }

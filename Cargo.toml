@@ -14,7 +14,9 @@ members = [
     "math_explorer",
     "math_explorer_gui",
     "crates/markdown_tests"
-, "apps/xtask"]
+, "apps/xtask",
+    "crates/unified_verification"
+]
 exclude = ["experimental/generative-turbulence-experimental"]
 resolver = "2"
 
