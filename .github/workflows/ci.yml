@@ -239,7 +239,9 @@ jobs:
 
       - name: Build and Package
         shell: bash
-        run: cargo packager --release -p math_explorer_gui -f ${{ matrix.target }}
+        run: |
+          cargo build --release -p math_explorer_gui
+          cargo packager --release -p math_explorer_gui -f ${{ matrix.target }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

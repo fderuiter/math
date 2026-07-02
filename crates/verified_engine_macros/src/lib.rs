@@ -69,7 +69,7 @@ impl VisitMut for InjectorVisitor {
 struct DeepAstVisitor {
     statements: usize,
     assertions: usize,
-    direct_recursion: bool,
+    direct_recursion: Option<proc_macro2::Span>,
     function_name: String,
 }
 
@@ -99,18 +99,33 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
             if expr_path.path.segments.len() == 1 {
                 if let Some(ident) = expr_path.path.segments.last().map(|s| s.ident.to_string()) {
                     if ident == self.function_name {
-                        self.direct_recursion = true;
+                        if self.direct_recursion.is_none() {
+                            self.direct_recursion = Some(syn::spanned::Spanned::span(node));
+                        }
                     }
                 }
             } else if expr_path.path.segments.len() == 2 {
                 let first = expr_path.path.segments.first().unwrap().ident.to_string();
                 let last = expr_path.path.segments.last().unwrap().ident.to_string();
                 if first == "Self" && last == self.function_name {
-                    self.direct_recursion = true;
+                    if self.direct_recursion.is_none() {
+                        self.direct_recursion = Some(syn::spanned::Spanned::span(node));
+                    }
                 }
             }
         }
         syn::visit::visit_expr_call(self, node);
+    }
+
+    fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
+        if node.method == self.function_name
+            && let syn::Expr::Path(ref expr_path) = *node.receiver
+            && expr_path.path.is_ident("self")
+            && self.direct_recursion.is_none()
+        {
+            self.direct_recursion = Some(syn::spanned::Spanned::span(node));
+        }
+        syn::visit::visit_expr_method_call(self, node);
     }
 }
 
@@ -137,16 +152,16 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut visitor = DeepAstVisitor {
         statements: 0,
         assertions: 0,
-        direct_recursion: false,
+        direct_recursion: None,
         function_name: input_fn.sig.ident.to_string(),
     };
 
     visitor.visit_item_fn(&input_fn);
 
     if !is_opt_out {
-        if visitor.direct_recursion {
-            return syn::Error::new_spanned(
-                &input_fn.sig.ident,
+        if let Some(span) = visitor.direct_recursion {
+            return syn::Error::new(
+                span,
                 "Direct recursion is not allowed in high-integrity verified modules (NASA Power of 10 Rule 1). Use #[verified(opt_out = \"reason\")] to bypass.",
             ).to_compile_error().into();
         }

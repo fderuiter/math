@@ -1,8 +1,6 @@
 //! Type definitions for the Hodgkin-Huxley model.
 
 use super::kinetics::{GatingKinetics, StandardKinetics};
-use pure_math::pure_math::analysis::ode::VectorOperations;
-use std::ops::{Add, AddAssign, Mul, MulAssign};
 use std::sync::Arc;
 
 /// Parameters for the Hodgkin-Huxley model.
@@ -61,65 +59,4 @@ pub struct HodgkinHuxleyState {
     pub h: f64,
 }
 
-impl Add for HodgkinHuxleyState {
-    type Output = Self;
-
-    #[verified_engine::verified]
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            v: self.v + rhs.v,
-            n: self.n + rhs.n,
-            m: self.m + rhs.m,
-            h: self.h + rhs.h,
-        }
-    }
-}
-
-impl AddAssign for HodgkinHuxleyState {
-    #[verified_engine::verified]
-    fn add_assign(&mut self, rhs: Self) {
-        self.v += rhs.v;
-        self.n += rhs.n;
-        self.m += rhs.m;
-        self.h += rhs.h;
-    }
-}
-
-impl Mul<f64> for HodgkinHuxleyState {
-    type Output = Self;
-
-    #[verified_engine::verified]
-    fn mul(self, scalar: f64) -> Self {
-        Self {
-            v: self.v * scalar,
-            n: self.n * scalar,
-            m: self.m * scalar,
-            h: self.h * scalar,
-        }
-    }
-}
-
-impl MulAssign<f64> for HodgkinHuxleyState {
-    #[verified_engine::verified]
-    fn mul_assign(&mut self, scalar: f64) {
-        self.v *= scalar;
-        self.n *= scalar;
-        self.m *= scalar;
-        self.h *= scalar;
-    }
-}
-
-impl VectorOperations for HodgkinHuxleyState {
-    #[verified_engine::verified]
-    fn scale_add(&mut self, other: &Self, scale: f64) {
-        self.v += other.v * scale;
-        self.n += other.n * scale;
-        self.m += other.m * scale;
-        self.h += other.h * scale;
-    }
-
-    #[verified_engine::verified]
-    fn copy_from(&mut self, other: &Self) {
-        *self = *other;
-    }
-}
+pure_math::impl_vector_operations!(HodgkinHuxleyState, v, n, m, h);

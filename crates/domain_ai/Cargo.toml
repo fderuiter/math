@@ -29,3 +29,6 @@ pure_math = { path = "../pure_math" }
 
 [dev-dependencies]
 approx = "0.5.1"
+
+[profile.release]
+overflow-checks = true

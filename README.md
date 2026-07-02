@@ -17,9 +17,9 @@
 git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer
 
-# Check prerequisites, build the core library, and run tests
+# Check prerequisites, build the core library, run tests, and automatically configure Git hooks
 # Note: To compile academic papers, ensure pdflatex (e.g., via TeX Live) is installed.
-./setup.sh
+cargo run -p xtask -- setup
 ```
 
 Alternatively, you can manually build the library using Cargo:
@@ -28,6 +28,8 @@ Alternatively, you can manually build the library using Cargo:
 # Build the core library manually
 cargo build --release --package math_explorer
 ```
+
+**Note:** The setup process automatically installs Git hooks that enforce project standards (e.g., file-length constraints in core directories) at the commit level. This provides immediate local feedback and prevents compliance bypasses without manual intervention.
 
 ## Usage
 

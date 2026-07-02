@@ -89,12 +89,12 @@ impl SimulationRunner for MorphogenesisRunner {
 
     fn get_snapshot(&self) -> StateSnapshot {
         let image = plot_concentration(self.system.u(), self.width, self.height);
-        let pixels = Arc::new(
+        let pixels = Arc::new(std::sync::RwLock::new(
             image
                 .pixels
                 .iter()
                 .map(|c| eframe::egui::Color32::from_rgba_unmultiplied(c[0], c[1], c[2], c[3]))
-                .collect(),
+                .collect()),
         );
         StateSnapshot {
             width: self.width,
@@ -302,7 +302,9 @@ impl crate::framework::InteractiveTool for MorphogenesisTool {
             if let Some(snapshot) = self.controller.update() {
                 let mut image = ColorImage::default();
                 image.size = [snapshot.width, snapshot.height];
-                image.pixels = snapshot.pixels.as_ref().clone();
+                if let Ok(guard) = snapshot.pixels.try_read() {
+                    image.pixels = guard.clone();
+                }
                 let texture = self.texture.get_or_insert_with(|| {
                     ui.ctx()
                         .load_texture("morphogenesis_plot", image.clone(), Default::default())

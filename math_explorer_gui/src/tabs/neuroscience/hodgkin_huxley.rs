@@ -102,7 +102,7 @@ impl SimulationRunner for HodgkinHuxleyRunner {
         StateSnapshot {
             width: 0,
             height: 0,
-            pixels: Arc::new(Vec::new()),
+            pixels: std::sync::Arc::new(std::sync::RwLock::new(Vec::new())),
             custom_data,
             structured_data: None,
         }
