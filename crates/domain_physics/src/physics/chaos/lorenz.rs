@@ -81,7 +81,10 @@ impl LorenzBuilder {
 
     /// Sets the numerical integration method.
     #[verified_engine::verified]
-    pub fn integration_method(mut self, val: pure_math::pure_math::analysis::ode::IntegrationMethod) -> Self {
+    pub fn integration_method(
+        mut self,
+        val: pure_math::pure_math::analysis::ode::IntegrationMethod,
+    ) -> Self {
         self.integration_method = val;
         self
     }
@@ -280,10 +283,16 @@ impl SimulationModel for LorenzSystem {
         match self.integration_method {
             pure_math::pure_math::analysis::ode::IntegrationMethod::Euler => {
                 let mut solver = pure_math::pure_math::analysis::ode::Euler::new(&self.state.vec);
-                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step_with(self, &mut solver, dt);
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step_with(
+                    self,
+                    &mut solver,
+                    dt,
+                );
             }
             pure_math::pure_math::analysis::ode::IntegrationMethod::RungeKutta4 => {
-                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(self, dt);
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(
+                    self, dt,
+                );
             }
         }
         Ok(())

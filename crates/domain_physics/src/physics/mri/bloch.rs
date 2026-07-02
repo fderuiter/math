@@ -193,11 +193,18 @@ impl SimulationModel for BlochSimulator {
         let dt = self.dt;
         match self.integration_method {
             pure_math::pure_math::analysis::ode::IntegrationMethod::Euler => {
-                let mut solver = pure_math::pure_math::analysis::ode::Euler::new(&self.magnetization);
-                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step_with(self, &mut solver, dt);
+                let mut solver =
+                    pure_math::pure_math::analysis::ode::Euler::new(&self.magnetization);
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step_with(
+                    self,
+                    &mut solver,
+                    dt,
+                );
             }
             pure_math::pure_math::analysis::ode::IntegrationMethod::RungeKutta4 => {
-                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(self, dt);
+                <Self as pure_math::pure_math::analysis::ode::TimeStepper<Vector3<f64>>>::step(
+                    self, dt,
+                );
             }
         }
         Ok(())

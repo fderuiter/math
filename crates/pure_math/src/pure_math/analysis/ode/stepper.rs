@@ -19,12 +19,7 @@ pub trait TimeStepper<State: VectorOperations>: OdeSystem<State> {
     #[verified_engine::verified]
     fn step(&mut self, dt: f64) {
         use super::solvers::RungeKutta4;
-        let new_state = RungeKutta4::step(
-            self,
-            0.0,
-            self.get_state(),
-            dt,
-        );
+        let new_state = RungeKutta4::step(self, 0.0, self.get_state(), dt);
         *self.get_state_mut() = new_state;
     }
 
