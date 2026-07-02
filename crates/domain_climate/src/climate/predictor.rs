@@ -2,7 +2,7 @@
 use rand::Rng;
 
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
-use domain_ai::ai::optimization::Optimizer;
+use domain_ai::ai::optimization::{Optimizer, ParamType};
 use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
 
 /// A trait representing the predictor model interface.
@@ -110,8 +110,8 @@ impl PredictorModel for Predictor {
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5);
 
             // Use the optimizer strategy to update weights
-            optimizer.update_matrix_legacy(i, &mut layer.kernel, &grad_k)?;
-            optimizer.update_vector_legacy(i, &mut layer.bias, &grad_b)?;
+            optimizer.update_matrix((i, ParamType::Weight), &mut layer.kernel, &grad_k)?;
+            optimizer.update_vector((i, ParamType::Bias), &mut layer.bias, &grad_b)?;
         }
         Ok(())
     }

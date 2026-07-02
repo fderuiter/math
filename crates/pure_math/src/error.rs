@@ -1,4 +1,4 @@
-use math_commons::diagnostics::{Diagnostic, Severity};
+use diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use thiserror::Error;
 

@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/federated_registry",
+    "crates/diagnostics",
     "crates/oxidize_core",
     "crates/verified_engine",
     "crates/verified_engine_macros",
