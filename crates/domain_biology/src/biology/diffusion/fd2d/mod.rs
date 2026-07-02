@@ -89,7 +89,48 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference2D {
     }
 }
 
+use pure_math::pure_math::analysis::pde::fused_stepper::FusedStencilStepper;
+
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
+    fn stepper(&self) -> FusedStencilStepper {
+        FusedStencilStepper::new_2d(self.geometry.dx, self.geometry.dy)
+    }
+
+    #[verified_engine::verified]
+    fn step_fused<K: crate::biology::morphogenesis::reaction::ReactionKinetics<N>>(
+        &self,
+        state: [&[f64]; N],
+        next_state: [&mut [f64]; N],
+        dt: f64,
+        coeffs: [f64; N],
+        kinetics: &K,
+    ) {
+        if N == 0 {
+            return;
+        }
+        let n = self.geometry.size();
+        if n == 0 {
+            return;
+        }
+
+        SpatialDiffusion::<N>::stepper(self).step_2d_coupled_neumann(
+            (*self.geometry.width, *self.geometry.height),
+            state,
+            next_state,
+            dt,
+            1.0, // Forward time
+            |_i, curr, left, right, up, down, ops| {
+                let mut rhs = [0.0; N];
+                let rates = kinetics.reaction(curr);
+                for s in 0..N {
+                    let d2u = ops.central_diff_2nd_2d(curr[s], left[s], right[s], up[s], down[s]);
+                    rhs[s] = coeffs[s] * d2u + rates[s];
+                }
+                rhs
+            },
+        );
+    }
+
     #[verified_engine::verified]
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)
     where

@@ -66,6 +66,7 @@ impl BoundaryCondition for NeumannBoundary {
     }
 }
 
+pub mod fused_stepper;
 pub mod greens;
 pub mod heat;
 pub mod laplace;

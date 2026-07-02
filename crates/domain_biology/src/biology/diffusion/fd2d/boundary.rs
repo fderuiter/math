@@ -1,5 +1,6 @@
 use super::geometry::GeometryStrategy;
 use math_commons::math_kernel::types::GridIndex;
+use oxidize_core::boundary::{BoundaryCondition, NeumannBoundary as CoreNeumann};
 
 pub trait BoundaryStrategy {
     #[verified_engine::verified]
@@ -26,15 +27,20 @@ impl BoundaryStrategy for NeumannBoundary {
         let width = *geom.width();
         let height = *geom.height();
 
-        let x_prev = if x > 0 { x - 1 } else { x };
-        let x_next = if x < width - 1 { x + 1 } else { x };
-        let y_prev = if y > 0 { y - 1 } else { y };
-        let y_next = if y < height - 1 { y + 1 } else { y };
-
-        let idx_l = y * width + x_prev;
-        let idx_r = y * width + x_next;
-        let idx_u = y_prev * width + x;
-        let idx_d = y_next * width + x;
+        let bc = CoreNeumann;
+        // Neighbors: left, right, up, down
+        let idx_l = bc
+            .resolve(x as isize - 1, y as isize, width, height)
+            .unwrap();
+        let idx_r = bc
+            .resolve(x as isize + 1, y as isize, width, height)
+            .unwrap();
+        let idx_u = bc
+            .resolve(x as isize, y as isize - 1, width, height)
+            .unwrap();
+        let idx_d = bc
+            .resolve(x as isize, y as isize + 1, width, height)
+            .unwrap();
 
         (
             GridIndex(idx_l),
