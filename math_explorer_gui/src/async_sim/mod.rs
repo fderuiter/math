@@ -131,7 +131,7 @@ impl SimulationController {
 
     #[cfg(target_arch = "wasm32")]
     // theory_verification!
-    pub fn new<T: SimulationRunner>(mut runner: T) -> Self {
+    pub fn new<T: SimulationRunner>(runner: T) -> Self {
         let (cmd_tx, cmd_rx) = mpsc::channel::<SimCommand>();
         let (state_tx, state_rx) = mpsc::channel::<SimStateUpdate>();
 
