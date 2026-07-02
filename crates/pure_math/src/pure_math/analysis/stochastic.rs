@@ -40,6 +40,7 @@ pub struct GillespieSolver<R> {
     rng: R,
     /// Reusable buffer for propensities to avoid allocation per step.
     buffer: Vec<f64>,
+    is_first_step: bool,
 }
 
 impl<R: Rng> GillespieSolver<R> {
@@ -52,6 +53,7 @@ impl<R: Rng> GillespieSolver<R> {
             rng,
             // Pre-allocate space for a reasonable number of reactions
             buffer: Vec::with_capacity(16),
+            is_first_step: true,
         }
     }
 
@@ -64,9 +66,19 @@ impl<R: Rng> GillespieSolver<R> {
     where
         S: StochasticSystem<State>,
     {
-        // Reuse internal buffer
-        self.buffer.clear();
-        system.propensities(state, &mut self.buffer);
+        if self.is_first_step {
+            let mut temp = Vec::new();
+            system.propensities(state, &mut temp);
+            self.buffer.reserve_exact(temp.len());
+            self.buffer.extend(temp);
+            verified_engine::allocator::lock_allocations();
+            self.is_first_step = false;
+        } else {
+            // Reuse internal buffer
+            self.buffer.clear();
+            system.propensities(state, &mut self.buffer);
+        }
+        
         let rates = &self.buffer;
 
         let total_rate: f64 = rates.iter().sum();
