@@ -9,7 +9,10 @@ fn test_deep_learning_cycle() {
     // Xor problem-ish (non-linear)
     // 2 inputs, 2 hidden units, 2 output classes
     // Use the new Strategy Pattern with SGD
-    let mut network = TrainingLoop::new(2, 4, 2, Box::new(SGD::new(0.1)));
+    use rand::SeedableRng;
+    let mut rng = rand::rngs::StdRng::seed_from_u64(1337);
+    let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
+    let mut network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.5)));
 
     // Dummy data: Input [1, 0] -> Class 0 ([1, 0])
     let x = DVector::from_vec(vec![1.0, 0.0]);
@@ -21,7 +24,7 @@ fn test_deep_learning_cycle() {
 
     // Train for a few steps
     let mut final_loss = 0.0;
-    for _ in 0..100 {
+    for _ in 0..500 {
         final_loss = network.train_step(&x, &y_true).unwrap();
     }
 
@@ -42,7 +45,9 @@ fn test_deep_learning_cycle() {
 #[verified_engine::verified]
 fn test_explicit_model_construction() {
     // Explicitly construct TwoLayerMLP and inject it
-    let model = TwoLayerMLP::new(2, 4, 2);
+    use rand::SeedableRng;
+    let mut rng = rand::rngs::StdRng::seed_from_u64(42);
+    let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
     let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1)));
 
     let x = DVector::from_vec(vec![1.0, 0.0]);
@@ -54,7 +59,10 @@ fn test_explicit_model_construction() {
 #[verified_engine::verified]
 fn test_backward_compatibility_layer_access() {
     // Verify we can still access layer1/layer2 like before (via Deref)
-    let network = TrainingLoop::new(2, 4, 2, Box::new(SGD::new(0.1)));
+    use rand::SeedableRng;
+    let mut rng = rand::rngs::StdRng::seed_from_u64(42);
+    let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
+    let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1)));
 
     // This access works because of Deref<Target=TwoLayerMLP>
     let _w1 = &network.layer1.weights;

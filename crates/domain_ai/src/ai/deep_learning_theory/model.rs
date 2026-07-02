@@ -49,6 +49,19 @@ impl TwoLayerMLP {
             layer2: DenseLayer::new(hidden_dim, output_dim),
         }
     }
+
+    #[verified_engine::verified]
+    pub fn new_with_rng<R: rand::Rng + ?Sized>(
+        input_dim: usize,
+        hidden_dim: usize,
+        output_dim: usize,
+        rng: &mut R,
+    ) -> Self {
+        Self {
+            layer1: DenseLayer::new_with_rng(input_dim, hidden_dim, rng),
+            layer2: DenseLayer::new_with_rng(hidden_dim, output_dim, rng),
+        }
+    }
 }
 
 impl Trainable for TwoLayerMLP {
