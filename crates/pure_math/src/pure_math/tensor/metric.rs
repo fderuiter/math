@@ -37,10 +37,10 @@ pub trait Metric {
     ) -> Result<CovariantVector, TensorError> {
         let g = self.metric_at(point)?;
         if g.nrows() != vec.dim() || g.ncols() != vec.dim() {
-            return Err(TensorError::DimensionMismatch {
-                expected: g.nrows(),
-                got: vec.dim(),
-            });
+            return Err(crate::pure_math::tensor::TensorError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(g.nrows()),
+                actual: math_commons::math_kernel::types::Dimension(vec.dim()),
+            }));
         }
         let lowered = &g * &vec.0;
         Ok(CovariantVector::new(lowered))
@@ -60,10 +60,10 @@ pub trait Metric {
     ) -> Result<ContravariantVector, TensorError> {
         let g_inv = self.inverse_metric_at(point)?;
         if g_inv.nrows() != vec.dim() || g_inv.ncols() != vec.dim() {
-            return Err(TensorError::DimensionMismatch {
-                expected: g_inv.nrows(),
-                got: vec.dim(),
-            });
+            return Err(crate::pure_math::tensor::TensorError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(g_inv.nrows()),
+                actual: math_commons::math_kernel::types::Dimension(vec.dim()),
+            }));
         }
         let raised = &g_inv * &vec.0;
         Ok(ContravariantVector::new(raised))

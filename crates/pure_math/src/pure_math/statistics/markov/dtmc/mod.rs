@@ -113,17 +113,17 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
 
         // Validate dimensions
         if transition_matrix.ncols() != n {
-            return Err(MarkovError::DimensionMismatch {
-                expected: n,
-                actual: transition_matrix.ncols(),
-            });
+            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(n),
+                actual: math_commons::math_kernel::types::Dimension(transition_matrix.ncols()),
+            }));
         }
 
         if state_types.len() != n {
-            return Err(MarkovError::DimensionMismatch {
-                expected: n,
-                actual: state_types.len(),
-            });
+            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(n),
+                actual: math_commons::math_kernel::types::Dimension(state_types.len()),
+            }));
         }
 
         // Validate stochasticity
@@ -480,10 +480,10 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     #[verified_engine::verified]
     pub fn expected_possession_value(&self, rewards: &DVector<T>) -> Result<DVector<T>> {
         if rewards.len() != self.num_absorbing() {
-            return Err(MarkovError::DimensionMismatch {
-                expected: self.num_absorbing(),
-                actual: rewards.len(),
-            });
+            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(self.num_absorbing()),
+                actual: math_commons::math_kernel::types::Dimension(rewards.len()),
+            }));
         }
 
         let b = self.absorption_probabilities()?;

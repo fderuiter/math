@@ -75,10 +75,10 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
         let n = generator.nrows();
 
         if generator.ncols() != n {
-            return Err(MarkovError::DimensionMismatch {
-                expected: n,
-                actual: generator.ncols(),
-            });
+            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(n),
+                actual: math_commons::math_kernel::types::Dimension(generator.ncols()),
+            }));
         }
 
         crate::pure_math::statistics::markov::validation::validate_generator_matrix(&generator)?;
@@ -183,9 +183,9 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
 
         let r = lhs
             .try_inverse()
-            .ok_or_else(|| MarkovError::NumericalError {
+            .ok_or_else(|| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
                 reason: "Failed to invert (V-U) in Padé approximation".to_string(),
-            })?
+            }))?
             * rhs;
 
         // Squaring: compute R^(2^s)
@@ -381,12 +381,12 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
 
             // Sample holding time
             let exp_dist = Exp::new(rate.to_f64().unwrap_or(0.0)).map_err(|_| {
-                MarkovError::NumericalError {
+                crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
                     reason: format!(
                         "Invalid rate for exponential: {}",
                         rate.to_f64().unwrap_or(f64::NAN)
                     ),
-                }
+                })
             })?;
             let holding_time: f64 = exp_dist.sample(rng);
             current_time += T::from_f64(holding_time).unwrap();
@@ -413,9 +413,9 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
                 break;
             }
 
-            let dist = WeightedIndex::new(&weights).map_err(|_| MarkovError::NumericalError {
+            let dist = WeightedIndex::new(&weights).map_err(|_| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
                 reason: "Failed to create weighted distribution".to_string(),
-            })?;
+            }))?;
 
             let next_idx = dist.sample(rng);
             current_state = next_states[next_idx];

@@ -37,9 +37,9 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
                 .map(|&x| x.to_f64().unwrap_or(0.0))
                 .collect::<Vec<_>>(),
         )
-        .map_err(|_| MarkovError::NumericalError {
+        .map_err(|_| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
             reason: "Failed to create initial distribution".to_string(),
-        })?;
+        }))?;
         let mut current_state = initial_dist.sample(rng);
         states.push(current_state);
 
@@ -51,9 +51,9 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
             .map(|&x| x.to_f64().unwrap_or(0.0))
             .collect();
         let emission_dist =
-            WeightedIndex::new(&emission_weights).map_err(|_| MarkovError::NumericalError {
+            WeightedIndex::new(&emission_weights).map_err(|_| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
                 reason: "Failed to create emission distribution".to_string(),
-            })?;
+            }))?;
         observations.push(emission_dist.sample(rng));
 
         // Generate remaining sequence
@@ -65,11 +65,9 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
                 .iter()
                 .map(|&x| x.to_f64().unwrap_or(0.0))
                 .collect();
-            let transition_dist = WeightedIndex::new(&transition_weights).map_err(|_| {
-                MarkovError::NumericalError {
+            let transition_dist = WeightedIndex::new(&transition_weights).map_err(|_| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
                     reason: "Failed to create transition distribution".to_string(),
-                }
-            })?;
+                }))?;
             current_state = transition_dist.sample(rng);
             states.push(current_state);
 
@@ -81,9 +79,9 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
                 .map(|&x| x.to_f64().unwrap_or(0.0))
                 .collect();
             let emission_dist =
-                WeightedIndex::new(&emission_weights).map_err(|_| MarkovError::NumericalError {
+                WeightedIndex::new(&emission_weights).map_err(|_| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
                     reason: "Failed to create emission distribution".to_string(),
-                })?;
+                }))?;
             observations.push(emission_dist.sample(rng));
         }
 
