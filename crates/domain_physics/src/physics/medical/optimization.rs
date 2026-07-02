@@ -97,7 +97,7 @@ mod tests {
 
         let cost = calculate_cost(&doses, &tumor_idx, &organ_idx, 50.0, 20.0, 1.0, 1.0);
 
-        assert!((cost - 200.0).abs() < 1e-6);
+        assert!((cost - 200.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
         // Verify organ below limit contributes 0
         // Change organ doses to [10, 15] (both < 20)
@@ -115,8 +115,8 @@ mod tests {
 
         // w_new = [10, 5] - 1.0 * [2, -1] = [8, 6]
         let w_new = update_weights(&w_old, &grad, eta);
-        assert!((w_new[0] - 8.0).abs() < 1e-6);
-        assert!((w_new[1] - 6.0).abs() < 1e-6);
+        assert!((w_new[0] - 8.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((w_new[1] - 6.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
         // Test clipping
         let w_old_clip = DVector::from_vec(vec![1.0]);

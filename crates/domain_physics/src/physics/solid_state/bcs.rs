@@ -43,8 +43,8 @@ impl Default for BcsGapSolver {
     #[verified_engine::verified]
     fn default() -> Self {
         Self {
-            max_iterations: 1000,
-            tolerance: 1e-9,
+            max_iterations: math_commons::registry::MAX_ITERATIONS,
+            tolerance: math_commons::registry::TOLERANCE_STANDARD,
             mixing_param: 0.5,
         }
     }
@@ -197,7 +197,7 @@ pub fn solve_gap_equation(
 
     let solver = BcsGapSolver::default()
         .with_max_iterations(iterations)
-        .with_tolerance(1e-9) // Higher tolerance to ensure legacy behavior match if needed?
+        .with_tolerance(math_commons::registry::TOLERANCE_STANDARD) // Higher tolerance to ensure legacy behavior match if needed?
         .with_mixing_param(0.5); // Legacy used 0.5
 
     // Legacy initial guess: 0.01 * debye_energy
@@ -251,7 +251,7 @@ mod tests {
         let delta = 0.2;
         let (u, v) = coherence_factors(xi, delta).unwrap();
         let prob = u * u + v * v;
-        assert!((prob - 1.0).abs() < 1e-9);
+        assert!((prob - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]

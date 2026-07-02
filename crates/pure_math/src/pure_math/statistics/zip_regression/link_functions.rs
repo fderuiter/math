@@ -31,7 +31,7 @@ impl LogLink {
     ///
     /// let eta = 1.0;
     /// let lambda = LogLink::link(eta);
-    /// assert!((lambda - 2.718281828).abs() < 1e-6);  // e^1
+    /// assert!((lambda - 2.718281828).abs() < math_commons::registry::TOLERANCE_FAST);  // e^1
     /// ```
     #[verified_engine::verified]
     pub fn link(linear_predictor: f64) -> f64 {
@@ -93,7 +93,7 @@ impl LogitLink {
     ///
     /// let gamma = 0.0;
     /// let rho = LogitLink::link(gamma);
-    /// assert!((rho - 0.5).abs() < 1e-9);  // expit(0) = 0.5
+    /// assert!((rho - 0.5).abs() < math_commons::registry::TOLERANCE_STANDARD);  // expit(0) = 0.5
     /// ```
     #[verified_engine::verified]
     pub fn link(linear_predictor: f64) -> f64 {
@@ -145,13 +145,13 @@ mod tests {
     #[verified_engine::verified]
     fn test_log_link() {
         // exp(0) = 1
-        assert!((LogLink::link(0.0) - 1.0).abs() < 1e-9);
+        assert!((LogLink::link(0.0) - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // exp(1) ≈ 2.718
-        assert!((LogLink::link(1.0) - std::f64::consts::E).abs() < 1e-9);
+        assert!((LogLink::link(1.0) - std::f64::consts::E).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // exp(2) ≈ 7.389
-        assert!((LogLink::link(2.0) - 7.389056099).abs() < 1e-6);
+        assert!((LogLink::link(2.0) - 7.389056099).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -160,7 +160,7 @@ mod tests {
         let lambda = 5.0;
         let eta = LogLink::inverse_link(lambda);
         let lambda_recovered = LogLink::link(eta);
-        assert!((lambda - lambda_recovered).abs() < 1e-9);
+        assert!((lambda - lambda_recovered).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -169,14 +169,14 @@ mod tests {
         let eta = 1.5;
         let derivative = LogLink::derivative(eta);
         let lambda = LogLink::link(eta);
-        assert!((derivative - lambda).abs() < 1e-9);
+        assert!((derivative - lambda).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
     #[verified_engine::verified]
     fn test_logit_link() {
         // expit(0) = 0.5
-        assert!((LogitLink::link(0.0) - 0.5).abs() < 1e-9);
+        assert!((LogitLink::link(0.0) - 0.5).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // expit(large positive) ≈ 1
         assert!(LogitLink::link(10.0) > 0.9999);
@@ -191,7 +191,7 @@ mod tests {
         let rho = 0.3;
         let gamma = LogitLink::inverse_link(rho);
         let rho_recovered = LogitLink::link(gamma);
-        assert!((rho - rho_recovered).abs() < 1e-9);
+        assert!((rho - rho_recovered).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -210,7 +210,7 @@ mod tests {
         let rho = 0.3;
         let derivative = LogitLink::derivative(rho);
         // d(ρ)/d(γ) = ρ(1-ρ) = 0.3 * 0.7 = 0.21
-        assert!((derivative - 0.21).abs() < 1e-9);
+        assert!((derivative - 0.21).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -219,9 +219,9 @@ mod tests {
         let predictors = DVector::from_vec(vec![0.0, 1.0, 2.0]);
         let rates = LogLink::link_vector(&predictors);
 
-        assert!((rates[0] - 1.0).abs() < 1e-9);
-        assert!((rates[1] - std::f64::consts::E).abs() < 1e-9);
-        assert!((rates[2] - 7.389056099).abs() < 1e-6);
+        assert!((rates[0] - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
+        assert!((rates[1] - std::f64::consts::E).abs() < math_commons::registry::TOLERANCE_STANDARD);
+        assert!((rates[2] - 7.389056099).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -231,7 +231,7 @@ mod tests {
         let probs = LogitLink::link_vector(&predictors);
 
         assert!(probs[0] < 0.5);
-        assert!((probs[1] - 0.5).abs() < 1e-9);
+        assert!((probs[1] - 0.5).abs() < math_commons::registry::TOLERANCE_STANDARD);
         assert!(probs[2] > 0.5);
     }
 }

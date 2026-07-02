@@ -2,8 +2,8 @@
 use rand::Rng;
 
 use crate::climate::tensor_ops::conv1d;
-use domain_ai::ai::optimization::Optimizer;
-use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
+use domain_ai::ai::optimization::{Optimizer, ParamType};
+use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
 
 /// A trait representing the Autoencoder model interface.
 pub trait AutoencoderModel {
@@ -13,10 +13,7 @@ pub trait AutoencoderModel {
 
     /// Performs a forward pass through the autoencoder.
     #[verified_engine::verified]
-    fn forward<S: Storage<f32, Dyn, Dyn>>(
-        &self,
-        input: &Matrix<f32, Dyn, Dyn, S>,
-    ) -> (DMatrix<f32>, DMatrix<f32>);
+    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>);
 
     /// Updates the weights of the model using the provided optimizer.
     fn update_weights<O: Optimizer<f32>>(
@@ -70,9 +67,7 @@ impl ConvLayer {
         let kernel = DMatrix::from_fn(out_channels, in_channels, |_, _| {
             oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() * 2.0 - 1.0
         });
-        let bias = DVector::from_fn(out_channels, |_, _| {
-            oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() * 2.0 - 1.0
-        });
+        let bias = DVector::from_fn(out_channels, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() * 2.0 - 1.0);
         Self {
             kernel,
             bias,
@@ -92,12 +87,10 @@ impl ConvLayer {
         let grad_k = DMatrix::from_fn(self.kernel.nrows(), self.kernel.ncols(), |_, _| {
             oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
         });
-        let grad_b = DVector::from_fn(self.bias.len(), |_, _| {
-            oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
-        });
+        let grad_b = DVector::from_fn(self.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5);
 
-        optimizer.update_matrix_legacy(layer_idx, &mut self.kernel, &grad_k)?;
-        optimizer.update_vector_legacy(layer_idx, &mut self.bias, &grad_b)?;
+        optimizer.update_matrix((layer_idx, ParamType::Weight), &mut self.kernel, &grad_k)?;
+        optimizer.update_vector((layer_idx, ParamType::Bias), &mut self.bias, &grad_b)?;
         Ok(())
     }
 }
@@ -154,10 +147,7 @@ impl Encoder {
     ///
     /// The latent representation matrix.
     #[verified_engine::verified]
-    pub fn forward<S: Storage<f32, Dyn, Dyn>>(
-        &self,
-        input: &Matrix<f32, Dyn, Dyn, S>,
-    ) -> DMatrix<f32> {
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
         let mut x = input.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
@@ -234,10 +224,7 @@ impl Decoder {
     ///
     /// The reconstructed data matrix.
     #[verified_engine::verified]
-    pub fn forward<S: Storage<f32, Dyn, Dyn>>(
-        &self,
-        latent_representation: &Matrix<f32, Dyn, Dyn, S>,
-    ) -> DMatrix<f32> {
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, latent_representation: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
         let mut x = latent_representation.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
@@ -314,10 +301,7 @@ impl Autoencoder {
     ///
     /// A tuple containing `(latent_representation, reconstruction)`.
     #[verified_engine::verified]
-    pub fn forward<S: Storage<f32, Dyn, Dyn>>(
-        &self,
-        input: &Matrix<f32, Dyn, Dyn, S>,
-    ) -> (DMatrix<f32>, DMatrix<f32>) {
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)
@@ -331,10 +315,7 @@ impl AutoencoderModel for Autoencoder {
     }
 
     #[verified_engine::verified]
-    fn forward<S: Storage<f32, Dyn, Dyn>>(
-        &self,
-        input: &Matrix<f32, Dyn, Dyn, S>,
-    ) -> (DMatrix<f32>, DMatrix<f32>) {
+    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)
@@ -368,9 +349,7 @@ mod tests {
 
         let autoencoder = Autoencoder::new(in_channels, latent_channels);
 
-        let input = DMatrix::from_fn(n_samples, in_channels, |_, _| {
-            oxidize_core::rng::OxidizeRng::default().r#gen()
-        });
+        let input = DMatrix::from_fn(n_samples, in_channels, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
 
         let (latent, reconstruction) = autoencoder.forward(&input);
 
@@ -386,6 +365,6 @@ mod tests {
         let mut matrix = DMatrix::from_row_slice(2, 2, &[-1.0, 2.0, -3.0, 0.0]);
         leaky_relu(&mut matrix, 0.1);
         let expected = DMatrix::from_row_slice(2, 2, &[-0.1, 2.0, -0.3, 0.0]);
-        assert!((matrix - expected).abs().max() < 1e-6);
+        assert!((matrix - expected).abs().max() < math_commons::registry::TOLERANCE_FAST_F32);
     }
 }

@@ -320,7 +320,7 @@ mod tests {
         assert_eq!(interval.birth, 0.5);
         assert_eq!(interval.death, 2.0);
         assert_eq!(interval.dimension, 1);
-        assert!((interval.persistence() - 1.5).abs() < 1e-6);
+        assert!((interval.persistence() - 1.5).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -374,7 +374,7 @@ mod tests {
         barcode.add_interval(PersistenceInterval::new(1.0, 2.0, 1).unwrap()); // persistence 1.0
 
         let most_persistent = barcode.most_persistent(1).unwrap();
-        assert!((most_persistent.persistence() - 2.5).abs() < 1e-6);
+        assert!((most_persistent.persistence() - 2.5).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]

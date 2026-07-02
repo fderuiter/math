@@ -3,7 +3,7 @@ use nalgebra::{DMatrix, DVector};
 use pure_math::pure_math::analysis::integration::Integrator;
 use rand::{Rng, RngCore};
 
-const EPSILON: f64 = 1e-9;
+const EPSILON: f64 = math_commons::registry::TOLERANCE_STANDARD;
 
 /// Context provided to scoring strategies during evaluation.
 ///

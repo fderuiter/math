@@ -112,7 +112,7 @@ mod tests {
 
         let result = dijkstra(&graph, n0);
 
-        assert!((result.distances.get(&n2).unwrap() - 1.0).abs() < 1e-6);
+        assert!((result.distances.get(&n2).unwrap() - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
         assert_eq!(*result.predecessors.get(&n2).unwrap(), n1);
     }
 }

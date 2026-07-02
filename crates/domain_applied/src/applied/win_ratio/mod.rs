@@ -95,11 +95,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "win_ratio",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         TIE = 0.5;
     },
     test = {
-        assert_relative_eq!(TIE, 0.5, epsilon = 1e-6);
+        assert_relative_eq!(TIE, 0.5, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

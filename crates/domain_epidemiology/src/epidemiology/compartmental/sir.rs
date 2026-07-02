@@ -348,7 +348,7 @@ mod tests {
 
         // Ensure conservation of mass (population size constant)
         let total = state.s + state.i + state.r;
-        assert!((total - 1000.0).abs() < 1e-9);
+        assert!((total - 1000.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]

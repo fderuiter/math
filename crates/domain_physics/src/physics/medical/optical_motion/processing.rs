@@ -222,7 +222,7 @@ pub fn optical_flow_velocity(spatial_gradient: (f64, f64), temporal_gradient: f6
     let (gx, gy) = spatial_gradient;
     let norm_sq = gx.powi(2) + gy.powi(2);
 
-    if norm_sq < 1e-9 {
+    if norm_sq < math_commons::registry::TOLERANCE_STANDARD {
         return (0.0, 0.0);
     }
 

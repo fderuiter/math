@@ -373,7 +373,7 @@ mod tests {
         ];
 
         // Assert with tolerance
-        let tolerance = 1e-10;
+        let tolerance = math_commons::registry::TOLERANCE_HIGH;
         for i in 0..n {
             assert!(
                 (u_out[i] - expected_u[i]).abs() < tolerance,

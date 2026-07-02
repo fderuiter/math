@@ -119,7 +119,7 @@ mod tests {
         let z = calculate_partition_function(&energies, t);
         let f = helmholtz_free_energy(z, t);
 
-        assert!((z - 1.0).abs() < 1e-9, "Z should be 1 for single E=0 state");
-        assert!(f.abs() < 1e-9, "F should be 0 for Z=1");
+        assert!((z - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD, "Z should be 1 for single E=0 state");
+        assert!(f.abs() < math_commons::registry::TOLERANCE_STANDARD, "F should be 0 for Z=1");
     }
 }

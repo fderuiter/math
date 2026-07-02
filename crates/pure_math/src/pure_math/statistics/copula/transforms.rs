@@ -163,12 +163,12 @@ mod tests {
 
         // Test median (z=0 -> u=0.5)
         let u = transform.to_uniform(0.0).unwrap();
-        assert_relative_eq!(u.value(), 0.5, epsilon = 1e-6);
+        assert_relative_eq!(u.value(), 0.5, epsilon = math_commons::registry::TOLERANCE_FAST);
 
         // Test inverse
         let u = Probability::new(0.5).unwrap();
         let z = transform.inverse_transform(u);
-        assert_relative_eq!(z, 0.0, epsilon = 1e-6);
+        assert_relative_eq!(z, 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -178,7 +178,7 @@ mod tests {
 
         // At mean, CDF should be 0.5
         let u = transform.to_uniform(10.0).unwrap();
-        assert_relative_eq!(u.value(), 0.5, epsilon = 1e-6);
+        assert_relative_eq!(u.value(), 0.5, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -187,7 +187,7 @@ mod tests {
         // Test known values
         let u_median = Probability::new(0.5).unwrap();
         let z_median = inverse_standard_normal(u_median).unwrap();
-        assert_relative_eq!(z_median, 0.0, epsilon = 1e-6);
+        assert_relative_eq!(z_median, 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
 
         // 97.5th percentile ≈ 1.96
         let u_975 = Probability::new(0.975).unwrap();
@@ -200,7 +200,7 @@ mod tests {
     fn test_standard_normal_cdf() {
         // Test z=0 -> p=0.5
         let p = standard_normal_cdf(0.0).unwrap();
-        assert_relative_eq!(p.value(), 0.5, epsilon = 1e-6);
+        assert_relative_eq!(p.value(), 0.5, epsilon = math_commons::registry::TOLERANCE_FAST);
 
         // Test z=1.96 -> p≈0.975
         let p = standard_normal_cdf(1.96).unwrap();
@@ -215,7 +215,7 @@ mod tests {
         for &value in &[-2.0, -1.0, 0.0, 1.0, 2.0] {
             let u = transform.to_uniform(value).unwrap();
             let recovered = transform.inverse_transform(u);
-            assert_relative_eq!(recovered, value, epsilon = 1e-9);
+            assert_relative_eq!(recovered, value, epsilon = math_commons::registry::TOLERANCE_STANDARD);
         }
     }
 }

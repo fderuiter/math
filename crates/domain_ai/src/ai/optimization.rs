@@ -110,6 +110,7 @@ fn softmax<T: RealField + Copy>(z: &DVector<T>) -> DVector<T> {
 /// if the type implements it with a compatible Key.
 pub trait Optimizer<T: RealField + Copy>: GenericOptimizer<T, (usize, ParamType)> {
     // Default implementation delegates to the generic one using the tuple key.
+    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
     #[verified_engine::verified]
     fn update_matrix_legacy(
         &mut self,
@@ -120,6 +121,7 @@ pub trait Optimizer<T: RealField + Copy>: GenericOptimizer<T, (usize, ParamType)
         self.update_matrix((layer_idx, ParamType::Weight), param, grad)
     }
 
+    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
     #[verified_engine::verified]
     fn update_vector_legacy(
         &mut self,

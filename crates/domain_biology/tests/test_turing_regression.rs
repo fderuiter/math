@@ -46,8 +46,8 @@ fn test_turing_regression() {
     }
 
     // Verify exactness
-    assert!((system.u()[50] - 0.3116871030).abs() < 1e-9);
-    assert!((system.v()[50] - 0.0447023450).abs() < 1e-9);
+    assert!((system.u()[50] - 0.3116871030).abs() < math_commons::registry::TOLERANCE_STANDARD);
+    assert!((system.v()[50] - 0.0447023450).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]

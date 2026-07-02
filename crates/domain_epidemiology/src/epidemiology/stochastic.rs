@@ -67,7 +67,7 @@ mod tests {
         let r0_high = 2.0;
         let i0_one = 1.0;
         // P = 1/2
-        assert!((probability_of_extinction(r0_high, i0_one) - 0.5).abs() < 1e-6);
+        assert!((probability_of_extinction(r0_high, i0_one) - 0.5).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]

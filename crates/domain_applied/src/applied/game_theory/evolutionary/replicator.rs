@@ -115,7 +115,7 @@ impl<S: FitnessStrategy> ReplicatorDynamics<S> {
 
             // Normalize to prevent numerical drift from simplex
             let sum = current_x.sum();
-            if (sum - 1.0).abs() > 1e-9 {
+            if (sum - 1.0).abs() > math_commons::registry::TOLERANCE_STANDARD {
                 current_x /= sum;
             }
 
@@ -168,13 +168,13 @@ mod tests {
         // Equilibrium check
         let equilibrium = DVector::from_vec(vec![1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]);
         let deriv = system.derivative(&equilibrium);
-        assert!(deriv.norm() < 1e-9);
+        assert!(deriv.norm() < math_commons::registry::TOLERANCE_STANDARD);
 
         // Simulation check
         let init = DVector::from_vec(vec![0.4, 0.3, 0.3]);
         let trajectory = system.simulate(init, 10.0, 0.01);
         let last_state = &trajectory.last().unwrap().1;
-        assert!((last_state.sum() - 1.0).abs() < 1e-6);
+        assert!((last_state.sum() - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -204,7 +204,7 @@ mod tests {
         // f1 = 0.8. f1 - avg = 0.12. dx1 = 0.8 * 0.12 = 0.096.
         // f2 = 0.2. f2 - avg = 0.2 - 0.68 = -0.48. dx2 = 0.2 * -0.48 = -0.096.
 
-        assert!((deriv[0] - 0.096).abs() < 1e-6);
-        assert!((deriv[1] - -0.096).abs() < 1e-6);
+        assert!((deriv[0] - 0.096).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((deriv[1] - -0.096).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

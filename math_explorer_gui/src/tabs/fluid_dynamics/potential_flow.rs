@@ -127,7 +127,7 @@ impl InteractiveTool for PotentialFlowTool {
             }
 
             ui.separator();
-            ui.add(egui::Slider::new(&mut self.grid_size, 10..=50).text("Visualization - Grid Density"));
+            ui.add(egui::Slider::new(&mut self.grid_size, 10..=math_commons::registry::MAX_GRID_SIZE).text("Visualization - Grid Density"));
             ui.add(egui::Slider::new(&mut self.view_range, 5.0..=50.0).text("View Range"));
         });
 

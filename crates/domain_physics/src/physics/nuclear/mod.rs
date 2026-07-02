@@ -130,7 +130,7 @@ mod tests {
         let off_val = reactions::breit_wigner(e_res + 1.0, e_res, gamma).unwrap();
 
         assert!(max_val > off_val, "Resonance should be max at E_res");
-        assert!((max_val - 4.0).abs() < 1e-6);
+        assert!((max_val - 4.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -147,7 +147,7 @@ mod tests {
         let n0 = 100.0;
         let remaining = decay::calculate_remaining(n0, half_life, 10.0).unwrap();
         // At t=half_life, should be 50.
-        assert!((remaining - 50.0).abs() < 1e-6);
+        assert!((remaining - 50.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -168,11 +168,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "nuclear",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         DUMMY = 1.0;
     },
     test = {
-        assert_relative_eq!(DUMMY, 1.0, epsilon = 1e-6);
+        assert_relative_eq!(DUMMY, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

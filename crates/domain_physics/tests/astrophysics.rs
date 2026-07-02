@@ -5,7 +5,7 @@ use domain_physics::physics::astrophysics::galaxies::{
     calculate_redshift_from_log_mass,
 };
 
-const F64_TOLERANCE: f64 = 1e-9;
+const F64_TOLERANCE: f64 = math_commons::registry::TOLERANCE_STANDARD;
 
 #[test]
 #[allow(deprecated)]

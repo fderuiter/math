@@ -165,7 +165,7 @@ impl InteractiveTool for FractalViewer {
             // Max Iterations
             if ui
                 .add(
-                    egui::Slider::new(&mut self.max_iter, 10..=2000)
+                    egui::Slider::new(&mut self.max_iter, 10..=math_commons::registry::MAX_ITERATIONS as u32)
                         .logarithmic(true)
                         .text("Max Iter"),
                 )

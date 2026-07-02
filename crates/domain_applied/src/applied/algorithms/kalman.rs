@@ -330,8 +330,8 @@ mod tests {
 
         // New Pos = 0 + 10*1 = 10
         // New Vel = 10
-        assert!((kf.state[0] - 10.0).abs() < 1e-6);
-        assert!((kf.state[1] - 10.0).abs() < 1e-6);
+        assert!((kf.state[0] - 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((kf.state[1] - 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
         Ok(())
     }
 
@@ -397,7 +397,7 @@ mod tests {
             .build()?;
 
         kf.predict();
-        assert!((kf.state[0] - 10.0).abs() < 1e-6, "Prediction step failed");
+        assert!((kf.state[0] - 10.0).abs() < math_commons::registry::TOLERANCE_FAST, "Prediction step failed");
 
         // Measurement z=100 (perfect measurement for x=10)
         let measurement = DVector::from_element(1, 100.0);

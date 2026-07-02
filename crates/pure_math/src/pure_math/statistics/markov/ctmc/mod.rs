@@ -251,10 +251,10 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
 
                 // Check if it's approximately stationary
                 let pi_next = self.generator.transpose() * &pi;
-                if pi_next.norm() < T::from_f64(1e-6).unwrap() {
+                if pi_next.norm() < T::from_f64(math_commons::registry::TOLERANCE_FAST).unwrap() {
                     // Normalize to ensure exact sum to 1
                     let sum = pi.iter().fold(T::zero(), |acc, &x| acc + x);
-                    if sum > T::from_f64(1e-10).unwrap() {
+                    if sum > T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap() {
                         pi /= sum;
                         return Some(pi);
                     }
@@ -375,7 +375,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             // Get rate out of current state
             let rate = -self.generator[(current_state, current_state)];
 
-            if rate < T::from_f64(1e-10).unwrap() {
+            if rate < T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap() {
                 // Absorbing state or very slow rate
                 break;
             }
@@ -402,7 +402,7 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
             for j in 0..self.num_states {
                 if j != current_state {
                     let transition_rate = self.generator[(current_state, j)];
-                    if transition_rate > T::from_f64(1e-10).unwrap() {
+                    if transition_rate > T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap() {
                         weights.push(transition_rate.to_f64().unwrap_or(0.0));
                         next_states.push(j);
                     }

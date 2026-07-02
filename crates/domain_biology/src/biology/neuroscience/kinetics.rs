@@ -82,7 +82,7 @@ impl GatingKinetics for StandardKinetics {
     #[verified_engine::verified]
     fn alpha_n(&self, v: f64, v_rest: f64) -> f64 {
         let x = 10.0 - (v - v_rest);
-        if x.abs() < 1e-9 {
+        if x.abs() < math_commons::registry::TOLERANCE_STANDARD {
             0.1 // Limit as x -> 0
         } else {
             0.01 * x / ((0.1 * x).exp() - 1.0)
@@ -110,7 +110,7 @@ impl GatingKinetics for StandardKinetics {
     fn alpha_m(&self, v: f64, v_rest: f64) -> f64 {
         let dv = v - v_rest;
         let x = 25.0 - dv;
-        if x.abs() < 1e-9 {
+        if x.abs() < math_commons::registry::TOLERANCE_STANDARD {
             1.0
         } else {
             0.1 * x / ((0.1 * x).exp() - 1.0)
@@ -159,7 +159,7 @@ mod tests {
         let result = kinetics.alpha_n(v_singular, v_rest);
 
         // Expected limit: 0.1
-        assert!((result - 0.1).abs() < 1e-9, "Expected 0.1, got {}", result);
+        assert!((result - 0.1).abs() < math_commons::registry::TOLERANCE_STANDARD, "Expected 0.1, got {}", result);
         assert!(result.is_finite(), "Result should be finite");
     }
 
@@ -173,7 +173,7 @@ mod tests {
         let result = kinetics.alpha_m(v_singular, v_rest);
 
         // Expected limit: 1.0
-        assert!((result - 1.0).abs() < 1e-9, "Expected 1.0, got {}", result);
+        assert!((result - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD, "Expected 1.0, got {}", result);
         assert!(result.is_finite(), "Result should be finite");
     }
 }

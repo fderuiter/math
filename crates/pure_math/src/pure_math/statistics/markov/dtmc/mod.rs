@@ -99,7 +99,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the generic real field `T` fails to instantiate from the `f64` value `1e-10`.
+    /// Panics if the generic real field `T` fails to instantiate from the `f64` value `math_commons::registry::TOLERANCE_HIGH`.
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     #[verified_engine::verified]
     pub fn new(transition_matrix: DMatrix<T>, state_types: Vec<StateType>) -> Result<Self> {
@@ -136,7 +136,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
                 for j in 0..n {
                     let expected = if i == j { T::one() } else { T::zero() };
                     let actual = transition_matrix[(i, j)];
-                    let tolerance = T::from_f64(1e-10).unwrap();
+                    let tolerance = T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap();
                     if (actual - expected).abs() > tolerance {
                         return Err(MarkovError::InvalidState {
                             reason: format!(
@@ -405,8 +405,8 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     /// // The stationary distribution solves πP = π.
     /// // Solving the system: 0.8*π0 + 0.4*π1 = π0 => 0.4*π1 = 0.2*π0 => π0 = 2*π1.
     /// // Since π0 + π1 = 1, we get π0 ≈ 0.666... and π1 ≈ 0.333...
-    /// assert!((pi[0] - 2.0 / 3.0).abs() < 1e-10);
-    /// assert!((pi[1] - 1.0 / 3.0).abs() < 1e-10);
+    /// assert!((pi[0] - 2.0 / 3.0).abs() < math_commons::registry::TOLERANCE_HIGH);
+    /// assert!((pi[1] - 1.0 / 3.0).abs() < math_commons::registry::TOLERANCE_HIGH);
     /// ```
     #[verified_engine::verified]
     pub fn stationary_distribution(&self) -> Option<DVector<T>> {
@@ -425,7 +425,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
         }
 
         // For ergodic chains, use power method
-        const MAX_ITERS: usize = 10000;
+        let max_iters: usize = math_commons::registry::MAX_ITERATIONS;
         let tolerance = T::from_f64(1e-12).unwrap();
 
         let mut pi = DVector::from_element(
@@ -436,7 +436,7 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
         // OPTIMIZATION: Cache transpose outside the loop to avoid O(N^2) allocations per iteration
         let transition_matrix_t = self.transition_matrix.transpose();
 
-        for _ in 0..MAX_ITERS {
+        for _ in 0..max_iters {
             let pi_next = &transition_matrix_t * &pi;
 
             // Check convergence

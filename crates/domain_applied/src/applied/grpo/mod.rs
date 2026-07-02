@@ -10,11 +10,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "grpo",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         BETA = 0.01;
     },
     test = {
-        assert_relative_eq!(BETA, 0.01, epsilon = 1e-6);
+        assert_relative_eq!(BETA, 0.01, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

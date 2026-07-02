@@ -2,7 +2,7 @@
 
 use crate::climate::autoencoder::{Autoencoder, AutoencoderModel};
 use crate::climate::predictor::{Predictor, PredictorModel};
-use nalgebra::{DMatrix, Dyn, Matrix, Storage};
+use nalgebra::{DMatrix, Matrix, Dyn, Storage};
 // Re-export CeraConfig for backward compatibility (or convenience)
 pub use crate::climate::config::CeraConfig;
 use verified_engine::Theory;
@@ -111,11 +111,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     ///
     /// The reshaped matrix ready for the predictor.
     #[verified_engine::verified]
-    pub fn reshape_for_predictor<S: Storage<f32, Dyn, Dyn>>(
-        &self,
-        latent_matrix: &Matrix<f32, Dyn, Dyn, S>,
-        batch_size: usize,
-    ) -> DMatrix<f32> {
+    pub fn reshape_for_predictor<S: Storage<f32, Dyn, Dyn>>(&self, latent_matrix: &Matrix<f32, Dyn, Dyn, S>, batch_size: usize) -> DMatrix<f32> {
         let num_levels = self.config.num_levels;
         let aligned_channels = self.config.aligned_channels;
         let mut reshaped_data = Vec::with_capacity(batch_size * num_levels * aligned_channels);
@@ -141,10 +137,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
     ///
     /// The predicted output matrix.
     #[verified_engine::verified]
-    pub fn predict<S: Storage<f32, Dyn, Dyn>>(
-        &self,
-        inputs: &Matrix<f32, Dyn, Dyn, S>,
-    ) -> DMatrix<f32> {
+    pub fn predict<S: Storage<f32, Dyn, Dyn>>(&self, inputs: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
         let num_levels = self.config.num_levels;
         let aligned_channels = self.config.aligned_channels;
         let batch_size = inputs.nrows() / num_levels;
@@ -160,6 +153,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
 mod tests {
     use super::*;
     use crate::climate::training::CeraTrainer;
+    use nalgebra::DMatrix; // Import Trainer
     use rand::Rng;
 
     // Helper constant for tests
@@ -172,9 +166,7 @@ mod tests {
         let inputs = DMatrix::from_fn(n_samples * TEST_NUM_LEVELS, TEST_IN_CHANNELS, |_, _| {
             oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() + offset
         });
-        let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| {
-            oxidize_core::rng::OxidizeRng::default().r#gen()
-        });
+        let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
         (inputs, targets)
     }
 

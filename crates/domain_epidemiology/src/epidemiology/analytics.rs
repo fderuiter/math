@@ -31,7 +31,7 @@ pub fn calculate_final_size(r0: f64, s0: f64, n: f64) -> Result<f64, String> {
         let fx = s0.ln() - x.ln() - r0 * (1.0 - x / n);
         let dfx = -1.0 / x + r0 / n;
 
-        if dfx.abs() < 1e-10 {
+        if dfx.abs() < math_commons::registry::TOLERANCE_HIGH {
             return Err("Derivative too close to zero".to_string());
         }
 

@@ -101,18 +101,16 @@ impl CorrelationMatrix {
     pub fn new(matrix: DMatrix<f64>) -> Result<Self, CopulaError> {
         // Check square
         if matrix.nrows() != matrix.ncols() {
-            return Err(crate::error::CopulaError::Math(
-                math_commons::error::MathError::DimensionMismatch {
-                    expected: math_commons::math_kernel::types::Dimension(matrix.nrows()),
-                    actual: math_commons::math_kernel::types::Dimension(matrix.ncols()),
-                },
-            ));
+            return Err(crate::error::CopulaError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(matrix.nrows()),
+                actual: math_commons::math_kernel::types::Dimension(matrix.ncols()),
+            }));
         }
 
         // Check symmetric
         for i in 0..matrix.nrows() {
             for j in i + 1..matrix.ncols() {
-                if (matrix[(i, j)] - matrix[(j, i)]).abs() > 1e-10 {
+                if (matrix[(i, j)] - matrix[(j, i)]).abs() > math_commons::registry::TOLERANCE_HIGH {
                     return Err(CopulaError::NotSymmetric);
                 }
             }
@@ -120,19 +118,17 @@ impl CorrelationMatrix {
 
         // Check diagonal is 1
         for i in 0..matrix.nrows() {
-            if (matrix[(i, i)] - 1.0).abs() > 1e-10 {
-                return Err(crate::error::CopulaError::Math(
-                    math_commons::error::MathError::NumericalError {
-                        reason: format!("Diagonal element {} is not 1.0", i),
-                    },
-                ));
+            if (matrix[(i, i)] - 1.0).abs() > math_commons::registry::TOLERANCE_HIGH {
+                return Err(crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
+                    reason: format!("Diagonal element {} is not 1.0", i),
+                }));
             }
         }
 
         // Check all elements in [-1, 1]
         for i in 0..matrix.nrows() {
             for j in 0..matrix.ncols() {
-                if matrix[(i, j)].abs() > 1.0 + 1e-10 {
+                if matrix[(i, j)].abs() > 1.0 + math_commons::registry::TOLERANCE_HIGH {
                     return Err(CopulaError::InvalidCorrelation {
                         value: matrix[(i, j)],
                     });

@@ -98,7 +98,7 @@ mod tests {
         // Sheet 1: sqrt(1) * e^(i*pi) = -1
         let val1 = surface.evaluate(z, 1);
         assert_relative_eq!(val1.re, -1.0);
-        assert_relative_eq!(val1.im, 0.0, epsilon = 1e-10);
+        assert_relative_eq!(val1.im, 0.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
 
         // Winding
         assert_eq!(surface.next_sheet(0, 1), 1);

@@ -123,7 +123,7 @@ impl InteractiveTool for ComplexMappingTool {
             }
 
             ui.add_space(10.0);
-            ui.add(egui::Slider::new(&mut self.grid_density, 2..=30).text("Grid Density:"));
+            ui.add(egui::Slider::new(&mut self.grid_density, 2..=math_commons::registry::MAX_GRID_SIZE).text("Grid Density:"));
 
             ui.separator();
             ui.heading("Inspection Point (z)");

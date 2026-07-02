@@ -60,7 +60,7 @@ mod tests {
         let expected_scores = [0.85, 0.15, 0.85, 0.15];
         assert_eq!(scores.len(), expected_scores.len());
         for (score, expected) in scores.iter().zip(expected_scores.iter()) {
-            assert!((score - expected).abs() < 1e-9);
+            assert!((score - expected).abs() < math_commons::registry::TOLERANCE_STANDARD);
         }
     }
 }

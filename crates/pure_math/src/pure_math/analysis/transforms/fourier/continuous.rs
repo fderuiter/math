@@ -37,7 +37,7 @@ where
     let min = -l;
     let max = l;
     // Target error for integration. Using a small value.
-    let eps = 1e-6;
+    let eps = math_commons::registry::TOLERANCE_FAST;
 
     // a0 = (1/L) * int(f(x))
     let a0_res = integrator.integrate(f, min, max, eps);
@@ -97,7 +97,7 @@ where
 {
     let min = -l;
     let max = l;
-    let eps = 1e-6;
+    let eps = math_commons::registry::TOLERANCE_FAST;
     let range = n_terms as isize;
     let mut coeffs = Vec::with_capacity(2 * n_terms + 1);
 
@@ -149,7 +149,7 @@ where
     I: Integrator,
 {
     let (min, max) = bounds;
-    let eps = 1e-6;
+    let eps = math_commons::registry::TOLERANCE_FAST;
 
     // e^{-i omega t} = cos(omega t) - i sin(omega t)
     let func_re = |t: f64| f(t) * (omega * t).cos();
@@ -181,7 +181,7 @@ mod tests {
 
         let (a0, an, bn) = calculate_fourier_coefficients_real(func, l, 3, &integrator);
 
-        assert!(a0.abs() < 1e-9);
+        assert!(a0.abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // a1 should be 1.0
         assert!((an[0] - 1.0).abs() < 1e-4);

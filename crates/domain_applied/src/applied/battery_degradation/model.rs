@@ -143,11 +143,11 @@ mod tests {
 
         // At 0 cycles, capacity should be 1.0
         let cap_0 = model.capacity(Cycles::new_clamped(0.0), dod);
-        assert!((cap_0.as_f64() - 1.0).abs() < 1e-6);
+        assert!((cap_0.as_f64() - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
         // At n70 cycles, capacity should be 0.7
         let cap_n70 = model.capacity(Cycles::new_clamped(n70), dod);
-        assert!((cap_n70.as_f64() - 0.7).abs() < 1e-6);
+        assert!((cap_n70.as_f64() - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -159,11 +159,11 @@ mod tests {
         // Target 0.7 capacity -> should return n70
         let cycles = model.cycles_to_capacity(Capacity::new_clamped(0.7), dod);
         let n70 = model.n70(dod);
-        assert!((cycles.as_f64() - n70.as_f64()).abs() < 1e-6);
+        assert!((cycles.as_f64() - n70.as_f64()).abs() < math_commons::registry::TOLERANCE_FAST);
 
         // Target 1.0 capacity -> should be 0 cycles
         let cycles_0 = model.cycles_to_capacity(Capacity::new_clamped(1.0), dod);
-        assert!(cycles_0.as_f64() < 1e-6);
+        assert!(cycles_0.as_f64() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]

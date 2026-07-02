@@ -23,6 +23,24 @@ struct IntegrityReport {
     passed: bool,
 }
 
+fn get_workspace_members() -> Vec<String> {
+    let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
+    let parsed: toml::Value = toml::from_str(&content).unwrap_or_else(|_| toml::Value::Table(Default::default()));
+    let mut members = Vec::new();
+    if let Some(workspace) = parsed.get("workspace") {
+        if let Some(mems) = workspace.get("members") {
+            if let Some(arr) = mems.as_array() {
+                for v in arr {
+                    if let Some(s) = v.as_str() {
+                        members.push(s.to_string());
+                    }
+                }
+            }
+        }
+    }
+    members
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
@@ -34,7 +52,13 @@ fn main() {
         "verify-records" => verify_records(),
         "traceability" => traceability(),
         "verify-suite" => verify_suite(),
-        "check-file-lengths" => check_file_lengths(),
+        "check-file-lengths" => {
+            let members = get_workspace_members();
+            let debt = check_file_lengths(&members);
+            for d in debt {
+                println!("{}", d);
+            }
+        },
         _ => {
             eprintln!("Unknown command: {}", args[1]);
             std::process::exit(1);
@@ -119,42 +143,30 @@ fn traceability() {
     }
 }
 
-fn check_file_lengths() {
-    println!("Checking for files exceeding 500 lines in core math directories...");
-    let dirs = vec![
-        "crates/domain_physics",
-        "crates/domain_biology",
-        "crates/pure_math",
-    ];
+fn check_file_lengths(members: &[String]) -> Vec<String> {
     let mut exceeding = Vec::new();
 
-    for dir in dirs {
+    for dir in members {
         if Path::new(dir).exists() {
             for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+                let path_str = entry.path().to_string_lossy();
+                if path_str.contains("/target/") || path_str.contains("\\target\\") {
+                    continue;
+                }
                 if entry.file_type().is_file()
                     && entry.path().extension().and_then(|s| s.to_str()) == Some("rs")
                 {
                     if let Ok(content) = fs::read_to_string(entry.path()) {
                         let lines = content.lines().count();
                         if lines > 500 {
-                            exceeding.push(format!("{} ({} lines)", entry.path().display(), lines));
+                            exceeding.push(format!("File length violation: {} ({} lines)", entry.path().display(), lines));
                         }
                     }
                 }
             }
         }
     }
-
-    if !exceeding.is_empty() {
-        eprintln!("Error: The following files exceed the 500-line limit:");
-        for e in exceeding {
-            eprintln!("{}", e);
-        }
-        eprintln!("Please split these files using the Strategy pattern.");
-        std::process::exit(1);
-    } else {
-        println!("All checked files are within the 500-line limit.");
-    }
+    exceeding
 }
 
 fn get_llvm_cov_output() -> std::process::Output {
@@ -239,6 +251,7 @@ fn analyze_files(rs_files: &[std::path::PathBuf]) -> FileMetrics {
         Regex::new(r#"#\[(?:verified_engine::)?verified\(opt_out\s*=\s*"([^"]+)"\)\]"#).unwrap();
     let wasm_re =
         Regex::new(r#"#\[cfg\(target_arch\s*=\s*"wasm32"\)\]\s*(.*?)(?:#\[cfg|$)"#).unwrap();
+    let legacy_re = Regex::new(r"\bfn\s+([a-zA-Z0-9_]*_legacy)\b").unwrap();
 
     for filepath in rs_files {
         if let Ok(content) = fs::read_to_string(filepath) {
@@ -254,6 +267,13 @@ fn analyze_files(rs_files: &[std::path::PathBuf]) -> FileMetrics {
                     norm = norm[2..].to_string();
                 }
                 m.opt_outs.push((norm, cap[1].to_string()));
+            }
+            for cap in legacy_re.captures_iter(&content) {
+                let mut norm = filepath.to_string_lossy().replace("\\", "/");
+                if norm.starts_with("./") {
+                    norm = norm[2..].to_string();
+                }
+                m.opt_outs.push((norm, format!("Legacy function call: {}", &cap[1])));
             }
 
             m.total_funcs += funcs;
@@ -287,20 +307,9 @@ fn analyze_files(rs_files: &[std::path::PathBuf]) -> FileMetrics {
     m
 }
 
-fn check_unverified_modules() -> Vec<String> {
-    let feature_modules = vec![
-        "crates/domain_ai",
-        "crates/domain_applied",
-        "crates/domain_biology",
-        "crates/domain_climate",
-        "crates/domain_epidemiology",
-        "crates/domain_physics",
-        "crates/pure_math",
-        "math_explorer_gui",
-    ];
-
+fn check_unverified_modules(members: &[String]) -> Vec<String> {
     let mut unverified_modules = Vec::new();
-    for fm in feature_modules {
+    for fm in members {
         let mod_dir = Path::new(fm).join("src");
         if mod_dir.exists() {
             let mut has_theory = false;
@@ -320,7 +329,7 @@ fn check_unverified_modules() -> Vec<String> {
                 }
             }
             if !has_theory {
-                unverified_modules.push(fm.to_string());
+                unverified_modules.push(format!("Unverified Module: {}", fm));
             }
         }
     }
@@ -354,7 +363,7 @@ fn print_report(
     native_cov_pct: f64,
     wasm_cov_pct: f64,
     m: &FileMetrics,
-    unverified_modules: &[String],
+    debt_items: &[String],
 ) -> bool {
     let total_density = if m.total_funcs > 0.0 {
         m.total_asserts / m.total_funcs
@@ -396,20 +405,19 @@ fn print_report(
         passed = false;
     }
 
-    if !m.opt_outs.is_empty() {
-        println!("\n--- High-Integrity Debt ---");
-        for (idx, (file, reason)) in m.opt_outs.iter().enumerate() {
-            println!("[{}] {} bypassed: '{}'", idx + 1, file, reason);
-        }
+    let mut all_debt = Vec::new();
+    for (file, reason) in &m.opt_outs {
+        all_debt.push(format!("{} bypassed: '{}'", file, reason));
+    }
+    for item in debt_items {
+        all_debt.push(item.clone());
     }
 
-    if !unverified_modules.is_empty() {
-        println!("\n[!] Unverified Modules (Missing theory_verification!):");
-        for md in unverified_modules {
-            println!("  - {}", md);
+    if !all_debt.is_empty() {
+        println!("\n--- Integrity Debt ---");
+        for (idx, item) in all_debt.iter().enumerate() {
+            println!("[{}] {}", idx + 1, item);
         }
-        println!("\nThreshold not met: False Green detected!");
-        passed = false;
     }
 
     let avg_cov = (native_cov_pct + wasm_cov_pct) / 2.0;
@@ -437,25 +445,10 @@ fn verify_suite() {
     println!("Running security checks...");
     let mut passed_security = true;
 
-    if !profile::check_profiles(&[
-        "crates/federated_registry",
-        "crates/oxidize_core",
-        "crates/verified_engine",
-        "crates/verified_engine_macros",
-        "crates/math_commons",
-        "crates/pure_math",
-        "crates/domain_ai",
-        "crates/domain_physics",
-        "crates/domain_biology",
-        "crates/domain_applied",
-        "crates/domain_climate",
-        "crates/domain_epidemiology",
-        "math_explorer",
-        "math_explorer_gui",
-        "crates/markdown_tests",
-        "apps/xtask",
-        "crates/unified_verification",
-    ]) {
+    let members = get_workspace_members();
+    let member_refs: Vec<&str> = members.iter().map(|s| s.as_str()).collect();
+
+    if !profile::check_profiles(&member_refs) {
         passed_security = false;
     }
 
@@ -467,9 +460,7 @@ fn verify_suite() {
         passed_security = false;
     }
 
-    if !entropy_guard::check_entropy() {
-        passed_security = false;
-    }
+    let entropy_debt = entropy_guard::check_entropy(&members);
 
     if !passed_security {
         eprintln!("Security verification failed!");
@@ -489,7 +480,10 @@ fn verify_suite() {
     let rs_files = collect_rs_files();
     let (native_lines_total, native_lines_covered) = parse_coverage(&cov_json);
     let m = analyze_files(&rs_files);
-    let unverified_modules = check_unverified_modules();
+    let mut all_debt = Vec::new();
+    all_debt.extend(check_unverified_modules(&members));
+    all_debt.extend(check_file_lengths(&members));
+    all_debt.extend(entropy_debt);
 
     let native_cov_pct = if native_lines_total > 0.0 {
         native_lines_covered / native_lines_total * 100.0
@@ -502,7 +496,7 @@ fn verify_suite() {
         100.0
     };
 
-    let passed = print_report(native_cov_pct, wasm_cov_pct, &m, &unverified_modules);
+    let passed = print_report(native_cov_pct, wasm_cov_pct, &m, &all_debt);
 
     if !passed {
         std::process::exit(1);

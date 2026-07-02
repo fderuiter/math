@@ -30,7 +30,7 @@ impl InteractiveTool for PrimeSpiralWidget {
 
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {
-                    if ui.add(egui::Slider::new(&mut self.grid_size, 10..=1000).text("Grid Size (side length)"))
+                    if ui.add(egui::Slider::new(&mut self.grid_size, 10..=math_commons::registry::MAX_GRID_SIZE).text("Grid Size (side length)"))
                         .changed()
                     {
                         self.texture = None; // Invalidate texture

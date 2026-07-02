@@ -36,7 +36,7 @@
 //! let cg = clebsch_gordan(1.5, -0.5, 1.0, 1.0, 2.5, 0.5);
 //!
 //! println!("CG Coefficient: {:.4}", cg);
-//! assert!((cg - (0.3f64).sqrt()).abs() < 1e-9); // Expected value sqrt(3/10)
+//! assert!((cg - (0.3f64).sqrt()).abs() < math_commons::registry::TOLERANCE_STANDARD); // Expected value sqrt(3/10)
 //! ```
 //!
 //! ### 2. Time Evolution of a Qubit
@@ -91,11 +91,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "quantum",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         DUMMY = 1.0;
     },
     test = {
-        assert_relative_eq!(DUMMY, 1.0, epsilon = 1e-6);
+        assert_relative_eq!(DUMMY, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

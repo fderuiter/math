@@ -62,7 +62,7 @@ mod tests {
     fn test_cosine_model() {
         // t=0, phase = pi/2. cos(pi/2) = 0. Z = 0.
         let z0 = cosine_respiratory_curve(0.0, 1.0, 5.0);
-        assert!(z0.abs() < 1e-9);
+        assert!(z0.abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]

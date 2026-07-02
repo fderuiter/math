@@ -7,7 +7,7 @@ fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
     let scores = calculate_soft_self_consistency_scores(responses);
     let entropy = calculate_answer_entropy(responses);
     let temperature = map_entropy_to_temperature(entropy);
-    if temperature.abs() < 1e-9 {
+    if temperature.abs() < math_commons::registry::TOLERANCE_STANDARD {
         let mut max_score = f64::NEG_INFINITY;
         let mut max_idx = 0;
         for (i, score) in scores.iter().enumerate() {
@@ -32,7 +32,7 @@ fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
         .map(|s| (s - max_temp_score).exp())
         .collect();
     let sum_exps: f64 = exps.iter().sum();
-    if sum_exps.abs() < 1e-9 {
+    if sum_exps.abs() < math_commons::registry::TOLERANCE_STANDARD {
         let n = responses.len();
         if n > 0 {
             vec![1.0 / n as f64; n]
@@ -111,7 +111,7 @@ mod tests {
         ];
         let predicted_dist_q = vec![0.4, 0.1, 0.4, 0.1];
         let loss = calculate_kl_divergence_loss(&responses, &predicted_dist_q)?;
-        assert!((loss - 0.07019869).abs() < 1e-6);
+        assert!((loss - 0.07019869).abs() < math_commons::registry::TOLERANCE_FAST);
         Ok(())
     }
 }

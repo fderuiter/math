@@ -42,7 +42,7 @@ fn test_cortical_thickness() {
     let v_p = [0.5, 2.0, 0.0];
 
     let thickness = cortical_thickness(&v_w, &v_p, &white_surface, &pial_surface);
-    assert!((thickness - 2.0).abs() < 1e-9);
+    assert!((thickness - 2.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]
@@ -52,8 +52,8 @@ fn test_glm_beta_estimation() {
     let y: DVector<f64> = DVector::from_vec(vec![6.0, 5.0, 7.0, 10.0]);
 
     let beta = estimate_beta(&x, &y).unwrap();
-    assert!((beta[0] - 3.5).abs() < 1e-9);
-    assert!((beta[1] - 1.4).abs() < 1e-9);
+    assert!((beta[0] - 3.5).abs() < math_commons::registry::TOLERANCE_STANDARD);
+    assert!((beta[1] - 1.4).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]

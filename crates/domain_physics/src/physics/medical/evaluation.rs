@@ -103,7 +103,7 @@ pub fn root_mean_square_error(predicted: &[f64], observed: &[f64]) -> Option<f64
 /// but we follow the requested formula.
 #[verified_engine::verified]
 pub fn spatial_accuracy_error(measured: f64, reference: f64) -> f64 {
-    if measured.abs() < 1e-9 {
+    if measured.abs() < math_commons::registry::TOLERANCE_STANDARD {
         return 0.0; // Avoid division by zero
     }
     ((measured - reference) / measured) * 100.0
@@ -120,12 +120,12 @@ mod tests {
         let y = vec![2.0, 4.0, 6.0];
         // Perfectly correlated (r=1)
         let r = pearson_correlation(&x, &y).unwrap();
-        assert!((r - 1.0).abs() < 1e-6);
+        assert!((r - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
         let y_inv = vec![3.0, 2.0, 1.0];
         // Perfectly negatively correlated (r=-1)
         let r_inv = pearson_correlation(&x, &y_inv).unwrap();
-        assert!((r_inv + 1.0).abs() < 1e-6);
+        assert!((r_inv + 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]

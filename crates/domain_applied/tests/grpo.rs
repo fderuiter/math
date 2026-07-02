@@ -5,7 +5,7 @@ use domain_applied::applied::grpo::formulas::*;
 fn test_response_level_advantage() {
     let rewards = vec![1.0, 2.0, 3.0, 4.0, 5.0];
     let advantage = response_level_advantage(&rewards, 3.0);
-    assert!((advantage - 0.0).abs() < 1e-9);
+    assert!((advantage - 0.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     let advantage_high = response_level_advantage(&rewards, 5.0);
     assert!(advantage_high > 0.0);
@@ -37,27 +37,27 @@ fn test_clipped_surrogate_objective() {
         beta,
         kl_divergence,
     );
-    assert!((objective - (-2.25)).abs() < 1e-9);
+    assert!((objective - (-2.25)).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]
 #[verified_engine::verified]
 fn test_uncertainty_reward() {
     let reward_max = uncertainty_reward(0.5);
-    assert!((reward_max - 1.0).abs() < 1e-9);
+    assert!((reward_max - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     let reward_min = uncertainty_reward(0.0);
-    assert!((reward_min - 0.0).abs() < 1e-9);
+    assert!((reward_min - 0.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     let reward_min_2 = uncertainty_reward(1.0);
-    assert!((reward_min_2 - 0.0).abs() < 1e-9);
+    assert!((reward_min_2 - 0.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]
 #[verified_engine::verified]
 fn test_pairwise_distance_bleu() {
     let dist = pairwise_distance_bleu("hello world", "hello world");
-    assert!((dist - 0.0).abs() < 1e-9);
+    assert!((dist - 0.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     let dist_diff = pairwise_distance_bleu("hello world", "goodbye world");
     assert!(dist_diff > 0.0);
@@ -67,17 +67,17 @@ fn test_pairwise_distance_bleu() {
 #[verified_engine::verified]
 fn test_repetition_penalty() {
     let penalty = repetition_penalty(10, 100, 1.0);
-    assert!((penalty - 0.1).abs() < 1e-9);
+    assert!((penalty - 0.1).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]
 #[verified_engine::verified]
 fn test_composite_reward() {
     let reward = composite_reward(0.8, 0.1);
-    assert!((reward - 0.7).abs() < 1e-9);
+    assert!((reward - 0.7).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     let reward_zero = composite_reward(0.1, 0.8);
-    assert!((reward_zero - 0.0).abs() < 1e-9);
+    assert!((reward_zero - 0.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]
@@ -96,18 +96,18 @@ fn test_solver_empirical_accuracy() {
         "apple".to_string(),
     ];
     let accuracy = solver_empirical_accuracy(&responses, "apple");
-    assert!((accuracy - 2.0 / 3.0).abs() < 1e-9);
+    assert!((accuracy - 2.0 / 3.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     let accuracy_no_match = solver_empirical_accuracy(&responses, "orange");
-    assert!((accuracy_no_match - 0.0).abs() < 1e-9);
+    assert!((accuracy_no_match - 0.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }
 
 #[test]
 #[verified_engine::verified]
 fn test_kl_divergence_lower_bound() {
     let bound = kl_divergence_lower_bound(0.5, 1.0);
-    assert!((bound - 0.125).abs() < 1e-9);
+    assert!((bound - 0.125).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     let bound_zero_p = kl_divergence_lower_bound(0.0, 1.0);
-    assert!((bound_zero_p - 0.0).abs() < 1e-9);
+    assert!((bound_zero_p - 0.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }

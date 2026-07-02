@@ -54,6 +54,6 @@ mod tests {
         assert_eq!(calculate_terma(100.0, 0.0, 10.0).unwrap(), 0.0);
 
         let t0 = calculate_terma(100.0, 0.1, 0.0).unwrap();
-        assert!((t0 - 10.0).abs() < 1e-6);
+        assert!((t0 - 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

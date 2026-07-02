@@ -49,7 +49,7 @@ mod tests {
         let softmax_result = softmax_row_wise(&matrix);
 
         // Each row should sum to 1.0
-        assert_relative_eq!(softmax_result.row(0).sum(), 1.0, epsilon = 1e-6);
-        assert_relative_eq!(softmax_result.row(1).sum(), 1.0, epsilon = 1e-6);
+        assert_relative_eq!(softmax_result.row(0).sum(), 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(softmax_result.row(1).sum(), 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 }

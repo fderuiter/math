@@ -10,7 +10,7 @@
 /// in a free electron gas.
 #[verified_engine::verified]
 pub fn thomas_fermi_dielectric(q: f64, k_tf: f64) -> f64 {
-    if q.abs() < 1e-10 {
+    if q.abs() < math_commons::registry::TOLERANCE_HIGH {
         // Divergence at q=0 implies infinite screening length for constant potential (perfect shielding).
         return 1e10;
     }

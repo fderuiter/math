@@ -31,7 +31,7 @@ use nalgebra::DMatrix;
 ///
 /// * `matrix` - The input matrix.
 /// * `tolerance` - The threshold below which singular values are considered zero.
-///   If `None`, a default tolerance of 1e-10 is used.
+///   If `None`, a default tolerance of math_commons::registry::TOLERANCE_HIGH is used.
 ///
 /// # Returns
 ///
@@ -50,7 +50,7 @@ use nalgebra::DMatrix;
 #[verified_engine::verified]
 pub fn effective_rank(matrix: &DMatrix<f64>, tolerance: Option<f64>) -> usize {
     let svd = matrix.clone().svd(false, false);
-    let tol = tolerance.unwrap_or(1e-10);
+    let tol = tolerance.unwrap_or(math_commons::registry::TOLERANCE_HIGH);
     svd.singular_values
         .iter()
         .filter(|&sigma| *sigma > tol)

@@ -45,7 +45,7 @@ impl LinearCalibrator {
         let sum_x2: f64 = voltages.iter().take(n).map(|x| x.powi(2)).sum();
 
         let denominator = nf * sum_x2 - sum_x.powi(2);
-        if denominator.abs() < 1e-10 {
+        if denominator.abs() < math_commons::registry::TOLERANCE_HIGH {
             return Err("Variance of x is zero; cannot fit line.".to_string());
         }
 

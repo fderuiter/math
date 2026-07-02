@@ -100,8 +100,8 @@ mod tests {
 
         // Check closeness
         for (orig, recon) in signal.iter().zip(reconstructed.iter()) {
-            assert!((orig.re - recon.re).abs() < 1e-10);
-            assert!((orig.im - recon.im).abs() < 1e-10);
+            assert!((orig.re - recon.re).abs() < math_commons::registry::TOLERANCE_HIGH);
+            assert!((orig.im - recon.im).abs() < math_commons::registry::TOLERANCE_HIGH);
         }
         Ok(())
     }
@@ -117,8 +117,8 @@ mod tests {
         // FFT of impulse is constant 1
         let spectrum = fft.forward(&signal)?;
         for val in spectrum {
-            assert!((val.re - 1.0).abs() < 1e-10);
-            assert!(val.im.abs() < 1e-10);
+            assert!((val.re - 1.0).abs() < math_commons::registry::TOLERANCE_HIGH);
+            assert!(val.im.abs() < math_commons::registry::TOLERANCE_HIGH);
         }
         Ok(())
     }

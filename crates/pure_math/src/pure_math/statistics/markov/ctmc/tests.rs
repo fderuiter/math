@@ -28,16 +28,16 @@ fn test_transition_probabilities() {
 
     // At t=0, P(0) should be identity
     let p_0 = chain.transition_probabilities(0.0).unwrap();
-    assert_relative_eq!(p_0[(0, 0)], 1.0, epsilon = 1e-10);
-    assert_relative_eq!(p_0[(0, 1)], 0.0, epsilon = 1e-10);
-    assert_relative_eq!(p_0[(1, 0)], 0.0, epsilon = 1e-10);
-    assert_relative_eq!(p_0[(1, 1)], 1.0, epsilon = 1e-10);
+    assert_relative_eq!(p_0[(0, 0)], 1.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+    assert_relative_eq!(p_0[(0, 1)], 0.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+    assert_relative_eq!(p_0[(1, 0)], 0.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+    assert_relative_eq!(p_0[(1, 1)], 1.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
 
     // At t > 0, check stochasticity
     let p_t = chain.transition_probabilities(1.0).unwrap();
     for i in 0..2 {
         let row_sum: f64 = p_t.row(i).iter().sum();
-        assert_relative_eq!(row_sum, 1.0, epsilon = 1e-6);
+        assert_relative_eq!(row_sum, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 
     // For long time, should approach steady state
@@ -120,7 +120,7 @@ fn test_absorption_times() {
     assert!(times[1] > 0.0);
 
     // By symmetry, they should be equal
-    assert_relative_eq!(times[0], times[1], epsilon = 1e-10);
+    assert_relative_eq!(times[0], times[1], epsilon = math_commons::registry::TOLERANCE_HIGH);
 }
 
 #[test]

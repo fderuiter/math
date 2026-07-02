@@ -361,10 +361,10 @@ mod tests {
         let t_mid = TimeIndex::new(12.0).unwrap();
         let p_mid = tensor.transition_matrix_at(t_mid).unwrap();
 
-        assert_relative_eq!(p_mid[(0, 0)], 0.7, epsilon = 1e-10); // (0.8 + 0.6) / 2
-        assert_relative_eq!(p_mid[(0, 1)], 0.3, epsilon = 1e-10); // (0.2 + 0.4) / 2
-        assert_relative_eq!(p_mid[(1, 0)], 0.4, epsilon = 1e-10); // (0.3 + 0.5) / 2
-        assert_relative_eq!(p_mid[(1, 1)], 0.6, epsilon = 1e-10); // (0.7 + 0.5) / 2
+        assert_relative_eq!(p_mid[(0, 0)], 0.7, epsilon = math_commons::registry::TOLERANCE_HIGH); // (0.8 + 0.6) / 2
+        assert_relative_eq!(p_mid[(0, 1)], 0.3, epsilon = math_commons::registry::TOLERANCE_HIGH); // (0.2 + 0.4) / 2
+        assert_relative_eq!(p_mid[(1, 0)], 0.4, epsilon = math_commons::registry::TOLERANCE_HIGH); // (0.3 + 0.5) / 2
+        assert_relative_eq!(p_mid[(1, 1)], 0.6, epsilon = math_commons::registry::TOLERANCE_HIGH); // (0.7 + 0.5) / 2
     }
 
     #[test]

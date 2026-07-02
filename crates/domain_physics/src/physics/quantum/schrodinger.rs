@@ -57,12 +57,12 @@ use num_complex::Complex;
 /// let expected_diag = Complex::new(-1.0, 0.0);
 ///
 /// // Check diagonal elements
-/// assert!((u_matrix[(0, 0)] - expected_diag).norm() < 1e-9, "U(0,0) incorrect");
-/// assert!((u_matrix[(1, 1)] - expected_diag).norm() < 1e-9, "U(1,1) incorrect");
+/// assert!((u_matrix[(0, 0)] - expected_diag).norm() < math_commons::registry::TOLERANCE_STANDARD, "U(0,0) incorrect");
+/// assert!((u_matrix[(1, 1)] - expected_diag).norm() < math_commons::registry::TOLERANCE_STANDARD, "U(1,1) incorrect");
 ///
 /// // Check off-diagonal elements are zero
-/// assert!(u_matrix[(0, 1)].norm() < 1e-9, "U(0,1) should be 0");
-/// assert!(u_matrix[(1, 0)].norm() < 1e-9, "U(1,0) should be 0");
+/// assert!(u_matrix[(0, 1)].norm() < math_commons::registry::TOLERANCE_STANDARD, "U(0,1) should be 0");
+/// assert!(u_matrix[(1, 0)].norm() < math_commons::registry::TOLERANCE_STANDARD, "U(1,0) should be 0");
 /// ```
 #[verified_engine::verified]
 pub fn time_evolution_operator(

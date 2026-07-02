@@ -16,10 +16,10 @@ mod tests {
         assert!((n - 600.0).abs() < 50.0);
 
         let cap = capacity(n, d);
-        assert!((cap - 0.7).abs() < 1e-6);
+        assert!((cap - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
 
         let cycles = cycles_to_capacity(0.7, d);
-        assert!((cycles - n).abs() < 1e-6);
+        assert!((cycles - n).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -32,10 +32,10 @@ mod tests {
         assert!((cycles.as_f64() - 600.0).abs() < 50.0);
 
         let cap = model.capacity(cycles, dod);
-        assert!((cap.as_f64() - 0.7).abs() < 1e-6);
+        assert!((cap.as_f64() - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
 
         let calculated_cycles = model.cycles_to_capacity(Capacity::new(0.7).unwrap(), dod);
-        assert!((calculated_cycles.as_f64() - cycles.as_f64()).abs() < 1e-6);
+        assert!((calculated_cycles.as_f64() - cycles.as_f64()).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
