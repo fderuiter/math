@@ -10,7 +10,9 @@ pub struct Grid2D<T> {
 
 impl<T: Clone> Grid2D<T> {
     pub fn new(width: usize, height: usize, initial_value: T) -> Self {
-        let size = width.checked_mul(height).expect("Grid dimensions too large");
+        let size = width
+            .checked_mul(height)
+            .expect("Grid dimensions too large");
         Self {
             width,
             height,
@@ -22,7 +24,11 @@ impl<T: Clone> Grid2D<T> {
 impl<T> Grid2D<T> {
     pub fn from_vec(width: usize, height: usize, data: Vec<T>) -> Self {
         assert_eq!(width * height, data.len());
-        Self { width, height, data }
+        Self {
+            width,
+            height,
+            data,
+        }
     }
 
     #[inline(always)]

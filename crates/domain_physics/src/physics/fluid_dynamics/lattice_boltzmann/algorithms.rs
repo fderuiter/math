@@ -100,7 +100,10 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         let collision_model = &self.collision_model;
 
         // Use zipping for iteration to enable better vectorization and eliminate bounds checks
-        self.state.f_new.data.iter_mut()
+        self.state
+            .f_new
+            .data
+            .iter_mut()
             .zip(self.state.rho.data.iter_mut())
             .zip(self.state.ux.data.iter_mut())
             .zip(self.state.uy.data.iter_mut())
@@ -445,7 +448,9 @@ impl SimulationModel for LatticeBoltzmannD2Q9<BgkCollision> {
     #[verified_engine::verified]
     fn step(&mut self) -> Result<(), Self::Error> {
         self.step();
-        pure_math::pure_math::analysis::evolution::DoubleBufferedState::swap_buffers(&mut self.state);
+        pure_math::pure_math::analysis::evolution::DoubleBufferedState::swap_buffers(
+            &mut self.state,
+        );
         Ok(())
     }
 

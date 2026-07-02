@@ -1,6 +1,6 @@
+use oxidize_core::grid::Grid2D;
 use pure_math::pure_math::analysis::ode::traits::VectorOperations;
 use std::ops::{Add, AddAssign, Mul, MulAssign};
-use oxidize_core::grid::Grid2D;
 
 /// Represents the state of a multi-species chemical system.
 ///
@@ -59,11 +59,7 @@ impl Add for ChemicalState {
 
     #[verified_engine::verified]
     fn add(mut self, rhs: Self) -> Self {
-        for (val, r_val) in self
-            .grid.data
-            .iter_mut()
-            .zip(rhs.grid.data.iter())
-        {
+        for (val, r_val) in self.grid.data.iter_mut().zip(rhs.grid.data.iter()) {
             *val += r_val;
         }
         self
@@ -73,11 +69,7 @@ impl Add for ChemicalState {
 impl AddAssign for ChemicalState {
     #[verified_engine::verified]
     fn add_assign(&mut self, rhs: Self) {
-        for (val, r_val) in self
-            .grid.data
-            .iter_mut()
-            .zip(rhs.grid.data.iter())
-        {
+        for (val, r_val) in self.grid.data.iter_mut().zip(rhs.grid.data.iter()) {
             *val += r_val;
         }
     }
@@ -107,11 +99,7 @@ impl MulAssign<f64> for ChemicalState {
 impl VectorOperations for ChemicalState {
     #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (val, r_val) in self
-            .grid.data
-            .iter_mut()
-            .zip(other.grid.data.iter())
-        {
+        for (val, r_val) in self.grid.data.iter_mut().zip(other.grid.data.iter()) {
             *val += r_val * scale;
         }
     }
@@ -132,7 +120,8 @@ impl VectorOperations for ChemicalState {
         }
 
         for ((dst, src), oth) in self
-            .grid.data
+            .grid
+            .data
             .iter_mut()
             .zip(source.grid.data.iter())
             .zip(other.grid.data.iter())

@@ -50,7 +50,9 @@ pub trait DoubleBufferedState {
     fn swap_buffers(&mut self);
 }
 
-pub trait DoubleBufferedEvolutionEngine<State: DoubleBufferedState, AuxState>: EvolutionEngine<State, AuxState> {
+pub trait DoubleBufferedEvolutionEngine<State: DoubleBufferedState, AuxState>:
+    EvolutionEngine<State, AuxState>
+{
     /// Native double buffered step: delegates to step and then swaps buffers.
     fn step_buffered<R: RngCore + ?Sized>(
         &mut self,
@@ -70,7 +72,8 @@ impl<E, State, AuxState> DoubleBufferedEvolutionEngine<State, AuxState> for E
 where
     E: EvolutionEngine<State, AuxState>,
     State: DoubleBufferedState,
-{}
+{
+}
 
 use super::ode::traits::{OdeSystem, Solver, VectorOperations};
 

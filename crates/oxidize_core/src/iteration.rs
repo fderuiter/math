@@ -27,7 +27,7 @@ impl IterationPattern {
         if width == 0 || height == 0 {
             return;
         }
-        
+
         // Top and Bottom
         for y in [0, height.saturating_sub(1)] {
             if y == 0 || height > 1 {
@@ -36,7 +36,7 @@ impl IterationPattern {
                 }
             }
         }
-        
+
         // Left and Right (excluding corners)
         if height > 2 {
             for y in 1..height - 1 {

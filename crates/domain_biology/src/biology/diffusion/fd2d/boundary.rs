@@ -26,13 +26,21 @@ impl BoundaryStrategy for NeumannBoundary {
     ) -> (GridIndex, GridIndex, GridIndex, GridIndex) {
         let width = *geom.width();
         let height = *geom.height();
-        
+
         let bc = CoreNeumann;
         // Neighbors: left, right, up, down
-        let idx_l = bc.resolve(x as isize - 1, y as isize, width, height).unwrap();
-        let idx_r = bc.resolve(x as isize + 1, y as isize, width, height).unwrap();
-        let idx_u = bc.resolve(x as isize, y as isize - 1, width, height).unwrap();
-        let idx_d = bc.resolve(x as isize, y as isize + 1, width, height).unwrap();
+        let idx_l = bc
+            .resolve(x as isize - 1, y as isize, width, height)
+            .unwrap();
+        let idx_r = bc
+            .resolve(x as isize + 1, y as isize, width, height)
+            .unwrap();
+        let idx_u = bc
+            .resolve(x as isize, y as isize - 1, width, height)
+            .unwrap();
+        let idx_d = bc
+            .resolve(x as isize, y as isize + 1, width, height)
+            .unwrap();
 
         (
             GridIndex(idx_l),

@@ -29,12 +29,20 @@ impl BoundaryCondition for NeumannBoundary {
     fn resolve(&self, x: isize, y: isize, width: usize, height: usize) -> Option<usize> {
         let mut x_clamped = x;
         let mut y_clamped = y;
-        
-        if x_clamped < 0 { x_clamped = 0; }
-        if x_clamped >= width as isize { x_clamped = width as isize - 1; }
-        if y_clamped < 0 { y_clamped = 0; }
-        if y_clamped >= height as isize { y_clamped = height as isize - 1; }
-        
+
+        if x_clamped < 0 {
+            x_clamped = 0;
+        }
+        if x_clamped >= width as isize {
+            x_clamped = width as isize - 1;
+        }
+        if y_clamped < 0 {
+            y_clamped = 0;
+        }
+        if y_clamped >= height as isize {
+            y_clamped = height as isize - 1;
+        }
+
         Some((y_clamped as usize) * width + (x_clamped as usize))
     }
 }
