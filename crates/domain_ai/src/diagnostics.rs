@@ -92,6 +92,7 @@ pub struct DiagnosticBus {
 impl DiagnosticBus {
     #[verified_engine::verified]
     pub fn new() -> Self {
+        federated_registry::global_registry().register_source(env!("CARGO_PKG_NAME"));
         let (sender, receiver) = channel();
         Self {
             sender,
@@ -101,7 +102,20 @@ impl DiagnosticBus {
 
     #[verified_engine::verified]
     pub fn emit(&self, event: DiagnosticEvent) {
-        let _ = self.sender.send(event);
+        let _ = self.sender.send(event.clone());
+        let fed_severity = match event.severity {
+            Severity::Info => federated_registry::Severity::Info,
+            Severity::Warning => federated_registry::Severity::Warning,
+            Severity::Error => federated_registry::Severity::Error,
+            Severity::Fatal => federated_registry::Severity::Fatal,
+        };
+        federated_registry::global_registry().emit(federated_registry::TelemetryEvent {
+            source: env!("CARGO_PKG_NAME").to_string(),
+            severity: fed_severity,
+            message: event.message,
+            metadata: event.metadata,
+            thread_name: event.thread_name,
+        });
     }
 
     #[verified_engine::verified]

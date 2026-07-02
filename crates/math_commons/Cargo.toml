@@ -4,6 +4,7 @@ version = "0.4.0"
 edition = "2024"
 
 [dependencies]
+federated_registry = { path = "../federated_registry" }
 rustfft = "6.2.0"
 nalgebra = "0.34.0"
 quadrature = "0.1.2"

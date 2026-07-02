@@ -56,16 +56,20 @@ impl Integer {
     pub fn from_str_radix(s: &str, radix: u32) -> Result<Self, ()> {
         IBig::from_str_radix(s, radix).map(Integer).map_err(|_| ())
     }
+    #[verified_engine::verified]
     pub fn is_even(&self) -> bool {
         &self.0 % IBig::from(2u8) == IBig::from(0u8)
     }
+    #[verified_engine::verified]
     pub fn is_divisible(&self, other: &Integer) -> bool {
         (&self.0 % &other.0) == IBig::from(0u8)
     }
+    #[verified_engine::verified]
     pub fn sqrt(&self) -> Self {
         Integer(self.0.nth_root(2))
     }
     #[allow(clippy::result_unit_err)]
+    #[verified_engine::verified]
     pub fn pow_mod(&self, exp: &Integer, m: &Integer) -> Result<Self, ()> {
         if m.0 == IBig::from(0u8) {
             return Err(());
@@ -91,6 +95,7 @@ impl Integer {
         Ok(Integer(result))
     }
     #[allow(clippy::result_unit_err)]
+    #[verified_engine::verified]
     pub fn invert(&self, m: &Integer) -> Result<Self, ()> {
         let (gcd, x, _y) = self.extended_gcd(m);
         if gcd.0 == IBig::from(1u8) {
@@ -103,10 +108,12 @@ impl Integer {
             Err(())
         }
     }
+    #[verified_engine::verified]
     pub fn abs(self) -> Self {
         Integer(self.0.abs())
     }
 
+    #[verified_engine::verified]
     fn extended_gcd(&self, other: &Integer) -> (Integer, Integer, Integer) {
         let mut old_r = self.0.clone();
         let mut r = other.0.clone();
@@ -234,6 +241,7 @@ impl Float {
     pub fn abs(self) -> Self {
         Float(self.0.abs())
     }
+    #[verified_engine::verified]
     pub fn round(self) -> f64 {
         use dashu::float::round::mode::HalfAway;
         let f: FBig<HalfAway, 2> = self.0.clone().with_rounding();
@@ -367,11 +375,13 @@ impl Rational {
         }
         Rational(RBig::from_parts(real_n, mag_d))
     }
+    #[verified_engine::verified]
     pub fn numer(&self) -> f64 {
         use dashu::float::round::mode::HalfAway;
         let n_f: FBig<HalfAway, 2> = FBig::from(self.0.numerator().clone());
         n_f.to_f64().value()
     }
+    #[verified_engine::verified]
     pub fn denom(&self) -> f64 {
         use dashu::float::round::mode::HalfAway;
         let d_f: FBig<HalfAway, 2> = FBig::from(self.0.denominator().clone());
