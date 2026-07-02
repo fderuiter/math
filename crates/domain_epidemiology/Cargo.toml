@@ -25,7 +25,6 @@ pure_math = { path = "../pure_math" }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.2.17", features = ["js"] }
 
 [dev-dependencies]
 approx = "0.5.1"

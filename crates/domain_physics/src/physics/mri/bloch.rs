@@ -180,7 +180,10 @@ impl SimulationModel for BlochSimulator {
     type Error = std::io::Error;
 
     #[verified_engine::verified]
-    fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
+    fn initialize(
+        config: Self::Config,
+        _provider: oxidize_core::rng::OxidizeRng,
+    ) -> Result<Self, Self::Error> {
         let initial_m = Vector3::new(0.0, 1.0, 0.0); // Default 90 deg flipped
         let mut sim = BlochSimulator::new(initial_m, config.m0);
         sim.set_relaxation(config.t1, config.t2);

@@ -109,8 +109,6 @@ impl<R: Rng> GillespieSolver<R> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::SeedableRng;
-    use rand::rngs::StdRng;
 
     // Simple Decay Model: X -> nothing
     // Rate: k * X
@@ -150,7 +148,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_decay_process() -> Result<(), StochasticError> {
-        let rng = StdRng::seed_from_u64(42);
+        let rng = oxidize_core::rng::OxidizeRng::default();
         let mut solver = GillespieSolver::new(rng);
         let model = DecayModel { k: 0.1 };
         let mut state = DecayState { x: 100 };

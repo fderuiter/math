@@ -5,7 +5,7 @@ use math_explorer::pure_math::statistics::tda::{
     core::{Point2D, PointCloud},
     vietoris_rips_complex, SimplicialComplex,
 };
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::Rng;
 
 pub struct VietorisRipsTool {
     radius: f64,
@@ -30,7 +30,7 @@ impl Default for VietorisRipsTool {
 
 impl VietorisRipsTool {
     fn generate_points(&mut self, count: usize) {
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
 
         self.points.clear();
         for _ in 0..count {
@@ -75,7 +75,7 @@ impl InteractiveTool for VietorisRipsTool {
                         .duration_since(std::time::UNIX_EPOCH)
                         .unwrap_or_default()
                         .as_secs();
-                    let mut rng = StdRng::seed_from_u64(now);
+                    let mut rng = oxidize_core::rng::OxidizeRng::new(now);
 
                     self.points.clear();
                     for _ in 0..20 {

@@ -1,6 +1,6 @@
 use egui::{Key, Modifiers, Response, Ui, Context, Id};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CommandTrigger {
     Key(Key),
     Shortcut(Modifiers, Key),
@@ -32,16 +32,16 @@ impl CommandRegistryData {
         ui: Option<&Ui>,
         response: Option<&Response>,
     ) -> bool {
-        let mut data = ctx.data_mut(|d| d.get_temp::<CommandRegistryData>(Id::new("CMD_REGISTRY")).unwrap_or_default());
+        let mut data = ctx.data_mut(|d| d.get_temp::<Self>(Id::new("CMD_REGISTRY")).unwrap_or_default());
         
         // Avoid duplicates in the same frame
         if !data.commands.iter().any(|c| c.name == name && c.context == context_name) {
             data.commands.push(CommandMetadata {
-                name: name.to_string(),
-                description: description.to_string(),
+                name: name.to_owned(),
+                description: description.to_owned(),
                 trigger: trigger.clone(),
                 desktop_only,
-                context: context_name.to_string(),
+                context: context_name.to_owned(),
             });
             ctx.data_mut(|d| d.insert_temp(Id::new("CMD_REGISTRY"), data));
         }
@@ -73,16 +73,15 @@ impl CommandRegistryData {
                 }
             }
             CommandTrigger::AltClick => {
-                if let (Some(ui), Some(resp)) = (ui, response) {
-                    if resp.clicked() && ui.input(|i| i.modifiers.alt) {
+                if let (Some(ui), Some(resp)) = (ui, response)
+                    && resp.clicked() && ui.input(|i| i.modifiers.alt) {
                         triggered = true;
                     }
-                }
             }
         }
 
         if triggered {
-            let msg = format!("Action executed: {}", name);
+            let msg = format!("Action executed: {name}");
             ctx.data_mut(|d| d.insert_temp(Id::new("aria_live_message"), msg));
         }
 
