@@ -65,8 +65,6 @@ pub fn estimate_diffusion_coefficient_with_rng<R: Rng + ?Sized>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::SeedableRng;
-    use rand::rngs::StdRng;
 
     #[test]
     #[verified_engine::verified]

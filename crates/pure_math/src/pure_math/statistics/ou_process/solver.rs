@@ -234,8 +234,6 @@ impl EulerMaruyama {
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
-    use rand::SeedableRng;
-    use rand::rngs::StdRng;
 
     #[test]
     #[verified_engine::verified]

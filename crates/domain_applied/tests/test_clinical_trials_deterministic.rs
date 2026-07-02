@@ -1,8 +1,6 @@
 use domain_applied::applied::clinical_trials::design::{
     AllocationStrategy, BlockRandomizer, Group, SimpleRandomizer,
 };
-use rand::SeedableRng;
-use rand::rngs::StdRng;
 
 #[test]
 #[verified_engine::verified]

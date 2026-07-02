@@ -1,8 +1,6 @@
 use super::*;
 use approx::assert_relative_eq;
 use nalgebra::DMatrix;
-use rand::SeedableRng;
-use rand::rngs::StdRng;
 
 #[test]
 #[verified_engine::verified]

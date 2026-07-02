@@ -12,8 +12,6 @@ use math_explorer::pure_math::statistics::{
     zip_regression::{Count, ZipDistribution, ZipParams},
 };
 use nalgebra::{DMatrix, DVector};
-use rand::SeedableRng;
-use rand::rngs::StdRng;
 
 fn demo_zip_regression() {
     println!("1. ZIP REGRESSION - Player Block Modeling");

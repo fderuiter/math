@@ -315,8 +315,6 @@ impl SpinLattice {
 mod tests {
     use super::*;
     use crate::physics::stat_mech::KB;
-    use rand::SeedableRng;
-    use rand::rngs::StdRng;
 
     #[test]
     #[verified_engine::verified]
