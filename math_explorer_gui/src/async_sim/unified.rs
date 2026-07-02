@@ -197,7 +197,12 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
         });
     }
 
-    fn draw_image_plot(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, texture: &egui::TextureHandle) {
+    fn draw_image_plot(
+        &mut self,
+        ui: &mut egui::Ui,
+        ctx: &egui::Context,
+        texture: &egui::TextureHandle,
+    ) {
         let width = texture.size()[0] as f32;
         let height = texture.size()[1] as f32;
 
@@ -217,7 +222,9 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
                     [width, height],
                 ));
 
-                if plot_ui.response().hovered() && ctx.input(|i| i.pointer.primary_down() || i.pointer.secondary_down()) {
+                if plot_ui.response().hovered()
+                    && ctx.input(|i| i.pointer.primary_down() || i.pointer.secondary_down())
+                {
                     if let Some(pos) = plot_ui.pointer_coordinate() {
                         let grid_x = pos.x.round() as i32;
                         let grid_y = pos.y.round() as i32;
@@ -233,7 +240,9 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
     }
 
     fn draw_line_plot(&self, ui: &mut egui::Ui, snapshot: &CachedSnapshot) {
-        if snapshot.custom_data.is_empty() { return; }
+        if snapshot.custom_data.is_empty() {
+            return;
+        }
         let mut points = Vec::new();
         for i in (0..snapshot.custom_data.len()).step_by(2) {
             if i + 1 < snapshot.custom_data.len() {
@@ -256,7 +265,8 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             if let Some(snapshot) = &self.last_snapshot {
                 if let Ok(guard) = snapshot.pixels.try_read() {
                     if !guard.is_empty() {
-                        let image = ColorImage::new([snapshot.width, snapshot.height], guard.clone());
+                        let image =
+                            ColorImage::new([snapshot.width, snapshot.height], guard.clone());
                         let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
                         self.texture = Some(texture);
                         has_image = true;

@@ -13,14 +13,8 @@ pub type Result<T> = std::result::Result<T, MarkovError>;
 use nalgebra::{DMatrix, DVector, RealField};
 use num_traits::ToPrimitive;
 
-/// Classification of a state in a Markov chain.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum StateType {
-    /// Transient state (can leave and never return).
-    Transient,
-    /// Absorbing state (once entered, cannot leave).
-    Absorbing,
-}
+mod types;
+pub use types::StateType;
 
 /// A discrete-time Markov chain.
 ///
@@ -113,17 +107,21 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
 
         // Validate dimensions
         if transition_matrix.ncols() != n {
-            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(n),
-                actual: math_commons::math_kernel::types::Dimension(transition_matrix.ncols()),
-            }));
+            return Err(crate::error::MarkovError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(n),
+                    actual: math_commons::math_kernel::types::Dimension(transition_matrix.ncols()),
+                },
+            ));
         }
 
         if state_types.len() != n {
-            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(n),
-                actual: math_commons::math_kernel::types::Dimension(state_types.len()),
-            }));
+            return Err(crate::error::MarkovError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(n),
+                    actual: math_commons::math_kernel::types::Dimension(state_types.len()),
+                },
+            ));
         }
 
         // Validate stochasticity
@@ -480,10 +478,12 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
     #[verified_engine::verified]
     pub fn expected_possession_value(&self, rewards: &DVector<T>) -> Result<DVector<T>> {
         if rewards.len() != self.num_absorbing() {
-            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(self.num_absorbing()),
-                actual: math_commons::math_kernel::types::Dimension(rewards.len()),
-            }));
+            return Err(crate::error::MarkovError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(self.num_absorbing()),
+                    actual: math_commons::math_kernel::types::Dimension(rewards.len()),
+                },
+            ));
         }
 
         let b = self.absorption_probabilities()?;

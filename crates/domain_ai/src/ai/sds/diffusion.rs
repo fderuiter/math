@@ -103,9 +103,10 @@ pub fn generate_noise_with_rng<R: Rng + ?Sized>(
     cols: usize,
     rng: &mut R,
 ) -> Result<DMatrix<f64>, crate::error::AIError> {
-    let normal = Normal::new(0.0, 1.0).map_err(|e| math_commons::error::MathError::ConversionError {
-        reason: format!("Invalid normal distribution: {}", e),
-    })?;
+    let normal =
+        Normal::new(0.0, 1.0).map_err(|e| math_commons::error::MathError::ConversionError {
+            reason: format!("Invalid normal distribution: {}", e),
+        })?;
     Ok(DMatrix::from_fn(rows, cols, |_, _| normal.sample(rng)))
 }
 

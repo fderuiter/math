@@ -99,17 +99,21 @@ impl<T: RealField + Copy + ToPrimitive> HiddenMarkovModel<T> {
 
         // Validate dimensions
         if transitions.nrows() != num_states || transitions.ncols() != num_states {
-            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(num_states),
-                actual: math_commons::math_kernel::types::Dimension(transitions.nrows()),
-            }));
+            return Err(crate::error::MarkovError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(num_states),
+                    actual: math_commons::math_kernel::types::Dimension(transitions.nrows()),
+                },
+            ));
         }
 
         if emissions.nrows() != num_states {
-            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(num_states),
-                actual: math_commons::math_kernel::types::Dimension(emissions.nrows()),
-            }));
+            return Err(crate::error::MarkovError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(num_states),
+                    actual: math_commons::math_kernel::types::Dimension(emissions.nrows()),
+                },
+            ));
         }
 
         let num_observations = emissions.ncols();

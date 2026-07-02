@@ -67,7 +67,9 @@ impl ConvLayer {
         let kernel = DMatrix::from_fn(out_channels, in_channels, |_, _| {
             oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() * 2.0 - 1.0
         });
-        let bias = DVector::from_fn(out_channels, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() * 2.0 - 1.0);
+        let bias = DVector::from_fn(out_channels, |_, _| {
+            oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() * 2.0 - 1.0
+        });
         Self {
             kernel,
             bias,
@@ -87,7 +89,9 @@ impl ConvLayer {
         let grad_k = DMatrix::from_fn(self.kernel.nrows(), self.kernel.ncols(), |_, _| {
             oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
         });
-        let grad_b = DVector::from_fn(self.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5);
+        let grad_b = DVector::from_fn(self.bias.len(), |_, _| {
+            oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
+        });
 
         optimizer.update_matrix_legacy(layer_idx, &mut self.kernel, &grad_k)?;
         optimizer.update_vector_legacy(layer_idx, &mut self.bias, &grad_b)?;
@@ -349,7 +353,9 @@ mod tests {
 
         let autoencoder = Autoencoder::new(in_channels, latent_channels);
 
-        let input = DMatrix::from_fn(n_samples, in_channels, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
+        let input = DMatrix::from_fn(n_samples, in_channels, |_, _| {
+            oxidize_core::rng::OxidizeRng::default().r#gen()
+        });
 
         let (latent, reconstruction) = autoencoder.forward(&input);
 

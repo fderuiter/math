@@ -157,8 +157,8 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
 mod tests {
     use super::*;
     use crate::climate::training::CeraTrainer;
-    use rand::Rng;
-    use nalgebra::DMatrix; // Import Trainer
+    use nalgebra::DMatrix;
+    use rand::Rng; // Import Trainer
 
     // Helper constant for tests
     const TEST_NUM_LEVELS: usize = 30;
@@ -170,7 +170,9 @@ mod tests {
         let inputs = DMatrix::from_fn(n_samples * TEST_NUM_LEVELS, TEST_IN_CHANNELS, |_, _| {
             oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() + offset
         });
-        let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
+        let targets = DMatrix::from_fn(n_samples, TEST_OUTPUT_SIZE, |_, _| {
+            oxidize_core::rng::OxidizeRng::default().r#gen()
+        });
         (inputs, targets)
     }
 

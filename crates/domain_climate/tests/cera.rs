@@ -1,7 +1,7 @@
-use rand::Rng;
 use domain_climate::climate::cera::{Cera, CeraConfig};
 use domain_climate::climate::training::CeraTrainer;
 use nalgebra::DMatrix;
+use rand::Rng;
 
 const IN_CHANNELS: usize = 2;
 const LATENT_CHANNELS: usize = 3;
@@ -14,7 +14,9 @@ fn generate_synthetic_data(n_samples: usize, offset: f32) -> (DMatrix<f32>, DMat
     let inputs = DMatrix::from_fn(n_samples * NUM_LEVELS, IN_CHANNELS, |_, _| {
         oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() + offset
     });
-    let targets = DMatrix::from_fn(n_samples, OUTPUT_SIZE, |_, _| oxidize_core::rng::OxidizeRng::default().r#gen());
+    let targets = DMatrix::from_fn(n_samples, OUTPUT_SIZE, |_, _| {
+        oxidize_core::rng::OxidizeRng::default().r#gen()
+    });
     (inputs, targets)
 }
 

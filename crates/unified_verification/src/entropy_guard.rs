@@ -5,9 +5,21 @@ use walkdir::WalkDir;
 pub fn check_entropy() -> bool {
     println!("Running Entropy Guard...");
     let forbidden_patterns = [
-        (Regex::new(r"\bthread_rng\s*\(").unwrap(), "thread_rng()", "Use oxidize_core::rng::OxidizeRng or inject a seeded RNG."),
-        (Regex::new(r"\brandom\s*\(").unwrap(), "random()", "Use oxidize_core::rng::OxidizeRng or inject a seeded RNG."),
-        (Regex::new(r"\bSystemTime::now\s*\(").unwrap(), "SystemTime::now()", "Use oxidize_core::rng::OxidizeRng or inject a seeded RNG."),
+        (
+            Regex::new(r"\bthread_rng\s*\(").unwrap(),
+            "thread_rng()",
+            "Use oxidize_core::rng::OxidizeRng or inject a seeded RNG.",
+        ),
+        (
+            Regex::new(r"\brandom\s*\(").unwrap(),
+            "random()",
+            "Use oxidize_core::rng::OxidizeRng or inject a seeded RNG.",
+        ),
+        (
+            Regex::new(r"\bSystemTime::now\s*\(").unwrap(),
+            "SystemTime::now()",
+            "Use oxidize_core::rng::OxidizeRng or inject a seeded RNG.",
+        ),
     ];
 
     let ignore_re = Regex::new(r"allow\(entropy_guard\)").unwrap();
@@ -35,7 +47,7 @@ pub fn check_entropy() -> bool {
                 if let Ok(content) = fs::read_to_string(entry.path()) {
                     let lines: Vec<&str> = content.lines().collect();
                     for (i, line) in lines.iter().enumerate() {
-                        if ignore_re.is_match(line) || (i > 0 && ignore_re.is_match(lines[i-1])) {
+                        if ignore_re.is_match(line) || (i > 0 && ignore_re.is_match(lines[i - 1])) {
                             continue; // Skip if ignored
                         }
                         for (re, name, suggestion) in forbidden_patterns.iter() {

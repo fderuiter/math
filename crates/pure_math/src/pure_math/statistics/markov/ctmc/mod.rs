@@ -75,10 +75,12 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
         let n = generator.nrows();
 
         if generator.ncols() != n {
-            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(n),
-                actual: math_commons::math_kernel::types::Dimension(generator.ncols()),
-            }));
+            return Err(crate::error::MarkovError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(n),
+                    actual: math_commons::math_kernel::types::Dimension(generator.ncols()),
+                },
+            ));
         }
 
         crate::pure_math::statistics::markov::validation::validate_generator_matrix(&generator)?;
@@ -181,12 +183,11 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
         let lhs = v.clone() - &u;
         let rhs = v + u;
 
-        let r = lhs
-            .try_inverse()
-            .ok_or_else(|| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
+        let r = lhs.try_inverse().ok_or_else(|| {
+            crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
                 reason: "Failed to invert (V-U) in Padé approximation".to_string(),
-            }))?
-            * rhs;
+            })
+        })? * rhs;
 
         // Squaring: compute R^(2^s)
         let mut result = r;
@@ -413,9 +414,11 @@ impl<T: RealField + Copy + ToPrimitive> ContinuousMarkovChain<T> {
                 break;
             }
 
-            let dist = WeightedIndex::new(&weights).map_err(|_| crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
-                reason: "Failed to create weighted distribution".to_string(),
-            }))?;
+            let dist = WeightedIndex::new(&weights).map_err(|_| {
+                crate::error::MarkovError::Math(math_commons::error::MathError::NumericalError {
+                    reason: "Failed to create weighted distribution".to_string(),
+                })
+            })?;
 
             let next_idx = dist.sample(rng);
             current_state = next_states[next_idx];

@@ -59,7 +59,10 @@ fi
     if std::path::Path::new(hook_path).exists() {
         let existing = fs::read_to_string(hook_path).unwrap_or_default();
         if !existing.contains("auto-generated pre-commit hook") {
-            println!("Warning: A custom pre-commit hook exists at {}. Please merge the verification check manually or remove it to allow auto-installation.", hook_path);
+            println!(
+                "Warning: A custom pre-commit hook exists at {}. Please merge the verification check manually or remove it to allow auto-installation.",
+                hook_path
+            );
         } else {
             fs::write(hook_path, hook_content).unwrap();
             #[cfg(unix)]

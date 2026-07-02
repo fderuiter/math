@@ -81,9 +81,12 @@ impl Optimizer for AdamOptimizer {
     ) -> Result<DMatrix<f64>, AIError> {
         if params.shape() != grads.shape() {
             return Err(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(params.nrows() * params.ncols()),
+                expected: math_commons::math_kernel::types::Dimension(
+                    params.nrows() * params.ncols(),
+                ),
                 actual: math_commons::math_kernel::types::Dimension(grads.nrows() * grads.ncols()),
-            }.into());
+            }
+            .into());
         }
 
         self.t += 1;
@@ -151,9 +154,12 @@ impl Optimizer for SgdOptimizer {
     ) -> Result<DMatrix<f64>, AIError> {
         if params.shape() != grads.shape() {
             return Err(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(params.nrows() * params.ncols()),
+                expected: math_commons::math_kernel::types::Dimension(
+                    params.nrows() * params.ncols(),
+                ),
                 actual: math_commons::math_kernel::types::Dimension(grads.nrows() * grads.ncols()),
-            }.into());
+            }
+            .into());
         }
 
         // Initialize state if needed

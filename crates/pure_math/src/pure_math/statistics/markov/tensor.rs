@@ -116,10 +116,12 @@ impl<T: RealField + Copy + ToPrimitive> TransitionTensor<T> {
 
         // Validate matrix dimensions
         if matrix.nrows() != self.num_states || matrix.ncols() != self.num_states {
-            return Err(crate::error::MarkovError::Math(math_commons::error::MathError::DimensionMismatch {
-                expected: math_commons::math_kernel::types::Dimension(self.num_states),
-                actual: math_commons::math_kernel::types::Dimension(matrix.nrows()),
-            }));
+            return Err(crate::error::MarkovError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(self.num_states),
+                    actual: math_commons::math_kernel::types::Dimension(matrix.nrows()),
+                },
+            ));
         }
 
         // Validate stochasticity
