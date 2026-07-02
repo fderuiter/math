@@ -1161,16 +1161,15 @@ impl<'a> Plot<'a> {
 
         // Drag axes to zoom:
         for d in 0..2 {
-            if allow_axis_zoom_drag[d] {
-                if let Some(axis_response) = (if d == 0 {
+            if allow_axis_zoom_drag[d]
+                && let Some(axis_response) = (if d == 0 {
                     &x_axis_responses
                 } else {
                     &y_axis_responses
                 })
                 .iter()
                 .find(|r| r.dragged_by(PointerButton::Primary))
-                {
-                    if let Some(drag_start_pos) = ui.input(|i| i.pointer.press_origin()) {
+                    && let Some(drag_start_pos) = ui.input(|i| i.pointer.press_origin()) {
                         let delta = axis_response.drag_delta();
 
                         let axis_zoom = 1.0 + (0.02 * delta[d]).clamp(-1.0, 1.0);
@@ -1191,8 +1190,6 @@ impl<'a> Plot<'a> {
                             mem.auto_bounds = false.into();
                         }
                     }
-                }
-            }
         }
 
         // Zooming
@@ -1214,13 +1211,13 @@ impl<'a> Plot<'a> {
                         epaint::RectShape::stroke(
                             rect,
                             0.0,
-                            epaint::Stroke::new(4., Color32::DARK_BLUE),
+                            epaint::Stroke::new(4_f32, Color32::DARK_BLUE),
                             egui::StrokeKind::Middle,
                         ), // Outer stroke
                         epaint::RectShape::stroke(
                             rect,
                             0.0,
-                            epaint::Stroke::new(2., Color32::WHITE),
+                            epaint::Stroke::new(2_f32, Color32::WHITE),
                             egui::StrokeKind::Middle,
                         ), // Inner stroke
                     ));
@@ -1333,7 +1330,7 @@ impl<'a> Plot<'a> {
         // --- EXTRACT DATASETS INJECTED ---
         let mut accessible_datasets: Vec<(String, Vec<[f64; 2]>)> = Vec::new();
         for item in &items {
-            accessible_datasets.push((item.name().to_string(), item.extract_points()));
+            accessible_datasets.push((item.name().to_owned(), item.extract_points()));
         }
         // --- END EXTRACT DATASETS ---
 let prepared = PreparedPlot {
@@ -1421,13 +1418,13 @@ let prepared = PreparedPlot {
         let focus_response = response.interact(egui::Sense::focusable_noninteractive());
         
         let overlay_rect = egui::Rect::from_min_size(plot_rect.min, egui::vec2(plot_rect.width(), 30.0));
-        ui.allocate_ui_at_rect(overlay_rect, |ui| {
+        ui.scope_builder(egui::UiBuilder::new().max_rect(overlay_rect), |ui| {
             ui.horizontal(|ui| {
                 if ui.button("Table View").clicked() {
                     access_state.show_table = !access_state.show_table;
                 }
                 if ui.button("Export CSV").clicked() {
-                    use std::io::Write;
+                    use std::io::Write as _;
                     if let Ok(mut file) = std::fs::File::create("export.csv") {
                         let _ = writeln!(file, "Dataset,X,Y");
                         for (name, pts) in &accessible_datasets {
@@ -1438,7 +1435,7 @@ let prepared = PreparedPlot {
                     }
                 }
                 if ui.button("Export JSON").clicked() {
-                    use std::io::Write;
+                    use std::io::Write as _;
                     if let Ok(mut file) = std::fs::File::create("export.json") {
                         let _ = writeln!(file, "[");
                         let mut first = true;
@@ -1457,7 +1454,7 @@ let prepared = PreparedPlot {
         });
 
         if access_state.show_table {
-            egui::Window::new(format!("Data Table - {:?}", id_source)).show(ui.ctx(), |ui| {
+            egui::Window::new(format!("Data Table - {id_source:?}")).show(ui.ctx(), |ui| {
                 egui::ScrollArea::both().show(ui, |ui| {
                     for (name, pts) in &accessible_datasets {
                         if pts.is_empty() { continue; }
@@ -1484,13 +1481,12 @@ let prepared = PreparedPlot {
                     Some(ui),
                     None,
                 );
-                if down_triggered {
-                    if access_state.focused_item + 1 < num_items {
+                if down_triggered
+                    && access_state.focused_item + 1 < num_items {
                         access_state.focused_item += 1;
                         access_state.focused_point = 0;
                         changed = true;
                     }
-                }
                 
                 let up_triggered = crate::commands::CommandRegistryData::register_and_check(
                     ui.ctx(),
@@ -1502,13 +1498,12 @@ let prepared = PreparedPlot {
                     Some(ui),
                     None,
                 );
-                if up_triggered {
-                    if access_state.focused_item > 0 {
+                if up_triggered
+                    && access_state.focused_item > 0 {
                         access_state.focused_item -= 1;
                         access_state.focused_point = 0;
                         changed = true;
                     }
-                }
                 
                 if let Some((_, pts)) = accessible_datasets.get(access_state.focused_item) {
                     let num_pts = pts.len();
@@ -1523,12 +1518,11 @@ let prepared = PreparedPlot {
                             Some(ui),
                             None,
                         );
-                        if right_triggered {
-                            if access_state.focused_point + 1 < num_pts {
+                        if right_triggered
+                            && access_state.focused_point + 1 < num_pts {
                                 access_state.focused_point += 1;
                                 changed = true;
                             }
-                        }
                         
                         let left_triggered = crate::commands::CommandRegistryData::register_and_check(
                             ui.ctx(),
@@ -1540,23 +1534,20 @@ let prepared = PreparedPlot {
                             Some(ui),
                             None,
                         );
-                        if left_triggered {
-                            if access_state.focused_point > 0 {
+                        if left_triggered
+                            && access_state.focused_point > 0 {
                                 access_state.focused_point -= 1;
                                 changed = true;
                             }
-                        }
                     }
                 }
 
-                if changed {
-                    if let Some((name, pts)) = accessible_datasets.get(access_state.focused_item) {
-                        if let Some(p) = pts.get(access_state.focused_point) {
+                if changed
+                    && let Some((name, pts)) = accessible_datasets.get(access_state.focused_item)
+                        && let Some(p) = pts.get(access_state.focused_point) {
                             let msg = format!("Dataset {}, Point X: {:.4}, Y: {:.4}", name, p[0], p[1]);
                             ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("aria_live_message"), msg));
                         }
-                    }
-                }
             }
         }
 
@@ -1995,7 +1986,7 @@ impl PreparedPlot<'_> {
             }
 
             shapes.push((
-                Shape::line_segment([p0, p1], Stroke::new(1.0, line_color)),
+                Shape::line_segment([p0, p1], Stroke::new(1.0_f32, line_color)),
                 line_strength,
             ));
         }
@@ -2101,15 +2092,14 @@ fn generate_marks(step_sizes: [f64; 3], bounds: (f64, f64)) -> Vec<GridMark> {
 
     let mut deduplicated: Vec<GridMark> = Vec::with_capacity(steps.len());
     for step in steps {
-        if let Some(last) = deduplicated.last_mut() {
-            if (last.value - step.value).abs() < eps {
+        if let Some(last) = deduplicated.last_mut()
+            && (last.value - step.value).abs() < eps {
                 // Keep the one with the largest step size
                 if last.step_size < step.step_size {
                     *last = step;
                 }
                 continue;
             }
-        }
         deduplicated.push(step);
     }
 
