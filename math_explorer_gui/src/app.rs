@@ -1,11 +1,11 @@
 use crate::tabs::ExplorerTab;
 use eframe::egui;
-use math_explorer::diagnostics::{global_bus, DiagnosticEvent, Severity};
+use federated_registry::{global_registry, Severity, TelemetryEvent};
 
 pub struct MathExplorerApp {
     tabs: Vec<Box<dyn ExplorerTab>>,
     selected_tab: usize,
-    diagnostic_events: Vec<DiagnosticEvent>,
+    diagnostic_events: Vec<TelemetryEvent>,
     show_info: bool,
     show_warnings: bool,
     show_errors: bool,
@@ -80,7 +80,7 @@ impl eframe::App for MathExplorerApp {
         }
 
         // Fetch new events
-        let new_events = global_bus().try_recv_all();
+        let new_events = global_registry().try_recv_all();
         for event in &new_events {
             if matches!(event.severity, Severity::Error | Severity::Fatal) {
                 crate::accessibility::announce_status_with_priority(
@@ -129,9 +129,12 @@ impl eframe::App for MathExplorerApp {
                         ui.group(|ui| {
                             ui.horizontal(|ui| {
                                 ui.label(
-                                    egui::RichText::new(format!("[{}]", event.severity))
-                                        .color(color)
-                                        .strong(),
+                                    egui::RichText::new(format!(
+                                        "[{} - {}]",
+                                        event.source, event.severity
+                                    ))
+                                    .color(color)
+                                    .strong(),
                                 );
                                 if let Some(thread) = &event.thread_name {
                                     ui.label(
