@@ -15,3 +15,5 @@ ureq = { version = "2.9.6", features = ["json"] }
 
 [profile.release]
 overflow-checks = true
+[lints]
+workspace = true
