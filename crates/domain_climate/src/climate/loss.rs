@@ -1,6 +1,6 @@
 //! This module implements the loss functions for the CERA framework.
 
-use nalgebra::{DMatrix, Matrix, Dyn, Storage};
+use nalgebra::{Matrix, Dyn, Storage};
 
 /// Computes the Mean Squared Error (MSE) between two matrices.
 ///
@@ -111,7 +111,7 @@ pub fn cera_loss(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nalgebra::{DMatrix, Matrix, Dyn, Storage};
+    use nalgebra::DMatrix;
 
     #[test]
     #[verified_engine::verified]
