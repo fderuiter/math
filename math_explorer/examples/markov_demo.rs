@@ -9,10 +9,7 @@ use nalgebra::{DMatrix, DVector};
 use rand::SeedableRng;
 use rand::rngs::StdRng;
 
-fn main() {
-    println!("=== Math Explorer: Markov Chain Models Demo ===\n");
-
-    // 1. Expected Possession Value (DTMC with Rewards)
+fn demo_epv() {
     println!("1. Expected Possession Value (DTMC with Rewards)");
     let transitions = DMatrix::from_row_slice(
         4,
@@ -45,8 +42,9 @@ fn main() {
         "   P(score | start in advantage) = {:.3}\n",
         absorption[(1, 0)]
     );
+}
 
-    // 2. Shot Clock Urgency (Time-Varying Transitions)
+fn demo_shot_clock() {
     println!("2. Shot Clock Urgency (Time-Varying Transitions)");
     let mut tensor = TransitionTensor::new(
         3,
@@ -76,8 +74,9 @@ fn main() {
         .transition_matrix_at(TimeIndex::new(12.0).unwrap())
         .unwrap();
     println!("   Shot probability at 12 seconds: {:.3}\n", p_12[(0, 1)]);
+}
 
-    // 3. Hot Hand Detection (HMM)
+fn demo_hot_hand() {
     println!("3. Hot Hand Detection (HMM)");
     let initial = DVector::from_vec(vec![0.5, 0.5]);
     let transitions = DMatrix::from_row_slice(2, 2, &[0.70, 0.30, 0.40, 0.60]);
@@ -90,8 +89,9 @@ fn main() {
 
     let posterior = hmm.filter(&shots).unwrap();
     println!("   P(Hot | all shots) = {:.3}\n", posterior[1]);
+}
 
-    // 4. Gambler's Ruin (Classic DTMC)
+fn demo_gamblers_ruin() {
     println!("4. Gambler's Ruin (Classic DTMC)");
     let transitions = DMatrix::from_row_slice(
         5,
@@ -121,8 +121,9 @@ fn main() {
     }
     let times = chain.expected_absorption_times().unwrap();
     println!("   Expected games from $2: {:.1}\n", times[1]);
+}
 
-    // 5. Birth-Death Process (CTMC)
+fn demo_birth_death() {
     println!("5. Birth-Death Process (CTMC)");
     let generator = DMatrix::from_row_slice(2, 2, &[-2.0, 2.0, 3.0, -3.0]);
     let chain = ContinuousMarkovChain::new(generator).unwrap();
@@ -137,8 +138,9 @@ fn main() {
     let mut rng = StdRng::seed_from_u64(42);
     let trajectory = chain.simulate_trajectory(0, 10.0, &mut rng).unwrap();
     println!("   Trajectory length: {}\n", trajectory.len());
+}
 
-    // 6. Market Regime Detection (HMM)
+fn demo_market_regime() {
     println!("6. Market Regime Detection (HMM)");
     let initial = DVector::from_vec(vec![0.33, 0.33, 0.34]);
     let transitions = DMatrix::from_row_slice(
@@ -165,4 +167,14 @@ fn main() {
         "   P(Bull) = {:.3}, P(Bear) = {:.3}, P(Sideways) = {:.3}\n",
         current_belief[0], current_belief[1], current_belief[2]
     );
+}
+
+fn main() {
+    println!("=== Math Explorer: Markov Chain Models Demo ===\n");
+    demo_epv();
+    demo_shot_clock();
+    demo_hot_hand();
+    demo_gamblers_ruin();
+    demo_birth_death();
+    demo_market_regime();
 }

@@ -25,7 +25,7 @@ impl fmt::Display for Color {
     }
 }
 
-fn main() {
+fn print_header() {
     println!();
     println!(
         "{}  🌌 LORENZ ATTRACTOR: THE BUTTERFLY EFFECT 🦋  {}",
@@ -43,8 +43,9 @@ fn main() {
     println!("We will simulate two Lorenz systems with almost identical initial conditions.");
     println!("Notice how the trajectories diverge exponentially over time.");
     println!();
+}
 
-    // 1. Initialize two systems with epsilon difference
+fn run_simulation() {
     let x0 = 10.0;
     let y0 = 10.0;
     let z0 = 10.0;
@@ -67,6 +68,10 @@ fn main() {
     );
     println!();
 
+    simulate_systems(&mut sys1, &mut sys2);
+}
+
+fn simulate_systems(sys1: &mut math_explorer::physics::chaos::lorenz::LorenzSystem, sys2: &mut math_explorer::physics::chaos::lorenz::LorenzSystem) {
     let dt = 0.01;
     let steps = 3000;
     let print_interval = 200;
@@ -125,4 +130,9 @@ fn main() {
         Color::Reset
     );
     println!();
+}
+
+fn main() {
+    print_header();
+    run_simulation();
 }

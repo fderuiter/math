@@ -27,6 +27,37 @@ impl fmt::Display for Color {
     }
 }
 
+fn generate_torus_sdf(width: usize, height: usize, depth: usize, major_radius: f32, minor_radius: f32) -> VoxelGrid {
+    let min_bound = -4.0;
+    let max_bound = 4.0;
+    let range = max_bound - min_bound;
+    let step = range / (width as f32);
+
+    let mut data = Vec::with_capacity(width * height * depth);
+
+    for z in 0..depth {
+        let z_coord = min_bound + (z as f32) * step;
+        for y in 0..height {
+            let y_coord = min_bound + (y as f32) * step;
+            for x in 0..width {
+                let x_coord = min_bound + (x as f32) * step;
+                let len_xy = (x_coord * x_coord + y_coord * y_coord).sqrt();
+                let dist =
+                    ((len_xy - major_radius).powi(2) + z_coord * z_coord).sqrt() - minor_radius;
+                data.push(dist);
+            }
+        }
+    }
+
+    VoxelGrid::builder()
+        .dimensions(width, height, depth)
+        .data(data)
+        .voxel_size(Point3D::new(step, step, step))
+        .origin(Point3D::new(min_bound, min_bound, min_bound))
+        .build()
+        .unwrap()
+}
+
 /// This example generates a mesh for a Torus using the Marching Cubes algorithm
 /// and exports it to a Wavefront OBJ file.
 fn main() -> std::io::Result<()> {
@@ -45,9 +76,6 @@ fn main() -> std::io::Result<()> {
     let width = 64;
     let height = 64;
     let depth = 64;
-    let total_size = width * height * depth;
-
-    // Torus parameters
     let major_radius = 2.0;
     let minor_radius = 0.8;
 
@@ -70,41 +98,7 @@ fn main() -> std::io::Result<()> {
     );
     println!();
 
-    // Grid Setup (Spatial extent from -4 to 4)
-    let min_bound = -4.0;
-    let max_bound = 4.0;
-    let range = max_bound - min_bound;
-    let step = range / (width as f32);
-
-    let mut data = Vec::with_capacity(total_size);
-
-    for z in 0..depth {
-        let z_coord = min_bound + (z as f32) * step;
-        for y in 0..height {
-            let y_coord = min_bound + (y as f32) * step;
-            for x in 0..width {
-                let x_coord = min_bound + (x as f32) * step;
-
-                // Torus SDF: f(x,y,z) = sqrt((sqrt(x^2 + y^2) - R)^2 + z^2) - r
-                let len_xy = (x_coord * x_coord + y_coord * y_coord).sqrt();
-                let dist =
-                    ((len_xy - major_radius).powi(2) + z_coord * z_coord).sqrt() - minor_radius;
-
-                // Marching Cubes expects values where < threshold is "inside".
-                // SDF is typically negative inside, positive outside.
-                // We'll use threshold = 0.0.
-                data.push(dist);
-            }
-        }
-    }
-
-    let grid = VoxelGrid::builder()
-        .dimensions(width, height, depth)
-        .data(data)
-        .voxel_size(Point3D::new(step, step, step))
-        .origin(Point3D::new(min_bound, min_bound, min_bound))
-        .build()
-        .unwrap();
+    let grid = generate_torus_sdf(width, height, depth, major_radius, minor_radius);
 
     println!(
         "{}⛏️  Extracting Isosurface using Marching Cubes...{}",

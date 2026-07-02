@@ -2,12 +2,7 @@
 
 use math_explorer::pure_math::statistics::{glicko2, kelly, tda};
 
-fn main() {
-    println!("=== Math Explorer: New Statistics Modules Demo ===\n");
-
-    // ========================================
-    // 1. Glicko-2 Rating System
-    // ========================================
+fn demo_glicko2() -> glicko2::GlickoPlayer {
     println!("1. GLICKO-2 RATING SYSTEM");
     println!("   (Competitive ranking with uncertainty)");
     println!("   ----------------------------------------");
@@ -37,10 +32,10 @@ fn main() {
         updated.volatility.value()
     );
     println!("   ✓ Rating increased after victory!\n");
+    updated
+}
 
-    // ========================================
-    // 2. Kelly Criterion
-    // ========================================
+fn demo_kelly() -> f64 {
     println!("2. KELLY CRITERION");
     println!("   (Optimal bet sizing)");
     println!("   --------------------");
@@ -70,15 +65,14 @@ fn main() {
         bankroll, bet_amount
     );
     println!("   ✓ Optimal sizing for positive expected growth!\n");
+    half_kelly.value() * 100.0
+}
 
-    // ========================================
-    // 3. Topological Data Analysis
-    // ========================================
+fn demo_tda() -> usize {
     println!("3. TOPOLOGICAL DATA ANALYSIS");
     println!("   (Shape detection in point clouds)");
     println!("   ----------------------------------");
 
-    // Create a circle of points
     let n = 12;
     let circle_points: Vec<tda::Point2D> = (0..n)
         .map(|i| {
@@ -93,7 +87,6 @@ fn main() {
         cloud.size()
     );
 
-    // Build complex at different radii
     let small_radius = 0.5;
     let medium_radius = 0.6;
 
@@ -115,7 +108,6 @@ fn main() {
         beta0_medium, beta1_medium
     );
 
-    // Compute persistence
     let radii: Vec<f64> = (0..40).map(|i| i as f64 * 0.05).collect();
     let barcode = tda::compute_persistence(&cloud, &radii).unwrap();
 
@@ -132,6 +124,15 @@ fn main() {
         );
         println!("   ✓ Circular structure detected!\n");
     }
+    beta1_medium
+}
+
+fn main() {
+    println!("=== Math Explorer: New Statistics Modules Demo ===\n");
+
+    let updated = demo_glicko2();
+    let kelly_percent = demo_kelly();
+    let beta1_medium = demo_tda();
 
     // ========================================
     // Summary
@@ -143,7 +144,7 @@ fn main() {
     );
     println!(
         "✓ Kelly: Optimal bet is {:.1}% of bankroll for positive EV",
-        half_kelly.value() * 100.0
+        kelly_percent
     );
     println!("✓ TDA: Detected circular topology with β₁={}", beta1_medium);
     println!("\nAll three modules working perfectly! 🎉");
