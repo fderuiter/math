@@ -88,7 +88,7 @@ impl<M: UnifiedModel> SimulationRunner for UnifiedSimRunner<M> {
 struct CachedSnapshot {
     width: usize,
     height: usize,
-    pixels: Arc<Vec<egui::Color32>>,
+    pixels: Arc<std::sync::RwLock<Vec<egui::Color32>>>,
 }
 
 pub struct UnifiedSimTool<M: UnifiedModel> {
@@ -199,12 +199,14 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
     fn draw_central_panel(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
             if let Some(snapshot) = &self.last_snapshot {
-                let image = ColorImage::new(
-                    [snapshot.width, snapshot.height],
-                    snapshot.pixels.as_ref().clone(),
-                );
-                let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
-                self.texture = Some(texture);
+                if let Ok(guard) = snapshot.pixels.try_read() {
+                    let image = ColorImage::new(
+                        [snapshot.width, snapshot.height],
+                        guard.clone(),
+                    );
+                    let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
+                    self.texture = Some(texture);
+                }
             }
 
             if let Some(texture) = &self.texture {
