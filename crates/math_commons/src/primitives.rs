@@ -16,7 +16,7 @@ macro_rules! define_bounded_float {
         impl $name {
             /// Creates a new instance, validating bounds.
             pub fn new(value: f64) -> Result<Self, String> {
-                if value >= $min && value <= $max && value.is_finite() {
+                if ($min..=$max).contains(&value) && value.is_finite() {
                     Ok(Self(value))
                 } else {
                     Err(format!("Value {} is outside the allowed range [{}, {}]", value, $min, $max))
