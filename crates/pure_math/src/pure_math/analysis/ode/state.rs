@@ -197,7 +197,7 @@ impl VectorOperations for DVector<f64> {
         }
     }
 
-    #[verified_engine::verified]
+    #[verified_engine::verified(opt_out = "inherent method call false positive")]
     fn copy_from(&mut self, other: &Self) {
         self.copy_from(other);
     }

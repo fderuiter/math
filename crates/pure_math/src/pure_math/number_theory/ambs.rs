@@ -116,25 +116,29 @@ impl AmbsDsp {
 
     #[verified_engine::verified]
     pub fn build_prefix(&mut self, current_p: u64, last_p_index: usize, h_max_remaining: f64) {
-        if (current_p as f64) >= self.b_stop {
-            self.prefix_pool.push(current_p);
-            return;
-        }
+        let mut stack = vec![(current_p, last_p_index, h_max_remaining)];
 
-        for i in last_p_index..self.valid_powers.len() {
-            let (p, _, p2e) = self.valid_powers[i];
-            if let Some(next_p) = current_p.checked_mul(p2e) {
-                let term_abundancy = (sigma(p2e) as f64) / (p2e as f64);
-                let current_abundancy = (sigma(current_p) as f64) / (current_p as f64);
-                let next_abundancy = current_abundancy * term_abundancy;
-                let next_h_max = h_max_remaining / term_abundancy;
+        while let Some((curr_p, curr_idx, curr_h_max)) = stack.pop() {
+            if (curr_p as f64) >= self.b_stop {
+                self.prefix_pool.push(curr_p);
+                continue;
+            }
 
-                if next_abundancy * next_h_max >= 2.0 {
-                    let mut next_idx = i + 1;
-                    while next_idx < self.valid_powers.len() && self.valid_powers[next_idx].0 == p {
-                        next_idx += 1;
+            for i in (curr_idx..self.valid_powers.len()).rev() {
+                let (p, _, p2e) = self.valid_powers[i];
+                if let Some(next_p) = curr_p.checked_mul(p2e) {
+                    let term_abundancy = (sigma(p2e) as f64) / (p2e as f64);
+                    let current_abundancy = (sigma(curr_p) as f64) / (curr_p as f64);
+                    let next_abundancy = current_abundancy * term_abundancy;
+                    let next_h_max = curr_h_max / term_abundancy;
+
+                    if next_abundancy * next_h_max >= 2.0 {
+                        let mut next_idx = i + 1;
+                        while next_idx < self.valid_powers.len() && self.valid_powers[next_idx].0 == p {
+                            next_idx += 1;
+                        }
+                        stack.push((next_p, next_idx, next_h_max));
                     }
-                    self.build_prefix(next_p, next_idx, next_h_max);
                 }
             }
         }
