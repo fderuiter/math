@@ -1,0 +1,15 @@
+[package]
+name = "diagnostics"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = []
+federated = ["dep:federated_registry"]
+
+[dependencies]
+federated_registry = { path = "../federated_registry", optional = true }
+thiserror = "2.0.18"
+
+[lints]
+workspace = true
