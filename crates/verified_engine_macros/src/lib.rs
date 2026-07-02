@@ -207,10 +207,14 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
     }
 
     let mut field_params = Vec::new();
+    let mut get_params = Vec::new();
+    let mut set_params = Vec::new();
+
     if let syn::Data::Struct(data) = &input.data {
         if let syn::Fields::Named(fields) = &data.fields {
             for field in &fields.named {
-                let field_name = field.ident.as_ref().unwrap().to_string();
+                let field_ident = field.ident.as_ref().unwrap();
+                let field_name = field_ident.to_string();
                 let mut min_val: Option<f64> = None;
                 let mut max_val: Option<f64> = None;
                 let mut step_val: Option<f64> = None;
@@ -247,6 +251,16 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
                             step: #step,
                         });
                     });
+
+                    get_params.push(quote::quote! {
+                        #field_name => Some(self.#field_ident as f64),
+                    });
+
+                    set_params.push(quote::quote! {
+                        #field_name => {
+                            self.#field_ident = _value as _;
+                        }
+                    });
                 }
             }
         }
@@ -273,6 +287,18 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
                 let mut map = std::collections::HashMap::new();
                 #(#field_params)*
                 map
+            }
+            fn get_parameter(&self, _name: &str) -> Option<f64> {
+                match _name {
+                    #(#get_params)*
+                    _ => None,
+                }
+            }
+            fn set_parameter(&mut self, _name: &str, _value: f64) {
+                match _name {
+                    #(#set_params)*
+                    _ => {}
+                }
             }
         }
     };
