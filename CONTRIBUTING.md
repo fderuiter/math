@@ -45,6 +45,10 @@ graph TD
     H -->|Approved| I[Merge]
 ```
 
+## Git Hooks & Guardrails
+
+To ensure immediate feedback and high integrity, standards (such as file-length limits in core directories) are enforced automatically at the commit level. Running the project setup command (`cargo run -p xtask -- setup`) automatically configures a Git pre-commit hook that runs the centralized verification suite. This minimizes CI failures and maintains architectural constraints.
+
 ##  Testing
 
 We take reliability seriously. Before submitting, ensure all tests pass.
