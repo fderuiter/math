@@ -114,8 +114,7 @@ impl<const N: usize> SpatialDiffusion<N> for FiniteDifference2D {
         }
 
         SpatialDiffusion::<N>::stepper(self).step_2d_coupled_neumann(
-            *self.geometry.width,
-            *self.geometry.height,
+            (*self.geometry.width, *self.geometry.height),
             state,
             next_state,
             dt,

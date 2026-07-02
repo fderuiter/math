@@ -174,8 +174,7 @@ impl FusedStencilStepper {
     #[verified_engine::verified]
     pub fn step_2d_coupled_neumann<const N: usize, F>(
         &self,
-        width: usize,
-        height: usize,
+        dim: (usize, usize),
         src: [&[f64]; N],
         dst: [&mut [f64]; N],
         dt: f64,
@@ -192,6 +191,7 @@ impl FusedStencilStepper {
             &StencilOperators,
         ) -> [f64; N],
     {
+        let (width, height) = dim;
         let n = width * height;
         if n == 0 {
             return;
