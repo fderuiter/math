@@ -53,7 +53,7 @@ impl MathExplorerApp {
             }
             menu.append(&view_menu).unwrap();
 
-            let _ = menu.init_for_nsapp();
+            menu.init_for_nsapp();
         }
 
         app
