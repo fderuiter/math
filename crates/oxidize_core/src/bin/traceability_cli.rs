@@ -85,13 +85,22 @@ fn print_dashboard(report: &oxidize_core::traceability::TraceabilityReport) {
     } else {
         0.0
     };
-    
+
     println!("Total Assertion Density: {:.2} asserts/fn", total_density);
-    println!("Verified Modules Density: {:.2} asserts/fn", verified_density);
-    println!("Unverified Modules Density: {:.2} asserts/fn", unverified_density);
-    
+    println!(
+        "Verified Modules Density: {:.2} asserts/fn",
+        verified_density
+    );
+    println!(
+        "Unverified Modules Density: {:.2} asserts/fn",
+        unverified_density
+    );
+
     if report.verified_funcs > 0 && verified_density < 2.0 {
-        println!("\n[!] Assertion Density Failure: Verified modules have a density of {:.2} asserts/fn, which is below the minimum required 2.0 asserts/fn.", verified_density);
+        println!(
+            "\n[!] Assertion Density Failure: Verified modules have a density of {:.2} asserts/fn, which is below the minimum required 2.0 asserts/fn.",
+            verified_density
+        );
     }
 }
 
@@ -124,7 +133,7 @@ fn main() {
             if failed {
                 process::exit(1);
             }
-            
+
             print_dashboard(&report);
 
             println!("All checks passed!");

@@ -201,8 +201,10 @@ fn parse_coverage(cov_json: &serde_json::Value) -> (f64, f64) {
         for f in files {
             if let Some(summary) = f.get("summary").and_then(|s| s.get("lines")) {
                 native_lines_total += summary.get("count").and_then(|c| c.as_f64()).unwrap_or(0.0);
-                native_lines_covered +=
-                    summary.get("covered").and_then(|c| c.as_f64()).unwrap_or(0.0);
+                native_lines_covered += summary
+                    .get("covered")
+                    .and_then(|c| c.as_f64())
+                    .unwrap_or(0.0);
             }
         }
     }
@@ -379,8 +381,14 @@ fn print_report(
 
     println!("\n--- High-Integrity Dashboard ---");
     println!("Total Assertion Density: {:.2} asserts/fn", total_density);
-    println!("Verified Modules Density: {:.2} asserts/fn", verified_density);
-    println!("Unverified Modules Density: {:.2} asserts/fn", unverified_density);
+    println!(
+        "Verified Modules Density: {:.2} asserts/fn",
+        verified_density
+    );
+    println!(
+        "Unverified Modules Density: {:.2} asserts/fn",
+        unverified_density
+    );
 
     let mut passed = true;
     if verified_density < 0.0 {

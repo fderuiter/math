@@ -92,7 +92,7 @@ impl<'ast> Visit<'ast> for AstVisitor {
 
     fn visit_item_fn(&mut self, node: &'ast ItemFn) {
         self.total_funcs += 1;
-        
+
         let mut is_verified = false;
         for attr in &node.attrs {
             if let Meta::Path(path) = &attr.meta {
@@ -103,7 +103,9 @@ impl<'ast> Visit<'ast> for AstVisitor {
                 }
             } else if let Meta::List(list) = &attr.meta {
                 let path_str = quote::quote!(#list).to_string().replace(" ", "");
-                if path_str.starts_with("verified_engine::verified") || path_str.starts_with("verified") {
+                if path_str.starts_with("verified_engine::verified")
+                    || path_str.starts_with("verified")
+                {
                     is_verified = true;
                     break;
                 }
@@ -117,12 +119,12 @@ impl<'ast> Visit<'ast> for AstVisitor {
         // Count assertions in this function
         let mut assert_visitor = AssertVisitor { count: 0 };
         visit::visit_item_fn(&mut assert_visitor, node);
-        
+
         self.total_asserts += assert_visitor.count;
         if is_verified {
             self.verified_asserts += assert_visitor.count;
         }
-        
+
         // Continue visiting inside the function (if there are nested items)
         visit::visit_item_fn(self, node);
     }
@@ -136,7 +138,13 @@ impl<'ast> Visit<'ast> for AssertVisitor {
     fn visit_macro(&mut self, node: &'ast Macro) {
         if let Some(ident) = node.path.segments.last().map(|s| &s.ident) {
             let name = ident.to_string();
-            if name == "assert" || name == "assert_eq" || name == "assert_ne" || name == "debug_assert" || name == "debug_assert_eq" || name == "debug_assert_ne" {
+            if name == "assert"
+                || name == "assert_eq"
+                || name == "assert_ne"
+                || name == "debug_assert"
+                || name == "debug_assert_eq"
+                || name == "debug_assert_ne"
+            {
                 self.count += 1;
             }
         }
