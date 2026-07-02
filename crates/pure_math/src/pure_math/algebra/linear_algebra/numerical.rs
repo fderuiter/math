@@ -111,7 +111,7 @@ mod tests {
 
         let c_vec = solve_normal_equation(&a, &b).unwrap();
         // Expect c=0, m=1
-        assert!(c_vec[0].abs() < 1e-6);
-        assert!((c_vec[1] - 1.0).abs() < 1e-6);
+        assert!(c_vec[0].abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((c_vec[1] - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

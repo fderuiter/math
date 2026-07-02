@@ -54,6 +54,6 @@ mod tests {
         let r0_matrix = calculate_r0_matrix(&f, &v).unwrap();
         let r0_scalar = compartmental::basic_reproduction_number(beta, gamma);
 
-        assert!((r0_matrix - r0_scalar).abs() < 1e-6);
+        assert!((r0_matrix - r0_scalar).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

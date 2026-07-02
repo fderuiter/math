@@ -103,6 +103,6 @@ mod tests {
     fn test_ca_cfar() {
         let refs = vec![10.0, 12.0, 8.0, 10.0];
         let noise = ca_cfar_noise_level(&refs);
-        assert!((noise - 10.0).abs() < 1e-6);
+        assert!((noise - 10.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

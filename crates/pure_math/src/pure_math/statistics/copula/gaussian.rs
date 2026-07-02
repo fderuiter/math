@@ -131,7 +131,7 @@ impl GaussianCopula {
         }
 
         // If correlation is near ±1, use limiting formula
-        if (rho.abs() - 1.0).abs() < 1e-10 {
+        if (rho.abs() - 1.0).abs() < math_commons::registry::TOLERANCE_HIGH {
             if rho > 0.0 {
                 // Perfect positive correlation
                 let prob1 = standard_normal_cdf(z1)?.value();

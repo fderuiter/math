@@ -31,7 +31,7 @@ impl PharmacokineticModel for BatemanModel {
         let v = self.params.v();
 
         // Handle the case where ka is very close to ke
-        if (ka - ke).abs() < 1e-9 {
+        if (ka - ke).abs() < math_commons::registry::TOLERANCE_STANDARD {
             // Special case for ka = ke
             return (f * d * ka * t / v) * (-ka * t).exp();
         }
@@ -56,7 +56,7 @@ pub fn t_max(ka: f64, ke: f64) -> f64 {
     if ka <= 0.0 || ke <= 0.0 {
         return 0.0; // Invalid input, though PKParameters prevents this.
     }
-    if (ka - ke).abs() < 1e-9 {
+    if (ka - ke).abs() < math_commons::registry::TOLERANCE_STANDARD {
         1.0 / ke
     } else {
         (ka.ln() - ke.ln()) / (ka - ke)
@@ -94,7 +94,7 @@ pub fn solve_ka(
 
     // Derivative: f'(ka) = d(t_max)/d(ka)
     let f_prime = |ka: f64| -> f64 {
-        if (ka - ke).abs() < 1e-9 {
+        if (ka - ke).abs() < math_commons::registry::TOLERANCE_STANDARD {
             // Limit as ka -> ke is -1 / (2 * ke^2)
             -1.0 / (2.0 * ke * ke)
         } else {

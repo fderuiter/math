@@ -27,7 +27,7 @@ fn test_divergence_theorem_cartesian_box() {
     let (lhs, rhs, diff) = verify_divergence_theorem(&coords, &domain, field, 10);
 
     println!("LHS (Vol): {}, RHS (Surf): {}, Diff: {}", lhs, rhs, diff);
-    assert!(diff < 1e-10);
+    assert!(diff < math_commons::registry::TOLERANCE_HIGH);
 }
 
 #[test]

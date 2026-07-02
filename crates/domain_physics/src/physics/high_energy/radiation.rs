@@ -55,7 +55,7 @@ mod tests {
         let beta = (1.0 - 1.0 / 4.0f64).sqrt(); // consistent beta
         let p = synchrotron_power(u_b, beta, gamma).expect("Failed to calc synchrotron power");
         let expected = (4.0 / 3.0) * SIGMA_T * C * beta * beta * 4.0;
-        assert_relative_eq!(p, expected, epsilon = 1e-6);
+        assert_relative_eq!(p, expected, epsilon = math_commons::registry::TOLERANCE_FAST);
 
         // Inverse Compton
         // p = 3 => alpha = (3-1)/2 = 1.

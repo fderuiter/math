@@ -53,7 +53,7 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "battery_degradation",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         TARGET_CAP = 0.8;
     },
@@ -67,7 +67,7 @@ theory_verification!(
                 )
                 .as_f64(),
             1.0,
-            epsilon = 1e-6
+            epsilon = math_commons::registry::TOLERANCE_FAST
         );
     }
 );

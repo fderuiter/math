@@ -216,6 +216,6 @@ mod tests {
 
         // Check that we don't have NaNs and weights are uniform
         assert!(!weights[(0, 0)].is_nan());
-        assert_relative_eq!(weights[(0, 0)], expected_weight, epsilon = 1e-6);
+        assert_relative_eq!(weights[(0, 0)], expected_weight, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 }

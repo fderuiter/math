@@ -255,7 +255,7 @@ mod tests {
         let kelly = kelly_fraction(&p, &odds).unwrap();
 
         // f* = (1.0 * 0.55 - 0.45) / 1.0 = 0.10
-        assert!((kelly.value() - 0.10).abs() < 1e-6);
+        assert!((kelly.value() - 0.10).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -278,7 +278,7 @@ mod tests {
         let kelly = kelly_fraction(&p, &odds).unwrap();
 
         // f* = (1.0 * 0.70 - 0.30) / 1.0 = 0.40
-        assert!((kelly.value() - 0.40).abs() < 1e-6);
+        assert!((kelly.value() - 0.40).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -289,7 +289,7 @@ mod tests {
         let half = fractional_kelly(&p, &odds, 0.5).unwrap();
 
         let full = kelly_fraction(&p, &odds).unwrap();
-        assert!((half.value() - full.value() * 0.5).abs() < 1e-6);
+        assert!((half.value() - full.value() * 0.5).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -300,7 +300,7 @@ mod tests {
         let quarter = fractional_kelly(&p, &odds, 0.25).unwrap();
 
         let full = kelly_fraction(&p, &odds).unwrap();
-        assert!((quarter.value() - full.value() * 0.25).abs() < 1e-6);
+        assert!((quarter.value() - full.value() * 0.25).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -326,7 +326,7 @@ mod tests {
         let growth = expected_growth_rate(&p, &odds, &zero);
 
         // Zero bet means zero growth
-        assert!((growth - 0.0).abs() < 1e-10);
+        assert!((growth - 0.0).abs() < math_commons::registry::TOLERANCE_HIGH);
     }
 
     #[test]
@@ -352,7 +352,7 @@ mod tests {
         let ev = expected_value(&p, &odds);
 
         // EV = 1.0 * 0.55 - 0.45 = 0.10
-        assert!((ev - 0.10).abs() < 1e-6);
+        assert!((ev - 0.10).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -364,7 +364,7 @@ mod tests {
         let ev = expected_value(&p, &odds);
 
         // Fair bet: EV = 0
-        assert!(ev.abs() < 1e-10);
+        assert!(ev.abs() < math_commons::registry::TOLERANCE_HIGH);
     }
 
     #[test]
@@ -388,7 +388,7 @@ mod tests {
         let quarter = variants::quarter_kelly(&p, &odds).unwrap();
         let full = kelly_fraction(&p, &odds).unwrap();
 
-        assert!((quarter.value() - full.value() * 0.25).abs() < 1e-6);
+        assert!((quarter.value() - full.value() * 0.25).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -400,7 +400,7 @@ mod tests {
         let half = variants::half_kelly(&p, &odds).unwrap();
         let full = kelly_fraction(&p, &odds).unwrap();
 
-        assert!((half.value() - full.value() * 0.5).abs() < 1e-6);
+        assert!((half.value() - full.value() * 0.5).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -434,6 +434,6 @@ mod tests {
         let kelly = kelly_fraction(&p, &odds).unwrap();
 
         // f* = (5.0 * 0.20 - 0.80) / 5.0 = 0.04
-        assert!((kelly.value() - 0.04).abs() < 1e-6);
+        assert!((kelly.value() - 0.04).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

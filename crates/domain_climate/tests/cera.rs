@@ -80,7 +80,7 @@ fn test_cera_integration() {
 
     let difference = (&prediction - &fresh_prediction).abs().sum();
     assert!(
-        difference > 1e-6,
+        difference > math_commons::registry::TOLERANCE_FAST,
         "Trained model's prediction should be different from an untrained model's."
     );
 }

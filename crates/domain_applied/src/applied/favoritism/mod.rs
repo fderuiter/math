@@ -98,11 +98,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "favoritism",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         BASE_SCORE = 1.0;
     },
     test = {
-        assert_relative_eq!(BASE_SCORE, 1.0, epsilon = 1e-6);
+        assert_relative_eq!(BASE_SCORE, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

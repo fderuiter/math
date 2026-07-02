@@ -24,7 +24,7 @@ mod tests {
         <BgkCollision as CollisionModel<9, D2Q9>>::apply(&strategy, &mut f, rho, ux, uy);
 
         for k in 0..Q {
-            assert!((f[k] - eq[k]).abs() < 1e-9);
+            assert!((f[k] - eq[k]).abs() < math_commons::registry::TOLERANCE_STANDARD);
         }
     }
 
@@ -34,8 +34,8 @@ mod tests {
         let solver = LatticeBoltzmannD2Q9::new(10, 10, 1.0);
         assert_eq!(solver.state.rho.data.len(), 100);
         for i in 0..100 {
-            assert!((solver.state.rho.data[i] - 1.0).abs() < 1e-9);
-            assert!(solver.state.ux.data[i].abs() < 1e-9);
+            assert!((solver.state.rho.data[i] - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
+            assert!(solver.state.ux.data[i].abs() < math_commons::registry::TOLERANCE_STANDARD);
         }
     }
 
@@ -72,6 +72,6 @@ mod tests {
         assert!(!solver.is_obstacle(obs_x, obs_y));
 
         solver = LatticeBoltzmannD2Q9::new(width, height, 0.6);
-        assert!((solver.collision_model.tau - 0.6).abs() < 1e-9);
+        assert!((solver.collision_model.tau - 0.6).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 }

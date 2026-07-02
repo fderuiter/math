@@ -26,7 +26,7 @@ fn test_matched_pairs() {
     assert_eq!(losses, 1);
 
     let stats = pair_comparison::calculate_statistics(wins, losses).unwrap();
-    assert!((stats.win_ratio - 2.0).abs() < 1e-9);
+    assert!((stats.win_ratio - 2.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
     // Note: The confidence intervals and p-value will differ from the Python script
     // due to different library implementations, but we can test for reasonable values.
     // Python script output for matched:
@@ -65,7 +65,7 @@ fn test_unmatched_pairs() {
     assert_eq!(losses, 1);
 
     let stats = pair_comparison::calculate_statistics(wins, losses).unwrap();
-    assert!((stats.win_ratio - 8.0).abs() < 1e-9);
+    assert!((stats.win_ratio - 8.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     // p_win = 8/9 = 0.888... n=9.
     // se = sqrt( (8./9.) * (1./9.) / 9. ) = 0.1047
@@ -123,7 +123,7 @@ fn test_sample_win_ratio() {
 fn test_probability_win_ratio_with_simulation() {
     let params = simulation::SimulationParams::new(0.1, 0.2, 0.8, 0.7);
     let c = 5.0;
-    let error_tolerance = 1e-6;
+    let error_tolerance = math_commons::registry::TOLERANCE_FAST;
 
     // Theoretical win ratio from simulation parameters
     let expected_pr_w = simulation::win_ratio_parameter(&params);

@@ -101,6 +101,6 @@ mod tests {
 
         // dT/dt = (0.5*10 + 100) / (1000*4000) = 105 / 4e6
         let rate = bio_heat_transfer_rate(rho, c, k, d2t, q);
-        assert!((rate - 2.625e-5).abs() < 1e-9);
+        assert!((rate - 2.625e-5).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 }

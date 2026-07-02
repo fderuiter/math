@@ -20,11 +20,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "standard_model",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         DUMMY = 1.0;
     },
     test = {
-        assert_relative_eq!(DUMMY, 1.0, epsilon = 1e-6);
+        assert_relative_eq!(DUMMY, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

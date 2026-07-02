@@ -26,11 +26,11 @@ mod tests {
         let expected_dc = k_n * n - mu_c * c;
 
         assert!(
-            (derivative[0] - expected_dn).abs() < 1e-10,
+            (derivative[0] - expected_dn).abs() < math_commons::registry::TOLERANCE_HIGH,
             "Model derivative dN/dt should match expected"
         );
         assert!(
-            (derivative[1] - expected_dc).abs() < 1e-10,
+            (derivative[1] - expected_dc).abs() < math_commons::registry::TOLERANCE_HIGH,
             "Model derivative dC/dt should match expected"
         );
     }

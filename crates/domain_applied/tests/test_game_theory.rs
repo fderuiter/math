@@ -19,7 +19,7 @@ fn test_equilibrium_integration() {
     // Check trivial fixed point
     let correspondence = BestResponseCorrespondence {
         mapping: Box::new(|x| x.clone()),
-        tolerance: 1e-6,
+        tolerance: math_commons::registry::TOLERANCE_FAST,
     };
     assert!(FixedPointVerifier::is_fixed_point(
         &correspondence,

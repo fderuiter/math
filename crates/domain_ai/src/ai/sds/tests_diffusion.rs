@@ -16,7 +16,7 @@ fn test_noise_schedule() {
     // alpha_bar_0 = alpha_0 = 1 - beta_0
     // sig = sqrt(alpha_bar)
     // noise = sqrt(1-alpha_bar)
-    assert_relative_eq!(sig.powi(2) + noise.powi(2), 1.0, epsilon = 1e-6);
+    assert_relative_eq!(sig.powi(2) + noise.powi(2), 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
 }
 
 #[test]

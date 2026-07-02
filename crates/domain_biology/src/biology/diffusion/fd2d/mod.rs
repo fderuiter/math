@@ -273,7 +273,7 @@ mod tests_2d {
             for x in 1..width - 1 {
                 let idx = y * width + x;
                 assert!(
-                    (out_u[idx] - 4.0).abs() < 1e-10,
+                    (out_u[idx] - 4.0).abs() < math_commons::registry::TOLERANCE_HIGH,
                     "Failed at ({}, {}): {}",
                     x,
                     y,
@@ -342,8 +342,8 @@ mod tests_2d {
         );
 
         for i in 0..n {
-            assert!((out_u_1[i] - out_u_2[i]).abs() < 1e-10);
-            assert!((out_v_1[i] - out_v_2[i]).abs() < 1e-10);
+            assert!((out_u_1[i] - out_u_2[i]).abs() < math_commons::registry::TOLERANCE_HIGH);
+            assert!((out_v_1[i] - out_v_2[i]).abs() < math_commons::registry::TOLERANCE_HIGH);
         }
     }
 
@@ -381,7 +381,7 @@ mod tests_2d {
         let expected_center = -4.0 * coeffs[0];
         let val = out.species(0)[center_idx];
         assert!(
-            (val - expected_center).abs() < 1e-10,
+            (val - expected_center).abs() < math_commons::registry::TOLERANCE_HIGH,
             "Expected {}, got {}",
             expected_center,
             val
@@ -394,7 +394,7 @@ mod tests_2d {
         let expected_neighbor = 1.0 * coeffs[0];
         let val_neighbor = out.species(0)[neighbor_idx];
         assert!(
-            (val_neighbor - expected_neighbor).abs() < 1e-10,
+            (val_neighbor - expected_neighbor).abs() < math_commons::registry::TOLERANCE_HIGH,
             "Expected {}, got {}",
             expected_neighbor,
             val_neighbor

@@ -62,5 +62,5 @@ pub fn verify_summation_formula(p: u64) -> bool {
     let expected = (p_i64 - 2) as f64 / 3.0;
 
     // Compare floating point numbers with a tolerance.
-    (sum - expected).abs() < 1e-9
+    (sum - expected).abs() < math_commons::registry::TOLERANCE_STANDARD
 }

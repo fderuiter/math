@@ -8,7 +8,7 @@ use num_traits::ToPrimitive;
 pub fn validate_stochastic_matrix<T: RealField + Copy + ToPrimitive>(
     matrix: &DMatrix<T>,
 ) -> Result<()> {
-    let tolerance = T::from_f64(1e-10).unwrap();
+    let tolerance = T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap();
     let one = T::one();
     let zero = T::zero();
 
@@ -42,7 +42,7 @@ pub fn validate_stochastic_matrix<T: RealField + Copy + ToPrimitive>(
 pub fn validate_probability_vector<T: RealField + Copy + ToPrimitive>(
     vec: &DVector<T>,
 ) -> Result<()> {
-    let tolerance = T::from_f64(1e-10).unwrap();
+    let tolerance = T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap();
     let one = T::one();
     let zero = T::zero();
 
@@ -72,7 +72,7 @@ pub fn validate_probability_vector<T: RealField + Copy + ToPrimitive>(
 pub fn validate_generator_matrix<T: RealField + Copy + ToPrimitive>(
     generator: &DMatrix<T>,
 ) -> Result<()> {
-    let tolerance = T::from_f64(1e-10).unwrap();
+    let tolerance = T::from_f64(math_commons::registry::TOLERANCE_HIGH).unwrap();
     let zero = T::zero();
 
     for i in 0..generator.nrows() {

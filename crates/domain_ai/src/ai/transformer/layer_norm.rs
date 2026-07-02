@@ -24,7 +24,7 @@ impl LayerNorm {
     #[verified_engine::verified]
     pub fn new(d_model: usize) -> Self {
         Self {
-            epsilon: 1e-6,
+            epsilon: math_commons::registry::TOLERANCE_FAST,
             gamma: RowDVector::from_element(d_model, 1.0),
             beta: RowDVector::from_element(d_model, 0.0),
         }
@@ -83,7 +83,7 @@ mod tests {
         // After normalization (before gamma/beta), mean should be ~0 and std dev ~1.
         // Since gamma=1 and beta=0 by default, the output should be normalized.
         let output_row = output.row(0);
-        assert_relative_eq!(output_row.mean(), 0.0, epsilon = 1e-6);
-        assert_relative_eq!(output_row.variance().sqrt(), 1.0, epsilon = 1e-6);
+        assert_relative_eq!(output_row.mean(), 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+        assert_relative_eq!(output_row.variance().sqrt(), 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 }

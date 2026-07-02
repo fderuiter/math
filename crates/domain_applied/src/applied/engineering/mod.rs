@@ -17,11 +17,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "engineering",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         TOLERANCE = 0.001;
     },
     test = {
-        assert_relative_eq!(TOLERANCE, 0.001, epsilon = 1e-6);
+        assert_relative_eq!(TOLERANCE, 0.001, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

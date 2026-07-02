@@ -70,11 +70,11 @@ use pure_math::theory_verification;
 
 theory_verification!(
     module = "game_theory",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         PAYOFF = 5.0;
     },
     test = {
-        assert_relative_eq!(PAYOFF, 5.0, epsilon = 1e-6);
+        assert_relative_eq!(PAYOFF, 5.0, epsilon = math_commons::registry::TOLERANCE_FAST);
     }
 );

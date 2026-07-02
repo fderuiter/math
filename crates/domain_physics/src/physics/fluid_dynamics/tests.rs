@@ -18,11 +18,11 @@ mod tests {
     #[verified_engine::verified]
     fn test_fluid_properties() {
         let water = FluidProperties::water();
-        assert!((water.density() - 998.2).abs() < 1e-6);
-        assert!((water.dynamic_viscosity() - 1.002e-3).abs() < 1e-6);
+        assert!((water.density() - 998.2).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((water.dynamic_viscosity() - 1.002e-3).abs() < math_commons::registry::TOLERANCE_FAST);
 
         let nu = water.kinematic_viscosity();
-        assert!((nu - 1.002e-3 / 998.2).abs() < 1e-9);
+        assert!((nu - 1.002e-3 / 998.2).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -42,7 +42,7 @@ mod tests {
 
         // D/Dt = 0.5 + 1*0.1 + 2*0.2 + 3*0.3 = 0.5 + 0.1 + 0.4 + 0.9 = 1.9
         let result = material_derivative_scalar(local_change, velocity, gradient);
-        assert!((result - 1.9).abs() < 1e-9);
+        assert!((result - 1.9).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -54,7 +54,7 @@ mod tests {
 
         // Re = 1000 * 2 * 0.5 / 0.001 = 1_000_000
         let re = reynolds_number(&props, u, l);
-        assert!((re - 1_000_000.0).abs() < 1e-9);
+        assert!((re - 1_000_000.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // Pipe Flow (default)
         let pipe_classifier = PipeFlowClassifier;
@@ -92,7 +92,7 @@ mod tests {
         // 101325 + 500 * 100 + 1000 * 9.81 * 5
         // 101325 + 50000 + 49050 = 200375
         let constant = bernoulli_constant(&state, &props, h, g);
-        assert!((constant - 200375.0).abs() < 1e-6);
+        assert!((constant - 200375.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -103,7 +103,7 @@ mod tests {
 
         // tau = mu * du/dy = 0.001 * 500 = 0.5 Pa
         let tau = shear_stress(&props, grad_u);
-        assert!((tau - 0.5).abs() < 1e-9);
+        assert!((tau - 0.5).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -123,7 +123,7 @@ mod tests {
         let p_grad_x = Vector3::new(2.0, 0.0, 0.0);
         let accel_p =
             navier_stokes_time_derivative(&props, &state, &vel_grad, p_grad_x, lap_vel, g);
-        assert!((accel_p.x - (-2.0)).abs() < 1e-9);
+        assert!((accel_p.x - (-2.0)).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 
     #[test]
@@ -149,19 +149,19 @@ mod tests {
         let ns = NavierStokes;
         let accel_ns = ns.acceleration(&props, &state, &gradients, g);
         // a = -grad(p)/rho = -100 / 1000 = -0.1
-        assert!((accel_ns.x - (-0.1)).abs() < 1e-9);
+        assert!((accel_ns.x - (-0.1)).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // 2. Test Euler Strategy directly
         let euler = FluidEuler;
         let accel_euler = euler.acceleration(&props, &state, &gradients, g);
-        assert!((accel_euler.x - (-0.1)).abs() < 1e-9);
+        assert!((accel_euler.x - (-0.1)).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // 3. Test dynamic dispatch (simulated)
         let strategies: Vec<Box<dyn MomentumEquation>> =
             vec![Box::new(NavierStokes), Box::new(FluidEuler)];
         for strategy in strategies {
             let acc = strategy.acceleration(&props, &state, &gradients, g);
-            assert!((acc.x - (-0.1)).abs() < 1e-9);
+            assert!((acc.x - (-0.1)).abs() < math_commons::registry::TOLERANCE_STANDARD);
         }
     }
 
@@ -193,6 +193,6 @@ mod tests {
 
         let expected_accel = 100.0 / 998.2;
         assert!((next_state.velocity.x - expected_accel).abs() < 1e-4);
-        assert!((next_state.pressure - 101325.0).abs() < 1e-9); // Pressure should be constant
+        assert!((next_state.pressure - 101325.0).abs() < math_commons::registry::TOLERANCE_STANDARD); // Pressure should be constant
     }
 }

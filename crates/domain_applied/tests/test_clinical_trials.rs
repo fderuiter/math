@@ -128,11 +128,11 @@ fn test_kaplan_meier() {
     // t=4: 1 event, 1 at risk. S(4) = 0.50 * (0/1) = 0.0
 
     assert_eq!(curve[0].time, 1.0);
-    assert!((curve[0].survival_probability - 0.75).abs() < 1e-9);
+    assert!((curve[0].survival_probability - 0.75).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     assert_eq!(curve[1].time, 2.0);
-    assert!((curve[1].survival_probability - 0.50).abs() < 1e-9);
+    assert!((curve[1].survival_probability - 0.50).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
     assert_eq!(curve[2].time, 3.0);
-    assert!((curve[2].survival_probability - 0.50).abs() < 1e-9);
+    assert!((curve[2].survival_probability - 0.50).abs() < math_commons::registry::TOLERANCE_STANDARD);
 }

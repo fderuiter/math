@@ -143,7 +143,7 @@ pub fn angle_resolution(
     angle: f64,
 ) -> f64 {
     let denominator = num_rx_antennas as f64 * antenna_distance * angle.cos();
-    if denominator.abs() < 1e-9 {
+    if denominator.abs() < math_commons::registry::TOLERANCE_STANDARD {
         f64::INFINITY // Singularity at grazing angles
     } else {
         wavelength / denominator

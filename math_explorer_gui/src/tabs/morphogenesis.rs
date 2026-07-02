@@ -125,8 +125,8 @@ pub struct MorphogenesisTool {
 
 impl Default for MorphogenesisTool {
     fn default() -> Self {
-        let width = 100;
-        let height = 100;
+        let width = math_commons::registry::MAX_GRID_SIZE;
+        let height = math_commons::registry::MAX_GRID_SIZE;
         let a = 0.1;
         let b = 0.9;
         let d_u = 1.0;

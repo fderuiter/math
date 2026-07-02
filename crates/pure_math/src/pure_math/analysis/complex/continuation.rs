@@ -33,7 +33,7 @@ mod tests {
         let val = schwarz_reflect(f_upper, z);
 
         // Analytical expectation: (1-2i)^2 + 1 = 1 - 4i - 4 + 1 = -2 - 4i
-        assert_relative_eq!(val.re, -2.0, epsilon = 1e-10);
-        assert_relative_eq!(val.im, -4.0, epsilon = 1e-10);
+        assert_relative_eq!(val.re, -2.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
+        assert_relative_eq!(val.im, -4.0, epsilon = math_commons::registry::TOLERANCE_HIGH);
     }
 }

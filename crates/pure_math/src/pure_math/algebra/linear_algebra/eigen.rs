@@ -98,7 +98,7 @@ pub fn natural_frequencies(matrix: &DMatrix<f64>) -> Vec<f64> {
             let neg_lambda = -lambda;
 
             // Check if effectively real
-            if neg_lambda.im.abs() < 1e-10 {
+            if neg_lambda.im.abs() < math_commons::registry::TOLERANCE_HIGH {
                 if neg_lambda.re >= 0.0 {
                     neg_lambda.re.sqrt()
                 } else {

@@ -75,11 +75,11 @@ mod tests {
 
         // At mean, exp(0) = 1, so returns opacity * 1 = 1.0
         let opacity = evaluate_gaussian_opacity(&g, &Point2::new(0.0, 0.0));
-        assert!((opacity - 1.0).abs() < 1e-6);
+        assert!((opacity - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
         // At 1 sigma away (x=1), exp(-0.5 * 1 * 1 * 1) = exp(-0.5) = 0.6065
         let opacity_sigma = evaluate_gaussian_opacity(&g, &Point2::new(1.0, 0.0));
-        assert!((opacity_sigma - (-0.5f64).exp()).abs() < 1e-6);
+        assert!((opacity_sigma - (-0.5f64).exp()).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -108,8 +108,8 @@ mod tests {
         let gaussians = vec![g1, g2];
         let color = blend_gaussians(&gaussians, &Point2::new(0.0, 0.0));
 
-        assert!((color.x - 0.5).abs() < 1e-6);
-        assert!((color.y - 0.25).abs() < 1e-6);
-        assert!((color.z - 0.0).abs() < 1e-6);
+        assert!((color.x - 0.5).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((color.y - 0.25).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!((color.z - 0.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

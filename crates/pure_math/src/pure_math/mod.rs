@@ -56,7 +56,7 @@ pub mod vector_calculus;
 
 crate::theory_verification!(
     module = "pure_math",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         TEST = 1.0;
     },

@@ -19,7 +19,7 @@ fn test_rating_invalid() {
 fn test_rating_scale_conversion() {
     let r = Rating::new(1500.0).unwrap();
     let mu = r.to_glicko2_scale();
-    assert!((mu - 0.0).abs() < 1e-6);
+    assert!((mu - 0.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
     let r2 = Rating::from_glicko2_scale(mu).unwrap();
     assert!((r2.value() - 1500.0).abs() < 1e-3);
@@ -45,7 +45,7 @@ fn test_rd_invalid() {
 fn test_rd_scale_conversion() {
     let rd = RatingDeviation::new(173.7178).unwrap();
     let phi = rd.to_glicko2_scale();
-    assert!((phi - 1.0).abs() < 1e-6);
+    assert!((phi - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
     let rd2 = RatingDeviation::from_glicko2_scale(phi).unwrap();
     assert!((rd2.value() - 173.7178).abs() < 1e-3);
@@ -112,7 +112,7 @@ fn test_match_result_invalid() {
 #[verified_engine::verified]
 fn test_g_function() {
     // When phi = 0, g(phi) = 1
-    assert!((g_function(0.0) - 1.0).abs() < 1e-6);
+    assert!((g_function(0.0) - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
     // As phi increases, g(phi) decreases
     let g1 = g_function(1.0);
@@ -125,7 +125,7 @@ fn test_g_function() {
 fn test_expected_outcome() {
     // Equal ratings and RD should give 0.5 probability
     let e = expected_outcome(0.0, 0.0, 1.0);
-    assert!((e - 0.5).abs() < 1e-6);
+    assert!((e - 0.5).abs() < math_commons::registry::TOLERANCE_FAST);
 
     // Higher rating should give > 0.5 probability
     let e = expected_outcome(1.0, 0.0, 1.0);

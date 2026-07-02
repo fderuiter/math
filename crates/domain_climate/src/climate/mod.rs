@@ -114,7 +114,7 @@ pub mod training;
 use pure_math::theory_verification;
 theory_verification!(
     module = "climate",
-    epsilon = 1e-6,
+    epsilon = math_commons::registry::TOLERANCE_FAST,
     constants = {
         TEST = 1.0;
     },

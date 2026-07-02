@@ -135,7 +135,7 @@ mod tests {
         // Check that posteriors sum to 1 at each time
         for t in 0..2 {
             let sum: f64 = gamma.column(t).iter().sum();
-            assert_relative_eq!(sum, 1.0, epsilon = 1e-6);
+            assert_relative_eq!(sum, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
         }
     }
 

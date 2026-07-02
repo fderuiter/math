@@ -28,7 +28,7 @@ fn test_radar_physics() {
     let expected_dphi = (4.0 * std::f64::consts::PI * tc) / lambda;
 
     let v = config.velocity_from_phase(expected_dphi);
-    assert_relative_eq!(v, 1.0, epsilon = 1e-6);
+    assert_relative_eq!(v, 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
 }
 
 #[test]
@@ -88,12 +88,12 @@ fn test_surface_fitting() {
 
     // z = c0 + c1*x + c2*y + c3*xy + c4*x^2 + c5*y^2
     // Expect: c0=1, c4=0.1, c5=0.1, others 0
-    assert_relative_eq!(coeffs[0], 1.0, epsilon = 1e-6); // c0
-    assert_relative_eq!(coeffs[1], 0.0, epsilon = 1e-6); // c1
-    assert_relative_eq!(coeffs[2], 0.0, epsilon = 1e-6); // c2
-    assert_relative_eq!(coeffs[3], 0.0, epsilon = 1e-6); // c3
-    assert_relative_eq!(coeffs[4], 0.1, epsilon = 1e-6); // c4
-    assert_relative_eq!(coeffs[5], 0.1, epsilon = 1e-6); // c5
+    assert_relative_eq!(coeffs[0], 1.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c0
+    assert_relative_eq!(coeffs[1], 0.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c1
+    assert_relative_eq!(coeffs[2], 0.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c2
+    assert_relative_eq!(coeffs[3], 0.0, epsilon = math_commons::registry::TOLERANCE_FAST); // c3
+    assert_relative_eq!(coeffs[4], 0.1, epsilon = math_commons::registry::TOLERANCE_FAST); // c4
+    assert_relative_eq!(coeffs[5], 0.1, epsilon = math_commons::registry::TOLERANCE_FAST); // c5
 }
 
 #[test]

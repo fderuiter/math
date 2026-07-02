@@ -44,7 +44,7 @@ impl Default for MriTab {
             time_scale: 1.0,
             current_time: 0.0,
             history: VecDeque::new(),
-            max_history: 2000,
+            max_history: math_commons::registry::MAX_ITERATIONS as usize,
         }
     }
 }

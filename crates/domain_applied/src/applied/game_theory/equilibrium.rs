@@ -160,7 +160,7 @@ mod tests {
         // Define a simple mapping f(x) = 0.5 * x. Fixed point is 0.
         let correspondence = BestResponseCorrespondence {
             mapping: Box::new(|x| 0.5 * x),
-            tolerance: 1e-6,
+            tolerance: math_commons::registry::TOLERANCE_FAST,
         };
 
         let point_zero = DVector::from_vec(vec![0.0]);

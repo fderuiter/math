@@ -352,6 +352,6 @@ mod tests {
         let r0 = heterogeneous_r0(beta, gamma, mean_k, var_k);
 
         // R0 = (beta/gamma) * (16 - 4)/4 = 5 * 3 = 15.
-        assert!((r0 - 15.0).abs() < 1e-6);
+        assert!((r0 - 15.0).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 }

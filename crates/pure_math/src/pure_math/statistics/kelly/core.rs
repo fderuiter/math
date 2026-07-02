@@ -240,10 +240,10 @@ mod tests {
     #[verified_engine::verified]
     fn test_odds_implied_probability() {
         let odds = Odds::new(2.0).unwrap();
-        assert!((odds.implied_probability() - 0.5).abs() < 1e-6);
+        assert!((odds.implied_probability() - 0.5).abs() < math_commons::registry::TOLERANCE_FAST);
 
         let odds = Odds::new(4.0).unwrap();
-        assert!((odds.implied_probability() - 0.25).abs() < 1e-6);
+        assert!((odds.implied_probability() - 0.25).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]

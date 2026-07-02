@@ -26,7 +26,7 @@ impl ExponentialKernel {
 impl DoseKernel for ExponentialKernel {
     #[verified_engine::verified]
     fn value_at(&self, radius: f64) -> Result<f64, DoseFluenceError> {
-        if radius.abs() < 1e-6 {
+        if radius.abs() < math_commons::registry::TOLERANCE_FAST {
             return Err(DoseFluenceError::Singularity);
         }
         if radius < 0.0 {

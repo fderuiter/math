@@ -12,10 +12,10 @@ fn test_lbm_initialization() {
     // Check initial density is 1.0 everywhere
     for y in 0..height {
         for x in 0..width {
-            assert_relative_eq!(solver.get_density(x, y), 1.0, epsilon = 1e-6);
+            assert_relative_eq!(solver.get_density(x, y), 1.0, epsilon = math_commons::registry::TOLERANCE_FAST);
             let (ux, uy) = solver.get_velocity(x, y);
-            assert_relative_eq!(ux, 0.0, epsilon = 1e-6);
-            assert_relative_eq!(uy, 0.0, epsilon = 1e-6);
+            assert_relative_eq!(ux, 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
+            assert_relative_eq!(uy, 0.0, epsilon = math_commons::registry::TOLERANCE_FAST);
         }
     }
 }
@@ -47,7 +47,7 @@ fn test_lbm_mass_conservation() {
         }
     }
 
-    assert_relative_eq!(initial_mass, final_mass, epsilon = 1e-10);
+    assert_relative_eq!(initial_mass, final_mass, epsilon = math_commons::registry::TOLERANCE_HIGH);
 }
 
 #[test]

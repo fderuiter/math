@@ -205,14 +205,14 @@ mod tests {
 
         // Fermion: {c_k, c_k^dag} = 1
         let val = check_commutation::<Fermion>(&c_k, &c_k_dag);
-        assert!((val - 1.0).abs() < 1e-9);
+        assert!((val - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // Fermion: {c_k, c_q} = 0
         let val2 = check_commutation::<Fermion>(&c_k, &c_q);
-        assert!(val2.abs() < 1e-9);
+        assert!(val2.abs() < math_commons::registry::TOLERANCE_STANDARD);
 
         // Boson: [a_k, a_k^dag] = 1
         let val3 = check_commutation::<Boson>(&c_k, &c_k_dag);
-        assert!((val3 - 1.0).abs() < 1e-9);
+        assert!((val3 - 1.0).abs() < math_commons::registry::TOLERANCE_STANDARD);
     }
 }

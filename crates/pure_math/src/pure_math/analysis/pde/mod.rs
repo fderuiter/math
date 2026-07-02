@@ -21,9 +21,9 @@ impl SecondOrderLinearPde2D {
     #[verified_engine::verified]
     pub fn classify(&self) -> PdeClassification {
         let discriminant = self.b * self.b - 4.0 * self.a * self.c;
-        if discriminant < -1e-9 {
+        if discriminant < -math_commons::registry::TOLERANCE_STANDARD {
             PdeClassification::Elliptic
-        } else if discriminant > 1e-9 {
+        } else if discriminant > math_commons::registry::TOLERANCE_STANDARD {
             PdeClassification::Hyperbolic
         } else {
             PdeClassification::Parabolic

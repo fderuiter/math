@@ -3,7 +3,7 @@
 // Import the module to be tested
 use domain_applied::applied::pharmacokinetics::*;
 
-const TOLERANCE: f64 = 1e-6;
+const TOLERANCE: f64 = math_commons::registry::TOLERANCE_FAST;
 
 // Helper function to create parameters for d-amphetamine based on the prompt.
 #[verified_engine::verified]

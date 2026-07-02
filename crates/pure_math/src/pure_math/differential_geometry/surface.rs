@@ -10,7 +10,7 @@ pub trait ParametricSurface {
     /// Default implementation uses finite differences.
     #[verified_engine::verified]
     fn partial_u(&self, u: f64, v: f64) -> Vector3<f64> {
-        let h = 1e-6;
+        let h = math_commons::registry::TOLERANCE_FAST;
         (self.position(u + h, v) - self.position(u - h, v)) / (2.0 * h)
     }
 
@@ -18,7 +18,7 @@ pub trait ParametricSurface {
     /// Default implementation uses finite differences.
     #[verified_engine::verified]
     fn partial_v(&self, u: f64, v: f64) -> Vector3<f64> {
-        let h = 1e-6;
+        let h = math_commons::registry::TOLERANCE_FAST;
         (self.position(u, v + h) - self.position(u, v - h)) / (2.0 * h)
     }
 }
