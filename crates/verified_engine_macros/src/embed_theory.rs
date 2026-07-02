@@ -197,10 +197,9 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return syn::Error::new(proc_macro2::Span::call_site(), e).to_compile_error(),
     };
     
-    let canonical_path = abs_path.canonicalize().unwrap_or(abs_path);
-    let canonical_path_str = canonical_path.to_string_lossy().to_string();
+    let canonical_path_str = abs_path.to_string_lossy().replace("\\", "/");
     
-    let tex_content = match fs::read_to_string(&canonical_path) {
+    let tex_content = match fs::read_to_string(&abs_path) {
         Ok(c) => c,
         Err(e) => {
             let err_msg = format!("Failed to read {}: {}", args.file_path, e);
