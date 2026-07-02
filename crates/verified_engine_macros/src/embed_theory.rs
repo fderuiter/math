@@ -219,6 +219,14 @@ fn get_item_attrs(item: &TokenStream) -> Option<Vec<syn::Attribute>> {
     }
 }
 
+fn normalize_path(path: &std::path::Path) -> String {
+    let mut path_str = path.to_string_lossy().to_string();
+    if path_str.starts_with(r"\\?\") {
+        path_str = path_str[4..].to_string();
+    }
+    path_str.replace('\\', "/")
+}
+
 pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = match syn::parse2::<EmbedTheoryArgs>(attr) {
         Ok(a) => a,
@@ -230,9 +238,12 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return syn::Error::new(proc_macro2::Span::call_site(), e).to_compile_error(),
     };
 
-    let canonical_path_str = abs_path.to_string_lossy().replace("\\", "/");
+    // Ensure the path is absolute and clean.
+    // Use canonicalize to resolve `..` if possible, but safely normalize the result for include_str!
+    let canonical_path = abs_path.canonicalize().unwrap_or(abs_path.clone());
+    let canonical_path_str = normalize_path(&canonical_path);
 
-    let tex_content = match fs::read_to_string(&abs_path) {
+    let tex_content = match fs::read_to_string(&canonical_path) {
         Ok(c) => c,
         Err(e) => {
             let err_msg = format!("Failed to read {}: {}", args.file_path, e);
@@ -262,5 +273,32 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
         #item
         #[allow(dead_code)]
         const #track_ident: &str = include_str!(#canonical_path_str);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn test_normalize_windows_extended_path() {
+        let windows_path = Path::new(r"\\?\C:\Users\runner\work\papers\theory.tex");
+        let normalized = normalize_path(windows_path);
+        assert_eq!(normalized, "C:/Users/runner/work/papers/theory.tex");
+    }
+
+    #[test]
+    fn test_normalize_standard_windows_path() {
+        let windows_path = Path::new(r"C:\Users\runner\work\papers\theory.tex");
+        let normalized = normalize_path(windows_path);
+        assert_eq!(normalized, "C:/Users/runner/work/papers/theory.tex");
+    }
+
+    #[test]
+    fn test_normalize_unix_path() {
+        let unix_path = Path::new("/app/papers/theory.tex");
+        let normalized = normalize_path(unix_path);
+        assert_eq!(normalized, "/app/papers/theory.tex");
     }
 }
