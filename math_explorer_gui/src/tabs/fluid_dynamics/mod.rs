@@ -6,9 +6,6 @@ pub mod lattice_boltzmann;
 pub mod potential_flow;
 pub mod turbulence;
 
-use lattice_boltzmann::LatticeBoltzmannTool;
-use potential_flow::PotentialFlowTool;
-use turbulence::TurbulenceTool;
 
 pub struct FluidDynamicsTab {
     framework: crate::framework::SimulationFramework,
@@ -17,11 +14,7 @@ pub struct FluidDynamicsTab {
 impl Default for FluidDynamicsTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(PotentialFlowTool::default()),
-                Box::new(TurbulenceTool::default()),
-                Box::new(LatticeBoltzmannTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("fluid_dynamics"),
         }
     }
 }

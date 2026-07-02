@@ -205,3 +205,13 @@ impl InteractiveTool for SurfaceViewer {
 }
 
 // [cite:modular_polynomials_review]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "SurfaceViewer",
+        domain: "geometry_topology",
+        tags: &[],
+        build: || Box::new(SurfaceViewer::default()),
+    }
+}

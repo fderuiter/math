@@ -13,11 +13,7 @@ pub struct ClimateTab {
 impl Default for ClimateTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(temperature::TemperatureAnomaliesTool::default()),
-                Box::new(cera::CeraTool::default()),
-                Box::new(co2_projections::Co2ProjectionsTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("climate"),
         }
     }
 }

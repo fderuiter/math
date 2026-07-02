@@ -205,3 +205,13 @@ impl TurbulenceTool {
 }
 
 // [cite:generative_turbulence]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "TurbulenceTool",
+        domain: "fluid_dynamics",
+        tags: &[],
+        build: || Box::new(TurbulenceTool::default()),
+    }
+}

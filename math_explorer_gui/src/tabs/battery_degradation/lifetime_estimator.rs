@@ -109,3 +109,13 @@ impl InteractiveTool for LifetimeEstimatorTool {
 }
 
 // [cite:algorithmic_information_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "LifetimeEstimatorTool",
+        domain: "battery_degradation",
+        tags: &[],
+        build: || Box::new(LifetimeEstimatorTool::default()),
+    }
+}

@@ -13,11 +13,7 @@ pub struct ChaosTab {
 impl Default for ChaosTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(attractors::AttractorPlotter::default()),
-                Box::new(bifurcation::BifurcationDiagram::default()),
-                Box::new(fractals::FractalViewer::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("chaos"),
         }
     }
 }

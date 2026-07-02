@@ -175,3 +175,13 @@ impl InteractiveTool for GridWorldTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "GridWorldTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(GridWorldTool::default()),
+    }
+}

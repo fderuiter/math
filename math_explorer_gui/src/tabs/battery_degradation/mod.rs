@@ -5,8 +5,6 @@ use eframe::egui;
 pub mod capacity_fade;
 pub mod lifetime_estimator;
 
-use capacity_fade::CapacityFadeTool;
-use lifetime_estimator::LifetimeEstimatorTool;
 
 pub struct BatteryDegradationTab {
     framework: crate::framework::SimulationFramework,
@@ -15,10 +13,7 @@ pub struct BatteryDegradationTab {
 impl Default for BatteryDegradationTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(CapacityFadeTool::default()),
-                Box::new(LifetimeEstimatorTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("battery_degradation"),
         }
     }
 }

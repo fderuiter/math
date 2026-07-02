@@ -54,3 +54,13 @@ impl InteractiveTool for Co2ProjectionsTool {
 }
 
 // [cite:isosurface_extraction]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "Co2ProjectionsTool",
+        domain: "climate",
+        tags: &[],
+        build: || Box::new(Co2ProjectionsTool::default()),
+    }
+}

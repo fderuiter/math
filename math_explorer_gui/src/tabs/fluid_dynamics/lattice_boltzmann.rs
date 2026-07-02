@@ -371,3 +371,13 @@ impl TheoryDescribable for LatticeBoltzmannTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "LatticeBoltzmannTool",
+        domain: "fluid_dynamics",
+        tags: &[],
+        build: || Box::new(LatticeBoltzmannTool::default()),
+    }
+}

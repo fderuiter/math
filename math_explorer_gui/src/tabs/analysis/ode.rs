@@ -369,3 +369,13 @@ impl InteractiveTool for OdeSolverTool {
 }
 
 // [cite:graph_parameters_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "OdeSolverTool",
+        domain: "analysis",
+        tags: &[],
+        build: || Box::new(OdeSolverTool::default()),
+    }
+}

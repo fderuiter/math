@@ -302,3 +302,13 @@ impl TheoryDescribable for HodgkinHuxleyTool {
 // Removed local reset and update_params logic.
 
 // [cite:advanced_linear_algebra]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "HodgkinHuxleyTool",
+        domain: "neuroscience",
+        tags: &[],
+        build: || Box::new(HodgkinHuxleyTool::default()),
+    }
+}

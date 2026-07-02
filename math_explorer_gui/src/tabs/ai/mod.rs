@@ -18,16 +18,7 @@ pub struct AiTab {
 impl Default for AiTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(loss_landscape::LossLandscapeTool::default()),
-                Box::new(training_monitor::TrainingMonitorTool::default()),
-                Box::new(activation_functions::ActivationFunctionsTool::default()),
-                Box::new(attention_maps::AttentionMapsTool::default()),
-                Box::new(grid_world::GridWorldTool::default()),
-                Box::new(q_table_inspector::QTableInspectorTool::default()),
-                Box::new(reward_plots::RewardPlotsTool::default()),
-                Box::new(tokenization::TokenizationTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("ai"),
         }
     }
 }

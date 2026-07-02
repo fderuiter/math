@@ -186,3 +186,13 @@ impl InteractiveTool for SampleSizeCalculatorTool {
 }
 
 // [cite:clinical_trials_statistics]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "SampleSizeCalculatorTool",
+        domain: "clinical_trials",
+        tags: &[],
+        build: || Box::new(SampleSizeCalculatorTool::default()),
+    }
+}

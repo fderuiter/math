@@ -198,3 +198,13 @@ impl InteractiveTool for TokenizationTool {
 }
 
 // [cite:algorithmic_information_rust]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "TokenizationTool",
+        domain: "ai",
+        tags: &[],
+        build: || Box::new(TokenizationTool::default()),
+    }
+}

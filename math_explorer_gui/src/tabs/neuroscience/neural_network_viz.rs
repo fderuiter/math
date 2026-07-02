@@ -207,3 +207,13 @@ impl InteractiveTool for NeuralNetworkVizTool {
 }
 
 // [cite:cera_framework]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "NeuralNetworkVizTool",
+        domain: "neuroscience",
+        tags: &[],
+        build: || Box::new(NeuralNetworkVizTool::default()),
+    }
+}

@@ -5,8 +5,6 @@ use eframe::egui;
 pub mod beam_profiling;
 pub mod dose;
 
-use beam_profiling::BeamProfilingTool;
-use dose::DoseCalculationTool;
 
 pub struct MedicalTab {
     framework: crate::framework::SimulationFramework,
@@ -15,10 +13,7 @@ pub struct MedicalTab {
 impl Default for MedicalTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(DoseCalculationTool::default()),
-                Box::new(BeamProfilingTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("medical"),
         }
     }
 }

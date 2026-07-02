@@ -5,8 +5,6 @@ use eframe::egui;
 pub mod network_propagation;
 pub mod sir;
 
-use network_propagation::NetworkPropagationTool;
-use sir::SirTool;
 
 pub struct EpidemiologyTab {
     framework: crate::framework::SimulationFramework,
@@ -15,10 +13,7 @@ pub struct EpidemiologyTab {
 impl Default for EpidemiologyTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(SirTool::default()),
-                Box::new(NetworkPropagationTool::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("epidemiology"),
         }
     }
 }

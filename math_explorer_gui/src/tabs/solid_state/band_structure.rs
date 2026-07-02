@@ -114,3 +114,13 @@ impl InteractiveTool for BandStructureTool {
 }
 
 // [cite:mmwave_radiotherapy_setup]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "BandStructureTool",
+        domain: "solid_state",
+        tags: &[],
+        build: || Box::new(BandStructureTool::default()),
+    }
+}

@@ -14,12 +14,7 @@ pub struct NumberTheoryTab {
 impl Default for NumberTheoryTab {
     fn default() -> Self {
         Self {
-            framework: crate::framework::SimulationFramework::new(vec![
-                Box::new(prime_spiral::PrimeSpiralWidget::default()),
-                Box::new(ualbf_widget::UalbfWidget::default()),
-                Box::new(factorization::FactorizationTool::default()),
-                Box::new(partitions_widget::PartitionsWidget::default()),
-            ]),
+            framework: crate::framework::SimulationFramework::new("number_theory"),
         }
     }
 }

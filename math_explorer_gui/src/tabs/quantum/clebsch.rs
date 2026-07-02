@@ -218,3 +218,13 @@ impl InteractiveTool for ClebschGordanTool {
 }
 
 // [cite:quantum_mechanics]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "ClebschGordanTool",
+        domain: "quantum",
+        tags: &[],
+        build: || Box::new(ClebschGordanTool::default()),
+    }
+}

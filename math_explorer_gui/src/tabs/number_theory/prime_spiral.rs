@@ -122,3 +122,13 @@ impl PrimeSpiralWidget {
 }
 
 // [cite:mmwave_radiotherapy_setup]
+
+
+inventory::submit! {
+    crate::framework::ToolMetadata {
+        name: "PrimeSpiralWidget",
+        domain: "number_theory",
+        tags: &[],
+        build: || Box::new(PrimeSpiralWidget::default()),
+    }
+}
