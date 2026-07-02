@@ -41,3 +41,12 @@
 - **Issue**: The system relied on manual string manipulation and hardcoded path separators (`.replace("\\", "/")`) in build scripts, causing inconsistent VFS generation and traceability mapping failures on Windows environments.
 - **Resolution**: Extracted path normalization logic into a shared utility (`path_utils.rs` in `oxidize_core`). Refactored `traceability.rs`, `oxidize_core/build.rs`, and `markdown_tests/build.rs` to use this canonical utility for all file path resolution.
 - **Impact**: Guaranteed consistent forward-slash path keys for WASM VFS compatibility and traceability mappings regardless of the host OS, eliminating cyclical build script failures on Windows.
+
+## Unified Simulation Framework (PR 1026)
+
+- **Issue**: Adding a new simulation required developers to manually implement thread-safe synchronization layers, custom runner logic, and repetitive UI code, leading to code duplication and race condition risks.
+- **Resolution**: Introduced a **Unified Simulation Framework** to the `math_explorer_gui` crate.
+    - Added the `UnifiedModel` trait for simulations to define initial state, step logic, and parameter metadata.
+    - Implemented `UnifiedSimRunner` for thread-safe parameter synchronization, abstracting away locks and channels.
+    - Created `UnifiedSimTool` to dynamically generate interactive UI sliders from model metadata.
+- **Impact**: Reduced boilerplate for new models, centralized thread-safety logic, and provided a standardized user experience with Play, Pause, and Reset controls.
