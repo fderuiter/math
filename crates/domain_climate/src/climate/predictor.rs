@@ -3,7 +3,7 @@ use rand::Rng;
 
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
 use domain_ai::ai::optimization::Optimizer;
-use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
+use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
 
 /// A trait representing the predictor model interface.
 /// This allows for different predictor architectures and decouples the training loop.

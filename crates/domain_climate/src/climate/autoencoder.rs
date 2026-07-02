@@ -3,7 +3,7 @@ use rand::Rng;
 
 use crate::climate::tensor_ops::conv1d;
 use domain_ai::ai::optimization::Optimizer;
-use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
+use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
 
 /// A trait representing the Autoencoder model interface.
 pub trait AutoencoderModel {
@@ -13,7 +13,10 @@ pub trait AutoencoderModel {
 
     /// Performs a forward pass through the autoencoder.
     #[verified_engine::verified]
-    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>);
+    fn forward<S: Storage<f32, Dyn, Dyn>>(
+        &self,
+        input: &Matrix<f32, Dyn, Dyn, S>,
+    ) -> (DMatrix<f32>, DMatrix<f32>);
 
     /// Updates the weights of the model using the provided optimizer.
     fn update_weights<O: Optimizer<f32>>(
@@ -151,7 +154,10 @@ impl Encoder {
     ///
     /// The latent representation matrix.
     #[verified_engine::verified]
-    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(
+        &self,
+        input: &Matrix<f32, Dyn, Dyn, S>,
+    ) -> DMatrix<f32> {
         let mut x = input.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
@@ -228,7 +234,10 @@ impl Decoder {
     ///
     /// The reconstructed data matrix.
     #[verified_engine::verified]
-    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, latent_representation: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(
+        &self,
+        latent_representation: &Matrix<f32, Dyn, Dyn, S>,
+    ) -> DMatrix<f32> {
         let mut x = latent_representation.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
@@ -305,7 +314,10 @@ impl Autoencoder {
     ///
     /// A tuple containing `(latent_representation, reconstruction)`.
     #[verified_engine::verified]
-    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>) {
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(
+        &self,
+        input: &Matrix<f32, Dyn, Dyn, S>,
+    ) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)
@@ -319,7 +331,10 @@ impl AutoencoderModel for Autoencoder {
     }
 
     #[verified_engine::verified]
-    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>) {
+    fn forward<S: Storage<f32, Dyn, Dyn>>(
+        &self,
+        input: &Matrix<f32, Dyn, Dyn, S>,
+    ) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)

@@ -59,7 +59,12 @@ impl Add for ChemicalState {
 
     #[verified_engine::verified]
     fn add(mut self, rhs: Self) -> Self {
-        for (val, r_val) in self.grid.as_mut_slice().iter_mut().zip(rhs.grid.as_slice().iter()) {
+        for (val, r_val) in self
+            .grid
+            .as_mut_slice()
+            .iter_mut()
+            .zip(rhs.grid.as_slice().iter())
+        {
             *val += r_val;
         }
         self
@@ -69,7 +74,12 @@ impl Add for ChemicalState {
 impl AddAssign for ChemicalState {
     #[verified_engine::verified]
     fn add_assign(&mut self, rhs: Self) {
-        for (val, r_val) in self.grid.as_mut_slice().iter_mut().zip(rhs.grid.as_slice().iter()) {
+        for (val, r_val) in self
+            .grid
+            .as_mut_slice()
+            .iter_mut()
+            .zip(rhs.grid.as_slice().iter())
+        {
             *val += r_val;
         }
     }
@@ -99,7 +109,12 @@ impl MulAssign<f64> for ChemicalState {
 impl VectorOperations for ChemicalState {
     #[verified_engine::verified]
     fn scale_add(&mut self, other: &Self, scale: f64) {
-        for (val, r_val) in self.grid.as_mut_slice().iter_mut().zip(other.grid.as_slice().iter()) {
+        for (val, r_val) in self
+            .grid
+            .as_mut_slice()
+            .iter_mut()
+            .zip(other.grid.as_slice().iter())
+        {
             *val += r_val * scale;
         }
     }
@@ -110,7 +125,9 @@ impl VectorOperations for ChemicalState {
             self.grid = other.grid.clone();
             return;
         }
-        self.grid.as_mut_slice().copy_from_slice(other.grid.as_slice());
+        self.grid
+            .as_mut_slice()
+            .copy_from_slice(other.grid.as_slice());
     }
 
     #[verified_engine::verified]

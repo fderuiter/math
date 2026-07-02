@@ -90,7 +90,7 @@ impl DiagnosticBus {
     pub fn new() -> Self {
         #[cfg(feature = "federated")]
         federated_registry::global_registry().register_source(env!("CARGO_PKG_NAME"));
-        
+
         let (sender, receiver) = channel();
         Self {
             sender,
@@ -100,7 +100,7 @@ impl DiagnosticBus {
 
     pub fn emit(&self, event: DiagnosticEvent) {
         let _ = self.sender.send(event.clone());
-        
+
         #[cfg(feature = "federated")]
         {
             let fed_severity = match event.severity {
