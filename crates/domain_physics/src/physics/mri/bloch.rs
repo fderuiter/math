@@ -176,9 +176,9 @@ impl SimulationModel for BlochSimulator {
     type Error = std::io::Error;
 
     #[verified_engine::verified]
-    fn initialize(
+    fn initialize<R: rand::RngCore>(
         config: Self::Config,
-        _provider: oxidize_core::rng::OxidizeRng,
+        _provider: R,
     ) -> Result<Self, Self::Error> {
         let initial_m = Vector3::new(0.0, 1.0, 0.0); // Default 90 deg flipped
         let mut sim = BlochSimulator::new(initial_m, config.m0);

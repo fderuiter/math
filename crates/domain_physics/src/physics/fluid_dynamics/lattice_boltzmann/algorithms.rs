@@ -438,9 +438,9 @@ impl SimulationModel for LatticeBoltzmannD2Q9<BgkCollision> {
     type Error = std::io::Error;
 
     #[verified_engine::verified]
-    fn initialize(
+    fn initialize<R: rand::RngCore>(
         config: Self::Config,
-        _provider: oxidize_core::rng::OxidizeRng,
+        _provider: R,
     ) -> Result<Self, Self::Error> {
         Ok(Self::new(config.width, config.height, config.tau))
     }
