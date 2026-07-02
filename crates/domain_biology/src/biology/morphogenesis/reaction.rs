@@ -97,7 +97,7 @@ impl ReactionModel for SchnakenbergKinetics {
         let n = state.grid_size();
 
         // Split mutable borrow to access both rate vectors simultaneously
-        let (rates_u, rates_v) = rates.grid.data.split_at_mut(n);
+        let (rates_u, rates_v) = rates.grid.as_mut_slice().split_at_mut(n);
 
         // Vectorized loop: Access memory linearly, enabling prefetch and SIMD
         for i in 0..n {

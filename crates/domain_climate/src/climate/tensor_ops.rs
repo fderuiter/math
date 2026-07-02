@@ -2,7 +2,7 @@
 //! A 1D convolution with kernel size 1 is equivalent to a linear transformation (dense layer)
 //! applied at each position.
 
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
 
 /// Performs a 1D convolution with kernel size 1.
 /// This is equivalent to a matrix multiplication.
@@ -17,7 +17,7 @@ use nalgebra::{DMatrix, DVector};
 ///
 /// * The output tensor, with shape (N, out_channels).
 #[verified_engine::verified]
-pub fn conv1d(input: &DMatrix<f32>, kernel: &DMatrix<f32>, bias: &DVector<f32>) -> DMatrix<f32> {
+pub fn conv1d<S: Storage<f32, Dyn, Dyn>>(input: &Matrix<f32, Dyn, Dyn, S>, kernel: &DMatrix<f32>, bias: &DVector<f32>) -> DMatrix<f32> {
     // Check dimensions
     assert_eq!(
         input.ncols(),
@@ -55,8 +55,8 @@ pub fn conv1d(input: &DMatrix<f32>, kernel: &DMatrix<f32>, bias: &DVector<f32>) 
 ///
 /// * The output tensor, with shape (N, out_channels).
 #[verified_engine::verified]
-pub fn conv_transpose1d(
-    input: &DMatrix<f32>,
+pub fn conv_transpose1d<S: Storage<f32, Dyn, Dyn>>(
+    input: &Matrix<f32, Dyn, Dyn, S>,
     kernel: &DMatrix<f32>, // Shape (out_channels, in_channels) from the original conv
     bias: &DVector<f32>,
 ) -> DMatrix<f32> {

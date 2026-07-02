@@ -35,14 +35,12 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// Initializes the grid to a uniform equilibrium state (rho=1, u=0).
     #[verified_engine::verified]
     pub fn init_equilibrium(&mut self) {
-        for i in 0..self.state.width * self.state.height {
-            self.state.rho.data[i] = 1.0;
-            self.state.ux.data[i] = 0.0;
-            self.state.uy.data[i] = 0.0;
-            let eq = L::equilibrium(1.0, 0.0, 0.0);
-            self.state.f.data[i] = eq;
-            self.state.f_new.data[i] = eq;
-        }
+        self.state.rho.fill(1.0);
+        self.state.ux.fill(0.0);
+        self.state.uy.fill(0.0);
+        let eq = L::equilibrium(1.0, 0.0, 0.0);
+        self.state.f.fill(eq);
+        self.state.f_new.fill(eq);
     }
 
     /// Sets a rectangular region of velocity (e.g., inlet).
@@ -50,13 +48,12 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     pub fn set_inlet(&mut self, x: usize, y: usize, w: usize, h: usize, u_x: f64, u_y: f64) {
         for j in y..(y + h).min(self.state.height) {
             for i in x..(x + w).min(self.state.width) {
-                let idx = self.state.index(i, j);
-                if !self.state.obstacles.data[idx] {
-                    self.state.ux.data[idx] = u_x;
-                    self.state.uy.data[idx] = u_y;
+                if !self.state.obstacles[(j, i)] {
+                    self.state.ux[(j, i)] = u_x;
+                    self.state.uy[(j, i)] = u_y;
                     // Reset distributions to equilibrium for the new velocity
                     // keeping density roughly constant (1.0)
-                    self.state.f.data[idx] = L::equilibrium(1.0, u_x, u_y);
+                    self.state.f[(j, i)] = L::equilibrium(1.0, u_x, u_y);
                 }
             }
         }
@@ -66,12 +63,11 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     #[verified_engine::verified]
     pub fn set_obstacle(&mut self, x: usize, y: usize, is_obstacle: bool) {
         if x < self.state.width && y < self.state.height {
-            let idx = self.state.index(x, y);
-            self.state.obstacles.data[idx] = is_obstacle;
+            self.state.obstacles[(y, x)] = is_obstacle;
             // Reset velocity inside obstacle
             if is_obstacle {
-                self.state.ux.data[idx] = 0.0;
-                self.state.uy.data[idx] = 0.0;
+                self.state.ux[(y, x)] = 0.0;
+                self.state.uy[(y, x)] = 0.0;
             }
         }
     }
@@ -102,12 +98,11 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         // Use zipping for iteration to enable better vectorization and eliminate bounds checks
         self.state
             .f_new
-            .data
             .iter_mut()
-            .zip(self.state.rho.data.iter_mut())
-            .zip(self.state.ux.data.iter_mut())
-            .zip(self.state.uy.data.iter_mut())
-            .zip(self.state.obstacles.data.iter())
+            .zip(self.state.rho.iter_mut())
+            .zip(self.state.ux.iter_mut())
+            .zip(self.state.uy.iter_mut())
+            .zip(self.state.obstacles.iter())
             .for_each(|((((f_cell, rho), ux), uy), is_obs)| {
                 if *is_obs {
                     *ux = 0.0;
@@ -150,19 +145,18 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         let required_len = width * height;
 
         // Security Check: Ensure invariants hold before entering unsafe blocks.
-        // Since `state` fields are public, a user could corrupt them (e.g., changing width without resizing f).
         assert_eq!(
-            self.state.f.data.len(),
+            self.state.f.len(),
             required_len,
             "LatticeState invariant violated: f.len() != width * height"
         );
         assert_eq!(
-            self.state.f_new.data.len(),
+            self.state.f_new.len(),
             required_len,
             "LatticeState invariant violated: f_new.len() != width * height"
         );
         assert_eq!(
-            self.state.obstacles.data.len(),
+            self.state.obstacles.len(),
             required_len,
             "LatticeState invariant violated: obstacles.len() != width * height"
         );
@@ -171,43 +165,29 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         let cy = L::directions_y();
         let opp = L::opposite_indices();
 
-        // Precompute offsets to avoid multiplication in the inner loop.
-        // offset[k] = -(dx[k] + dy[k] * width)
-        let mut offsets = [0isize; Q];
-        for k in 0..Q {
-            offsets[k] = -((cx[k] as isize) + (cy[k] as isize) * (width as isize));
-        }
-
         // 1. Interior (Hot Path) - Loop Splitting & optimizations
-        // Uses safe indexing
         if width > 2 && height > 2 {
             for y in 1..height - 1 {
-                let idx_row = y * width;
                 for x in 1..width - 1 {
-                    let idx = idx_row + x;
-
-                    let is_obstacle = self.state.obstacles.data[idx];
+                    let is_obstacle = self.state.obstacles[(y, x)];
                     if is_obstacle {
                         continue;
                     }
 
                     for k in 0..Q {
-                        // Calculate prev_idx using precomputed offset.
-                        // Since we are in the interior (y >= 1, x >= 1), idx is at least width + 1.
-                        // The max negative offset is -(1 + width).
-                        // So idx + offset >= 0.
-                        let prev_idx = (idx as isize + offsets[k]) as usize;
+                        let prev_y = (y as isize - cy[k] as isize) as usize;
+                        let prev_x = (x as isize - cx[k] as isize) as usize;
 
-                        let source_is_obstacle = self.state.obstacles.data[prev_idx];
+                        let source_is_obstacle = self.state.obstacles[(prev_y, prev_x)];
 
                         if source_is_obstacle {
                             // Bounce-back
-                            let bounce_val = self.state.f.data[idx][opp[k]];
-                            self.state.f_new.data[idx][k] = bounce_val;
+                            let bounce_val = self.state.f[(y, x)][opp[k]];
+                            self.state.f_new[(y, x)][k] = bounce_val;
                         } else {
                             // Stream
-                            let stream_val = self.state.f.data[prev_idx][k];
-                            self.state.f_new.data[idx][k] = stream_val;
+                            let stream_val = self.state.f[(prev_y, prev_x)][k];
+                            self.state.f_new[(y, x)][k] = stream_val;
                         }
                     }
                 }
@@ -217,8 +197,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
         // 2. Boundary Handling (Slow Path)
         // Process top/bottom rows and left/right columns
         let process_boundary_cell = |x: usize, y: usize, state: &mut LatticeState<Q>| {
-            let idx = y * width + x;
-            if state.obstacles.data[idx] {
+            if state.obstacles[(y, x)] {
                 return;
             }
 
@@ -227,11 +206,10 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
                 let prev_y = y as i32 - cy[k];
 
                 if prev_x >= 0 && prev_x < width as i32 && prev_y >= 0 && prev_y < height as i32 {
-                    let prev_idx = (prev_y as usize) * width + (prev_x as usize);
-                    if state.obstacles.data[prev_idx] {
-                        state.f_new.data[idx][k] = state.f.data[idx][opp[k]];
+                    if state.obstacles[(prev_y as usize, prev_x as usize)] {
+                        state.f_new[(y, x)][k] = state.f[(y, x)][opp[k]];
                     } else {
-                        state.f_new.data[idx][k] = state.f.data[prev_idx][k];
+                        state.f_new[(y, x)][k] = state.f[(prev_y as usize, prev_x as usize)][k];
                     }
                 } else {
                     // Boundary Logic (Periodic X, Bounce Y)
@@ -247,13 +225,12 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
 
                     if src_y < 0 || src_y >= height as i32 {
                         // Wall Bounce
-                        state.f_new.data[idx][k] = state.f.data[idx][opp[k]];
+                        state.f_new[(y, x)][k] = state.f[(y, x)][opp[k]];
                     } else {
-                        let src_idx = (src_y as usize) * width + (src_x as usize);
-                        if state.obstacles.data[src_idx] {
-                            state.f_new.data[idx][k] = state.f.data[idx][opp[k]];
+                        if state.obstacles[(src_y as usize, src_x as usize)] {
+                            state.f_new[(y, x)][k] = state.f[(y, x)][opp[k]];
                         } else {
-                            state.f_new.data[idx][k] = state.f.data[src_idx][k];
+                            state.f_new[(y, x)][k] = state.f[(src_y as usize, src_x as usize)][k];
                         }
                     }
                 }
@@ -318,7 +295,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
     #[verified_engine::verified]
     pub fn get_density(&self, x: usize, y: usize) -> f64 {
-        self.state.rho.data[self.state.index(x, y)]
+        self.state.rho[(y, x)]
     }
 
     /// Retrieves the macroscopic fluid velocity $(u_x, u_y)$ at the specified coordinates.
@@ -350,8 +327,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// ```
     #[verified_engine::verified]
     pub fn get_velocity(&self, x: usize, y: usize) -> (f64, f64) {
-        let idx = self.state.index(x, y);
-        (self.state.ux.data[idx], self.state.uy.data[idx])
+        (self.state.ux[(y, x)], self.state.uy[(y, x)])
     }
 
     /// Calculates the magnitude of the macroscopic fluid velocity at the specified coordinates.
@@ -372,8 +348,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
     #[verified_engine::verified]
     pub fn get_velocity_magnitude(&self, x: usize, y: usize) -> f64 {
-        let idx = self.state.index(x, y);
-        (self.state.ux.data[idx].powi(2) + self.state.uy.data[idx].powi(2)).sqrt()
+        (self.state.ux[(y, x)].powi(2) + self.state.uy[(y, x)].powi(2)).sqrt()
     }
 
     /// Checks if a given cell is marked as an obstacle.
@@ -395,7 +370,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// Panics if `x >= width` or `y >= height` due to out-of-bounds flat array indexing.
     #[verified_engine::verified]
     pub fn is_obstacle(&self, x: usize, y: usize) -> bool {
-        self.state.obstacles.data[self.state.index(x, y)]
+        self.state.obstacles[(y, x)]
     }
 
     /// Clears all obstacles from the lattice.
@@ -414,7 +389,7 @@ impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> LatticeBoltzmann<
     /// ```
     #[verified_engine::verified]
     pub fn clear_obstacles(&mut self) {
-        self.state.obstacles.data.fill(false);
+        self.state.obstacles.fill(false);
     }
 }
 
