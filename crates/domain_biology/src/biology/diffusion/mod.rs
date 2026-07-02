@@ -16,6 +16,7 @@ pub mod fd2d;
 
 pub use fd1d::FiniteDifference1D;
 pub use fd2d::FiniteDifference2D;
+use pure_math::pure_math::analysis::pde::fused_stepper::FusedStencilStepper;
 
 /// Defines a strategy for computing spatial diffusion.
 pub trait SpatialDiffusion<const N: usize> {
@@ -30,6 +31,20 @@ pub trait SpatialDiffusion<const N: usize> {
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], op: F)
     where
         F: FnMut(usize, [f64; N], [f64; N]);
+
+    /// Returns the core FusedStencilStepper configured for this spatial grid.
+    fn stepper(&self) -> FusedStencilStepper;
+
+    /// Fused step using the core math engine.
+    #[verified_engine::verified]
+    fn step_fused<K: crate::biology::morphogenesis::reaction::ReactionKinetics<N>>(
+        &self,
+        state: [&[f64]; N],
+        next_state: [&mut [f64]; N],
+        dt: f64,
+        coeffs: [f64; N],
+        kinetics: &K,
+    );
 
     /// Applies the diffusion operator to the state vectors.
     ///

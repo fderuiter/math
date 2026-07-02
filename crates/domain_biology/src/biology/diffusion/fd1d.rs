@@ -50,7 +50,44 @@ impl crate::biology::reaction_diffusion::DiffusionModel for FiniteDifference1D {
     }
 }
 
+use pure_math::pure_math::analysis::pde::fused_stepper::FusedStencilStepper;
+
 impl<const N: usize> SpatialDiffusion<N> for FiniteDifference1D {
+    fn stepper(&self) -> FusedStencilStepper {
+        FusedStencilStepper::new(self.dx)
+    }
+
+    #[verified_engine::verified]
+    fn step_fused<K: crate::biology::morphogenesis::reaction::ReactionKinetics<N>>(
+        &self,
+        state: [&[f64]; N],
+        next_state: [&mut [f64]; N],
+        dt: f64,
+        coeffs: [f64; N],
+        kinetics: &K,
+    ) {
+        if N == 0 { return; }
+        let n = state[0].len();
+        if n == 0 { return; }
+
+        SpatialDiffusion::<N>::stepper(self).step_1d_coupled_neumann(
+            n,
+            state,
+            next_state,
+            dt,
+            1.0, // Forward time
+            |_i, _prev, curr, _next, ops| {
+                let mut rhs = [0.0; N];
+                let rates = kinetics.reaction(curr);
+                for s in 0..N {
+                    let d2u = ops.central_diff_2nd(_prev[s], curr[s], _next[s]);
+                    rhs[s] = coeffs[s] * d2u + rates[s];
+                }
+                rhs
+            }
+        );
+    }
+
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     #[verified_engine::verified]
     fn map_diffusion<F>(&self, state: [&[f64]; N], coeffs: [f64; N], mut op: F)

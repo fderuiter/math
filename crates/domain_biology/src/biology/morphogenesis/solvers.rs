@@ -183,30 +183,21 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
         let concentrations_slices: [&[f64]; N] =
             std::array::from_fn(|i| state.concentrations[i].as_slice());
 
-        let mut next_slices: Vec<&mut [f64]> = next_state
-            .concentrations
-            .iter_mut()
-            .map(|v| v.as_mut_slice())
-            .collect();
+        let mut next_slices_arr: [&mut [f64]; N] = std::array::from_fn(|_| &mut [] as &mut [f64]);
+        
+        let mut iter = next_state.concentrations.iter_mut();
+        for slice in &mut next_slices_arr {
+            if let Some(vec) = iter.next() {
+                *slice = vec.as_mut_slice();
+            }
+        }
 
-        dynamics.diffusion.map_diffusion(
+        dynamics.diffusion.step_fused(
             concentrations_slices,
+            next_slices_arr,
+            dt,
             dynamics.diffusion_coeffs,
-            |i, vals, diffs| {
-                let rates = dynamics.kinetics.reaction(vals);
-
-                for s in 0..N {
-                    let curr = vals[s];
-                    let diff = diffs[s];
-                    let reac = rates[s];
-
-                    if let Some(slice) = next_slices.get_mut(s)
-                        && i < slice.len()
-                    {
-                        slice[i] = curr + dt * (diff + reac);
-                    }
-                }
-            },
+            dynamics.kinetics,
         );
     }
 }

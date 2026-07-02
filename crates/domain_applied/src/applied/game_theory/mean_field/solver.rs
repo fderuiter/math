@@ -1,6 +1,8 @@
 use super::physics::{Hamiltonian, QuadraticHamiltonian};
 use super::types::{Density, MFGConfig, Position};
 use nalgebra::DMatrix;
+use pure_math::pure_math::analysis::pde::fused_stepper::FusedStencilStepper;
+use math_commons::math_kernel::types::StepSize;
 
 /// Strategy trait for solving Mean Field Games.
 ///
@@ -95,6 +97,8 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
         for n in 1..=nt {
             m.column_mut(n).copy_from(&m0);
         }
+        
+        let stepper = FusedStencilStepper::new(StepSize(config.dx));
 
         for _iter in 0..self.iterations {
             // 1. Solve HJB Backward
@@ -105,58 +109,62 @@ impl<H: Hamiltonian> MFGSolver for FixedPointSolver<H> {
 
             // Backward in time
             for n in (0..nt).rev() {
-                for i in 1..nx - 1 {
-                    let x = xs[i];
-
-                    // Finite differences
-                    // u(i, n) = u(i, n+1) + dt * ( H + nu * lapl + F )
-
-                    let du_dx = (u[(i + 1, n + 1)] - u[(i - 1, n + 1)]) / (2.0 * config.dx);
-                    let d2u_dx2 = (u[(i + 1, n + 1)] - 2.0 * u[(i, n + 1)] + u[(i - 1, n + 1)])
-                        / (config.dx * config.dx);
-
-                    let hamiltonian = self.hamiltonian.evaluate(du_dx);
-                    let running_cost = cost_function(Position(x), Density(m[(i, n + 1)]));
-
-                    u[(i, n)] = u[(i, n + 1)]
-                        - config.dt * (hamiltonian - config.viscosity * d2u_dx2 - running_cost);
-                }
+                let u_next = u.column(n + 1).clone_owned();
+                let mut u_curr = u.column(n).clone_owned();
+                
+                stepper.step_1d_slice(
+                    u_next.as_slice(),
+                    u_curr.as_mut_slice(),
+                    config.dt,
+                    -1.0, // Backward
+                    |i, prev, curr, next, ops| {
+                        let du_dx = ops.central_diff_1st(prev, next);
+                        let d2u_dx2 = ops.central_diff_2nd(prev, curr, next);
+                        let hamiltonian = self.hamiltonian.evaluate(du_dx);
+                        let running_cost = cost_function(Position(xs[i]), Density(m[(i, n + 1)]));
+                        hamiltonian - config.viscosity * d2u_dx2 - running_cost
+                    }
+                );
+                
                 // Boundary conditions (Neumann 0)
-                u[(0, n)] = u[(1, n)];
-                u[(nx - 1, n)] = u[(nx - 2, n)];
+                u_curr[0] = u_curr[1];
+                u_curr[nx - 1] = u_curr[nx - 2];
+                u.column_mut(n).copy_from(&u_curr);
             }
 
             // 2. Solve Fokker-Planck Forward
             for n in 0..nt {
-                for i in 1..nx - 1 {
-                    // Calculate v at current step n
-                    let du_dx = (u[(i + 1, n)] - u[(i - 1, n)]) / (2.0 * config.dx);
+                let m_curr = m.column(n).clone_owned();
+                let mut m_next = m.column(n + 1).clone_owned();
+                let u_curr = u.column(n).clone_owned();
+                
+                stepper.step_1d_slice(
+                    m_curr.as_slice(),
+                    m_next.as_mut_slice(),
+                    config.dt,
+                    1.0, // Forward
+                    |i, prev, curr, next, ops| {
+                        let u_prev = u_curr[i - 1];
+                        let u_next = u_curr[i + 1];
+                        let du_dx = ops.central_diff_1st(u_prev, u_next);
+                        let v = -self.hamiltonian.derivative(du_dx);
+                        let drift_flux = ops.upwind_flux(v, prev, curr, next);
+                        let d2m_dx2 = ops.central_diff_2nd(prev, curr, next);
+                        -drift_flux + config.viscosity * d2m_dx2
+                    }
+                );
 
-                    // The drift velocity v = - H_p(p)
-                    let v = -self.hamiltonian.derivative(du_dx);
-
-                    let d2m_dx2 =
-                        (m[(i + 1, n)] - 2.0 * m[(i, n)] + m[(i - 1, n)]) / (config.dx * config.dx);
-
-                    // Upwind for drift term
-                    let drift_flux = if v > 0.0 {
-                        (m[(i, n)] * v - m[(i - 1, n)] * v) / config.dx
-                    } else {
-                        (m[(i + 1, n)] * v - m[(i, n)] * v) / config.dx
-                    };
-
-                    let rhs = -drift_flux + config.viscosity * d2m_dx2;
-                    m[(i, n + 1)] = m[(i, n)] + config.dt * rhs;
-                }
                 // Boundary conditions
-                m[(0, n + 1)] = m[(1, n + 1)];
-                m[(nx - 1, n + 1)] = m[(nx - 2, n + 1)];
+                m_next[0] = m_next[1];
+                m_next[nx - 1] = m_next[nx - 2];
 
                 // Normalize mass to prevent explosion/vanishing
-                let sum: f64 = m.column(n + 1).sum();
+                let sum: f64 = m_next.sum();
                 if sum > 1e-9 {
-                    m.column_mut(n + 1).scale_mut(1.0 / sum);
+                    m_next.scale_mut(1.0 / sum);
                 }
+                
+                m.column_mut(n + 1).copy_from(&m_next);
             }
         }
 
