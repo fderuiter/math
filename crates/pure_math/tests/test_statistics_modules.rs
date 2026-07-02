@@ -40,7 +40,7 @@ mod glicko2_tests {
 #[cfg(test)]
 mod kelly_tests {
     use pure_math::pure_math::statistics::kelly::{
-        UnitInterval, Odds, expected_value, kelly_fraction,
+        Odds, UnitInterval, expected_value, kelly_fraction,
     };
 
     #[test]

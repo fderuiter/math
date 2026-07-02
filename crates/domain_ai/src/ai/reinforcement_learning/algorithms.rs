@@ -141,7 +141,11 @@ where
 {
     /// Creates a new Tabular Q-Agent.
     #[verified_engine::verified]
-    pub fn new(learning_rate: UnitInterval, discount_factor: UnitInterval, epsilon: UnitInterval) -> Self {
+    pub fn new(
+        learning_rate: UnitInterval,
+        discount_factor: UnitInterval,
+        epsilon: UnitInterval,
+    ) -> Self {
         Self {
             q_func: TabularQFunction::new(),
             learning_rate,
@@ -173,7 +177,11 @@ where
 /// * `return_gt`: The cumulative return $G_t$.
 /// * `grad_log_pi`: The gradient of the log probability of the action taken.
 #[verified_engine::verified]
-pub fn policy_gradient_step(return_gt: f64, grad_log_pi: &[f64], learning_rate: UnitInterval) -> Vec<f64> {
+pub fn policy_gradient_step(
+    return_gt: f64,
+    grad_log_pi: &[f64],
+    learning_rate: UnitInterval,
+) -> Vec<f64> {
     grad_log_pi
         .iter()
         .map(|g| learning_rate.value() * return_gt * g)

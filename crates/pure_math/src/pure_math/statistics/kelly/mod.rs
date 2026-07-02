@@ -196,7 +196,7 @@ pub mod core;
 pub mod criterion;
 
 // Re-export main types and functions
-pub use core::{BankrollFraction, UnitInterval, Odds};
+pub use core::{BankrollFraction, Odds, UnitInterval};
 pub use criterion::{
     expected_growth_rate, expected_value, fractional_kelly, kelly_fraction, variants,
 };

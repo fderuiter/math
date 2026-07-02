@@ -19,10 +19,13 @@ macro_rules! define_bounded_float {
                 if ($min..=$max).contains(&value) && value.is_finite() {
                     Ok(Self(value))
                 } else {
-                    Err(format!("Value {} is outside the allowed range [{}, {}]", value, $min, $max))
+                    Err(format!(
+                        "Value {} is outside the allowed range [{}, {}]",
+                        value, $min, $max
+                    ))
                 }
             }
-            
+
             /// Retrieves the raw value.
             pub fn value(&self) -> f64 {
                 self.0
@@ -35,7 +38,7 @@ macro_rules! define_bounded_float {
                 &self.0
             }
         }
-        
+
         impl From<$name> for f64 {
             fn from(val: $name) -> Self {
                 val.0
@@ -63,10 +66,13 @@ macro_rules! define_strictly_bounded_float {
                 if value > $min && value < $max && value.is_finite() {
                     Ok(Self(value))
                 } else {
-                    Err(format!("Value {} is outside the strictly allowed range ({}, {})", value, $min, $max))
+                    Err(format!(
+                        "Value {} is outside the strictly allowed range ({}, {})",
+                        value, $min, $max
+                    ))
                 }
             }
-            
+
             /// Retrieves the raw value.
             pub fn value(&self) -> f64 {
                 self.0
@@ -79,7 +85,7 @@ macro_rules! define_strictly_bounded_float {
                 &self.0
             }
         }
-        
+
         impl From<$name> for f64 {
             fn from(val: $name) -> Self {
                 val.0

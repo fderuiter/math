@@ -1,7 +1,7 @@
 //! Core types for Ornstein-Uhlenbeck process.
 
 use crate::error::OuError;
-use math_commons::primitives::{PositiveFloat, NonNegativeFloat};
+use math_commons::primitives::{NonNegativeFloat, PositiveFloat};
 
 /// The long-term mean μ (mu).
 ///
@@ -113,8 +113,10 @@ impl OuParams {
     pub fn from_values(mu: f64, theta: f64, sigma: f64) -> Result<Self, OuError> {
         Ok(Self {
             mu: LongTermMean::new(mu)?,
-            theta: PositiveFloat::new(theta).map_err(|_| OuError::InvalidMeanReversionRate { value: theta })?,
-            sigma: NonNegativeFloat::new(sigma).map_err(|_| OuError::InvalidVolatility { value: sigma })?,
+            theta: PositiveFloat::new(theta)
+                .map_err(|_| OuError::InvalidMeanReversionRate { value: theta })?,
+            sigma: NonNegativeFloat::new(sigma)
+                .map_err(|_| OuError::InvalidVolatility { value: sigma })?,
         })
     }
 }
@@ -162,4 +164,3 @@ mod tests {
         assert!(OuParams::from_values(f64::NAN, 1.0, 0.3).is_err());
     }
 }
-

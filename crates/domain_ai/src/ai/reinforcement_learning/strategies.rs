@@ -1,6 +1,6 @@
 use super::types::{Action, State};
-use rand::Rng;
 use math_commons::primitives::UnitInterval;
+use rand::Rng;
 
 /// Strategy for selecting an action based on Q-values.
 pub trait ExplorationStrategy<S, A> {

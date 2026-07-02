@@ -226,10 +226,13 @@ pub fn coherence_factors(xi_k: f64, delta: f64) -> Result<(f64, f64), String> {
 
 /// Strong-typed version of coherence factors.
 #[verified_engine::verified]
-pub fn coherence_factors_strong(xi_k: ElectronVolts, delta: ElectronVolts) -> Result<(f64, f64), String> {
+pub fn coherence_factors_strong(
+    xi_k: ElectronVolts,
+    delta: ElectronVolts,
+) -> Result<(f64, f64), String> {
     let e_k = (xi_k.0.powi(2) + delta.0.powi(2)).sqrt();
     let raw_v_sq = 0.5 * (1.0 - xi_k.0 / e_k);
-    
+
     // Use UnitInterval to enforce invariants explicitly without manual clamping
     let v_sq = math_commons::primitives::UnitInterval::new(raw_v_sq)?;
     let u_sq = v_sq.complement();

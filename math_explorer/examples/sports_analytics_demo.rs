@@ -6,7 +6,7 @@ use math_explorer::pure_math::statistics::{
         GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility,
         update_rating,
     },
-    kelly::{UnitInterval, Odds, kelly_fraction},
+    kelly::{Odds, UnitInterval, kelly_fraction},
     markov::dtmc::{MarkovChain, StateType},
     ou_process::{EulerMaruyama, OuParams, TimeStep},
     zip_regression::{Count, ZipDistribution, ZipParams},

@@ -3,6 +3,6 @@ pub mod constants;
 pub mod diagnostics;
 pub mod error;
 pub mod math_kernel;
+pub mod primitives;
 pub mod theory;
 pub mod wigner;
-pub mod primitives;

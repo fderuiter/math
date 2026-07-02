@@ -48,9 +48,9 @@
 //! assert!((hawk_freq.value() - 0.2).abs() < 0.05);
 //! ```
 
-use math_commons::primitives::UnitInterval;
 use domain_applied::applied::game_theory::evolutionary::ReplicatorDynamics;
 use domain_applied::error::GameTheoryError;
+use math_commons::primitives::UnitInterval;
 use nalgebra::{DMatrix, DVector};
 use pure_math::pure_math::analysis::ode::{ArrayState, Euler, OdeSystem, Solver, SolverExt};
 
@@ -102,7 +102,11 @@ impl HawkDovePopulation {
     /// # Returns
     /// The new frequency of Hawks.
     #[verified_engine::verified]
-    pub fn update_frequencies(&self, hawk_freq: UnitInterval, dt: f64) -> Result<UnitInterval, GameTheoryError> {
+    pub fn update_frequencies(
+        &self,
+        hawk_freq: UnitInterval,
+        dt: f64,
+    ) -> Result<UnitInterval, GameTheoryError> {
         // Use ArrayState (stack allocated) for zero-overhead simulation
         let current_state = ArrayState([hawk_freq.value()]);
         let mut solver = Euler::new(&current_state);
