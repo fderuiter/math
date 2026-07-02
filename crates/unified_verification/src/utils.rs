@@ -1,6 +1,6 @@
+use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
-use std::fs;
 
 pub fn check_file_lengths(members: &[String]) -> Vec<String> {
     let mut exceeding = Vec::new();

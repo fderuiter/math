@@ -68,7 +68,7 @@ pub fn render_all_theory_parameters<T: TheoryDescribable>(
 
             let mut response = ui.add(slider);
             let available_descs = model.available_descriptions();
-            
+
             if let Some(param_desc) = available_descs.get(&param_name) {
                 response = response.accessible_hover_text(param_desc);
             } else {

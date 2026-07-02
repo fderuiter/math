@@ -51,7 +51,7 @@ pub trait UnifiedModel: Send + 'static + math_commons::theory::TheoryDescribable
 
     /// Allow the model to draw custom visualization in the central panel.
     /// Return true if custom rendering was performed.
-    fn custom_central_panel(_ui: &mut eframe::egui::Ui, _snapshot: Option<&StateSnapshot>) -> bool 
+    fn custom_central_panel(_ui: &mut eframe::egui::Ui, _snapshot: Option<&StateSnapshot>) -> bool
     where
         Self: Sized,
     {
@@ -152,15 +152,12 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
         }
     }
 
-    fn draw_model_parameters(
-        &mut self,
-        ui: &mut egui::Ui,
-    ) {
+    fn draw_model_parameters(&mut self, ui: &mut egui::Ui) {
         ui.separator();
         ui.label("Model Parameters");
 
         let mut params_lock = self.params.write().unwrap();
-        
+
         let presets = M::presets();
         if !presets.is_empty() {
             ui.horizontal(|ui| {
@@ -183,7 +180,8 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
                 ui.label("Actions:");
                 for action in custom_actions {
                     if ui.button(action).clicked() {
-                        self.controller.send_command(SimCommand::Custom(action.to_string()));
+                        self.controller
+                            .send_command(SimCommand::Custom(action.to_string()));
                     }
                 }
             });
@@ -344,12 +342,12 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
 }
 
 impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable {
+        self
+    }
     fn name(&self) -> &'static str {
         M::name()
     }
-
-
 
     fn show(&mut self, ctx: &egui::Context) {
         let has_update = self.controller.update().is_some();
@@ -363,8 +361,16 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
 }
 
 impl<M: UnifiedModel> math_commons::theory::TheoryDescribable for UnifiedSimTool<M> {
-    fn theory_description(&self) -> String { self.cached_theory_desc.clone() }
-    fn phonetic_description(&self) -> String { self.cached_phonetic.clone() }
-    fn theory_citation(&self) -> String { self.cached_citation.clone() }
-    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { self.cached_descs.clone() }
+    fn theory_description(&self) -> String {
+        self.cached_theory_desc.clone()
+    }
+    fn phonetic_description(&self) -> String {
+        self.cached_phonetic.clone()
+    }
+    fn theory_citation(&self) -> String {
+        self.cached_citation.clone()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        self.cached_descs.clone()
+    }
 }

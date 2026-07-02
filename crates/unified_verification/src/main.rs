@@ -11,8 +11,8 @@ use walkdir::WalkDir;
 mod ast_visitor;
 mod entropy_guard;
 mod profile;
-mod vulnerabilities;
 mod utils;
+mod vulnerabilities;
 use utils::check_file_lengths;
 
 #[derive(Serialize)]
