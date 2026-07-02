@@ -7,7 +7,13 @@ use math_explorer::physics::medical::radar_gating::{C, FmcwConfig, chirp_z_trans
 use num_complex::Complex;
 use std::f64::consts::PI;
 
-fn simulate_signal(config: &FmcwConfig, sample_rate: f64, n_samples: usize, true_range: f64, displacement_mm: f64) -> (f64, Vec<Complex<f64>>) {
+fn simulate_signal(
+    config: &FmcwConfig,
+    sample_rate: f64,
+    n_samples: usize,
+    true_range: f64,
+    displacement_mm: f64,
+) -> (f64, Vec<Complex<f64>>) {
     let true_displacement = displacement_mm / 1000.0;
     println!("\n--- Simulation ---");
     println!("True Range: {:.6} m", true_range);
@@ -32,7 +38,13 @@ fn simulate_signal(config: &FmcwConfig, sample_rate: f64, n_samples: usize, true
     (beat_freq, signal)
 }
 
-fn coarse_search(config: &FmcwConfig, signal: &[Complex<f64>], sample_rate: f64, n_samples: usize, true_range: f64) -> f64 {
+fn coarse_search(
+    config: &FmcwConfig,
+    signal: &[Complex<f64>],
+    sample_rate: f64,
+    n_samples: usize,
+    true_range: f64,
+) -> f64 {
     println!("\n--- Step 1: Coarse Search (FFT) ---");
     let fft_output = chirp_z_transform(signal, 0.0, sample_rate, sample_rate, n_samples);
 
@@ -56,7 +68,13 @@ fn coarse_search(config: &FmcwConfig, signal: &[Complex<f64>], sample_rate: f64,
     coarse_freq
 }
 
-fn fine_search(config: &FmcwConfig, signal: &[Complex<f64>], sample_rate: f64, coarse_freq: f64, true_range: f64) -> (f64, Complex<f64>) {
+fn fine_search(
+    config: &FmcwConfig,
+    signal: &[Complex<f64>],
+    sample_rate: f64,
+    coarse_freq: f64,
+    true_range: f64,
+) -> (f64, Complex<f64>) {
     println!("\n--- Step 2: Fine Search (CZT Zoom) ---");
     let zoom_bandwidth = 20_000.0;
     let start_freq = coarse_freq - zoom_bandwidth / 2.0;
@@ -115,9 +133,11 @@ fn main() {
     let true_range = 0.5;
     let displacement_mm = 0.1;
 
-    let (_beat_freq, signal) = simulate_signal(&config, sample_rate, n_samples, true_range, displacement_mm);
+    let (_beat_freq, signal) =
+        simulate_signal(&config, sample_rate, n_samples, true_range, displacement_mm);
     let coarse_freq = coarse_search(&config, &signal, sample_rate, n_samples, true_range);
-    let (_refined_freq, peak_complex) = fine_search(&config, &signal, sample_rate, coarse_freq, true_range);
+    let (_refined_freq, peak_complex) =
+        fine_search(&config, &signal, sample_rate, coarse_freq, true_range);
     extract_displacement(&config, peak_complex, displacement_mm);
 
     println!("\n=== Verification Complete ===");

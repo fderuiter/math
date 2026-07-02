@@ -121,10 +121,10 @@ impl SimulationFramework {
             .into_iter()
             .filter(|t| t.domain == domain)
             .collect();
-            
+
         // Sort by name for deterministic order
         available_tools.sort_by_key(|t| t.name);
-        
+
         Self {
             available_tools,
             active_tool: None,
@@ -189,10 +189,11 @@ impl SimulationFramework {
                         if ui
                             .selectable_label(self.selected_tool_index == Some(i), meta.name)
                             .clicked()
-                            && self.selected_tool_index != Some(i) {
-                                self.selected_tool_index = Some(i);
-                                self.active_tool = Some((meta.build)());
-                            }
+                            && self.selected_tool_index != Some(i)
+                        {
+                            self.selected_tool_index = Some(i);
+                            self.active_tool = Some((meta.build)());
+                        }
                     }
                 });
                 ui.separator();
