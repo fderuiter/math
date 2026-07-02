@@ -10,7 +10,10 @@ pub struct StencilOperators {
 impl StencilOperators {
     #[verified_engine::verified]
     pub fn new(dx: StepSize) -> Self {
-        Self { dx, dy: StepSize(1.0) }
+        Self {
+            dx,
+            dy: StepSize(1.0),
+        }
     }
 
     #[verified_engine::verified]
@@ -80,14 +83,8 @@ impl FusedStencilStepper {
     /// `dir`: +1.0 for forward-time, -1.0 for backward-time equations.
     /// Boundaries are not updated and must be handled by the caller.
     #[verified_engine::verified]
-    pub fn step_1d_slice<F>(
-        &self,
-        src: &[f64],
-        dst: &mut [f64],
-        dt: f64,
-        dir: f64,
-        mut op: F,
-    ) where
+    pub fn step_1d_slice<F>(&self, src: &[f64], dst: &mut [f64], dt: f64, dir: f64, mut op: F)
+    where
         F: FnMut(usize, f64, f64, f64, &StencilOperators) -> f64,
     {
         let n = src.len();
@@ -115,8 +112,10 @@ impl FusedStencilStepper {
     ) where
         F: FnMut(usize, [f64; N], [f64; N], [f64; N], &StencilOperators) -> [f64; N],
     {
-        if n == 0 { return; }
-        
+        if n == 0 {
+            return;
+        }
+
         let get_state = |idx| {
             let mut val = [0.0; N];
             for s in 0..N {
@@ -126,7 +125,7 @@ impl FusedStencilStepper {
             }
             val
         };
-        
+
         // Left boundary
         {
             let curr = get_state(0);
@@ -182,10 +181,20 @@ impl FusedStencilStepper {
         dir: f64,
         mut op: F,
     ) where
-        F: FnMut(usize, [f64; N], [f64; N], [f64; N], [f64; N], [f64; N], &StencilOperators) -> [f64; N],
+        F: FnMut(
+            usize,
+            [f64; N],
+            [f64; N],
+            [f64; N],
+            [f64; N],
+            [f64; N],
+            &StencilOperators,
+        ) -> [f64; N],
     {
         let n = width * height;
-        if n == 0 { return; }
+        if n == 0 {
+            return;
+        }
 
         let get_state = |idx| {
             let mut val = [0.0; N];
@@ -200,7 +209,7 @@ impl FusedStencilStepper {
         for y in 0..height {
             for x in 0..width {
                 let idx = y * width + x;
-                
+
                 let idx_l = if x > 0 { idx - 1 } else { idx };
                 let idx_r = if x < width - 1 { idx + 1 } else { idx };
                 let idx_u = if y > 0 { idx - width } else { idx };
