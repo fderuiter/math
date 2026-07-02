@@ -3,7 +3,7 @@ use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, State
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::{ColorImage, TextureOptions};
-use egui_plot::{Plot, PlotImage, PlotPoint};
+use egui_plot::{Line, Plot, PlotImage, PlotPoint, PlotPoints};
 use math_commons::theory::ParameterConstraint;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -89,6 +89,7 @@ struct CachedSnapshot {
     width: usize,
     height: usize,
     pixels: Arc<std::sync::RwLock<Vec<egui::Color32>>>,
+    custom_data: Vec<f64>,
 }
 
 pub struct UnifiedSimTool<M: UnifiedModel> {
@@ -196,36 +197,79 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
         });
     }
 
+    fn draw_image_plot(&mut self, ui: &mut egui::Ui, ctx: &egui::Context, texture: &egui::TextureHandle) {
+        let width = texture.size()[0] as f32;
+        let height = texture.size()[1] as f32;
+
+        Plot::new(format!("{}_plot_img", M::name()))
+            .data_aspect(1.0)
+            .view_aspect(1.0)
+            .show_grid(false)
+            .show_axes([false, false])
+            .allow_drag(false)
+            .allow_zoom(false)
+            .allow_scroll(false)
+            .show(ui, |plot_ui| {
+                plot_ui.image(PlotImage::new(
+                    format!("{}_image", M::name()),
+                    texture.id(),
+                    PlotPoint::new(width as f64 / 2.0, height as f64 / 2.0),
+                    [width, height],
+                ));
+
+                if plot_ui.response().hovered() && ctx.input(|i| i.pointer.primary_down() || i.pointer.secondary_down()) {
+                    if let Some(pos) = plot_ui.pointer_coordinate() {
+                        let grid_x = pos.x.round() as i32;
+                        let grid_y = pos.y.round() as i32;
+                        self.controller.send_command(SimCommand::ApplyBrush {
+                            cx: grid_x,
+                            cy: grid_y,
+                            r: 2,
+                            is_obstacle: ctx.input(|i| i.pointer.primary_down()),
+                        });
+                    }
+                }
+            });
+    }
+
+    fn draw_line_plot(&self, ui: &mut egui::Ui, snapshot: &CachedSnapshot) {
+        if snapshot.custom_data.is_empty() { return; }
+        let mut points = Vec::new();
+        for i in (0..snapshot.custom_data.len()).step_by(2) {
+            if i + 1 < snapshot.custom_data.len() {
+                points.push([snapshot.custom_data[i], snapshot.custom_data[i + 1]]);
+            }
+        }
+        let line = Line::new(M::name(), PlotPoints::from_iter(points))
+            .color(egui::Color32::from_rgb(100, 200, 255));
+
+        Plot::new(format!("{}_plot_line", M::name()))
+            .view_aspect(2.0)
+            .show(ui, |plot_ui| {
+                plot_ui.line(line);
+            });
+    }
+
     fn draw_central_panel(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            let mut has_image = false;
             if let Some(snapshot) = &self.last_snapshot {
                 if let Ok(guard) = snapshot.pixels.try_read() {
-                    let image = ColorImage::new([snapshot.width, snapshot.height], guard.clone());
-                    let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
-                    self.texture = Some(texture);
+                    if !guard.is_empty() {
+                        let image = ColorImage::new([snapshot.width, snapshot.height], guard.clone());
+                        let texture = ctx.load_texture(M::name(), image, TextureOptions::NEAREST);
+                        self.texture = Some(texture);
+                        has_image = true;
+                    }
                 }
             }
 
-            if let Some(texture) = &self.texture {
-                let width = texture.size()[0] as f32;
-                let height = texture.size()[1] as f32;
-
-                Plot::new(format!("{}_plot", M::name()))
-                    .data_aspect(1.0)
-                    .view_aspect(1.0)
-                    .show_grid(false)
-                    .show_axes([false, false])
-                    .allow_drag(false)
-                    .allow_zoom(false)
-                    .allow_scroll(false)
-                    .show(ui, |plot_ui| {
-                        plot_ui.image(PlotImage::new(
-                            format!("{}_image", M::name()),
-                            texture.id(),
-                            PlotPoint::new(width as f64 / 2.0, height as f64 / 2.0),
-                            [width, height],
-                        ));
-                    });
+            if has_image || self.texture.is_some() {
+                if let Some(texture) = self.texture.clone() {
+                    self.draw_image_plot(ui, ctx, &texture);
+                }
+            } else if let Some(snapshot) = &self.last_snapshot {
+                self.draw_line_plot(ui, snapshot);
             }
         });
     }
@@ -242,6 +286,7 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
                 width: snapshot.width,
                 height: snapshot.height,
                 pixels: Arc::clone(&snapshot.pixels),
+                custom_data: snapshot.custom_data.clone(),
             });
             ctx.request_repaint();
         } else if self.controller.running {

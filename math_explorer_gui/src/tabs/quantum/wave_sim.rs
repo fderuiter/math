@@ -1,80 +1,47 @@
-use crate::accessibility::AccessibleTheoryHover;
-use crate::async_sim::{SimCommand, SimulationController, SimulationRunner, StateSnapshot};
-use eframe::egui;
-use egui_plot::{Legend, Line, Plot, PlotPoints};
-use math_commons::theory::TheoryDescribable;
+use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
+use crate::async_sim::{SimCommand, StateSnapshot};
+use math_commons::theory::ParameterConstraint;
 use math_explorer::physics::quantum::{
     construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
 };
 use nalgebra::DVector;
 use num_complex::Complex;
-use std::any::Any;
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
-use crate::framework::InteractiveTool;
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum PotentialType {
-    InfiniteWell,
-    HarmonicOscillator,
-}
-
-pub struct WaveParams {
-    pub potential_type: AtomicU64,
-}
-
-impl WaveParams {
-    pub fn new(potential_type: f64) -> Self {
-        Self {
-            potential_type: AtomicU64::new(potential_type.to_bits()),
-        }
-    }
-}
-
-pub struct WaveData {
-    pub time: f64,
-    pub x_axis: Vec<f64>,
-    pub prob_density: Vec<f64>,
-    pub potential: Vec<f64>,
-}
-
-struct WaveRunner {
+pub struct WaveUnified {
     psi: QuantumState,
     hamiltonian: QuantumOperator,
-    potential_type: PotentialType,
     potential: DVector<f64>,
-    params: Arc<WaveParams>,
     x_axis: Vec<f64>,
     time: f64,
     n_points: usize,
     x_min: f64,
     x_max: f64,
-    steps_per_frame: usize,
 }
 
-impl SimulationRunner for WaveRunner {
-    fn process_command(&mut self, cmd: SimCommand) {
-        match cmd {
-            SimCommand::SetSpeed(speed) => self.steps_per_frame = speed,
-            SimCommand::Reset => self.init_system(),
-            _ => {}
-        }
+impl UnifiedModel for WaveUnified {
+    fn new(params: &HashMap<String, f64>) -> Self {
+        let n_points = 200;
+        let x_min = -5.0;
+        let x_max = 5.0;
+
+        let potential_type = *params.get("potential_type").unwrap_or(&0.0);
+        let mut sim = Self {
+            psi: QuantumState::new(DVector::from_element(n_points, Complex::new(0.0, 0.0))),
+            hamiltonian: construct_1d_hamiltonian(&DVector::zeros(n_points), 1.0, 1.0, 1.0),
+            potential: DVector::zeros(n_points),
+            x_axis: Vec::new(),
+            time: 0.0,
+            n_points,
+            x_min,
+            x_max,
+        };
+        sim.init_system(potential_type);
+        sim
     }
 
-    fn step(&mut self) {
-        let val = f64::from_bits(self.params.potential_type.load(Ordering::Relaxed));
-        let new_potential_type = if val == 0.0 {
-            PotentialType::InfiniteWell
-        } else {
-            PotentialType::HarmonicOscillator
-        };
-        if self.potential_type != new_potential_type {
-            self.potential_type = new_potential_type;
-            self.init_system();
-        }
-
+    fn step(&mut self, _params: &HashMap<String, f64>) {
         let dt = 0.05;
         self.psi = evolve_state(&self.psi, &self.hamiltonian, dt, 1.0);
         self.time += dt;
@@ -83,30 +50,46 @@ impl SimulationRunner for WaveRunner {
 
     fn get_snapshot(&self) -> StateSnapshot {
         let prob_density = self.psi.probability_density();
-
-        let structured_data = Box::new(WaveData {
-            time: self.time,
-            x_axis: self.x_axis.clone(),
-            prob_density: prob_density.iter().copied().collect(),
-            potential: self.potential.iter().copied().collect(),
-        }) as Box<dyn Any + Send>;
+        let mut custom_data = Vec::with_capacity(self.n_points * 2);
+        for i in 0..self.n_points {
+            custom_data.push(self.x_axis[i]);
+            custom_data.push(prob_density[i]);
+        }
 
         StateSnapshot {
             width: 0,
             height: 0,
-            pixels: std::sync::Arc::new(std::sync::RwLock::new(Vec::new())),
-            custom_data: Vec::new(),
-            structured_data: Some(structured_data),
+            pixels: Arc::new(std::sync::RwLock::new(Vec::new())),
+            custom_data,
+            structured_data: None,
         }
     }
 
-    fn get_steps_per_frame(&self) -> usize {
-        self.steps_per_frame
+    fn process_command(&mut self, cmd: SimCommand, params: &HashMap<String, f64>) {
+        if let SimCommand::Reset = cmd {
+            let potential_type = *params.get("potential_type").unwrap_or(&0.0);
+            self.init_system(potential_type);
+        }
+    }
+
+    fn parameters() -> HashMap<String, ParameterConstraint> {
+        let mut map = HashMap::new();
+        // 0.0 for Infinite Well, 1.0 for Harmonic Oscillator
+        map.insert("potential_type".to_string(), ParameterConstraint { min: 0.0, max: 1.0, step: 1.0 });
+        map
+    }
+
+    fn name() -> &'static str {
+        "Wave Simulator"
+    }
+
+    fn theory_description() -> Option<String> {
+        Some("Quantum wave simulation [cite:quantum_mechanics]".to_string())
     }
 }
 
-impl WaveRunner {
-    fn init_system(&mut self) {
+impl WaveUnified {
+    fn init_system(&mut self, potential_type: f64) {
         let dx = (self.x_max - self.x_min) / (self.n_points as f64 - 1.0);
         self.x_axis = (0..self.n_points)
             .map(|i| self.x_min + i as f64 * dx)
@@ -114,9 +97,10 @@ impl WaveRunner {
 
         self.potential = DVector::zeros(self.n_points);
         for (i, &x) in self.x_axis.iter().enumerate() {
-            let v = match self.potential_type {
-                PotentialType::InfiniteWell => 0.0,
-                PotentialType::HarmonicOscillator => 0.5 * x * x,
+            let v = if potential_type < 0.5 {
+                0.0 // InfiniteWell
+            } else {
+                0.5 * x * x // HarmonicOscillator
             };
             self.potential[i] = v;
         }
@@ -132,212 +116,11 @@ impl WaveRunner {
     }
 }
 
-pub struct WaveSimulator {
-    controller: SimulationController,
-    potential_type: PotentialType,
-    params: Arc<WaveParams>,
-    cached_x: Vec<f64>,
-    cached_prob: Vec<f64>,
-    cached_pot: Vec<f64>,
-    cached_time: f64,
-}
-
-impl Default for WaveSimulator {
-    fn default() -> Self {
-        let n_points = 200;
-        let x_min = -5.0;
-        let x_max = 5.0;
-
-        let potential = DVector::zeros(n_points);
-        let hamiltonian = construct_1d_hamiltonian(&potential, 1.0, 1.0, 1.0);
-        let psi = QuantumState::new(DVector::from_element(n_points, Complex::new(0.0, 0.0)));
-
-        let params = Arc::new(WaveParams::new(0.0));
-
-        let mut runner = WaveRunner {
-            psi,
-            hamiltonian,
-            potential_type: PotentialType::InfiniteWell,
-            potential,
-            params: Arc::clone(&params),
-            x_axis: Vec::new(),
-            time: 0.0,
-            n_points,
-            x_min,
-            x_max,
-            steps_per_frame: 1,
-        };
-        runner.init_system();
-
-        let controller = SimulationController::new(runner);
-
-        Self {
-            controller,
-            potential_type: PotentialType::InfiniteWell,
-            params,
-            cached_x: Vec::new(),
-            cached_prob: Vec::new(),
-            cached_pot: Vec::new(),
-            cached_time: 0.0,
-        }
-    }
-}
-
-impl TheoryDescribable for WaveSimulator {
-    fn theory_description(&self) -> String {
-        let pot = if self.potential_type == PotentialType::InfiniteWell {
-            "Infinite Well"
-        } else {
-            "Harmonic Oscillator"
-        };
-        format!(
-            "Quantum wave simulation in {}, time: {:.2}",
-            pot, self.cached_time
-        )
-    }
-
-    fn phonetic_description(&self) -> String {
-        self.theory_description()
-    }
-
-    fn theory_citation(&self) -> String {
-        "[cite:quantum_mechanics]".to_string()
-    }
-
-    fn available_descriptions(&self) -> HashMap<String, String> {
-        let mut map = HashMap::new();
-        map.insert("default".to_string(), "Quantum wave simulation".to_string());
-        map
-    }
-}
-
-impl InteractiveTool for WaveSimulator {
-    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
-        Some(self)
-    }
-    fn name(&self) -> &'static str {
-        "Wave Simulator"
-    }
-
-    #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
-    fn show(&mut self, ctx: &egui::Context) {
-        if self.controller.running {
-            ctx.request_repaint();
-        }
-
-        if let Some(snap) = self.controller.update() {
-            if let Some(any_data) = &snap.structured_data {
-                if let Some(wave_data) = any_data.downcast_ref::<WaveData>() {
-                    self.cached_time = wave_data.time;
-                    self.cached_x = wave_data.x_axis.clone();
-                    self.cached_prob = wave_data.prob_density.clone();
-                    self.cached_pot = wave_data.potential.clone();
-                }
-            }
-        }
-
-        egui::SidePanel::left("quantum_controls").show(ctx, |ui| {
-            ui.heading("Quantum Control");
-            ui.separator();
-
-            ui.label("Potential:");
-            let mut changed = false;
-            changed |= ui
-                .radio_value(
-                    &mut self.potential_type,
-                    PotentialType::InfiniteWell,
-                    "Infinite Well",
-                )
-                .clicked();
-            changed |= ui
-                .radio_value(
-                    &mut self.potential_type,
-                    PotentialType::HarmonicOscillator,
-                    "Harmonic Oscillator",
-                )
-                .clicked();
-
-            if changed {
-                let val: f64 = if self.potential_type == PotentialType::InfiniteWell {
-                    0.0
-                } else {
-                    1.0
-                };
-                self.params.potential_type.store(val.to_bits(), Ordering::Relaxed);
-                self.controller.send_command(SimCommand::Reset);
-            }
-
-            ui.separator();
-            ui.horizontal(|ui| {
-                if ui
-                    .button(if !self.controller.running {
-                        "▶ Play"
-                    } else {
-                        "⏸ Pause"
-                    })
-                    .clicked()
-                {
-                    if self.controller.running {
-                        self.controller.send_command(SimCommand::Pause);
-                    } else {
-                        self.controller.send_command(SimCommand::Start);
-                    }
-                }
-                if ui.button("↻ Reset").clicked() {
-                    self.controller.send_command(SimCommand::Reset);
-                }
-            });
-
-            ui.separator();
-            ui.label(format!("Time: {:.2}", self.cached_time));
-            ui.label("White: |ψ(x)|² (Probability)");
-            ui.colored_label(
-                egui::Color32::from_rgb(100, 100, 255),
-                "Blue: V(x) (Potential)",
-            );
-        });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let mut psi_points = Vec::new();
-            let mut v_points = Vec::new();
-
-            for i in 0..self.cached_x.len() {
-                let x = self.cached_x[i];
-                let p = self.cached_prob[i];
-                let v = self.cached_pot[i];
-                psi_points.push([x, p]);
-                v_points.push([x, v * 0.2]);
-            }
-
-            let response = Plot::new("quantum_plot")
-                .legend(Legend::default())
-                .x_axis_label("Position (x)")
-                .y_axis_label("Probability Density / Potential")
-                .view_aspect(2.0)
-                .show(ui, |plot_ui| {
-                    plot_ui.line(
-                        Line::new("Probability |ψ|²", PlotPoints::new(psi_points))
-                            .color(egui::Color32::WHITE)
-                            .width(2.0_f32),
-                    );
-                    plot_ui.line(
-                        Line::new("Potential V(x) (scaled)", PlotPoints::new(v_points))
-                            .color(egui::Color32::from_rgb(100, 100, 255)),
-                    );
-                })
-                .response;
-            response.accessible_theory_hover(self);
-        });
-    }
-}
-// [cite:quantum_mechanics]
-
-
 inventory::submit! {
     crate::framework::ToolMetadata {
         name: "WaveSimulator",
         domain: "quantum",
         tags: &[],
-        build: || Box::new(WaveSimulator::default()),
+        build: || Box::new(UnifiedSimTool::<WaveUnified>::new()),
     }
 }
