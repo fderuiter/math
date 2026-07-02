@@ -32,10 +32,10 @@ mod tests {
     #[verified_engine::verified]
     fn test_solver_initialization() {
         let solver = LatticeBoltzmannD2Q9::new(10, 10, 1.0);
-        assert_eq!(solver.state.rho.data.len(), 100);
+        assert_eq!(solver.state.rho.len(), 100);
         for i in 0..100 {
-            assert!((solver.state.rho.data[i] - 1.0).abs() < 1e-9);
-            assert!(solver.state.ux.data[i].abs() < 1e-9);
+            assert!((solver.state.rho[i] - 1.0).abs() < 1e-9);
+            assert!(solver.state.ux[i].abs() < 1e-9);
         }
     }
 
@@ -56,7 +56,7 @@ mod tests {
 
         solver.collision_model.tau = 2.0;
         solver.step();
-        assert!(solver.state.rho.data[0].is_finite());
+        assert!(solver.state.rho[0].is_finite());
 
         let obs_x = 10;
         let obs_y = 5;
