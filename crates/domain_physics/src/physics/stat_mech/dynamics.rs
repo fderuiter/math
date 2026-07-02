@@ -72,7 +72,7 @@ mod tests {
     #[verified_engine::verified]
     fn test_diffusion() {
         // For Random Walk D ~ 0.5 (since dx=1, dt=1).
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let d = estimate_diffusion_coefficient_with_rng(1000, 100, &mut rng);
         assert!(
             (d - 0.5).abs() < 0.1,

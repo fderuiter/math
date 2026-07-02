@@ -13,7 +13,7 @@ fn main() {
     println!("Benchmarking Gillespie Solver with {} steps...", steps);
 
     // Setup
-    let rng = StdRng::seed_from_u64(42);
+    let rng = oxidize_core::rng::OxidizeRng::default();
     let mut solver = GillespieSolver::new(rng);
 
     // Large population to prevent extinction early
@@ -29,7 +29,7 @@ fn main() {
 
     // Reset state for actual bench
     state = *model.state();
-    let rng = StdRng::seed_from_u64(42);
+    let rng = oxidize_core::rng::OxidizeRng::default();
     solver = GillespieSolver::new(rng);
 
     let (_, metrics) = VerifiedEngine::run_verified(|| {

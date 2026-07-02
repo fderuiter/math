@@ -7,8 +7,8 @@ use rand::rngs::StdRng;
 #[test]
 #[verified_engine::verified]
 fn test_deterministic_simple_randomization() {
-    let mut rng1 = StdRng::seed_from_u64(42);
-    let mut rng2 = StdRng::seed_from_u64(42);
+    let mut rng1 = oxidize_core::rng::OxidizeRng::default();
+    let mut rng2 = oxidize_core::rng::OxidizeRng::default();
     let strategy = SimpleRandomizer;
 
     let assignments1 = strategy.assign(&mut rng1, 100).unwrap();
@@ -20,8 +20,8 @@ fn test_deterministic_simple_randomization() {
 #[test]
 #[verified_engine::verified]
 fn test_deterministic_block_randomization() {
-    let mut rng1 = StdRng::seed_from_u64(12345);
-    let mut rng2 = StdRng::seed_from_u64(12345);
+    let mut rng1 = oxidize_core::rng::OxidizeRng::new(12345);
+    let mut rng2 = oxidize_core::rng::OxidizeRng::new(12345);
     let strategy = BlockRandomizer::new(4).unwrap();
 
     let assignments1 = strategy.assign(&mut rng1, 20).unwrap();

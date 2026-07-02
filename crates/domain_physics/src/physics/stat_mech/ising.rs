@@ -332,7 +332,7 @@ mod tests {
 
         let width = 20;
         let height = 20;
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let mut lattice = SpinLattice::new_with_rng(width, height, &mut rng);
 
         // Run many steps to equilibrate

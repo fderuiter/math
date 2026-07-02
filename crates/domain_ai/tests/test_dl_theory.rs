@@ -10,7 +10,7 @@ fn test_deep_learning_cycle() {
     // 2 inputs, 2 hidden units, 2 output classes
     // Use the new Strategy Pattern with SGD
     use rand::SeedableRng;
-    let mut rng = rand::rngs::StdRng::seed_from_u64(1337);
+    let mut rng = oxidize_core::rng::OxidizeRng::new(1337);
     let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
     let mut network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.5)));
 
@@ -46,7 +46,7 @@ fn test_deep_learning_cycle() {
 fn test_explicit_model_construction() {
     // Explicitly construct TwoLayerMLP and inject it
     use rand::SeedableRng;
-    let mut rng = rand::rngs::StdRng::seed_from_u64(42);
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
     let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1)));
 
@@ -60,7 +60,7 @@ fn test_explicit_model_construction() {
 fn test_backward_compatibility_layer_access() {
     // Verify we can still access layer1/layer2 like before (via Deref)
     use rand::SeedableRng;
-    let mut rng = rand::rngs::StdRng::seed_from_u64(42);
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
     let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1)));
 

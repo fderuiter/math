@@ -145,7 +145,7 @@ impl OuAnalyzer {
     /// let dt = TimeStep::new(0.01).unwrap();
     /// let analyzer = OuAnalyzer::new(params, dt);
     ///
-    /// let mut rng = StdRng::seed_from_u64(42);
+    /// let mut rng = oxidize_core::rng::OxidizeRng::default();
     /// let stats = analyzer.monte_carlo_forecast(0.50, 1.0, 10000, Some(0.48), &mut rng);
     /// ```
     #[verified_engine::verified]
@@ -329,7 +329,7 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let analyzer = OuAnalyzer::new(params, dt);
 
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let stats = analyzer.monte_carlo_forecast(0.6, 1.0, 1000, Some(0.5), &mut rng);
 
         // Mean should be close to long-term mean
@@ -345,7 +345,7 @@ mod tests {
         let dt = TimeStep::new(0.01).unwrap();
         let analyzer = OuAnalyzer::new(params, dt);
 
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
         let prob = analyzer.comeback_probability(0.3, 0.5, 1.0, 1000, &mut rng);
 
         // Should be between 0 and 1
@@ -362,7 +362,7 @@ mod tests {
         let dt = TimeStep::new(0.1).unwrap();
         let solver = EulerMaruyama::new(true_params, dt);
 
-        let mut rng = StdRng::seed_from_u64(12345);
+        let mut rng = oxidize_core::rng::OxidizeRng::new(12345);
         let trajectory = solver.simulate(0.6, 100, &mut rng);
 
         // Estimate parameters

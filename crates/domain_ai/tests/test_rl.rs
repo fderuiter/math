@@ -197,8 +197,8 @@ mod tests {
         );
         let state = GridState::Start;
 
-        let mut rng1 = StdRng::seed_from_u64(42);
-        let mut rng2 = StdRng::seed_from_u64(42);
+        let mut rng1 = oxidize_core::rng::OxidizeRng::default();
+        let mut rng2 = oxidize_core::rng::OxidizeRng::default();
 
         let actions = [Move::Forward, Move::Stay];
 

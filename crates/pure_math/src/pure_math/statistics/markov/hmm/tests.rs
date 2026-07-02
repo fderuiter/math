@@ -149,7 +149,7 @@ mod tests {
         let emissions = DMatrix::from_row_slice(2, 2, &[0.8, 0.2, 0.3, 0.7]);
 
         let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
-        let mut rng = StdRng::seed_from_u64(42);
+        let mut rng = oxidize_core::rng::OxidizeRng::default();
 
         let (states, observations) = hmm.generate(10, &mut rng).unwrap();
 
@@ -176,10 +176,10 @@ mod tests {
 
         let hmm = HiddenMarkovModel::new(initial, transitions, emissions).unwrap();
 
-        let mut rng1 = StdRng::seed_from_u64(123);
+        let mut rng1 = oxidize_core::rng::OxidizeRng::new(123);
         let (states1, obs1) = hmm.generate(20, &mut rng1).unwrap();
 
-        let mut rng2 = StdRng::seed_from_u64(123);
+        let mut rng2 = oxidize_core::rng::OxidizeRng::new(123);
         let (states2, obs2) = hmm.generate(20, &mut rng2).unwrap();
 
         // Same seed should produce same sequence

@@ -33,7 +33,7 @@ fn demo_ou_process() {
     let ou_params = OuParams::from_values(0.45, 1.0, 0.15).unwrap();
     let dt = TimeStep::new(0.01).unwrap();
     let solver = EulerMaruyama::new(ou_params, dt);
-    let mut rng = StdRng::seed_from_u64(42);
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
     let trajectory = solver.simulate(0.60, 100, &mut rng);
     println!("   True skill: 45%, Currently: 60% (hot)");
     println!(

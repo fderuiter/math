@@ -9,7 +9,7 @@ pub trait SimulationModel: Sized {
     type State: ModelState;
     type Error: std::error::Error + Send + Sync + 'static;
 
-    fn initialize(config: Self::Config) -> Result<Self, Self::Error>;
+    fn initialize(config: Self::Config, provider: rng::OxidizeRng) -> Result<Self, Self::Error>;
     fn step(&mut self) -> Result<(), Self::Error>;
     fn get_state(&self) -> Self::State;
 }
@@ -53,7 +53,7 @@ mod tests {
         type State = BooleanMaskState;
         type Error = SimulationError;
 
-        fn initialize(config: Self::Config) -> Result<Self, Self::Error> {
+        fn initialize(config: Self::Config, _provider: rng::OxidizeRng) -> Result<Self, Self::Error> {
             let state = BooleanMaskState {
                 grid: vec![false; config.width * config.height],
                 width: config.width,
@@ -81,7 +81,8 @@ mod tests {
             width: 10,
             height: 10,
         };
-        let mut sim = BooleanMaskSimulation::initialize(config).unwrap();
+        let provider = rng::OxidizeRng::new(42);
+        let mut sim = BooleanMaskSimulation::initialize(config, provider).unwrap();
 
         // Initial state should be all false
         assert!(sim.get_state().grid.iter().all(|&x| !x));
@@ -98,3 +99,4 @@ pub mod path_utils;
 pub mod traceability;
 pub mod vfs;
 pub mod ast_visitor;
+pub mod rng;
