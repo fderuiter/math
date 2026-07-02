@@ -20,6 +20,7 @@ oxidize_core = { path = "../oxidize_core" }
 verified_engine = { version = "0.1.0", path = "../verified_engine" }
 
 math_commons = { path = "../math_commons" }
+diagnostics = { path = "../diagnostics", features = ["federated"] }
 pure_math = { path = "../pure_math" }
 domain_ai = { path = "../domain_ai" }
 

@@ -2,18 +2,18 @@
 use rand::Rng;
 
 use crate::climate::tensor_ops::conv1d;
-use domain_ai::ai::optimization::Optimizer;
-use nalgebra::{DMatrix, DVector};
+use domain_ai::ai::optimization::{Optimizer, ParamType};
+use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
 
 /// A trait representing the Autoencoder model interface.
 pub trait AutoencoderModel {
     /// Encodes the input data into a latent representation.
     #[verified_engine::verified]
-    fn encode(&self, input: &DMatrix<f32>) -> DMatrix<f32>;
+    fn encode<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32>;
 
     /// Performs a forward pass through the autoencoder.
     #[verified_engine::verified]
-    fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>);
+    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>);
 
     /// Updates the weights of the model using the provided optimizer.
     fn update_weights<O: Optimizer<f32>>(
@@ -89,8 +89,8 @@ impl ConvLayer {
         });
         let grad_b = DVector::from_fn(self.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5);
 
-        optimizer.update_matrix_legacy(layer_idx, &mut self.kernel, &grad_k)?;
-        optimizer.update_vector_legacy(layer_idx, &mut self.bias, &grad_b)?;
+        optimizer.update_matrix((layer_idx, ParamType::Weight), &mut self.kernel, &grad_k)?;
+        optimizer.update_vector((layer_idx, ParamType::Bias), &mut self.bias, &grad_b)?;
         Ok(())
     }
 }
@@ -98,7 +98,7 @@ impl ConvLayer {
 /// The encoder component of the autoencoder.
 pub struct Encoder {
     /// The stack of convolutional layers.
-    pub layers: Vec<ConvLayer>,
+    pub layers: [ConvLayer; 3],
 }
 
 impl Encoder {
@@ -115,10 +115,10 @@ impl Encoder {
     /// A new `Encoder`.
     #[verified_engine::verified]
     pub fn new(in_channels: usize, latent_channels: usize) -> Self {
-        let layers = vec![
+        let layers = [
             ConvLayer::new(in_channels, 64),
             ConvLayer::new(64, 64),
-            ConvLayer::new(64, latent_channels), // No activation on the latent layer
+            ConvLayer::new(64, latent_channels),
         ];
         Self::new_from_layers(layers)
     }
@@ -133,7 +133,7 @@ impl Encoder {
     ///
     /// A new `Encoder`.
     #[verified_engine::verified]
-    pub fn new_from_layers(layers: Vec<ConvLayer>) -> Self {
+    pub fn new_from_layers(layers: [ConvLayer; 3]) -> Self {
         Self { layers }
     }
 
@@ -147,8 +147,8 @@ impl Encoder {
     ///
     /// The latent representation matrix.
     #[verified_engine::verified]
-    pub fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
-        let mut x = input.clone();
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
+        let mut x = input.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
             // No activation on the final layer
@@ -175,7 +175,7 @@ impl Encoder {
 /// The decoder component of the autoencoder.
 pub struct Decoder {
     /// The stack of convolutional layers.
-    pub layers: Vec<ConvLayer>,
+    pub layers: [ConvLayer; 3],
 }
 
 impl Decoder {
@@ -192,10 +192,10 @@ impl Decoder {
     /// A new `Decoder`.
     #[verified_engine::verified]
     pub fn new(latent_channels: usize, out_channels: usize) -> Self {
-        let layers = vec![
+        let layers = [
             ConvLayer::new(latent_channels, 64),
             ConvLayer::new(64, 64),
-            ConvLayer::new(64, out_channels), // No activation on the output layer
+            ConvLayer::new(64, out_channels),
         ];
         Self::new_from_layers(layers)
     }
@@ -210,7 +210,7 @@ impl Decoder {
     ///
     /// A new `Decoder`.
     #[verified_engine::verified]
-    pub fn new_from_layers(layers: Vec<ConvLayer>) -> Self {
+    pub fn new_from_layers(layers: [ConvLayer; 3]) -> Self {
         Self { layers }
     }
 
@@ -224,8 +224,8 @@ impl Decoder {
     ///
     /// The reconstructed data matrix.
     #[verified_engine::verified]
-    pub fn forward(&self, latent_representation: &DMatrix<f32>) -> DMatrix<f32> {
-        let mut x = latent_representation.clone();
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, latent_representation: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
+        let mut x = latent_representation.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
             x = conv1d(&x, &layer.kernel, &layer.bias);
             if i < self.layers.len() - 1 {
@@ -301,7 +301,7 @@ impl Autoencoder {
     ///
     /// A tuple containing `(latent_representation, reconstruction)`.
     #[verified_engine::verified]
-    pub fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>) {
+    pub fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)
@@ -310,12 +310,12 @@ impl Autoencoder {
 
 impl AutoencoderModel for Autoencoder {
     #[verified_engine::verified]
-    fn encode(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
+    fn encode<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
         self.encoder.forward(input)
     }
 
     #[verified_engine::verified]
-    fn forward(&self, input: &DMatrix<f32>) -> (DMatrix<f32>, DMatrix<f32>) {
+    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> (DMatrix<f32>, DMatrix<f32>) {
         let latent = self.encoder.forward(input);
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)

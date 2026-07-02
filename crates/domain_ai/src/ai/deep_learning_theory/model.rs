@@ -1,6 +1,6 @@
 use super::calculus::{linear_backward, relu, relu_prime};
 use super::linear_algebra::{DenseLayer, Vector};
-use crate::ai::optimization::Optimizer;
+use crate::ai::optimization::{Optimizer, ParamType};
 
 /// Defines a Trainable Model that can perform forward passes and handle backpropagation.
 pub trait Trainable {
@@ -102,12 +102,12 @@ impl Trainable for TwoLayerMLP {
         // --- Update ---
         // Use legacy update methods provided by the Optimizer facade
         // Layer 2
-        optimizer.update_matrix_legacy(2, &mut self.layer2.weights, &d_w2)?;
-        optimizer.update_vector_legacy(2, &mut self.layer2.bias, &d_b2)?;
+        optimizer.update_matrix((2, ParamType::Weight), &mut self.layer2.weights, &d_w2)?;
+        optimizer.update_vector((2, ParamType::Bias), &mut self.layer2.bias, &d_b2)?;
 
         // Layer 1
-        optimizer.update_matrix_legacy(1, &mut self.layer1.weights, &d_w1)?;
-        optimizer.update_vector_legacy(1, &mut self.layer1.bias, &d_b1)?;
+        optimizer.update_matrix((1, ParamType::Weight), &mut self.layer1.weights, &d_w1)?;
+        optimizer.update_vector((1, ParamType::Bias), &mut self.layer1.bias, &d_b1)?;
 
         Ok(())
     }

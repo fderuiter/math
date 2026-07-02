@@ -19,7 +19,7 @@ pub use domain_physics::physics;
 #[cfg(feature = "pure_math")]
 pub use pure_math::pure_math;
 
-pub use math_commons::diagnostics;
+pub use diagnostics;
 pub use math_commons::math_kernel;
 
 // math_explorer/src/error.rs could just export the individual errors, but it's simpler to keep it as it was if possible, or just let users import from specific crates.

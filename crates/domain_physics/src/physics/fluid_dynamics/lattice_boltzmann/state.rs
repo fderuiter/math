@@ -1,4 +1,4 @@
-use oxidize_core::grid::Grid2D;
+use nalgebra::DMatrix;
 use pure_math::pure_math::analysis::evolution::DoubleBufferedState;
 
 /// State container for Lattice Boltzmann Simulation.
@@ -9,18 +9,18 @@ use pure_math::pure_math::analysis::evolution::DoubleBufferedState;
 pub struct LatticeState<const Q: usize> {
     pub(crate) width: usize,
     pub(crate) height: usize,
-    /// Distribution functions (flattened: y * width + x). Each cell holds [f64; Q].
-    pub(crate) f: Grid2D<[f64; Q]>,
+    /// Distribution functions. Each cell holds [f64; Q].
+    pub(crate) f: DMatrix<[f64; Q]>,
     /// Buffer for streaming step.
-    pub(crate) f_new: Grid2D<[f64; Q]>,
+    pub(crate) f_new: DMatrix<[f64; Q]>,
     /// Macroscopic density.
-    pub(crate) rho: Grid2D<f64>,
+    pub(crate) rho: DMatrix<f64>,
     /// Macroscopic velocity X.
-    pub(crate) ux: Grid2D<f64>,
+    pub(crate) ux: DMatrix<f64>,
     /// Macroscopic velocity Y.
-    pub(crate) uy: Grid2D<f64>,
+    pub(crate) uy: DMatrix<f64>,
     /// Boolean grid for obstacles (true = solid).
-    pub(crate) obstacles: Grid2D<bool>,
+    pub(crate) obstacles: DMatrix<bool>,
 }
 
 impl<const Q: usize> DoubleBufferedState for LatticeState<Q> {
@@ -37,24 +37,17 @@ impl<const Q: usize> LatticeState<Q> {
     /// - f = 0.0 (Caller must initialize equilibrium)
     #[verified_engine::verified]
     pub fn new(width: usize, height: usize) -> Self {
+        let _ = width.checked_mul(height).expect("Grid dimensions too large");
         Self {
             width,
             height,
-            f: Grid2D::new(width, height, [0.0; Q]),
-            f_new: Grid2D::new(width, height, [0.0; Q]),
-            rho: Grid2D::new(width, height, 1.0),
-            ux: Grid2D::new(width, height, 0.0),
-            uy: Grid2D::new(width, height, 0.0),
-            obstacles: Grid2D::new(width, height, false),
+            f: DMatrix::from_element(height, width, [0.0; Q]),
+            f_new: DMatrix::from_element(height, width, [0.0; Q]),
+            rho: DMatrix::from_element(height, width, 1.0),
+            ux: DMatrix::from_element(height, width, 0.0),
+            uy: DMatrix::from_element(height, width, 0.0),
+            obstacles: DMatrix::from_element(height, width, false),
         }
-    }
-
-    /// Returns the linear index for coordinates (x, y).
-    /// Does not check bounds (use with caution or check bounds externally).
-    #[inline]
-    #[verified_engine::verified]
-    pub fn index(&self, x: usize, y: usize) -> usize {
-        self.f.index_1d(x, y)
     }
 
     /// Checks if the coordinates are within the grid.
@@ -81,24 +74,24 @@ impl<const Q: usize> LatticeState<Q> {
     /// Returns a slice of the macroscopic density field.
     #[verified_engine::verified]
     pub fn density(&self) -> &[f64] {
-        &self.rho.data
+        self.rho.as_slice()
     }
 
     /// Returns a slice of the macroscopic X-velocity field.
     #[verified_engine::verified]
     pub fn velocity_x(&self) -> &[f64] {
-        &self.ux.data
+        self.ux.as_slice()
     }
 
     /// Returns a slice of the macroscopic Y-velocity field.
     #[verified_engine::verified]
     pub fn velocity_y(&self) -> &[f64] {
-        &self.uy.data
+        self.uy.as_slice()
     }
 
     /// Returns a slice of the obstacle mask (true = obstacle).
     #[verified_engine::verified]
     pub fn obstacles(&self) -> &[bool] {
-        &self.obstacles.data
+        self.obstacles.as_slice()
     }
 }

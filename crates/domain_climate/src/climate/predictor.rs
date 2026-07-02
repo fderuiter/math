@@ -2,15 +2,15 @@
 use rand::Rng;
 
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
-use domain_ai::ai::optimization::Optimizer;
-use nalgebra::{DMatrix, DVector};
+use domain_ai::ai::optimization::{Optimizer, ParamType};
+use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
 
 /// A trait representing the predictor model interface.
 /// This allows for different predictor architectures and decouples the training loop.
 pub trait PredictorModel {
     /// Performs a forward pass through the predictor.
     #[verified_engine::verified]
-    fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32>;
+    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32>;
 
     /// Updates the weights of the predictor using the provided optimizer.
     /// Note: This replaces the previous simplified learning rate update.
@@ -26,7 +26,7 @@ pub trait PredictorModel {
 /// autoencoder's encoder and maps it to the target output variables.
 pub struct Predictor {
     /// The stack of layers (using `ConvLayer` for simplicity as dense layers).
-    pub layers: Vec<ConvLayer>,
+    pub layers: [ConvLayer; 5],
     // Store dimensions for clarity
     #[allow(dead_code)]
     input_size: usize,
@@ -49,7 +49,7 @@ impl Predictor {
     /// A new `Predictor` instance.
     #[verified_engine::verified]
     pub fn new(input_size: usize, output_size: usize) -> Self {
-        let layers = vec![
+        let layers = [
             ConvLayer::new(input_size, 128),
             ConvLayer::new(128, 128),
             ConvLayer::new(128, 128),
@@ -63,7 +63,7 @@ impl Predictor {
     ///
     /// # Arguments
     ///
-    /// * `layers` - A vector of convolutional layers.
+    /// * `layers` - A fixed-size array of convolutional layers.
     /// * `input_size` - The dimension of the input vector.
     /// * `output_size` - The dimension of the output vector.
     ///
@@ -71,7 +71,7 @@ impl Predictor {
     ///
     /// A new `Predictor` instance.
     #[verified_engine::verified]
-    pub fn new_from_layers(layers: Vec<ConvLayer>, input_size: usize, output_size: usize) -> Self {
+    pub fn new_from_layers(layers: [ConvLayer; 5], input_size: usize, output_size: usize) -> Self {
         Self {
             layers,
             input_size,
@@ -82,8 +82,8 @@ impl Predictor {
 
 impl PredictorModel for Predictor {
     #[verified_engine::verified]
-    fn forward(&self, input: &DMatrix<f32>) -> DMatrix<f32> {
-        let mut x = input.clone();
+    fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
+        let mut x = input.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
             // A dense layer is equivalent to a 1D convolution with kernel size 1
             // if we treat the input as having 1 level.
@@ -110,8 +110,8 @@ impl PredictorModel for Predictor {
             let grad_b = DVector::from_fn(layer.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5);
 
             // Use the optimizer strategy to update weights
-            optimizer.update_matrix_legacy(i, &mut layer.kernel, &grad_k)?;
-            optimizer.update_vector_legacy(i, &mut layer.bias, &grad_b)?;
+            optimizer.update_matrix((i, ParamType::Weight), &mut layer.kernel, &grad_k)?;
+            optimizer.update_vector((i, ParamType::Bias), &mut layer.bias, &grad_b)?;
         }
         Ok(())
     }
