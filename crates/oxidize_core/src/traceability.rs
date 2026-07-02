@@ -138,36 +138,7 @@ impl<'a> TraceabilityEngine<'a> {
         let mut code_files: Vec<String> = active_files.into_iter().collect();
         code_files.sort();
 
-        for file in code_files {
-            report.scanned_files += 1;
-            let is_module =
-                file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
-
-            if let Ok(content) = self.vfs.read_to_string(&file) {
-                // Parse with syn
-                if let Ok(ast) = syn::parse_file(&content) {
-                    let mut visitor = crate::ast_visitor::AstVisitor::new();
-                    syn::visit::Visit::visit_file(&mut visitor, &ast);
-                    
-                    report.total_funcs += visitor.total_funcs;
-                    report.total_asserts += visitor.total_asserts;
-                    report.verified_funcs += visitor.verified_funcs;
-                    report.verified_asserts += visitor.verified_asserts;
-
-                    if is_module {
-                        for module in &visitor.verified_modules {
-                            if !registered_modules.contains(module) {
-                                report.unlinked_code.push(file.clone());
-                            }
-                        }
-                    }
-
-                    if visitor.total_funcs > 0 && visitor.verified_funcs == 0 && visitor.verified_modules.is_empty() && !visitor.opted_out {
-                        report.unverified_modules.push(file.clone());
-                    }
-                }
-            }
-        }
+        self.process_code_files(code_files, &registered_modules, &mut report);
 
         // 4. Find orphans
         for (name, linked_code) in &report.paper_coverage {
@@ -180,6 +151,43 @@ impl<'a> TraceabilityEngine<'a> {
         report.invalid_links.sort();
 
         Ok(report)
+    }
+
+    fn process_code_files(
+        &self,
+        code_files: Vec<String>,
+        registered_modules: &HashSet<String>,
+        report: &mut TraceabilityReport,
+    ) {
+        for file in code_files {
+            report.scanned_files += 1;
+            let is_module =
+                file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
+
+            if let Ok(content) = self.vfs.read_to_string(&file)
+                && let Ok(ast) = syn::parse_file(&content)
+            {
+                let mut visitor = crate::ast_visitor::AstVisitor::new();
+                syn::visit::Visit::visit_file(&mut visitor, &ast);
+                
+                report.total_funcs += visitor.total_funcs;
+                report.total_asserts += visitor.total_asserts;
+                report.verified_funcs += visitor.verified_funcs;
+                report.verified_asserts += visitor.verified_asserts;
+
+                if is_module {
+                    for module in &visitor.verified_modules {
+                        if !registered_modules.contains(module) {
+                            report.unlinked_code.push(file.clone());
+                        }
+                    }
+                }
+
+                if visitor.total_funcs > 0 && visitor.verified_funcs == 0 && visitor.verified_modules.is_empty() && !visitor.opted_out {
+                    report.unverified_modules.push(file.clone());
+                }
+            }
+        }
     }
 
     fn parse_module_tree(&self, file_path: &str, active_files: &mut HashSet<String>) {
@@ -203,8 +211,8 @@ impl<'a> TraceabilityEngine<'a> {
                 let dir_path = dir_parts.join("/");
                 
                 for submodule in visitor.active_submodules {
-                    let path1 = crate::path_utils::join_and_normalize(&dir_path, &format!("{}.rs", submodule));
-                    let path2 = crate::path_utils::join_and_normalize(&dir_path, &format!("{}/mod.rs", submodule));
+                    let path1 = crate::path_utils::join_and_normalize(&dir_path, format!("{}.rs", submodule));
+                    let path2 = crate::path_utils::join_and_normalize(&dir_path, format!("{}/mod.rs", submodule));
                     
                     if self.vfs.read_to_string(&path1).is_ok() {
                         self.parse_module_tree(&path1, active_files);

@@ -11,6 +11,12 @@ pub struct AstVisitor {
     pub opted_out: bool,
 }
 
+impl Default for AstVisitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AstVisitor {
     pub fn new() -> Self {
         Self {
