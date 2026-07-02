@@ -454,11 +454,12 @@ impl SimulationModel for LatticeBoltzmannD2Q9<BgkCollision> {
     }
 }
 
-
 use pure_math::pure_math::analysis::evolution::{EvolutionEngine, EvolutionError};
 use rand::RngCore;
 
-impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> EvolutionEngine<LatticeState<Q>, ()> for LatticeBoltzmann<Q, L, C> {
+impl<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q, L>> EvolutionEngine<LatticeState<Q>, ()>
+    for LatticeBoltzmann<Q, L, C>
+{
     fn step<R: RngCore + ?Sized>(
         &mut self,
         state: &mut LatticeState<Q>,

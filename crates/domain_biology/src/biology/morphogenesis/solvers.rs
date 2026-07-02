@@ -240,7 +240,6 @@ impl<const N: usize, S: Solver<TuringState<N>>> TuringSolverStrategy<N>
     }
 }
 
-
 use pure_math::pure_math::analysis::evolution::{EvolutionEngine, EvolutionError};
 use rand::RngCore;
 
@@ -250,7 +249,9 @@ pub struct FusedEulerEvolution<'a, const N: usize, K, D> {
     pub dynamics: &'a TuringDynamics<'a, N, K, D>,
 }
 
-impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>> EvolutionEngine<TuringState<N>, TuringState<N>> for FusedEulerEvolution<'a, N, K, D> {
+impl<'a, const N: usize, K: ReactionKinetics<N>, D: SpatialDiffusion<N>>
+    EvolutionEngine<TuringState<N>, TuringState<N>> for FusedEulerEvolution<'a, N, K, D>
+{
     fn step<R: RngCore + ?Sized>(
         &mut self,
         state: &mut TuringState<N>,

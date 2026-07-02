@@ -2,11 +2,11 @@
 //!
 //! Provides structures and traits for mathematical optimization problems.
 
+use super::evolution::{EvolutionEngine, EvolutionError};
 use nalgebra::{DMatrix, DVector, RealField};
+use rand::RngCore;
 use std::collections::HashMap;
 use thiserror::Error;
-use super::evolution::{EvolutionEngine, EvolutionError};
-use rand::RngCore;
 
 /// Errors that can occur during optimization.
 #[derive(Debug, Clone, PartialEq, Error)]
@@ -107,7 +107,8 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
     ) -> Result<(), OptimizationError> {
         let mut aux = grad.clone();
         let mut rng = rand::rngs::mock::StepRng::new(0, 1);
-        self.step(param, &mut aux, &mut rng, 0.01).map_err(Into::into)
+        self.step(param, &mut aux, &mut rng, 0.01)
+            .map_err(Into::into)
     }
 
     #[verified_engine::verified]
@@ -119,7 +120,8 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
     ) -> Result<(), OptimizationError> {
         let mut aux = grad.clone();
         let mut rng = rand::rngs::mock::StepRng::new(0, 1);
-        self.step(param, &mut aux, &mut rng, 0.01).map_err(Into::into)
+        self.step(param, &mut aux, &mut rng, 0.01)
+            .map_err(Into::into)
     }
 }
 
@@ -165,7 +167,9 @@ where
     }
 }
 
-impl<T: RealField + Copy, Key: Eq + std::hash::Hash> EvolutionEngine<DMatrix<T>, (DMatrix<T>, &mut AdamState<T>)> for Adam<T, Key> {
+impl<T: RealField + Copy, Key: Eq + std::hash::Hash>
+    EvolutionEngine<DMatrix<T>, (DMatrix<T>, &mut AdamState<T>)> for Adam<T, Key>
+{
     fn step<R: RngCore + ?Sized>(
         &mut self,
         state: &mut DMatrix<T>,
@@ -176,7 +180,7 @@ impl<T: RealField + Copy, Key: Eq + std::hash::Hash> EvolutionEngine<DMatrix<T>,
         let grad = &aux.0;
         let adam_state = &mut aux.1;
         let lr = T::from_f64(dt).unwrap_or(self.learning_rate);
-        
+
         let beta1 = self.beta1;
         let beta2 = self.beta2;
         let epsilon = self.epsilon;
@@ -198,7 +202,9 @@ impl<T: RealField + Copy, Key: Eq + std::hash::Hash> EvolutionEngine<DMatrix<T>,
     }
 }
 
-impl<T: RealField + Copy, Key: Eq + std::hash::Hash> EvolutionEngine<DVector<T>, (DVector<T>, &mut AdamState<T>)> for Adam<T, Key> {
+impl<T: RealField + Copy, Key: Eq + std::hash::Hash>
+    EvolutionEngine<DVector<T>, (DVector<T>, &mut AdamState<T>)> for Adam<T, Key>
+{
     fn step<R: RngCore + ?Sized>(
         &mut self,
         state: &mut DVector<T>,
@@ -209,12 +215,12 @@ impl<T: RealField + Copy, Key: Eq + std::hash::Hash> EvolutionEngine<DVector<T>,
         let grad = &aux.0;
         let adam_state = &mut aux.1;
         let lr = T::from_f64(dt).unwrap_or(self.learning_rate);
-        
+
         let beta1 = self.beta1;
         let beta2 = self.beta2;
         let epsilon = self.epsilon;
         let one = T::one();
-        
+
         let rows = state.len();
         let cols = 1;
 
@@ -251,7 +257,7 @@ where
         // extract state first to avoid borrow conflicts
         let shape = (param.nrows(), param.ncols());
         let mut rng = rand::rngs::mock::StepRng::new(0, 1);
-        
+
         // This is safe because we use the internal state, keeping the interface unchanged
         // while fulfilling the EvolutionEngine pattern.
         // Get the state first:
@@ -260,10 +266,10 @@ where
             v: DMatrix::zeros(shape.0, shape.1),
             t: 0,
         });
-        
+
         let mut aux = (grad.clone(), &mut state_val);
         EvolutionEngine::step(self, param, &mut aux, &mut rng, 0.01)?;
-        
+
         self.states.insert(key, state_val);
         Ok(())
     }
@@ -277,16 +283,16 @@ where
     ) -> Result<(), OptimizationError> {
         let shape = (param.len(), 1);
         let mut rng = rand::rngs::mock::StepRng::new(0, 1);
-        
+
         let mut state_val = self.states.remove(&key).unwrap_or_else(|| AdamState {
             m: DMatrix::zeros(shape.0, shape.1),
             v: DMatrix::zeros(shape.0, shape.1),
             t: 0,
         });
-        
+
         let mut aux = (grad.clone(), &mut state_val);
         EvolutionEngine::step(self, param, &mut aux, &mut rng, 0.01)?;
-        
+
         self.states.insert(key, state_val);
         Ok(())
     }
