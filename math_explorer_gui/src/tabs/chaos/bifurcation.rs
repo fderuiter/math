@@ -60,9 +60,8 @@ impl TheoryDescribable for BifurcationDiagram {
 }
 
 impl InteractiveTool for BifurcationDiagram {
-    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
-        Some(self)
-    }
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    
     fn name(&self) -> &'static str {
         "Bifurcation Diagram"
     }

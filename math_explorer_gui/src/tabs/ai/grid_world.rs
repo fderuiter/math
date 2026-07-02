@@ -78,6 +78,7 @@ impl GridWorldTool {
 }
 
 impl InteractiveTool for GridWorldTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Grid World (RL)"
     }
@@ -183,5 +184,24 @@ inventory::submit! {
         domain: "ai",
         tags: &[],
         build: || Box::new(GridWorldTool::default()),
+    }
+}
+
+impl math_commons::theory::TheoryDescribable for GridWorldTool {
+    fn theory_description(&self) -> String {
+        "Reinforcement Learning involves an agent that interacts with its environment to learn optimal actions, aiming to maximize a cumulative reward based on the Bellman equation.".into()
+    }
+    fn phonetic_description(&self) -> String {
+        "Reinforcement Learning involves an agent that interacts with its environment to learn optimal actions, aiming to maximize a cumulative reward based on the Bellman equation.".into()
+    }
+    fn theory_citation(&self) -> String {
+        "Sutton, R. S., & Barto, A. G. (2018). Reinforcement Learning: An Introduction. MIT press.".into()
+    }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        let mut map = std::collections::HashMap::new();
+        map.insert("learning_rate".into(), "The step size used to update the Q-values, controlling how much new information overrides old information.".into());
+        map.insert("discount_factor".into(), "Determines the importance of future rewards. A factor of 0 makes the agent opportunistic, while 1 makes it strive for long-term high reward.".into());
+        map.insert("exploration_rate".into(), "The probability that the agent will choose a random action instead of the best known action, facilitating exploration of the state space.".into());
+        map
     }
 }

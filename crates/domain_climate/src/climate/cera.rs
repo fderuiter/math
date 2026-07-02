@@ -158,8 +158,7 @@ mod tests {
     use super::*;
     use crate::climate::training::CeraTrainer;
     use rand::Rng;
-    use nalgebra::DMatrix; // Import Trainer
-    use rand::Rng;
+    use nalgebra::DMatrix;
 
     // Helper constant for tests
     const TEST_NUM_LEVELS: usize = 30;

@@ -203,13 +203,12 @@ impl Default for LatticeBoltzmannTool {
 use crate::framework::InteractiveTool;
 
 impl InteractiveTool for LatticeBoltzmannTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Lattice Boltzmann (Demo)"
     }
 
-    fn theory(&self) -> Option<&dyn TheoryDescribable> {
-        Some(self)
-    }
+    
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context) {

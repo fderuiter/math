@@ -74,6 +74,7 @@ impl Default for ComplexMappingTool {
 }
 
 impl InteractiveTool for ComplexMappingTool {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Complex Mapping"
     }
@@ -263,4 +264,11 @@ inventory::submit! {
         tags: &[],
         build: || Box::new(ComplexMappingTool::default()),
     }
+}
+
+impl math_commons::theory::TheoryDescribable for ComplexMappingTool {
+    fn theory_description(&self) -> String { "Theoretical context not available.".into() }
+    fn phonetic_description(&self) -> String { "Theoretical context not available.".into() }
+    fn theory_citation(&self) -> String { "Uncited".into() }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { std::collections::HashMap::new() }
 }
