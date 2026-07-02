@@ -81,10 +81,10 @@ impl GaussianCopula {
     #[verified_engine::verified]
     pub fn cdf(&self, u: &[Probability]) -> Result<Probability, CopulaError> {
         if u.len() != self.correlation.dimension() {
-            return Err(CopulaError::DimensionMismatch {
-                expected: self.correlation.dimension(),
-                actual: u.len(),
-            });
+            return Err(crate::error::CopulaError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(self.correlation.dimension()),
+                actual: math_commons::math_kernel::types::Dimension(u.len()),
+            }));
         }
 
         // Special case for bivariate (more efficient)
@@ -107,9 +107,9 @@ impl GaussianCopula {
         let rho = self
             .correlation
             .get_correlation(0, 1)
-            .ok_or(CopulaError::NumericalError {
+            .ok_or(crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
                 reason: "Failed to get correlation".to_string(),
-            })?;
+            }))?;
 
         // Compute bivariate normal CDF using the formula:
         // Φ_ρ(z₁, z₂) = Φ(z₁)Φ(z₂) + ∫∫ φ(x,y;ρ) dx dy
@@ -125,9 +125,9 @@ impl GaussianCopula {
     fn bivariate_normal_cdf(&self, z1: f64, z2: f64, rho: f64) -> Result<f64, CopulaError> {
         // Handle edge cases
         if !z1.is_finite() || !z2.is_finite() {
-            return Err(CopulaError::NumericalError {
+            return Err(crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
                 reason: "Non-finite z-scores".to_string(),
-            });
+            }));
         }
 
         // If correlation is near ±1, use limiting formula
@@ -202,15 +202,15 @@ impl GaussianCopula {
         let cov = self.correlation.matrix().clone();
 
         let _mvn = MultivariateNormal::new(mean.as_slice().to_vec(), cov.as_slice().to_vec())
-            .map_err(|e| CopulaError::NumericalError {
+            .map_err(|e| crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
                 reason: format!("Failed to create MVN: {}", e),
-            })?;
+            }))?;
 
         // Compute CDF by Monte Carlo or numerical integration
         // For now, return an error as full MVN CDF is complex
-        Err(CopulaError::NumericalError {
+        Err(crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
             reason: "Multivariate CDF not yet implemented; use bivariate".to_string(),
-        })
+        }))
     }
 
     /// Returns the correlation matrix.
@@ -255,10 +255,10 @@ pub fn sgp_joint_probability(
     correlation_matrix: &CorrelationMatrix,
 ) -> Result<Probability, CopulaError> {
     if marginals.len() != correlation_matrix.dimension() {
-        return Err(CopulaError::DimensionMismatch {
-            expected: correlation_matrix.dimension(),
-            actual: marginals.len(),
-        });
+        return Err(crate::error::CopulaError::Math(math_commons::error::MathError::DimensionMismatch {
+            expected: math_commons::math_kernel::types::Dimension(correlation_matrix.dimension()),
+                actual: math_commons::math_kernel::types::Dimension(marginals.len()),
+        }));
     }
 
     let copula = GaussianCopula::new(correlation_matrix.clone());

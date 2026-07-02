@@ -60,9 +60,9 @@ impl NormalTransform {
     /// ```
     #[verified_engine::verified]
     pub fn new(mean: f64, std_dev: f64) -> Result<Self, CopulaError> {
-        let normal = Normal::new(mean, std_dev).map_err(|e| CopulaError::NumericalError {
+        let normal = Normal::new(mean, std_dev).map_err(|e| crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
             reason: format!("Failed to create normal distribution: {}", e),
-        })?;
+        }))?;
         Ok(Self { normal })
     }
 
@@ -110,9 +110,9 @@ impl ProbabilityTransform for NormalTransform {
 /// ```
 #[verified_engine::verified]
 pub fn inverse_standard_normal(u: Probability) -> Result<f64, CopulaError> {
-    let normal = Normal::new(0.0, 1.0).map_err(|e| CopulaError::NumericalError {
+    let normal = Normal::new(0.0, 1.0).map_err(|e| crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
         reason: format!("Failed to create standard normal: {}", e),
-    })?;
+    }))?;
     Ok(normal.inverse_cdf(u.value()))
 }
 
@@ -139,9 +139,9 @@ pub fn inverse_standard_normal(u: Probability) -> Result<f64, CopulaError> {
 /// ```
 #[verified_engine::verified]
 pub fn standard_normal_cdf(z: f64) -> Result<Probability, CopulaError> {
-    let normal = Normal::new(0.0, 1.0).map_err(|e| CopulaError::NumericalError {
+    let normal = Normal::new(0.0, 1.0).map_err(|e| crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
         reason: format!("Failed to create standard normal: {}", e),
-    })?;
+    }))?;
     Probability::new(normal.cdf(z))
 }
 

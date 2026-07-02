@@ -24,6 +24,8 @@ pub enum TensorError {
     /// Indicates an attempt to access an element beyond the allocated bounds.
     #[error("Index out of bounds")]
     IndexOutOfBounds,
+    #[error(transparent)]
+    Math(#[from] math_commons::error::MathError),
 }
 
 /// A contravariant vector ($A^\mu$).

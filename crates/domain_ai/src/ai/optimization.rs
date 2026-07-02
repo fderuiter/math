@@ -33,7 +33,7 @@ pub fn mean_squared_error<T: RealField + Copy>(
     y_true: &DVector<T>,
 ) -> Result<T, AIError> {
     let diff = y_pred - y_true;
-    let n = T::from_usize(y_pred.len()).ok_or_else(|| AIError::ConversionError {
+    let n = T::from_usize(y_pred.len()).ok_or_else(|| math_commons::error::MathError::ConversionError {
         reason: "Failed to convert usize to T".to_string(),
     })?;
     Ok(diff.dot(&diff) / n)
@@ -46,10 +46,10 @@ pub fn mse_prime<T: RealField + Copy>(
     y_pred: &DVector<T>,
     y_true: &DVector<T>,
 ) -> Result<DVector<T>, AIError> {
-    let n = T::from_usize(y_pred.len()).ok_or_else(|| AIError::ConversionError {
+    let n = T::from_usize(y_pred.len()).ok_or_else(|| math_commons::error::MathError::ConversionError {
         reason: "Failed to convert usize to T".to_string(),
     })?;
-    let two = T::from_f64(2.0).ok_or_else(|| AIError::ConversionError {
+    let two = T::from_f64(2.0).ok_or_else(|| math_commons::error::MathError::ConversionError {
         reason: "Failed to convert 2.0 to T".to_string(),
     })?;
     Ok((y_pred - y_true) * (two / n))
@@ -67,7 +67,7 @@ pub fn cross_entropy_loss<T: RealField + Copy>(
     y_true: &DVector<T>,
 ) -> Result<T, AIError> {
     // Add a small epsilon to avoid log(0)
-    let epsilon = T::from_f64(1e-15).ok_or_else(|| AIError::ConversionError {
+    let epsilon = T::from_f64(1e-15).ok_or_else(|| math_commons::error::MathError::ConversionError {
         reason: "Failed to convert 1e-15 to T".to_string(),
     })?;
     let y_pred_safe = y_pred.map(|v| if v > epsilon { v } else { epsilon });

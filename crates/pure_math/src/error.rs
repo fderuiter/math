@@ -2,6 +2,8 @@ use math_commons::diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use thiserror::Error;
 
+pub type Result<T> = math_commons::error::MathResult<T>;
+
 #[derive(Debug, Error)]
 pub enum NumberTheoryError {
     #[error("Failed to parse integer from string: {0}")]
@@ -47,13 +49,7 @@ pub enum MarkovError {
         value: f64,
     },
 
-    /// Matrix dimension mismatch.
-    DimensionMismatch {
-        /// Expected dimension.
-        expected: usize,
-        /// Actual dimension.
-        actual: usize,
-    },
+    
 
     /// Matrix is not stochastic (rows don't sum to 1).
     NotStochastic {
@@ -67,11 +63,7 @@ pub enum MarkovError {
         reason: String,
     },
 
-    /// Numerical computation error.
-    NumericalError {
-        /// Description of the error.
-        reason: String,
-    },
+    
 
     /// Invalid state specification.
     InvalidState {
@@ -98,6 +90,8 @@ pub enum MarkovError {
         /// Context about which matrix.
         context: String,
     },
+
+    Math(math_commons::error::MathError),
 }
 
 #[derive(Debug, Clone, PartialEq, Error)]
@@ -157,14 +151,14 @@ pub enum CopulaError {
     InvalidProbability { value: f64 },
     /// Invalid correlation (must be in [-1, 1]).
     InvalidCorrelation { value: f64 },
-    /// Dimension mismatch in matrices or vectors.
-    DimensionMismatch { expected: usize, actual: usize },
+    
     /// Matrix is not positive definite.
     NotPositiveDefinite,
     /// Matrix is not symmetric.
     NotSymmetric,
-    /// Numerical computation failed.
-    NumericalError { reason: String },
+    
+
+    Math(math_commons::error::MathError),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -343,3 +337,16 @@ impl std::fmt::Display for Glicko2Error {
 }
 
 impl std::error::Error for Glicko2Error {}
+
+
+impl From<math_commons::error::MathError> for MarkovError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        MarkovError::Math(err)
+    }
+}
+
+impl From<math_commons::error::MathError> for CopulaError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        CopulaError::Math(err)
+    }
+}

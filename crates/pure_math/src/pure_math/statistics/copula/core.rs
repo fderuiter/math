@@ -101,10 +101,10 @@ impl CorrelationMatrix {
     pub fn new(matrix: DMatrix<f64>) -> Result<Self, CopulaError> {
         // Check square
         if matrix.nrows() != matrix.ncols() {
-            return Err(CopulaError::DimensionMismatch {
-                expected: matrix.nrows(),
-                actual: matrix.ncols(),
-            });
+            return Err(crate::error::CopulaError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(matrix.nrows()),
+                actual: math_commons::math_kernel::types::Dimension(matrix.ncols()),
+            }));
         }
 
         // Check symmetric
@@ -119,9 +119,9 @@ impl CorrelationMatrix {
         // Check diagonal is 1
         for i in 0..matrix.nrows() {
             if (matrix[(i, i)] - 1.0).abs() > 1e-10 {
-                return Err(CopulaError::NumericalError {
+                return Err(crate::error::CopulaError::Math(math_commons::error::MathError::NumericalError {
                     reason: format!("Diagonal element {} is not 1.0", i),
-                });
+                }));
             }
         }
 
