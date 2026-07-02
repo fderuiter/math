@@ -27,7 +27,13 @@ impl fmt::Display for Color {
     }
 }
 
-fn generate_torus_sdf(width: usize, height: usize, depth: usize, major_radius: f32, minor_radius: f32) -> VoxelGrid {
+fn generate_torus_sdf(
+    width: usize,
+    height: usize,
+    depth: usize,
+    major_radius: f32,
+    minor_radius: f32,
+) -> VoxelGrid {
     let min_bound = -4.0;
     let max_bound = 4.0;
     let range = max_bound - min_bound;

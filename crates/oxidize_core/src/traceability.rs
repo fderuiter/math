@@ -169,7 +169,7 @@ impl<'a> TraceabilityEngine<'a> {
             {
                 let mut visitor = crate::ast_visitor::AstVisitor::new();
                 syn::visit::Visit::visit_file(&mut visitor, &ast);
-                
+
                 report.total_funcs += visitor.total_funcs;
                 report.total_asserts += visitor.total_asserts;
                 report.verified_funcs += visitor.verified_funcs;
@@ -183,7 +183,11 @@ impl<'a> TraceabilityEngine<'a> {
                     }
                 }
 
-                if visitor.total_funcs > 0 && visitor.verified_funcs == 0 && visitor.verified_modules.is_empty() && !visitor.opted_out {
+                if visitor.total_funcs > 0
+                    && visitor.verified_funcs == 0
+                    && visitor.verified_modules.is_empty()
+                    && !visitor.opted_out
+                {
                     report.unverified_modules.push(file.clone());
                 }
             }
@@ -199,21 +203,31 @@ impl<'a> TraceabilityEngine<'a> {
             if let Ok(ast) = syn::parse_file(&content) {
                 let mut visitor = crate::ast_visitor::AstVisitor::new();
                 syn::visit::Visit::visit_file(&mut visitor, &ast);
-                
+
                 let mut dir_parts: Vec<&str> = file_path.split('/').collect();
-                let is_mod_rs = file_path.ends_with("mod.rs") || file_path.ends_with("lib.rs") || file_path.ends_with("main.rs");
+                let is_mod_rs = file_path.ends_with("mod.rs")
+                    || file_path.ends_with("lib.rs")
+                    || file_path.ends_with("main.rs");
                 if is_mod_rs {
                     dir_parts.pop();
-                } else if let Some(stem) = dir_parts.pop().map(|s| s.strip_suffix(".rs").unwrap_or(s)) {
+                } else if let Some(stem) =
+                    dir_parts.pop().map(|s| s.strip_suffix(".rs").unwrap_or(s))
+                {
                     dir_parts.push(stem);
                 }
-                
+
                 let dir_path = dir_parts.join("/");
-                
+
                 for submodule in visitor.active_submodules {
-                    let path1 = crate::path_utils::join_and_normalize(&dir_path, format!("{}.rs", submodule));
-                    let path2 = crate::path_utils::join_and_normalize(&dir_path, format!("{}/mod.rs", submodule));
-                    
+                    let path1 = crate::path_utils::join_and_normalize(
+                        &dir_path,
+                        format!("{}.rs", submodule),
+                    );
+                    let path2 = crate::path_utils::join_and_normalize(
+                        &dir_path,
+                        format!("{}/mod.rs", submodule),
+                    );
+
                     if self.vfs.read_to_string(&path1).is_ok() {
                         self.parse_module_tree(&path1, active_files);
                     } else if self.vfs.read_to_string(&path2).is_ok() {
