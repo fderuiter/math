@@ -153,7 +153,7 @@ impl<A: AutoencoderModel, P: PredictorModel> Cera<A, P> {
 mod tests {
     use super::*;
     use crate::climate::training::CeraTrainer;
-    use nalgebra::{DMatrix, Matrix, Dyn, Storage}; // Import Trainer
+    use nalgebra::DMatrix; // Import Trainer
     use rand::Rng;
 
     // Helper constant for tests

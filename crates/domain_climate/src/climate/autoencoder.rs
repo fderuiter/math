@@ -2,7 +2,7 @@
 use rand::Rng;
 
 use crate::climate::tensor_ops::conv1d;
-use domain_ai::ai::optimization::Optimizer;
+use domain_ai::ai::optimization::{Optimizer, ParamType};
 use nalgebra::{DMatrix, DVector, Matrix, Dyn, Storage};
 
 /// A trait representing the Autoencoder model interface.
@@ -89,8 +89,8 @@ impl ConvLayer {
         });
         let grad_b = DVector::from_fn(self.bias.len(), |_, _| oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5);
 
-        optimizer.update_matrix_legacy(layer_idx, &mut self.kernel, &grad_k)?;
-        optimizer.update_vector_legacy(layer_idx, &mut self.bias, &grad_b)?;
+        optimizer.update_matrix((layer_idx, ParamType::Weight), &mut self.kernel, &grad_k)?;
+        optimizer.update_vector((layer_idx, ParamType::Bias), &mut self.bias, &grad_b)?;
         Ok(())
     }
 }
