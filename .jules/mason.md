@@ -41,3 +41,9 @@
 - **Issue**: The system relied on manual string manipulation and hardcoded path separators (`.replace("\\", "/")`) in build scripts, causing inconsistent VFS generation and traceability mapping failures on Windows environments.
 - **Resolution**: Extracted path normalization logic into a shared utility (`path_utils.rs` in `oxidize_core`). Refactored `traceability.rs`, `oxidize_core/build.rs`, and `markdown_tests/build.rs` to use this canonical utility for all file path resolution.
 - **Impact**: Guaranteed consistent forward-slash path keys for WASM VFS compatibility and traceability mappings regardless of the host OS, eliminating cyclical build script failures on Windows.
+
+## Global Dynamic Tool Registry (PR 1031)
+
+- **Issue**: Domains like AI and Chaos were instantiating all tools at startup, causing memory overhead, tight coupling, and startup lag.
+- **Resolution**: Implemented a centralized, metadata-driven registry using the `inventory` crate for lazy loading tools on demand.
+- **Impact**: Reduced initial memory footprint, improved scalability by decentralizing tool registration, and decreased application startup time.
