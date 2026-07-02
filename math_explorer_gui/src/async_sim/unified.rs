@@ -8,7 +8,7 @@ use math_commons::theory::ParameterConstraint;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-pub trait UnifiedModel: Send + 'static {
+pub trait UnifiedModel: Send + 'static + math_commons::theory::TheoryDescribable {
     /// Initialize the model given the starting parameters.
     fn new(params: &HashMap<String, f64>) -> Self
     where
@@ -33,13 +33,6 @@ pub trait UnifiedModel: Send + 'static {
     where
         Self: Sized;
 
-    /// Return the theoretical context.
-    fn create_theory() -> Option<Box<dyn math_commons::theory::TheoryDescribable>>
-    where
-        Self: Sized,
-    {
-        None
-    }
 }
 
 pub struct UnifiedSimRunner<M: UnifiedModel> {
@@ -99,7 +92,10 @@ pub struct UnifiedSimTool<M: UnifiedModel> {
     steps_per_frame: usize,
     last_snapshot: Option<CachedSnapshot>,
     texture: Option<egui::TextureHandle>,
-    theory_instance: Option<Box<dyn math_commons::theory::TheoryDescribable>>,
+    cached_theory_desc: String,
+    cached_phonetic: String,
+    cached_citation: String,
+    cached_descs: HashMap<String, String>,
     _marker: std::marker::PhantomData<M>,
 }
 
@@ -120,9 +116,11 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             initial_params.insert(name.clone(), (constraint.min + constraint.max) / 2.0);
         }
 
-        let params = Arc::new(RwLock::new(initial_params));
+        let params = Arc::new(RwLock::new(initial_params.clone()));
         let runner = UnifiedSimRunner::<M>::new(Arc::clone(&params));
         let controller = SimulationController::new(runner);
+
+        let temp_model = M::new(&initial_params);
 
         Self {
             controller,
@@ -131,7 +129,10 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             steps_per_frame: 5,
             last_snapshot: None,
             texture: None,
-            theory_instance: M::create_theory(),
+            cached_theory_desc: temp_model.theory_description(),
+            cached_phonetic: temp_model.phonetic_description(),
+            cached_citation: temp_model.theory_citation(),
+            cached_descs: temp_model.available_descriptions(),
             _marker: std::marker::PhantomData,
         }
     }
@@ -184,15 +185,25 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
             ui.label("Model Parameters");
 
             let mut params_lock = self.params.write().unwrap();
+            
+            // Get available descriptions from a temporary model instance or we can just instantiate it?
+            // Wait, we don't have access to the model instance directly here, it's inside the controller thread!
+            // But we can get it from M::parameters(), which means it's static?
+            // But TheoryDescribable methods take `&self`.
+            // Let's just create a dummy instance to read it, or use the tool's TheoryDescribable impl?
+            // Actually, the requirements say: "UI controls must derive their accessibility labels directly from the model's theoretical documentation"
+            let available_descs = self.theory().available_descriptions();
+
             for (name, constraint) in &self.param_metadata {
                 if let Some(val) = params_lock.get_mut(name) {
                     let slider = egui::Slider::new(val, constraint.min..=constraint.max)
                         .step_by(constraint.step)
                         .text(name);
                     let mut resp = ui.add(slider);
-                    if let Some(theory) = &self.theory_instance {
-                        resp = resp.accessible_hover_text(theory.theory_description());
+                    if let Some(desc) = available_descs.get(name) {
+                        resp = resp.accessible_hover_text(desc);
                     }
+                    
                     let _ = resp.changed(); // Just calling it to suppress unused warning if necessary, or not needed.
                 }
             }
@@ -288,13 +299,12 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
 }
 
 impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         M::name()
     }
 
-    fn theory(&self) -> Option<&dyn math_commons::theory::TheoryDescribable> {
-        self.theory_instance.as_deref()
-    }
+
 
     fn show(&mut self, ctx: &egui::Context) {
         if let Some(snapshot) = self.controller.update() {
@@ -312,4 +322,11 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
         self.draw_left_panel(ctx);
         self.draw_central_panel(ctx);
     }
+}
+
+impl<M: UnifiedModel> math_commons::theory::TheoryDescribable for UnifiedSimTool<M> {
+    fn theory_description(&self) -> String { self.cached_theory_desc.clone() }
+    fn phonetic_description(&self) -> String { self.cached_phonetic.clone() }
+    fn theory_citation(&self) -> String { self.cached_citation.clone() }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { self.cached_descs.clone() }
 }

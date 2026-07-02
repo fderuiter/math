@@ -106,10 +106,6 @@ impl UnifiedModel for HodgkinHuxleyUnified {
     fn name() -> &'static str {
         "Hodgkin-Huxley Model"
     }
-
-    fn create_theory() -> Option<Box<dyn TheoryDescribable>> {
-        Some(Box::new(HodgkinHuxleyModel::new(HodgkinHuxleyParameters::default(), 0.0)))
-    }
 }
 
 inventory::submit! {
@@ -118,5 +114,23 @@ inventory::submit! {
         domain: "neuroscience",
         tags: &[],
         build: || Box::new(UnifiedSimTool::<HodgkinHuxleyUnified>::new()),
+    }
+}
+
+impl math_commons::theory::TheoryDescribable for HodgkinHuxleyUnified {
+    fn theory_description(&self) -> String {
+        math_explorer::biology::neuroscience::HodgkinHuxleyModel::new(math_explorer::biology::neuroscience::HodgkinHuxleyParameters::default(), 0.0).theory_description()
+    }
+    
+    fn phonetic_description(&self) -> String {
+        math_explorer::biology::neuroscience::HodgkinHuxleyModel::new(math_explorer::biology::neuroscience::HodgkinHuxleyParameters::default(), 0.0).phonetic_description()
+    }
+    
+    fn theory_citation(&self) -> String {
+        math_explorer::biology::neuroscience::HodgkinHuxleyModel::new(math_explorer::biology::neuroscience::HodgkinHuxleyParameters::default(), 0.0).theory_citation()
+    }
+    
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        math_explorer::biology::neuroscience::HodgkinHuxleyModel::new(math_explorer::biology::neuroscience::HodgkinHuxleyParameters::default(), 0.0).available_descriptions()
     }
 }

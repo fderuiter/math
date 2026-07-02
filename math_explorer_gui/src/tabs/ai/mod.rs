@@ -10,6 +10,7 @@ pub mod q_table_inspector;
 pub mod reward_plots;
 pub mod tokenization;
 pub mod training_monitor;
+pub mod gaussian_splatting;
 
 pub struct AiTab {
     framework: crate::framework::SimulationFramework,

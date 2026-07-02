@@ -108,10 +108,6 @@ impl UnifiedModel for LbmUnified {
     fn name() -> &'static str {
         "Lattice Boltzmann (Demo)"
     }
-
-    fn create_theory() -> Option<Box<dyn TheoryDescribable>> {
-        Some(Box::new(LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0)))
-    }
 }
 
 inventory::submit! {
@@ -120,5 +116,23 @@ inventory::submit! {
         domain: "fluid_dynamics",
         tags: &[],
         build: || Box::new(UnifiedSimTool::<LbmUnified>::new()),
+    }
+}
+
+impl TheoryDescribable for LbmUnified {
+    fn theory_description(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_description()
+    }
+    
+    fn phonetic_description(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).phonetic_description()
+    }
+    
+    fn theory_citation(&self) -> String {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).theory_citation()
+    }
+    
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
+        LatticeBoltzmannD2Q9::<BgkCollision>::new(1, 1, 1.0).available_descriptions()
     }
 }

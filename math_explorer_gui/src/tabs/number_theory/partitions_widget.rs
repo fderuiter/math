@@ -52,6 +52,7 @@ impl PartitionsWidget {
 }
 
 impl InteractiveTool for PartitionsWidget {
+    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Partition Function"
     }
@@ -191,4 +192,11 @@ inventory::submit! {
         tags: &[],
         build: || Box::new(PartitionsWidget::default()),
     }
+}
+
+impl math_commons::theory::TheoryDescribable for PartitionsWidget {
+    fn theory_description(&self) -> String { "Theoretical context not available.".into() }
+    fn phonetic_description(&self) -> String { "Theoretical context not available.".into() }
+    fn theory_citation(&self) -> String { "Uncited".into() }
+    fn available_descriptions(&self) -> std::collections::HashMap<String, String> { std::collections::HashMap::new() }
 }

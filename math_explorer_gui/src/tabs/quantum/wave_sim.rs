@@ -82,25 +82,6 @@ impl UnifiedModel for WaveUnified {
     fn name() -> &'static str {
         "Wave Simulator"
     }
-
-    fn create_theory() -> Option<Box<dyn math_commons::theory::TheoryDescribable>> {
-        struct WaveTheory;
-        impl math_commons::theory::TheoryDescribable for WaveTheory {
-            fn theory_description(&self) -> String {
-                "Quantum wave simulation [cite:quantum_mechanics]".to_string()
-            }
-            fn phonetic_description(&self) -> String {
-                "Quantum wave simulation".to_string()
-            }
-            fn theory_citation(&self) -> String {
-                "[cite:quantum_mechanics]".to_string()
-            }
-            fn available_descriptions(&self) -> HashMap<String, String> {
-                HashMap::new()
-            }
-        }
-        Some(Box::new(WaveTheory))
-    }
 }
 
 impl WaveUnified {
@@ -137,5 +118,20 @@ inventory::submit! {
         domain: "quantum",
         tags: &[],
         build: || Box::new(UnifiedSimTool::<WaveUnified>::new()),
+    }
+}
+
+impl math_commons::theory::TheoryDescribable for WaveUnified {
+    fn theory_description(&self) -> String {
+        "Quantum wave simulation [cite:quantum_mechanics]".to_string()
+    }
+    fn phonetic_description(&self) -> String {
+        "Quantum wave simulation".to_string()
+    }
+    fn theory_citation(&self) -> String {
+        "[cite:quantum_mechanics]".to_string()
+    }
+    fn available_descriptions(&self) -> HashMap<String, String> {
+        HashMap::new()
     }
 }
