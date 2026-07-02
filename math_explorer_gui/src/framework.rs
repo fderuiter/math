@@ -189,12 +189,10 @@ impl SimulationFramework {
                         if ui
                             .selectable_label(self.selected_tool_index == Some(i), meta.name)
                             .clicked()
-                        {
-                            if self.selected_tool_index != Some(i) {
+                            && self.selected_tool_index != Some(i) {
                                 self.selected_tool_index = Some(i);
                                 self.active_tool = Some((meta.build)());
                             }
-                        }
                     }
                 });
                 ui.separator();

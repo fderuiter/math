@@ -5,8 +5,6 @@ use eframe::egui;
 pub mod beam_profiling;
 pub mod dose;
 
-use beam_profiling::BeamProfilingTool;
-use dose::DoseCalculationTool;
 
 pub struct MedicalTab {
     framework: crate::framework::SimulationFramework,

@@ -5,8 +5,6 @@ use eframe::egui;
 pub mod capacity_fade;
 pub mod lifetime_estimator;
 
-use capacity_fade::CapacityFadeTool;
-use lifetime_estimator::LifetimeEstimatorTool;
 
 pub struct BatteryDegradationTab {
     framework: crate::framework::SimulationFramework,

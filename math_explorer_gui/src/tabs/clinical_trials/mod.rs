@@ -6,9 +6,6 @@ pub mod randomization;
 pub mod sample_size;
 pub mod survival;
 
-use randomization::RandomizationTool;
-use sample_size::SampleSizeCalculatorTool;
-use survival::SurvivalAnalysisTool;
 
 pub struct ClinicalTrialsTab {
     framework: crate::framework::SimulationFramework,

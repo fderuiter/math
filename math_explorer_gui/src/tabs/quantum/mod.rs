@@ -6,8 +6,6 @@ pub mod clebsch;
 pub mod spin_viz;
 pub mod wave_sim;
 
-use clebsch::ClebschGordanTool;
-use wave_sim::WaveSimulator;
 
 pub struct QuantumTab {
     framework: crate::framework::SimulationFramework,

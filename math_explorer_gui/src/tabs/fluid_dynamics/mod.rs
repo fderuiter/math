@@ -6,9 +6,6 @@ pub mod lattice_boltzmann;
 pub mod potential_flow;
 pub mod turbulence;
 
-use lattice_boltzmann::LatticeBoltzmannTool;
-use potential_flow::PotentialFlowTool;
-use turbulence::TurbulenceTool;
 
 pub struct FluidDynamicsTab {
     framework: crate::framework::SimulationFramework,
