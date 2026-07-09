@@ -32,7 +32,5 @@ diagnostics = { path = "../diagnostics", features = ["federated"] }
 [dev-dependencies]
 approx = "0.5.1"
 
-[profile.release]
-overflow-checks = true
 [lints]
 workspace = true

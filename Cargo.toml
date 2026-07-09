@@ -29,3 +29,6 @@ cognitive_complexity = "deny"
 
 [patch.crates-io]
 egui_plot = { path = "egui_plot" }
+
+[profile.release]
+overflow-checks = true

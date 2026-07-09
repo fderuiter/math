@@ -1,8 +1,8 @@
 {
   "native_execution_coverage_pct": 0.0,
   "wasm_path_coverage_pct": 75.0,
-  "total_assertion_density": 0.330804248861912,
+  "total_assertion_density": 0.3309716599190283,
   "verified_modules_density": 0.49585144211774,
-  "unverified_modules_density": 0.03724525650035137,
+  "unverified_modules_density": 0.03729767769176636,
   "passed": true
 }

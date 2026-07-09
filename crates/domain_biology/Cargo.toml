@@ -33,7 +33,5 @@ domain_applied = { path = "../domain_applied" }
 [dev-dependencies]
 approx = "0.5.1"
 
-[profile.release]
-overflow-checks = true
 [lints]
 workspace = true
