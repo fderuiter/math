@@ -33,7 +33,5 @@ domain_ai = { path = "../domain_ai" }
 [dev-dependencies]
 approx = "0.5.1"
 
-[profile.release]
-overflow-checks = true
 [lints]
 workspace = true

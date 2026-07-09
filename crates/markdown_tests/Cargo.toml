@@ -24,7 +24,5 @@ thiserror = "1.0"
 eframe = "0.33"
 egui = "0.33"
 
-[profile.release]
-overflow-checks = true
 [lints]
 workspace = true

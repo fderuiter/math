@@ -14,7 +14,7 @@ fn main() {
     match args[1].as_str() {
         "setup" => setup(),
         "test-features" => test_features(&args[2..]),
-        "verify-suite" => verify_suite(),
+        "verify-suite" => verify_suite(&args[2..]),
         "verify-records" => verify_records(),
         "compile-papers" => compile_papers(),
         "traceability" => traceability(),
@@ -148,19 +148,19 @@ fn test_features(args: &[String]) {
     }
 }
 
-fn verify_suite() {
+fn verify_suite(args: &[String]) {
     println!("=== High-Integrity Verified Suite ===");
-    run_cmd(
-        "cargo",
-        &[
-            "run",
-            "-p",
-            "unified_verification",
-            "--release",
-            "--",
-            "verify-suite",
-        ],
-    );
+    let mut cmd_args = vec![
+        "run",
+        "-p",
+        "unified_verification",
+        "--release",
+        "--",
+        "verify-suite",
+    ];
+    let args_str: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+    cmd_args.extend(args_str);
+    run_cmd("cargo", &cmd_args);
 }
 
 fn verify_records() {

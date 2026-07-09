@@ -54,7 +54,7 @@ fn main() {
     match args[1].as_str() {
         "verify-records" => verify_records(),
         "traceability" => traceability(),
-        "verify-suite" => verify_suite(),
+        "verify-suite" => verify_suite(&args[2..]),
         "check-file-lengths" => {
             let members = get_workspace_members();
             let debt = check_file_lengths(&members);
@@ -417,16 +417,17 @@ fn print_report(
     passed
 }
 
-fn verify_suite() {
+fn verify_suite(args: &[String]) {
     println!("=== High-Integrity Verified Suite ===");
 
     println!("Running security checks...");
     let mut passed_security = true;
+    let auto_fix = args.contains(&"--auto-fix".to_string());
 
     let members = get_workspace_members();
     let member_refs: Vec<&str> = members.iter().map(|s| s.as_str()).collect();
 
-    if !profile::check_profiles(&member_refs) {
+    if !profile::check_profiles(&member_refs, auto_fix) {
         passed_security = false;
     }
 

@@ -175,7 +175,5 @@ required-features = ["pure_math"]
 name = "lorenz_chaos"
 required-features = ["physics"]
 
-[profile.release]
-overflow-checks = true
 [lints]
 workspace = true

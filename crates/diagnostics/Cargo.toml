@@ -11,8 +11,5 @@ federated = ["dep:federated_registry"]
 federated_registry = { path = "../federated_registry", optional = true }
 thiserror = "2.0.18"
 
-[profile.release]
-overflow-checks = true
-
 [lints]
 workspace = true
