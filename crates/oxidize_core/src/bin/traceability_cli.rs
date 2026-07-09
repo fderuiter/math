@@ -110,7 +110,7 @@ fn main() {
     let auto_fix = args.iter().any(|arg| arg == "--auto-fix");
 
     let vfs = DefaultVfs;
-    let engine = TraceabilityEngine::new(&vfs);
+    let engine = TraceabilityEngine::new(vfs);
 
     let code_dirs = vec![
         "math_explorer/src".to_string(),
@@ -126,7 +126,7 @@ fn main() {
 
     let all_dirs: Vec<&str> = code_dirs.iter().map(|s| s.as_str()).collect();
 
-    match engine.scan_repository(&all_dirs, "papers", auto_fix) {
+    match futures::executor::block_on(engine.scan_repository(&all_dirs, "papers", auto_fix)) {
         Ok(report) => {
             println!("=== Traceability Report ===");
             println!("Summary: Scanned {} source files.", report.scanned_files);

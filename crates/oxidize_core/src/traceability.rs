@@ -17,17 +17,19 @@ pub struct TraceabilityReport {
     pub vacuous_bypasses: Vec<String>,
 }
 
-pub struct TraceabilityEngine<'a> {
-    vfs: &'a dyn VirtualFileSystem,
+pub struct TraceabilityEngine<V: VirtualFileSystem> {
+    pub vfs: V,
 }
 
-impl<'a> TraceabilityEngine<'a> {
-    pub fn new(vfs: &'a dyn VirtualFileSystem) -> Self {
+impl<V: VirtualFileSystem> TraceabilityEngine<V> {
+    pub fn new(vfs: V) -> Self {
         Self { vfs }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn verify_module_registered(module_name: &str) -> bool {
-        let registry_content = include_str!("../../../traceability.toml");
+        let vfs = crate::vfs::DefaultVfs;
+        let registry_content = futures::executor::block_on(vfs.read_to_string("traceability.toml")).unwrap_or_default();
         if let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
             && let Some(paper) = links.get(module_name)
@@ -37,12 +39,17 @@ impl<'a> TraceabilityEngine<'a> {
         false
     }
 
-    fn verify_and_link_registry(
+    #[cfg(target_arch = "wasm32")]
+    pub fn verify_module_registered(_module_name: &str) -> bool {
+        true
+    }
+
+    async fn verify_and_link_registry(
         &self,
         valid_papers: &HashSet<String>,
         report: &mut TraceabilityReport,
     ) {
-        if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml")
+        if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml").await
             && let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
         {
@@ -99,7 +106,7 @@ impl<'a> TraceabilityEngine<'a> {
         cites
     }
 
-    pub fn scan_repository(
+    pub async fn scan_repository(
         &self,
         code_dirs: &[&str],
         papers_dir: &str,
@@ -110,7 +117,7 @@ impl<'a> TraceabilityEngine<'a> {
 
         // 1. Scan papers
         let normalized_papers_dir = crate::path_utils::normalize_path(papers_dir);
-        if let Ok(entries) = self.vfs.list_dir(&normalized_papers_dir) {
+        if let Ok(entries) = self.vfs.list_dir(&normalized_papers_dir).await {
             for name in entries {
                 if name.ends_with(".tex") {
                     let paper_name = name.clone();
@@ -121,11 +128,11 @@ impl<'a> TraceabilityEngine<'a> {
         }
 
         // 2. Read registry
-        self.verify_and_link_registry(&valid_papers, &mut report);
+        self.verify_and_link_registry(&valid_papers, &mut report).await;
 
         let mut registered_modules = HashSet::new();
         let mut registry_links = HashMap::new();
-        if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml")
+        if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml").await
             && let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
         {
@@ -142,18 +149,18 @@ impl<'a> TraceabilityEngine<'a> {
             let normalized = crate::path_utils::normalize_path(dir);
             let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
             let main = crate::path_utils::join_and_normalize(&normalized, "main.rs");
-            if self.vfs.read_to_string(&lib).is_ok() {
-                self.parse_module_tree(&lib, &mut active_files);
+            if self.vfs.read_to_string(&lib).await.is_ok() {
+                self.parse_module_tree(&lib, &mut active_files).await;
             }
-            if self.vfs.read_to_string(&main).is_ok() {
-                self.parse_module_tree(&main, &mut active_files);
+            if self.vfs.read_to_string(&main).await.is_ok() {
+                self.parse_module_tree(&main, &mut active_files).await;
             }
         }
 
         let mut code_files: Vec<String> = active_files.into_iter().collect();
         code_files.sort();
 
-        self.process_code_files(code_files, &registered_modules, &registry_links, &mut report, auto_fix);
+        self.process_code_files(code_files, &registered_modules, &registry_links, &mut report, auto_fix).await;
 
         // 4. Find orphans
         for (name, linked_code) in &report.paper_coverage {
@@ -168,7 +175,7 @@ impl<'a> TraceabilityEngine<'a> {
         Ok(report)
     }
 
-    fn process_code_files(
+    async fn process_code_files(
         &self,
         code_files: Vec<String>,
         registered_modules: &HashSet<String>,
@@ -181,7 +188,7 @@ impl<'a> TraceabilityEngine<'a> {
             let is_module =
                 file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
 
-            if let Ok(mut content) = self.vfs.read_to_string(&file) {
+            if let Ok(mut content) = self.vfs.read_to_string(&file).await {
                 let mut file_modified = false;
                 let citations = Self::extract_citations(&content);
                 let mut final_citations = Vec::new();
@@ -220,7 +227,7 @@ impl<'a> TraceabilityEngine<'a> {
                 }
 
                 if file_modified {
-                    let _ = self.vfs.write_to_file(&file, content.as_bytes());
+                    let _ = self.vfs.write_to_file(&file, content.as_bytes()).await;
                 }
 
                 if let Ok(ast) = syn::parse_file(&content) {
@@ -265,11 +272,12 @@ impl<'a> TraceabilityEngine<'a> {
         }
     }
 
-    fn parse_module_tree(&self, file_path: &str, active_files: &mut HashSet<String>) {
+    #[async_recursion::async_recursion(?Send)]
+    async fn parse_module_tree(&self, file_path: &str, active_files: &mut HashSet<String>) {
         if active_files.contains(file_path) {
             return;
         }
-        if let Ok(content) = self.vfs.read_to_string(file_path) {
+        if let Ok(content) = self.vfs.read_to_string(file_path).await {
             active_files.insert(file_path.to_string());
             if let Ok(ast) = syn::parse_file(&content) {
                 let mut visitor = crate::ast_visitor::AstVisitor::new();
@@ -299,10 +307,10 @@ impl<'a> TraceabilityEngine<'a> {
                         format!("{}/mod.rs", submodule),
                     );
 
-                    if self.vfs.read_to_string(&path1).is_ok() {
-                        self.parse_module_tree(&path1, active_files);
-                    } else if self.vfs.read_to_string(&path2).is_ok() {
-                        self.parse_module_tree(&path2, active_files);
+                    if self.vfs.read_to_string(&path1).await.is_ok() {
+                        self.parse_module_tree(&path1, active_files).await;
+                    } else if self.vfs.read_to_string(&path2).await.is_ok() {
+                        self.parse_module_tree(&path2, active_files).await;
                     }
                 }
             }

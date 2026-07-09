@@ -24,6 +24,7 @@ epidemiology = ["math_explorer/epidemiology", "pure_math"]
 physics = ["math_explorer/physics", "applied", "pure_math"]
 
 [dependencies]
+futures = "0.3"
 federated_registry = { path = "../crates/federated_registry" }
 eframe = "0.33.3"
 egui_plot = "0.34.1"

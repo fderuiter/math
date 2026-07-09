@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+futures = "0.3"
+async-recursion = "1.0"
 obj-exporter = "0.2.0"
 proc-macro2 = "1.0.106"
 quote = "1.0.46"
@@ -17,7 +19,7 @@ toml = "1.1.2"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.100"
 js-sys = "0.3.60"
-web-sys = { version = "0.3.60", features = ["Window", "Document", "HtmlElement", "Blob", "Url", "BlobPropertyBag"] }
+web-sys = { version = "0.3.60", features = ["Window", "Document", "HtmlElement", "Blob", "Url", "BlobPropertyBag", "Response"] }
 
 [dev-dependencies]
 approx = "0.5.1"
