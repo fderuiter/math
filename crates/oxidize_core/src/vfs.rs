@@ -1,7 +1,10 @@
+use std::future::Future;
+use std::pin::Pin;
+
 pub trait VirtualFileSystem {
-    fn read_to_string(&self, path: &str) -> Result<String, std::io::Error>;
-    fn write_to_file(&self, path: &str, content: &[u8]) -> Result<(), std::io::Error>;
-    fn list_dir(&self, path: &str) -> Result<Vec<String>, std::io::Error>;
+    fn read_to_string(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>>;
+    fn write_to_file(&self, path: &str, content: &[u8]) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>>;
+    fn list_dir(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>>;
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -9,24 +12,30 @@ pub struct DefaultVfs;
 
 #[cfg(not(target_arch = "wasm32"))]
 impl VirtualFileSystem for DefaultVfs {
-    fn read_to_string(&self, path: &str) -> Result<String, std::io::Error> {
-        std::fs::read_to_string(path)
+    fn read_to_string(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>> {
+        let path = path.to_string();
+        Box::pin(async move { std::fs::read_to_string(&path) })
     }
 
-    fn write_to_file(&self, path: &str, content: &[u8]) -> Result<(), std::io::Error> {
-        std::fs::write(path, content)
+    fn write_to_file(&self, path: &str, content: &[u8]) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>> {
+        let path = path.to_string();
+        let content = content.to_vec();
+        Box::pin(async move { std::fs::write(&path, content) })
     }
 
-    fn list_dir(&self, path: &str) -> Result<Vec<String>, std::io::Error> {
-        let mut files = Vec::new();
-        if let Ok(entries) = std::fs::read_dir(path) {
-            for entry in entries.flatten() {
-                if let Some(s) = entry.file_name().to_str() {
-                    files.push(s.to_string());
+    fn list_dir(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>> {
+        let path = path.to_string();
+        Box::pin(async move {
+            let mut files = Vec::new();
+            if let Ok(entries) = std::fs::read_dir(&path) {
+                for entry in entries.flatten() {
+                    if let Some(s) = entry.file_name().to_str() {
+                        files.push(s.to_string());
+                    }
                 }
             }
-        }
-        Ok(files)
+            Ok(files)
+        })
     }
 }
 
@@ -40,33 +49,55 @@ include!(concat!(env!("OUT_DIR"), "/vfs_data.rs"));
 pub struct WasmVfs;
 
 #[cfg(target_arch = "wasm32")]
-// theory_verification!
 impl VirtualFileSystem for WasmVfs {
-    fn read_to_string(&self, path: &str) -> Result<String, std::io::Error> {
-        if let Some(content) = get_file_content(path) {
-            Ok(content.to_string())
-        } else {
-            Err(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                "File not found in VFS",
-            ))
-        }
+    fn read_to_string(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>> {
+        let path = path.to_string();
+        Box::pin(async move {
+            use wasm_bindgen::JsCast;
+            use wasm_bindgen_futures::JsFuture;
+            let window = web_sys::window().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "No window"))?;
+            let mut url = path.clone();
+            // ensure it can be fetched
+            if !url.starts_with("http") && !url.starts_with('/') {
+                url = format!("/{}", url);
+            }
+            let response_value = JsFuture::from(window.fetch_with_str(&url))
+                .await
+                .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Fetch failed"))?;
+            let response: web_sys::Response = response_value.dyn_into()
+                .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Invalid response"))?;
+            if !response.ok() {
+                return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "File not found via fetch"));
+            }
+            let text_value = JsFuture::from(response.text().map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "No text in response"))?)
+                .await
+                .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Text extraction failed"))?;
+            let content = text_value.as_string().unwrap_or_default();
+            Ok(content)
+        })
     }
 
-    fn write_to_file(&self, path: &str, content: &[u8]) -> Result<(), std::io::Error> {
-        trigger_download(path, content);
-        Ok(())
+    fn write_to_file(&self, path: &str, content: &[u8]) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>> {
+        let path = path.to_string();
+        let content = content.to_vec();
+        Box::pin(async move {
+            trigger_download(&path, &content);
+            Ok(())
+        })
     }
 
-    fn list_dir(&self, path: &str) -> Result<Vec<String>, std::io::Error> {
-        if let Some(children) = get_dir_children(path) {
-            Ok(children.iter().map(|s| s.to_string()).collect())
-        } else {
-            Err(std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                "Directory not found in VFS",
-            ))
-        }
+    fn list_dir(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>> {
+        let path = path.to_string();
+        Box::pin(async move {
+            if let Some(children) = get_dir_children(&path) {
+                Ok(children.iter().map(|s| s.to_string()).collect())
+            } else {
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "Directory not found in VFS",
+                ))
+            }
+        })
     }
 }
 

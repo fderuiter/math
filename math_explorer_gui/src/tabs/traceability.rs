@@ -9,6 +9,8 @@ pub struct TraceabilityTab {
     unlinked_code: Vec<String>,
     invalid_links: Vec<(String, String)>, // code_file, paper_name
     repo_path: Option<String>,
+    report_rx: Option<std::sync::mpsc::Receiver<oxidize_core::traceability::TraceabilityReport>>,
+    is_loading: bool,
 }
 
 #[derive(Clone)]
@@ -27,6 +29,8 @@ impl Default for TraceabilityTab {
             unlinked_code: Vec::new(),
             invalid_links: Vec::new(),
             repo_path: None,
+            report_rx: None,
+            is_loading: false,
         };
         tab.refresh();
         tab
@@ -40,13 +44,7 @@ impl TraceabilityTab {
         self.orphaned_papers.clear();
         self.unlinked_code.clear();
         self.invalid_links.clear();
-
-        #[cfg(not(target_arch = "wasm32"))]
-        let vfs = oxidize_core::vfs::DefaultVfs;
-        #[cfg(target_arch = "wasm32")]
-        let vfs = oxidize_core::vfs::WasmVfs;
-
-        let engine = oxidize_core::traceability::TraceabilityEngine::new(&vfs);
+        self.is_loading = true;
 
         let base_dir = match &self.repo_path {
             Some(p) => format!("{}/", p),
@@ -59,36 +57,57 @@ impl TraceabilityTab {
             format!("{}math_explorer_gui/src/tabs", base_dir),
         ];
 
-        // We simulate reading the crates directories
-        let mut crate_dirs = Vec::new();
-        if let Ok(crates) = vfs.list_dir(&format!("{}crates", base_dir)) {
-            for crate_name in crates {
-                crate_dirs.push(format!("{}crates/{}/src", base_dir, crate_name));
-            }
-        }
-
-        let mut all_dirs: Vec<&str> = code_dirs.iter().map(|s| s.as_str()).collect();
-        for dir in &crate_dirs {
-            all_dirs.push(dir.as_str());
-        }
-
         let papers_dir = format!("{}papers", base_dir);
-        if let Ok(report) = engine.scan_repository(&all_dirs, &papers_dir, false) {
-            self.orphaned_papers = report.orphaned_papers;
-            self.unlinked_code = report.unlinked_code;
-            self.invalid_links = report.invalid_links;
+        let crate_base = format!("{}crates", base_dir);
 
-            for (paper_name, linked_code) in report.paper_coverage {
-                self.papers.insert(
-                    paper_name.clone(),
-                    PaperStatus {
-                        name: paper_name,
-                        linked_code,
-                        is_wip: false,
-                    },
-                );
+        let (tx, rx) = std::sync::mpsc::channel();
+        self.report_rx = Some(rx);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        std::thread::spawn(move || {
+            futures::executor::block_on(async move {
+                let vfs = oxidize_core::vfs::DefaultVfs;
+                let engine = oxidize_core::traceability::TraceabilityEngine::new(vfs);
+                
+                let mut crate_dirs = Vec::new();
+                if let Ok(crates) = engine.vfs.list_dir(&crate_base).await {
+                    for crate_name in crates {
+                        crate_dirs.push(format!("{}/{}/src", crate_base, crate_name));
+                    }
+                }
+
+                let mut all_dirs: Vec<&str> = code_dirs.iter().map(|s| s.as_str()).collect();
+                for dir in &crate_dirs {
+                    all_dirs.push(dir.as_str());
+                }
+
+                if let Ok(report) = engine.scan_repository(&all_dirs, &papers_dir, false).await {
+                    let _ = tx.send(report);
+                }
+            });
+        });
+
+        #[cfg(target_arch = "wasm32")]
+        wasm_bindgen_futures::spawn_local(async move {
+            let vfs = oxidize_core::vfs::WasmVfs;
+            let engine = oxidize_core::traceability::TraceabilityEngine::new(vfs);
+            
+            let mut crate_dirs = Vec::new();
+            if let Ok(crates) = engine.vfs.list_dir(&crate_base).await {
+                for crate_name in crates {
+                    crate_dirs.push(format!("{}/{}/src", crate_base, crate_name));
+                }
             }
-        }
+
+            let mut all_dirs: Vec<&str> = code_dirs.iter().map(|s| s.as_str()).collect();
+            for dir in &crate_dirs {
+                all_dirs.push(dir.as_str());
+            }
+
+            if let Ok(report) = engine.scan_repository(&all_dirs, &papers_dir, false).await {
+                let _ = tx.send(report);
+            }
+        });
     }
 }
 
@@ -99,6 +118,29 @@ impl ExplorerTab for TraceabilityTab {
 
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
     fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if let Some(rx) = &self.report_rx {
+            if let Ok(report) = rx.try_recv() {
+                self.orphaned_papers = report.orphaned_papers;
+                self.unlinked_code = report.unlinked_code;
+                self.invalid_links = report.invalid_links;
+
+                for (paper_name, linked_code) in report.paper_coverage {
+                    self.papers.insert(
+                        paper_name.clone(),
+                        PaperStatus {
+                            name: paper_name,
+                            linked_code,
+                            is_wip: false,
+                        },
+                    );
+                }
+                self.is_loading = false;
+                self.report_rx = None;
+            } else if self.is_loading {
+                ctx.request_repaint();
+            }
+        }
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.heading("Theory-to-Code Traceability Portal");
@@ -123,6 +165,12 @@ impl ExplorerTab for TraceabilityTab {
                 }
             });
             ui.separator();
+
+            if self.is_loading {
+                ui.spinner();
+                ui.label("Scanning repository via Virtual File System...");
+                return;
+            }
 
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.collapsing("System Health & Alignment", |ui| {

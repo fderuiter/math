@@ -173,9 +173,12 @@ impl InteractiveTool for SurfaceViewer {
                 #[cfg(target_arch = "wasm32")]
                 {
                     let filename = "surface.obj";
-                    use oxidize_core::vfs::VirtualFileSystem;
-                    let vfs = oxidize_core::vfs::WasmVfs;
-                    let _ = vfs.write_to_file(filename, obj.as_bytes());
+                    let obj_clone = obj.clone();
+                    wasm_bindgen_futures::spawn_local(async move {
+                        use oxidize_core::vfs::VirtualFileSystem;
+                        let vfs = oxidize_core::vfs::WasmVfs;
+                        let _ = vfs.write_to_file(filename, obj_clone.as_bytes()).await;
+                    });
                 }
             }
         });
