@@ -19,7 +19,7 @@ pub trait BindingEnergyModel {
         mass_number: MassNumber,
     ) -> Result<f64, NuclearError> {
         let be = self.binding_energy(atomic_number, mass_number)?;
-        Ok(be / mass_number.as_f64())
+        Ok(be / mass_number.value() as f64)
     }
 }
 
@@ -73,8 +73,8 @@ impl BindingEnergyModel for LiquidDropModel {
         atomic_number: AtomicNumber,
         mass_number: MassNumber,
     ) -> Result<f64, NuclearError> {
-        let z = atomic_number.as_f64();
-        let a = mass_number.as_f64();
+        let z = atomic_number.value() as f64;
+        let a = mass_number.value() as f64;
 
         if atomic_number.value() > mass_number.value() {
             return Err(NuclearError::InvalidAtomicNumber(

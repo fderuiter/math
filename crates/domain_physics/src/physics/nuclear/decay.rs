@@ -39,7 +39,7 @@ pub fn gamow_factor(
         return Err(NuclearError::InvalidVelocity);
     }
     let hbar = constants::HBAR_C / constants::LIGHT_SPEED;
-    let numerator = PI * z_alpha.as_f64() * z_daughter.as_f64() * constants::E_SQUARED;
+    let numerator = PI * z_alpha.value() as f64 * z_daughter.value() as f64 * constants::E_SQUARED;
     let denominator = hbar * velocity;
     Ok(numerator / denominator)
 }
