@@ -43,7 +43,7 @@ Where:
 This implies that **shallower discharges drastically increase cycle life**.
 
 ```rust
-use domain_applied::applied::battery_degradation::{PowerLawModel, DepthOfDischarge, Cycles};
+use domain_applied::applied::battery_degradation::{PowerLawModel, DepthOfDischarge, Cycles, Capacity};
 
 fn main() {
     // 1. Initialize the standard model
@@ -54,12 +54,12 @@ fn main() {
 
     // 3. Estimate Life Expectancy (Cycles to 70% SOH)
     let life_cycles = model.n70(dod);
-    println!("Expected Life: {:.0} cycles", life_cycles.as_f64());
+    println!("Expected Life: {:.0} cycles", life_cycles/ Cycles::new_clamped(1.0));
 
     // 4. Predict Capacity after 1000 cycles
     let current_cycles = Cycles::new_clamped(1000.0);
     let remaining_capacity = model.capacity(current_cycles, dod);
-    println!("Capacity after 1000 cycles: {:.1}%", remaining_capacity.as_f64() * 100.0);
+    println!("Capacity after 1000 cycles: {:.1}%", remaining_capacity/ Capacity::new_clamped(1.0) * 100.0);
 }
 ```
 

@@ -3,7 +3,7 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Energy in Electron Volts (eV).
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
-pub struct ElectronVolts(pub f64);
+pub struct ElectronVolts(f64);
 
 impl ElectronVolts {
     /// Creates a new `ElectronVolts` instance.
@@ -22,6 +22,22 @@ impl ElectronVolts {
     #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
+    }
+
+    pub fn powf(&self, n: f64) -> Self {
+        Self::new(self.0.powf(n))
+    }
+
+    pub fn sqrt(&self) -> Self {
+        Self::new(self.0.sqrt())
+    }
+
+    pub fn ln(&self) -> Self {
+        Self::new(self.0.ln())
+    }
+
+    pub fn exp(&self) -> Self {
+        Self::new(self.0.exp())
     }
 }
 
@@ -90,7 +106,7 @@ impl Neg for ElectronVolts {
 
 /// Temperature in Kelvin (K).
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
-pub struct Kelvin(pub f64);
+pub struct Kelvin(f64);
 
 impl Kelvin {
     /// Creates a new `Kelvin` instance.
@@ -103,6 +119,26 @@ impl Kelvin {
     #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
+    }
+
+    pub fn powf(&self, n: f64) -> Self {
+        Self::new(self.0.powf(n))
+    }
+
+    pub fn sqrt(&self) -> Self {
+        Self::new(self.0.sqrt())
+    }
+
+    pub fn ln(&self) -> Self {
+        Self::new(self.0.ln())
+    }
+
+    pub fn exp(&self) -> Self {
+        Self::new(self.0.exp())
+    }
+
+    pub fn abs(&self) -> Self {
+        Self::new(self.0.abs())
     }
 }
 

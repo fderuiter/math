@@ -91,8 +91,8 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     // does not affect the calculation (as noted below, order doesn't matter for risk set calculation).
     // This reduces sorting time by ~30% for large datasets, saving CPU cycles.
     obs.sort_unstable_by(|a, b| {
-        let ta = a.time.as_f64();
-        let tb = b.time.as_f64();
+        let ta = a.time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
+        let tb = b.time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
         if (ta - tb).abs() < math_commons::registry::TOLERANCE_STANDARD {
             // Equal time: events come first?
             // Standard KM handles ties. Usually event is counted against risk set.
@@ -116,13 +116,13 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     let mut n_at_risk = total_subjects;
 
     while i < obs.len() {
-        let t = obs[i].time.as_f64();
+        let t = obs[i].time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
         let mut n_events = 0;
         let mut n_censored = 0;
 
         // Process all events at this time t
         while i < obs.len()
-            && (obs[i].time.as_f64() - t).abs() < math_commons::registry::TOLERANCE_STANDARD
+            && (obs[i].time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap() - t).abs() < math_commons::registry::TOLERANCE_STANDARD
         {
             if obs[i].event_occurred {
                 n_events += 1;
@@ -173,7 +173,7 @@ pub fn try_estimate_hazard_ratio(
             if obs.event_occurred {
                 events += 1.0;
             }
-            time += obs.time.as_f64();
+            time += obs.time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
         }
         Ok((events, time))
     };

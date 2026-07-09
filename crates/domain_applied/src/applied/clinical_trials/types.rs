@@ -184,3 +184,102 @@ impl fmt::Display for SurvivalTime {
         write!(f, "{}", self.0)
     }
 }
+use std::ops::{Add, Sub, Mul, Div};
+
+impl SurvivalTime {
+    #[verified_engine::verified]
+    pub fn powf(&self, n: f64) -> Result<Self, ClinicalTrialError> {
+        Self::new(self.0.powf(n))
+    }
+    #[verified_engine::verified]
+    pub fn sqrt(&self) -> Result<Self, ClinicalTrialError> {
+        Self::new(self.0.sqrt())
+    }
+    #[verified_engine::verified]
+    pub fn ln(&self) -> Result<Self, ClinicalTrialError> {
+        Self::new(self.0.ln())
+    }
+    #[verified_engine::verified]
+    pub fn exp(&self) -> Result<Self, ClinicalTrialError> {
+        Self::new(self.0.exp())
+    }
+    #[verified_engine::verified]
+    pub fn abs(&self) -> Result<Self, ClinicalTrialError> {
+        Self::new(self.0.abs())
+    }
+}
+
+impl Add<f64> for SurvivalTime {
+    type Output = Result<Self, ClinicalTrialError>;
+    fn add(self, rhs: f64) -> Self::Output {
+        Self::new(self.0 + rhs)
+    }
+}
+impl Sub<f64> for SurvivalTime {
+    type Output = Result<Self, ClinicalTrialError>;
+    fn sub(self, rhs: f64) -> Self::Output {
+        Self::new(self.0 - rhs)
+    }
+}
+impl Mul<f64> for SurvivalTime {
+    type Output = Result<Self, ClinicalTrialError>;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Self::new(self.0 * rhs)
+    }
+}
+impl Div<f64> for SurvivalTime {
+    type Output = Result<Self, ClinicalTrialError>;
+    fn div(self, rhs: f64) -> Self::Output {
+        Self::new(self.0 / rhs)
+    }
+}
+
+impl Add<SurvivalTime> for f64 {
+    type Output = Result<SurvivalTime, ClinicalTrialError>;
+    fn add(self, rhs: SurvivalTime) -> Self::Output {
+        SurvivalTime::new(self + rhs.0)
+    }
+}
+impl Sub<SurvivalTime> for f64 {
+    type Output = Result<SurvivalTime, ClinicalTrialError>;
+    fn sub(self, rhs: SurvivalTime) -> Self::Output {
+        SurvivalTime::new(self - rhs.0)
+    }
+}
+impl Mul<SurvivalTime> for f64 {
+    type Output = Result<SurvivalTime, ClinicalTrialError>;
+    fn mul(self, rhs: SurvivalTime) -> Self::Output {
+        SurvivalTime::new(self * rhs.0)
+    }
+}
+impl Div<SurvivalTime> for f64 {
+    type Output = Result<SurvivalTime, ClinicalTrialError>;
+    fn div(self, rhs: SurvivalTime) -> Self::Output {
+        SurvivalTime::new(self / rhs.0)
+    }
+}
+
+impl Add<SurvivalTime> for SurvivalTime {
+    type Output = Result<Self, ClinicalTrialError>;
+    fn add(self, rhs: SurvivalTime) -> Self::Output {
+        Self::new(self.0 + rhs.0)
+    }
+}
+impl Sub<SurvivalTime> for SurvivalTime {
+    type Output = Result<Self, ClinicalTrialError>;
+    fn sub(self, rhs: SurvivalTime) -> Self::Output {
+        Self::new(self.0 - rhs.0)
+    }
+}
+impl Mul<SurvivalTime> for SurvivalTime {
+    type Output = Result<Self, ClinicalTrialError>;
+    fn mul(self, rhs: SurvivalTime) -> Self::Output {
+        Self::new(self.0 * rhs.0)
+    }
+}
+impl Div<SurvivalTime> for SurvivalTime {
+    type Output = f64;
+    fn div(self, rhs: SurvivalTime) -> f64 {
+        self.0 / rhs.0
+    }
+}

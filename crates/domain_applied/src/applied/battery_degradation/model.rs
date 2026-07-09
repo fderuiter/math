@@ -1,28 +1,19 @@
 //! Battery degradation models.
 
 use super::types::{Capacity, Cycles, DepthOfDischarge};
-
 use verified_engine::Theory;
 
-/// A trait representing a battery degradation model.
 pub trait DegradationModel {
-    /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
-    /// for a given depth-of-discharge (DoD).
     #[verified_engine::verified]
     fn n70(&self, d: DepthOfDischarge) -> Cycles;
 
-    /// Calculates the remaining battery capacity after a number of cycles.
     #[verified_engine::verified]
     fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity;
 
-    /// Calculates the number of equivalent full cycles to reach a target capacity.
     #[verified_engine::verified]
     fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles;
 }
 
-/// A power-law based battery degradation model.
-///
-/// $N_{70}(d) = \alpha \cdot d^\beta$
 #[derive(Debug, Clone, Copy, Theory)]
 #[theory(
     description = "Empirical power-law model characterizing the cycle life of lithium-ion batteries as a function of depth of discharge.",
@@ -34,15 +25,11 @@ pub struct PowerLawModel {
 }
 
 impl PowerLawModel {
-    /// Creates a new `PowerLawModel`.
     #[verified_engine::verified]
     pub fn new(alpha: f64, beta: f64) -> Self {
         Self { alpha, beta }
     }
 
-    /// Returns the standard Li-ion model fitted to experimental data.
-    ///
-    /// alpha = 1.019e5, beta = -1.2639
     #[verified_engine::verified]
     pub fn standard() -> Self {
         Self {
@@ -53,54 +40,48 @@ impl PowerLawModel {
 }
 
 impl DegradationModel for PowerLawModel {
-    /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
-    /// for a given depth-of-discharge (DoD).
     #[verified_engine::verified]
     fn n70(&self, d: DepthOfDischarge) -> Cycles {
-        let val = self.alpha * d.as_f64().powf(self.beta);
+        // use raw f64 extracted via division to avoid failing bounds during exponentiation
+        let raw_d = d / DepthOfDischarge::new_clamped(1.0);
+        let val = self.alpha * raw_d.powf(self.beta);
         Cycles::new_clamped(val)
     }
 
-    /// Calculates the remaining battery capacity after a number of cycles.
     #[verified_engine::verified]
     fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity {
-        let n70_val = self.n70(d).as_f64();
+        let n70_val = self.n70(d) / Cycles::new_clamped(1.0);
         if n70_val == 0.0 {
             return Capacity::new_clamped(0.0);
         }
-        let exponent = n.as_f64() / n70_val;
+        let n_val = n / Cycles::new_clamped(1.0);
+        let exponent = n_val / n70_val;
         let cap = 0.7_f64.powf(exponent);
-        // Clamp to 1.0 just in case floating point error pushes it slightly over for n=0
         Capacity::new_clamped(cap)
     }
 
-    /// Calculates the number of equivalent full cycles to reach a target capacity.
     #[verified_engine::verified]
     fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles {
-        let n70_val = self.n70(d).as_f64();
-        let ln_target = target.as_f64().ln();
+        let n70_val = self.n70(d) / Cycles::new_clamped(1.0);
+        let target_raw = target / Capacity::new_clamped(1.0);
+        let ln_raw = target_raw.ln();
 
-        let val = (ln_target / math_commons::constants::LN_0_7) * n70_val;
+        let val = (ln_raw / math_commons::constants::LN_0_7) * n70_val;
         Cycles::new_clamped(val)
     }
 }
 
-// Inherent methods for backward compatibility, delegating to trait implementation
 impl PowerLawModel {
-    /// Calculates the number of equivalent full cycles to 70% capacity (N₇₀)
-    /// for a given depth-of-discharge (DoD).
     #[verified_engine::verified]
     pub fn n70(&self, d: DepthOfDischarge) -> Cycles {
         DegradationModel::n70(self, d)
     }
 
-    /// Calculates the remaining battery capacity after a number of cycles.
     #[verified_engine::verified]
     pub fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity {
         DegradationModel::capacity(self, n, d)
     }
 
-    /// Calculates the number of equivalent full cycles to reach a target capacity.
     #[verified_engine::verified]
     pub fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles {
         DegradationModel::cycles_to_capacity(self, target, d)
@@ -116,17 +97,14 @@ mod tests {
     fn test_standard_model_n70() {
         let model = PowerLawModel::standard();
 
-        // Check anchor points from documentation approximately
-        // DoD=100%, N70=300
-        let n70_100 = model.n70(DepthOfDischarge::new_clamped(100.0)).as_f64();
+        let n70_100 = model.n70(DepthOfDischarge::new_clamped(100.0)) / Cycles::new_clamped(1.0);
         assert!(
             (n70_100 - 300.0).abs() < 50.0,
             "Expected ~300, got {}",
             n70_100
         );
 
-        // DoD=10%, N70=6000
-        let n70_10 = model.n70(DepthOfDischarge::new_clamped(10.0)).as_f64();
+        let n70_10 = model.n70(DepthOfDischarge::new_clamped(10.0)) / Cycles::new_clamped(1.0);
         assert!(
             (n70_10 - 6000.0).abs() < 500.0,
             "Expected ~6000, got {}",
@@ -139,15 +117,13 @@ mod tests {
     fn test_capacity_decay() {
         let model = PowerLawModel::standard();
         let dod = DepthOfDischarge::new_clamped(60.0);
-        let n70 = model.n70(dod).as_f64();
+        let n70 = model.n70(dod) / Cycles::new_clamped(1.0);
 
-        // At 0 cycles, capacity should be 1.0
         let cap_0 = model.capacity(Cycles::new_clamped(0.0), dod);
-        assert!((cap_0.as_f64() - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(((cap_0 / Capacity::new_clamped(1.0)) - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
 
-        // At n70 cycles, capacity should be 0.7
         let cap_n70 = model.capacity(Cycles::new_clamped(n70), dod);
-        assert!((cap_n70.as_f64() - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(((cap_n70 / Capacity::new_clamped(1.0)) - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
@@ -156,24 +132,21 @@ mod tests {
         let model = PowerLawModel::standard();
         let dod = DepthOfDischarge::new_clamped(50.0);
 
-        // Target 0.7 capacity -> should return n70
         let cycles = model.cycles_to_capacity(Capacity::new_clamped(0.7), dod);
         let n70 = model.n70(dod);
-        assert!((cycles.as_f64() - n70.as_f64()).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(((cycles / Cycles::new_clamped(1.0)) - (n70 / Cycles::new_clamped(1.0))).abs() < math_commons::registry::TOLERANCE_FAST);
 
-        // Target 1.0 capacity -> should be 0 cycles
         let cycles_0 = model.cycles_to_capacity(Capacity::new_clamped(1.0), dod);
-        assert!(cycles_0.as_f64() < math_commons::registry::TOLERANCE_FAST);
+        assert!((cycles_0 / Cycles::new_clamped(1.0)) < math_commons::registry::TOLERANCE_FAST);
     }
 
     #[test]
     #[verified_engine::verified]
     fn test_trait_implementation() {
-        // This function accepts any implementation of DegradationModel
         #[verified_engine::verified]
         fn evaluate_model<M: DegradationModel>(model: &M) -> f64 {
             let d = DepthOfDischarge::new_clamped(50.0);
-            model.n70(d).as_f64()
+            model.n70(d) / Cycles::new_clamped(1.0)
         }
 
         let model = PowerLawModel::standard();

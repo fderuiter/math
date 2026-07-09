@@ -1,4 +1,28 @@
-use std::ops::Deref;
+use std::ops::{Deref, Mul, Div};
+
+#[macro_export]
+macro_rules! impl_binop {
+    ($name:ident) => {
+        impl std::ops::Mul<f64> for $name {
+            type Output = Result<Self, String>;
+            fn mul(self, rhs: f64) -> Self::Output {
+                Self::new(self.0 * rhs)
+            }
+        }
+        impl std::ops::Mul<$name> for f64 {
+            type Output = Result<$name, String>;
+            fn mul(self, rhs: $name) -> Self::Output {
+                $name::new(self * rhs.0)
+            }
+        }
+        impl std::ops::Div<f64> for $name {
+            type Output = Result<Self, String>;
+            fn div(self, rhs: f64) -> Self::Output {
+                Self::new(self.0 / rhs)
+            }
+        }
+    };
+}
 
 /// A macro to define a bounded float primitive.
 #[macro_export]
@@ -30,6 +54,26 @@ macro_rules! define_bounded_float {
             pub fn value(&self) -> f64 {
                 self.0
             }
+
+            pub fn powf(&self, n: f64) -> Result<Self, String> {
+                Self::new(self.0.powf(n))
+            }
+
+            pub fn sqrt(&self) -> Result<Self, String> {
+                Self::new(self.0.sqrt())
+            }
+
+            pub fn ln(&self) -> Result<Self, String> {
+                Self::new(self.0.ln())
+            }
+
+            pub fn exp(&self) -> Result<Self, String> {
+                Self::new(self.0.exp())
+            }
+
+            pub fn abs(&self) -> Result<Self, String> {
+                Self::new(self.0.abs())
+            }
         }
 
         impl Deref for $name {
@@ -44,6 +88,8 @@ macro_rules! define_bounded_float {
                 val.0
             }
         }
+        
+        $crate::impl_binop!($name);
     };
 }
 
@@ -77,6 +123,26 @@ macro_rules! define_strictly_bounded_float {
             pub fn value(&self) -> f64 {
                 self.0
             }
+
+            pub fn powf(&self, n: f64) -> Result<Self, String> {
+                Self::new(self.0.powf(n))
+            }
+
+            pub fn sqrt(&self) -> Result<Self, String> {
+                Self::new(self.0.sqrt())
+            }
+
+            pub fn ln(&self) -> Result<Self, String> {
+                Self::new(self.0.ln())
+            }
+
+            pub fn exp(&self) -> Result<Self, String> {
+                Self::new(self.0.exp())
+            }
+
+            pub fn abs(&self) -> Result<Self, String> {
+                Self::new(self.0.abs())
+            }
         }
 
         impl Deref for $name {
@@ -91,6 +157,8 @@ macro_rules! define_strictly_bounded_float {
                 val.0
             }
         }
+        
+        $crate::impl_binop!($name);
     };
 }
 
