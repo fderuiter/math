@@ -73,12 +73,13 @@ impl<M: Trainable> TrainingLoop<M> {
     /// ```rust
     /// use nalgebra::DVector;
     /// use domain_ai::ai::optimization::SGD;
+    /// use rand::SeedableRng;
     /// use domain_ai::ai::deep_learning_theory::cycle::TrainingLoop;
     ///
     /// let x = DVector::from_vec(vec![1.0, 0.5]);
     /// let y_true = DVector::from_vec(vec![1.0, 0.0]);
     ///
-    /// let optimizer = Box::new(SGD::new(0.01));
+    /// let optimizer = Box::new(SGD::new(0.01, 0.01, rand::rngs::StdRng::seed_from_u64(42)));
     /// let mut trainer = TrainingLoop::new(2, 4, 2, optimizer);
     ///
     /// let loss = trainer.train_step(&x, &y_true).unwrap();

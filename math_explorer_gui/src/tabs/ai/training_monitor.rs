@@ -1,3 +1,4 @@
+use rand::SeedableRng;
 use crate::accessibility::AccessibleHoverText;
 use crate::framework::InteractiveTool;
 use eframe::egui;
@@ -35,9 +36,9 @@ impl Default for TrainingMonitorTool {
 
         // Fallback to SGD if Adam fails (though it shouldn't for f64 constants).
         let optimizer: Box<dyn math_explorer::ai::optimization::Optimizer<f64>> =
-            match Adam::new(learning_rate) {
+            match Adam::new(learning_rate, 0.01, rand::rngs::StdRng::seed_from_u64(42)) {
                 Ok(adam) => Box::new(adam),
-                Err(_) => Box::new(math_explorer::ai::optimization::SGD::new(learning_rate)),
+                Err(_) => Box::new(math_explorer::ai::optimization::SGD::new(learning_rate, 0.01, rand::rngs::StdRng::seed_from_u64(42))),
             };
 
         let training_loop = TrainingLoop::new(2, hidden_dim, 2, optimizer);
@@ -59,7 +60,7 @@ impl Default for TrainingMonitorTool {
 
 impl TrainingMonitorTool {
     fn reset(&mut self) {
-        if let Ok(adam) = Adam::new(self.learning_rate) {
+        if let Ok(adam) = Adam::new(self.learning_rate, 0.01, rand::rngs::StdRng::seed_from_u64(42)) {
             let optimizer = Box::new(adam);
             self.training_loop = TrainingLoop::new(2, self.hidden_dim, 2, optimizer);
             self.epoch = 0;

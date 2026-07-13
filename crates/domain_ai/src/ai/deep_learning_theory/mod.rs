@@ -51,6 +51,7 @@
 //! ```rust
 //! use domain_ai::ai::deep_learning_theory::cycle::TrainingLoop;
 //! use domain_ai::ai::optimization::SGD;
+//! use rand::SeedableRng;
 //! use nalgebra::DVector;
 //!
 //! // 1. Define Architecture
@@ -63,7 +64,7 @@
 //!
 //! // 2. Choose an Optimizer
 //! // Stochastic Gradient Descent with Learning Rate 0.01
-//! let optimizer = Box::new(SGD::new(0.01));
+//! let optimizer = Box::new(SGD::new(0.01, 0.01, rand::rngs::StdRng::seed_from_u64(42)));
 //!
 //! // 3. Initialize the Training Loop
 //! let mut model = TrainingLoop::new(input_dim, hidden_dim, output_dim, optimizer);

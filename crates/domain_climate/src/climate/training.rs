@@ -20,7 +20,8 @@ impl<'a, A: AutoencoderModel, P: PredictorModel> CeraTrainer<'a, A, P, SGD<f32>>
     pub fn new(model: &'a mut Cera<A, P>) -> Self {
         // Initialize optimizer from config.
         let lr = model.config.learning_rate;
-        let optimizer = SGD::new(lr);
+        use rand::SeedableRng;
+        let optimizer = SGD::new(lr, 0.01, rand::rngs::StdRng::seed_from_u64(42));
         Self { model, optimizer }
     }
 }

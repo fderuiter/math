@@ -18,8 +18,8 @@ pub enum EvolutionError {
     OptimizationError,
 }
 
-/// The unified numerical evolution engine trait.
-/// Merges the AI optimizer and Physics solver hierarchies.
+/// The legacy unified numerical evolution engine trait.
+/// Enforces fixed loop bounds and centralized RNG injection.
 pub trait EvolutionEngine<State, AuxState> {
     /// Explicit hook for fused streaming and collision steps, or gradient updates.
     fn step<R: RngCore + ?Sized>(
@@ -41,6 +41,50 @@ pub trait EvolutionEngine<State, AuxState> {
     ) -> Result<(), EvolutionError> {
         for _ in 0..ITERS {
             self.step(state, aux, rng, dt)?;
+        }
+        Ok(())
+    }
+}
+
+pub trait DeterministicEvolutionEngine<State, AuxState> {
+    fn step(
+        &mut self,
+        state: &mut State,
+        aux: &mut AuxState,
+        dt: f64,
+    ) -> Result<(), EvolutionError>;
+
+    fn evolve<const ITERS: usize>(
+        &mut self,
+        state: &mut State,
+        aux: &mut AuxState,
+        dt: f64,
+    ) -> Result<(), EvolutionError> {
+        for _ in 0..ITERS {
+            self.step(state, aux, dt)?;
+        }
+        Ok(())
+    }
+}
+
+pub trait StochasticEvolutionEngine<State, AuxState> {
+    fn step_stochastic<R: RngCore + ?Sized>(
+        &mut self,
+        state: &mut State,
+        aux: &mut AuxState,
+        rng: &mut R,
+        dt: f64,
+    ) -> Result<(), EvolutionError>;
+
+    fn evolve_stochastic<R: RngCore + ?Sized, const ITERS: usize>(
+        &mut self,
+        state: &mut State,
+        aux: &mut AuxState,
+        rng: &mut R,
+        dt: f64,
+    ) -> Result<(), EvolutionError> {
+        for _ in 0..ITERS {
+            self.step_stochastic(state, aux, rng, dt)?;
         }
         Ok(())
     }

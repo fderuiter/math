@@ -150,7 +150,8 @@ mod tests {
         let input_size = 10;
         let output_size = 5;
         let mut predictor = Predictor::new(input_size, output_size);
-        let mut optimizer = SGD::new(0.1f32);
+        use rand::SeedableRng;
+        let mut optimizer = SGD::new(0.1f32, 0.01, rand::rngs::StdRng::seed_from_u64(42));
 
         let initial_kernel = predictor.layers[0].kernel.clone();
 

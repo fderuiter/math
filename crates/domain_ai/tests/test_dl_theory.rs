@@ -1,3 +1,4 @@
+use rand::SeedableRng;
 use domain_ai::ai::deep_learning_theory::cycle::TrainingLoop;
 use domain_ai::ai::deep_learning_theory::model::TwoLayerMLP;
 use domain_ai::ai::optimization::SGD;
@@ -12,7 +13,7 @@ fn test_deep_learning_cycle() {
 
     let mut rng = oxidize_core::rng::OxidizeRng::new(1337);
     let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
-    let mut network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.5)));
+    let mut network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.5, 0.01, rand::rngs::StdRng::seed_from_u64(42))));
 
     // Dummy data: Input [1, 0] -> Class 0 ([1, 0])
     let x = DVector::from_vec(vec![1.0, 0.0]);
@@ -48,7 +49,7 @@ fn test_explicit_model_construction() {
 
     let mut rng = oxidize_core::rng::OxidizeRng::default();
     let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
-    let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1)));
+    let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1, 0.01, rand::rngs::StdRng::seed_from_u64(42))));
 
     let x = DVector::from_vec(vec![1.0, 0.0]);
     let pred = network.predict(&x);
@@ -62,7 +63,7 @@ fn test_backward_compatibility_layer_access() {
 
     let mut rng = oxidize_core::rng::OxidizeRng::default();
     let model = TwoLayerMLP::new_with_rng(2, 4, 2, &mut rng);
-    let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1)));
+    let network = TrainingLoop::new_with_model(model, Box::new(SGD::new(0.1, 0.01, rand::rngs::StdRng::seed_from_u64(42))));
 
     // This access works because of Deref<Target=TwoLayerMLP>
     let _w1 = &network.layer1.weights;
