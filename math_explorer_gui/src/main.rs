@@ -10,6 +10,7 @@ use app::MathExplorerApp;
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result {
     diagnostics::init_panic_hook();
+    let _ = federated_registry::global_registry();
     accessibility::init_accessibility_bridge();
     let native_options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
@@ -34,6 +35,7 @@ fn main() -> eframe::Result {
 fn main() {
     console_error_panic_hook::set_once();
     diagnostics::init_panic_hook();
+    let _ = federated_registry::global_registry();
     accessibility::init_accessibility_bridge();
     wasm_bindgen_futures::spawn_local(async {
         use wasm_bindgen::JsCast;
