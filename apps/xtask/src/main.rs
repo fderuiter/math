@@ -179,7 +179,37 @@ fn verify_records() {
 }
 
 fn compile_papers() {
-    println!("Compiling papers skipped in native Rust tool...");
+    println!("=== Compiling Papers with Tectonic ===");
+    let papers_dir = std::path::Path::new("papers");
+    let output_dir = std::path::Path::new("papers/output");
+    
+    if !output_dir.exists() {
+        fs::create_dir_all(output_dir).unwrap();
+    }
+
+    for entry in fs::read_dir(papers_dir).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        if path.is_file() && path.extension().map_or(false, |ext| ext == "tex") {
+            println!("Compiling {:?}", path);
+            let status = Command::new("tectonic")
+                .arg("-X")
+                .arg("compile")
+                .arg("--outdir")
+                .arg(output_dir)
+                .arg(&path)
+                .status();
+                
+            match status {
+                Ok(s) if s.success() => println!("Successfully compiled {:?}", path),
+                _ => {
+                    eprintln!("Failed to compile {:?}", path);
+                    exit(1);
+                }
+            }
+        }
+    }
+    println!("=== All papers compiled successfully ===");
 }
 
 fn traceability() {

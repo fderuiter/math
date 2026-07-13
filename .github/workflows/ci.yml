@@ -155,6 +155,33 @@ jobs:
           mkdir -p artifacts
           cp Verification_Certificate.json artifacts/ || echo "No cert generated yet"
 
+  compile-papers:
+    name: Compile Academic Papers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Tectonic
+        run: |
+          curl -sL "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz" | tar xz
+          sudo mv tectonic /usr/local/bin/
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly
+
+      - name: Compile Papers
+        run: cargo run -p xtask -- compile-papers
+
+      - name: Upload PDF Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled_papers
+          path: papers/output/*.pdf
+          retention-days: 7
+
   feature-matrix:
     name: Domain Tests (${{ matrix.feature || 'core-only' }})
     runs-on: ubuntu-latest

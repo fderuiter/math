@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{geometry}
 \usepackage{accessibility}
+\usepackage{amssymb}
 \geometry{a4paper, margin=1in}
 
 \title{A Rust Implementation of the Transformer Model}
@@ -14,13 +15,13 @@
 \maketitle
 
 \begin{abstract}
-The Transformer architecture, introduced in "Attention Is All You Need", has become the foundation of modern natural language processing. This paper presents a from-scratch implementation of the core components of the Transformer model in the Rust programming language. The implementation focuses on providing a clear, correct, and idiomatic representation of the mathematical concepts using the `nalgebra` library for linear algebra operations. We detail the implementation of Scaled Dot-Product Attention, Multi-Head Attention, Positional Encoding, and the overall Encoder-Decoder structure, accompanied by a suite of unit tests to verify correctness.
+The Transformer architecture, introduced in "Attention Is All You Need", has become the foundation of modern natural language processing. This paper presents a from-scratch implementation of the core components of the Transformer model in the Rust programming language. The implementation focuses on providing a clear, correct, and idiomatic representation of the mathematical concepts using the \texttt{nalgebra} library for linear algebra operations. We detail the implementation of Scaled Dot-Product Attention, Multi-Head Attention, Positional Encoding, and the overall Encoder-Decoder structure, accompanied by a suite of unit tests to verify correctness.
 \end{abstract}
 
 \section{Introduction}
 The Transformer model, proposed by Vaswani et al. \cite{vaswani2017attention}, represented a paradigm shift in sequence transduction models by dispensing with recurrence and convolutions entirely, relying solely on attention mechanisms. This design allows for significantly more parallelization and has led to state-of-the-art performance in a wide range of tasks.
 
-This paper documents a Rust implementation of the key components of the Transformer model. The goal is to provide a clear and understandable codebase that mirrors the mathematical specification of the original paper, built within the `math_explorer` crate. The implementation leverages the `nalgebra` library \cite{nalgebra} for its numerical computation needs.
+This paper documents a Rust implementation of the key components of the Transformer model. The goal is to provide a clear and understandable codebase that mirrors the mathematical specification of the original paper, built within the \texttt{math_explorer} crate. The implementation leverages the \texttt{nalgebra} library \cite{nalgebra} for its numerical computation needs.
 
 \section{Model Architecture}
 Our implementation follows the architecture described in the original paper. The core components are detailed below.
@@ -45,7 +46,7 @@ To incorporate sequence order, sinusoidal positional encodings are added to the 
 \[ PE_{(pos, 2i+1)} = \cos(\text{pos} / 10000^{2i/d_{\text{model}}}) \]
 
 \section{Implementation in Rust}
-The implementation is organized into a new `ai` module within the `math_explorer` crate.
+The implementation is organized into a new \texttt{ai} module within the \texttt{math_explorer} crate.
 
 \subsection{Module Structure}
 The code is structured into the following modules:
@@ -53,14 +54,14 @@ The code is structured into the following modules:
     \item \texttt{ai::positional\_encoding}: Generates the positional encodings.
     \item \texttt{ai::attention}: Implements Scaled Dot-Product and Multi-Head Attention.
     \item \texttt{ai::feed\_forward}: Implements the Position-wise Feed-Forward Network.
-    \item \texttt{ai::transformer}: Contains the `EncoderLayer`, `DecoderLayer`, and `LayerNorm` structs, assembling the final model.
+    \item \texttt{ai::transformer}: Contains the \texttt{EncoderLayer}, \texttt{DecoderLayer}, and \texttt{LayerNorm} structs, assembling the final model.
 \end{itemize}
 
 \subsection{Core Logic}
-The implementation uses the `nalgebra` crate for all matrix and vector operations. Key functions like `softmax` and `LayerNorm` were implemented from scratch, as they are not standard features of the library. Unit tests were written for each component to verify dimensional correctness and mathematical accuracy against known values.
+The implementation uses the \texttt{nalgebra} crate for all matrix and vector operations. Key functions like \texttt{softmax} and \texttt{LayerNorm} were implemented from scratch, as they are not standard features of the library. Unit tests were written for each component to verify dimensional correctness and mathematical accuracy against known values.
 
 \section{Conclusion}
-We have successfully implemented the core components of the Transformer model in Rust. The code is organized logically and tested for correctness, providing a solid foundation for further exploration into machine learning concepts within the `math_explorer` project. This work serves as a practical, low-level demonstration of a foundational model in modern AI.
+We have successfully implemented the core components of the Transformer model in Rust. The code is organized logically and tested for correctness, providing a solid foundation for further exploration into machine learning concepts within the \texttt{math_explorer} project. This work serves as a practical, low-level demonstration of a foundational model in modern AI.
 
 \bibliographystyle{plain}
 \bibliography{references}
