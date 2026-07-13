@@ -2,7 +2,7 @@
 
 
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
-use domain_ai::ai::optimization::{Optimizer, ParamType};
+use pure_math::pure_math::analysis::optimization::{ModelOptimizer as Optimizer, ParamType};
 use nalgebra::{DMatrix, Dyn, Matrix, Storage};
 
 /// A trait representing the predictor model interface.
@@ -87,7 +87,7 @@ impl PredictorModel for Predictor {
     }
 }
 
-impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Predictor {
+impl pure_math::pure_math::analysis::optimization::Trainable<f32> for Predictor {
     fn forward(&self, x: &nalgebra::DVector<f32>) -> nalgebra::DVector<f32> {
         let mut current = x.clone();
         for (i, layer) in self.layers.iter().enumerate() {
@@ -108,7 +108,7 @@ impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Predictor {
         x: &nalgebra::DVector<f32>,
         loss_grad: &nalgebra::DVector<f32>,
         optimizer: &mut dyn Optimizer<f32>,
-    ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
+    ) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
         let mut activations = Vec::new();
         let mut zs = Vec::new();
         let mut current = x.clone();
@@ -159,8 +159,9 @@ impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Predictor {
 
 #[cfg(test)]
 mod tests {
+    use rand::Rng;
     use super::*;
-    use domain_ai::ai::optimization::SGD;
+    use pure_math::pure_math::analysis::optimization::SGD;
     use nalgebra::DMatrix;
 
     #[test]
@@ -185,7 +186,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_predictor_update_weights_with_optimizer() {
-        use domain_ai::ai::deep_learning_theory::model::Trainable;
+        use pure_math::pure_math::analysis::optimization::Trainable;
         use nalgebra::DVector;
         let input_size = 10;
         let output_size = 5;

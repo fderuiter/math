@@ -2,30 +2,7 @@ use super::calculus::{linear_backward, relu, relu_prime};
 use super::linear_algebra::{DenseLayer, Vector};
 use crate::ai::optimization::{Optimizer, ParamType};
 
-/// Defines a Trainable Model that can perform forward passes and handle backpropagation.
-pub trait Trainable<T: nalgebra::RealField + Copy = f64> {
-    /// Performs a forward pass through the network.
-    /// Returns the logits (pre-softmax outputs).
-    #[verified_engine::verified]
-    fn forward(&self, x: &nalgebra::DVector<T>) -> nalgebra::DVector<T>;
-
-    /// Performs the backward pass and updates parameters.
-    ///
-    /// # Arguments
-    /// * `x` - Input vector.
-    /// * `loss_grad` - Gradient of the loss with respect to the output logits (dJ/dz).
-    /// * `optimizer` - The optimizer strategy to update parameters.
-    ///
-    /// # Errors
-    /// Returns an `OptimizationError` if the parameter updates fail during optimization.
-    #[verified_engine::verified]
-    fn backward_update(
-        &mut self,
-        x: &nalgebra::DVector<T>,
-        loss_grad: &nalgebra::DVector<T>,
-        optimizer: &mut dyn Optimizer<T>,
-    ) -> Result<(), crate::ai::optimization::OptimizationError>;
-}
+pub use pure_math::pure_math::analysis::optimization::Trainable;
 
 use verified_engine::Theory;
 

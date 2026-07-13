@@ -4,10 +4,10 @@ use crate::climate::autoencoder::AutoencoderModel;
 use crate::climate::cera::Cera;
 use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
 use crate::climate::predictor::PredictorModel;
-use domain_ai::ai::optimization::{Optimizer, SGD};
+use pure_math::pure_math::analysis::optimization::{ModelOptimizer as Optimizer, SGD};
 use nalgebra::DMatrix;
 
-use domain_ai::ai::deep_learning_theory::model::Trainable;
+use pure_math::pure_math::analysis::optimization::Trainable;
 
 /// A trainer for the CERA model.
 pub struct CeraTrainer<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32>, O: Optimizer<f32>> {
@@ -43,7 +43,7 @@ impl<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32
     /// A full implementation would require a proper autograd engine to compute
     /// gradients and an optimizer (e.g., Adam) to update the weights.
     #[verified_engine::verified]
-    fn optimizer_step(&mut self) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
+    fn optimizer_step(&mut self) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
         use nalgebra::DVector;
 
         // The autoencoder backpropagation is not implemented and will panic as explicitly required.
