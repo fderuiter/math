@@ -129,6 +129,23 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
     }
 }
 
+#[proc_macro]
+pub fn runtime_violation(input: TokenStream) -> TokenStream {
+    let msg = syn::parse_macro_input!(input as syn::LitStr);
+    let msg_str = msg.value();
+    let json = format!(
+        r#"{{"severity":"FATAL","message":"{}","metadata":{{}},"thread_name":null}}"#,
+        msg_str
+    );
+    let expanded = quote! {
+        {
+            eprintln!("{}", #json);
+            std::process::abort();
+        }
+    };
+    TokenStream::from(expanded)
+}
+
 mod embed_theory;
 
 #[proc_macro_attribute]
@@ -160,16 +177,20 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     if !is_opt_out {
         if let Some(span) = visitor.direct_recursion {
-            return syn::Error::new(
-                span,
-                "Direct recursion is not allowed in high-integrity verified modules (NASA Power of 10 Rule 1). Use #[verified(opt_out = \"reason\")] to bypass.",
-            ).to_compile_error().into();
+            let diag = format!(
+                r#"{{"severity":"FATAL","message":"VIOLATION: Direct recursion is not allowed in high-integrity verified modules (NASA Power of 10 Rule 1). Use #[verified(opt_out = \"reason\")] to bypass.","metadata":{{}},"thread_name":null}}"#
+            );
+            return syn::Error::new(span, diag).to_compile_error().into();
         }
 
         if visitor.statements > 60 {
+            let diag = format!(
+                r#"{{"severity":"FATAL","message":"VIOLATION: Function exceeds 60 statements (NASA Power of 10 Rule 4) - length: {} statements","metadata":{{}},"thread_name":null}}"#,
+                visitor.statements
+            );
             return syn::Error::new_spanned(
                 &input_fn.sig.ident,
-                format!("Function exceeds 60 statements (NASA Power of 10 Rule 4) - length: {} statements", visitor.statements)
+                diag
             ).to_compile_error().into();
         }
     }
