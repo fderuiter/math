@@ -3,11 +3,11 @@ use super::linear_algebra::{DenseLayer, Vector};
 use crate::ai::optimization::{Optimizer, ParamType};
 
 /// Defines a Trainable Model that can perform forward passes and handle backpropagation.
-pub trait Trainable {
+pub trait Trainable<T: nalgebra::RealField + Copy = f64> {
     /// Performs a forward pass through the network.
     /// Returns the logits (pre-softmax outputs).
     #[verified_engine::verified]
-    fn forward(&self, x: &Vector) -> Vector;
+    fn forward(&self, x: &nalgebra::DVector<T>) -> nalgebra::DVector<T>;
 
     /// Performs the backward pass and updates parameters.
     ///
@@ -21,9 +21,9 @@ pub trait Trainable {
     #[verified_engine::verified]
     fn backward_update(
         &mut self,
-        x: &Vector,
-        loss_grad: &Vector,
-        optimizer: &mut dyn Optimizer<f64>,
+        x: &nalgebra::DVector<T>,
+        loss_grad: &nalgebra::DVector<T>,
+        optimizer: &mut dyn Optimizer<T>,
     ) -> Result<(), crate::ai::optimization::OptimizationError>;
 }
 

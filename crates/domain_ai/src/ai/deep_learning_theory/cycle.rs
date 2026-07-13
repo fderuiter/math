@@ -11,13 +11,13 @@ use std::ops::{Deref, DerefMut};
 ///
 /// # Generics
 /// * `M`: The model type, implementing `Trainable`. Defaults to `TwoLayerMLP` for backward compatibility.
-pub struct TrainingLoop<M: Trainable = TwoLayerMLP> {
+pub struct TrainingLoop<M: Trainable<f64> = TwoLayerMLP> {
     pub model: M,
     pub optimizer: Box<dyn Optimizer<f64>>,
 }
 
 // Deref implementation allows `network.layer1` access if `M` has those fields (like `TwoLayerMLP`).
-impl<M: Trainable> Deref for TrainingLoop<M> {
+impl<M: Trainable<f64>> Deref for TrainingLoop<M> {
     type Target = M;
 
     #[verified_engine::verified]
@@ -26,7 +26,7 @@ impl<M: Trainable> Deref for TrainingLoop<M> {
     }
 }
 
-impl<M: Trainable> DerefMut for TrainingLoop<M> {
+impl<M: Trainable<f64>> DerefMut for TrainingLoop<M> {
     #[verified_engine::verified]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.model
@@ -49,7 +49,7 @@ impl TrainingLoop<TwoLayerMLP> {
     }
 }
 
-impl<M: Trainable> TrainingLoop<M> {
+impl<M: Trainable<f64>> TrainingLoop<M> {
     /// Creates a new Training Loop with a custom model.
     #[verified_engine::verified]
     pub fn new_with_model(model: M, optimizer: Box<dyn Optimizer<f64>>) -> Self {
