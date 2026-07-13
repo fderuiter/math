@@ -29,7 +29,10 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn verify_module_registered(module_name: &str) -> bool {
         let vfs = crate::vfs::DefaultVfs;
-        let registry_content = futures::executor::block_on(vfs.read_to_string("traceability.toml")).unwrap_or_default();
+        let mut registry_content = futures::executor::block_on(vfs.read_to_string("traceability.toml")).unwrap_or_default();
+        if registry_content.is_empty() {
+            registry_content = futures::executor::block_on(vfs.read_to_string("../../traceability.toml")).unwrap_or_default();
+        }
         if let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
             && let Some(paper) = links.get(module_name)

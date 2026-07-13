@@ -1,9 +1,9 @@
 //! This module defines the predictor model for the CERA framework.
-use rand::Rng;
+
 
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
 use domain_ai::ai::optimization::{Optimizer, ParamType};
-use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
+use nalgebra::{DMatrix, Dyn, Matrix, Storage};
 
 /// A trait representing the predictor model interface.
 /// This allows for different predictor architectures and decouples the training loop.
@@ -11,13 +11,6 @@ pub trait PredictorModel {
     /// Performs a forward pass through the predictor.
     #[verified_engine::verified]
     fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32>;
-
-    /// Updates the weights of the predictor using the provided optimizer.
-    /// Note: This replaces the previous simplified learning rate update.
-    fn update_weights<O: Optimizer<f32>>(
-        &mut self,
-        optimizer: &mut O,
-    ) -> Result<(), domain_ai::ai::optimization::OptimizationError>;
 }
 
 /// A multi-layer perceptron (MLP) used as the predictor in the CERA framework.
@@ -85,35 +78,80 @@ impl PredictorModel for Predictor {
     fn forward<S: Storage<f32, Dyn, Dyn>>(&self, input: &Matrix<f32, Dyn, Dyn, S>) -> DMatrix<f32> {
         let mut x = input.clone_owned();
         for (i, layer) in self.layers.iter().enumerate() {
-            // A dense layer is equivalent to a 1D convolution with kernel size 1
-            // if we treat the input as having 1 level.
-            // Our conv1d function `input * kernel.transpose()` works directly for this.
             x = crate::climate::tensor_ops::conv1d(&x, &layer.kernel, &layer.bias);
-            // No activation on the final layer
             if i < self.layers.len() - 1 {
                 leaky_relu(&mut x, 0.01);
             }
         }
         x
     }
+}
 
-    fn update_weights<O: Optimizer<f32>>(
+impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Predictor {
+    fn forward(&self, x: &nalgebra::DVector<f32>) -> nalgebra::DVector<f32> {
+        let mut current = x.clone();
+        for (i, layer) in self.layers.iter().enumerate() {
+            current = &layer.kernel * &current + &layer.bias;
+            if i < self.layers.len() - 1 {
+                for v in current.iter_mut() {
+                    if *v < 0.0 {
+                        *v *= 0.01;
+                    }
+                }
+            }
+        }
+        current
+    }
+
+    fn backward_update(
         &mut self,
-        optimizer: &mut O,
+        x: &nalgebra::DVector<f32>,
+        loss_grad: &nalgebra::DVector<f32>,
+        optimizer: &mut dyn Optimizer<f32>,
     ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
-        for (i, layer) in self.layers.iter_mut().enumerate() {
-            // Placeholder: Generate random gradients to simulate training dynamics
-            // In a real implementation, these would come from backpropagation.
-            let grad_k = DMatrix::from_fn(layer.kernel.nrows(), layer.kernel.ncols(), |_, _| {
-                oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
-            });
-            let grad_b = DVector::from_fn(layer.bias.len(), |_, _| {
-                oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
-            });
+        let mut activations = Vec::new();
+        let mut zs = Vec::new();
+        let mut current = x.clone();
+        activations.push(current.clone());
 
-            // Use the optimizer strategy to update weights
-            optimizer.update_matrix((i, ParamType::Weight), &mut layer.kernel, &grad_k)?;
-            optimizer.update_vector((i, ParamType::Bias), &mut layer.bias, &grad_b)?;
+        for (i, layer) in self.layers.iter().enumerate() {
+            let z = &layer.kernel * &current + &layer.bias;
+            zs.push(z.clone());
+            let mut a = z.clone();
+            if i < self.layers.len() - 1 {
+                for v in a.iter_mut() {
+                    if *v < 0.0 {
+                        *v *= 0.01;
+                    }
+                }
+            }
+            current = a.clone();
+            activations.push(a);
+        }
+
+        let mut d_z = loss_grad.clone();
+
+        for i in (0..self.layers.len()).rev() {
+            let a_prev = &activations[i];
+            
+            let d_w = &d_z * a_prev.transpose();
+            let d_b = d_z.clone();
+
+            let layer = &mut self.layers[i];
+            optimizer.update_matrix((i, ParamType::Weight), &mut layer.kernel, &d_w)?;
+            optimizer.update_vector((i, ParamType::Bias), &mut layer.bias, &d_b)?;
+
+            if i > 0 {
+                let d_a_prev = layer.kernel.transpose() * &d_z;
+                let z_prev = &zs[i - 1];
+                let mut d_z_prev = d_a_prev.clone();
+                for (j, val) in z_prev.iter().enumerate() {
+                    if *val < 0.0 {
+                        d_z_prev[j] *= 0.01;
+                    }
+                }
+                d_z = d_z_prev;
+            }
         }
         Ok(())
     }
@@ -147,6 +185,8 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_predictor_update_weights_with_optimizer() {
+        use domain_ai::ai::deep_learning_theory::model::Trainable;
+        use nalgebra::DVector;
         let input_size = 10;
         let output_size = 5;
         let mut predictor = Predictor::new(input_size, output_size);
@@ -155,7 +195,9 @@ mod tests {
         let initial_kernel = predictor.layers[0].kernel.clone();
 
         // Update weights
-        let _ = predictor.update_weights(&mut optimizer);
+        let dummy_x = DVector::from_element(input_size, 0.5);
+        let dummy_grad = DVector::from_element(output_size, 0.1);
+        let _ = predictor.backward_update(&dummy_x, &dummy_grad, &mut optimizer);
 
         // Check that weights have changed
         let new_kernel = &predictor.layers[0].kernel;

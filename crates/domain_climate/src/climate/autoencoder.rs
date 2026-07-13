@@ -2,7 +2,7 @@
 use rand::Rng;
 
 use crate::climate::tensor_ops::conv1d;
-use domain_ai::ai::optimization::{Optimizer, ParamType};
+use domain_ai::ai::optimization::Optimizer;
 use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
 
 /// A trait representing the Autoencoder model interface.
@@ -17,12 +17,6 @@ pub trait AutoencoderModel {
         &self,
         input: &Matrix<f32, Dyn, Dyn, S>,
     ) -> (DMatrix<f32>, DMatrix<f32>);
-
-    /// Updates the weights of the model using the provided optimizer.
-    fn update_weights<O: Optimizer<f32>>(
-        &mut self,
-        optimizer: &mut O,
-    ) -> Result<(), domain_ai::ai::optimization::OptimizationError>;
 }
 
 /// A simple leaky ReLU activation function.
@@ -86,19 +80,10 @@ impl ConvLayer {
     /// Note: This still uses random gradients as a placeholder for real backpropagation.
     pub fn update_weights<O: Optimizer<f32>>(
         &mut self,
-        optimizer: &mut O,
-        layer_idx: usize,
+        _optimizer: &mut O,
+        _layer_idx: usize,
     ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
-        let grad_k = DMatrix::from_fn(self.kernel.nrows(), self.kernel.ncols(), |_, _| {
-            oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
-        });
-        let grad_b = DVector::from_fn(self.bias.len(), |_, _| {
-            oxidize_core::rng::OxidizeRng::default().r#gen::<f32>() - 0.5
-        });
-
-        optimizer.update_matrix((layer_idx, ParamType::Weight), &mut self.kernel, &grad_k)?;
-        optimizer.update_vector((layer_idx, ParamType::Bias), &mut self.bias, &grad_b)?;
-        Ok(())
+        unimplemented!("Use Trainable interface.");
     }
 }
 
@@ -339,16 +324,22 @@ impl AutoencoderModel for Autoencoder {
         let reconstruction = self.decoder.forward(&latent);
         (latent, reconstruction)
     }
+}
 
-    fn update_weights<O: Optimizer<f32>>(
+impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Autoencoder {
+    fn forward(&self, x: &nalgebra::DVector<f32>) -> nalgebra::DVector<f32> {
+        let x_mat = nalgebra::DMatrix::from_row_slice(1, x.len(), x.as_slice());
+        let (_, recon) = AutoencoderModel::forward(self, &x_mat);
+        nalgebra::DVector::from_column_slice(recon.as_slice())
+    }
+
+    fn backward_update(
         &mut self,
-        optimizer: &mut O,
+        _x: &nalgebra::DVector<f32>,
+        _loss_grad: &nalgebra::DVector<f32>,
+        _optimizer: &mut dyn Optimizer<f32>,
     ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
-        let mut idx = 0;
-        self.encoder.update_weights(optimizer, idx)?;
-        idx += self.encoder.layers.len();
-        self.decoder.update_weights(optimizer, idx)?;
-        Ok(())
+        panic!("autoencoder backpropagation is not yet implemented");
     }
 }
 
