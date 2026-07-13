@@ -5,6 +5,9 @@ use std::sync::Arc;
 #[cfg(not(target_arch = "wasm32"))]
 use std::thread;
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::JsCast;
+
 pub enum SimCommand {
     Start,
     Pause,
@@ -174,7 +177,7 @@ impl SimulationController {
         } else {
             // Fallback if worker.js doesn't exist
             wasm_bindgen_futures::spawn_local(async move {
-                run_simulation_worker(ptr);
+                run_simulation_worker(ptr).await;
             });
         }
 
@@ -189,6 +192,20 @@ impl SimulationController {
 
     pub fn send_command(&self, cmd: SimCommand) {
         let _ = self.cmd_tx.send(cmd);
+        #[cfg(target_arch = "wasm32")]
+        {
+            if let Some(worker) = &self.worker {
+                let msg = js_sys::Object::new();
+                let _ = js_sys::Reflect::set(
+                    &msg,
+                    &wasm_bindgen::JsValue::from_str("type"),
+                    &wasm_bindgen::JsValue::from_str("wake"),
+                );
+                let _ = worker.post_message(&msg);
+            } else {
+                wake_worker();
+            }
+        }
     }
 
     pub fn latest_snapshot(&self) -> Option<&StateSnapshot> {
@@ -219,8 +236,68 @@ pub struct WorkerContext {
 }
 
 #[cfg(target_arch = "wasm32")]
+pub fn wake_worker() {
+    let global = js_sys::global();
+    if let Ok(wake_fn) = js_sys::Reflect::get(&global, &wasm_bindgen::JsValue::from_str("__sim_worker_wake")) {
+        if wake_fn.is_function() {
+            let func = wake_fn.unchecked_into::<js_sys::Function>();
+            let _ = func.call0(&wasm_bindgen::JsValue::UNDEFINED);
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn yield_to_event_loop() {
+    let promise = js_sys::Promise::new(&mut |resolve, _| {
+        let global = js_sys::global();
+        let timeout_scheduled = if let Ok(worker_scope) = global.clone().dyn_into::<web_sys::DedicatedWorkerGlobalScope>() {
+            worker_scope.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0).is_ok()
+        } else if let Ok(window) = global.dyn_into::<web_sys::Window>() {
+            window.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0).is_ok()
+        } else {
+            false
+        };
+        if !timeout_scheduled {
+            let _ = resolve.call0(&wasm_bindgen::JsValue::UNDEFINED);
+        }
+    });
+    let _ = wasm_bindgen_futures::JsFuture::from(promise).await;
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn suspend_worker() {
+    let promise = js_sys::Promise::new(&mut |resolve, _| {
+        let global = js_sys::global();
+        let _ = js_sys::Reflect::set(&global, &wasm_bindgen::JsValue::from_str("__sim_worker_wake"), &resolve);
+    });
+    let _ = wasm_bindgen_futures::JsFuture::from(promise).await;
+    // Remove the wake function after waking up
+    let global = js_sys::global();
+    let _ = js_sys::Reflect::delete_property(&global, &wasm_bindgen::JsValue::from_str("__sim_worker_wake"));
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn setup_wake_listener() {
+    let global = js_sys::global();
+    if let Ok(worker_scope) = global.dyn_into::<web_sys::DedicatedWorkerGlobalScope>() {
+        let cb = wasm_bindgen::closure::Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
+            if let Ok(data) = e.data().dyn_into::<js_sys::Object>() {
+                if let Ok(type_val) = js_sys::Reflect::get(&data, &wasm_bindgen::JsValue::from_str("type")) {
+                    if type_val.as_string().as_deref() == Some("wake") {
+                        wake_worker();
+                    }
+                }
+            }
+        }) as Box<dyn FnMut(web_sys::MessageEvent)>);
+        let _ = worker_scope.add_event_listener_with_callback("message", cb.as_ref().unchecked_ref());
+        cb.forget(); // Leak to keep it alive
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen::prelude::wasm_bindgen]
-pub fn run_simulation_worker(ptr: u32) {
+pub async fn run_simulation_worker(ptr: u32) {
+    setup_wake_listener();
     let ctx = unsafe { Box::from_raw(ptr as *mut WorkerContext) };
     let mut runner = ctx.runner;
     let cmd_rx = ctx.cmd_rx;
@@ -230,8 +307,6 @@ pub fn run_simulation_worker(ptr: u32) {
     let mut steps_per_frame = runner.get_steps_per_frame();
 
     loop {
-        // Only yield if we are NOT running, or periodically to avoid freezing if it's the fallback
-        // In a true web worker, we don't strictly need to yield, but it's good practice.
         let mut cmd_opt = None;
         if running {
             if let Ok(c) = cmd_rx.try_recv() {
@@ -241,14 +316,11 @@ pub fn run_simulation_worker(ptr: u32) {
             if let Ok(c) = cmd_rx.try_recv() {
                 cmd_opt = Some(c);
             } else {
-                // If paused, we should yield so we don't spin 100% CPU on fallback,
-                // but in a worker we could just block. Since we use try_recv we must yield.
-                // For simplicity, we just do a busy wait with requestAnimationFrame or similar if fallback,
-                // but since we are in a worker, we can just do a small loop.
-                // Actually, since we might be in the fallback (spawn_local), we must yield!
-                // We can't block here using await because the signature isn't async.
-                // Wait! If the signature isn't async, the fallback `spawn_local` CANNOT yield easily!
-                // Let's assume we are in a Web Worker, so we can just busy-wait (not ideal but works for this demo constraint).
+                suspend_worker().await;
+                // After waking up, try to receive the command again
+                if let Ok(c) = cmd_rx.try_recv() {
+                    cmd_opt = Some(c);
+                }
             }
         }
 
@@ -287,8 +359,7 @@ pub fn run_simulation_worker(ptr: u32) {
             if state_tx.send(SimStateUpdate::Snapshot(snapshot)).is_err() {
                 break;
             }
-        } else {
-            // Sleep slightly or yield if paused in worker
+            yield_to_event_loop().await;
         }
     }
 }
