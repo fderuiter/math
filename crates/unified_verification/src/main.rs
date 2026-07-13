@@ -375,9 +375,9 @@ fn print_report(
     );
 
     let mut passed = true;
-    if verified_density < 0.0 {
+    if verified_density < 2.0 {
         println!(
-            "\n[!] Assertion Density Failure: Verified modules have a density of {:.2} asserts/fn, which is below the minimum required 0.0 asserts/fn.",
+            "\n[!] Assertion Density Failure: Verified modules have a density of {:.2} asserts/fn, which is below the minimum required 2.0 asserts/fn.",
             verified_density
         );
         passed = false;
@@ -440,6 +440,9 @@ fn verify_suite(args: &[String]) {
     }
 
     let entropy_debt = entropy_guard::check_entropy(&members);
+    if !entropy_debt.is_empty() {
+        passed_security = false;
+    }
 
     if !passed_security {
         eprintln!("Security verification failed!");

@@ -62,14 +62,6 @@ pub fn run_ast_visitor() -> bool {
         for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
             if entry.path().extension().and_then(|s| s.to_str()) == Some("rs") {
                 if let Ok(content) = fs::read_to_string(entry.path()) {
-                    // Fast pre-filter
-                    if !content.contains("Command::new")
-                        && !content.contains("TcpStream")
-                        && !content.contains("UdpSocket")
-                        && !content.contains("remove_dir_all")
-                    {
-                        continue;
-                    }
                     if let Ok(ast) = syn::parse_file(&content) {
                         let mut visitor = MaliciousCodeVisitor {
                             has_shell_execution: false,
@@ -105,5 +97,5 @@ pub fn run_ast_visitor() -> bool {
     }
 
     println!("AST visitor finished. Flagged {} patterns.", flags_found);
-    true
+    flags_found == 0
 }

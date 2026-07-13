@@ -15,11 +15,11 @@ members = [
     "crates/domain_epidemiology",
     "math_explorer",
     "math_explorer_gui",
-    "crates/markdown_tests"
-, "apps/xtask",
-    "crates/unified_verification"
+    "crates/markdown_tests",
+    "apps/xtask",
+    "crates/unified_verification",
+    "experimental/generative-turbulence-experimental"
 ]
-exclude = ["experimental/generative-turbulence-experimental"]
 resolver = "2"
 
 [workspace.lints.clippy]
