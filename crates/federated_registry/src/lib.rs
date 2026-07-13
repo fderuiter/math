@@ -2,24 +2,7 @@ use std::collections::HashMap;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex, OnceLock};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Severity {
-    Info,
-    Warning,
-    Error,
-    Fatal,
-}
-
-impl std::fmt::Display for Severity {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Severity::Info => write!(f, "INFO"),
-            Severity::Warning => write!(f, "WARNING"),
-            Severity::Error => write!(f, "ERROR"),
-            Severity::Fatal => write!(f, "FATAL"),
-        }
-    }
-}
+pub use diagnostics::Severity;
 
 #[derive(Debug, Clone)]
 pub struct TelemetryEvent {
@@ -80,7 +63,23 @@ impl Default for FederatedRegistry {
 
 pub fn global_registry() -> &'static FederatedRegistry {
     static REGISTRY: OnceLock<FederatedRegistry> = OnceLock::new();
-    REGISTRY.get_or_init(FederatedRegistry::new)
+    REGISTRY.get_or_init(|| {
+        let registry = FederatedRegistry::new();
+        let sender = registry.sender.clone();
+        diagnostics::global_bus().register_listener(move |event| {
+            let source = event.metadata.get("source")
+                .cloned()
+                .unwrap_or_else(|| "diagnostics".to_string());
+            let _ = sender.send(TelemetryEvent {
+                source,
+                severity: event.severity.clone(),
+                message: event.message.clone(),
+                metadata: event.metadata.clone(),
+                thread_name: event.thread_name.clone(),
+            });
+        });
+        registry
+    })
 }
 
 pub fn init_panic_hook() {
