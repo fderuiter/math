@@ -31,6 +31,8 @@ pub fn check_profiles(workspace_members: &[&str], auto_fix: bool) -> bool {
                 eprintln!("[!] Profile mismatch: workspace root Cargo.toml is missing [profile.release] overflow-checks = true");
                 passed = false;
             }
+        } else {
+            println!("[+] Verified workspace root profile: overflow-checks = true is strictly enforced.");
         }
     }
 
@@ -87,4 +89,46 @@ fn remove_profile_release(content: &str) -> String {
         }
     }
     out.trim_end().to_string() + "\n"
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+    use std::fs;
+
+    #[test]
+    fn test_member_shadowing_failure() {
+        let temp_dir = env::temp_dir().join("unified_verification_test");
+        fs::create_dir_all(&temp_dir).unwrap();
+
+        // Save current directory and change to temp_dir
+        let original_dir = env::current_dir().unwrap();
+        env::set_current_dir(&temp_dir).unwrap();
+
+        // Create root Cargo.toml
+        fs::write(
+            "Cargo.toml",
+            "[workspace]\nmembers = [\"member1\"]\n[profile.release]\noverflow-checks = true\n",
+        )
+        .unwrap();
+
+        // Create member Cargo.toml with shadowing profile
+        fs::create_dir_all("member1").unwrap();
+        fs::write(
+            "member1/Cargo.toml",
+            "[package]\nname = \"member1\"\nversion = \"0.1.0\"\n\n[profile.release]\noverflow-checks = false\n",
+        )
+        .unwrap();
+
+        // Check profiles (auto_fix = false)
+        let passed = check_profiles(&["member1"], false);
+
+        // It should fail due to shadowing
+        assert!(!passed, "Linting should fail when member crate shadows [profile.release]");
+
+        // Clean up
+        env::set_current_dir(original_dir).unwrap();
+        fs::remove_dir_all(&temp_dir).unwrap();
+    }
 }
