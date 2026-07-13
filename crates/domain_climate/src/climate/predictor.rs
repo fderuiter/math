@@ -159,6 +159,7 @@ impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Predictor {
 
 #[cfg(test)]
 mod tests {
+    use rand::Rng;
     use super::*;
     use domain_ai::ai::optimization::SGD;
     use nalgebra::DMatrix;

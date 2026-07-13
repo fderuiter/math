@@ -84,38 +84,34 @@ pub struct DiagnosticEvent {
 pub struct DiagnosticBus {
     sender: Sender<DiagnosticEvent>,
     receiver: Arc<Mutex<Receiver<DiagnosticEvent>>>,
+    listeners: Arc<Mutex<Vec<Arc<dyn Fn(&DiagnosticEvent) + Send + Sync + 'static>>>>,
 }
 
 impl DiagnosticBus {
     pub fn new() -> Self {
-        #[cfg(feature = "federated")]
-        federated_registry::global_registry().register_source(env!("CARGO_PKG_NAME"));
-
         let (sender, receiver) = channel();
         Self {
             sender,
             receiver: Arc::new(Mutex::new(receiver)),
+            listeners: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    pub fn register_listener<F>(&self, listener: F)
+    where
+        F: Fn(&DiagnosticEvent) + Send + Sync + 'static,
+    {
+        if let Ok(mut listeners) = self.listeners.lock() {
+            listeners.push(Arc::new(listener));
         }
     }
 
     pub fn emit(&self, event: DiagnosticEvent) {
         let _ = self.sender.send(event.clone());
-
-        #[cfg(feature = "federated")]
-        {
-            let fed_severity = match event.severity {
-                Severity::Info => federated_registry::Severity::Info,
-                Severity::Warning => federated_registry::Severity::Warning,
-                Severity::Error => federated_registry::Severity::Error,
-                Severity::Fatal => federated_registry::Severity::Fatal,
-            };
-            federated_registry::global_registry().emit(federated_registry::TelemetryEvent {
-                source: env!("CARGO_PKG_NAME").to_string(),
-                severity: fed_severity,
-                message: event.message,
-                metadata: event.metadata,
-                thread_name: event.thread_name,
-            });
+        if let Ok(listeners) = self.listeners.lock() {
+            for listener in listeners.iter() {
+                listener(&event);
+            }
         }
     }
 
