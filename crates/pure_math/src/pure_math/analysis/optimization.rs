@@ -297,3 +297,63 @@ where
         Ok(())
     }
 }
+
+/// Identifies the type of parameter being updated.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ParamType {
+    Weight,
+    Bias,
+}
+
+/// Legacy Adapter Trait to maintain backward compatibility for models.
+/// The `Optimizer` uses a generic `Key`, but old code expects `(usize, ParamType)`.
+pub trait ModelOptimizer<T: RealField + Copy>: Optimizer<T, (usize, ParamType)> {
+    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
+    #[verified_engine::verified]
+    fn update_matrix_legacy(
+        &mut self,
+        layer_idx: usize,
+        param: &mut DMatrix<T>,
+        grad: &DMatrix<T>,
+    ) -> Result<(), OptimizationError> {
+        self.update_matrix((layer_idx, ParamType::Weight), param, grad)
+    }
+
+    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
+    #[verified_engine::verified]
+    fn update_vector_legacy(
+        &mut self,
+        layer_idx: usize,
+        param: &mut DVector<T>,
+        grad: &DVector<T>,
+    ) -> Result<(), OptimizationError> {
+        self.update_vector((layer_idx, ParamType::Bias), param, grad)
+    }
+}
+
+impl<T: RealField + Copy, O> ModelOptimizer<T> for O where O: Optimizer<T, (usize, ParamType)> {}
+
+/// Defines a Trainable Model that can perform forward passes and handle backpropagation.
+pub trait Trainable<T: nalgebra::RealField + Copy = f64> {
+    /// Performs a forward pass through the network.
+    /// Returns the logits (pre-softmax outputs).
+    #[verified_engine::verified]
+    fn forward(&self, x: &nalgebra::DVector<T>) -> nalgebra::DVector<T>;
+
+    /// Performs the backward pass and updates parameters.
+    ///
+    /// # Arguments
+    /// * `x` - Input vector.
+    /// * `loss_grad` - Gradient of the loss with respect to the output logits (dJ/dz).
+    /// * `optimizer` - The optimizer strategy to update parameters.
+    ///
+    /// # Errors
+    /// Returns an `OptimizationError` if the parameter updates fail during optimization.
+    #[verified_engine::verified]
+    fn backward_update(
+        &mut self,
+        x: &nalgebra::DVector<T>,
+        loss_grad: &nalgebra::DVector<T>,
+        optimizer: &mut dyn ModelOptimizer<T>,
+    ) -> Result<(), OptimizationError>;
+}

@@ -2,7 +2,7 @@
 use rand::Rng;
 
 use crate::climate::tensor_ops::conv1d;
-use domain_ai::ai::optimization::Optimizer;
+use pure_math::pure_math::analysis::optimization::ModelOptimizer as Optimizer;
 use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
 
 /// A trait representing the Autoencoder model interface.
@@ -82,7 +82,7 @@ impl ConvLayer {
         &mut self,
         _optimizer: &mut O,
         _layer_idx: usize,
-    ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
+    ) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
         unimplemented!("Use Trainable interface.");
     }
 }
@@ -159,7 +159,7 @@ impl Encoder {
         &mut self,
         optimizer: &mut O,
         start_idx: usize,
-    ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
+    ) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
         for (i, layer) in self.layers.iter_mut().enumerate() {
             layer.update_weights(optimizer, start_idx + i)?;
         }
@@ -238,7 +238,7 @@ impl Decoder {
         &mut self,
         optimizer: &mut O,
         start_idx: usize,
-    ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
+    ) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
         for (i, layer) in self.layers.iter_mut().enumerate() {
             layer.update_weights(optimizer, start_idx + i)?;
         }
@@ -326,7 +326,7 @@ impl AutoencoderModel for Autoencoder {
     }
 }
 
-impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Autoencoder {
+impl pure_math::pure_math::analysis::optimization::Trainable<f32> for Autoencoder {
     fn forward(&self, x: &nalgebra::DVector<f32>) -> nalgebra::DVector<f32> {
         let x_mat = nalgebra::DMatrix::from_row_slice(1, x.len(), x.as_slice());
         let (_, recon) = AutoencoderModel::forward(self, &x_mat);
@@ -338,7 +338,7 @@ impl domain_ai::ai::deep_learning_theory::model::Trainable<f32> for Autoencoder 
         _x: &nalgebra::DVector<f32>,
         _loss_grad: &nalgebra::DVector<f32>,
         _optimizer: &mut dyn Optimizer<f32>,
-    ) -> Result<(), domain_ai::ai::optimization::OptimizationError> {
+    ) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
         panic!("autoencoder backpropagation is not yet implemented");
     }
 }

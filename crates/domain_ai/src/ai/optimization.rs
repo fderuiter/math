@@ -5,17 +5,11 @@ use std::hash::Hash;
 // Re-export the core trait and implementations from pure_math
 pub use pure_math::pure_math::analysis::optimization::{
     OptimizationError, Optimizer as GenericOptimizer, SGD,
+    ParamType, ModelOptimizer as Optimizer,
 };
 
 // Import the generic Adam implementation from pure_math
 use pure_math::pure_math::analysis::optimization::Adam as GenericAdam;
-
-/// Identifies the type of parameter being updated.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ParamType {
-    Weight,
-    Bias,
-}
 
 // Type alias to maintain backward compatibility for Adam
 // The generic Adam now takes a Key, so we fix it to (usize, ParamType) for the AI module.
@@ -103,35 +97,3 @@ fn softmax<T: RealField + Copy>(z: &DVector<T>) -> DVector<T> {
     exps / sum_exps
 }
 
-/// Legacy Adapter Trait to maintain backward compatibility for AI models.
-/// The `GenericOptimizer` uses a generic `Key`, but old AI code expects `(layer_idx, ParamType)`.
-///
-/// We redefine `Optimizer` here to match the old signature but default to using `GenericOptimizer` methods
-/// if the type implements it with a compatible Key.
-pub trait Optimizer<T: RealField + Copy>: GenericOptimizer<T, (usize, ParamType)> {
-    // Default implementation delegates to the generic one using the tuple key.
-    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
-    #[verified_engine::verified]
-    fn update_matrix_legacy(
-        &mut self,
-        layer_idx: usize,
-        param: &mut DMatrix<T>,
-        grad: &DMatrix<T>,
-    ) -> Result<(), OptimizationError> {
-        self.update_matrix((layer_idx, ParamType::Weight), param, grad)
-    }
-
-    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
-    #[verified_engine::verified]
-    fn update_vector_legacy(
-        &mut self,
-        layer_idx: usize,
-        param: &mut DVector<T>,
-        grad: &DVector<T>,
-    ) -> Result<(), OptimizationError> {
-        self.update_vector((layer_idx, ParamType::Bias), param, grad)
-    }
-}
-
-// Blanket implementation for any type that implements the GenericOptimizer with the specific tuple key.
-impl<T: RealField + Copy, O> Optimizer<T> for O where O: GenericOptimizer<T, (usize, ParamType)> {}
