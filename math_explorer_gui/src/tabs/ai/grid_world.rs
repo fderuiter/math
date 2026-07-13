@@ -26,7 +26,7 @@ impl Default for GridWorldTool {
             traps: vec![GridState { x: 2, y: 2 }, GridState { x: 3, y: 2 }],
             gamma: 0.9,
         };
-        let agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap());
+        let agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap(), None);
         Self {
             current_state: env.start,
             env,
@@ -118,7 +118,7 @@ impl InteractiveTool for GridWorldTool {
                     .accessible_hover_text("Clear the Q-table and reset the agent's knowledge")
                     .clicked()
                 {
-                    self.agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap());
+                    self.agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap(), None);
                     self.reset_episode();
                     self.episodes = 0;
                 }

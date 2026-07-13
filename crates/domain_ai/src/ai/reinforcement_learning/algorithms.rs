@@ -2,7 +2,7 @@ use super::q_function::TabularQFunction;
 use super::strategies::{EpsilonGreedy, ExplorationStrategy};
 use super::types::{Action, QFunction, State};
 use math_commons::primitives::UnitInterval;
-use rand::RngCore;
+
 use std::hash::Hash;
 
 /// Q-Learning Update Rule.
@@ -34,6 +34,7 @@ where
     learning_rate: UnitInterval,
     discount_factor: UnitInterval,
     strategy: Box<dyn ExplorationStrategy<S, A>>,
+    pub rng: oxidize_core::rng::OxidizeRng,
 }
 
 /// Legacy alias for the Tabular Q-Learning Agent.
@@ -47,19 +48,26 @@ where
     A: Action,
     Q: QFunction<S, A>,
 {
-    /// Creates a new generic Q-Learning agent.
+    /// Creates a new generic Q-Learning agent. Optionally provide a seed.
     #[verified_engine::verified]
     pub fn new_generic(
         q_func: Q,
         learning_rate: UnitInterval,
         discount_factor: UnitInterval,
         strategy: Box<dyn ExplorationStrategy<S, A>>,
+        seed: Option<u64>,
     ) -> Self {
+        let rng = if let Some(s) = seed {
+            oxidize_core::rng::OxidizeRng::new(s)
+        } else {
+            oxidize_core::rng::OxidizeRng::default()
+        };
         Self {
             q_func,
             learning_rate,
             discount_factor,
             strategy,
+            rng,
         }
     }
 
@@ -107,29 +115,21 @@ where
     }
 
     /// Selects an action using the injected strategy.
-    /// This method uses the default thread-local RNG.
+    /// This method uses the internal owned RNG.
     #[verified_engine::verified]
-    pub fn select_action(&self, state: &S, available_actions: &[A]) -> Option<A> {
-        let mut rng = oxidize_core::rng::OxidizeRng::default();
-        self.select_action_with_rng(state, available_actions, &mut rng)
-    }
-
-    /// Selects an action using the injected strategy and a provided RNG.
-    /// Useful for deterministic testing.
-    #[verified_engine::verified]
-    pub fn select_action_with_rng(
-        &self,
-        state: &S,
-        available_actions: &[A],
-        rng: &mut dyn RngCore,
-    ) -> Option<A> {
+    pub fn select_action(&mut self, state: &S, available_actions: &[A]) -> Option<A> {
         let q_values: Vec<f64> = available_actions
             .iter()
             .map(|a| self.get_q_value(state, a))
             .collect();
 
         self.strategy
-            .select_action(state, available_actions, &q_values, rng)
+            .select_action(state, available_actions, &q_values, &mut self.rng)
+    }
+
+    /// Re-seeds the internal RNG of the agent.
+    pub fn reseed(&mut self, seed: u64) {
+        self.rng = oxidize_core::rng::OxidizeRng::new(seed);
     }
 }
 
@@ -139,34 +139,38 @@ where
     S: State + Hash + Eq,
     A: Action + Hash + Eq,
 {
-    /// Creates a new Tabular Q-Agent.
+    /// Creates a new Tabular Q-Agent. Optionally provide a seed.
     #[verified_engine::verified]
     pub fn new(
         learning_rate: UnitInterval,
         discount_factor: UnitInterval,
         epsilon: UnitInterval,
+        seed: Option<u64>,
     ) -> Self {
-        Self {
-            q_func: TabularQFunction::new(),
+        Self::new_generic(
+            TabularQFunction::new(),
             learning_rate,
             discount_factor,
-            strategy: Box::new(EpsilonGreedy::new(epsilon)),
-        }
+            Box::new(EpsilonGreedy::new(epsilon)),
+            seed,
+        )
     }
 
-    /// Creates a new Tabular Q-Agent with a custom exploration strategy.
+    /// Creates a new Tabular Q-Agent with a custom exploration strategy. Optionally provide a seed.
     #[verified_engine::verified]
     pub fn new_with_strategy(
         learning_rate: UnitInterval,
         discount_factor: UnitInterval,
         strategy: Box<dyn ExplorationStrategy<S, A>>,
+        seed: Option<u64>,
     ) -> Self {
-        Self {
-            q_func: TabularQFunction::new(),
+        Self::new_generic(
+            TabularQFunction::new(),
             learning_rate,
             discount_factor,
             strategy,
-        }
+            seed,
+        )
     }
 }
 

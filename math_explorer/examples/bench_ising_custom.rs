@@ -18,7 +18,7 @@ fn main() {
     );
 
     // --- Before: metropolis_step loop ---
-    let mut lattice = SpinLattice::new(width, height);
+    let mut lattice = SpinLattice::new(width, height, None);
     let start = Instant::now();
     for _ in 0..iterations {
         lattice.metropolis_step(temp, j_coupling, h_field);
@@ -32,7 +32,7 @@ fn main() {
     );
 
     // --- After: evolve batch ---
-    let mut lattice = SpinLattice::new(width, height);
+    let mut lattice = SpinLattice::new(width, height, None);
     let start = Instant::now();
     lattice.evolve(iterations, temp, j_coupling, h_field);
     let duration = start.elapsed();

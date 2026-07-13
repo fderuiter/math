@@ -23,7 +23,7 @@ impl Default for RewardPlotsTool {
             traps: vec![GridState { x: 2, y: 2 }, GridState { x: 3, y: 2 }],
             gamma: 0.9,
         };
-        let agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap());
+        let agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap(), None);
         Self {
             env,
             agent,
@@ -100,7 +100,7 @@ impl InteractiveTool for RewardPlotsTool {
                 )
                 .clicked()
             {
-                self.agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap());
+                self.agent = TabularQAgent::new(math_commons::primitives::UnitInterval::new(0.1).unwrap(), math_commons::primitives::UnitInterval::new(0.9).unwrap(), math_commons::primitives::UnitInterval::new(0.1).unwrap(), None);
                 self.rewards_per_episode.clear();
                 self.episodes_trained = 0;
             }

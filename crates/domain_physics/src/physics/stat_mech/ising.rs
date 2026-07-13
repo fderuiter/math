@@ -35,7 +35,7 @@ use rand::Rng;
 /// let temp = 1.0 * j_coupling / KB;
 ///
 /// // 3. Initialize Lattice
-/// let mut lattice = SpinLattice::new(width, height);
+/// let mut lattice = SpinLattice::new(width, height, None);
 ///
 /// // 4. Run Metropolis Simulation to reach equilibrium
 /// // Note: This is a probabilistic process. We use enough steps to overcome
@@ -56,6 +56,7 @@ pub struct SpinLattice {
     height: usize,
     spins: Vec<i8>,             // Flattened 2D grid
     neighbors: Vec<[usize; 4]>, // Precomputed neighbor indices [left, right, up, down]
+    rng: oxidize_core::rng::OxidizeRng,
 }
 
 impl SpinLattice {
@@ -73,16 +74,20 @@ impl SpinLattice {
         self.height
     }
 
-    /// Creates a new random spin lattice.
+    /// Creates a new random spin lattice. Optionally provide a seed.
     #[verified_engine::verified]
-    pub fn new(width: usize, height: usize) -> Self {
-        let mut rng = oxidize_core::rng::OxidizeRng::default();
-        Self::new_with_rng(width, height, &mut rng)
+    pub fn new(width: usize, height: usize, seed: Option<u64>) -> Self {
+        let rng = if let Some(s) = seed {
+            oxidize_core::rng::OxidizeRng::new(s)
+        } else {
+            oxidize_core::rng::OxidizeRng::default()
+        };
+        Self::new_with_rng(width, height, rng)
     }
 
     /// Creates a new random spin lattice using the provided RNG.
     #[verified_engine::verified]
-    pub fn new_with_rng<R: Rng + ?Sized>(width: usize, height: usize, rng: &mut R) -> Self {
+    pub fn new_with_rng(width: usize, height: usize, mut rng: oxidize_core::rng::OxidizeRng) -> Self {
         let count = width * height;
         let spins = (0..count)
             .map(|_| if rng.gen_bool(0.5) { 1 } else { -1 })
@@ -120,7 +125,13 @@ impl SpinLattice {
             height,
             spins,
             neighbors,
+            rng,
         }
+    }
+
+    /// Re-seeds the internal RNG of the lattice.
+    pub fn reseed(&mut self, seed: u64) {
+        self.rng = oxidize_core::rng::OxidizeRng::new(seed);
     }
 
     /// Gets the spin at (x, y).
@@ -186,21 +197,8 @@ impl SpinLattice {
     /// 3. Accept flip if Delta E < 0 OR with probability e^(-beta * Delta E).
     #[verified_engine::verified]
     pub fn metropolis_step(&mut self, temperature: f64, j_coupling: f64, h_field: f64) {
-        let mut rng = oxidize_core::rng::OxidizeRng::default();
-        self.metropolis_step_with_rng(temperature, j_coupling, h_field, &mut rng)
-    }
-
-    /// Performs one Metropolis algorithm step using the provided RNG.
-    #[verified_engine::verified]
-    pub fn metropolis_step_with_rng<R: Rng + ?Sized>(
-        &mut self,
-        temperature: f64,
-        j_coupling: f64,
-        h_field: f64,
-        rng: &mut R,
-    ) {
-        let x = rng.gen_range(0..self.width);
-        let y = rng.gen_range(0..self.height);
+        let x = self.rng.gen_range(0..self.width);
+        let y = self.rng.gen_range(0..self.height);
 
         let s = self.get(x, y);
 
@@ -226,7 +224,7 @@ impl SpinLattice {
         } else {
             let beta = 1.0 / (KB * temperature);
             let prob = (-beta * delta_e).exp();
-            rng.r#gen::<f64>() < prob
+            self.rng.r#gen::<f64>() < prob
         };
 
         if should_flip {
@@ -242,20 +240,6 @@ impl SpinLattice {
     /// 3. It precomputes neighbor indices to avoid coordinate arithmetic in the loop.
     #[verified_engine::verified]
     pub fn evolve(&mut self, steps: usize, temperature: f64, j_coupling: f64, h_field: f64) {
-        let mut rng = oxidize_core::rng::OxidizeRng::default();
-        self.evolve_with_rng(steps, temperature, j_coupling, h_field, &mut rng)
-    }
-
-    /// Performs multiple Metropolis steps efficiently using the provided RNG.
-    #[verified_engine::verified]
-    pub fn evolve_with_rng<R: Rng + ?Sized>(
-        &mut self,
-        steps: usize,
-        temperature: f64,
-        j_coupling: f64,
-        h_field: f64,
-        rng: &mut R,
-    ) {
         if steps == 0 || self.spins.is_empty() {
             return;
         }
@@ -285,7 +269,7 @@ impl SpinLattice {
 
         for _ in 0..steps {
             // Pick a random site. Using a single range is faster than two.
-            let idx = rng.gen_range(0..count);
+            let idx = self.rng.gen_range(0..count);
 
             let s = self.spins[idx];
             let neighbors = &self.neighbors[idx];
@@ -304,7 +288,7 @@ impl SpinLattice {
 
             // If prob > 1.0, it was delta_e < 0, so flip.
             // Else compare with random.
-            if prob > 1.0 || rng.r#gen::<f64>() < prob {
+            if prob > 1.0 || self.rng.r#gen::<f64>() < prob {
                 self.spins[idx] = -s;
             }
         }
@@ -330,13 +314,12 @@ mod tests {
 
         let width = 20;
         let height = 20;
-        let mut rng = oxidize_core::rng::OxidizeRng::default();
-        let mut lattice = SpinLattice::new_with_rng(width, height, &mut rng);
+        let mut lattice = SpinLattice::new(width, height, None);
 
         // Run many steps to equilibrate
         let steps = 10_000;
         for _ in 0..steps {
-            lattice.metropolis_step_with_rng(t_high, j_val, h_val, &mut rng);
+            lattice.metropolis_step(t_high, j_val, h_val);
         }
 
         let m = lattice.magnetization();
