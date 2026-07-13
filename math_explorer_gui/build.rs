@@ -98,7 +98,7 @@ fn scan_local_tabs(
             let abs_path = env::current_dir().unwrap().join(&target_file);
             let abs_path_str = abs_path.to_string_lossy().replace('\\', "\\\\");
             generated_mods.push_str(&format!("#[path = \"{}\"]\n", abs_path_str));
-            generated_mods.push_str(&format!("pub mod {};\n", mod_name));
+            generated_mods.push_str(&format!("mod {};\n", mod_name));
 
             let instantiation = format!("{}::{}::default()", mod_name, s_name);
             discovered_tabs.push((instantiation, feature, order));

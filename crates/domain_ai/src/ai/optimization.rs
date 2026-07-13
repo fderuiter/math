@@ -1,6 +1,4 @@
-use nalgebra::{DMatrix, DVector, RealField};
-use std::fmt::Debug;
-use std::hash::Hash;
+use nalgebra::{DVector, RealField};
 
 // Re-export the core trait and implementations from pure_math
 pub use pure_math::pure_math::analysis::optimization::{

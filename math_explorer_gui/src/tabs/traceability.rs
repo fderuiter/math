@@ -14,11 +14,9 @@ pub struct TraceabilityTab {
 }
 
 #[derive(Clone)]
-#[allow(dead_code)]
 struct PaperStatus {
     name: String,
     linked_code: Vec<String>,
-    is_wip: bool,
 }
 
 impl Default for TraceabilityTab {
@@ -130,7 +128,6 @@ impl ExplorerTab for TraceabilityTab {
                         PaperStatus {
                             name: paper_name,
                             linked_code,
-                            is_wip: false,
                         },
                     );
                 }
