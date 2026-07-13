@@ -1,79 +1,25 @@
 use super::types::Mesh;
-use obj_exporter::{Geometry, ObjSet, Object, Shape, Vertex};
-
-pub fn mesh_to_obj_set(mesh: &Mesh) -> ObjSet {
-    let mut vertices = Vec::new();
-    let mut normals = Vec::new();
-    let mut shapes = Vec::new();
-
-    for (i, tri) in mesh.triangles.iter().enumerate() {
-        let v_idx = i * 3;
-
-        vertices.push(Vertex {
-            x: tri.v1.x as f64,
-            y: tri.v1.y as f64,
-            z: tri.v1.z as f64,
-        });
-        vertices.push(Vertex {
-            x: tri.v2.x as f64,
-            y: tri.v2.y as f64,
-            z: tri.v2.z as f64,
-        });
-        vertices.push(Vertex {
-            x: tri.v3.x as f64,
-            y: tri.v3.y as f64,
-            z: tri.v3.z as f64,
-        });
-
-        normals.push(Vertex {
-            x: tri.n1.x as f64,
-            y: tri.n1.y as f64,
-            z: tri.n1.z as f64,
-        });
-        normals.push(Vertex {
-            x: tri.n2.x as f64,
-            y: tri.n2.y as f64,
-            z: tri.n2.z as f64,
-        });
-        normals.push(Vertex {
-            x: tri.n3.x as f64,
-            y: tri.n3.y as f64,
-            z: tri.n3.z as f64,
-        });
-
-        shapes.push(Shape {
-            primitive: obj_exporter::Primitive::Triangle(
-                (v_idx, None, Some(v_idx)),
-                (v_idx + 1, None, Some(v_idx + 1)),
-                (v_idx + 2, None, Some(v_idx + 2)),
-            ),
-            groups: vec![],
-            smoothing_groups: vec![],
-        });
-    }
-
-    let geometry = Geometry {
-        material_name: None,
-        shapes,
-    };
-
-    let object = Object {
-        name: "oxidize_mesh".to_string(),
-        vertices,
-        tex_vertices: vec![],
-        normals,
-        geometry: vec![geometry],
-    };
-
-    ObjSet {
-        material_library: None,
-        objects: vec![object],
-    }
-}
+use std::fmt::Write;
 
 pub fn export_mesh_to_obj_string(mesh: &Mesh) -> Result<String, std::io::Error> {
-    let obj_set = mesh_to_obj_set(mesh);
-    let mut buffer = Vec::new();
-    obj_exporter::export(&obj_set, &mut buffer).map_err(std::io::Error::other)?;
-    Ok(String::from_utf8_lossy(&buffer).to_string())
+    let estimated_size = mesh.vertices.len() * 25 + mesh.normals.len() * 25 + (mesh.indices.len() / 3) * 30 + 100;
+    let mut out = String::with_capacity(estimated_size);
+
+    out.push_str("o oxidize_mesh\n");
+    for v in &mesh.vertices {
+        let _ = writeln!(out, "v {} {} {}", v.x, v.y, v.z);
+    }
+    for n in &mesh.normals {
+        let _ = writeln!(out, "vn {} {} {}", n.x, n.y, n.z);
+    }
+    for chunk in mesh.indices.chunks(3) {
+        if chunk.len() == 3 {
+            let i1 = chunk[0] + 1;
+            let i2 = chunk[1] + 1;
+            let i3 = chunk[2] + 1;
+            let _ = writeln!(out, "f {}//{} {}//{} {}//{}", i1, i1, i2, i2, i3, i3);
+        }
+    }
+
+    Ok(out)
 }

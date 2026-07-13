@@ -1,6 +1,6 @@
 use super::gradients::{CentralDifferenceEstimator, GradientEstimator};
 use super::tables::{CUBE_EDGE_FLAGS, EDGE_CONNECTION, TRIANGLE_CONNECTION_TABLE};
-use super::types::{Mesh, Point3D, Triangle, VoxelGrid};
+use super::types::{Mesh, Point3D, VoxelGrid};
 use crate::error::IsosurfaceError;
 
 /// Interpolates between two points (p1, v1) and (p2, v2) to find the point where value == threshold.
@@ -43,6 +43,10 @@ struct CubeData {
     normals: [Point3D; 8],
     /// The case index (0-255).
     index: usize,
+    /// Base index for edge deduplication.
+    base_idx: usize,
+    stride_y: usize,
+    stride_z: usize,
 }
 
 /// Marching Cubes algorithm implementation.
@@ -97,15 +101,19 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     ///
     /// // Extract the surface at threshold 0.0.
     /// let mesh = extractor.extract(0.0).expect("Extraction failed");
-    /// assert!(!mesh.triangles.is_empty(), "Expected a generated mesh");
+    /// assert!(!mesh.indices.is_empty(), "Expected a generated mesh");
     /// ```
     #[verified_engine::verified]
     pub fn extract(&self, threshold: f32) -> Result<Mesh, IsosurfaceError> {
         self.validate_grid()?;
 
-        // Estimate capacity
-        let estimated_triangles = self.grid.width() * self.grid.height() * 5;
-        let mut triangles = Vec::with_capacity(estimated_triangles);
+        let total_voxels = self.grid.width() * self.grid.height() * self.grid.depth();
+        let max_vertices = total_voxels * 3;
+        
+        let mut vertices = Vec::with_capacity(max_vertices);
+        let mut normals = Vec::with_capacity(max_vertices);
+        let mut indices = Vec::with_capacity(max_vertices * 5); // Rough upper bound for indices
+        let mut edge_to_vertex = vec![u32::MAX; max_vertices];
 
         let stride_y = self.grid.width();
         let stride_z = self.grid.width() * self.grid.height();
@@ -118,32 +126,22 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                 let y_interior = y > 0 && y < self.grid.height() - 2;
                 let row_is_interior = z_interior && y_interior;
 
-                // Cache for the "Right Face" gradients of the previous iteration (x-1).
                 let mut cached_gradients: Option<[Point3D; 4]> = None;
 
                 for x in 0..self.grid.width() - 1 {
                     let base_idx = z * stride_z + y * stride_y + x;
 
-                    // 1. Get Values & Index
-                    // SAFETY: `base_idx` is computed from `x,y,z` which are strictly less than `width-1`, `height-1`, `depth-1`.
-                    // The offsets applied in `get_cube_values_fast` are at most `stride_y + stride_z + 1`.
-                    // The maximum index accessed is `(depth-2)*stride_z + (height-2)*stride_y + (width-2) + stride_y + stride_z + 1`
-                    // which equals `(depth-1)*stride_z + (height-1)*stride_y + (width-1)`.
-                    // This is strictly less than `width * height * depth`, which is validated by `validate_grid` to be `<= data.len()`.
                     let (values, index) =
                         self.get_cube_values_fast(base_idx, stride_y, stride_z, threshold);
 
-                    // 2. Early Exit if cube doesn't intersect surface
                     if CUBE_EDGE_FLAGS[index] == 0 {
                         cached_gradients = None;
                         continue;
                     }
 
-                    // 3. Get Positions
                     let positions = self.get_cube_positions(x, y, z);
 
-                    // 4. Get Normals (with caching)
-                    let (normals, right_face) = self.compute_gradients_fast(
+                    let (cube_normals, right_face) = self.compute_gradients_fast(
                         (x, y, z),
                         base_idx,
                         (stride_y, stride_z),
@@ -155,17 +153,19 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
                     let cube_data = CubeData {
                         values,
                         positions,
-                        normals,
+                        normals: cube_normals,
                         index,
+                        base_idx,
+                        stride_y,
+                        stride_z,
                     };
 
-                    // 5. Triangulate
-                    self.triangulate_cube(&cube_data, threshold, &mut triangles);
+                    self.triangulate_cube(&cube_data, threshold, &mut vertices, &mut normals, &mut indices, &mut edge_to_vertex);
                 }
             }
         }
 
-        Ok(Mesh { triangles })
+        Ok(Mesh { vertices, normals, indices })
     }
 
     #[verified_engine::verified]
@@ -350,32 +350,71 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 
     #[inline]
     #[verified_engine::verified]
-    fn triangulate_cube(&self, cube: &CubeData, threshold: f32, output: &mut Vec<Triangle>) {
+    fn get_edge_index(&self, base_idx: usize, stride_y: usize, stride_z: usize, edge_num: usize) -> usize {
+        match edge_num {
+            0 => base_idx * 3 + 0,
+            1 => (base_idx + 1) * 3 + 1,
+            2 => (base_idx + stride_y) * 3 + 0,
+            3 => base_idx * 3 + 1,
+            4 => (base_idx + stride_z) * 3 + 0,
+            5 => (base_idx + 1 + stride_z) * 3 + 1,
+            6 => (base_idx + stride_y + stride_z) * 3 + 0,
+            7 => (base_idx + stride_z) * 3 + 1,
+            8 => base_idx * 3 + 2,
+            9 => (base_idx + 1) * 3 + 2,
+            10 => (base_idx + 1 + stride_y) * 3 + 2,
+            11 => (base_idx + stride_y) * 3 + 2,
+            _ => unreachable!(),
+        }
+    }
+
+    #[inline]
+    #[verified_engine::verified]
+    fn triangulate_cube(
+        &self,
+        cube: &CubeData,
+        threshold: f32,
+        vertices: &mut Vec<Point3D>,
+        normals: &mut Vec<Point3D>,
+        indices: &mut Vec<usize>,
+        edge_to_vertex: &mut [u32],
+    ) {
         let edge_flags = CUBE_EDGE_FLAGS[cube.index];
-        let mut edge_vertex = [Point3D::new(0.0, 0.0, 0.0); 12];
-        let mut edge_norm = [Point3D::new(0.0, 0.0, 0.0); 12];
+        let mut edge_vertex_indices = [0usize; 12];
 
         // Interpolate vertices and normals on intersected edges
         for i in 0..12 {
             if (edge_flags & (1 << i)) != 0 {
-                let v1_idx = EDGE_CONNECTION[i][0];
-                let v2_idx = EDGE_CONNECTION[i][1];
+                let global_edge_idx = self.get_edge_index(cube.base_idx, cube.stride_y, cube.stride_z, i);
+                
+                if edge_to_vertex[global_edge_idx] != u32::MAX {
+                    edge_vertex_indices[i] = edge_to_vertex[global_edge_idx] as usize;
+                } else {
+                    let v1_idx = EDGE_CONNECTION[i][0];
+                    let v2_idx = EDGE_CONNECTION[i][1];
 
-                edge_vertex[i] = interpolate(
-                    cube.positions[v1_idx],
-                    cube.values[v1_idx],
-                    cube.positions[v2_idx],
-                    cube.values[v2_idx],
-                    threshold,
-                );
+                    let v = interpolate(
+                        cube.positions[v1_idx],
+                        cube.values[v1_idx],
+                        cube.positions[v2_idx],
+                        cube.values[v2_idx],
+                        threshold,
+                    );
 
-                edge_norm[i] = interpolate_normal(
-                    cube.normals[v1_idx],
-                    cube.values[v1_idx],
-                    cube.normals[v2_idx],
-                    cube.values[v2_idx],
-                    threshold,
-                );
+                    let n = interpolate_normal(
+                        cube.normals[v1_idx],
+                        cube.values[v1_idx],
+                        cube.normals[v2_idx],
+                        cube.values[v2_idx],
+                        threshold,
+                    );
+
+                    let new_idx = vertices.len();
+                    vertices.push(v);
+                    normals.push(n);
+                    edge_to_vertex[global_edge_idx] = new_idx as u32;
+                    edge_vertex_indices[i] = new_idx;
+                }
             }
         }
 
@@ -389,18 +428,9 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
             let v2_lookup = TRIANGLE_CONNECTION_TABLE[cube.index][i + 1];
             let v3_lookup = TRIANGLE_CONNECTION_TABLE[cube.index][i + 2];
 
-            let v1 = v1_lookup as usize;
-            let v2 = v2_lookup as usize;
-            let v3 = v3_lookup as usize;
-
-            output.push(Triangle {
-                v1: edge_vertex[v1],
-                v2: edge_vertex[v2],
-                v3: edge_vertex[v3],
-                n1: edge_norm[v1],
-                n2: edge_norm[v2],
-                n3: edge_norm[v3],
-            });
+            indices.push(edge_vertex_indices[v1_lookup as usize]);
+            indices.push(edge_vertex_indices[v2_lookup as usize]);
+            indices.push(edge_vertex_indices[v3_lookup as usize]);
 
             i += 3;
         }
@@ -440,7 +470,7 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
 /// let mesh = extract_isosurface(&grid, 0.0).expect("Failed to extract isosurface");
 ///
 /// // The simple gradient will yield triangles spanning across the middle.
-/// assert!(!mesh.triangles.is_empty(), "Mesh should contain triangles");
+/// assert!(!mesh.indices.is_empty(), "Mesh should contain triangles");
 /// ```
 #[verified_engine::verified]
 pub fn extract_isosurface(grid: &VoxelGrid, threshold: f32) -> Result<Mesh, IsosurfaceError> {

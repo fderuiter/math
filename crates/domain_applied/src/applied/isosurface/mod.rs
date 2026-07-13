@@ -26,7 +26,7 @@
 //! // 2. Extract the surface where value == 0.0
 //! let mesh = extract_isosurface(&grid, 0.0).unwrap();
 //!
-//! println!("Generated {} triangles", mesh.triangles.len());
+//! println!("Generated {} triangles", mesh.indices.len() / 3);
 //! ```
 //!
 //! ## Examples

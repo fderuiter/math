@@ -71,7 +71,7 @@ fn run_macro_benchmark() {
 
     println!(
         "Extracted {} triangles in {:?}",
-        mesh.triangles.len(),
+        mesh.indices.len() / 3,
         duration_macro
     );
 }

@@ -115,7 +115,7 @@ fn main() -> std::io::Result<()> {
     println!(
         "   Generated {}{}{} triangles.",
         Color::Bold,
-        mesh.triangles.len(),
+        mesh.indices.len() / 3,
         Color::Reset
     );
     println!();
