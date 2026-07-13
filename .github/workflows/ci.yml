@@ -72,50 +72,39 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Build Unified Verification Tool
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo build -p unified_verification --release
 
       - name: Verify Architectural Records Updates
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo run -p unified_verification --release -- verify-records
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
       - name: Check Traceability
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo run -p unified_verification --release -- traceability
 
       - name: Check Formatting
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo fmt --all -- --check
 
       - name: Check File Lengths (500 lines limit)
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo run -p unified_verification --release -- check-file-lengths
 
       - name: Build (Native)
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo build --workspace --verbose --all-features
 
       - name: Run Tests (Native)
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo test --workspace --verbose --all-features
 
       - name: Run Clippy (Native)
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo clippy --workspace --all-features -- -D warnings
 
       - name: Install cargo-llvm-cov
-        if: matrix.target != 'wasm32-unknown-unknown'
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Free up disk space before coverage
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo clean
 
       - name: Run Integrity Verified Suite
-        if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo run -p unified_verification --release -- verify-suite
 
       - name: Check Workspace (WASM)
