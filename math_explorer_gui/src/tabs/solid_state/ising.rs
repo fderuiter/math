@@ -17,7 +17,7 @@ pub struct IsingModelTool {
 impl Default for IsingModelTool {
     fn default() -> Self {
         Self {
-            lattice: SpinLattice::new(100, 100),
+            lattice: SpinLattice::new(100, 100, None),
             temperature: 2.269, // Near Critical Temp for J=1
             j_coupling: 1.0,
             h_field: 0.0,
@@ -84,7 +84,7 @@ impl InteractiveTool for IsingModelTool {
                         .accessible_hover_text("Reset the lattice spin state")
                         .clicked()
                     {
-                        self.lattice = SpinLattice::new(100, 100);
+                        self.lattice = SpinLattice::new(100, 100, None);
                         self.texture = None; // Force texture recreation
                     }
                 });

@@ -139,6 +139,7 @@ mod tests {
             UnitInterval::new(0.1).unwrap(),
             UnitInterval::new(0.9).unwrap(),
             UnitInterval::new(0.1).unwrap(),
+            None,
         );
         let state = GridState::Start;
         let action = Move::Forward;
@@ -193,21 +194,25 @@ mod tests {
     #[verified_engine::verified]
     fn test_deterministic_action_selection() {
         // Epsilon 0.5 to trigger both exploration and exploitation
-        let agent = TabularQAgent::new(
+        let mut agent1 = TabularQAgent::new(
             UnitInterval::new(0.1).unwrap(),
             UnitInterval::new(0.9).unwrap(),
             UnitInterval::new(0.5).unwrap(),
+            Some(42),
         );
+        let mut agent2 = TabularQAgent::new(
+            UnitInterval::new(0.1).unwrap(),
+            UnitInterval::new(0.9).unwrap(),
+            UnitInterval::new(0.5).unwrap(),
+            Some(42),
+        );
+        
         let state = GridState::Start;
-
-        let mut rng1 = oxidize_core::rng::OxidizeRng::default();
-        let mut rng2 = oxidize_core::rng::OxidizeRng::default();
-
         let actions = [Move::Forward, Move::Stay];
 
         for _ in 0..20 {
-            let action1 = agent.select_action_with_rng(&state, &actions, &mut rng1);
-            let action2 = agent.select_action_with_rng(&state, &actions, &mut rng2);
+            let action1 = agent1.select_action(&state, &actions);
+            let action2 = agent2.select_action(&state, &actions);
             assert_eq!(
                 action1, action2,
                 "Actions should be identical for same seed"
