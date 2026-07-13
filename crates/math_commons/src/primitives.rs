@@ -1,4 +1,4 @@
-use std::ops::{Deref, Mul, Div};
+use std::ops::Deref;
 
 #[macro_export]
 macro_rules! impl_binop {
