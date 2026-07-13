@@ -98,11 +98,11 @@ pub struct QSeries {
     pub coeffs: Vec<i64>,
 }
 \end{verbatim}
-The vector \texttt{coeffs} stores the coefficients of the series, where the index of the vector corresponds to the power of $q$. For example, the series $1 - q - q^2$ would be represented by a vector `vec![1, -1, -1]`. The precision of the series is determined by the length of this vector.
+The vector \texttt{coeffs} stores the coefficients of the series, where the index of the vector corresponds to the power of $q$. For example, the series $1 - q - q^2$ would be represented by a vector \texttt{vec![1, -1, -1]}. The precision of the series is determined by the length of this vector.
 
 \subsection{Arithmetic Operations}
 
-We implemented the standard arithmetic operations for \texttt{QSeries} by overloading the `Add`, `Mul`, and `Div` traits from Rust's standard library. This allows for natural and idiomatic expression of q-series arithmetic. For example, two series can be multiplied with the `*` operator. The implementations follow the standard algorithms for polynomial arithmetic, with careful handling of series precision. All operations are designed to work with references to avoid unnecessary copying of data.
+We implemented the standard arithmetic operations for \texttt{QSeries} by overloading the \texttt{Add}, \texttt{Mul}, and \texttt{Div} traits from Rust's standard library. This allows for natural and idiomatic expression of q-series arithmetic. For example, two series can be multiplied with the \texttt{*} operator. The implementations follow the standard algorithms for polynomial arithmetic, with careful handling of series precision. All operations are designed to work with references to avoid unnecessary copying of data.
 
 \subsection{The Eta Product \texttt{f\_k}}
 
@@ -110,7 +110,7 @@ The generating functions for the partition functions are all defined in terms of
 
 \subsection{Exponentiation}
 
-Since the generating functions often involve powers of $f_k$ functions, we implemented an efficient `pow` method for the \texttt{QSeries} struct. This method uses the exponentiation by squaring algorithm to compute powers of a q-series in logarithmic time relative to the exponent, which is significantly more efficient than repeated multiplication.
+Since the generating functions often involve powers of $f_k$ functions, we implemented an efficient \texttt{pow} method for the \texttt{QSeries} struct. This method uses the exponentiation by squaring algorithm to compute powers of a q-series in logarithmic time relative to the exponent, which is significantly more efficient than repeated multiplication.
 
 \subsection{Generating Functions}
 

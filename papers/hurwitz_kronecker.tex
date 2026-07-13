@@ -95,7 +95,7 @@ We have developed a Rust implementation to compute and verify the summation form
 
 \subsection{Module Structure}
 
-The core logic is located in the `math_explorer::pure_math::number_theory` module, which is further divided into:
+The core logic is located in the \texttt{math_explorer::pure_math::number_theory} module, which is further divided into:
 \begin{itemize}
     \item \texttt{primes}: For generating prime numbers.
     \item \texttt{class\_number}: For computing the class number $h(D)$.
@@ -116,7 +116,7 @@ pub fn hurwitz_class_number(d: i64) -> f64
 pub fn verify_summation_formula(p: u64) -> bool
 \end{verbatim}
 
-The `class_number` function is implemented by counting the number of reduced, primitive, positive-definite binary quadratic forms of a given discriminant, following the algorithm described in \cite{cohen1993course}.
+The \texttt{class_number} function is implemented by counting the number of reduced, primitive, positive-definite binary quadratic forms of a given discriminant, following the algorithm described in \cite{cohen1993course}.
 
 \section{Verification and Results}
 
@@ -147,28 +147,7 @@ In this paper, we have presented a complete and robust Rust implementation of a 
 
 Future work could involve optimizing the class number algorithm for larger discriminants and exploring other related formulas in the theory of modular forms and elliptic curves.
 
-\begin{thebibliography}{9}
-
-\bibitem{tsai2025montgomery}
-Tsai Yi-Ju,
-\textit{A Novel Summation Formula for the Hurwitz-Kronecker Class Number},
-arXiv:2509.08281v1, 2025.
-
-\bibitem{cohen1993course}
-Henri Cohen,
-\textit{A Course in Computational Algebraic Number Theory},
-Springer-Verlag, 1993.
-
-\bibitem{brown2008elliptic}
-Brittany Brown et al.,
-\textit{Elliptic curves, modular forms, and sums of Hurwitz class numbers},
-Journal of Number Theory 128.6 (2008): 1847-1863.
-
-\bibitem{zagier1975nombres}
-Don Zagier,
-\textit{Nombres de classes et formes modulaires de poids 3/2},
-Seminaire de Théorie des Nombres de Bordeaux 4 (1974-1975): 1-2.
-
-\end{thebibliography}
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}

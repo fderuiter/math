@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage{accessibility}
 \usepackage[numbers]{natbib}
+\usepackage{amssymb}
 
 \title{A Rust Implementation of Graph Parameter Algorithms for Parameterized Complexity Analysis}
 \author{Jules}
@@ -14,7 +15,7 @@
 \maketitle
 
 \begin{abstract}
-This paper details a Rust implementation of several graph parameter algorithms, inspired by the work of Komusiewicz et al. \cite{komusiewicz2025parameter}. We provide robust and efficient implementations for key parameters such as degeneracy and vertex cover, leveraging the `petgraph` library for graph data structures. This work serves as a practical, open-source companion to the theoretical analysis presented in the source paper, enabling further empirical studies in parameterized complexity.
+This paper details a Rust implementation of several graph parameter algorithms, inspired by the work of Komusiewicz et al. \cite{komusiewicz2025parameter}. We provide robust and efficient implementations for key parameters such as degeneracy and vertex cover, leveraging the \texttt{petgraph} library for graph data structures. This work serves as a practical, open-source companion to the theoretical analysis presented in the source paper, enabling further empirical studies in parameterized complexity.
 \end{abstract}
 
 \section{Introduction}
@@ -33,19 +34,19 @@ We implemented a selection of parameters from different categories as defined in
 \paragraph{Treewidth} The treewidth of a graph is a measure of its tree-likeness. Computing it is NP-hard.
 
 \section{Implementation in Rust}
-Our implementation is a new module, `graph_theory`, within the `math_explorer` Rust library.
+Our implementation is a new module, \texttt{graph_theory}, within the \texttt{math_explorer} Rust library.
 
 \subsection{Project Structure}
 The module is organized as follows:
 \begin{itemize}
-    \item \texttt{graph.rs}: Defines the core graph data structure using `petgraph`.
+    \item \texttt{graph.rs}: Defines the core graph data structure using \texttt{petgraph}.
     \item \texttt{parameters/degree.rs}: Implements degree-related parameters.
     \item \texttt{parameters/modulator.rs}: Implements modulator-based parameters.
     \item \texttt{parameters/treewidth.rs}: Implements treewidth.
 \end{itemize}
 
 \subsection{Data Structures}
-We use the `petgraph` crate to provide the underlying graph data structures. Our `Graph` struct is a wrapper around `petgraph::Graph`, configured for undirected graphs.
+We use the \texttt{petgraph} crate to provide the underlying graph data structures. Our \texttt{Graph} struct is a wrapper around \texttt{petgraph::Graph}, configured for undirected graphs.
 
 \subsection{Algorithm Implementation}
 \paragraph{Degeneracy} We implemented a linear-time algorithm to compute the degeneracy of a graph. The algorithm iteratively removes the vertex with the smallest degree and updates the degrees of its neighbors. The degeneracy is the maximum degree of a vertex at the time of its removal.

@@ -29,14 +29,14 @@ This paper introduces a new open-source Rust library for the computational explo
 
 \section{Implementation Design}
 
-The core of our computational framework is a new Rust library, developed as a module within the `math_explorer` crate. The library is designed to be modular and extensible, with a clear separation of concerns that reflects the mathematical concepts from the source paper. The main modules are `geometry`, `kolmogorov`, and `combinatorics`.
+The core of our computational framework is a new Rust library, developed as a module within the \texttt{math_explorer} crate. The library is designed to be modular and extensible, with a clear separation of concerns that reflects the mathematical concepts from the source paper. The main modules are \texttt{geometry}, \texttt{kolmogorov}, and \texttt{combinatorics}.
 
-\subsection{The `geometry` Module}
+\subsection{The \texttt{geometry} Module}
 
-The `geometry` module provides the foundational data structures for representing geometric objects. To handle the high-precision arithmetic required by the theoretical framework, we use the `rug` library, which provides arbitrary-precision rational numbers (`rug::Rational`).
+The \texttt{geometry} module provides the foundational data structures for representing geometric objects. To handle the high-precision arithmetic required by the theoretical framework, we use the \texttt{rug} library, which provides arbitrary-precision rational numbers (\texttt{rug::Rational}).
 
 \begin{itemize}
-    \item \texttt{Point2D}: A type alias for a 2D vector of `Rational` numbers, representing a point in $\mathbb{R}^2$.
+    \item \texttt{Point2D}: A type alias for a 2D vector of \texttt{Rational} numbers, representing a point in $\mathbb{R}^2$.
     \item \texttt{Line}: A struct representing a line in 2D space, defined by an origin point and a direction vector.
     \item \texttt{DyadicRational}: A struct representing a dyadic rational number of the form $m/2^r$.
     \item \texttt{DyadicPoint2D}: A struct representing a point with dyadic rational coordinates.
@@ -44,18 +44,18 @@ The `geometry` module provides the foundational data structures for representing
 
 The module also provides functions for essential geometric operations, such as calculating Euclidean distances and projecting points onto lines.
 
-\subsection{The `kolmogorov` Module}
+\subsection{The \texttt{kolmogorov} Module}
 
-The `kolmogorov` module provides functions for working with computable approximations of Kolmogorov complexity. As prefix Kolmogorov complexity ($K$) is not computable, we implement functions that compute upper bounds and approximations as used in the paper.
+The \texttt{kolmogorov} module provides functions for working with computable approximations of Kolmogorov complexity. As prefix Kolmogorov complexity ($K$) is not computable, we implement functions that compute upper bounds and approximations as used in the paper.
 
 \begin{itemize}
     \item \texttt{prefix\_kolmogorov\_approx}: This function computes an upper bound for $K(n)$ for a given integer $n$, based on the inequality $K(n) \le \log_2(n) + 2\log_2(\log_2(n)) + O(1)$.
     \item \texttt{k\_floor\_r}: This function approximates the complexity of a point at a given precision $r$ by computing the complexity of its truncated binary expansion, $K(\lfloor x \rfloor_r)$. This is a key technique used in the paper to bridge the gap between the uncomputable nature of $K$ and the need for concrete calculations.
 \end{itemize}
 
-\subsection{The `combinatorics` Module}
+\subsection{The \texttt{combinatorics} Module}
 
-The `combinatorics` module implements the Combinatorial Lemma (Lemma 1) from the source paper. This lemma is the algorithmic heart of the paper's main proofs.
+The \texttt{combinatorics} module implements the Combinatorial Lemma (Lemma 1) from the source paper. This lemma is the algorithmic heart of the paper's main proofs.
 
 \begin{itemize}
     \item \texttt{combinatorial\_lemma}: This generic function takes as input the sets $X$ and $V$, the collection of subsets $N_v$, and the similarity relations $\sim_d$, and it performs a search to find a pair of points $(u, v)$ that satisfies the lemma's conclusion. While the lemma's proof is a non-constructive counting argument, our implementation provides a constructive way to find such a pair, albeit with a computational cost that depends on the size of the sets.

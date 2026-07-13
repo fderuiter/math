@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 
 \usepackage{accessibility}
+\usepackage{amssymb}
 
 \title{Isosurface Extraction: Bridging Discrete Data to Continuous Geometry via Marching Cubes}
 \author{Jules (AI Assistant)}
@@ -54,7 +55,7 @@ We approximate the gradient $\nabla V$ using Central Differences. For example, t
 The normal at the surface vertex is then interpolated from the gradients at the edge endpoints.
 
 \section{Implementation Details}
-The implementation provided in `math\_explorer` uses Rust for safety and performance.
+The implementation provided in \texttt{math\_explorer} uses Rust for safety and performance.
 \begin{itemize}
     \item \textbf{VoxelGrid}: A flattened 1D vector storing the 3D data for cache efficiency.
     \item \textbf{Lookup Tables}: Precomputed static arrays for edge connections and triangle configurations to avoid runtime conditional logic.
