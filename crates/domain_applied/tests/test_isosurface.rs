@@ -36,11 +36,11 @@ mod tests {
         let mesh = extract_isosurface(&grid, radius).unwrap();
 
         // A sphere should have many triangles
-        assert!(mesh.triangles.len() > 100);
+        assert!(mesh.indices.len() / 3 > 100);
 
         // Check if vertices are approximately at radius distance from center
-        for tri in &mesh.triangles {
-            for v in &[tri.v1, tri.v2, tri.v3] {
+        for v in &mesh.vertices {
+            {
                 let dx = v.x - center;
                 let dy = v.y - center;
                 let dz = v.z - center;
@@ -68,6 +68,6 @@ mod tests {
             .build()
             .unwrap();
         let mesh = extract_isosurface(&grid, 5.0).unwrap();
-        assert!(!mesh.triangles.is_empty());
+        assert!(!mesh.indices.is_empty());
     }
 }

@@ -84,6 +84,7 @@ impl Div<f32> for Point3D {
     }
 }
 
+// Kept for backward compatibility if needed, but Mesh now uses indexing.
 #[derive(Debug, Clone)]
 pub struct Triangle {
     pub v1: Point3D,
@@ -94,7 +95,9 @@ pub struct Triangle {
     pub n3: Point3D,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Mesh {
-    pub triangles: Vec<Triangle>,
+    pub vertices: Vec<Point3D>,
+    pub normals: Vec<Point3D>,
+    pub indices: Vec<usize>,
 }
