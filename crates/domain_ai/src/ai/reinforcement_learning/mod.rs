@@ -54,6 +54,7 @@
 //!     UnitInterval::new(0.1).unwrap(),
 //!     UnitInterval::new(0.9).unwrap(),
 //!     UnitInterval::new(0.1).unwrap(),
+//!     None,
 //! );
 //!
 //! // 3. Training Loop (Simplified)
