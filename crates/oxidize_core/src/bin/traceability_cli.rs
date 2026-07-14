@@ -102,6 +102,11 @@ fn print_dashboard(report: &oxidize_core::traceability::TraceabilityReport) {
             verified_density
         );
     }
+
+    println!("\n=== Semantic Integrity ===");
+    for (module, status) in &report.semantic_integrity_status {
+        println!("{}: {}", module, status);
+    }
 }
 
 #[cfg(not(target_arch = "wasm32"))]

@@ -146,6 +146,9 @@ pub fn runtime_violation(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+mod latex_parser;
+mod semantic_integrity;
+
 mod embed_theory;
 
 #[proc_macro_attribute]

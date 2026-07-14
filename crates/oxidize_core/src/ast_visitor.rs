@@ -10,6 +10,7 @@ pub struct AstVisitor {
     pub total_asserts: usize,
     pub verified_funcs: usize,
     pub verified_asserts: usize,
+    pub semantic_integrity_funcs: usize,
     pub active_submodules: Vec<String>,
     pub opted_out: bool,
 }
@@ -30,6 +31,7 @@ impl AstVisitor {
             total_asserts: 0,
             verified_funcs: 0,
             verified_asserts: 0,
+            semantic_integrity_funcs: 0,
             active_submodules: Vec::new(),
             opted_out: false,
         }
@@ -99,6 +101,7 @@ impl<'ast> Visit<'ast> for AstVisitor {
         self.total_funcs += 1;
 
         let mut is_verified = false;
+        let mut has_semantic = false;
         for attr in &node.attrs {
             if let Meta::Path(path) = &attr.meta {
                 let path_str = quote::quote!(#path).to_string().replace(" ", "");
@@ -112,13 +115,18 @@ impl<'ast> Visit<'ast> for AstVisitor {
                     || path_str.starts_with("verified")
                 {
                     is_verified = true;
-                    break;
+                }
+                if path_str.contains("embed_theory") {
+                    has_semantic = true;
                 }
             }
         }
 
         if is_verified {
             self.verified_funcs += 1;
+        }
+        if has_semantic {
+            self.semantic_integrity_funcs += 1;
         }
 
         // Count assertions in this function
