@@ -15,6 +15,7 @@ pub struct TraceabilityReport {
     pub verified_asserts: usize,
     pub invalid_tiers: Vec<String>,
     pub vacuous_bypasses: Vec<String>,
+    pub semantic_integrity_status: HashMap<String, String>,
 }
 
 pub struct TraceabilityEngine<V: VirtualFileSystem> {
@@ -235,13 +236,22 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
 
                 if let Ok(ast) = syn::parse_file(&content) {
                     let mut visitor = crate::ast_visitor::AstVisitor::new();
-                    visitor.verified_modules.extend(final_citations);
+                    visitor.verified_modules.extend(final_citations.clone());
                     syn::visit::Visit::visit_file(&mut visitor, &ast);
 
                 report.total_funcs += visitor.total_funcs;
                 report.total_asserts += visitor.total_asserts;
                 report.verified_funcs += visitor.verified_funcs;
                 report.verified_asserts += visitor.verified_asserts;
+
+                for cite in &final_citations {
+                    if visitor.semantic_integrity_funcs > 0 {
+                        report.semantic_integrity_status.insert(cite.clone(), "Verified".to_string());
+                    } else if !report.semantic_integrity_status.contains_key(cite) {
+                        report.semantic_integrity_status.insert(cite.clone(), "Unverified".to_string());
+                    }
+                }
+
 
                 if visitor.has_vacuous_bypass && file.contains("domain_ai") {
                     report.vacuous_bypasses.push(file.clone());
