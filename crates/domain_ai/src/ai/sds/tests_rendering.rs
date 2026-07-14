@@ -1,5 +1,5 @@
 use crate::ai::sds::rendering::{
-    NeRFModel, generate_ray_bundle, render_image, stratified_sampling, volume_integration,
+    NeRFModel, RenderContext, generate_ray_bundle, render_image, stratified_sampling, volume_integration,
 };
 use approx::assert_relative_eq;
 use nalgebra::{Matrix4, Vector3};
@@ -17,8 +17,8 @@ fn test_generate_ray_bundle() {
 
     assert_eq!(bundle.rays.len(), width * height);
 
-    // Center pixel should have direction roughly (0, 0, -1)
-    let center_idx = (height / 2) * width + (width / 2);
+    // Center pixel for column-major iteration is (width / 2) * height + (height / 2)
+    let center_idx = (width / 2) * height + (height / 2);
     let center_ray = bundle.rays[center_idx];
 
     assert_relative_eq!(center_ray.origin.x, 0.0);
@@ -35,8 +35,9 @@ fn test_stratified_sampling() {
     let t_near = 0.0;
     let t_far = 10.0;
     let n_samples = 10;
+    let mut samples = vec![0.0; n_samples];
 
-    let samples = stratified_sampling(t_near, t_far, n_samples);
+    stratified_sampling(t_near, t_far, n_samples, &mut samples);
     assert_eq!(samples.len(), n_samples);
 
     for (i, sample) in samples.iter().enumerate().take(n_samples) {
@@ -82,7 +83,8 @@ fn test_render_image() {
     let bundle = generate_ray_bundle(&pose, width, height, fov_y);
     let model = MockNeRF;
 
-    let image = render_image(&bundle, &model, 0.1, 2.0, 5);
+    let mut ctx = RenderContext::new();
+    let image = render_image(&mut ctx, &bundle, &model, 0.1, 2.0, 5);
 
     assert_eq!(image.nrows(), height);
     assert_eq!(image.ncols(), width);
