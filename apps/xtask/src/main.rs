@@ -8,7 +8,7 @@ fn main() {
     if args.len() < 2 {
         println!("Usage: xtask <command> [args...]");
         println!(
-            "Commands: setup, test-features, verify-suite, verify-records, compile-papers, traceability, check-file-lengths"
+            "Commands: setup, test-features, verify-suite, verify-records, compile-papers, traceability, check-file-lengths, regenerate-baseline"
         );
         exit(1);
     }
@@ -20,6 +20,7 @@ fn main() {
         "compile-papers" => compile_papers(),
         "traceability" => traceability(),
         "check-file-lengths" => check_file_lengths(),
+        "regenerate-baseline" => regenerate_baseline(),
         _ => {
             println!("Unknown command");
             exit(1);
@@ -276,6 +277,20 @@ fn check_file_lengths() {
             "--release",
             "--",
             "check-file-lengths",
+        ],
+    );
+}
+fn regenerate_baseline() {
+    println!("=== Regenerate Public API Baseline ===");
+    run_cmd(
+        "cargo",
+        &[
+            "run",
+            "-p",
+            "unified_verification",
+            "--release",
+            "--",
+            "regenerate-baseline",
         ],
     );
 }

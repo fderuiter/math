@@ -12,6 +12,7 @@ use walkdir::WalkDir;
 mod ast_visitor;
 mod entropy_guard;
 mod profile;
+mod api_drift;
 mod utils;
 mod vulnerabilities;
 use utils::check_file_lengths;
@@ -53,9 +54,14 @@ fn main() {
     }
 
     match args[1].as_str() {
-        "verify-records" => verify_records(),
+        "verify-records" => {
+            if !verify_records() {
+                std::process::exit(1);
+            }
+        },
         "traceability" => traceability(),
         "verify-suite" => verify_suite(&args[2..]),
+        "regenerate-baseline" => api_drift::regenerate_baseline(),
         "check-duplicates" => {
             if !ast_visitor::run_clone_detector() {
                 std::process::exit(1);
@@ -81,11 +87,11 @@ fn main() {
     }
 }
 
-fn verify_records() {
+fn verify_records() -> bool {
     let base_sha = env::var("BASE_SHA").ok().filter(|s| !s.is_empty());
     let head_sha = env::var("HEAD_SHA").ok().filter(|s| !s.is_empty());
 
-    let (commit_msgs, changed_files) = if let (Some(base), Some(head)) = (base_sha, head_sha) {
+    let (_commit_msgs, changed_files) = if let (Some(base), Some(head)) = (base_sha, head_sha) {
         let msg_out = Command::new("git")
             .args(["log", "--format=%B", &format!("{}..{}", base, head)])
             .output()
@@ -120,11 +126,6 @@ fn verify_records() {
         (msgs, diffs)
     };
 
-    if commit_msgs.to_lowercase().contains("[skip journal]") {
-        println!("Commit message contains [skip journal]. Bypassing journal verification.");
-        return;
-    }
-
     let changed_files = changed_files.replace("\\", "/");
     println!("Changed files:\n{}", changed_files);
 
@@ -136,12 +137,20 @@ fn verify_records() {
 
     if core_modified {
         println!("Core logic areas (math_explorer/ or crates/) were modified.");
-        println!(
-            "Architectural records check is obsolete since .jules/ was removed. Successfully verified."
-        );
+        
+        let adr_modified = changed_lines.iter().any(|l| l.starts_with("docs/adr/") && l.ends_with(".md"));
+        
+        if !adr_modified {
+            println!("Verification failed! A Markdown ADR in docs/adr/ must be created or updated when modifying core logic.");
+            return false;
+        }
+        
+        println!("ADR verification passed.");
     } else {
-        println!("No core logic areas modified. Skipping journal verification.");
+        println!("No core logic areas modified. Skipping ADR verification.");
     }
+    
+    true
 }
 
 fn traceability() {
@@ -462,6 +471,14 @@ fn verify_suite(args: &[String]) {
 
     if !passed_security {
         eprintln!("Security verification failed!");
+        std::process::exit(1);
+    }
+
+    println!("Running ADR and API drift checks...");
+    if !verify_records() {
+        std::process::exit(1);
+    }
+    if !api_drift::check_api_drift() {
         std::process::exit(1);
     }
 
