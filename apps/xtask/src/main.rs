@@ -180,6 +180,19 @@ fn verify_records() {
 
 fn compile_papers() {
     println!("=== Compiling Papers with Tectonic ===");
+    
+    let check = Command::new("tectonic").arg("--version").output();
+    match check {
+        Ok(output) if output.status.success() => {}
+        _ => {
+            eprintln!("Error: Tectonic is not installed or not in PATH.");
+            eprintln!("Please install Tectonic 0.15.0 to compile academic papers:");
+            eprintln!("curl -sL \"https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz\" | tar xz");
+            eprintln!("sudo mv tectonic /usr/local/bin/");
+            exit(1);
+        }
+    }
+
     let papers_dir = std::path::Path::new("papers");
     let output_dir = std::path::Path::new("papers/output");
     
@@ -190,7 +203,7 @@ fn compile_papers() {
     for entry in fs::read_dir(papers_dir).unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
-        if path.is_file() && path.extension().map_or(false, |ext| ext == "tex") {
+        if path.is_file() && path.extension().is_some_and(|ext| ext == "tex") {
             println!("Compiling {:?}", path);
             let status = Command::new("tectonic")
                 .arg("-X")
