@@ -1,6 +1,7 @@
 use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::{SimCommand, StateSnapshot};
 use eframe::egui::ColorImage;
+use math_commons::math_kernel::colormap::heatmap_color;
 use math_commons::theory::{ParameterConstraint, TheoryDescribable};
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
@@ -157,31 +158,14 @@ fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
 
     for &val in data {
         let norm = (val - min) * inv_range;
-        let (r, g, b) = heatmap_color(norm);
-        pixels.push(r);
-        pixels.push(g);
-        pixels.push(b);
+        let rgb = heatmap_color(norm);
+        pixels.push(rgb[0]);
+        pixels.push(rgb[1]);
+        pixels.push(rgb[2]);
         pixels.push(255);
     }
 
     ColorImage::from_rgba_unmultiplied([width, height], &pixels)
-}
-
-fn heatmap_color(t: f64) -> (u8, u8, u8) {
-    let t = t.clamp(0.0, 1.0);
-    if t < 0.5 {
-        let t2 = t * 2.0;
-        let r = (255.0 * t2) as u8;
-        let g = 0;
-        let b = (128.0 * (1.0 - t2)) as u8;
-        (r, g, b)
-    } else {
-        let t2 = (t - 0.5) * 2.0;
-        let r = 255;
-        let g = (255.0 * t2) as u8;
-        let b = 0;
-        (r, g, b)
-    }
 }
 
 struct SimpleRng {

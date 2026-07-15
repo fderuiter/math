@@ -2,6 +2,7 @@ use crate::accessibility::AccessibleHoverText;
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use eframe::egui::Pos2;
+use math_commons::math_kernel::types::flatten_2d_index;
 use math_explorer::pure_math::graph_theory::dijkstra::dijkstra;
 use math_explorer::pure_math::graph_theory::graph::Graph;
 use petgraph::graph::NodeIndex;
@@ -59,7 +60,7 @@ impl AlgorithmVisualizerTool {
         // We store relative positions from (0,0) and offset them during rendering
         for r in 0..rows {
             for c in 0..cols {
-                let id = r * cols + c;
+                let id = flatten_2d_index(c, r, cols);
                 let pos = offset + eframe::egui::vec2(c as f32 * spacing, r as f32 * spacing);
                 let idx = self.graph.add_node(pos);
                 self.node_indices.insert(id, idx);
@@ -79,7 +80,7 @@ impl AlgorithmVisualizerTool {
         // Add grid edges with arbitrary weights
         for r in 0..rows {
             for c in 0..cols {
-                let u = r * cols + c;
+                let u = flatten_2d_index(c, r, cols);
                 if c < cols - 1 {
                     let v = u + 1;
                     add_edge(u, v, 1.0 + ((u + v) % 5) as f64);

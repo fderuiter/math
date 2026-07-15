@@ -1,6 +1,7 @@
 use crate::accessibility::AccessibleTheoryHover;
 use crate::framework::InteractiveTool;
 use eframe::egui;
+use math_commons::math_kernel::types::flatten_2d_index;
 use math_commons::theory::TheoryDescribable;
 use math_explorer::physics::chaos::fractals::{escape_time_julia, escape_time_mandelbrot};
 use num_complex::Complex;
@@ -319,7 +320,7 @@ impl FractalViewer {
 
                 let color = self.map_iter_to_color(iterations);
 
-                let idx = (y * width + x) * 4;
+                let idx = flatten_2d_index(x, y, width) * 4;
                 pixels[idx] = color[0];
                 pixels[idx + 1] = color[1];
                 pixels[idx + 2] = color[2];
@@ -334,13 +335,8 @@ impl FractalViewer {
         if iter == self.max_iter {
             [0, 0, 0, 255] // Black inside
         } else {
-            // Cyclic cosine palette
-            let n = iter as f64;
-            let r = (0.5 + 0.5 * (3.0 + n * 0.15).cos()) * 255.0;
-            let g = (0.5 + 0.5 * (3.0 + n * 0.15 + 2.0).cos()) * 255.0;
-            let b = (0.5 + 0.5 * (3.0 + n * 0.15 + 4.0).cos()) * 255.0;
-
-            [r as u8, g as u8, b as u8, 255]
+            let rgb = math_commons::math_kernel::colormap::cyclic_cosine_palette(iter as f64);
+            [rgb[0], rgb[1], rgb[2], 255]
         }
     }
 }

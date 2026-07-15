@@ -1,4 +1,4 @@
-use math_commons::math_kernel::types::StepSize;
+use math_commons::math_kernel::types::{flatten_2d_index, StepSize};
 
 /// Standard spatial numerical operators for fused stencil evaluations.
 #[derive(Debug, Clone, Copy)]
@@ -216,7 +216,7 @@ impl FusedStencilStepper {
 
         for y in 0..height {
             for x in 0..width {
-                let idx = y * width + x;
+                let idx = flatten_2d_index(x, y, width);
 
                 let idx_l = if x > 0 { idx - 1 } else { idx };
                 let idx_r = if x < width - 1 { idx + 1 } else { idx };

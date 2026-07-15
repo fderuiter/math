@@ -1,6 +1,8 @@
 use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::{SimCommand, StateSnapshot};
 use eframe::egui::Color32;
+use math_commons::math_kernel::types::flatten_2d_index;
+use math_commons::math_kernel::colormap::heatmap_color;
 use math_commons::theory::{ParameterConstraint, TheoryDescribable};
 use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
     BgkCollision, LatticeBoltzmannD2Q9,
@@ -52,17 +54,14 @@ impl UnifiedModel for LbmUnified {
         let mut pixels = vec![Color32::BLACK; width * height];
         for y in 0..height {
             for x in 0..width {
-                let pixel_idx = y * width + x;
+                let pixel_idx = flatten_2d_index(x, y, width);
                 if self.solver.is_obstacle(x, height - 1 - y) {
                     pixels[pixel_idx] = Color32::from_gray(50);
                 } else {
                     let v = self.solver.get_velocity_magnitude(x, height - 1 - y);
-                    let intensity = (v * 1000.0).clamp(0.0, 255.0) as u8;
-                    pixels[pixel_idx] = Color32::from_rgb(
-                        intensity,
-                        (intensity as f32 * 0.5) as u8,
-                        255 - intensity,
-                    );
+                    let normalized_v = (v * 1000.0 / 255.0).clamp(0.0, 1.0);
+                    let rgb = heatmap_color(normalized_v);
+                    pixels[pixel_idx] = Color32::from_rgb(rgb[0], rgb[1], rgb[2]);
                 }
             }
         }

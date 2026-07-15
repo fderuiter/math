@@ -2,6 +2,8 @@ use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::{Color32, ColorImage, TextureOptions};
 use egui_plot::{Plot, PlotImage, PlotPoint};
+use math_commons::math_kernel::colormap::heatmap_color;
+use math_commons::math_kernel::types::flatten_2d_index;
 use math_explorer::physics::medical::dose::kernel::{DoseKernel, ExponentialKernel};
 
 pub struct DoseCalculationTool {
@@ -114,7 +116,8 @@ impl DoseCalculationTool {
 
                 // Map dose to color (Heatmap: Black -> Blue -> Red -> White)
                 let intensity = (dose / max_dose).clamp(0.0, 1.0);
-                pixels[y * width + x] = map_value_to_color(intensity);
+                let rgb = heatmap_color(intensity);
+                pixels[flatten_2d_index(x, y, width)] = Color32::from_rgb(rgb[0], rgb[1], rgb[2]);
             }
         }
 
@@ -122,28 +125,6 @@ impl DoseCalculationTool {
 
         self.texture = Some(ctx.load_texture("dose_field", image, TextureOptions::LINEAR));
     }
-}
-
-fn map_value_to_color(t: f64) -> Color32 {
-    // Simple heatmap gradient
-    // t: 0.0 -> 1.0
-    // 0.0 - 0.25: Black -> Blue
-    // 0.25 - 0.5: Blue -> Cyan
-    // 0.5 - 0.75: Cyan -> Yellow
-    // 0.75 - 1.0: Yellow -> Red
-
-    // Simplified:
-    // Low: Blue, Mid: Green, High: Red
-    let r = (t * 2.0 - 1.0).max(0.0);
-    let g = (1.0 - (t * 2.0 - 1.0).abs()).max(0.0);
-    let b = (1.0 - t * 2.0).max(0.0);
-
-    // Apply gamma or brightness boost
-    let r = (r * 255.0) as u8;
-    let g = (g * 255.0) as u8;
-    let b = (b * 255.0) as u8;
-
-    Color32::from_rgb(r, g, b)
 }
 
 // [cite:graph_parameters_rust]

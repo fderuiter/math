@@ -1,6 +1,6 @@
 use super::boundary::BoundaryStrategy;
 use super::geometry::GeometryStrategy;
-use math_commons::math_kernel::types::GridIndex;
+use math_commons::math_kernel::types::{flatten_2d_index, GridIndex};
 use oxidize_core::iteration::IterationPattern;
 
 #[allow(missing_docs)]
@@ -33,14 +33,14 @@ impl IterationStrategy for LoopSplittingIteration {
 
         // Boundary points
         IterationPattern::for_each_boundary(width, height, |x, y| {
-            let idx = GridIndex(y * width + x);
+            let idx = GridIndex(flatten_2d_index(x, y, width));
             let (idx_l, idx_r, idx_u, idx_d) = boundary.neighbors(x, y, geom);
             op(idx, idx_l, idx_r, idx_u, idx_d);
         });
 
         // Interior points
         IterationPattern::for_each_interior(width, height, |x, y| {
-            let idx = y * width + x;
+            let idx = flatten_2d_index(x, y, width);
             let idx_l = idx - 1;
             let idx_r = idx + 1;
             let idx_u = idx - width;
