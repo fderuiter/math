@@ -40,7 +40,10 @@ impl FederatedRegistry {
 
     #[allow(missing_docs)]
     pub fn register_source(&self, name: &str) {
-        let mut sources = self.sources.lock().unwrap();
+        let mut sources = match self.sources.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
         if !sources.contains(&name.to_string()) {
             sources.push(name.to_string());
         }
@@ -48,21 +51,29 @@ impl FederatedRegistry {
 
     #[allow(missing_docs)]
     pub fn known_sources(&self) -> Vec<String> {
-        self.sources.lock().unwrap().clone()
+        let sources = match self.sources.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        sources.clone()
     }
 
     #[allow(missing_docs)]
     pub fn emit(&self, event: TelemetryEvent) {
-        let _ = self.sender.send(event);
+        if let Err(_) = self.sender.send(event.clone()) {
+            eprintln!("[{}] {} (Source: {}, Metadata: {:?})", event.severity, event.message, event.source, event.metadata);
+        }
     }
 
     #[allow(missing_docs)]
     pub fn try_recv_all(&self) -> Vec<TelemetryEvent> {
         let mut events = Vec::new();
-        if let Ok(rx) = self.receiver.lock() {
-            while let Ok(event) = rx.try_recv() {
-                events.push(event);
-            }
+        let rx = match self.receiver.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        while let Ok(event) = rx.try_recv() {
+            events.push(event);
         }
         events
     }
@@ -84,13 +95,15 @@ pub fn global_registry() -> &'static FederatedRegistry {
             let source = event.metadata.get("source")
                 .cloned()
                 .unwrap_or_else(|| "diagnostics".to_string());
-            let _ = sender.send(TelemetryEvent {
-                source,
+            if let Err(_) = sender.send(TelemetryEvent {
+                source: source.clone(),
                 severity: event.severity.clone(),
                 message: event.message.clone(),
                 metadata: event.metadata.clone(),
                 thread_name: event.thread_name.clone(),
-            });
+            }) {
+                eprintln!("[{}] {} (Source: {}, Metadata: {:?})", event.severity, event.message, source, event.metadata);
+            }
         });
         registry
     })

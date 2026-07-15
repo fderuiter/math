@@ -117,17 +117,28 @@ impl DiagnosticBus {
     where
         F: Fn(&DiagnosticEvent) + Send + Sync + 'static,
     {
-        if let Ok(mut listeners) = self.listeners.lock() {
-            listeners.push(Arc::new(listener));
-        }
+        let mut listeners = match self.listeners.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        listeners.push(Arc::new(listener));
     }
 
     #[allow(missing_docs)]
     pub fn emit(&self, event: DiagnosticEvent) {
-        let _ = self.sender.send(event.clone());
-        if let Ok(listeners) = self.listeners.lock() {
-            for listener in listeners.iter() {
+        if let Err(_) = self.sender.send(event.clone()) {
+            eprintln!("[{}] {} - Metadata: {:?}", event.severity, event.message, event.metadata);
+        }
+        let listeners = match self.listeners.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        for listener in listeners.iter() {
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 listener(&event);
+            }));
+            if let Err(_) = result {
+                eprintln!("Diagnostic listener panicked while processing event: {}", event.message);
             }
         }
     }
@@ -148,10 +159,12 @@ impl DiagnosticBus {
     #[allow(missing_docs)]
     pub fn try_recv_all(&self) -> Vec<DiagnosticEvent> {
         let mut events = Vec::new();
-        if let Ok(rx) = self.receiver.lock() {
-            while let Ok(event) = rx.try_recv() {
-                events.push(event);
-            }
+        let rx = match self.receiver.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        while let Ok(event) = rx.try_recv() {
+            events.push(event);
         }
         events
     }
