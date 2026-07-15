@@ -18,7 +18,10 @@ git clone https://github.com/fderuiter/math-explorer.git
 cd math-explorer
 
 # Check prerequisites, build the core library, run tests, and automatically configure Git hooks
-# Note: To compile academic papers, ensure pdflatex (e.g., via TeX Live) is installed.
+# Note: To compile academic papers, ensure Tectonic is installed.
+# Install Tectonic 0.15.0:
+# curl -sL "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz" | tar xz
+# sudo mv tectonic /usr/local/bin/
 cargo run -p xtask -- setup
 ```
 
