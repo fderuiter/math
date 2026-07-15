@@ -17,8 +17,7 @@ members = [
     "math_explorer_gui",
     "crates/markdown_tests",
     "apps/xtask",
-    "crates/unified_verification",
-    "experimental/generative-turbulence-experimental"
+    "crates/unified_verification"
 ]
 resolver = "2"
 
@@ -34,4 +33,9 @@ cognitive_complexity = "deny"
 egui_plot = { path = "egui_plot" }
 
 [profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true
 overflow-checks = true
+panic = "abort"
