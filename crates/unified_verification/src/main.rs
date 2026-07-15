@@ -56,7 +56,7 @@ fn main() {
                 std::process::exit(1);
             }
         },
-        "check-staged-duplicates" => utils::check_staged_duplicates(),
+        "check-staged-duplicates" => check_staged_duplicates(),
         "check-file-lengths" => {
             let members = get_workspace_members();
             let debt = check_file_lengths(&members);

@@ -35,9 +35,9 @@ impl LaplaceEquation2D {
 /// Currently assumes $u(0,y)=0, u(a,y)=0, u(x,0)=0, u(x,b)=f(x)$.
 pub struct RectangularLaplaceSolver {
     #[allow(missing_docs)]
-    pub width: f64,             // a
+    pub width: f64, // a
     #[allow(missing_docs)]
-    pub height: f64,            // b
+    pub height: f64, // b
     #[allow(missing_docs)]
     pub coefficients: Vec<f64>, // A_n coefficients
 }

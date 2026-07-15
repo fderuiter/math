@@ -1,4 +1,4 @@
-use math_commons::math_kernel::types::{flatten_2d_index, StepSize};
+use math_commons::math_kernel::types::{StepSize, flatten_2d_index};
 
 /// Standard spatial numerical operators for fused stencil evaluations.
 #[derive(Debug, Clone, Copy)]

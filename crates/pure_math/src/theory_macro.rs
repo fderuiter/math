@@ -104,9 +104,10 @@ macro_rules! empirical_verification {
             #[test]
             #[$crate::__macro_deps::verified_engine::verified]
             fn test_empirical_verification() {
-                if !$crate::__macro_deps::oxidize_core::traceability::TraceabilityEngine::<$crate::__macro_deps::oxidize_core::vfs::DefaultVfs>::verify_module_registered(
-                    $module_name,
-                ) {
+                if !$crate::__macro_deps::oxidize_core::traceability::TraceabilityEngine::<
+                    $crate::__macro_deps::oxidize_core::vfs::DefaultVfs,
+                >::verify_module_registered($module_name)
+                {
                     panic!(
                         "Traceability mismatch: module '{}' is not registered to any paper",
                         $module_name

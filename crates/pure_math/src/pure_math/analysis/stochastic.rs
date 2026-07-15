@@ -96,7 +96,7 @@ impl<R: Rng> GillespieSolver<R> {
             system.propensities(state, &mut self.buffer);
             guard
         };
-        
+
         let rates = &self.buffer;
 
         let total_rate: f64 = rates.iter().sum();
