@@ -5,30 +5,44 @@ use std::f64::consts::PI;
 /// Represents a single ray: r(t) = o + t * d
 #[derive(Debug, Clone, Copy)]
 pub struct Ray {
+    #[allow(missing_docs)]
     pub origin: Vector3<f64>,
+    #[allow(missing_docs)]
     pub direction: Vector3<f64>,
 }
 
 /// A bundle of rays corresponding to an image grid.
 pub struct RayBundle {
+    #[allow(missing_docs)]
     pub rays: Vec<Ray>,
+    #[allow(missing_docs)]
     pub width: usize,
+    #[allow(missing_docs)]
     pub height: usize,
 }
 
 /// A persistent rendering context for zero-allocation rendering.
 pub struct RenderContext {
+    #[allow(missing_docs)]
     pub image_data: Vec<Vector3<f64>>,
+    #[allow(missing_docs)]
     pub ts: Vec<f64>,
+    #[allow(missing_docs)]
     pub densities: Vec<f64>,
+    #[allow(missing_docs)]
     pub colors: Vec<Vector3<f64>>,
+    #[allow(missing_docs)]
     pub deltas: Vec<f64>,
+    #[allow(missing_docs)]
     pub width: usize,
+    #[allow(missing_docs)]
     pub height: usize,
+    #[allow(missing_docs)]
     pub n_samples: usize,
 }
 
 impl RenderContext {
+    #[allow(missing_docs)]
     pub fn new() -> Self {
         Self {
             image_data: Vec::new(),
@@ -42,6 +56,7 @@ impl RenderContext {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn resize(&mut self, width: usize, height: usize, n_samples: usize) {
         if self.width != width || self.height != height {
             self.image_data.resize(width * height, Vector3::zeros());
@@ -144,6 +159,7 @@ pub fn positional_encoding(p: f64, l: usize) -> Vec<f64> {
 /// Module 1.3: MLP Query Interface
 pub trait NeRFModel {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn query(&self, pos: &Vector3<f64>, dir: &Vector3<f64>) -> (f64, Vector3<f64>);
 }
 

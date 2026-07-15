@@ -33,6 +33,7 @@ pub trait Hamiltonian {
 /// not to be confused with the population density $m(x)$.
 #[derive(Debug, Clone, Copy)]
 pub struct QuadraticHamiltonian {
+    #[allow(missing_docs)]
     pub mass: f64,
 }
 
@@ -44,6 +45,7 @@ impl Default for QuadraticHamiltonian {
 }
 
 impl QuadraticHamiltonian {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(mass: f64) -> Self {
         Self { mass }

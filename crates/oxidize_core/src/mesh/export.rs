@@ -1,6 +1,7 @@
 use super::types::Mesh;
 use std::fmt::Write;
 
+#[allow(missing_docs)]
 pub fn export_mesh_to_obj_string(mesh: &Mesh) -> Result<String, std::io::Error> {
     let estimated_size = mesh.vertices.len() * 25 + mesh.normals.len() * 25 + (mesh.indices.len() / 3) * 30 + 100;
     let mut out = String::with_capacity(estimated_size);

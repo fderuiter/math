@@ -6,6 +6,7 @@ use nalgebra::DMatrix;
 /// Output: Text Embedding Vectors e_text.
 pub trait TextEncoder {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn encode(&self, text: &str) -> DMatrix<f64>;
 }
 

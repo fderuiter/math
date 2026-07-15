@@ -3,22 +3,29 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 /// A 3D point or vector with single-precision floating point coordinates.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point3D {
+    #[allow(missing_docs)]
     pub x: f32,
+    #[allow(missing_docs)]
     pub y: f32,
+    #[allow(missing_docs)]
     pub z: f32,
 }
 
 impl Point3D {
+    #[allow(missing_docs)]
     pub const EPSILON: f32 = 1.0e-6;
     #[inline]
+    #[allow(missing_docs)]
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
     }
     #[inline]
+    #[allow(missing_docs)]
     pub fn dot(&self, other: Point3D) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
     #[inline]
+    #[allow(missing_docs)]
     pub fn cross(&self, other: Point3D) -> Point3D {
         Point3D::new(
             self.y * other.z - self.z * other.y,
@@ -27,10 +34,12 @@ impl Point3D {
         )
     }
     #[inline]
+    #[allow(missing_docs)]
     pub fn magnitude(&self) -> f32 {
         self.dot(*self).sqrt()
     }
     #[inline]
+    #[allow(missing_docs)]
     pub fn normalize(&self) -> Point3D {
         let mag = self.magnitude();
         if mag > Self::EPSILON {
@@ -86,18 +95,29 @@ impl Div<f32> for Point3D {
 
 // Kept for backward compatibility if needed, but Mesh now uses indexing.
 #[derive(Debug, Clone)]
+#[allow(missing_docs)]
 pub struct Triangle {
+    #[allow(missing_docs)]
     pub v1: Point3D,
+    #[allow(missing_docs)]
     pub v2: Point3D,
+    #[allow(missing_docs)]
     pub v3: Point3D,
+    #[allow(missing_docs)]
     pub n1: Point3D,
+    #[allow(missing_docs)]
     pub n2: Point3D,
+    #[allow(missing_docs)]
     pub n3: Point3D,
 }
 
 #[derive(Debug, Clone, Default)]
+#[allow(missing_docs)]
 pub struct Mesh {
+    #[allow(missing_docs)]
     pub vertices: Vec<Point3D>,
+    #[allow(missing_docs)]
     pub normals: Vec<Point3D>,
+    #[allow(missing_docs)]
     pub indices: Vec<usize>,
 }

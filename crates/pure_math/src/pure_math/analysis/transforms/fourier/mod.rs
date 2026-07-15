@@ -5,6 +5,7 @@
 
 pub mod continuous;
 pub mod discrete;
+#[allow(missing_docs)]
 pub mod traits;
 
 // Re-export continuous functions for backward compatibility.

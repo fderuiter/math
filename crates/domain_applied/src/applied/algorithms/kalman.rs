@@ -5,18 +5,25 @@
 use nalgebra::{DMatrix, DVector, RealField};
 use thiserror::Error;
 #[derive(Error, Debug, PartialEq)]
+#[allow(missing_docs)]
 pub enum KalmanError {
     #[error("Failed to invert innovation covariance matrix (singular)")]
+    #[allow(missing_docs)]
     MatrixInversionError,
     #[error(
         "Dimension mismatch: state size {state_size} does not match covariance dimensions {cov_rows}x{cov_cols}"
     )]
+    #[allow(missing_docs)]
     DimensionMismatch {
+        #[allow(missing_docs)]
         state_size: usize,
+        #[allow(missing_docs)]
         cov_rows: usize,
+        #[allow(missing_docs)]
         cov_cols: usize,
     },
     #[error("Missing required initialization field: {0}")]
+    #[allow(missing_docs)]
     InitializationError(String),
 }
 /// Defines the physics/dynamics model for the Kalman Filter.

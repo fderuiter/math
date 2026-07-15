@@ -38,14 +38,20 @@ pub const LN_0_7: f64 = -0.3566749439387324;
 
 /// Liquid Drop Model Constants
 pub mod liquid_drop_constants {
+    #[allow(missing_docs)]
     pub const A_V: f64 = 15.75;
+    #[allow(missing_docs)]
     pub const A_S: f64 = 17.8;
+    #[allow(missing_docs)]
     pub const A_C: f64 = 0.711;
+    #[allow(missing_docs)]
     pub const A_SYM: f64 = 23.7;
+    #[allow(missing_docs)]
     pub const DELTA_COEFF: f64 = 11.18;
 }
 
 /// Nuclear Properties Constants
 pub mod property_constants {
+    #[allow(missing_docs)]
     pub const R0: f64 = 1.2; // fm
 }

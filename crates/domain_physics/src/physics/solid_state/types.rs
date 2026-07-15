@@ -24,18 +24,22 @@ impl ElectronVolts {
         self.0
     }
 
+    #[allow(missing_docs)]
     pub fn powf(&self, n: f64) -> Self {
         Self::new(self.0.powf(n))
     }
 
+    #[allow(missing_docs)]
     pub fn sqrt(&self) -> Self {
         Self::new(self.0.sqrt())
     }
 
+    #[allow(missing_docs)]
     pub fn ln(&self) -> Self {
         Self::new(self.0.ln())
     }
 
+    #[allow(missing_docs)]
     pub fn exp(&self) -> Self {
         Self::new(self.0.exp())
     }
@@ -121,22 +125,27 @@ impl Kelvin {
         self.0
     }
 
+    #[allow(missing_docs)]
     pub fn powf(&self, n: f64) -> Self {
         Self::new(self.0.powf(n))
     }
 
+    #[allow(missing_docs)]
     pub fn sqrt(&self) -> Self {
         Self::new(self.0.sqrt())
     }
 
+    #[allow(missing_docs)]
     pub fn ln(&self) -> Self {
         Self::new(self.0.ln())
     }
 
+    #[allow(missing_docs)]
     pub fn exp(&self) -> Self {
         Self::new(self.0.exp())
     }
 
+    #[allow(missing_docs)]
     pub fn abs(&self) -> Self {
         Self::new(self.0.abs())
     }

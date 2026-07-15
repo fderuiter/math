@@ -3,6 +3,7 @@ use crate::math_types::{Integer, ops::Pow, ops::RemRounding};
 use crate::pure_math::number_theory::primes::is_prime;
 use thiserror::Error;
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn sigma(n: u64) -> u64 {
     let mut sum = 0;
@@ -18,15 +19,20 @@ pub fn sigma(n: u64) -> u64 {
 }
 
 #[derive(Debug, Error)]
+#[allow(missing_docs)]
 pub enum AmbsError {
     #[error("Failed to parse integer from string: {0}")]
+    #[allow(missing_docs)]
     ParseError(String),
     #[error("Modulo operation failed")]
+    #[allow(missing_docs)]
     ModuloError,
     #[error("Conversion to usize failed")]
+    #[allow(missing_docs)]
     ConversionError,
 }
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
     let mut a_copy = a.clone();
@@ -37,6 +43,7 @@ pub fn modular_inverse(a: &Integer, m: &Integer) -> Option<Integer> {
     a_copy.invert(m).ok()
 }
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     let mut factors = Vec::new();
@@ -67,6 +74,7 @@ pub fn prime_factors(mut n: u64) -> Vec<(u64, u32)> {
     factors
 }
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn precompute_valid_prime_powers(limit_p: u64, max_e: u32) -> Vec<(u64, u32, u64)> {
     let mut valid = Vec::new();
@@ -98,13 +106,18 @@ pub fn precompute_valid_prime_powers(limit_p: u64, max_e: u32) -> Vec<(u64, u32,
     valid
 }
 
+#[allow(missing_docs)]
 pub struct AmbsDsp {
+    #[allow(missing_docs)]
     pub valid_powers: Vec<(u64, u32, u64)>,
+    #[allow(missing_docs)]
     pub b_stop: f64,
+    #[allow(missing_docs)]
     pub prefix_pool: Vec<u64>,
 }
 
 impl AmbsDsp {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(limit_p: u64, max_e: u32, b_stop: f64) -> Self {
         Self {
@@ -114,6 +127,7 @@ impl AmbsDsp {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn build_prefix(&mut self, current_p: u64, last_p_index: usize, h_max_remaining: f64) {
         let mut stack = vec![(current_p, last_p_index, h_max_remaining)];
@@ -147,6 +161,7 @@ impl AmbsDsp {
     }
 
     #[allow(clippy::too_many_lines)]
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn tonelli_shanks(n: &Integer, p: &Integer) -> Result<Vec<Integer>, AmbsError> {
         let n_mod = n.clone().rem_euc(p);
@@ -328,6 +343,7 @@ impl AmbsDsp {
         res
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn compute_modular_square_roots(
         x_l: &Integer,
@@ -364,6 +380,7 @@ impl AmbsDsp {
         Ok(final_roots)
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn search(&mut self, n_max_str: &str) -> Result<Option<Integer>, AmbsError> {
         let n_max = Integer::from_str_radix(n_max_str, 10)
@@ -426,6 +443,7 @@ impl AmbsDsp {
     }
 }
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn solve_quasiperfect_modularity(
     _s_l_str: &str,

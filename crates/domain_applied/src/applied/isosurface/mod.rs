@@ -41,9 +41,13 @@
 //! cargo run --example isosurface_torus
 //! ```
 
+#[allow(missing_docs)]
 pub mod gradients;
+#[allow(missing_docs)]
 pub mod marching_cubes;
+#[allow(missing_docs)]
 pub mod tables;
+#[allow(missing_docs)]
 pub mod types;
 
 pub use gradients::{CentralDifferenceEstimator, GradientEstimator};

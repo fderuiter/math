@@ -70,7 +70,8 @@ The `math_explorer_gui` crate is built with **egui** and **eframe**.
 
 We follow the **Curator's Philosophy**: "Code explains HOW; Docs explain WHY."
 
-*   **Public API**: Every public struct, enum, and function must have a docstring (`///`).
+*   **Public API**: Every new or updated public struct, enum, trait, and function must have a docstring (`///`). Our automated integration checks will fail if you submit undocumented public APIs.
+*   **Legacy Exemptions**: To prevent delaying ongoing work, older undocumented modules are grandfathered in. If you are touching a legacy module that has no documentation, you may leave it exempt. Existing exemptions are declared at the module level using `#[allow(missing_docs)]`. **Do not** add crate-level exemptions (e.g., `#![allow(missing_docs)]` in `lib.rs`), as any new files must be properly documented.
 *   **Examples**: Include runnable examples in your docstrings using generic code blocks or doctests.
 *   **Clarity**: Avoid fluff words ("simple", "easy"). Be precise.
 *   **Mental Compilation**: Ensure your examples are syntactically correct and import necessary dependencies.

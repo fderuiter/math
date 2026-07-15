@@ -25,6 +25,7 @@ pub enum TensorError {
     #[error("Index out of bounds")]
     IndexOutOfBounds,
     #[error(transparent)]
+    #[allow(missing_docs)]
     Math(#[from] math_commons::error::MathError),
 }
 

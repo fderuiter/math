@@ -1,33 +1,49 @@
 use super::{Action, MarkovDecisionProcess, State};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[allow(missing_docs)]
 pub struct GridState {
+    #[allow(missing_docs)]
     pub x: i32,
+    #[allow(missing_docs)]
     pub y: i32,
 }
 
 impl State for GridState {}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[allow(missing_docs)]
 pub enum Move {
+    #[allow(missing_docs)]
     Up,
+    #[allow(missing_docs)]
     Down,
+    #[allow(missing_docs)]
     Left,
+    #[allow(missing_docs)]
     Right,
 }
 
 impl Action for Move {}
 
+#[allow(missing_docs)]
 pub struct GridWorldEnv {
+    #[allow(missing_docs)]
     pub width: i32,
+    #[allow(missing_docs)]
     pub height: i32,
+    #[allow(missing_docs)]
     pub goal: GridState,
+    #[allow(missing_docs)]
     pub start: GridState,
+    #[allow(missing_docs)]
     pub traps: Vec<GridState>,
+    #[allow(missing_docs)]
     pub gamma: f64,
 }
 
 impl GridWorldEnv {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn step(&self, current_state: &GridState, action: &Move) -> GridState {
         let mut expected_next = *current_state;

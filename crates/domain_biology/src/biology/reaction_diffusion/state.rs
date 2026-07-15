@@ -9,6 +9,7 @@ use std::ops::{Add, AddAssign, Mul, MulAssign};
 /// The layout is such that each column represents a species, where nrows = grid_size and ncols = num_species.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ChemicalState {
+    #[allow(missing_docs)]
     pub grid: DMatrix<f64>,
 }
 

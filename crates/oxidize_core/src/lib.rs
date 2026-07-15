@@ -1,17 +1,27 @@
+//! Legacy crate.
 use serde::{Deserialize, Serialize};
 
+#[allow(missing_docs)]
 pub trait ModelConfig: Clone + Serialize + Deserialize<'static> {}
 
+#[allow(missing_docs)]
 pub trait ModelState: Clone {}
 
+#[allow(missing_docs)]
 pub trait SimulationModel: Sized {
+    #[allow(missing_docs)]
     type Config: ModelConfig;
+    #[allow(missing_docs)]
     type State: ModelState;
+    #[allow(missing_docs)]
     type Error: std::error::Error + Send + Sync + 'static;
 
+    #[allow(missing_docs)]
     fn initialize<R: rand::RngCore>(config: Self::Config, provider: R)
     -> Result<Self, Self::Error>;
+    #[allow(missing_docs)]
     fn step(&mut self) -> Result<(), Self::Error>;
+    #[allow(missing_docs)]
     fn get_state(&self) -> Self::State;
 }
 
@@ -98,17 +108,28 @@ mod tests {
         assert!(sim.get_state().grid.iter().all(|&x| x));
     }
 }
+#[allow(missing_docs)]
 pub mod ast_visitor;
+#[allow(missing_docs)]
 pub mod boundary;
+#[allow(missing_docs)]
 pub mod double_buffer;
+#[allow(missing_docs)]
 pub mod grid;
+#[allow(missing_docs)]
 pub mod iteration;
+#[allow(missing_docs)]
 pub mod mesh;
+#[allow(missing_docs)]
 pub mod path_utils;
+#[allow(missing_docs)]
 pub mod rng;
+#[allow(missing_docs)]
 pub mod traceability;
+#[allow(missing_docs)]
 pub mod vfs;
 
+#[allow(missing_docs)]
 pub mod prelude {
     pub use crate::{ModelConfig, ModelState, SimulationModel};
 }

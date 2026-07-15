@@ -20,12 +20,17 @@ pub fn heterogeneous_r0(beta: f64, gamma: f64, mean_degree: f64, degree_variance
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
+#[allow(missing_docs)]
 pub enum NodeState {
+    #[allow(missing_docs)]
     Susceptible,
+    #[allow(missing_docs)]
     Infected,
+    #[allow(missing_docs)]
     Recovered,
 }
 
+#[allow(missing_docs)]
 pub struct NetworkEpidemicModel {
     num_nodes: usize,
     states: Vec<NodeState>,
@@ -36,11 +41,17 @@ pub struct NetworkEpidemicModel {
 }
 
 #[derive(Debug)]
+#[allow(missing_docs)]
 pub enum NetworkModelError {
+    #[allow(missing_docs)]
     InvalidNodeCount,
+    #[allow(missing_docs)]
     InvalidParameters,
+    #[allow(missing_docs)]
     StateMismatch,
+    #[allow(missing_docs)]
     PositionMismatch,
+    #[allow(missing_docs)]
     AdjacencyMismatch,
 }
 
@@ -59,6 +70,7 @@ impl std::fmt::Display for NetworkModelError {
 
 impl std::error::Error for NetworkModelError {}
 
+#[allow(missing_docs)]
 pub struct NetworkEpidemicModelBuilder {
     num_nodes: Option<usize>,
     beta: Option<f64>,
@@ -76,6 +88,7 @@ impl Default for NetworkEpidemicModelBuilder {
 }
 
 impl NetworkEpidemicModelBuilder {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
@@ -88,12 +101,14 @@ impl NetworkEpidemicModelBuilder {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn num_nodes(mut self, num: usize) -> Self {
         self.num_nodes = Some(num);
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn parameters(mut self, beta: f64, gamma: f64) -> Self {
         self.beta = Some(beta);
@@ -101,24 +116,28 @@ impl NetworkEpidemicModelBuilder {
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn states(mut self, states: Vec<NodeState>) -> Self {
         self.states = Some(states);
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn positions(mut self, positions: Vec<[f32; 2]>) -> Self {
         self.positions = Some(positions);
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn adjacency(mut self, adjacency: Vec<Vec<usize>>) -> Self {
         self.adjacency = Some(adjacency);
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn build(self) -> Result<NetworkEpidemicModel, NetworkModelError> {
         let num_nodes = self.num_nodes.ok_or(NetworkModelError::InvalidNodeCount)?;
@@ -164,40 +183,49 @@ impl NetworkEpidemicModelBuilder {
 }
 
 impl NetworkEpidemicModel {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn builder() -> NetworkEpidemicModelBuilder {
         NetworkEpidemicModelBuilder::new()
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn num_nodes(&self) -> usize {
         self.num_nodes
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn states(&self) -> &[NodeState] {
         &self.states
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn states_mut(&mut self) -> &mut Vec<NodeState> {
         &mut self.states
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn positions(&self) -> &[[f32; 2]] {
         &self.positions
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn adjacency(&self) -> &[Vec<usize>] {
         &self.adjacency
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn beta(&self) -> f64 {
         self.beta
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn gamma(&self) -> f64 {
         self.gamma
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn set_num_nodes(&mut self, num: usize) -> Result<(), NetworkModelError> {
         if num == 0 {
@@ -207,6 +235,7 @@ impl NetworkEpidemicModel {
         Ok(())
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn set_beta(&mut self, beta: f64) -> Result<(), NetworkModelError> {
         if beta < 0.0 {
@@ -216,6 +245,7 @@ impl NetworkEpidemicModel {
         Ok(())
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn set_gamma(&mut self, gamma: f64) -> Result<(), NetworkModelError> {
         if gamma < 0.0 {

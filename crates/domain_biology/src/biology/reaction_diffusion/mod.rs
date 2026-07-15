@@ -77,8 +77,11 @@
 //! assert!(system.state.species(0)[5] < 100.0); // Concentration decayed
 //! ```
 
+#[allow(missing_docs)]
 pub mod model;
+#[allow(missing_docs)]
 pub mod state;
+#[allow(missing_docs)]
 pub mod traits;
 
 pub use model::{ReactionDiffusionModel, ReactionDiffusionSystem, ReactionDiffusionSystemBuilder};
@@ -89,12 +92,17 @@ pub use traits::{DiffusionModel, ReactionModel};
 #[derive(Debug, thiserror::Error, PartialEq)]
 pub enum ReactionDiffusionError {
     #[error("Dimension mismatch: expected {expected} diffusion coefficients, but got {got}")]
+    #[allow(missing_docs)]
+    #[allow(missing_docs)]
     DimensionMismatch { expected: usize, got: usize },
     #[error("System requires at least one species")]
+    #[allow(missing_docs)]
     ZeroSpecies,
     #[error("Grid size cannot be zero")]
+    #[allow(missing_docs)]
     ZeroGridSize,
     #[error("Missing parameter: {0}")]
+    #[allow(missing_docs)]
     MissingParameter(&'static str),
 }
 

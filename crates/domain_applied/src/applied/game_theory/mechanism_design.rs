@@ -160,6 +160,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level optimal_reserve_price function directly."
     )]
+    #[allow(missing_docs)]
     #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn optimal_reserve_price<D: ValuationDistribution>(
         dist: &D,
@@ -173,6 +174,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level optimal_reserve_price_with_solver function directly."
     )]
+    #[allow(missing_docs)]
     #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn optimal_reserve_price_with_solver<D: ValuationDistribution, S: RootFinder>(
         dist: &D,
@@ -187,6 +189,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level simulate_optimal_revenue function directly."
     )]
+    #[allow(missing_docs)]
     #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn simulate_optimal_revenue<D: ValuationDistribution>(
         dist: &D,
@@ -200,6 +203,7 @@ impl MechanismDesign {
         since = "0.2.0",
         note = "Use the module-level simulate_optimal_revenue_with_rng function directly."
     )]
+    #[allow(missing_docs)]
     #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Sized>(
         dist: &D,

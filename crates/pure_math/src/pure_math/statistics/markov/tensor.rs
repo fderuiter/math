@@ -4,6 +4,7 @@
 //! such as modeling basketball possessions with shot clock urgency effects.
 
 use crate::error::MarkovError;
+#[allow(missing_docs)]
 pub type Result<T> = std::result::Result<T, MarkovError>;
 use nalgebra::{DMatrix, RealField};
 

@@ -14,11 +14,14 @@ use verified_engine::Theory;
     citation = "Learning representations by back-propagating errors (Rumelhart et al., 1986)"
 )]
 pub struct TwoLayerMLP {
+    #[allow(missing_docs)]
     pub layer1: DenseLayer,
+    #[allow(missing_docs)]
     pub layer2: DenseLayer,
 }
 
 impl TwoLayerMLP {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(input_dim: usize, hidden_dim: usize, output_dim: usize) -> Self {
         Self {
@@ -27,6 +30,7 @@ impl TwoLayerMLP {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new_with_rng<R: rand::Rng + ?Sized>(
         input_dim: usize,

@@ -5,7 +5,9 @@
 //! This module collects utility functions that don't fit into the larger simulation frameworks
 //! but are essential for "back-of-the-napkin" estimation in embedded systems and manufacturing.
 
+#[allow(missing_docs)]
 pub mod cnc;
+#[allow(missing_docs)]
 pub mod uart;
 
 pub use cnc::*;

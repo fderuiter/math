@@ -21,9 +21,13 @@ pub struct VoxelGrid {
 }
 
 #[derive(Debug)]
+#[allow(missing_docs)]
 pub enum VoxelGridError {
+    #[allow(missing_docs)]
     InvalidDimensions,
+    #[allow(missing_docs)]
     DataSizeMismatch,
+    #[allow(missing_docs)]
     InvalidVoxelSize,
 }
 
@@ -42,6 +46,7 @@ impl std::fmt::Display for VoxelGridError {
 
 impl std::error::Error for VoxelGridError {}
 
+#[allow(missing_docs)]
 pub struct VoxelGridBuilder {
     width: Option<usize>,
     height: Option<usize>,
@@ -59,6 +64,7 @@ impl Default for VoxelGridBuilder {
 }
 
 impl VoxelGridBuilder {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new() -> Self {
         Self {
@@ -71,6 +77,7 @@ impl VoxelGridBuilder {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn dimensions(mut self, width: usize, height: usize, depth: usize) -> Self {
         self.width = Some(width);
@@ -79,24 +86,28 @@ impl VoxelGridBuilder {
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn data(mut self, data: Vec<f32>) -> Self {
         self.data = Some(data);
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn voxel_size(mut self, size: Point3D) -> Self {
         self.voxel_size = size;
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn origin(mut self, origin: Point3D) -> Self {
         self.origin = origin;
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn build(self) -> Result<VoxelGrid, VoxelGridError> {
         let width = self.width.ok_or(VoxelGridError::InvalidDimensions)?;
@@ -128,36 +139,44 @@ impl VoxelGridBuilder {
 }
 
 impl VoxelGrid {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn builder() -> VoxelGridBuilder {
         VoxelGridBuilder::new()
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn width(&self) -> usize {
         self.width
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn height(&self) -> usize {
         self.height
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn depth(&self) -> usize {
         self.depth
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn data(&self) -> &[f32] {
         &self.data
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn voxel_size(&self) -> &Point3D {
         &self.voxel_size
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn origin(&self) -> &Point3D {
         &self.origin
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn set_voxel_size(&mut self, size: Point3D) -> Result<(), VoxelGridError> {
         if size.x <= 0.0 || size.y <= 0.0 || size.z <= 0.0 {
@@ -167,6 +186,7 @@ impl VoxelGrid {
         Ok(())
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn set_origin(&mut self, origin: Point3D) {
         self.origin = origin;

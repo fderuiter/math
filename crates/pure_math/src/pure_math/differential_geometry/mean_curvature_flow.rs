@@ -4,12 +4,16 @@ use nalgebra::{Point3, Vector3};
 /// Used for evolutions where the surface geometry itself changes.
 #[derive(Clone)]
 pub struct DiscreteSurface {
+    #[allow(missing_docs)]
     pub points: Vec<Vec<Point3<f64>>>,
+    #[allow(missing_docs)]
     pub closed_u: bool,
+    #[allow(missing_docs)]
     pub closed_v: bool,
 }
 
 impl DiscreteSurface {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(points: Vec<Vec<Point3<f64>>>, closed_u: bool, closed_v: bool) -> Self {
         Self {
@@ -99,13 +103,16 @@ impl DiscreteSurface {
     }
 }
 
+#[allow(missing_docs)]
 pub struct MeanCurvatureFlow {
+    #[allow(missing_docs)]
     pub surface: DiscreteSurface,
     /// Bolt Optimization: Buffer to avoid allocations in step
     pub next_points: Vec<Vec<Point3<f64>>>,
 }
 
 impl MeanCurvatureFlow {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(surface: DiscreteSurface) -> Self {
         let next_points = surface.points.clone();
@@ -115,6 +122,7 @@ impl MeanCurvatureFlow {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn step(&mut self, dt: f64) {
         let nu = self.surface.points.len();

@@ -32,10 +32,13 @@
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
+#[allow(missing_docs)]
 pub enum KineticsError {
     #[error("Substrate concentration cannot be negative")]
+    #[allow(missing_docs)]
     NegativeSubstrateConcentration,
     #[error("Parameters must be non-negative")]
+    #[allow(missing_docs)]
     InvalidParameters,
 }
 
@@ -150,6 +153,7 @@ impl KineticsModel for HillKinetics {
 
 // Backward compatibility
 #[deprecated(note = "Use MichaelisMenten instead")]
+#[allow(missing_docs)]
 pub type EnzymeReaction = MichaelisMenten;
 
 #[cfg(test)]

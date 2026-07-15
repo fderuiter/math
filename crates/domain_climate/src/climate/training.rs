@@ -11,6 +11,7 @@ use pure_math::pure_math::analysis::optimization::Trainable;
 
 /// A trainer for the CERA model.
 pub struct CeraTrainer<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32>, O: Optimizer<f32>> {
+    #[allow(missing_docs)]
     pub model: &'a mut Cera<A, P>,
     /// The optimizer strategy (e.g., SGD, Adam).
     pub optimizer: O,

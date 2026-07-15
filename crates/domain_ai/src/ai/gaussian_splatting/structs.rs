@@ -6,9 +6,13 @@ use nalgebra::{Matrix2, Matrix3, Point2, Point3, UnitQuaternion, Vector3};
 /// opacity, and color (Spherical Harmonics).
 #[derive(Clone, Debug)]
 pub struct Gaussian3D {
+    #[allow(missing_docs)]
     pub mean: Point3<f64>,
+    #[allow(missing_docs)]
     pub scale: Vector3<f64>,
+    #[allow(missing_docs)]
     pub rotation: UnitQuaternion<f64>,
+    #[allow(missing_docs)]
     pub opacity: f64,
     /// Simplified color representation (e.g., DC component of SH or RGB)
     pub color: Vector3<f64>,
@@ -30,10 +34,13 @@ impl Gaussian3D {
 /// Represents the 2D projection of a Gaussian on the image plane.
 #[derive(Clone, Debug)]
 pub struct Gaussian2D {
+    #[allow(missing_docs)]
     pub mean: Point2<f64>,
     /// The conic matrix (inverse covariance with -0.5 factor) for fast evaluation.
     pub conic: Matrix2<f64>,
+    #[allow(missing_docs)]
     pub opacity: f64,
+    #[allow(missing_docs)]
     pub color: Vector3<f64>,
     /// Depth is needed for sorting
     pub depth: f64,
@@ -41,6 +48,7 @@ pub struct Gaussian2D {
 
 /// A collection of 3D Gaussians.
 pub struct Scene {
+    #[allow(missing_docs)]
     pub gaussians: Vec<Gaussian3D>,
 }
 

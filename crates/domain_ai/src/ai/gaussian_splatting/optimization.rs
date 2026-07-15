@@ -1,8 +1,13 @@
 #[derive(Debug, PartialEq)]
+#[allow(missing_docs)]
 pub enum DensityAction {
+    #[allow(missing_docs)]
     Clone,
+    #[allow(missing_docs)]
     Split,
+    #[allow(missing_docs)]
     Prune,
+    #[allow(missing_docs)]
     Keep,
 }
 

@@ -8,6 +8,7 @@ use math_commons::theory::ParameterConstraint;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
+#[allow(missing_docs)]
 pub trait UnifiedModel: Send + 'static + math_commons::theory::TheoryDescribable {
     /// Initialize the model given the starting parameters.
     fn new(params: &HashMap<String, f64>) -> Self
@@ -59,6 +60,7 @@ pub trait UnifiedModel: Send + 'static + math_commons::theory::TheoryDescribable
     }
 }
 
+#[allow(missing_docs)]
 pub struct UnifiedSimRunner<M: UnifiedModel> {
     model: M,
     params: Arc<RwLock<HashMap<String, f64>>>,
@@ -66,6 +68,7 @@ pub struct UnifiedSimRunner<M: UnifiedModel> {
 }
 
 impl<M: UnifiedModel> UnifiedSimRunner<M> {
+    #[allow(missing_docs)]
     pub fn new(params: Arc<RwLock<HashMap<String, f64>>>) -> Self {
         let initial_params = params.read().unwrap().clone();
         Self {
@@ -102,6 +105,7 @@ impl<M: UnifiedModel> SimulationRunner for UnifiedSimRunner<M> {
     }
 }
 
+#[allow(missing_docs)]
 pub struct UnifiedSimTool<M: UnifiedModel> {
     controller: SimulationController,
     params: Arc<RwLock<HashMap<String, f64>>>,
@@ -122,6 +126,7 @@ impl<M: UnifiedModel> Default for UnifiedSimTool<M> {
 }
 
 impl<M: UnifiedModel> UnifiedSimTool<M> {
+    #[allow(missing_docs)]
     pub fn new() -> Self {
         let param_map = M::parameters();
         let mut param_metadata: Vec<_> = param_map.into_iter().collect();

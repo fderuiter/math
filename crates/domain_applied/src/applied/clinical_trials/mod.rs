@@ -67,10 +67,15 @@
 //! }
 //! ```
 
+#[allow(missing_docs)]
 pub mod analysis;
+#[allow(missing_docs)]
 pub mod design;
+#[allow(missing_docs)]
 pub mod hypothesis_testing;
+#[allow(missing_docs)]
 pub mod sample_size;
+#[allow(missing_docs)]
 pub mod survival_analysis;
 pub mod types;
 

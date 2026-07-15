@@ -3,14 +3,18 @@
 use super::types::{Capacity, Cycles, DepthOfDischarge};
 use verified_engine::Theory;
 
+#[allow(missing_docs)]
 pub trait DegradationModel {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn n70(&self, d: DepthOfDischarge) -> Cycles;
 
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity;
 
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles;
 }
 
@@ -19,17 +23,20 @@ pub trait DegradationModel {
     description = "Empirical power-law model characterizing the cycle life of lithium-ion batteries as a function of depth of discharge.",
     citation = "Capacity Fade Model for Li-ion Batteries (Smith et al., 2011)"
 )]
+#[allow(missing_docs)]
 pub struct PowerLawModel {
     alpha: f64,
     beta: f64,
 }
 
 impl PowerLawModel {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(alpha: f64, beta: f64) -> Self {
         Self { alpha, beta }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn standard() -> Self {
         Self {
@@ -72,16 +79,19 @@ impl DegradationModel for PowerLawModel {
 }
 
 impl PowerLawModel {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn n70(&self, d: DepthOfDischarge) -> Cycles {
         DegradationModel::n70(self, d)
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn capacity(&self, n: Cycles, d: DepthOfDischarge) -> Capacity {
         DegradationModel::capacity(self, n, d)
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn cycles_to_capacity(&self, target: Capacity, d: DepthOfDischarge) -> Cycles {
         DegradationModel::cycles_to_capacity(self, target, d)

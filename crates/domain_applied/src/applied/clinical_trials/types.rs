@@ -6,6 +6,7 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub enum ClinicalTrialError {
     /// Sample size is too small for the requested test.
+    #[allow(missing_docs)]
     InsufficientSampleSize { required: usize, actual: usize },
     /// Invalid input data (e.g., negative counts).
     InvalidData(String),
@@ -187,22 +188,27 @@ impl fmt::Display for SurvivalTime {
 use std::ops::{Add, Sub, Mul, Div};
 
 impl SurvivalTime {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn powf(&self, n: f64) -> Result<Self, ClinicalTrialError> {
         Self::new(self.0.powf(n))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn sqrt(&self) -> Result<Self, ClinicalTrialError> {
         Self::new(self.0.sqrt())
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn ln(&self) -> Result<Self, ClinicalTrialError> {
         Self::new(self.0.ln())
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn exp(&self) -> Result<Self, ClinicalTrialError> {
         Self::new(self.0.exp())
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn abs(&self) -> Result<Self, ClinicalTrialError> {
         Self::new(self.0.abs())

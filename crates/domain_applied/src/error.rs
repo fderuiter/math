@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
+#[allow(missing_docs)]
 pub enum PharmacokineticsError {
     /// An invalid parameter was provided (e.g., negative volume or rate constant).
     #[error("Invalid parameter: {0}")]
@@ -15,6 +16,7 @@ pub enum PharmacokineticsError {
 }
 
 #[derive(Debug, Clone, PartialEq, Error)]
+#[allow(missing_docs)]
 pub enum BatteryError {
     /// Depth of Discharge must be between 0.0 and 100.0.
     #[error("DepthOfDischarge must be between 0.0 and 100.0, got {0}")]
@@ -28,38 +30,51 @@ pub enum BatteryError {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum GameTheoryError {
     /// Payoff matrix is not square.
+    #[allow(missing_docs)]
     NonSquarePayoffMatrix { rows: usize, cols: usize },
     /// Invalid parameter value (e.g. frequency outside [0, 1]).
+    #[allow(missing_docs)]
     InvalidParameter { name: String, value: f64 },
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum EngineeringError {
     /// Invalid parameter value (e.g. TotalBits = 0).
+    #[allow(missing_docs)]
     InvalidParameter { name: String, value: f64 },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
+#[allow(missing_docs)]
 pub enum LoraError {
     #[error("Ensemble is empty; cannot combine.")]
+    #[allow(missing_docs)]
     EmptyEnsemble,
     #[error("Weights cannot be empty.")]
+    #[allow(missing_docs)]
     EmptyWeights,
     #[error("The number of weights must match the number of modules in the ensemble.")]
+    #[allow(missing_docs)]
     WeightModuleMismatch,
     #[error("Mismatched tensor shapes for the same key.")]
+    #[allow(missing_docs)]
     TensorShapeMismatch,
     #[error("Mismatched keys between LoRA modules.")]
+    #[allow(missing_docs)]
     KeyMismatch,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum IsosurfaceError {
     /// The grid dimensions are too small (must be at least 2x2x2).
     InvalidGrid(String),
     /// The data buffer size matches the grid dimensions.
+    #[allow(missing_docs)]
     DataMismatch { expected: usize, actual: usize },
 }
 

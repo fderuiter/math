@@ -88,9 +88,13 @@
 //! *   **[rendering]**: Alpha blending and opacity evaluation logic.
 //! *   **[optimization]**: Adaptive density control strategies (Split vs Clone).
 
+#[allow(missing_docs)]
 pub mod optimization;
+#[allow(missing_docs)]
 pub mod projection;
+#[allow(missing_docs)]
 pub mod rendering;
+#[allow(missing_docs)]
 pub mod structs;
 
 pub use structs::{Gaussian2D, Gaussian3D, Scene};

@@ -2,8 +2,10 @@ use super::geometry::GeometryStrategy;
 use math_commons::math_kernel::types::GridIndex;
 use oxidize_core::boundary::{BoundaryCondition, NeumannBoundary as CoreNeumann};
 
+#[allow(missing_docs)]
 pub trait BoundaryStrategy {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn neighbors<G: GeometryStrategy>(
         &self,
         x: usize,
@@ -13,6 +15,7 @@ pub trait BoundaryStrategy {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
+#[allow(missing_docs)]
 pub struct NeumannBoundary;
 
 impl BoundaryStrategy for NeumannBoundary {

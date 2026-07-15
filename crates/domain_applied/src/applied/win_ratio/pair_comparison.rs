@@ -2,15 +2,20 @@ use statrs::distribution::{ContinuousCDF, Normal};
 use std::marker::PhantomData;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
+#[allow(missing_docs)]
 pub enum ComparisonResult {
+    #[allow(missing_docs)]
     Win,
+    #[allow(missing_docs)]
     Loss,
+    #[allow(missing_docs)]
     Tie,
 }
 
 /// Defines how to compare two outcomes of type T.
 pub trait OutcomeComparator<T: ?Sized> {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn compare(&self, a: &T, b: &T) -> ComparisonResult;
 }
 
@@ -57,10 +62,12 @@ impl<T: PartialOrd> OutcomeComparator<T> for LowerIsBetter {
 ///
 /// Note: This strategy requires `T` to be `f64` (or convertible).
 pub struct ThresholdComparator {
+    #[allow(missing_docs)]
     pub threshold: f64,
 }
 
 impl ThresholdComparator {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(threshold: f64) -> Self {
         Self { threshold }
@@ -91,6 +98,7 @@ pub struct WinRatioAnalysis<T> {
 /// A strategy for pairing subjects between two groups for comparison.
 pub trait PairingStrategy<T> {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn evaluate(
         &self,
         analysis: &WinRatioAnalysis<T>,

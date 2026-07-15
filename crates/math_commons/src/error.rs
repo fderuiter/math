@@ -9,16 +9,20 @@ pub enum MathError {
     /// Dimension mismatch between tensors/matrices or expected sizes.
     #[error("Dimension mismatch: expected {expected:?}, actual {actual:?}")]
     DimensionMismatch {
+        #[allow(missing_docs)]
         expected: Dimension,
+        #[allow(missing_docs)]
         actual: Dimension,
     },
 
     /// Numerical computation failures (e.g., singular matrix, non-positive definite).
     #[error("Numerical error: {reason}")]
+    #[allow(missing_docs)]
     NumericalError { reason: String },
 
     /// Conversion failures (e.g., failed to convert between numeric types).
     #[error("Conversion error: {reason}")]
+    #[allow(missing_docs)]
     ConversionError { reason: String },
 }
 
@@ -46,4 +50,5 @@ impl Diagnostic for MathError {
     }
 }
 
+#[allow(missing_docs)]
 pub type MathResult<T> = std::result::Result<T, MathError>;

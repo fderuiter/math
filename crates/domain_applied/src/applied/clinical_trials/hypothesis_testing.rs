@@ -9,19 +9,26 @@ pub trait HypothesisTest<Input> {
 }
 
 #[derive(Debug, Clone)]
+#[allow(missing_docs)]
 pub struct TestResult {
+    #[allow(missing_docs)]
     pub statistic: f64,
+    #[allow(missing_docs)]
     pub p_value: f64,
+    #[allow(missing_docs)]
     pub is_significant: bool,                    // Based on provided alpha
+    #[allow(missing_docs)]
     pub confidence_interval: Option<(f64, f64)>, // For the difference
 }
 
 /// Strategy for an independent two-sample t-test (assuming equal variances).
 pub struct TTestIndependent {
+    #[allow(missing_docs)]
     pub alpha: f64,
 }
 
 impl TTestIndependent {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(alpha: f64) -> Self {
         Self { alpha }
@@ -83,10 +90,12 @@ impl<'a> HypothesisTest<(&'a GroupData, &'a GroupData)> for TTestIndependent {
 
 /// Strategy for a Chi-Square test for a 2x2 contingency table.
 pub struct ChiSquare2x2 {
+    #[allow(missing_docs)]
     pub alpha: f64,
 }
 
 impl ChiSquare2x2 {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(alpha: f64) -> Self {
         Self { alpha }

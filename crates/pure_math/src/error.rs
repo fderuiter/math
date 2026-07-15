@@ -2,46 +2,60 @@ use diagnostics::{Diagnostic, Severity};
 use std::collections::HashMap;
 use thiserror::Error;
 
+#[allow(missing_docs)]
 pub type Result<T> = math_commons::error::MathResult<T>;
 
 #[derive(Debug, Error)]
+#[allow(missing_docs)]
 pub enum NumberTheoryError {
     #[error("Failed to parse integer from string: {0}")]
+    #[allow(missing_docs)]
     ParseError(String),
 
     #[error("Modulo operation failed")]
+    #[allow(missing_docs)]
     ModuloError,
 
     #[error("Conversion to usize failed")]
+    #[allow(missing_docs)]
     ConversionError,
 
     #[error("Division by zero QSeries")]
+    #[allow(missing_docs)]
     DivisionByZeroQSeries,
 
     #[error("Division by a QSeries with zero constant term")]
+    #[allow(missing_docs)]
     DivisionByZeroConstantTerm,
 }
 
 #[derive(Debug, Clone, PartialEq, Error)]
+#[allow(missing_docs)]
 pub enum KellyError {
     /// Invalid probability (must be between 0 and 1).
     #[error("Invalid probability: {value} (must be between 0 and 1)")]
+    #[allow(missing_docs)]
     InvalidProbability { value: f64 },
     /// Invalid odds (must be greater than 1.0 for decimal odds).
     #[error("Invalid odds: {value} (must be > 1.0)")]
+    #[allow(missing_docs)]
     InvalidOdds { value: f64 },
     /// Invalid fraction (must be between 0 and 1).
     #[error("Invalid fraction: {value} (must be between 0 and 1)")]
+    #[allow(missing_docs)]
     InvalidFraction { value: f64 },
     /// No edge (negative expected value - should not bet).
     #[error("No edge: p={probability}, odds={odds} results in negative expectation")]
+    #[allow(missing_docs)]
     NoEdge { probability: f64, odds: f64 },
     /// Invalid bankroll amount (must be positive).
     #[error("Invalid bankroll: {value} (must be positive)")]
+    #[allow(missing_docs)]
     InvalidBankroll { value: f64 },
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum MarkovError {
     /// Invalid probability value (must be in [0, 1] and finite).
     InvalidProbability {
@@ -87,68 +101,91 @@ pub enum MarkovError {
         context: String,
     },
 
+    #[allow(missing_docs)]
     Math(math_commons::error::MathError),
 }
 
 #[derive(Debug, Clone, PartialEq, Error)]
+#[allow(missing_docs)]
 pub enum OuError {
     /// Invalid mean reversion rate (must be positive).
     #[error("Invalid mean reversion rate: {value} (must be positive)")]
+    #[allow(missing_docs)]
     InvalidMeanReversionRate { value: f64 },
     /// Invalid volatility (must be non-negative).
     #[error("Invalid volatility: {value} (must be non-negative)")]
+    #[allow(missing_docs)]
     InvalidVolatility { value: f64 },
     /// Invalid time step (must be positive).
     #[error("Invalid time step: {value} (must be positive)")]
+    #[allow(missing_docs)]
     InvalidTimeStep { value: f64 },
     /// Invalid simulation parameters.
     #[error("Invalid simulation parameters: {reason}")]
+    #[allow(missing_docs)]
     InvalidSimulationParams { reason: String },
     /// Insufficient data for parameter estimation.
     #[error("Insufficient data: required at least {required}, got {actual}")]
+    #[allow(missing_docs)]
     InsufficientData { required: usize, actual: usize },
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum ZipError {
     /// Invalid probability parameter (must be in [0, 1]).
+    #[allow(missing_docs)]
     InvalidProbability { value: f64, parameter: String },
     /// Invalid rate parameter (must be positive).
+    #[allow(missing_docs)]
     InvalidRate { value: f64 },
     /// Invalid count value (must be non-negative integer).
+    #[allow(missing_docs)]
     InvalidCount { value: f64 },
     /// Insufficient data for regression.
+    #[allow(missing_docs)]
     InsufficientData { required: usize, actual: usize },
     /// Regression convergence failed.
+    #[allow(missing_docs)]
     ConvergenceFailed { iterations: usize, reason: String },
     /// Invalid predictor matrix dimensions.
+    #[allow(missing_docs)]
     InvalidDimensions { expected: String, actual: String },
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum TdaError {
     /// Empty point cloud provided.
     EmptyPointCloud,
     /// Invalid radius (must be non-negative).
+    #[allow(missing_docs)]
     InvalidRadius { value: f64 },
     /// Invalid dimension for Betti number computation.
+    #[allow(missing_docs)]
     InvalidDimension { dimension: usize },
     /// Insufficient points for the requested operation.
+    #[allow(missing_docs)]
     InsufficientPoints { required: usize, actual: usize },
     /// Invalid simplex (e.g., duplicate vertices).
+    #[allow(missing_docs)]
     InvalidSimplex { reason: String },
     /// Matrix computation error.
+    #[allow(missing_docs)]
     MatrixError { reason: String },
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum CopulaError {
     /// Invalid probability (must be in [0, 1]).
     InvalidProbability {
+        #[allow(missing_docs)]
         value: f64,
     },
     /// Invalid correlation (must be in [-1, 1]).
     InvalidCorrelation {
+        #[allow(missing_docs)]
         value: f64,
     },
 
@@ -157,24 +194,33 @@ pub enum CopulaError {
     /// Matrix is not symmetric.
     NotSymmetric,
 
+    #[allow(missing_docs)]
     Math(math_commons::error::MathError),
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum Glicko2Error {
     /// Invalid rating value.
+    #[allow(missing_docs)]
     InvalidRating { value: f64 },
     /// Invalid rating deviation (must be positive).
+    #[allow(missing_docs)]
     InvalidRatingDeviation { value: f64 },
     /// Invalid volatility (must be positive).
+    #[allow(missing_docs)]
     InvalidVolatility { value: f64 },
     /// Invalid system constant tau (must be between 0.3 and 1.2).
+    #[allow(missing_docs)]
     InvalidSystemConstant { value: f64 },
     /// Invalid opponent count (must be at least 1).
+    #[allow(missing_docs)]
     InvalidOpponentCount { count: usize },
     /// Volatility convergence failed after maximum iterations.
+    #[allow(missing_docs)]
     VolatilityConvergenceFailed { iterations: usize },
     /// Invalid score (must be between 0 and 1).
+    #[allow(missing_docs)]
     InvalidScore { value: f64 },
     /// Empty match results provided.
     EmptyMatchResults,

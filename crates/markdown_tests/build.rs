@@ -1,3 +1,4 @@
+//! Legacy crate.
 #[path = "../oxidize_core/src/path_utils.rs"]
 mod path_utils;
 

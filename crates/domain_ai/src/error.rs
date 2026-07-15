@@ -3,9 +3,11 @@ use std::collections::HashMap;
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum AIError {
     /// Invalid parameter value (e.g. negative learning rate).
     #[error("Invalid parameter {name}: {value}")]
+    #[allow(missing_docs)]
     InvalidParameter { name: String, value: f64 },
 
     /// Optimization failed or diverged.
@@ -14,16 +16,20 @@ pub enum AIError {
 
     /// State is uninitialized.
     #[error("Uninitialized state: {name}")]
+    #[allow(missing_docs)]
     UninitializedState { name: String },
 
     /// Mismatched data distribution lengths.
     #[error("Distributions have different lengths: expected {expected}, got {got}")]
+    #[allow(missing_docs)]
     DistributionLengthMismatch { expected: usize, got: usize },
 
     #[error(transparent)]
+    #[allow(missing_docs)]
     Math(#[from] math_commons::error::MathError),
 }
 
+#[allow(missing_docs)]
 pub type Result<T> = math_commons::error::MathResult<T>;
 
 impl Diagnostic for AIError {

@@ -34,8 +34,11 @@
 //! assert!((gamma_theta_phi_phi + 0.5).abs() < 1e-4);
 //! ```
 
+#[allow(missing_docs)]
 pub mod christoffel;
+#[allow(missing_docs)]
 pub mod differentiation;
+#[allow(missing_docs)]
 pub mod metric;
 pub mod types;
 

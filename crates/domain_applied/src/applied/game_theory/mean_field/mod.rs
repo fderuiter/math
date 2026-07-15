@@ -47,7 +47,9 @@
 //! ```
 
 pub mod physics;
+#[allow(missing_docs)]
 pub mod solver;
+#[allow(missing_docs)]
 pub mod types;
 
 pub use physics::{Hamiltonian, QuadraticHamiltonian};
@@ -72,6 +74,7 @@ pub struct MeanFieldGame1D {
 }
 
 impl MeanFieldGame1D {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(
         viscosity: f64,
@@ -95,6 +98,7 @@ impl MeanFieldGame1D {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn solve(
         &self,

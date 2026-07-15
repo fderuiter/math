@@ -1,3 +1,4 @@
+#[allow(missing_docs)]
 pub mod unified;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
@@ -8,45 +9,74 @@ use std::thread;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
 
+#[allow(missing_docs)]
 pub enum SimCommand {
+    #[allow(missing_docs)]
     Start,
+    #[allow(missing_docs)]
     Pause,
+    #[allow(missing_docs)]
     Reset,
+    #[allow(missing_docs)]
     SetSpeed(usize),
+    #[allow(missing_docs)]
     ApplyBrush {
+        #[allow(missing_docs)]
         cx: i32,
+        #[allow(missing_docs)]
         cy: i32,
+        #[allow(missing_docs)]
         r: i32,
+        #[allow(missing_docs)]
         is_obstacle: bool,
     },
+    #[allow(missing_docs)]
     ClearObstacles,
+    #[allow(missing_docs)]
     Custom(String),
 }
 
+#[allow(missing_docs)]
 pub struct StateSnapshot {
+    #[allow(missing_docs)]
     pub width: usize,
+    #[allow(missing_docs)]
     pub height: usize,
+    #[allow(missing_docs)]
     pub pixels: Arc<std::sync::RwLock<Vec<eframe::egui::Color32>>>,
+    #[allow(missing_docs)]
     pub custom_data: Vec<f64>,
+    #[allow(missing_docs)]
     pub structured_data: Option<Box<dyn std::any::Any + Send>>,
 }
 
+#[allow(missing_docs)]
 pub enum SimStateUpdate {
+    #[allow(missing_docs)]
     Snapshot(StateSnapshot),
+    #[allow(missing_docs)]
+    #[allow(missing_docs)]
     Status { running: bool },
 }
 
+#[allow(missing_docs)]
 pub trait SimulationRunner: Send + 'static {
+    #[allow(missing_docs)]
     fn process_command(&mut self, cmd: SimCommand);
+    #[allow(missing_docs)]
     fn step(&mut self);
+    #[allow(missing_docs)]
     fn get_snapshot(&self) -> StateSnapshot;
+    #[allow(missing_docs)]
     fn get_steps_per_frame(&self) -> usize;
 }
 
+#[allow(missing_docs)]
 pub struct SimulationController {
     cmd_tx: Sender<SimCommand>,
     state_rx: Receiver<SimStateUpdate>,
     latest_snapshot: Option<StateSnapshot>,
+    #[allow(missing_docs)]
     pub running: bool,
     #[cfg(target_arch = "wasm32")]
     worker: Option<web_sys::Worker>,
@@ -64,6 +94,7 @@ impl Drop for SimulationController {
 impl SimulationController {
     #[cfg(not(target_arch = "wasm32"))]
     #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+    #[allow(missing_docs)]
     pub fn new<T: SimulationRunner>(mut runner: T) -> Self {
         let (cmd_tx, cmd_rx) = mpsc::channel::<SimCommand>();
         let (state_tx, state_rx) = mpsc::channel::<SimStateUpdate>();
@@ -190,6 +221,7 @@ impl SimulationController {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn send_command(&self, cmd: SimCommand) {
         let _ = self.cmd_tx.send(cmd);
         #[cfg(target_arch = "wasm32")]
@@ -208,10 +240,12 @@ impl SimulationController {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn latest_snapshot(&self) -> Option<&StateSnapshot> {
         self.latest_snapshot.as_ref()
     }
 
+    #[allow(missing_docs)]
     pub fn update(&mut self) -> Option<&StateSnapshot> {
         while let Ok(update) = self.state_rx.try_recv() {
             match update {

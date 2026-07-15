@@ -30,10 +30,12 @@ where
     A: Action,
     Q: QFunction<S, A>,
 {
+    #[allow(missing_docs)]
     pub q_func: Q,
     learning_rate: UnitInterval,
     discount_factor: UnitInterval,
     strategy: Box<dyn ExplorationStrategy<S, A>>,
+    #[allow(missing_docs)]
     pub rng: oxidize_core::rng::OxidizeRng,
 }
 
@@ -71,11 +73,13 @@ where
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn get_q_value(&self, state: &S, action: &A) -> f64 {
         self.q_func.value(state, action)
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn update(
         &mut self,

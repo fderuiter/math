@@ -23,7 +23,9 @@ pub trait ConvexSet {
 /// A hyper-rectangle is always convex and compact (closed and bounded), making it
 /// a valid domain for standard fixed-point theorems.
 pub struct BoxSet {
+    #[allow(missing_docs)]
     pub min_bounds: DVector<f64>,
+    #[allow(missing_docs)]
     pub max_bounds: DVector<f64>,
 }
 
@@ -116,6 +118,7 @@ impl FixedPointVerifier {
         since = "0.2.0",
         note = "Use the module-level is_fixed_point function directly."
     )]
+    #[allow(missing_docs)]
     #[verified_engine::verified(opt_out = "Legacy wrapper")]
     pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64>) -> bool {
         is_fixed_point(correspondence, point)

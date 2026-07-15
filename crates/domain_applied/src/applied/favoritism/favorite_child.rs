@@ -3,7 +3,9 @@ use super::{FavoritismInputs, calculate_favoritism_score};
 /// Represents a child with a name and a set of attributes for favoritism calculation.
 #[derive(Debug, Clone)]
 pub struct Child {
+    #[allow(missing_docs)]
     pub name: String,
+    #[allow(missing_docs)]
     pub inputs: FavoritismInputs,
 }
 

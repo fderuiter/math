@@ -397,9 +397,13 @@ use oxidize_core::{ModelConfig, ModelState, SimulationModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct LbmConfig {
+    #[allow(missing_docs)]
     pub width: usize,
+    #[allow(missing_docs)]
     pub height: usize,
+    #[allow(missing_docs)]
     pub tau: f64,
 }
 

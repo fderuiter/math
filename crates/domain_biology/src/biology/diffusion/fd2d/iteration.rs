@@ -3,8 +3,10 @@ use super::geometry::GeometryStrategy;
 use math_commons::math_kernel::types::GridIndex;
 use oxidize_core::iteration::IterationPattern;
 
+#[allow(missing_docs)]
 pub trait IterationStrategy {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn iterate<G, B, F>(&self, geom: &G, boundary: &B, op: F)
     where
         G: GeometryStrategy,
@@ -13,6 +15,7 @@ pub trait IterationStrategy {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
+#[allow(missing_docs)]
 pub struct LoopSplittingIteration;
 
 impl IterationStrategy for LoopSplittingIteration {

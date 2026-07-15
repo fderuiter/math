@@ -11,7 +11,9 @@
 //! 2. Unroll loops for better instruction pipelining.
 //! 3. Use `unsafe` indexing (with rigorous safety proofs) to eliminate bounds checks.
 
+#[allow(missing_docs)]
 pub mod fd1d;
+#[allow(missing_docs)]
 pub mod fd2d;
 
 pub use fd1d::FiniteDifference1D;

@@ -16,8 +16,11 @@ use super::{ChemicalState, DiffusionModel, ReactionDiffusionError, ReactionModel
     citation = "The Chemical Basis of Morphogenesis (Turing, 1952)"
 )]
 pub struct ReactionDiffusionModel<R, D> {
+    #[allow(missing_docs)]
     pub reaction: R,
+    #[allow(missing_docs)]
     pub diffusion: D,
+    #[allow(missing_docs)]
     pub diffusion_coeffs: Vec<f64>,
 }
 
@@ -51,8 +54,11 @@ pub struct ReactionDiffusionSystem<
     D: DiffusionModel,
     S: Solver<ChemicalState> = Euler<ChemicalState>,
 > {
+    #[allow(missing_docs)]
     pub model: ReactionDiffusionModel<R, D>,
+    #[allow(missing_docs)]
     pub state: ChemicalState,
+    #[allow(missing_docs)]
     pub solver: S,
 }
 

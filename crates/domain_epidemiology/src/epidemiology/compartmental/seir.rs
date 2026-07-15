@@ -7,9 +7,13 @@ use verified_engine::Theory;
 /// State for the SEIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SEIRState {
+    #[allow(missing_docs)]
     pub s: f64,
+    #[allow(missing_docs)]
     pub e: f64,
+    #[allow(missing_docs)]
     pub i: f64,
+    #[allow(missing_docs)]
     pub r: f64,
 }
 
@@ -21,9 +25,13 @@ impl_compartmental_ops!(SEIRState, s, e, i, r);
 /// but does not hold the simulation state.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SEIRDynamics {
+    #[allow(missing_docs)]
     pub n: f64,
+    #[allow(missing_docs)]
     pub beta: f64,
+    #[allow(missing_docs)]
     pub sigma: f64,
+    #[allow(missing_docs)]
     pub gamma: f64,
 }
 

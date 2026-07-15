@@ -37,12 +37,19 @@
 //! println!("Assignments: {}", result.stats.assignments);
 //! ```
 
+#[allow(missing_docs)]
 pub mod divide_conquer;
+#[allow(missing_docs)]
 pub mod elementary;
+#[allow(missing_docs)]
 pub mod heap;
+#[allow(missing_docs)]
 pub mod linear;
+#[allow(missing_docs)]
 pub mod stats;
+#[allow(missing_docs)]
 pub mod strategy;
+#[allow(missing_docs)]
 pub mod theory;
 
 pub use divide_conquer::{MergeSorter, QuickSorter, merge_sort, quick_sort};

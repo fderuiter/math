@@ -17,30 +17,48 @@ pub struct Density(pub f64);
 /// - `dt`, `dx`: Discretization steps.
 #[derive(Clone, Debug)]
 pub struct MFGConfig {
+    #[allow(missing_docs)]
     pub viscosity: f64,            // nu
+    #[allow(missing_docs)]
     pub time_horizon: f64,         // T
+    #[allow(missing_docs)]
     pub time_steps: NonZeroUsize,  // Nt
+    #[allow(missing_docs)]
     pub grid_points: NonZeroUsize, // Nx
+    #[allow(missing_docs)]
     pub dt: f64,
+    #[allow(missing_docs)]
     pub dx: f64,
+    #[allow(missing_docs)]
     pub space_min: f64,
+    #[allow(missing_docs)]
     pub space_max: f64,
 }
 
 // Type states
+#[allow(missing_docs)]
 pub struct WithoutViscosity;
+#[allow(missing_docs)]
 pub struct WithViscosity(f64);
 
+#[allow(missing_docs)]
 pub struct WithoutTimeHorizon;
+#[allow(missing_docs)]
 pub struct WithTimeHorizon(f64);
 
+#[allow(missing_docs)]
 pub struct WithoutGridPoints;
+#[allow(missing_docs)]
 pub struct WithGridPoints(NonZeroUsize);
 
+#[allow(missing_docs)]
 pub struct WithoutTimeSteps;
+#[allow(missing_docs)]
 pub struct WithTimeSteps(NonZeroUsize);
 
+#[allow(missing_docs)]
 pub struct WithoutSpaceBounds;
+#[allow(missing_docs)]
 pub struct WithSpaceBounds {
     min: f64,
     max: f64,

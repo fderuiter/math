@@ -1,3 +1,4 @@
+//! Legacy crate.
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
@@ -130,6 +131,7 @@ impl<'ast> Visit<'ast> for DeepAstVisitor {
 }
 
 #[proc_macro]
+#[allow(missing_docs)]
 pub fn runtime_violation(input: TokenStream) -> TokenStream {
     let msg = syn::parse_macro_input!(input as syn::LitStr);
     let msg_str = msg.value();
@@ -152,11 +154,13 @@ mod semantic_integrity;
 mod embed_theory;
 
 #[proc_macro_attribute]
+#[allow(missing_docs)]
 pub fn embed_theory(attr: TokenStream, item: TokenStream) -> TokenStream {
     embed_theory::embed_theory_impl(attr.into(), item.into()).into()
 }
 
 #[proc_macro_attribute]
+#[allow(missing_docs)]
 pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut input_fn = match syn::parse::<ItemFn>(item.clone()) {
         Ok(f) => f,
@@ -216,6 +220,7 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(Theory, attributes(theory))]
 #[allow(clippy::too_many_lines, clippy::collapsible_if)]
+#[allow(missing_docs)]
 pub fn derive_theory(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
     let name = input.ident;

@@ -12,6 +12,7 @@ use std::ops::{Add, Div, Mul};
 /// The coefficient type T must be a Euclidean Domain to support division.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QSeries<T: EuclideanDomain> {
+    #[allow(missing_docs)]
     pub coeffs: Vec<T>,
 }
 

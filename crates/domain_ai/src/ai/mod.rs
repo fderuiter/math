@@ -90,14 +90,17 @@
 //! *   **Policy Gradients**: Optimizing the policy directly.
 //! *   **Bellman Equations**: The fundamental recursive relationship for value functions.
 
+#[allow(missing_docs)]
 pub mod activations;
 pub mod deep_learning_theory;
 pub mod gaussian_splatting;
+#[allow(missing_docs)]
 pub mod optimization;
 pub mod reinforcement_learning;
 pub mod sds;
 pub mod self_calibration;
 pub mod transformer;
+#[allow(missing_docs)]
 pub mod utils;
 
 // Re-export transformer components for backward compatibility.

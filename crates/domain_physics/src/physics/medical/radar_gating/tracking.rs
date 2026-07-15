@@ -13,11 +13,14 @@ use nalgebra::{DMatrix, DVector};
 /// State: [Position, Velocity]
 #[derive(Debug, Clone)]
 pub struct ConstantVelocityModel {
+    #[allow(missing_docs)]
     pub process_noise_var: f64,
+    #[allow(missing_docs)]
     pub measurement_noise_var: f64,
 }
 
 impl ConstantVelocityModel {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(process_noise_var: f64, measurement_noise_var: f64) -> Self {
         Self {

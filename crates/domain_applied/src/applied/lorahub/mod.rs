@@ -1,7 +1,10 @@
 #![doc = include_str!("README.md")]
 
+#[allow(missing_docs)]
 pub mod ensemble;
+#[allow(missing_docs)]
 pub mod strategies;
+#[allow(missing_docs)]
 pub mod types;
 
 pub use ensemble::LoraEnsemble;

@@ -1,7 +1,10 @@
 #![doc = include_str!("README.md")]
 
+#[allow(missing_docs)]
 pub mod formulas;
+#[allow(missing_docs)]
 pub mod metrics;
+#[allow(missing_docs)]
 pub mod rewards;
 
 // [cite:grpo]

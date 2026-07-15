@@ -9,16 +9,20 @@ use nalgebra::Matrix3;
 /// $$u = \bar{u} + u'$$
 #[derive(Debug, Clone, Copy)]
 pub struct ReynoldsDecomposition {
+    #[allow(missing_docs)]
     pub mean: f64,
+    #[allow(missing_docs)]
     pub fluctuating: f64,
 }
 
 impl ReynoldsDecomposition {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(mean: f64, fluctuating: f64) -> Self {
         Self { mean, fluctuating }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn instantaneous(&self) -> f64 {
         self.mean + self.fluctuating

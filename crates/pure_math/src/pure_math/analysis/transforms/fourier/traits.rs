@@ -5,8 +5,10 @@ use thiserror::Error;
 #[derive(Error, Debug, PartialEq)]
 pub enum TransformError {
     #[error("Input dimensions must be a power of 2")]
+    #[allow(missing_docs)]
     InvalidDimension,
     #[error("Input buffer is empty")]
+    #[allow(missing_docs)]
     EmptyInput,
 }
 

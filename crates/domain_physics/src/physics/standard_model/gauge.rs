@@ -7,8 +7,11 @@
 /// * `gs`: Coupling for SU(3)_C (Strong Color).
 #[derive(Debug, Clone, Copy)]
 pub struct GaugeCouplings {
+    #[allow(missing_docs)]
     pub g1: f64,
+    #[allow(missing_docs)]
     pub g2: f64,
+    #[allow(missing_docs)]
     pub gs: f64,
 }
 

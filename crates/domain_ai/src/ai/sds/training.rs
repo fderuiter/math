@@ -48,16 +48,24 @@ pub trait Optimizer {
 /// Simplified Adam implementation for a single parameter tensor (e.g., NeRF weights).
 /// theta_{t+1} = theta_t - eta * m_t / (sqrt(v_t) + epsilon)
 pub struct AdamOptimizer {
+    #[allow(missing_docs)]
     pub learning_rate: PositiveFloat,
+    #[allow(missing_docs)]
     pub beta1: UnitInterval,
+    #[allow(missing_docs)]
     pub beta2: UnitInterval,
+    #[allow(missing_docs)]
     pub epsilon: PositiveFloat,
+    #[allow(missing_docs)]
     pub m: Option<DMatrix<f64>>,
+    #[allow(missing_docs)]
     pub v: Option<DMatrix<f64>>,
+    #[allow(missing_docs)]
     pub t: usize,
 }
 
 impl AdamOptimizer {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(learning_rate: PositiveFloat) -> Self {
         Self {
@@ -129,12 +137,16 @@ impl Optimizer for AdamOptimizer {
 /// v_{t+1} = momentum * v_t + g_t
 /// theta_{t+1} = theta_t - lr * v_{t+1}
 pub struct SgdOptimizer {
+    #[allow(missing_docs)]
     pub learning_rate: PositiveFloat,
+    #[allow(missing_docs)]
     pub momentum: UnitInterval,
+    #[allow(missing_docs)]
     pub velocity: Option<DMatrix<f64>>,
 }
 
 impl SgdOptimizer {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(learning_rate: PositiveFloat, momentum: UnitInterval) -> Self {
         Self {

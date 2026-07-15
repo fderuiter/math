@@ -34,12 +34,16 @@ impl LaplaceEquation2D {
 /// Solves Laplace equation on a rectangular domain with Dirichlet boundary conditions using Fourier series.
 /// Currently assumes $u(0,y)=0, u(a,y)=0, u(x,0)=0, u(x,b)=f(x)$.
 pub struct RectangularLaplaceSolver {
+    #[allow(missing_docs)]
     pub width: f64,             // a
+    #[allow(missing_docs)]
     pub height: f64,            // b
+    #[allow(missing_docs)]
     pub coefficients: Vec<f64>, // A_n coefficients
 }
 
 impl RectangularLaplaceSolver {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn evaluate(&self, x: f64, y: f64) -> f64 {
         let mut u = 0.0;

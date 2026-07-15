@@ -15,6 +15,7 @@ pub struct TwoPulseModel<M> {
 }
 
 impl<M> TwoPulseModel<M> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(base_model: M, lag_time: f64, f1: f64, f2: f64) -> Self {
         Self {

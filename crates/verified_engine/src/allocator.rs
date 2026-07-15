@@ -3,14 +3,18 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use verified_engine_macros::runtime_violation;
 
+#[allow(missing_docs)]
 pub struct VerifiedAllocator;
 
+#[allow(missing_docs)]
 pub static MEMORY_LOCK: AtomicBool = AtomicBool::new(false);
 
+#[allow(missing_docs)]
 pub fn lock_allocations() {
     MEMORY_LOCK.store(true, Ordering::SeqCst);
 }
 
+#[allow(missing_docs)]
 pub fn unlock_allocations() {
     MEMORY_LOCK.store(false, Ordering::SeqCst);
 }

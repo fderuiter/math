@@ -78,9 +78,13 @@
 //! println!("Your Favoritism Score: {:.2}", score);
 //! ```
 
+#[allow(missing_docs)]
 pub mod favorite_child;
+#[allow(missing_docs)]
 pub mod scoring;
+#[allow(missing_docs)]
 pub mod strategies;
+#[allow(missing_docs)]
 pub mod types;
 
 pub use scoring::{

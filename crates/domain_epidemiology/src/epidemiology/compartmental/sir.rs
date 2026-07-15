@@ -7,8 +7,11 @@ use verified_engine::Theory;
 /// State for the SIR Model.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SIRState {
+    #[allow(missing_docs)]
     pub s: f64,
+    #[allow(missing_docs)]
     pub i: f64,
+    #[allow(missing_docs)]
     pub r: f64,
 }
 
@@ -21,8 +24,11 @@ impl_compartmental_ops!(SIRState, s, i, r);
 /// as a stateless Strategy or Flyweight.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SIRDynamics {
+    #[allow(missing_docs)]
     pub n: f64,
+    #[allow(missing_docs)]
     pub beta: f64,
+    #[allow(missing_docs)]
     pub gamma: f64,
 }
 

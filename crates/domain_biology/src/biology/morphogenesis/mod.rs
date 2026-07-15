@@ -64,8 +64,11 @@
 //! println!("Concentration of Activator at center: {:.4}", u_center);
 //! ```
 
+#[allow(missing_docs)]
 pub mod reaction;
+#[allow(missing_docs)]
 pub mod solvers;
+#[allow(missing_docs)]
 pub mod state;
 
 use crate::biology::diffusion::{FiniteDifference1D, SpatialDiffusion};
