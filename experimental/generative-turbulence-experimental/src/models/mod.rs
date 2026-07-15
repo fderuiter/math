@@ -6,6 +6,5 @@
 
 pub mod adv_no;
 pub mod diffusion;
-pub mod vae;
 
 // [cite:generative_turbulence]
