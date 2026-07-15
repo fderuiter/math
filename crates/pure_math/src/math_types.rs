@@ -3,29 +3,24 @@ use dashu::float::FBig;
 use dashu::integer::IBig;
 use dashu::rational::RBig;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
-
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 #[allow(missing_docs)]
 pub struct Integer(pub IBig);
-
 impl From<Integer> for IBig {
     fn from(i: Integer) -> Self {
         i.0
     }
 }
-
 impl Default for Integer {
     fn default() -> Self {
         Self::new()
     }
 }
-
 impl Integer {
     #[allow(missing_docs)]
     pub fn new() -> Self {
         Integer(IBig::from(0u8))
     }
-
     #[allow(missing_docs)]
     pub fn from<T>(v: T) -> Self
     where
@@ -33,7 +28,6 @@ impl Integer {
     {
         Integer(IBig::from(v))
     }
-
     #[allow(missing_docs)]
     pub fn to_f64(&self) -> f64 {
         use dashu::float::round::mode::HalfAway;
@@ -128,7 +122,6 @@ impl Integer {
     pub fn abs(self) -> Self {
         Integer(self.0.abs())
     }
-
     #[verified_engine::verified]
     fn extended_gcd(&self, other: &Integer) -> (Integer, Integer, Integer) {
         let mut old_r = self.0.clone();
@@ -137,17 +130,14 @@ impl Integer {
         let mut s = IBig::from(0u8);
         let mut old_t = IBig::from(0u8);
         let mut t = IBig::from(1u8);
-
         while r != IBig::from(0u8) {
             let quotient = &old_r / &r;
             let temp = r.clone();
             r = &old_r - &quotient * &r;
             old_r = temp;
-
             let temp = s.clone();
             s = &old_s - &quotient * &s;
             old_s = temp;
-
             let temp = t.clone();
             t = &old_t - &quotient * &t;
             old_t = temp;

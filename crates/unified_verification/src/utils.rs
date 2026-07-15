@@ -1,5 +1,7 @@
 use std::fs;
 use std::path::Path;
+use std::process::Command;
+use regex::Regex;
 use walkdir::WalkDir;
 
 pub fn check_file_lengths(members: &[String]) -> Vec<String> {
@@ -31,3 +33,45 @@ pub fn check_file_lengths(members: &[String]) -> Vec<String> {
     }
     exceeding
 }
+
+pub fn check_staged_duplicates() {
+    let output = Command::new("git")
+        .args(["diff", "--cached", "--no-color"])
+        .output()
+        .expect("Failed to run git diff --cached");
+
+    if !output.status.success() {
+        return;
+    }
+
+    let diff = String::from_utf8_lossy(&output.stdout);
+    let mut current_file = String::new();
+    let mut warnings = Vec::new();
+
+    let trait_re = Regex::new(r"trait\s+\w*(Solver|Integrator)").unwrap();
+    let proj_re = Regex::new(r"(fovy|aspect|projection|look_at|Perspective|matrix element)").unwrap();
+
+    for line in diff.lines() {
+        if line.starts_with("+++ b/") {
+            current_file = line["+++ b/".len()..].to_string();
+        } else if line.starts_with('+') && !line.starts_with("+++") {
+            let content = &line[1..];
+            if trait_re.is_match(content) {
+                warnings.push(format!("File {}: Possible duplicated mathematical trait detected: '{}'. Consider reusing existing utilities.", current_file, content.trim()));
+            }
+            if proj_re.is_match(content) {
+                warnings.push(format!("File {}: Possible duplicated camera/projection logic detected: '{}'. Consider consolidating.", current_file, content.trim()));
+            }
+        }
+    }
+
+    if !warnings.is_empty() {
+        println!("=== Code Duplication Warnings ===");
+        for w in warnings {
+            println!("WARN: {}", w);
+        }
+        println!("Please verify you are not duplicating existing utilities in pure_math or math_commons.");
+        println!("These warnings are non-blocking.");
+    }
+}
+

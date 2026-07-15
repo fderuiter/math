@@ -20,6 +20,7 @@ fn main() {
         "compile-papers" => compile_papers(),
         "traceability" => traceability(),
         "check-file-lengths" => check_file_lengths(),
+        "check-staged-duplicates" => check_staged_duplicates(),
         _ => {
             println!("Unknown command");
             exit(1);
@@ -59,6 +60,9 @@ if ! command -v cargo >/dev/null 2>&1; then
         export PATH="$PATH:$HOME/.cargo/bin"
     fi
 fi
+
+echo "Running staged duplicates check..."
+cargo run -p xtask -- check-staged-duplicates
 
 echo "Running centralized verification suite..."
 OUTPUT=$(cargo run -p xtask -- check-file-lengths 2>&1)
@@ -279,3 +283,18 @@ fn check_file_lengths() {
         ],
     );
 }
+
+fn check_staged_duplicates() {
+    run_cmd(
+        "cargo",
+        &[
+            "run",
+            "-p",
+            "unified_verification",
+            "--release",
+            "--",
+            "check-staged-duplicates",
+        ],
+    );
+}
+
