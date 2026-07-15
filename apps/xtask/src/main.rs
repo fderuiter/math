@@ -48,13 +48,37 @@ fn setup() {
     let hook_content = r#"#!/bin/sh
 # auto-generated pre-commit hook
 
-echo "Running centralized verification suite..."
-cargo run -p xtask -- check-file-lengths
+for profile in "$HOME/.bash_profile" "$HOME/.zprofile" "$HOME/.bashrc" "$HOME/.zshrc"; do
+    if [ -f "$profile" ]; then
+        . "$profile" >/dev/null 2>&1 || true
+    fi
+done
 
-if [ $? -ne 0 ]; then
+if ! command -v cargo >/dev/null 2>&1; then
+    if [ -d "$HOME/.cargo/bin" ]; then
+        export PATH="$PATH:$HOME/.cargo/bin"
+    fi
+fi
+
+echo "Running centralized verification suite..."
+OUTPUT=$(cargo run -p xtask -- check-file-lengths 2>&1)
+EXIT_CODE=$?
+
+echo "$OUTPUT"
+
+if [ $EXIT_CODE -ne 0 ]; then
     echo "Verification failed! Commit blocked due to file-length constraints."
     exit 1
 fi
+
+case "$OUTPUT" in
+    *"File length violation"*)
+        echo "Verification failed! Commit blocked due to file-length constraints."
+        exit 1
+        ;;
+esac
+
+exit 0
 "#;
 
     if std::path::Path::new(hook_path).exists() {
