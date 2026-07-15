@@ -34,6 +34,21 @@ pub trait StochasticSystem<State> {
     fn react(&self, state: &mut State, reaction_index: usize) -> Result<(), StochasticError>;
 }
 
+struct AllocationLockGuard;
+
+impl AllocationLockGuard {
+    fn lock() -> Self {
+        verified_engine::allocator::lock_allocations();
+        AllocationLockGuard
+    }
+}
+
+impl Drop for AllocationLockGuard {
+    fn drop(&mut self) {
+        verified_engine::allocator::unlock_allocations();
+    }
+}
+
 /// A solver for stochastic simulation using the Gillespie Algorithm (SSA).
 ///
 /// It uses the Direct Method to simulate exact stochastic trajectories.
@@ -67,18 +82,20 @@ impl<R: Rng> GillespieSolver<R> {
     where
         S: StochasticSystem<State>,
     {
-        if self.is_first_step {
+        let _guard = if self.is_first_step {
             let mut temp = Vec::new();
             system.propensities(state, &mut temp);
             self.buffer.reserve_exact(temp.len());
             self.buffer.extend(temp);
-            verified_engine::allocator::lock_allocations();
             self.is_first_step = false;
+            AllocationLockGuard::lock()
         } else {
+            let guard = AllocationLockGuard::lock();
             // Reuse internal buffer
             self.buffer.clear();
             system.propensities(state, &mut self.buffer);
-        }
+            guard
+        };
         
         let rates = &self.buffer;
 
