@@ -37,9 +37,8 @@ In `math_explorer/src/applied/mod.rs`, uncomment the line:
 ```
 
 **Contents:**
-*   **`models/`**: Variational Autoencoders (VAEs) and GANs for flow field generation.
+*   **`models/`**: High-level model implementations (adv-NO, Diffusion Models).
 *   **`networks/`**: Convolutional neural network backbones.
-*   **`training.rs`**: Training loops and optimization logic.
 *   **`analysis.rs`**: Statistical analysis of generated flow fields (energy spectra, correlation functions).
 
 ## Contributing

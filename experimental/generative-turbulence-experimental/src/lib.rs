@@ -11,7 +11,6 @@
 //! - `networks`: Core neural network architectures like U-Nets.
 //! - `models`: High-level model implementations (adv-NO, Diffusion Models).
 //! - `losses`: Custom loss functions for training.
-//! - `training`: Training loops and optimization logic.
 //! - `data`: Data loading and preprocessing utilities.
 //! - `analysis`: Tools for analyzing results (e.g., energy spectra).
 
