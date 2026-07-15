@@ -9,8 +9,28 @@ use crate::physics::solid_state::types::ElectronVolts;
 pub enum ChaosError {
     /// The simulation parameters are invalid (e.g., negative time step).
     InvalidParameter(String),
-    /// The calculation failed (e.g., trajectories converged completely).
+    /// Deprecated: use `Math` variant instead.
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     CalculationError(String),
+    /// Wrapped centralized mathematical error.
+    Math(math_commons::error::MathError),
+}
+
+impl Diagnostic for ChaosError {
+    #[verified_engine::verified]
+    fn severity(&self) -> Severity {
+        Severity::Error
+    }
+    #[verified_engine::verified]
+    fn metadata(&self) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        map.insert("error_type".to_string(), "ChaosError".to_string());
+        if let Self::Math(math_err) = self {
+            map.extend(math_err.metadata());
+        }
+        map.insert("description".to_string(), self.to_string());
+        map
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -63,7 +83,8 @@ pub enum DoseFluenceError {
 #[derive(Error, Debug, Clone, PartialEq)]
 #[allow(missing_docs)]
 pub enum RadarError {
-    /// Chirp length mismatch.
+    /// Deprecated: use `Math` variant instead.
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     #[error("Chirp length {actual} does not match expected {expected}")]
     #[allow(missing_docs)]
     ChirpLengthMismatch { expected: usize, actual: usize },
@@ -82,9 +103,14 @@ pub enum RadarError {
     #[error("Invalid configuration: {0}")]
     InvalidConfiguration(String),
 
-    /// Numerical instability detected (e.g. NaN/Inf).
+    /// Deprecated: use `Math` variant instead.
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     #[error("Numerical instability detected: {0}")]
     NumericalInstability(String),
+
+    /// Wrapped centralized mathematical error.
+    #[error("Mathematical error: {0}")]
+    Math(math_commons::error::MathError),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -122,9 +148,12 @@ pub enum HighEnergyError {
     /// Invalid statistics parameters (e.g. negative counts).
     #[allow(missing_docs)]
     InvalidStatisticsParams { reason: String },
-    /// Error during calculation (e.g. negative sqrt).
+    /// Deprecated: use `Math` variant instead.
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     #[allow(missing_docs)]
     CalculationError { reason: String },
+    /// Wrapped centralized mathematical error.
+    Math(math_commons::error::MathError),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -152,22 +181,11 @@ pub enum StatMechError {
         #[allow(missing_docs)]
         reason: String,
     },
-    /// Numerical instability (e.g. division by zero).
+    /// Deprecated: use `Math` variant instead.
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     NumericalInstability(String),
-}
-
-impl Diagnostic for ChaosError {
-    #[verified_engine::verified]
-    fn severity(&self) -> Severity {
-        Severity::Error
-    }
-    #[verified_engine::verified]
-    fn metadata(&self) -> HashMap<String, String> {
-        let mut map = HashMap::new();
-        map.insert("error_type".to_string(), "ChaosError".to_string());
-        map.insert("description".to_string(), self.to_string());
-        map
-    }
+    /// Wrapped centralized mathematical error.
+    Math(math_commons::error::MathError),
 }
 
 impl Diagnostic for StandardModelError {
@@ -221,6 +239,9 @@ impl Diagnostic for RadarError {
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "RadarError".to_string());
+        if let Self::Math(math_err) = self {
+            map.extend(math_err.metadata());
+        }
         map.insert("description".to_string(), self.to_string());
         map
     }
@@ -235,6 +256,9 @@ impl Diagnostic for HighEnergyError {
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "HighEnergyError".to_string());
+        if let Self::Math(math_err) = self {
+            map.extend(math_err.metadata());
+        }
         map.insert("description".to_string(), self.to_string());
         map
     }
@@ -263,6 +287,9 @@ impl Diagnostic for StatMechError {
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "StatMechError".to_string());
+        if let Self::Math(math_err) = self {
+            map.extend(math_err.metadata());
+        }
         map.insert("description".to_string(), self.to_string());
         map
     }
@@ -293,6 +320,12 @@ impl std::fmt::Display for HighEnergyError {
     }
 }
 
+impl From<math_commons::error::MathError> for HighEnergyError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        HighEnergyError::Math(err)
+    }
+}
+
 impl std::error::Error for HighEnergyError {}
 
 impl std::fmt::Display for FluidError {
@@ -311,4 +344,22 @@ impl std::fmt::Display for StatMechError {
     }
 }
 
+impl From<math_commons::error::MathError> for ChaosError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        ChaosError::Math(err)
+    }
+}
+
 impl std::error::Error for StatMechError {}
+
+impl From<math_commons::error::MathError> for StatMechError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        StatMechError::Math(err)
+    }
+}
+
+impl From<math_commons::error::MathError> for RadarError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        RadarError::Math(err)
+    }
+}

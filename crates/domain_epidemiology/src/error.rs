@@ -12,7 +12,8 @@ pub enum EpidemiologyError {
     /// Missing Parameter (e.g., required field not set in builder).
     #[allow(missing_docs)]
     MissingParameter { name: String },
-    /// Matrix dimensions mismatch.
+    /// Deprecated: use `Math` variant instead.
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     DimensionMismatch {
         #[allow(missing_docs)]
         f_rows: usize,
@@ -23,6 +24,8 @@ pub enum EpidemiologyError {
         #[allow(missing_docs)]
         v_cols: usize,
     },
+    /// Wrapped centralized mathematical error.
+    Math(math_commons::error::MathError),
 }
 
 impl Diagnostic for EpidemiologyError {
@@ -34,6 +37,9 @@ impl Diagnostic for EpidemiologyError {
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "EpidemiologyError".to_string());
+        if let Self::Math(math_err) = self {
+            map.extend(math_err.metadata());
+        }
         map.insert("description".to_string(), self.to_string());
         map
     }
@@ -47,3 +53,10 @@ impl std::fmt::Display for EpidemiologyError {
 }
 
 impl std::error::Error for EpidemiologyError {}
+
+impl From<math_commons::error::MathError> for EpidemiologyError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        EpidemiologyError::Math(err)
+    }
+}
+

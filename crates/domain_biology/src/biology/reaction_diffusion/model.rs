@@ -186,10 +186,12 @@ impl<R: ReactionModel, D: DiffusionModel>
         }
 
         if diffusion_coeffs.len() != num_species {
-            return Err(ReactionDiffusionError::DimensionMismatch {
-                expected: num_species,
-                got: diffusion_coeffs.len(),
-            });
+            return Err(ReactionDiffusionError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(num_species),
+                    actual: math_commons::math_kernel::types::Dimension(diffusion_coeffs.len()),
+                }
+            ));
         }
 
         let state = ChemicalState::new(num_species, grid_size);
@@ -243,10 +245,12 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
         }
 
         if diffusion_coeffs.len() != num_species {
-            return Err(ReactionDiffusionError::DimensionMismatch {
-                expected: num_species,
-                got: diffusion_coeffs.len(),
-            });
+            return Err(ReactionDiffusionError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(num_species),
+                    actual: math_commons::math_kernel::types::Dimension(diffusion_coeffs.len()),
+                }
+            ));
         }
 
         Ok(ReactionDiffusionSystem {

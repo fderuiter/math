@@ -47,9 +47,9 @@ fn test_music_nan_handling() {
     let result = estimator.compute_spectrum(0.0, 1.0, 0.1, 1e9, 3e8);
 
     match result {
-        Err(RadarError::NumericalInstability(_)) => (), // Pass
-        Err(e) => panic!("Expected NumericalInstability, got {:?}", e),
-        Ok(_) => panic!("Expected NumericalInstability, got Ok"),
+        Err(RadarError::Math(math_commons::error::MathError::NumericalError { .. })) => (), // Pass
+        Err(e) => panic!("Expected Math::NumericalError, got {:?}", e),
+        Ok(_) => panic!("Expected Math::NumericalError, got Ok"),
     }
 }
 

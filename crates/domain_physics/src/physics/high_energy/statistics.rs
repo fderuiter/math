@@ -33,9 +33,11 @@ pub fn li_ma_significance(n_on: f64, n_off: f64, alpha: f64) -> Result<f64, High
         // Should not happen for valid inputs where n_on/n_off reflect an excess,
         // but numerically possible or if deficit.
         // Formula has sqrt.
-        return Err(HighEnergyError::CalculationError {
-            reason: "Negative argument for sqrt in Li & Ma".to_string(),
-        });
+        return Err(HighEnergyError::Math(
+            math_commons::error::MathError::NumericalError {
+                reason: "Negative argument for sqrt in Li & Ma".to_string(),
+            }
+        ));
     }
 
     Ok(2.0f64.sqrt() * sum.sqrt())
