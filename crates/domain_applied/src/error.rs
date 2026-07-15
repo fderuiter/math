@@ -73,9 +73,12 @@ pub enum LoraError {
 pub enum IsosurfaceError {
     /// The grid dimensions are too small (must be at least 2x2x2).
     InvalidGrid(String),
-    /// The data buffer size matches the grid dimensions.
+    /// Deprecated: use `Math` instead.
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     #[allow(missing_docs)]
     DataMismatch { expected: usize, actual: usize },
+    /// Wrapped centralized mathematical error.
+    Math(math_commons::error::MathError),
 }
 
 impl Diagnostic for PharmacokineticsError {
@@ -160,8 +163,17 @@ impl Diagnostic for IsosurfaceError {
     fn metadata(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
         map.insert("error_type".to_string(), "IsosurfaceError".to_string());
+        if let Self::Math(math_err) = self {
+            map.extend(math_err.metadata());
+        }
         map.insert("description".to_string(), self.to_string());
         map
+    }
+}
+
+impl From<math_commons::error::MathError> for IsosurfaceError {
+    fn from(err: math_commons::error::MathError) -> Self {
+        IsosurfaceError::Math(err)
     }
 }
 

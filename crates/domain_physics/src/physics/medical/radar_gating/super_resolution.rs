@@ -72,10 +72,12 @@ impl MusicEstimator {
     #[verified_engine::verified]
     pub fn add_snapshot(&mut self, chirp: &[Complex<f64>]) -> Result<(), RadarError> {
         if chirp.len() != self.samples_per_chirp {
-            return Err(RadarError::ChirpLengthMismatch {
-                expected: self.samples_per_chirp,
-                actual: chirp.len(),
-            });
+            return Err(RadarError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(self.samples_per_chirp),
+                    actual: math_commons::math_kernel::types::Dimension(chirp.len()),
+                }
+            ));
         }
         let vec = DVector::from_iterator(chirp.len(), chirp.iter().cloned());
 
@@ -105,7 +107,7 @@ impl MusicEstimator {
     /// # Panics
     ///
     /// This method performs an `unwrap()` when sorting eigenvalues descending. This is provably
-    /// infallible because the algorithm explicitly checks and returns an error (`RadarError::NumericalInstability`)
+    /// infallible because the algorithm explicitly checks and returns an error (`RadarError::Math(NumericalError)`)
     /// if any eigenvalues contain `NaN` prior to sorting.
     ///
     /// # Examples
@@ -177,8 +179,10 @@ impl MusicEstimator {
 
         // Check for numerical instability (NaNs in eigenvalues)
         if eigen.eigenvalues.iter().any(|v| v.is_nan()) {
-            return Err(RadarError::NumericalInstability(
-                "Eigenvalues contain NaN".into(),
+            return Err(RadarError::Math(
+                math_commons::error::MathError::NumericalError {
+                    reason: "Eigenvalues contain NaN".into(),
+                }
             ));
         }
 

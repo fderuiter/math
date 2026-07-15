@@ -87,8 +87,10 @@ where
         let d_t = dist_vec.norm();
 
         if d_t == 0.0 {
-            return Err(ChaosError::CalculationError(
-                "Trajectories converged completely (distance 0), cannot compute log.".to_string(),
+            return Err(ChaosError::Math(
+                math_commons::error::MathError::NumericalError {
+                    reason: "Trajectories converged completely (distance 0), cannot compute log.".to_string(),
+                }
             ));
         }
 

@@ -14,12 +14,12 @@ pub fn calculate_r0_matrix(
     v_mat: &DMatrix<f64>,
 ) -> Result<f64, EpidemiologyError> {
     if f_mat.nrows() != v_mat.nrows() || f_mat.ncols() != v_mat.ncols() {
-        return Err(EpidemiologyError::DimensionMismatch {
-            f_rows: f_mat.nrows(),
-            f_cols: f_mat.ncols(),
-            v_rows: v_mat.nrows(),
-            v_cols: v_mat.ncols(),
-        });
+        return Err(EpidemiologyError::Math(
+            math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(f_mat.len()),
+                actual: math_commons::math_kernel::types::Dimension(v_mat.len()),
+            }
+        ));
     }
 
     let v_inv = v_mat
