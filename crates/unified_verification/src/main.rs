@@ -8,15 +8,13 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 use walkdir::WalkDir;
-
 mod ast_visitor;
 mod entropy_guard;
 mod profile;
 mod api_drift;
 mod utils;
 mod vulnerabilities;
-use utils::check_file_lengths;
-
+use utils::{check_file_lengths, check_staged_duplicates};
 #[derive(Serialize)]
 struct IntegrityReport {
     native_execution_coverage_pct: f64,
@@ -26,7 +24,6 @@ struct IntegrityReport {
     unverified_modules_density: f64,
     passed: bool,
 }
-
 fn get_workspace_members() -> Vec<String> {
     let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
     let parsed: toml::Value =
@@ -45,14 +42,12 @@ fn get_workspace_members() -> Vec<String> {
     }
     members
 }
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!("Usage: unified_verification <command>");
         std::process::exit(1);
     }
-
     match args[1].as_str() {
         "verify-records" => {
             if !verify_records() {
@@ -67,6 +62,7 @@ fn main() {
                 std::process::exit(1);
             }
         },
+        "check-staged-duplicates" => check_staged_duplicates(),
         "check-file-lengths" => {
             let members = get_workspace_members();
             let debt = check_file_lengths(&members);
@@ -86,7 +82,6 @@ fn main() {
         }
     }
 }
-
 fn verify_records() -> bool {
     let base_sha = env::var("BASE_SHA").ok().filter(|s| !s.is_empty());
     let head_sha = env::var("HEAD_SHA").ok().filter(|s| !s.is_empty());

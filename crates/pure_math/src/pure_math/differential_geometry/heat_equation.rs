@@ -6,9 +6,9 @@ pub struct HeatEquationSolver<'a, S: ParametricSurface> {
     #[allow(missing_docs)]
     pub surface: &'a S,
     #[allow(missing_docs)]
-    pub alpha: f64,               // Thermal diffusivity
+    pub alpha: f64, // Thermal diffusivity
     #[allow(missing_docs)]
-    pub u_grid: Vec<Vec<f64>>,    // Current temperature state
+    pub u_grid: Vec<Vec<f64>>, // Current temperature state
     #[allow(missing_docs)]
     pub next_grid: Vec<Vec<f64>>, // Bolt Optimization: Buffer to avoid allocations in step
     #[allow(missing_docs)]
