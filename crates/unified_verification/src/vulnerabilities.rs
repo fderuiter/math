@@ -5,10 +5,20 @@ use toml::Value;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn check_osv_vulnerabilities() -> bool {
-    let content = fs::read_to_string("Cargo.lock").unwrap_or_default();
+    let content = match fs::read_to_string("Cargo.lock") {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Failed to read Cargo.lock: {}", e);
+            return false;
+        }
+    };
+
     let parsed: Value = match toml::from_str(&content) {
         Ok(v) => v,
-        Err(_) => return true,
+        Err(e) => {
+            eprintln!("Failed to parse Cargo.lock: {}", e);
+            return false;
+        }
     };
 
     let mut queries = Vec::new();
@@ -45,7 +55,10 @@ pub fn check_osv_vulnerabilities() -> bool {
         .send_json(req_body)
     {
         Ok(r) => r,
-        Err(_) => return true, // if network fails, don't fail the build
+        Err(e) => {
+            eprintln!("Warning: Remote vulnerability database is unreachable: {}", e);
+            return true;
+        }
     };
 
     let res_json: serde_json::Value = res.into_json().unwrap_or_default();
