@@ -13,7 +13,7 @@ mod entropy_guard;
 mod profile;
 mod utils;
 mod vulnerabilities;
-use utils::check_file_lengths;
+use utils::{check_file_lengths, check_staged_duplicates};
 #[derive(Serialize)]
 struct IntegrityReport {
     native_execution_coverage_pct: f64,
@@ -56,6 +56,7 @@ fn main() {
                 std::process::exit(1);
             }
         },
+        "check-staged-duplicates" => utils::check_staged_duplicates(),
         "check-file-lengths" => {
             let members = get_workspace_members();
             let debt = check_file_lengths(&members);
