@@ -63,10 +63,12 @@ pub fn calculate_kl_divergence_loss(
     predicted_dist: &[f64],
 ) -> Result<f64, AIError> {
     if responses.len() != predicted_dist.len() {
-        return Err(AIError::DistributionLengthMismatch {
-            expected: predicted_dist.len(),
-            got: responses.len(),
-        });
+        return Err(AIError::Math(
+            math_commons::error::MathError::DimensionMismatch {
+                expected: math_commons::math_kernel::types::Dimension(predicted_dist.len()),
+                actual: math_commons::math_kernel::types::Dimension(responses.len()),
+            }
+        ));
     }
     if responses.is_empty() {
         return Ok(0.0);

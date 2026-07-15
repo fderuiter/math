@@ -10,6 +10,7 @@ pub enum KalmanError {
     #[error("Failed to invert innovation covariance matrix (singular)")]
     #[allow(missing_docs)]
     MatrixInversionError,
+    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
     #[error(
         "Dimension mismatch: state size {state_size} does not match covariance dimensions {cov_rows}x{cov_cols}"
     )]
@@ -22,6 +23,9 @@ pub enum KalmanError {
         #[allow(missing_docs)]
         cov_cols: usize,
     },
+    #[allow(missing_docs)]
+    #[error("Mathematical error: {0}")]
+    Math(#[from] math_commons::error::MathError),
     #[error("Missing required initialization field: {0}")]
     #[allow(missing_docs)]
     InitializationError(String),
@@ -177,11 +181,12 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilterBuilder<T, M> {
             .covariance
             .ok_or_else(|| KalmanError::InitializationError("initial_covariance".to_string()))?;
         if state.len() != covariance.nrows() || covariance.nrows() != covariance.ncols() {
-            return Err(KalmanError::DimensionMismatch {
-                state_size: state.len(),
-                cov_rows: covariance.nrows(),
-                cov_cols: covariance.ncols(),
-            });
+            return Err(KalmanError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(state.len()),
+                    actual: math_commons::math_kernel::types::Dimension(covariance.nrows() * covariance.ncols()),
+                }
+            ));
         }
         Ok(KalmanFilter {
             state,
@@ -419,16 +424,14 @@ mod tests {
             .initial_covariance(cov)
             .build();
         match result {
-            Err(KalmanError::DimensionMismatch {
-                state_size,
-                cov_rows,
-                cov_cols,
-            }) => {
-                assert_eq!(state_size, 2);
-                assert_eq!(cov_rows, 3);
-                assert_eq!(cov_cols, 3);
+            Err(KalmanError::Math(math_commons::error::MathError::DimensionMismatch {
+                expected,
+                actual,
+            })) => {
+                assert_eq!(expected.0, 2);
+                assert_eq!(actual.0, 9);
             }
-            _ => panic!("Expected DimensionMismatch error, got {:?}", result),
+            _ => panic!("Expected Math::DimensionMismatch error, got {:?}", result),
         }
     }
     #[test]

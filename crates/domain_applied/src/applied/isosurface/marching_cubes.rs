@@ -186,10 +186,12 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
             })?;
 
         if self.grid.data().len() < expected_len {
-            return Err(IsosurfaceError::DataMismatch {
-                expected: expected_len,
-                actual: self.grid.data().len(),
-            });
+            return Err(IsosurfaceError::Math(
+                math_commons::error::MathError::DimensionMismatch {
+                    expected: math_commons::math_kernel::types::Dimension(expected_len),
+                    actual: math_commons::math_kernel::types::Dimension(self.grid.data().len()),
+                }
+            ));
         }
         Ok(())
     }
