@@ -59,8 +59,14 @@ fn main() {
         "check-file-lengths" => {
             let members = get_workspace_members();
             let debt = check_file_lengths(&members);
+            let has_debt = !debt.is_empty();
             for d in debt {
                 println!("{}", d);
+            }
+            if has_debt {
+                std::process::exit(1);
+            } else {
+                std::process::exit(0);
             }
         }
         _ => {
