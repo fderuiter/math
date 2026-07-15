@@ -1,6 +1,7 @@
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints};
+use math_commons::math_kernel::colormap::mapped_gradient;
 use math_explorer::pure_math::differential_geometry::surface::{
     KleinBottle, ParametricSurface, Sphere, SurfaceAnalysis, Torus,
 };
@@ -80,42 +81,8 @@ impl CurvatureHeatmap {
 
     /// Maps a curvature value to a color.
     fn map_color(&self, value: f64, min_val: f64, max_val: f64) -> egui::Color32 {
-        // Normalize value to 0.0 .. 1.0
-        let range = max_val - min_val;
-        let mut normalized = if range == 0.0 {
-            0.5
-        } else {
-            (value - min_val) / range
-        };
-
-        normalized = normalized.clamp(0.0, 1.0);
-
-        // Simple colormap: Blue -> Cyan -> Green -> Yellow -> Red
-        let r = if normalized < 0.5 {
-            0
-        } else if normalized < 0.75 {
-            ((normalized - 0.5) * 4.0 * 255.0) as u8
-        } else {
-            255
-        };
-
-        let g = if normalized < 0.25 {
-            (normalized * 4.0 * 255.0) as u8
-        } else if normalized < 0.75 {
-            255
-        } else {
-            ((1.0 - normalized) * 4.0 * 255.0) as u8
-        };
-
-        let b = if normalized < 0.25 {
-            255
-        } else if normalized < 0.5 {
-            ((0.5 - normalized) * 4.0 * 255.0) as u8
-        } else {
-            0
-        };
-
-        egui::Color32::from_rgb(r, g, b)
+        let rgb = mapped_gradient(value, min_val, max_val);
+        egui::Color32::from_rgb(rgb[0], rgb[1], rgb[2])
     }
 
     fn generate_colored_lines<T: ParametricSurface>(

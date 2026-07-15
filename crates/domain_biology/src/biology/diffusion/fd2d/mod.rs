@@ -258,10 +258,11 @@ mod tests_2d {
         let mut out_u = vec![0.0; n];
         let mut out_v = vec![0.0; n];
 
+        use math_commons::math_kernel::types::flatten_2d_index;
         // u = x^2 + y^2
         for y in 0..height {
             for x in 0..width {
-                let idx = y * width + x;
+                let idx = flatten_2d_index(x, y, width);
                 u[idx] = (x as f64).powi(2) + (y as f64).powi(2);
             }
         }
@@ -278,7 +279,7 @@ mod tests_2d {
         // Interior range: x in 1..3, y in 1..3
         for y in 1..height - 1 {
             for x in 1..width - 1 {
-                let idx = y * width + x;
+                let idx = flatten_2d_index(x, y, width);
                 assert!(
                     (out_u[idx] - 4.0).abs() < math_commons::registry::TOLERANCE_HIGH,
                     "Failed at ({}, {}): {}",

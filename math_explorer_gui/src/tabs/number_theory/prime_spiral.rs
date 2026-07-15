@@ -1,4 +1,5 @@
 use eframe::egui::{self, Color32, ColorImage, TextureHandle, TextureOptions};
+use math_commons::math_kernel::types::flatten_2d_index;
 use math_explorer::pure_math::number_theory::primes::primes_up_to;
 
 pub struct PrimeSpiralWidget {
@@ -89,10 +90,10 @@ impl PrimeSpiralWidget {
 
                 if px < size && py < size {
                     if is_prime {
-                        pixels[py * size + px] = Color32::WHITE;
+                        pixels[flatten_2d_index(px, py, size)] = Color32::WHITE;
                     }
                     if i == 1 {
-                        pixels[py * size + px] = Color32::RED;
+                        pixels[flatten_2d_index(px, py, size)] = Color32::RED;
                     }
                 }
             }

@@ -50,3 +50,9 @@ impl DerefMut for Dimension {
         &mut self.0
     }
 }
+
+/// Converts a 2D coordinate into a 1D flat index.
+#[inline(always)]
+pub fn flatten_2d_index(x: usize, y: usize, width: usize) -> usize {
+    y * width + x
+}

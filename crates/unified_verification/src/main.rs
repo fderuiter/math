@@ -56,6 +56,11 @@ fn main() {
         "verify-records" => verify_records(),
         "traceability" => traceability(),
         "verify-suite" => verify_suite(&args[2..]),
+        "check-duplicates" => {
+            if !ast_visitor::run_clone_detector() {
+                std::process::exit(1);
+            }
+        },
         "check-file-lengths" => {
             let members = get_workspace_members();
             let debt = check_file_lengths(&members);
@@ -443,6 +448,10 @@ fn verify_suite(args: &[String]) {
     }
 
     if !ast_visitor::run_ast_visitor() {
+        passed_security = false;
+    }
+
+    if !ast_visitor::run_clone_detector() {
         passed_security = false;
     }
 

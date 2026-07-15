@@ -12,6 +12,7 @@
 //! - **$T > T_c$**: Paramagnetic phase (Disordered spins).
 
 use super::KB;
+use math_commons::math_kernel::types::flatten_2d_index;
 use rand::Rng;
 
 /// A 2D Spin Lattice for the Ising Model.
@@ -97,7 +98,7 @@ impl SpinLattice {
         let mut neighbors = vec![[0; 4]; count];
         for y in 0..height {
             for x in 0..width {
-                let idx = y * width + x;
+                let idx = flatten_2d_index(x, y, width);
 
                 let left = if x == 0 { idx + width - 1 } else { idx - 1 };
                 let right = if x == width - 1 {
