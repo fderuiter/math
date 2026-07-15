@@ -4,8 +4,11 @@ use crate::error::StatMechError;
 /// Type of particle for statistical distribution.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ParticleType {
+    #[allow(missing_docs)]
     Boson,
+    #[allow(missing_docs)]
     Fermion,
+    #[allow(missing_docs)]
     Classical,
 }
 

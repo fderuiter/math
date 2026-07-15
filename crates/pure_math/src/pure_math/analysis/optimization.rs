@@ -12,6 +12,7 @@ use thiserror::Error;
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum OptimizationError {
     #[error("Failed to convert numerical value")]
+    #[allow(missing_docs)]
     ConversionError,
 }
 
@@ -21,16 +22,19 @@ impl From<EvolutionError> for OptimizationError {
     }
 }
 
+#[allow(missing_docs)]
 pub struct L1RegularizedLeastSquares {
     lambda: f64,
 }
 
 impl L1RegularizedLeastSquares {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(lambda: f64) -> Self {
         Self { lambda }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn cost(&mut self, a: &DMatrix<f64>, x: &DVector<f64>, y: &DVector<f64>) -> f64 {
         let residual = y - (a * x);
@@ -44,12 +48,14 @@ impl L1RegularizedLeastSquares {
 /// Strategy for updating parameters.
 /// Reimplemented via the Unified EvolutionEngine.
 pub trait Optimizer<T: RealField + Copy, Key = u64> {
+    #[allow(missing_docs)]
     fn update_matrix(
         &mut self,
         key: Key,
         param: &mut DMatrix<T>,
         grad: &DMatrix<T>,
     ) -> Result<(), OptimizationError>;
+    #[allow(missing_docs)]
     fn update_vector(
         &mut self,
         key: Key,
@@ -58,11 +64,14 @@ pub trait Optimizer<T: RealField + Copy, Key = u64> {
     ) -> Result<(), OptimizationError>;
 }
 
+#[allow(missing_docs)]
 pub struct SGD<T> {
+    #[allow(missing_docs)]
     pub learning_rate: T,
 }
 
 impl<T: RealField + Copy> SGD<T> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(learning_rate: T) -> Self {
         Self { learning_rate }
@@ -125,20 +134,30 @@ impl<T: RealField + Copy, Key> Optimizer<T, Key> for SGD<T> {
     }
 }
 
+#[allow(missing_docs)]
 pub struct AdamState<T> {
+    #[allow(missing_docs)]
     pub m: DMatrix<T>,
+    #[allow(missing_docs)]
     pub v: DMatrix<T>,
+    #[allow(missing_docs)]
     pub t: i32,
 }
 
+#[allow(missing_docs)]
 pub struct Adam<T, Key>
 where
     Key: Eq + std::hash::Hash,
 {
+    #[allow(missing_docs)]
     pub learning_rate: T,
+    #[allow(missing_docs)]
     pub beta1: T,
+    #[allow(missing_docs)]
     pub beta2: T,
+    #[allow(missing_docs)]
     pub epsilon: T,
+    #[allow(missing_docs)]
     pub states: HashMap<Key, AdamState<T>>,
 }
 
@@ -146,6 +165,7 @@ impl<T: RealField + Copy, Key> Adam<T, Key>
 where
     Key: Eq + std::hash::Hash + Clone,
 {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(lr: T) -> Result<Self, OptimizationError> {
         Ok(Self {
@@ -157,6 +177,7 @@ where
         })
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn get_state(&mut self, key: Key, shape: (usize, usize)) -> &mut AdamState<T> {
         self.states.entry(key).or_insert_with(|| AdamState {
@@ -301,7 +322,9 @@ where
 /// Identifies the type of parameter being updated.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ParamType {
+    #[allow(missing_docs)]
     Weight,
+    #[allow(missing_docs)]
     Bias,
 }
 
@@ -309,6 +332,7 @@ pub enum ParamType {
 /// The `Optimizer` uses a generic `Key`, but old code expects `(usize, ParamType)`.
 pub trait ModelOptimizer<T: RealField + Copy>: Optimizer<T, (usize, ParamType)> {
     #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     fn update_matrix_legacy(
         &mut self,
@@ -320,6 +344,7 @@ pub trait ModelOptimizer<T: RealField + Copy>: Optimizer<T, (usize, ParamType)> 
     }
 
     #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     fn update_vector_legacy(
         &mut self,

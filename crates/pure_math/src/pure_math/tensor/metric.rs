@@ -86,6 +86,7 @@ impl<F> RiemannianMetric<F>
 where
     F: Fn(&DVector<f64>) -> DMatrix<f64>,
 {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(metric_fn: F) -> Self {
         Self { metric_fn }

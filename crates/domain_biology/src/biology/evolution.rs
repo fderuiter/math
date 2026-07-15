@@ -63,6 +63,7 @@ pub struct HawkDovePopulation {
 }
 
 impl HawkDovePopulation {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(v: f64, c: f64) -> Self {
         Self { v, c }

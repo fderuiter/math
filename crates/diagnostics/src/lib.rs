@@ -46,10 +46,15 @@ use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex, OnceLock};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(missing_docs)]
 pub enum Severity {
+    #[allow(missing_docs)]
     Info,
+    #[allow(missing_docs)]
     Warning,
+    #[allow(missing_docs)]
     Error,
+    #[allow(missing_docs)]
     Fatal,
 }
 
@@ -64,23 +69,32 @@ impl std::fmt::Display for Severity {
     }
 }
 
+#[allow(missing_docs)]
 pub trait Diagnostic: std::error::Error + Send + Sync + 'static {
+    #[allow(missing_docs)]
     fn severity(&self) -> Severity {
         Severity::Error
     }
+    #[allow(missing_docs)]
     fn metadata(&self) -> HashMap<String, String> {
         HashMap::new()
     }
 }
 
 #[derive(Debug, Clone)]
+#[allow(missing_docs)]
 pub struct DiagnosticEvent {
+    #[allow(missing_docs)]
     pub severity: Severity,
+    #[allow(missing_docs)]
     pub message: String,
+    #[allow(missing_docs)]
     pub metadata: HashMap<String, String>,
+    #[allow(missing_docs)]
     pub thread_name: Option<String>,
 }
 
+#[allow(missing_docs)]
 pub struct DiagnosticBus {
     sender: Sender<DiagnosticEvent>,
     receiver: Arc<Mutex<Receiver<DiagnosticEvent>>>,
@@ -88,6 +102,7 @@ pub struct DiagnosticBus {
 }
 
 impl DiagnosticBus {
+    #[allow(missing_docs)]
     pub fn new() -> Self {
         let (sender, receiver) = channel();
         Self {
@@ -97,6 +112,7 @@ impl DiagnosticBus {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn register_listener<F>(&self, listener: F)
     where
         F: Fn(&DiagnosticEvent) + Send + Sync + 'static,
@@ -106,6 +122,7 @@ impl DiagnosticBus {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn emit(&self, event: DiagnosticEvent) {
         let _ = self.sender.send(event.clone());
         if let Ok(listeners) = self.listeners.lock() {
@@ -115,6 +132,7 @@ impl DiagnosticBus {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn emit_error<E: Diagnostic>(&self, err: &E) {
         let metadata = err.metadata();
         let thread = std::thread::current();
@@ -127,6 +145,7 @@ impl DiagnosticBus {
         });
     }
 
+    #[allow(missing_docs)]
     pub fn try_recv_all(&self) -> Vec<DiagnosticEvent> {
         let mut events = Vec::new();
         if let Ok(rx) = self.receiver.lock() {
@@ -144,19 +163,23 @@ impl Default for DiagnosticBus {
     }
 }
 
+#[allow(missing_docs)]
 pub fn global_bus() -> &'static DiagnosticBus {
     static BUS: OnceLock<DiagnosticBus> = OnceLock::new();
     BUS.get_or_init(DiagnosticBus::new)
 }
 
+#[allow(missing_docs)]
 pub fn emit(event: DiagnosticEvent) {
     global_bus().emit(event);
 }
 
+#[allow(missing_docs)]
 pub fn emit_error<E: Diagnostic>(err: &E) {
     global_bus().emit_error(err);
 }
 
+#[allow(missing_docs)]
 pub fn init_panic_hook() {
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {

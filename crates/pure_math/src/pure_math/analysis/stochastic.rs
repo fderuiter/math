@@ -10,6 +10,7 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum StochasticError {
     #[error("Invalid reaction index: {0}")]
+    #[allow(missing_docs)]
     InvalidReactionIndex(usize),
 }
 

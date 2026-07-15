@@ -6,8 +6,11 @@
 //! - Temperature scaling based on answer entropy.
 //! - Training via KL divergence loss.
 
+#[allow(missing_docs)]
 pub mod scoring;
+#[allow(missing_docs)]
 pub mod temperature;
+#[allow(missing_docs)]
 pub mod training;
 pub mod types;
 

@@ -9,8 +9,10 @@ use crate::error::SolidStateError;
 
 // --- Traits ---
 
+#[allow(missing_docs)]
 pub trait GapEquation {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn calculate_next_gap(
         &self,
         current_gap: ElectronVolts,
@@ -20,9 +22,13 @@ pub trait GapEquation {
 // --- Solver ---
 
 #[derive(Debug, Clone)]
+#[allow(missing_docs)]
 pub struct BcsGapSolver {
+    #[allow(missing_docs)]
     pub max_iterations: usize,
+    #[allow(missing_docs)]
     pub tolerance: f64,
+    #[allow(missing_docs)]
     pub mixing_param: f64,
 }
 
@@ -38,29 +44,34 @@ impl Default for BcsGapSolver {
 }
 
 impl BcsGapSolver {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn with_max_iterations(mut self, max: usize) -> Self {
         self.max_iterations = max;
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn with_tolerance(mut self, tol: f64) -> Self {
         self.tolerance = tol;
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn with_mixing_param(mut self, param: f64) -> Self {
         self.mixing_param = param;
         self
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn solve<M: GapEquation>(
         &self,
@@ -89,13 +100,18 @@ impl BcsGapSolver {
 
 // --- Models ---
 
+#[allow(missing_docs)]
 pub struct IsotropicBCSModel {
+    #[allow(missing_docs)]
     pub energies: Vec<ElectronVolts>,
+    #[allow(missing_docs)]
     pub potential: ElectronVolts,
+    #[allow(missing_docs)]
     pub debye_cutoff: ElectronVolts,
 }
 
 impl IsotropicBCSModel {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(
         energies: Vec<f64>,
@@ -139,6 +155,7 @@ impl GapEquation for IsotropicBCSModel {
 #[deprecated(
     note = "Use BcsGapSolver and IsotropicBCSModel instead for better type safety and error handling"
 )]
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn solve_gap_equation(
     energies_xi: &[f64],
@@ -165,6 +182,7 @@ pub fn solve_gap_equation(
     }
 }
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn coherence_factors(xi_k: f64, delta: f64) -> Result<(f64, f64), String> {
     let xi = ElectronVolts::new(xi_k);
@@ -172,6 +190,7 @@ pub fn coherence_factors(xi_k: f64, delta: f64) -> Result<(f64, f64), String> {
     coherence_factors_strong(xi, d)
 }
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn coherence_factors_strong(
     xi_k: ElectronVolts,

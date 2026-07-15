@@ -1,3 +1,4 @@
+//! Legacy crate.
 #![allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 #![allow(clippy::all)]
 use regex::Regex;

@@ -3,13 +3,16 @@ use crate::metrics::{
     ComplexityMetrics, disable_verification, enable_verification, get_metrics, reset_metrics,
 };
 
+#[allow(missing_docs)]
 pub fn register_cpp_dependency(dep: &str) {
     println!("[Traceability] Tracking external C++ dependency: {}", dep);
 }
 
+#[allow(missing_docs)]
 pub struct VerifiedEngine;
 
 impl VerifiedEngine {
+    #[allow(missing_docs)]
     pub fn run_verified<F, R>(f: F) -> (R, ComplexityMetrics)
     where
         F: FnOnce() -> R,

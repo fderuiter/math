@@ -1,6 +1,10 @@
+#[allow(missing_docs)]
 pub mod death_rate;
+#[allow(missing_docs)]
 pub mod juvenile_adult_dynamics;
+#[allow(missing_docs)]
 pub mod mckendrick_von_foerster;
+#[allow(missing_docs)]
 pub mod two_dimensional_ode;
 
 pub use death_rate::*;

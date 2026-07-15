@@ -3,11 +3,14 @@ use math_commons::math_kernel::types::StepSize;
 /// Standard spatial numerical operators for fused stencil evaluations.
 #[derive(Debug, Clone, Copy)]
 pub struct StencilOperators {
+    #[allow(missing_docs)]
     pub dx: StepSize,
+    #[allow(missing_docs)]
     pub dy: StepSize,
 }
 
 impl StencilOperators {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(dx: StepSize) -> Self {
         Self {
@@ -16,6 +19,7 @@ impl StencilOperators {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new_2d(dx: StepSize, dy: StepSize) -> Self {
         Self { dx, dy }
@@ -61,10 +65,12 @@ impl StencilOperators {
 /// By evaluating operators inside the grid loop, this avoids memory bandwidth bottlenecks
 /// caused by temporary derivative buffers.
 pub struct FusedStencilStepper {
+    #[allow(missing_docs)]
     pub ops: StencilOperators,
 }
 
 impl FusedStencilStepper {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(dx: StepSize) -> Self {
         Self {
@@ -72,6 +78,7 @@ impl FusedStencilStepper {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new_2d(dx: StepSize, dy: StepSize) -> Self {
         Self {

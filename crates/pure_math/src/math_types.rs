@@ -5,6 +5,7 @@ use dashu::rational::RBig;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[allow(missing_docs)]
 pub struct Integer(pub IBig);
 
 impl From<Integer> for IBig {
@@ -20,10 +21,12 @@ impl Default for Integer {
 }
 
 impl Integer {
+    #[allow(missing_docs)]
     pub fn new() -> Self {
         Integer(IBig::from(0u8))
     }
 
+    #[allow(missing_docs)]
     pub fn from<T>(v: T) -> Self
     where
         IBig: From<T>,
@@ -31,44 +34,55 @@ impl Integer {
         Integer(IBig::from(v))
     }
 
+    #[allow(missing_docs)]
     pub fn to_f64(&self) -> f64 {
         use dashu::float::round::mode::HalfAway;
         let f: FBig<HalfAway, 2> = FBig::from(self.0.clone());
         f.to_f64().value()
     }
+    #[allow(missing_docs)]
     pub fn to_i32(&self) -> Option<i32> {
         i32::try_from(&self.0).ok()
     }
+    #[allow(missing_docs)]
     pub fn to_usize(&self) -> Option<usize> {
         usize::try_from(&self.0).ok()
     }
+    #[allow(missing_docs)]
     pub fn to_u64(&self) -> Option<u64> {
         u64::try_from(&self.0).ok()
     }
+    #[allow(missing_docs)]
     pub fn assign(&mut self, v: i128) {
         self.0 = IBig::from(v);
     }
     #[allow(clippy::result_unit_err)]
+    #[allow(missing_docs)]
     pub fn parse(s: &str) -> Result<Self, ()> {
         IBig::from_str_radix(s, 10).map(Integer).map_err(|_| ())
     }
     #[allow(clippy::result_unit_err)]
+    #[allow(missing_docs)]
     pub fn from_str_radix(s: &str, radix: u32) -> Result<Self, ()> {
         IBig::from_str_radix(s, radix).map(Integer).map_err(|_| ())
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn is_even(&self) -> bool {
         &self.0 % IBig::from(2u8) == IBig::from(0u8)
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn is_divisible(&self, other: &Integer) -> bool {
         (&self.0 % &other.0) == IBig::from(0u8)
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn sqrt(&self) -> Self {
         Integer(self.0.nth_root(2))
     }
     #[allow(clippy::result_unit_err)]
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn pow_mod(&self, exp: &Integer, m: &Integer) -> Result<Self, ()> {
         if m.0 == IBig::from(0u8) {
@@ -95,6 +109,7 @@ impl Integer {
         Ok(Integer(result))
     }
     #[allow(clippy::result_unit_err)]
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn invert(&self, m: &Integer) -> Result<Self, ()> {
         let (gcd, x, _y) = self.extended_gcd(m);
@@ -108,6 +123,7 @@ impl Integer {
             Err(())
         }
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn abs(self) -> Self {
         Integer(self.0.abs())
@@ -229,8 +245,10 @@ impl SubAssign<&Integer> for Integer {
 type F = dashu::float::FBig;
 
 #[derive(Clone, Debug)]
+#[allow(missing_docs)]
 pub struct Float(pub F);
 impl Float {
+    #[allow(missing_docs)]
     pub fn with_val(_prec: u32, v: f64) -> Self {
         if let Ok(f) = F::try_from(v) {
             Float(f)
@@ -238,9 +256,11 @@ impl Float {
             Float(F::from(0u8))
         }
     }
+    #[allow(missing_docs)]
     pub fn abs(self) -> Self {
         Float(self.0.abs())
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn round(self) -> f64 {
         use dashu::float::round::mode::HalfAway;
@@ -354,6 +374,7 @@ impl PartialOrd<f64> for Float {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+#[allow(missing_docs)]
 pub struct Rational(pub RBig);
 impl Default for Rational {
     fn default() -> Self {
@@ -362,9 +383,11 @@ impl Default for Rational {
 }
 
 impl Rational {
+    #[allow(missing_docs)]
     pub fn new() -> Self {
         Rational(RBig::from(0u8))
     }
+    #[allow(missing_docs)]
     pub fn from(v: (i128, i128)) -> Self {
         let n = dashu::integer::IBig::from(v.0);
         let d = dashu::integer::IBig::from(v.1);
@@ -375,12 +398,14 @@ impl Rational {
         }
         Rational(RBig::from_parts(real_n, mag_d))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn numer(&self) -> f64 {
         use dashu::float::round::mode::HalfAway;
         let n_f: FBig<HalfAway, 2> = FBig::from(self.0.numerator().clone());
         n_f.to_f64().value()
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn denom(&self) -> f64 {
         use dashu::float::round::mode::HalfAway;
@@ -437,9 +462,13 @@ impl Add<Rational> for &Rational {
     }
 }
 
+#[allow(missing_docs)]
 pub mod ops {
+    #[allow(missing_docs)]
     pub trait Pow<Rhs> {
+        #[allow(missing_docs)]
         type Output;
+        #[allow(missing_docs)]
         fn pow(self, rhs: Rhs) -> Self::Output;
     }
     impl Pow<u32> for super::Integer {
@@ -448,8 +477,11 @@ pub mod ops {
             super::Integer(self.0.pow(rhs as usize))
         }
     }
+    #[allow(missing_docs)]
     pub trait RemRounding<Rhs> {
+        #[allow(missing_docs)]
         type Output;
+        #[allow(missing_docs)]
         fn rem_euc(self, rhs: Rhs) -> Self::Output;
     }
     impl RemRounding<super::Integer> for super::Integer {

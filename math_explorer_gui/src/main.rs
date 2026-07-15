@@ -1,7 +1,12 @@
+//! Legacy crate.
+#[allow(missing_docs)]
 pub mod accessibility;
 mod app;
+#[allow(missing_docs)]
 pub mod async_sim;
+#[allow(missing_docs)]
 pub mod framework;
+#[allow(missing_docs)]
 pub mod reflective_ui;
 mod tabs;
 

@@ -56,6 +56,7 @@ fn calculate_target_distribution(responses: &[Response]) -> Vec<f64> {
 /// The KL divergence loss.
 use crate::error::AIError;
 
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn calculate_kl_divergence_loss(
     responses: &[Response],

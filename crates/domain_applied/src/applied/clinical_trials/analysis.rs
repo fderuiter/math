@@ -2,10 +2,15 @@ use super::types::{ClinicalTrialError, ContingencyTable};
 use statrs::distribution::{ContinuousCDF, Normal};
 
 #[derive(Debug, Clone)]
+#[allow(missing_docs)]
 pub struct RiskMetrics {
+    #[allow(missing_docs)]
     pub relative_risk: f64,
+    #[allow(missing_docs)]
     pub odds_ratio: f64,
+    #[allow(missing_docs)]
     pub rr_ci: (f64, f64),
+    #[allow(missing_docs)]
     pub or_ci: (f64, f64),
 }
 

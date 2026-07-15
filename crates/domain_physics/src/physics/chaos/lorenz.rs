@@ -13,6 +13,7 @@ pub struct LorenzState {
 }
 
 impl LorenzState {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         LorenzState {
@@ -244,12 +245,18 @@ use oxidize_core::{ModelConfig, ModelState, SimulationModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct LorenzConfig {
+    #[allow(missing_docs)]
     pub sigma: f64,
+    #[allow(missing_docs)]
     pub rho: f64,
+    #[allow(missing_docs)]
     pub beta: f64,
+    #[allow(missing_docs)]
     pub dt: f64,
     #[serde(default)]
+    #[allow(missing_docs)]
     pub integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod,
 }
 

@@ -16,6 +16,7 @@ impl Default for GreenFunctionSolver1D<ClenshawCurtis> {
 }
 
 impl GreenFunctionSolver1D<ClenshawCurtis> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new() -> Self {
         Self::default()
@@ -23,6 +24,7 @@ impl GreenFunctionSolver1D<ClenshawCurtis> {
 }
 
 impl<I: Integrator> GreenFunctionSolver1D<I> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn with_integrator(integrator: I) -> Self {
         Self { integrator }

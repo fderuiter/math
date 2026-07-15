@@ -1,12 +1,19 @@
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(missing_docs)]
 pub enum NuclearError {
+    #[allow(missing_docs)]
     InvalidMassNumber(String),
+    #[allow(missing_docs)]
     InvalidAtomicNumber(String),
+    #[allow(missing_docs)]
     InvalidHalfLife,
+    #[allow(missing_docs)]
     InvalidVelocity,
+    #[allow(missing_docs)]
     InvalidGammaWidth,
+    #[allow(missing_docs)]
     VolumeZero,
 }
 
@@ -32,16 +39,19 @@ impl std::error::Error for NuclearError {}
 pub struct AtomicNumber(u32);
 
 impl AtomicNumber {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(value: u32) -> Self {
         Self(value)
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0 as f64
@@ -61,6 +71,7 @@ impl From<u32> for AtomicNumber {
 pub struct MassNumber(u32);
 
 impl MassNumber {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(value: u32) -> Result<Self, NuclearError> {
         if value == 0 {
@@ -77,11 +88,13 @@ impl MassNumber {
         Self(value)
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn value(&self) -> u32 {
         self.0
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0 as f64

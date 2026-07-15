@@ -5,7 +5,9 @@ use crate::error::TdaError;
 /// A point in 2D space.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Point2D {
+    #[allow(missing_docs)]
     pub x: f64,
+    #[allow(missing_docs)]
     pub y: f64,
 }
 
@@ -40,6 +42,7 @@ impl Point2D {
 /// A collection of points in 2D space.
 #[derive(Debug, Clone)]
 pub struct PointCloud {
+    #[allow(missing_docs)]
     pub points: Vec<Point2D>,
 }
 

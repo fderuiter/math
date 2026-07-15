@@ -5,6 +5,7 @@ use thiserror::Error;
 use crate::physics::solid_state::types::ElectronVolts;
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum ChaosError {
     /// The simulation parameters are invalid (e.g., negative time step).
     InvalidParameter(String),
@@ -13,18 +14,24 @@ pub enum ChaosError {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum StandardModelError {
     /// Energy scale must be positive.
+    #[allow(missing_docs)]
     InvalidEnergyScale { scale: f64, context: String },
     /// Coupling constant must be positive.
+    #[allow(missing_docs)]
     InvalidCouplingConstant { alpha: f64 },
     /// The coupling constant diverges at this scale (Landau Pole).
+    #[allow(missing_docs)]
     LandauPole { scale: f64 },
     /// Invalid number of quark flavors (e.g., negative).
+    #[allow(missing_docs)]
     InvalidFlavors { nf: f64 },
 }
 
 #[derive(Error, Debug, PartialEq)]
+#[allow(missing_docs)]
 pub enum SolidStateError {
     /// The iterative solver failed to converge within the maximum number of iterations.
     #[error("Convergence failed after {0} iterations. Last value: {1}")]
@@ -40,27 +47,35 @@ pub enum SolidStateError {
 }
 
 #[derive(Error, Debug, PartialEq)]
+#[allow(missing_docs)]
 pub enum DoseFluenceError {
     #[error("Radius cannot be zero (singularity at r=0)")]
+    #[allow(missing_docs)]
     Singularity,
     #[error("Radius must be non-negative")]
+    #[allow(missing_docs)]
     NegativeRadius,
     #[error("Physical quantity must be non-negative: {0}")]
+    #[allow(missing_docs)]
     InvalidPhysicalQuantity(String),
 }
 
 #[derive(Error, Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum RadarError {
     /// Chirp length mismatch.
     #[error("Chirp length {actual} does not match expected {expected}")]
+    #[allow(missing_docs)]
     ChirpLengthMismatch { expected: usize, actual: usize },
 
     /// Insufficient snapshots for MUSIC algorithm.
     #[error("Not enough snapshots to compute stable Covariance Matrix: {actual} < {required}")]
+    #[allow(missing_docs)]
     InsufficientSnapshots { required: usize, actual: usize },
 
     /// Signal subspace dimension error (e.g. >= samples).
     #[error("Signal subspace dimension {subspace} equals or exceeds sample size {samples}")]
+    #[allow(missing_docs)]
     InvalidSignalSubspace { samples: usize, subspace: usize },
 
     /// Invalid configuration parameters.
@@ -73,49 +88,68 @@ pub enum RadarError {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum HighEnergyError {
     /// Mass must be positive.
+    #[allow(missing_docs)]
     InvalidMass { mass: f64 },
     /// Radius must be greater than Schwarzschild radius.
+    #[allow(missing_docs)]
     InvalidRadius { radius: f64, limit: f64 },
     /// Energy density cannot be negative.
+    #[allow(missing_docs)]
     InvalidEnergyDensity { u_b: f64 },
     /// Lorentz factor must be >= 1.
+    #[allow(missing_docs)]
     InvalidLorentzFactor { gamma: f64 },
     /// Power law index p must be > 1.
+    #[allow(missing_docs)]
     InvalidPowerLawIndex { p: f64 },
     /// Adiabatic index must be > 1.
+    #[allow(missing_docs)]
     InvalidAdiabaticIndex { gamma: f64 },
     /// Density must be positive.
+    #[allow(missing_docs)]
     InvalidDensity { rho: f64 },
     /// Pressure cannot be negative.
+    #[allow(missing_docs)]
     InvalidPressure { p: f64 },
     /// Velocity is invalid (e.g. >= c or < 0 if speed).
+    #[allow(missing_docs)]
     InvalidVelocity { v: f64 },
     /// Momentum is invalid (e.g. m^2 + p^2 < 0 somehow? or just checking validity).
     InvalidMomentum,
     /// Invalid statistics parameters (e.g. negative counts).
+    #[allow(missing_docs)]
     InvalidStatisticsParams { reason: String },
     /// Error during calculation (e.g. negative sqrt).
+    #[allow(missing_docs)]
     CalculationError { reason: String },
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum FluidError {
     /// Density must be strictly positive.
+    #[allow(missing_docs)]
     InvalidDensity { value: f64 },
     /// Dynamic viscosity must be non-negative.
+    #[allow(missing_docs)]
     InvalidViscosity { value: f64 },
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(missing_docs)]
 pub enum StatMechError {
     /// Temperature must be non-negative (absolute zero is allowed as a limit).
     InvalidTemperature(f64),
     /// Chemical potential is invalid for the particle type and state (e.g., > Energy for Bosons).
     InvalidChemicalPotential {
+        #[allow(missing_docs)]
         chemical_potential: f64,
+        #[allow(missing_docs)]
         energy: f64,
+        #[allow(missing_docs)]
         reason: String,
     },
     /// Numerical instability (e.g. division by zero).

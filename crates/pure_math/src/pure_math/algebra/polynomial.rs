@@ -8,10 +8,12 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 /// A polynomial with coefficients in a Ring T.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Polynomial<T: Ring> {
+    #[allow(missing_docs)]
     pub coeffs: Vec<T>, // coeffs[i] is coefficient of x^i
 }
 
 impl<T: Ring> Polynomial<T> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(coeffs: Vec<T>) -> Self {
         let mut p = Polynomial { coeffs };
@@ -33,6 +35,7 @@ impl<T: Ring> Polynomial<T> {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn degree(&self) -> Option<usize> {
         if self.coeffs.is_empty() {

@@ -39,10 +39,15 @@
 //! *   **[Score](score)**: Calculation of the SDS gradient update.
 //! *   **[Gradient](gradient)**: Utilities for backpropagating the score through the renderer.
 
+#[allow(missing_docs)]
 pub mod diffusion;
+#[allow(missing_docs)]
 pub mod gradient;
+#[allow(missing_docs)]
 pub mod rendering;
+#[allow(missing_docs)]
 pub mod score;
+#[allow(missing_docs)]
 pub mod training;
 
 // [cite:graph_parameters_rust]

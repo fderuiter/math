@@ -6,14 +6,18 @@ use std::collections::HashMap;
 /// Represents the group assignment for a patient in a clinical trial.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Group {
+    #[allow(missing_docs)]
     Treatment,
+    #[allow(missing_docs)]
     Control,
 }
 
 /// Represents a patient with an ID and a stratum identifier (e.g., "Male-Young").
 #[derive(Debug, Clone)]
 pub struct Patient {
+    #[allow(missing_docs)]
     pub id: String,
+    #[allow(missing_docs)]
     pub stratum: String,
 }
 
@@ -144,6 +148,7 @@ pub struct StratifiedRandomizer<S: AllocationStrategy> {
 }
 
 impl<S: AllocationStrategy> StratifiedRandomizer<S> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(strategy: S) -> Self {
         Self { strategy }
@@ -179,6 +184,7 @@ impl<S: AllocationStrategy> StratifiedRandomizer<S> {
 // --- Legacy Wrappers ---
 
 #[deprecated(since = "0.2.0", note = "Use SimpleRandomizer struct instead")]
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
     let mut rng = oxidize_core::rng::OxidizeRng::default();
@@ -186,6 +192,7 @@ pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
 }
 
 #[deprecated(since = "0.2.0", note = "Use BlockRandomizer struct instead")]
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<Group>, String> {
     let mut rng = oxidize_core::rng::OxidizeRng::default();
@@ -196,6 +203,7 @@ pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<G
 }
 
 #[deprecated(since = "0.2.0", note = "Use StratifiedRandomizer struct instead")]
+#[allow(missing_docs)]
 #[verified_engine::verified]
 pub fn stratified_randomization(
     patients: &[Patient],

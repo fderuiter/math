@@ -12,11 +12,14 @@ pub trait DoseKernel {
 /// Formula: $K(r) = \frac{A}{r^2} e^{-\beta r}$
 #[derive(Debug, Clone, Copy)]
 pub struct ExponentialKernel {
+    #[allow(missing_docs)]
     pub amplitude: f64,
+    #[allow(missing_docs)]
     pub beta: f64,
 }
 
 impl ExponentialKernel {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(amplitude: f64, beta: f64) -> Self {
         Self { amplitude, beta }

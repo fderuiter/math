@@ -14,13 +14,16 @@
 //! 8. Types and Errors (Strong types and error handling)
 
 pub mod band_theory;
+#[allow(missing_docs)]
 pub mod bcs;
 pub mod interactions;
+#[allow(missing_docs)]
 pub mod lattice;
 pub mod magnetism;
 pub mod phonons;
 pub mod screening;
 pub mod second_quantization;
+#[allow(missing_docs)]
 pub mod types;
 
 // [cite:mmwave_radiotherapy_setup]

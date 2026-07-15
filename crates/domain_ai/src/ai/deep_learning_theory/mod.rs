@@ -91,10 +91,15 @@
 //! *   **[Model](model)**: The `Trainable` trait and `TwoLayerMLP` implementation.
 //! *   **[Cycle](cycle)**: The `TrainingLoop` that ties it all together.
 
+#[allow(missing_docs)]
 pub mod calculus;
+#[allow(missing_docs)]
 pub mod cycle;
+#[allow(missing_docs)]
 pub mod linear_algebra;
+#[allow(missing_docs)]
 pub mod model;
+#[allow(missing_docs)]
 pub mod probability;
 
 // [cite:dwarf_galaxy_empirical_dependencies]

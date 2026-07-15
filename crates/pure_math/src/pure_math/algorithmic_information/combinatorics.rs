@@ -12,6 +12,7 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
+#[allow(missing_docs)]
 pub type SimilarityFn<U> = Box<dyn Fn(&U, &U) -> bool>;
 
 /// Implements the Combinatorial Lemma (Lemma 1).

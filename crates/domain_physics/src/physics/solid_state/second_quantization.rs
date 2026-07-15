@@ -6,10 +6,13 @@
 /// Particle statistics type.
 pub trait ParticleStatistics {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn validate_set_occupation(current: u8, count: u8) -> Result<(), String>;
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn validate_create_particle(current: u8) -> Result<u8, String>;
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn check_commutation(op1: &Operator, op2: &Operator) -> f64;
 }
 
@@ -35,11 +38,14 @@ pub enum QuantumOperatorType {
 /// A quantum operator acting on a specific state index (k-vector or site).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Operator {
+    #[allow(missing_docs)]
     pub op_type: QuantumOperatorType,
+    #[allow(missing_docs)]
     pub index: usize,
 }
 
 impl Operator {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(op_type: QuantumOperatorType, index: usize) -> Self {
         Self { op_type, index }

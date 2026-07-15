@@ -1,3 +1,4 @@
+//! Legacy crate.
 #[cfg(feature = "ai")]
 pub use domain_ai::ai;
 

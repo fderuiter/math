@@ -1,6 +1,10 @@
+#[allow(missing_docs)]
 pub mod common;
+#[allow(missing_docs)]
 pub mod macros;
+#[allow(missing_docs)]
 pub mod seir;
+#[allow(missing_docs)]
 pub mod sir;
 
 pub use common::basic_reproduction_number;

@@ -26,12 +26,16 @@ pub fn sample_timestep_with_rng<R: Rng + ?Sized>(max_timesteps: usize, rng: &mut
 /// Operation: Retrieve pre-defined noise variance coefficients beta_t and calculate cumulative product alpha_bar_t.
 /// Output: Signal scale sqrt(alpha_bar_t) and Noise scale sqrt(1 - alpha_bar_t).
 pub struct NoiseSchedule {
+    #[allow(missing_docs)]
     pub betas: Vec<f64>,
+    #[allow(missing_docs)]
     pub alphas: Vec<f64>,
+    #[allow(missing_docs)]
     pub alpha_bars: Vec<f64>,
 }
 
 impl NoiseSchedule {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(timesteps: usize) -> Self {
         // Linear schedule for betas as an example (e.g. 1e-4 to 0.02)
@@ -60,6 +64,7 @@ impl NoiseSchedule {
         }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn get_scales(&self, t: usize) -> (f64, f64) {
         // t is 1-indexed in the prompt, let's assume 0-indexed internally or handle offset.

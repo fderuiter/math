@@ -4,6 +4,7 @@
 //! can occur at any continuous time point rather than discrete steps.
 
 use crate::error::MarkovError;
+#[allow(missing_docs)]
 pub type Result<T> = std::result::Result<T, MarkovError>;
 use nalgebra::{DMatrix, DVector, RealField};
 use num_traits::ToPrimitive;

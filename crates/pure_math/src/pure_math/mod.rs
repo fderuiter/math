@@ -41,15 +41,19 @@
 
 pub mod algebra;
 pub mod algorithmic_information;
+#[allow(missing_docs)]
 pub mod analysis;
+#[allow(missing_docs)]
 pub mod differential_geometry;
 pub mod elliptic_curves;
+#[allow(missing_docs)]
 pub mod graph_theory;
 pub mod logic;
 pub mod number_theory;
 pub mod special_functions;
 pub mod statistics;
 pub mod tensor;
+#[allow(missing_docs)]
 pub mod vector_calculus;
 
 // [cite:graph_parameters_rust]

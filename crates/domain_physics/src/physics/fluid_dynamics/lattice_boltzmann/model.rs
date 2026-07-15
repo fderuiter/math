@@ -8,14 +8,19 @@ use verified_engine::Theory;
 /// specific lattice arrangement (D2Q9, D2Q5, etc.).
 pub trait Lattice2D<const Q: usize>: Copy + Clone + Send + Sync + 'static {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn weights() -> [f64; Q];
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn directions_x() -> [i32; Q];
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn directions_y() -> [i32; Q];
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn opposite_indices() -> [usize; Q];
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn equilibrium(rho: f64, ux: f64, uy: f64) -> [f64; Q];
 }
 
@@ -146,6 +151,7 @@ pub struct LatticeBoltzmann<const Q: usize, L: Lattice2D<Q>, C: CollisionModel<Q
     pub state: LatticeState<Q>,
     /// Collision Strategy
     pub collision_model: C,
+    #[allow(missing_docs)]
     pub _marker: PhantomData<L>,
 }
 

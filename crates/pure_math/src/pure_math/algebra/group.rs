@@ -25,7 +25,9 @@ use std::hash::Hash;
 /// Use `Zn<N>` for a type-safe implementation where N is known at compile time.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct CyclicElement {
+    #[allow(missing_docs)]
     pub value: usize,
+    #[allow(missing_docs)]
     pub modulo: usize,
 }
 
@@ -88,10 +90,12 @@ impl Monoid for CyclicElement {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Zn<const N: usize> {
+    #[allow(missing_docs)]
     pub value: usize,
 }
 
 impl<const N: usize> Zn<N> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(value: usize) -> Self {
         Zn { value: value % N }
@@ -134,10 +138,12 @@ impl<const N: usize> Group for Zn<N> {
 /// An element of the Symmetric Group $S_n$ (Permutations).
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Permutation {
+    #[allow(missing_docs)]
     pub map: Vec<usize>, // map[i] is the image of i
 }
 
 impl Permutation {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(map: Vec<usize>) -> Self {
         // Validation: map must contain 0..n
@@ -152,6 +158,7 @@ impl Permutation {
         Permutation { map }
     }
 
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn identity(n: usize) -> Self {
         Permutation {

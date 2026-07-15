@@ -5,8 +5,11 @@
 /// Represents a primitive, positive-definite binary quadratic form ax^2 + bxy + cy^2.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct BQF {
+    #[allow(missing_docs)]
     pub a: i64,
+    #[allow(missing_docs)]
     pub b: i64,
+    #[allow(missing_docs)]
     pub c: i64,
 }
 

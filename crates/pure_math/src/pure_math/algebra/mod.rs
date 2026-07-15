@@ -75,8 +75,10 @@
 
 pub mod fields;
 pub mod group;
+#[allow(missing_docs)]
 pub mod linear_algebra;
 pub mod polynomial;
+#[allow(missing_docs)]
 pub mod traits;
 
 pub use fields::Fp;

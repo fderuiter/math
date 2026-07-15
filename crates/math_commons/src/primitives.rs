@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
 #[macro_export]
+#[allow(missing_docs)]
 macro_rules! impl_binop {
     ($name:ident) => {
         impl std::ops::Mul<f64> for $name {
@@ -55,22 +56,27 @@ macro_rules! define_bounded_float {
                 self.0
             }
 
+            #[allow(missing_docs)]
             pub fn powf(&self, n: f64) -> Result<Self, String> {
                 Self::new(self.0.powf(n))
             }
 
+            #[allow(missing_docs)]
             pub fn sqrt(&self) -> Result<Self, String> {
                 Self::new(self.0.sqrt())
             }
 
+            #[allow(missing_docs)]
             pub fn ln(&self) -> Result<Self, String> {
                 Self::new(self.0.ln())
             }
 
+            #[allow(missing_docs)]
             pub fn exp(&self) -> Result<Self, String> {
                 Self::new(self.0.exp())
             }
 
+            #[allow(missing_docs)]
             pub fn abs(&self) -> Result<Self, String> {
                 Self::new(self.0.abs())
             }
@@ -124,22 +130,27 @@ macro_rules! define_strictly_bounded_float {
                 self.0
             }
 
+            #[allow(missing_docs)]
             pub fn powf(&self, n: f64) -> Result<Self, String> {
                 Self::new(self.0.powf(n))
             }
 
+            #[allow(missing_docs)]
             pub fn sqrt(&self) -> Result<Self, String> {
                 Self::new(self.0.sqrt())
             }
 
+            #[allow(missing_docs)]
             pub fn ln(&self) -> Result<Self, String> {
                 Self::new(self.0.ln())
             }
 
+            #[allow(missing_docs)]
             pub fn exp(&self) -> Result<Self, String> {
                 Self::new(self.0.exp())
             }
 
+            #[allow(missing_docs)]
             pub fn abs(&self) -> Result<Self, String> {
                 Self::new(self.0.abs())
             }

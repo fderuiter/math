@@ -66,11 +66,17 @@
 //! - **`EnantiomerModel`**: Models drugs with chiral centers (e.g., Adderall) where isomers have different kinetics.
 //! - **`TwoPulseModel`**: Simulates biphasic release profiles common in Extended Release (XR) formulations.
 
+#[allow(missing_docs)]
 pub mod bateman;
+#[allow(missing_docs)]
 pub mod enantiomer;
+#[allow(missing_docs)]
 pub mod parameters;
+#[allow(missing_docs)]
 pub mod superposition;
+#[allow(missing_docs)]
 pub mod traits;
+#[allow(missing_docs)]
 pub mod two_pulse;
 
 pub use bateman::{BatemanModel, half_life, solve_ka, t_max};

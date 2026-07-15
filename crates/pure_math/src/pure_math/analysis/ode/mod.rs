@@ -7,11 +7,17 @@
 //! with any vector-like type (e.g., `Vec<f64>`, `nalgebra::Vector3<f64>`, etc.),
 //! avoiding heap allocations when fixed-size arrays are sufficient.
 
+#[allow(missing_docs)]
 pub mod macros;
+#[allow(missing_docs)]
 pub mod model;
+#[allow(missing_docs)]
 pub mod solvers;
+#[allow(missing_docs)]
 pub mod state;
+#[allow(missing_docs)]
 pub mod stepper;
+#[allow(missing_docs)]
 pub mod traits;
 
 use serde::{Deserialize, Serialize};

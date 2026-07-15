@@ -1,13 +1,21 @@
+#[allow(missing_docs)]
 pub struct ClebschGordan {
+    #[allow(missing_docs)]
     pub tj1: i32,
+    #[allow(missing_docs)]
     pub tm1: i32,
+    #[allow(missing_docs)]
     pub tj2: i32,
+    #[allow(missing_docs)]
     pub tm2: i32,
+    #[allow(missing_docs)]
     pub tj12: i32,
+    #[allow(missing_docs)]
     pub tm12: i32,
 }
 
 impl ClebschGordan {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn value(&self) -> f64 {
         let (tj1, tm1, tj2, tm2, tj, tm) =

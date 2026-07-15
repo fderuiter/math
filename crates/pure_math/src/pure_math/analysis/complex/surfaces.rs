@@ -22,10 +22,12 @@ pub trait RiemannSurface {
 /// Riemann surface for the n-th root function $f(z) = z^{1/n}$.
 /// Has $n$ sheets.
 pub struct NthRootSurface {
+    #[allow(missing_docs)]
     pub n: usize,
 }
 
 impl NthRootSurface {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(n: usize) -> Self {
         assert!(n > 0);

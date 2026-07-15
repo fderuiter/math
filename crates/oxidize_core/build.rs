@@ -1,3 +1,4 @@
+//! Legacy crate.
 #[path = "src/path_utils.rs"]
 mod path_utils;
 

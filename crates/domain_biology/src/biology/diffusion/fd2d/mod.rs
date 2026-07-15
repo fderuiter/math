@@ -1,7 +1,10 @@
 use super::SpatialDiffusion;
 
+#[allow(missing_docs)]
 pub mod boundary;
+#[allow(missing_docs)]
 pub mod geometry;
+#[allow(missing_docs)]
 pub mod iteration;
 
 use boundary::NeumannBoundary;
@@ -12,12 +15,16 @@ use math_commons::math_kernel::types::{Dimension, StepSize};
 /// A 2D Finite Difference implementation using a 5-point stencil.
 #[derive(Debug, Clone, Copy)]
 pub struct FiniteDifference2D {
+    #[allow(missing_docs)]
     pub geometry: Cartesian2D,
+    #[allow(missing_docs)]
     pub boundary: NeumannBoundary,
+    #[allow(missing_docs)]
     pub iteration: LoopSplittingIteration,
 }
 
 impl FiniteDifference2D {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(width: Dimension, height: Dimension, dx: StepSize, dy: StepSize) -> Self {
         Self {

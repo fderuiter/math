@@ -3,8 +3,11 @@ use std::collections::HashMap;
 /// A structured representation of mathematical constraints for a parameter.
 #[derive(Debug, Clone)]
 pub struct ParameterConstraint {
+    #[allow(missing_docs)]
     pub min: f64,
+    #[allow(missing_docs)]
     pub max: f64,
+    #[allow(missing_docs)]
     pub step: f64,
 }
 

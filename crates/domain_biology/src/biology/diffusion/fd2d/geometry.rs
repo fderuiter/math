@@ -1,14 +1,20 @@
 use math_commons::math_kernel::types::{Dimension, StepSize};
 
+#[allow(missing_docs)]
 pub trait GeometryStrategy {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn width(&self) -> Dimension;
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn height(&self) -> Dimension;
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn dx(&self) -> StepSize;
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn dy(&self) -> StepSize;
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     fn size(&self) -> usize {
         *self.width() * *self.height()
@@ -16,10 +22,15 @@ pub trait GeometryStrategy {
 }
 
 #[derive(Debug, Clone, Copy)]
+#[allow(missing_docs)]
 pub struct Cartesian2D {
+    #[allow(missing_docs)]
     pub width: Dimension,
+    #[allow(missing_docs)]
     pub height: Dimension,
+    #[allow(missing_docs)]
     pub dx: StepSize,
+    #[allow(missing_docs)]
     pub dy: StepSize,
 }
 

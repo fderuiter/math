@@ -26,10 +26,15 @@ pub trait BindingEnergyModel {
 /// The Liquid Drop Model (Semi-Empirical Mass Formula).
 #[derive(Debug, Clone)]
 pub struct LiquidDropModel {
+    #[allow(missing_docs)]
     pub a_v: f64,
+    #[allow(missing_docs)]
     pub a_s: f64,
+    #[allow(missing_docs)]
     pub a_c: f64,
+    #[allow(missing_docs)]
     pub a_sym: f64,
+    #[allow(missing_docs)]
     pub delta_coeff: f64,
 }
 

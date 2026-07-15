@@ -10,13 +10,18 @@ const EPSILON: f64 = math_commons::registry::TOLERANCE_STANDARD;
 /// We use `dyn RngCore` to be object-safe regarding the RNG, but we must stay generic
 /// over `I` because `Integrator` is not object-safe.
 pub struct ScoringContext<'a, I: Integrator + ?Sized> {
+    #[allow(missing_docs)]
     pub rng: &'a mut dyn RngCore,
+    #[allow(missing_docs)]
     pub integrator: &'a I,
+    #[allow(missing_docs)]
     pub safe_x0: f64,
+    #[allow(missing_docs)]
     pub safe_t: f64,
 }
 
 impl<'a, I: Integrator + ?Sized> ScoringContext<'a, I> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(inputs: &FavoritismInputs, rng: &'a mut dyn RngCore, integrator: &'a I) -> Self {
         let safe_x0 = if inputs.time.x_0.abs() < EPSILON {
@@ -40,7 +45,9 @@ impl<'a, I: Integrator + ?Sized> ScoringContext<'a, I> {
 /// This struct composes multiple `ScoringStrategy` components to calculate
 /// the final score. It allows for extension by modifying the list of strategies.
 pub struct UnifiedFavoritismModel<I: Integrator + ?Sized> {
+    #[allow(missing_docs)]
     pub numerator_strategies: Vec<Box<dyn ScoringStrategy<I>>>,
+    #[allow(missing_docs)]
     pub denominator_strategies: Vec<Box<dyn ScoringStrategy<I>>>,
 }
 
@@ -92,11 +99,13 @@ impl<I: Integrator + ?Sized> UnifiedFavoritismModel<I> {
 /// A strategy for calculating a component of the favoritism score.
 pub trait ScoringStrategy<I: Integrator + ?Sized> {
     #[verified_engine::verified]
+    #[allow(missing_docs)]
     fn calculate(&self, inputs: &FavoritismInputs, ctx: &mut ScoringContext<I>) -> f64;
 }
 
 // --- Numerator Strategies ---
 
+#[allow(missing_docs)]
 pub struct ProximityStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for ProximityStrategy {
     #[verified_engine::verified]
@@ -107,6 +116,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for ProximityStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct EmotionalSupportStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for EmotionalSupportStrategy {
     #[verified_engine::verified]
@@ -122,6 +132,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for EmotionalSupportStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct GiftStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for GiftStrategy {
     #[verified_engine::verified]
@@ -134,6 +145,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for GiftStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct ComplimentStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for ComplimentStrategy {
     #[verified_engine::verified]
@@ -145,6 +157,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for ComplimentStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct ContactFrequencyStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for ContactFrequencyStrategy {
     #[verified_engine::verified]
@@ -153,6 +166,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for ContactFrequencyStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct PersonalityStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for PersonalityStrategy {
     #[verified_engine::verified]
@@ -164,6 +178,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for PersonalityStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct SocialMultiplierStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for SocialMultiplierStrategy {
     #[verified_engine::verified]
@@ -184,6 +199,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for SocialMultiplierStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct DecayStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for DecayStrategy {
     #[verified_engine::verified]
@@ -192,6 +208,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for DecayStrategy {
     }
 }
 
+#[allow(missing_docs)]
 pub struct StochasticStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for StochasticStrategy {
     #[verified_engine::verified]
@@ -207,6 +224,7 @@ impl<I: Integrator + ?Sized> ScoringStrategy<I> for StochasticStrategy {
 
 // --- Denominator Strategies ---
 
+#[allow(missing_docs)]
 pub struct SiblingCompetitionStrategy;
 impl<I: Integrator + ?Sized> ScoringStrategy<I> for SiblingCompetitionStrategy {
     #[verified_engine::verified]

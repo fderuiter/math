@@ -149,22 +149,33 @@ use oxidize_core::{ModelConfig, ModelState, SimulationModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct BlochConfig {
+    #[allow(missing_docs)]
     pub t1: f64,
+    #[allow(missing_docs)]
     pub t2: f64,
+    #[allow(missing_docs)]
     pub b0: f64, // Not directly used in simple relaxation, but typical
+    #[allow(missing_docs)]
     pub dt: f64,
+    #[allow(missing_docs)]
     pub m0: f64,
     #[serde(default)]
+    #[allow(missing_docs)]
     pub integration_method: pure_math::pure_math::analysis::ode::IntegrationMethod,
 }
 
 impl ModelConfig for BlochConfig {}
 
 #[derive(Clone)]
+#[allow(missing_docs)]
 pub struct BlochState {
+    #[allow(missing_docs)]
     pub x: f64,
+    #[allow(missing_docs)]
     pub y: f64,
+    #[allow(missing_docs)]
     pub z: f64,
 }
 

@@ -25,6 +25,7 @@ pub fn init_accessibility_bridge() {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(missing_docs)]
 pub fn init_accessibility_bridge() {}
 
 #[cfg(target_arch = "wasm32")]
@@ -48,12 +49,16 @@ pub fn announce_status_with_priority(message: &str, priority: &str) {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(missing_docs)]
 pub fn announce_status(_message: &str) {}
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(missing_docs)]
 pub fn announce_status_with_priority(_message: &str, _priority: &str) {}
 
+#[allow(missing_docs)]
 pub trait AccessibleHoverText {
+    #[allow(missing_docs)]
     fn accessible_hover_text(self, text: impl Into<WidgetText>) -> Self;
 }
 
@@ -70,7 +75,9 @@ impl AccessibleHoverText for Response {
     }
 }
 
+#[allow(missing_docs)]
 pub trait AccessibleTheoryHover {
+    #[allow(missing_docs)]
     fn accessible_theory_hover(self, theory: &impl TheoryDescribable) -> Self;
 }
 

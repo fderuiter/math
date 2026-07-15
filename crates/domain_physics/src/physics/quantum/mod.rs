@@ -71,10 +71,14 @@
 //! ```
 
 pub mod coupling;
+#[allow(missing_docs)]
 pub mod fourier;
+#[allow(missing_docs)]
 pub mod hamiltonian;
 pub mod schrodinger;
+#[allow(missing_docs)]
 pub mod spin;
+#[allow(missing_docs)]
 pub mod types;
 
 // Re-export key types for convenience

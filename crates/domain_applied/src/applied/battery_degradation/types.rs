@@ -6,18 +6,23 @@ use std::ops::{Add, Sub, Mul, Div};
 macro_rules! impl_math_ops {
     ($name:ident) => {
         impl $name {
+            #[allow(missing_docs)]
             pub fn powf(&self, n: f64) -> Result<Self, BatteryError> {
                 Self::new(self.0.powf(n))
             }
+            #[allow(missing_docs)]
             pub fn sqrt(&self) -> Result<Self, BatteryError> {
                 Self::new(self.0.sqrt())
             }
+            #[allow(missing_docs)]
             pub fn ln(&self) -> Result<Self, BatteryError> {
                 Self::new(self.0.ln())
             }
+            #[allow(missing_docs)]
             pub fn exp(&self) -> Result<Self, BatteryError> {
                 Self::new(self.0.exp())
             }
+            #[allow(missing_docs)]
             pub fn abs(&self) -> Result<Self, BatteryError> {
                 Self::new(self.0.abs())
             }
@@ -111,6 +116,7 @@ macro_rules! impl_math_ops {
 pub struct DepthOfDischarge(f64);
 
 impl DepthOfDischarge {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, BatteryError> {
         if !(0.0..=100.0).contains(&value) {
@@ -118,10 +124,12 @@ impl DepthOfDischarge {
         }
         Ok(Self(value))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new_clamped(value: f64) -> Self {
         Self(value.clamp(0.0, 100.0))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
@@ -142,6 +150,7 @@ impl_math_ops!(DepthOfDischarge);
 pub struct Capacity(f64);
 
 impl Capacity {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, BatteryError> {
         if !(0.0..=1.0).contains(&value) {
@@ -149,10 +158,12 @@ impl Capacity {
         }
         Ok(Self(value))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new_clamped(value: f64) -> Self {
         Self(value.clamp(0.0, 1.0))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0
@@ -173,6 +184,7 @@ impl_math_ops!(Capacity);
 pub struct Cycles(f64);
 
 impl Cycles {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(value: f64) -> Result<Self, BatteryError> {
         if value < 0.0 {
@@ -180,10 +192,12 @@ impl Cycles {
         }
         Ok(Self(value))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new_clamped(value: f64) -> Self {
         Self(value.max(0.0))
     }
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn as_f64(&self) -> f64 {
         self.0

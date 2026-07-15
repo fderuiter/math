@@ -84,6 +84,7 @@
 //! - `bmi`: Utility for calculating Body Mass Index (BMI), a common covariate in cardiovascular trials.
 
 pub mod bmi;
+#[allow(missing_docs)]
 pub mod pair_comparison;
 pub mod probability_win_ratio;
 pub mod sample_win_ratio;

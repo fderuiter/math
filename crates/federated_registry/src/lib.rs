@@ -1,3 +1,4 @@
+//! Legacy crate.
 use std::collections::HashMap;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex, OnceLock};
@@ -5,14 +6,21 @@ use std::sync::{Arc, Mutex, OnceLock};
 pub use diagnostics::Severity;
 
 #[derive(Debug, Clone)]
+#[allow(missing_docs)]
 pub struct TelemetryEvent {
+    #[allow(missing_docs)]
     pub source: String,
+    #[allow(missing_docs)]
     pub severity: Severity,
+    #[allow(missing_docs)]
     pub message: String,
+    #[allow(missing_docs)]
     pub metadata: HashMap<String, String>,
+    #[allow(missing_docs)]
     pub thread_name: Option<String>,
 }
 
+#[allow(missing_docs)]
 pub struct FederatedRegistry {
     sender: Sender<TelemetryEvent>,
     receiver: Arc<Mutex<Receiver<TelemetryEvent>>>,
@@ -20,6 +28,7 @@ pub struct FederatedRegistry {
 }
 
 impl FederatedRegistry {
+    #[allow(missing_docs)]
     pub fn new() -> Self {
         let (sender, receiver) = channel();
         Self {
@@ -29,6 +38,7 @@ impl FederatedRegistry {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn register_source(&self, name: &str) {
         let mut sources = self.sources.lock().unwrap();
         if !sources.contains(&name.to_string()) {
@@ -36,14 +46,17 @@ impl FederatedRegistry {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn known_sources(&self) -> Vec<String> {
         self.sources.lock().unwrap().clone()
     }
 
+    #[allow(missing_docs)]
     pub fn emit(&self, event: TelemetryEvent) {
         let _ = self.sender.send(event);
     }
 
+    #[allow(missing_docs)]
     pub fn try_recv_all(&self) -> Vec<TelemetryEvent> {
         let mut events = Vec::new();
         if let Ok(rx) = self.receiver.lock() {
@@ -61,6 +74,7 @@ impl Default for FederatedRegistry {
     }
 }
 
+#[allow(missing_docs)]
 pub fn global_registry() -> &'static FederatedRegistry {
     static REGISTRY: OnceLock<FederatedRegistry> = OnceLock::new();
     REGISTRY.get_or_init(|| {
@@ -82,6 +96,7 @@ pub fn global_registry() -> &'static FederatedRegistry {
     })
 }
 
+#[allow(missing_docs)]
 pub fn init_panic_hook() {
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {

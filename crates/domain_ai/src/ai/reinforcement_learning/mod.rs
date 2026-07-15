@@ -82,10 +82,15 @@
 //! assert!(q_value != 0.0);
 //! ```
 
+#[allow(missing_docs)]
 pub mod algorithms;
+#[allow(missing_docs)]
 pub mod bellman;
+#[allow(missing_docs)]
 pub mod q_function;
+#[allow(missing_docs)]
 pub mod strategies;
+#[allow(missing_docs)]
 pub mod types;
 
 // Re-exports for ease of use
@@ -95,5 +100,6 @@ pub use strategies::{EpsilonGreedy, ExplorationStrategy};
 pub use types::{Action, MarkovDecisionProcess, Policy, QFunction, State};
 
 // [cite:algorithmic_information_rust]
+#[allow(missing_docs)]
 pub mod grid_world;
 pub use grid_world::*;

@@ -39,6 +39,7 @@ pub struct SchwarzChristoffel {
 }
 
 impl SchwarzChristoffel {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(prevertices: Vec<f64>, exponents: Vec<f64>, a: Complex64, b: Complex64) -> Self {
         assert_eq!(

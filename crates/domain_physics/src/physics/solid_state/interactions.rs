@@ -14,6 +14,7 @@ pub struct FrohlichVertex {
 }
 
 impl FrohlichVertex {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(alpha: f64, omega_lo: f64) -> Self {
         Self { alpha, omega_lo }

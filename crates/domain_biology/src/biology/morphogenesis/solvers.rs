@@ -28,8 +28,11 @@ pub trait TuringSolverStrategy<const N: usize = 2> {
 /// This struct implements `OdeSystem` to allow standard solvers to integrate
 /// the reaction-diffusion equations.
 pub struct TuringDynamics<'a, const N: usize, K, D> {
+    #[allow(missing_docs)]
     pub kinetics: &'a K,
+    #[allow(missing_docs)]
     pub diffusion: &'a D,
+    #[allow(missing_docs)]
     pub diffusion_coeffs: [f64; N],
 }
 
@@ -206,10 +209,12 @@ impl<const N: usize> TuringSolverStrategy<N> for FusedEulerSolver {
 ///
 /// This adapter allows using any generic `Solver` (like RungeKutta4) within the TuringSystem.
 pub struct StandardSolverAdapter<S> {
+    #[allow(missing_docs)]
     pub solver: S,
 }
 
 impl<S> StandardSolverAdapter<S> {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new(solver: S) -> Self {
         Self { solver }
@@ -236,7 +241,9 @@ use rand::RngCore;
 
 /// A wrapper to use FusedEulerSolver within the unified EvolutionEngine interface.
 pub struct FusedEulerEvolution<'a, const N: usize, K, D> {
+    #[allow(missing_docs)]
     pub solver: FusedEulerSolver,
+    #[allow(missing_docs)]
     pub dynamics: &'a TuringDynamics<'a, N, K, D>,
 }
 

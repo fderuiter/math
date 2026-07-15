@@ -31,6 +31,7 @@ where
     S: State + Hash + Eq,
     A: Action + Hash + Eq,
 {
+    #[allow(missing_docs)]
     #[verified_engine::verified]
     pub fn new() -> Self {
         Self {

@@ -1,13 +1,18 @@
 use std::future::Future;
 use std::pin::Pin;
 
+#[allow(missing_docs)]
 pub trait VirtualFileSystem {
+    #[allow(missing_docs)]
     fn read_to_string(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>>;
+    #[allow(missing_docs)]
     fn write_to_file(&self, path: &str, content: &[u8]) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>>;
+    #[allow(missing_docs)]
     fn list_dir(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>>;
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(missing_docs)]
 pub struct DefaultVfs;
 
 #[cfg(not(target_arch = "wasm32"))]

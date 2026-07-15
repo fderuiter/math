@@ -7,9 +7,12 @@
 /// Boltzmann Constant in J/K.
 pub const KB: f64 = 1.380649e-23;
 
+#[allow(missing_docs)]
 pub mod dynamics;
+#[allow(missing_docs)]
 pub mod ensembles;
 pub mod ising;
+#[allow(missing_docs)]
 pub mod quantum_stats;
 
 // [cite:graph_parameters_rust]

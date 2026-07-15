@@ -66,10 +66,15 @@
 //! $R_0$ is defined as the expected number of secondary infections produced by a single infected
 //! individual in a completely susceptible population.
 
+#[allow(missing_docs)]
 pub mod analytics;
+#[allow(missing_docs)]
 pub mod compartmental;
+#[allow(missing_docs)]
 pub mod matrix_dynamics;
+#[allow(missing_docs)]
 pub mod networks;
+#[allow(missing_docs)]
 pub mod stochastic;
 
 // Re-exports for easier access

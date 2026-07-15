@@ -3,12 +3,19 @@ use super::surface::{ParametricSurface, SurfaceAnalysis};
 /// Solves the Heat Equation $\frac{\partial u}{\partial t} = \alpha \Delta_S u$ on a parametric surface.
 /// Uses explicit Euler time-stepping with a discrete 5-point stencil for the Laplace-Beltrami operator.
 pub struct HeatEquationSolver<'a, S: ParametricSurface> {
+    #[allow(missing_docs)]
     pub surface: &'a S,
+    #[allow(missing_docs)]
     pub alpha: f64,               // Thermal diffusivity
+    #[allow(missing_docs)]
     pub u_grid: Vec<Vec<f64>>,    // Current temperature state
+    #[allow(missing_docs)]
     pub next_grid: Vec<Vec<f64>>, // Bolt Optimization: Buffer to avoid allocations in step
+    #[allow(missing_docs)]
     pub grid_res: (usize, usize), // (n_u, n_v)
+    #[allow(missing_docs)]
     pub range_u: (f64, f64),
+    #[allow(missing_docs)]
     pub range_v: (f64, f64),
 }
 

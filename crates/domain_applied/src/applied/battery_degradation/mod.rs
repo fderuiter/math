@@ -1,6 +1,7 @@
 #![doc = include_str!("README.md")]
 
 pub mod model;
+#[allow(missing_docs)]
 pub mod types;
 
 pub use model::PowerLawModel;

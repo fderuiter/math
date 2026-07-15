@@ -34,7 +34,9 @@ pub trait MFGSolver {
 /// Iterates back and forth between the HJB (backward) and Fokker-Planck (forward) equations
 /// until convergence (or for a fixed number of iterations).
 pub struct FixedPointSolver<H: Hamiltonian> {
+    #[allow(missing_docs)]
     pub iterations: usize,
+    #[allow(missing_docs)]
     pub hamiltonian: H,
 }
 

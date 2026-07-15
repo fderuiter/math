@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 use std::sync::{OnceLock, RwLock};
 
+#[allow(missing_docs)]
 pub struct CitationRegistry {
     citations: HashMap<String, String>,
 }
 
 impl CitationRegistry {
+    #[allow(missing_docs)]
     pub fn global() -> &'static RwLock<CitationRegistry> {
         static REGISTRY: OnceLock<RwLock<CitationRegistry>> = OnceLock::new();
         REGISTRY.get_or_init(|| {
@@ -15,6 +17,7 @@ impl CitationRegistry {
         })
     }
 
+    #[allow(missing_docs)]
     pub fn register(id: String, citation: String) {
         Self::global()
             .write()
@@ -23,6 +26,7 @@ impl CitationRegistry {
             .insert(id, citation);
     }
 
+    #[allow(missing_docs)]
     pub fn get(id: &str) -> Option<String> {
         Self::global().read().unwrap().citations.get(id).cloned()
     }

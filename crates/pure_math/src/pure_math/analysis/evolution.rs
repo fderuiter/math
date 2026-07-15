@@ -7,14 +7,19 @@ use rand::RngCore;
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Error)]
+#[allow(missing_docs)]
 pub enum EvolutionError {
     #[error("Failed to convert numerical value")]
+    #[allow(missing_docs)]
     ConversionError,
     #[error("Loop bound exceeded")]
+    #[allow(missing_docs)]
     BoundsError,
     #[error("Invalid state")]
+    #[allow(missing_docs)]
     InvalidState,
     #[error("Optimization error")]
+    #[allow(missing_docs)]
     OptimizationError,
 }
 
@@ -46,10 +51,13 @@ pub trait EvolutionEngine<State, AuxState> {
     }
 }
 
+#[allow(missing_docs)]
 pub trait DoubleBufferedState {
+    #[allow(missing_docs)]
     fn swap_buffers(&mut self);
 }
 
+#[allow(missing_docs)]
 pub trait DoubleBufferedEvolutionEngine<State: DoubleBufferedState, AuxState>:
     EvolutionEngine<State, AuxState>
 {
@@ -79,8 +87,11 @@ use super::ode::traits::{OdeSystem, Solver, VectorOperations};
 
 /// A unified wrapper that turns any OdeSystem and Solver pair into an EvolutionEngine.
 pub struct SystemEvolver<Sys, Sol> {
+    #[allow(missing_docs)]
     pub system: Sys,
+    #[allow(missing_docs)]
     pub solver: Sol,
+    #[allow(missing_docs)]
     pub time: f64,
 }
 

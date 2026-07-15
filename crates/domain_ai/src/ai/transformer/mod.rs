@@ -89,14 +89,23 @@
 //! assert_eq!(dec_output.shape(), (seq_len, d_model));
 //! ```
 
+#[allow(missing_docs)]
 pub mod attention;
+#[allow(missing_docs)]
 pub mod decoder;
+#[allow(missing_docs)]
 pub mod encoder;
+#[allow(missing_docs)]
 pub mod feed_forward;
+#[allow(missing_docs)]
 pub mod layer_norm;
+#[allow(missing_docs)]
 pub mod model;
+#[allow(missing_docs)]
 pub mod positional_encoding;
+#[allow(missing_docs)]
 pub mod tokenization;
+#[allow(missing_docs)]
 pub mod traits;
 
 pub use attention::MultiHeadAttention;

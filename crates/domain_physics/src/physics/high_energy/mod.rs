@@ -80,10 +80,15 @@
 //! - **`fluid_dynamics`**: Relativistic Euler equations and shock waves.
 //! - **`statistics`**: Significance calculations (Li & Ma) for signal detection.
 
+#[allow(missing_docs)]
 pub mod fluid_dynamics;
+#[allow(missing_docs)]
 pub mod general_relativity;
+#[allow(missing_docs)]
 pub mod observer;
+#[allow(missing_docs)]
 pub mod radiation;
+#[allow(missing_docs)]
 pub mod statistics;
 
 // Re-export constants to match original API

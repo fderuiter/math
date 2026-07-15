@@ -2,16 +2,27 @@ use std::collections::HashMap;
 use syn::visit::{self, Visit};
 use syn::{ItemFn, ItemMacro, Macro, Meta};
 
+#[allow(missing_docs)]
 pub struct AstVisitor {
+    #[allow(missing_docs)]
     pub verified_modules: Vec<String>,
+    #[allow(missing_docs)]
     pub module_tiers: HashMap<String, String>,
+    #[allow(missing_docs)]
     pub has_vacuous_bypass: bool,
+    #[allow(missing_docs)]
     pub total_funcs: usize,
+    #[allow(missing_docs)]
     pub total_asserts: usize,
+    #[allow(missing_docs)]
     pub verified_funcs: usize,
+    #[allow(missing_docs)]
     pub verified_asserts: usize,
+    #[allow(missing_docs)]
     pub semantic_integrity_funcs: usize,
+    #[allow(missing_docs)]
     pub active_submodules: Vec<String>,
+    #[allow(missing_docs)]
     pub opted_out: bool,
 }
 
@@ -22,6 +33,7 @@ impl Default for AstVisitor {
 }
 
 impl AstVisitor {
+    #[allow(missing_docs)]
     pub fn new() -> Self {
         Self {
             verified_modules: Vec::new(),

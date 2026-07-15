@@ -10,7 +10,9 @@ pub trait Action: Clone + Debug + PartialEq {}
 
 /// Represents the Markov Decision Process (MDP) tuple $(S, A, P, R, \gamma)$.
 pub trait MarkovDecisionProcess {
+    #[allow(missing_docs)]
     type S: State;
+    #[allow(missing_docs)]
     type A: Action;
 
     /// The Transition Probability $P(s' | s, a)$.

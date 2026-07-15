@@ -1,9 +1,11 @@
+#[allow(missing_docs)]
 pub trait BoundaryCondition {
     /// Given a coordinate (x, y) and grid dimensions (width, height),
     /// resolve the target index based on boundary logic.
     fn resolve(&self, x: isize, y: isize, width: usize, height: usize) -> Option<usize>;
 }
 
+#[allow(missing_docs)]
 pub struct PeriodicBoundary;
 impl BoundaryCondition for PeriodicBoundary {
     fn resolve(&self, x: isize, y: isize, width: usize, height: usize) -> Option<usize> {
@@ -13,6 +15,7 @@ impl BoundaryCondition for PeriodicBoundary {
     }
 }
 
+#[allow(missing_docs)]
 pub struct BounceBackBoundary;
 impl BoundaryCondition for BounceBackBoundary {
     fn resolve(&self, x: isize, y: isize, width: usize, height: usize) -> Option<usize> {
@@ -24,6 +27,7 @@ impl BoundaryCondition for BounceBackBoundary {
     }
 }
 
+#[allow(missing_docs)]
 pub struct NeumannBoundary;
 impl BoundaryCondition for NeumannBoundary {
     fn resolve(&self, x: isize, y: isize, width: usize, height: usize) -> Option<usize> {

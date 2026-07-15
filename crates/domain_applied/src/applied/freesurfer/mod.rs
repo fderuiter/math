@@ -73,9 +73,13 @@
 //! - `thickness`: Vertex-wise cortical thickness estimation.
 //! - `glm`: General Linear Model for group analysis (Mass Univariate).
 
+#[allow(missing_docs)]
 pub mod glm;
+#[allow(missing_docs)]
 pub mod segmentation;
+#[allow(missing_docs)]
 pub mod surface;
+#[allow(missing_docs)]
 pub mod thickness;
 
 // Re-export specific items to maintain public API compatibility

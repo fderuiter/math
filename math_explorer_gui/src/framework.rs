@@ -1,35 +1,54 @@
 use eframe::egui;
 use math_commons::theory::TheoryDescribable;
 
+#[allow(missing_docs)]
 pub struct ToolMetadata {
+    #[allow(missing_docs)]
     pub name: &'static str,
+    #[allow(missing_docs)]
     pub domain: &'static str,
+    #[allow(missing_docs)]
     pub tags: &'static [&'static str],
+    #[allow(missing_docs)]
     pub build: fn() -> Box<dyn InteractiveTool>,
 }
 
 inventory::collect!(ToolMetadata);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(missing_docs)]
 pub enum InputMode {
+    #[allow(missing_docs)]
     Mouse,
+    #[allow(missing_docs)]
     Touch,
 }
 
 /// Event context provided to interaction hooks.
 pub struct InteractionContext<'a> {
+    #[allow(missing_docs)]
     pub pointer_pos: Option<egui::Pos2>,
+    #[allow(missing_docs)]
     pub delta: egui::Vec2,
+    #[allow(missing_docs)]
     pub is_dragging: bool,
+    #[allow(missing_docs)]
     pub is_clicked: bool,
+    #[allow(missing_docs)]
     pub response: &'a egui::Response,
+    #[allow(missing_docs)]
     pub input_mode: InputMode,
+    #[allow(missing_docs)]
     pub multi_touch: Option<egui::MultiTouchInfo>,
+    #[allow(missing_docs)]
     pub keys_down: std::collections::HashSet<egui::Key>,
+    #[allow(missing_docs)]
     pub modifiers: egui::Modifiers,
 }
 
+#[allow(missing_docs)]
 pub trait InteractiveTool {
+    #[allow(missing_docs)]
     fn name(&self) -> &'static str;
 
     /// Provide theoretical context.
@@ -97,23 +116,36 @@ pub trait InteractiveTool {
     fn draw(&mut self, _ui: &mut egui::Ui, _response: &egui::Response, _painter: &egui::Painter) {}
 
     // Normalized event hooks
+    #[allow(missing_docs)]
     fn on_hover(&mut self, _ctx: &InteractionContext) {}
+    #[allow(missing_docs)]
     fn on_drag(&mut self, _ctx: &InteractionContext) {}
+    #[allow(missing_docs)]
     fn on_click(&mut self, _ctx: &InteractionContext) {}
+    #[allow(missing_docs)]
     fn on_brush(&mut self, _ctx: &InteractionContext) {}
+    #[allow(missing_docs)]
     fn on_gesture(&mut self, _ctx: &InteractionContext) {}
+    #[allow(missing_docs)]
     fn on_keyboard(&mut self, _ctx: &InteractionContext) {}
 }
 
+#[allow(missing_docs)]
 pub struct SimulationFramework {
+    #[allow(missing_docs)]
     pub available_tools: Vec<&'static ToolMetadata>,
+    #[allow(missing_docs)]
     pub active_tool: Option<Box<dyn InteractiveTool>>,
+    #[allow(missing_docs)]
     pub selected_tool_index: Option<usize>,
+    #[allow(missing_docs)]
     pub input_mode: InputMode,
+    #[allow(missing_docs)]
     pub show_theory_portal: bool,
 }
 
 impl SimulationFramework {
+    #[allow(missing_docs)]
     pub fn new(domain: &str) -> Self {
         let mut available_tools: Vec<&'static ToolMetadata> = inventory::iter::<ToolMetadata>
             .into_iter()
@@ -196,6 +228,7 @@ impl SimulationFramework {
             });
     }
 
+    #[allow(missing_docs)]
     pub fn show(&mut self, ctx: &egui::Context, id_source: &str) {
         // Update global input mode
         ctx.input(|i| {
@@ -234,15 +267,22 @@ impl SimulationFramework {
     }
 }
 
+#[allow(missing_docs)]
 pub struct CoordinateMapper {
+    #[allow(missing_docs)]
     pub screen_rect: egui::Rect,
+    #[allow(missing_docs)]
     pub sim_rect: egui::Rect,
 }
 
 #[derive(Clone, Copy, Debug)]
+#[allow(missing_docs)]
 pub struct Camera3D {
+    #[allow(missing_docs)]
     pub pitch: f32,
+    #[allow(missing_docs)]
     pub yaw: f32,
+    #[allow(missing_docs)]
     pub zoom: f32,
 }
 
@@ -257,10 +297,12 @@ impl Default for Camera3D {
 }
 
 impl Camera3D {
+    #[allow(missing_docs)]
     pub fn new(pitch: f32, yaw: f32, zoom: f32) -> Self {
         Self { pitch, yaw, zoom }
     }
 
+    #[allow(missing_docs)]
     pub fn handle_interaction(&mut self, response: &egui::Response, ui: &egui::Ui) {
         let multi_touch = ui.input(|i| i.multi_touch());
 
@@ -345,6 +387,7 @@ impl Camera3D {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn project(&self, point: &[f64; 3]) -> [f64; 2] {
         let cy = (self.yaw as f64).cos();
         let sy = (self.yaw as f64).sin();
@@ -363,6 +406,7 @@ impl Camera3D {
         [x2 * (self.zoom as f64), y2 * (self.zoom as f64)]
     }
 
+    #[allow(missing_docs)]
     pub fn ui(&mut self, ui: &mut egui::Ui) {
         ui.label("Yaw");
         ui.drag_angle(&mut self.yaw);
@@ -375,6 +419,7 @@ impl Camera3D {
 }
 
 impl CoordinateMapper {
+    #[allow(missing_docs)]
     pub fn new(screen_rect: egui::Rect, sim_rect: egui::Rect) -> Self {
         Self {
             screen_rect,
@@ -382,6 +427,7 @@ impl CoordinateMapper {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn screen_to_sim(&self, pos: egui::Pos2) -> egui::Pos2 {
         let x_norm = (pos.x - self.screen_rect.min.x) / self.screen_rect.width();
         let y_norm = (pos.y - self.screen_rect.min.y) / self.screen_rect.height();
@@ -392,6 +438,7 @@ impl CoordinateMapper {
         )
     }
 
+    #[allow(missing_docs)]
     pub fn sim_to_screen(&self, pos: egui::Pos2) -> egui::Pos2 {
         let x_norm = (pos.x - self.sim_rect.min.x) / self.sim_rect.width();
         let y_norm = (pos.y - self.sim_rect.min.y) / self.sim_rect.height();

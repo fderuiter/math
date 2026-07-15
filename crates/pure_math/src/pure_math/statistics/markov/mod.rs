@@ -308,15 +308,19 @@
 
 pub mod ctmc;
 pub mod dtmc;
+#[allow(missing_docs)]
 pub mod hmm;
 pub mod tensor;
+#[allow(missing_docs)]
 pub mod time_index;
+#[allow(missing_docs)]
 pub mod validation;
 
 // Re-export commonly used types
 pub use crate::error::MarkovError;
 pub use ctmc::ContinuousMarkovChain;
 pub use dtmc::{MarkovChain, StateType};
+#[allow(missing_docs)]
 pub type Result<T> = std::result::Result<T, MarkovError>;
 pub use hmm::HiddenMarkovModel;
 pub use tensor::TransitionTensor;
