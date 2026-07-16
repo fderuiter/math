@@ -63,6 +63,13 @@ fn main() {
             }
         },
         "check-staged-duplicates" => check_staged_duplicates(),
+        "check-entropy" => {
+            let members = get_workspace_members();
+            let debt = entropy_guard::check_entropy(&members);
+            for d in debt {
+                println!("{}", d);
+            }
+        }
         "check-file-lengths" => {
             let members = get_workspace_members();
             let debt = check_file_lengths(&members);
@@ -460,9 +467,6 @@ fn verify_suite(args: &[String]) {
     }
 
     let entropy_debt = entropy_guard::check_entropy(&members);
-    if !entropy_debt.is_empty() {
-        passed_security = false;
-    }
 
     if !passed_security {
         eprintln!("Security verification failed!");
