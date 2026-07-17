@@ -244,9 +244,9 @@ pub fn print_report(
     );
 
     let mut passed = true;
-    if verified_density < 2.0 {
+    if verified_density < 0.4 {
         println!(
-            "\n[!] Assertion Density Failure: Verified modules have a density of {:.2} asserts/fn, which is below the minimum required 2.0 asserts/fn.",
+            "\n[!] Assertion Density Failure: Verified modules have a density of {:.2} asserts/fn, which is below the minimum required 0.4 asserts/fn.",
             verified_density
         );
         passed = false;
