@@ -2,8 +2,8 @@
 use rand::Rng;
 
 use crate::climate::tensor_ops::conv1d;
-use pure_math::pure_math::analysis::optimization::ModelOptimizer as Optimizer;
 use nalgebra::{DMatrix, DVector, Dyn, Matrix, Storage};
+use pure_math::pure_math::analysis::optimization::ModelOptimizer as Optimizer;
 
 /// A trait representing the Autoencoder model interface.
 pub trait AutoencoderModel {

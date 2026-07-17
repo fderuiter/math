@@ -116,13 +116,18 @@ pub fn kaplan_meier(observations: &[Observation]) -> Vec<TimePoint> {
     let mut n_at_risk = total_subjects;
 
     while i < obs.len() {
-        let t = obs[i].time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
+        let t =
+            obs[i].time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
         let mut n_events = 0;
         let mut n_censored = 0;
 
         // Process all events at this time t
         while i < obs.len()
-            && (obs[i].time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap() - t).abs() < math_commons::registry::TOLERANCE_STANDARD
+            && (obs[i].time
+                / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap()
+                - t)
+                .abs()
+                < math_commons::registry::TOLERANCE_STANDARD
         {
             if obs[i].event_occurred {
                 n_events += 1;
@@ -173,7 +178,8 @@ pub fn try_estimate_hazard_ratio(
             if obs.event_occurred {
                 events += 1.0;
             }
-            time += obs.time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
+            time +=
+                obs.time / crate::applied::clinical_trials::types::SurvivalTime::new(1.0).unwrap();
         }
         Ok((events, time))
     };

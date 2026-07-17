@@ -185,7 +185,7 @@ impl fmt::Display for SurvivalTime {
         write!(f, "{}", self.0)
     }
 }
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Div, Mul, Sub};
 
 impl SurvivalTime {
     #[allow(missing_docs)]

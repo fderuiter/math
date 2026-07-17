@@ -1,12 +1,12 @@
-/// A unified colormap utility module for scalar-to-color mapping.
-/// Handles custom color-gradient and step-linear mappings across the codebase.
+//! A unified colormap utility module for scalar-to-color mapping.
+//! Handles custom color-gradient and step-linear mappings across the codebase.
 
 /// Maps a normalized scalar value (0.0 to 1.0) to an RGB color based on a typical heatmap (blue -> green -> red).
 #[inline(always)]
 #[allow(missing_docs)]
 pub fn heatmap_color(mut t: f64) -> [u8; 3] {
     t = t.clamp(0.0, 1.0);
-    
+
     // Low: Blue, Mid: Green, High: Red
     let r = (t * 2.0 - 1.0).max(0.0);
     let g = (1.0 - (t * 2.0 - 1.0).abs()).max(0.0);

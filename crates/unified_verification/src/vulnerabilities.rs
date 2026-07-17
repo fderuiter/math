@@ -56,7 +56,10 @@ pub fn check_osv_vulnerabilities() -> bool {
     {
         Ok(r) => r,
         Err(e) => {
-            eprintln!("Warning: Remote vulnerability database is unreachable: {}", e);
+            eprintln!(
+                "Warning: Remote vulnerability database is unreachable: {}",
+                e
+            );
             return true;
         }
     };

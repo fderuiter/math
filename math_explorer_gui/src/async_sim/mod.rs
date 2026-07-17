@@ -272,7 +272,10 @@ pub struct WorkerContext {
 #[cfg(target_arch = "wasm32")]
 pub fn wake_worker() {
     let global = js_sys::global();
-    if let Ok(wake_fn) = js_sys::Reflect::get(&global, &wasm_bindgen::JsValue::from_str("__sim_worker_wake")) {
+    if let Ok(wake_fn) = js_sys::Reflect::get(
+        &global,
+        &wasm_bindgen::JsValue::from_str("__sim_worker_wake"),
+    ) {
         if wake_fn.is_function() {
             let func = wake_fn.unchecked_into::<js_sys::Function>();
             let _ = func.call0(&wasm_bindgen::JsValue::UNDEFINED);
@@ -284,10 +287,17 @@ pub fn wake_worker() {
 async fn yield_to_event_loop() {
     let promise = js_sys::Promise::new(&mut |resolve, _| {
         let global = js_sys::global();
-        let timeout_scheduled = if let Ok(worker_scope) = global.clone().dyn_into::<web_sys::DedicatedWorkerGlobalScope>() {
-            worker_scope.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0).is_ok()
+        let timeout_scheduled = if let Ok(worker_scope) = global
+            .clone()
+            .dyn_into::<web_sys::DedicatedWorkerGlobalScope>(
+        ) {
+            worker_scope
+                .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0)
+                .is_ok()
         } else if let Ok(window) = global.dyn_into::<web_sys::Window>() {
-            window.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0).is_ok()
+            window
+                .set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, 0)
+                .is_ok()
         } else {
             false
         };
@@ -302,12 +312,19 @@ async fn yield_to_event_loop() {
 async fn suspend_worker() {
     let promise = js_sys::Promise::new(&mut |resolve, _| {
         let global = js_sys::global();
-        let _ = js_sys::Reflect::set(&global, &wasm_bindgen::JsValue::from_str("__sim_worker_wake"), &resolve);
+        let _ = js_sys::Reflect::set(
+            &global,
+            &wasm_bindgen::JsValue::from_str("__sim_worker_wake"),
+            &resolve,
+        );
     });
     let _ = wasm_bindgen_futures::JsFuture::from(promise).await;
     // Remove the wake function after waking up
     let global = js_sys::global();
-    let _ = js_sys::Reflect::delete_property(&global, &wasm_bindgen::JsValue::from_str("__sim_worker_wake"));
+    let _ = js_sys::Reflect::delete_property(
+        &global,
+        &wasm_bindgen::JsValue::from_str("__sim_worker_wake"),
+    );
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -316,14 +333,18 @@ pub fn setup_wake_listener() {
     if let Ok(worker_scope) = global.dyn_into::<web_sys::DedicatedWorkerGlobalScope>() {
         let cb = wasm_bindgen::closure::Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
             if let Ok(data) = e.data().dyn_into::<js_sys::Object>() {
-                if let Ok(type_val) = js_sys::Reflect::get(&data, &wasm_bindgen::JsValue::from_str("type")) {
+                if let Ok(type_val) =
+                    js_sys::Reflect::get(&data, &wasm_bindgen::JsValue::from_str("type"))
+                {
                     if type_val.as_string().as_deref() == Some("wake") {
                         wake_worker();
                     }
                 }
             }
-        }) as Box<dyn FnMut(web_sys::MessageEvent)>);
-        let _ = worker_scope.add_event_listener_with_callback("message", cb.as_ref().unchecked_ref());
+        })
+            as Box<dyn FnMut(web_sys::MessageEvent)>);
+        let _ =
+            worker_scope.add_event_listener_with_callback("message", cb.as_ref().unchecked_ref());
         cb.forget(); // Leak to keep it alive
     }
 }

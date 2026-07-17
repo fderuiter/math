@@ -89,8 +89,9 @@ where
         if d_t == 0.0 {
             return Err(ChaosError::Math(
                 math_commons::error::MathError::NumericalError {
-                    reason: "Trajectories converged completely (distance 0), cannot compute log.".to_string(),
-                }
+                    reason: "Trajectories converged completely (distance 0), cannot compute log."
+                        .to_string(),
+                },
             ));
         }
 

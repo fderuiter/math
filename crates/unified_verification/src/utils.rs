@@ -1,7 +1,7 @@
+use regex::Regex;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
-use regex::Regex;
 use walkdir::WalkDir;
 
 pub fn check_file_lengths(members: &[String]) -> Vec<String> {
@@ -49,7 +49,8 @@ pub fn check_staged_duplicates() {
     let mut warnings = Vec::new();
 
     let trait_re = Regex::new(r"trait\s+\w*(Solver|Integrator)").unwrap();
-    let proj_re = Regex::new(r"(fovy|aspect|projection|look_at|Perspective|matrix element)").unwrap();
+    let proj_re =
+        Regex::new(r"(fovy|aspect|projection|look_at|Perspective|matrix element)").unwrap();
 
     for line in diff.lines() {
         if line.starts_with("+++ b/") {
@@ -70,8 +71,9 @@ pub fn check_staged_duplicates() {
         for w in warnings {
             println!("WARN: {}", w);
         }
-        println!("Please verify you are not duplicating existing utilities in pure_math or math_commons.");
+        println!(
+            "Please verify you are not duplicating existing utilities in pure_math or math_commons."
+        );
         println!("These warnings are non-blocking.");
     }
 }
-

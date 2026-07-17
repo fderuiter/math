@@ -41,6 +41,41 @@ fn run_cmd(cmd: &str, args: &[&str]) {
     }
 }
 
+fn setup_pre_commit_hook(hook_path: &str, hook_content: &str) {
+    if std::path::Path::new(hook_path).exists() {
+        let existing = fs::read_to_string(hook_path).unwrap_or_default();
+        if !existing.contains("auto-generated pre-commit hook") {
+            println!(
+                "Warning: A custom pre-commit hook exists at {}. Please merge the verification check manually or remove it to allow auto-installation.",
+                hook_path
+            );
+        } else {
+            fs::write(hook_path, hook_content).unwrap();
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = fs::metadata(hook_path).unwrap().permissions();
+                perms.set_mode(0o755);
+                fs::set_permissions(hook_path, perms).unwrap();
+            }
+            println!("Pre-commit hook updated.");
+        }
+    } else {
+        if let Some(parent) = std::path::Path::new(hook_path).parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+        fs::write(hook_path, hook_content).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(hook_path).unwrap().permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(hook_path, perms).unwrap();
+        }
+        println!("Pre-commit hook installed.");
+    }
+}
+
 fn setup() {
     println!("=== Math Explorer Setup Script ===");
     run_cmd("cargo", &["build"]);
@@ -86,39 +121,7 @@ esac
 exit 0
 "#;
 
-    if std::path::Path::new(hook_path).exists() {
-        let existing = fs::read_to_string(hook_path).unwrap_or_default();
-        if !existing.contains("auto-generated pre-commit hook") {
-            println!(
-                "Warning: A custom pre-commit hook exists at {}. Please merge the verification check manually or remove it to allow auto-installation.",
-                hook_path
-            );
-        } else {
-            fs::write(hook_path, hook_content).unwrap();
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                let mut perms = fs::metadata(hook_path).unwrap().permissions();
-                perms.set_mode(0o755);
-                fs::set_permissions(hook_path, perms).unwrap();
-            }
-            println!("Pre-commit hook updated.");
-        }
-    } else {
-        if let Some(parent) = std::path::Path::new(hook_path).parent() {
-            fs::create_dir_all(parent).unwrap();
-        }
-        fs::write(hook_path, hook_content).unwrap();
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut perms = fs::metadata(hook_path).unwrap().permissions();
-            perms.set_mode(0o755);
-            fs::set_permissions(hook_path, perms).unwrap();
-        }
-        println!("Pre-commit hook installed.");
-    }
-
+    setup_pre_commit_hook(hook_path, hook_content);
     println!("=== Setup Complete ===");
 }
 
@@ -210,14 +213,16 @@ fn verify_records() {
 
 fn compile_papers() {
     println!("=== Compiling Papers with Tectonic ===");
-    
+
     let check = Command::new("tectonic").arg("--version").output();
     match check {
         Ok(output) if output.status.success() => {}
         _ => {
             eprintln!("Error: Tectonic is not installed or not in PATH.");
             eprintln!("Please install Tectonic 0.15.0 to compile academic papers:");
-            eprintln!("curl -sL \"https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz\" | tar xz");
+            eprintln!(
+                "curl -sL \"https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz\" | tar xz"
+            );
             eprintln!("sudo mv tectonic /usr/local/bin/");
             exit(1);
         }
@@ -225,7 +230,7 @@ fn compile_papers() {
 
     let papers_dir = std::path::Path::new("papers");
     let output_dir = std::path::Path::new("papers/output");
-    
+
     if !output_dir.exists() {
         fs::create_dir_all(output_dir).unwrap();
     }
@@ -242,7 +247,7 @@ fn compile_papers() {
                 .arg(output_dir)
                 .arg(&path)
                 .status();
-                
+
             match status {
                 Ok(s) if s.success() => println!("Successfully compiled {:?}", path),
                 _ => {

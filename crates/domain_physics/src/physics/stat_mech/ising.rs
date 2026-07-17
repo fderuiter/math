@@ -88,7 +88,11 @@ impl SpinLattice {
 
     /// Creates a new random spin lattice using the provided RNG.
     #[verified_engine::verified]
-    pub fn new_with_rng(width: usize, height: usize, mut rng: oxidize_core::rng::OxidizeRng) -> Self {
+    pub fn new_with_rng(
+        width: usize,
+        height: usize,
+        mut rng: oxidize_core::rng::OxidizeRng,
+    ) -> Self {
         let count = width * height;
         let spins = (0..count)
             .map(|_| if rng.gen_bool(0.5) { 1 } else { -1 })

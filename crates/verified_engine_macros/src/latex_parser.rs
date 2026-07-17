@@ -62,7 +62,7 @@ pub fn parse_latex_math(latex: &str) -> (Vec<String>, Vec<MathOp>) {
 
     // Heuristics for implicit multiplication
     // e.g. "2 B R" -> if we see a number then a var, or var then var, it's Mul.
-    // For simplicity, just seeing if there's any operations. 
+    // For simplicity, just seeing if there's any operations.
     // We can refine this later if needed.
 
     (vars, ops)

@@ -190,7 +190,7 @@ impl<R: ReactionModel, D: DiffusionModel>
                 math_commons::error::MathError::DimensionMismatch {
                     expected: math_commons::math_kernel::types::Dimension(num_species),
                     actual: math_commons::math_kernel::types::Dimension(diffusion_coeffs.len()),
-                }
+                },
             ));
         }
 
@@ -249,7 +249,7 @@ impl<R: ReactionModel, D: DiffusionModel, S: Solver<ChemicalState>>
                 math_commons::error::MathError::DimensionMismatch {
                     expected: math_commons::math_kernel::types::Dimension(num_species),
                     actual: math_commons::math_kernel::types::Dimension(diffusion_coeffs.len()),
-                }
+                },
             ));
         }
 

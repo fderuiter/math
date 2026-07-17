@@ -94,7 +94,7 @@ macro_rules! define_bounded_float {
                 val.0
             }
         }
-        
+
         $crate::impl_binop!($name);
     };
 }
@@ -168,7 +168,7 @@ macro_rules! define_strictly_bounded_float {
                 val.0
             }
         }
-        
+
         $crate::impl_binop!($name);
     };
 }

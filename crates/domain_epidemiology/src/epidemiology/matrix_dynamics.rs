@@ -18,7 +18,7 @@ pub fn calculate_r0_matrix(
             math_commons::error::MathError::DimensionMismatch {
                 expected: math_commons::math_kernel::types::Dimension(f_mat.len()),
                 actual: math_commons::math_kernel::types::Dimension(v_mat.len()),
-            }
+            },
         ));
     }
 

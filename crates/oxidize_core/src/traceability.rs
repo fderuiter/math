@@ -48,9 +48,13 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
     #[allow(missing_docs)]
     pub fn verify_module_registered(module_name: &str) -> bool {
         let vfs = crate::vfs::DefaultVfs;
-        let mut registry_content = futures::executor::block_on(vfs.read_to_string("traceability.toml")).unwrap_or_default();
+        let mut registry_content =
+            futures::executor::block_on(vfs.read_to_string("traceability.toml"))
+                .unwrap_or_default();
         if registry_content.is_empty() {
-            registry_content = futures::executor::block_on(vfs.read_to_string("../../traceability.toml")).unwrap_or_default();
+            registry_content =
+                futures::executor::block_on(vfs.read_to_string("../../traceability.toml"))
+                    .unwrap_or_default();
         }
         if let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
@@ -151,7 +155,8 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         }
 
         // 2. Read registry
-        self.verify_and_link_registry(&valid_papers, &mut report).await;
+        self.verify_and_link_registry(&valid_papers, &mut report)
+            .await;
 
         let mut registered_modules = HashSet::new();
         let mut registry_links = HashMap::new();
@@ -183,7 +188,14 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         let mut code_files: Vec<String> = active_files.into_iter().collect();
         code_files.sort();
 
-        self.process_code_files(code_files, &registered_modules, &registry_links, &mut report, auto_fix).await;
+        self.process_code_files(
+            code_files,
+            &registered_modules,
+            &registry_links,
+            &mut report,
+            auto_fix,
+        )
+        .await;
 
         // 4. Find orphans
         for (name, linked_code) in &report.paper_coverage {
@@ -207,99 +219,154 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         auto_fix: bool,
     ) {
         for file in code_files {
-            report.scanned_files += 1;
-            let is_module =
-                file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
+            self.process_single_file(file, registered_modules, registry_links, report, auto_fix)
+                .await;
+        }
+    }
 
-            if let Ok(mut content) = self.vfs.read_to_string(&file).await {
-                let mut file_modified = false;
-                let citations = Self::extract_citations(&content);
-                let mut final_citations = Vec::new();
+    async fn process_single_file(
+        &self,
+        file: String,
+        registered_modules: &HashSet<String>,
+        registry_links: &HashMap<String, String>,
+        report: &mut TraceabilityReport,
+        auto_fix: bool,
+    ) {
+        report.scanned_files += 1;
+        let is_module =
+            file.ends_with("mod.rs") || file.contains("/tabs/") || file.ends_with("lib.rs");
 
-                for cite in citations {
-                    if !registered_modules.contains(&cite) {
-                        if auto_fix {
-                            let mut best_key = None;
-                            let mut sorted_registry: Vec<_> = registry_links.iter().collect();
-                            sorted_registry.sort_by_key(|(k, _)| *k);
+        if let Ok(mut content) = self.vfs.read_to_string(&file).await {
+            let citations = Self::extract_citations(&content);
+            let (file_modified, final_citations) = Self::fix_and_collect_citations(
+                &file,
+                &mut content,
+                citations,
+                registered_modules,
+                registry_links,
+                report,
+                auto_fix,
+            );
 
-                            for (key, val) in sorted_registry {
-                                let base_val = val.replace(".tex", "").replace("spec:", "");
-                                if base_val == cite || val == &cite {
-                                    best_key = Some(key.clone());
-                                    if file.contains(key) {
-                                        break;
-                                    }
-                                }
+            if file_modified {
+                let _ = self.vfs.write_to_file(&file, content.as_bytes()).await;
+            }
+
+            Self::analyze_file_ast(
+                &file,
+                &content,
+                is_module,
+                &final_citations,
+                registered_modules,
+                report,
+            );
+        }
+    }
+
+    fn fix_and_collect_citations(
+        file: &str,
+        content: &mut String,
+        citations: Vec<String>,
+        registered_modules: &HashSet<String>,
+        registry_links: &HashMap<String, String>,
+        report: &mut TraceabilityReport,
+        auto_fix: bool,
+    ) -> (bool, Vec<String>) {
+        let mut file_modified = false;
+        let mut final_citations = Vec::new();
+
+        for cite in citations {
+            if !registered_modules.contains(&cite) {
+                if auto_fix {
+                    let mut best_key = None;
+                    let mut sorted_registry: Vec<_> = registry_links.iter().collect();
+                    sorted_registry.sort_by_key(|(k, _)| *k);
+
+                    for (key, val) in sorted_registry {
+                        let base_val = val.replace(".tex", "").replace("spec:", "");
+                        if base_val == cite || val == &cite {
+                            best_key = Some(key.clone());
+                            if file.contains(key) {
+                                break;
                             }
-                            if let Some(key) = best_key {
-                                let old_tag = format!("[cite:{}]", cite);
-                                let new_tag = format!("[cite:{}]", key);
-                                content = content.replace(&old_tag, &new_tag);
-                                file_modified = true;
-                                final_citations.push(key);
-                            } else {
-                                report.invalid_links.push((file.clone(), cite.clone()));
-                            }
-                        } else {
-                            report.invalid_links.push((file.clone(), cite.clone()));
                         }
+                    }
+                    if let Some(key) = best_key {
+                        let old_tag = format!("[cite:{}]", cite);
+                        let new_tag = format!("[cite:{}]", key);
+                        *content = content.replace(&old_tag, &new_tag);
+                        file_modified = true;
+                        final_citations.push(key);
                     } else {
-                        final_citations.push(cite.clone());
+                        report.invalid_links.push((file.to_string(), cite.clone()));
+                    }
+                } else {
+                    report.invalid_links.push((file.to_string(), cite.clone()));
+                }
+            } else {
+                final_citations.push(cite.clone());
+            }
+        }
+
+        (file_modified, final_citations)
+    }
+
+    fn analyze_file_ast(
+        file: &str,
+        content: &str,
+        is_module: bool,
+        final_citations: &[String],
+        registered_modules: &HashSet<String>,
+        report: &mut TraceabilityReport,
+    ) {
+        if let Ok(ast) = syn::parse_file(content) {
+            let mut visitor = crate::ast_visitor::AstVisitor::new();
+            visitor.verified_modules.extend(final_citations.to_vec());
+            syn::visit::Visit::visit_file(&mut visitor, &ast);
+
+            report.total_funcs += visitor.total_funcs;
+            report.total_asserts += visitor.total_asserts;
+            report.verified_funcs += visitor.verified_funcs;
+            report.verified_asserts += visitor.verified_asserts;
+
+            for cite in final_citations {
+                if visitor.semantic_integrity_funcs > 0 {
+                    report
+                        .semantic_integrity_status
+                        .insert(cite.clone(), "Verified".to_string());
+                } else if !report.semantic_integrity_status.contains_key(cite) {
+                    report
+                        .semantic_integrity_status
+                        .insert(cite.clone(), "Unverified".to_string());
+                }
+            }
+
+            if visitor.has_vacuous_bypass && file.contains("domain_ai") {
+                report.vacuous_bypasses.push(file.to_string());
+            }
+
+            for (module, tier) in &visitor.module_tiers {
+                if file.contains("pure_math") && tier != "Deterministic" {
+                    report
+                        .invalid_tiers
+                        .push(format!("{} in {} used tier {}", module, file, tier));
+                }
+            }
+
+            if is_module {
+                for module in &visitor.verified_modules {
+                    if !registered_modules.contains(module) {
+                        report.unlinked_code.push(file.to_string());
                     }
                 }
+            }
 
-                if file_modified {
-                    let _ = self.vfs.write_to_file(&file, content.as_bytes()).await;
-                }
-
-                if let Ok(ast) = syn::parse_file(&content) {
-                    let mut visitor = crate::ast_visitor::AstVisitor::new();
-                    visitor.verified_modules.extend(final_citations.clone());
-                    syn::visit::Visit::visit_file(&mut visitor, &ast);
-
-                report.total_funcs += visitor.total_funcs;
-                report.total_asserts += visitor.total_asserts;
-                report.verified_funcs += visitor.verified_funcs;
-                report.verified_asserts += visitor.verified_asserts;
-
-                for cite in &final_citations {
-                    if visitor.semantic_integrity_funcs > 0 {
-                        report.semantic_integrity_status.insert(cite.clone(), "Verified".to_string());
-                    } else if !report.semantic_integrity_status.contains_key(cite) {
-                        report.semantic_integrity_status.insert(cite.clone(), "Unverified".to_string());
-                    }
-                }
-
-
-                if visitor.has_vacuous_bypass && file.contains("domain_ai") {
-                    report.vacuous_bypasses.push(file.clone());
-                }
-
-                for (module, tier) in &visitor.module_tiers {
-                    if file.contains("pure_math") && tier != "Deterministic" {
-                        report
-                            .invalid_tiers
-                            .push(format!("{} in {} used tier {}", module, file, tier));
-                    }
-                }
-
-                if is_module {
-                    for module in &visitor.verified_modules {
-                        if !registered_modules.contains(module) {
-                            report.unlinked_code.push(file.clone());
-                        }
-                    }
-                }
-
-                if visitor.total_funcs > 0
-                    && visitor.verified_funcs == 0
-                    && visitor.verified_modules.is_empty()
-                    && !visitor.opted_out
-                {
-                    report.unverified_modules.push(file.clone());
-                }
-                }
+            if visitor.total_funcs > 0
+                && visitor.verified_funcs == 0
+                && visitor.verified_modules.is_empty()
+                && !visitor.opted_out
+            {
+                report.unverified_modules.push(file.to_string());
             }
         }
     }

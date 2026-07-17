@@ -76,7 +76,7 @@ impl MusicEstimator {
                 math_commons::error::MathError::DimensionMismatch {
                     expected: math_commons::math_kernel::types::Dimension(self.samples_per_chirp),
                     actual: math_commons::math_kernel::types::Dimension(chirp.len()),
-                }
+                },
             ));
         }
         let vec = DVector::from_iterator(chirp.len(), chirp.iter().cloned());
@@ -182,7 +182,7 @@ impl MusicEstimator {
             return Err(RadarError::Math(
                 math_commons::error::MathError::NumericalError {
                     reason: "Eigenvalues contain NaN".into(),
-                }
+                },
             ));
         }
 

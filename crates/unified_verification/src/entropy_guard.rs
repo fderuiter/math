@@ -1,8 +1,8 @@
+use regex::Regex;
 use std::collections::HashMap;
 use std::fs;
-use regex::Regex;
-use syn::visit::Visit;
 use syn::spanned::Spanned;
+use syn::visit::Visit;
 use walkdir::WalkDir;
 
 struct SecurityVisitor<'a> {
@@ -14,7 +14,11 @@ struct SecurityVisitor<'a> {
     slack_re: &'a Regex,
 }
 
-fn flatten_use_tree(tree: &syn::UseTree, prefix: &mut Vec<String>, mappings: &mut HashMap<String, String>) {
+fn flatten_use_tree(
+    tree: &syn::UseTree,
+    prefix: &mut Vec<String>,
+    mappings: &mut HashMap<String, String>,
+) {
     match tree {
         syn::UseTree::Path(p) => {
             prefix.push(p.ident.to_string());
@@ -82,13 +86,23 @@ impl<'a, 'ast> Visit<'ast> for SecurityVisitor<'a> {
         if let syn::Expr::Path(p) = &*i.func {
             let resolved = resolve_path(&p.path, &self.aliases);
             let line = i.func.span().start().line;
-            
-            if resolved.contains("thread_rng") || resolved.ends_with("::thread_rng") || resolved == "thread_rng" {
-                self.entropy_violations.push(("thread_rng()".to_string(), line));
-            } else if resolved.contains("random") || resolved.ends_with("::random") || resolved == "random" {
+
+            if resolved.contains("thread_rng")
+                || resolved.ends_with("::thread_rng")
+                || resolved == "thread_rng"
+            {
+                self.entropy_violations
+                    .push(("thread_rng()".to_string(), line));
+            } else if resolved.contains("random")
+                || resolved.ends_with("::random")
+                || resolved == "random"
+            {
                 self.entropy_violations.push(("random()".to_string(), line));
-            } else if resolved.contains("SystemTime::now") || resolved.ends_with("::now") && resolved.contains("SystemTime") {
-                self.entropy_violations.push(("SystemTime::now()".to_string(), line));
+            } else if resolved.contains("SystemTime::now")
+                || resolved.ends_with("::now") && resolved.contains("SystemTime")
+            {
+                self.entropy_violations
+                    .push(("SystemTime::now()".to_string(), line));
             }
         }
         syn::visit::visit_expr_call(self, i);
@@ -97,25 +111,33 @@ impl<'a, 'ast> Visit<'ast> for SecurityVisitor<'a> {
     fn visit_lit_str(&mut self, lit: &'ast syn::LitStr) {
         let value = lit.value();
         let line = lit.span().start().line;
-        
-        if (value.contains("-----BEGIN ") && value.contains("PRIVATE KEY-----")) || (value.contains("-----BEGIN RSA ") && value.contains("PRIVATE KEY-----")) {
+
+        if (value.contains("-----BEGIN ") && value.contains("PRIVATE KEY-----"))
+            || (value.contains("-----BEGIN RSA ") && value.contains("PRIVATE KEY-----"))
+        {
             self.secret_warnings.push(("Private Key".to_string(), line));
         } else if self.aws_re.is_match(&value) {
-            self.secret_warnings.push(("AWS Access Key".to_string(), line));
+            self.secret_warnings
+                .push(("AWS Access Key".to_string(), line));
         } else if self.gh_re.is_match(&value) {
-            self.secret_warnings.push(("GitHub API Token".to_string(), line));
+            self.secret_warnings
+                .push(("GitHub API Token".to_string(), line));
         } else if self.slack_re.is_match(&value) {
-            self.secret_warnings.push(("Slack API Token".to_string(), line));
+            self.secret_warnings
+                .push(("Slack API Token".to_string(), line));
         } else if value.len() > 32 {
-            let is_hex_or_b64 = value.chars().all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '=');
+            let is_hex_or_b64 = value
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '=');
             if is_hex_or_b64 {
                 let entropy = calculate_entropy(&value);
                 if entropy > 4.5 {
-                    self.secret_warnings.push(("High-Entropy Secret".to_string(), line));
+                    self.secret_warnings
+                        .push(("High-Entropy Secret".to_string(), line));
                 }
             }
         }
-        
+
         syn::visit::visit_lit_str(self, lit);
     }
 }
@@ -149,9 +171,9 @@ pub fn check_entropy(members: &[String]) -> Vec<String> {
                             slack_re: &slack_re,
                         };
                         visitor.visit_file(&ast);
-                        
+
                         let lines: Vec<&str> = content.lines().collect();
-                        
+
                         for (name, line_num) in visitor.entropy_violations {
                             let mut ignored = false;
                             if line_num > 0 && line_num <= lines.len() {
@@ -166,7 +188,7 @@ pub fn check_entropy(members: &[String]) -> Vec<String> {
                                     }
                                 }
                             }
-                            
+
                             if !ignored {
                                 let msg = format!(
                                     "Entropy Guard Violation: Prohibited pattern '{}' found in {} at line {}",
@@ -180,7 +202,8 @@ pub fn check_entropy(members: &[String]) -> Vec<String> {
                         }
 
                         for (kind, line_num) in visitor.secret_warnings {
-                            println!("[WARNING] Raw credential ({}) found in {} at line {}",
+                            println!(
+                                "[WARNING] Raw credential ({}) found in {} at line {}",
                                 kind,
                                 entry.path().display(),
                                 line_num

@@ -130,10 +130,16 @@ mod tests {
         let n70 = model.n70(dod) / Cycles::new_clamped(1.0);
 
         let cap_0 = model.capacity(Cycles::new_clamped(0.0), dod);
-        assert!(((cap_0 / Capacity::new_clamped(1.0)) - 1.0).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            ((cap_0 / Capacity::new_clamped(1.0)) - 1.0).abs()
+                < math_commons::registry::TOLERANCE_FAST
+        );
 
         let cap_n70 = model.capacity(Cycles::new_clamped(n70), dod);
-        assert!(((cap_n70 / Capacity::new_clamped(1.0)) - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            ((cap_n70 / Capacity::new_clamped(1.0)) - 0.7).abs()
+                < math_commons::registry::TOLERANCE_FAST
+        );
     }
 
     #[test]
@@ -144,7 +150,10 @@ mod tests {
 
         let cycles = model.cycles_to_capacity(Capacity::new_clamped(0.7), dod);
         let n70 = model.n70(dod);
-        assert!(((cycles / Cycles::new_clamped(1.0)) - (n70 / Cycles::new_clamped(1.0))).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            ((cycles / Cycles::new_clamped(1.0)) - (n70 / Cycles::new_clamped(1.0))).abs()
+                < math_commons::registry::TOLERANCE_FAST
+        );
 
         let cycles_0 = model.cycles_to_capacity(Capacity::new_clamped(1.0), dod);
         assert!((cycles_0 / Cycles::new_clamped(1.0)) < math_commons::registry::TOLERANCE_FAST);

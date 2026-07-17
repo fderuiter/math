@@ -1,6 +1,6 @@
 use super::boundary::BoundaryStrategy;
 use super::geometry::GeometryStrategy;
-use math_commons::math_kernel::types::{flatten_2d_index, GridIndex};
+use math_commons::math_kernel::types::{GridIndex, flatten_2d_index};
 use oxidize_core::iteration::IterationPattern;
 
 #[allow(missing_docs)]

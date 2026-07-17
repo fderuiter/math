@@ -16,8 +16,7 @@ pub use types::{Capacity, Cycles, DepthOfDischarge};
 )]
 #[verified_engine::verified]
 pub fn n70(d: f64) -> f64 {
-    PowerLawModel::standard()
-        .n70(DepthOfDischarge::new_clamped(d)) / Cycles::new_clamped(1.0)
+    PowerLawModel::standard().n70(DepthOfDischarge::new_clamped(d)) / Cycles::new_clamped(1.0)
 }
 
 /// Calculates the remaining battery capacity after a number of cycles.
@@ -27,8 +26,8 @@ pub fn n70(d: f64) -> f64 {
 )]
 #[verified_engine::verified]
 pub fn capacity(n: f64, d: f64) -> f64 {
-    PowerLawModel::standard()
-        .capacity(Cycles::new_clamped(n), DepthOfDischarge::new_clamped(d)) / Capacity::new_clamped(1.0)
+    PowerLawModel::standard().capacity(Cycles::new_clamped(n), DepthOfDischarge::new_clamped(d))
+        / Capacity::new_clamped(1.0)
 }
 
 /// Calculates the number of equivalent full cycles to reach a target capacity.
@@ -38,11 +37,10 @@ pub fn capacity(n: f64, d: f64) -> f64 {
 )]
 #[verified_engine::verified]
 pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
-    PowerLawModel::standard()
-        .cycles_to_capacity(
-            Capacity::new_clamped(target_capacity),
-            DepthOfDischarge::new_clamped(d),
-        ) / Cycles::new_clamped(1.0)
+    PowerLawModel::standard().cycles_to_capacity(
+        Capacity::new_clamped(target_capacity),
+        DepthOfDischarge::new_clamped(d),
+    ) / Cycles::new_clamped(1.0)
 }
 
 // [cite:algorithmic_information_rust]
@@ -58,11 +56,10 @@ theory_verification!(
     test = {
         let model = model::PowerLawModel::standard();
         assert_relative_eq!(
-            model
-                .capacity(
-                    types::Cycles::new_clamped(0.0),
-                    types::DepthOfDischarge::new_clamped(1.0)
-                ) / types::Capacity::new_clamped(1.0),
+            model.capacity(
+                types::Cycles::new_clamped(0.0),
+                types::DepthOfDischarge::new_clamped(1.0)
+            ) / types::Capacity::new_clamped(1.0),
             1.0,
             epsilon = math_commons::registry::TOLERANCE_FAST
         );

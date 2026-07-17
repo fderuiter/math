@@ -9,7 +9,8 @@ pub fn check_profiles(workspace_members: &[&str], auto_fix: bool) -> bool {
     let root_path = Path::new("Cargo.toml");
     if root_path.exists() {
         let root_content = fs::read_to_string(root_path).unwrap_or_default();
-        let root_parsed: Value = toml::from_str(&root_content).unwrap_or_else(|_| Value::Table(Default::default()));
+        let root_parsed: Value =
+            toml::from_str(&root_content).unwrap_or_else(|_| Value::Table(Default::default()));
 
         let root_has_overflow_checks = root_parsed
             .get("profile")
@@ -20,7 +21,9 @@ pub fn check_profiles(workspace_members: &[&str], auto_fix: bool) -> bool {
 
         if !root_has_overflow_checks {
             if auto_fix {
-                println!("[+] Auto-fixing: Adding [profile.release] overflow-checks = true to workspace root Cargo.toml");
+                println!(
+                    "[+] Auto-fixing: Adding [profile.release] overflow-checks = true to workspace root Cargo.toml"
+                );
                 let mut new_root_content = root_content.clone();
                 if !new_root_content.ends_with('\n') {
                     new_root_content.push('\n');
@@ -28,11 +31,15 @@ pub fn check_profiles(workspace_members: &[&str], auto_fix: bool) -> bool {
                 new_root_content.push_str("\n[profile.release]\noverflow-checks = true\n");
                 fs::write(root_path, new_root_content).unwrap();
             } else {
-                eprintln!("[!] Profile mismatch: workspace root Cargo.toml is missing [profile.release] overflow-checks = true");
+                eprintln!(
+                    "[!] Profile mismatch: workspace root Cargo.toml is missing [profile.release] overflow-checks = true"
+                );
                 passed = false;
             }
         } else {
-            println!("[+] Verified workspace root profile: overflow-checks = true is strictly enforced.");
+            println!(
+                "[+] Verified workspace root profile: overflow-checks = true is strictly enforced."
+            );
         }
     }
 
@@ -55,7 +62,10 @@ pub fn check_profiles(workspace_members: &[&str], auto_fix: bool) -> bool {
 
             if has_profile_release {
                 if auto_fix {
-                    println!("[+] Auto-fixing: Removing redundant [profile.release] from {}", path.display());
+                    println!(
+                        "[+] Auto-fixing: Removing redundant [profile.release] from {}",
+                        path.display()
+                    );
                     let new_content = remove_profile_release(&content);
                     fs::write(&path, new_content).unwrap();
                 } else {
@@ -125,7 +135,10 @@ mod tests {
         let passed = check_profiles(&["member1"], false);
 
         // It should fail due to shadowing
-        assert!(!passed, "Linting should fail when member crate shadows [profile.release]");
+        assert!(
+            !passed,
+            "Linting should fail when member crate shadows [profile.release]"
+        );
 
         // Clean up
         env::set_current_dir(original_dir).unwrap();

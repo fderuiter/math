@@ -59,4 +59,3 @@ impl From<math_commons::error::MathError> for EpidemiologyError {
         EpidemiologyError::Math(err)
     }
 }
-

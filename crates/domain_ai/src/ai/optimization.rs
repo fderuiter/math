@@ -2,8 +2,7 @@ use nalgebra::{DVector, RealField};
 
 // Re-export the core trait and implementations from pure_math
 pub use pure_math::pure_math::analysis::optimization::{
-    OptimizationError, Optimizer as GenericOptimizer, SGD,
-    ParamType, ModelOptimizer as Optimizer,
+    ModelOptimizer as Optimizer, OptimizationError, Optimizer as GenericOptimizer, ParamType, SGD,
 };
 
 // Import the generic Adam implementation from pure_math
@@ -96,4 +95,3 @@ fn softmax<T: RealField + Copy>(z: &DVector<T>) -> DVector<T> {
     let sum_exps = exps.sum();
     exps / sum_exps
 }
-

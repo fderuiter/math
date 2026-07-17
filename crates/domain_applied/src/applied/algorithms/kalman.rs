@@ -184,8 +184,10 @@ impl<T: RealField + Copy, M: KalmanSystem<T>> KalmanFilterBuilder<T, M> {
             return Err(KalmanError::Math(
                 math_commons::error::MathError::DimensionMismatch {
                     expected: math_commons::math_kernel::types::Dimension(state.len()),
-                    actual: math_commons::math_kernel::types::Dimension(covariance.nrows() * covariance.ncols()),
-                }
+                    actual: math_commons::math_kernel::types::Dimension(
+                        covariance.nrows() * covariance.ncols(),
+                    ),
+                },
             ));
         }
         Ok(KalmanFilter {

@@ -18,11 +18,11 @@ pub struct Density(pub f64);
 #[derive(Clone, Debug)]
 pub struct MFGConfig {
     #[allow(missing_docs)]
-    pub viscosity: f64,            // nu
+    pub viscosity: f64, // nu
     #[allow(missing_docs)]
-    pub time_horizon: f64,         // T
+    pub time_horizon: f64, // T
     #[allow(missing_docs)]
-    pub time_steps: NonZeroUsize,  // Nt
+    pub time_steps: NonZeroUsize, // Nt
     #[allow(missing_docs)]
     pub grid_points: NonZeroUsize, // Nx
     #[allow(missing_docs)]

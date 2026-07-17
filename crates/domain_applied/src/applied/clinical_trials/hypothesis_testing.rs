@@ -16,7 +16,7 @@ pub struct TestResult {
     #[allow(missing_docs)]
     pub p_value: f64,
     #[allow(missing_docs)]
-    pub is_significant: bool,                    // Based on provided alpha
+    pub is_significant: bool, // Based on provided alpha
     #[allow(missing_docs)]
     pub confidence_interval: Option<(f64, f64)>, // For the difference
 }

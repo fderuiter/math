@@ -45,7 +45,10 @@ fn main() {
                     .map(|c| format!("{:?}", c))
                     .collect::<Vec<_>>()
                     .join(", ");
-                dirs_map.push_str(&format!("{:?} => Some(&[{}]),\n        ", relative_dir, child_str));
+                dirs_map.push_str(&format!(
+                    "{:?} => Some(&[{}]),\n        ",
+                    relative_dir, child_str
+                ));
             }
         }
     }
