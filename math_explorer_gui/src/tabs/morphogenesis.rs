@@ -1,3 +1,4 @@
+#![verified(opt_out="infrastructure")]
 use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::{SimCommand, StateSnapshot};
 use eframe::egui::ColorImage;

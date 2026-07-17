@@ -177,11 +177,32 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
             let normalized = crate::path_utils::normalize_path(dir);
             let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
             let main = crate::path_utils::join_and_normalize(&normalized, "main.rs");
+            let mut has_entrypoint = false;
+            
             if self.vfs.read_to_string(&lib).await.is_ok() {
                 self.parse_module_tree(&lib, &mut active_files).await;
+                has_entrypoint = true;
             }
             if self.vfs.read_to_string(&main).await.is_ok() {
                 self.parse_module_tree(&main, &mut active_files).await;
+                has_entrypoint = true;
+            }
+            
+            if !has_entrypoint {
+                // Direct file listing fallback!
+                let mut stack = vec![normalized];
+                while let Some(current_dir) = stack.pop() {
+                    if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
+                        for name in entries {
+                            let path = crate::path_utils::join_and_normalize(&current_dir, &name);
+                            if name.ends_with(".rs") {
+                                active_files.insert(path);
+                            } else if !name.contains('.') {
+                                stack.push(path);
+                            }
+                        }
+                    }
+                }
             }
         }
 
