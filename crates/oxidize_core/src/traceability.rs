@@ -167,6 +167,27 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
             }
         }
 
+        let active_files = self.collect_active_files(code_dirs).await;
+
+        let mut code_files: Vec<String> = active_files.into_iter().collect();
+        code_files.sort();
+
+        self.process_code_files(code_files, &registered_modules, &registry_links, &mut report, auto_fix).await;
+
+        // 4. Find orphans
+        for (name, linked_code) in &report.paper_coverage {
+            if linked_code.is_empty() {
+                report.orphaned_papers.push(name.clone());
+            }
+        }
+        report.orphaned_papers.sort();
+        report.unlinked_code.sort();
+        report.invalid_links.sort();
+
+        Ok(report)
+    }
+
+    async fn collect_active_files(&self, code_dirs: &[&str]) -> HashSet<String> {
         let mut active_files = HashSet::new();
         for dir in code_dirs {
             let normalized = crate::path_utils::normalize_path(dir);
@@ -200,23 +221,7 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
                 }
             }
         }
-
-        let mut code_files: Vec<String> = active_files.into_iter().collect();
-        code_files.sort();
-
-        self.process_code_files(code_files, &registered_modules, &registry_links, &mut report, auto_fix).await;
-
-        // 4. Find orphans
-        for (name, linked_code) in &report.paper_coverage {
-            if linked_code.is_empty() {
-                report.orphaned_papers.push(name.clone());
-            }
-        }
-        report.orphaned_papers.sort();
-        report.unlinked_code.sort();
-        report.invalid_links.sort();
-
-        Ok(report)
+        active_files
     }
 
     async fn process_code_files(

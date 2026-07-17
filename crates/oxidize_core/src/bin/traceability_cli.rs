@@ -162,24 +162,17 @@ fn discover_code_dirs() -> Vec<String> {
                             if let Ok(file_type) = entry.file_type() {
                                 if file_type.is_dir() {
                                     stack.push(entry.path());
-                                } else if file_type.is_file() {
-                                    if let Some(ext) = entry.path().extension() {
-                                        if ext == "rs" {
-                                            has_rs_files = true;
-                                        }
-                                    }
+                                } else if file_type.is_file() && entry.path().extension() == Some(std::ffi::OsStr::new("rs")) {
+                                    has_rs_files = true;
                                 }
                             }
                         }
                         if has_rs_files {
                             let mut target_dir = dir.to_string_lossy().to_string();
-                            if !is_root {
-                                if target_dir.starts_with("../../") {
-                                    target_dir = target_dir.trim_start_matches("../../").to_string();
-                                }
+                            if !is_root && target_dir.starts_with("../../") {
+                                target_dir = target_dir.trim_start_matches("../../").to_string();
                             }
-                            // Convert windows backslashes to forward slashes just in case
-                            target_dir = target_dir.replace("\\", "/");
+                            target_dir = target_dir.replace('\\', "/");
                             code_dirs.push(target_dir);
                         }
                     }
