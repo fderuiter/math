@@ -138,9 +138,9 @@ pub fn stratified_sampling_with_rng<R: Rng + ?Sized>(
     out: &mut [f64]
 ) {
     let bin_size = (t_far - t_near) / n_samples as f64;
-    for i in 0..n_samples {
+    for (i, val) in out.iter_mut().enumerate().take(n_samples) {
         let bin_start = t_near + i as f64 * bin_size;
-        out[i] = bin_start + rng.r#gen::<f64>() * bin_size;
+        *val = bin_start + rng.r#gen::<f64>() * bin_size;
     }
 }
 

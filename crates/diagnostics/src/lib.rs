@@ -94,11 +94,13 @@ pub struct DiagnosticEvent {
     pub thread_name: Option<String>,
 }
 
+type ListenerFn = dyn Fn(&DiagnosticEvent) + Send + Sync + 'static;
+
 #[allow(missing_docs)]
 pub struct DiagnosticBus {
     sender: Sender<DiagnosticEvent>,
     receiver: Arc<Mutex<Receiver<DiagnosticEvent>>>,
-    listeners: Arc<Mutex<Vec<Arc<dyn Fn(&DiagnosticEvent) + Send + Sync + 'static>>>>,
+    listeners: Arc<Mutex<Vec<Arc<ListenerFn>>>>,
 }
 
 impl DiagnosticBus {
@@ -126,7 +128,7 @@ impl DiagnosticBus {
 
     #[allow(missing_docs)]
     pub fn emit(&self, event: DiagnosticEvent) {
-        if let Err(_) = self.sender.send(event.clone()) {
+        if self.sender.send(event.clone()).is_err() {
             eprintln!("[{}] {} - Metadata: {:?}", event.severity, event.message, event.metadata);
         }
         let listeners = match self.listeners.lock() {
@@ -137,7 +139,7 @@ impl DiagnosticBus {
             let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 listener(&event);
             }));
-            if let Err(_) = result {
+            if result.is_err() {
                 eprintln!("Diagnostic listener panicked while processing event: {}", event.message);
             }
         }

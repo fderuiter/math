@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_applied::applied::win_ratio::{
     bmi, pair_comparison, probability_win_ratio, sample_win_ratio, simulation,
 };

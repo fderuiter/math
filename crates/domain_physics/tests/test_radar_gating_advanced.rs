@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_physics::physics::medical::radar_gating::{
     clutter::EllipticalFilter, czt::SpatialCztConfig, mimo::Beamformer, phase::PhaseUnwrapper,
     super_resolution::MusicEstimator,

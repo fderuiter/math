@@ -354,13 +354,13 @@ impl<'a, G: GradientEstimator> MarchingCubes<'a, G> {
     #[verified_engine::verified]
     fn get_edge_index(&self, base_idx: usize, stride_y: usize, stride_z: usize, edge_num: usize) -> usize {
         match edge_num {
-            0 => base_idx * 3 + 0,
+            0 => base_idx * 3,
             1 => (base_idx + 1) * 3 + 1,
-            2 => (base_idx + stride_y) * 3 + 0,
+            2 => (base_idx + stride_y) * 3,
             3 => base_idx * 3 + 1,
-            4 => (base_idx + stride_z) * 3 + 0,
+            4 => (base_idx + stride_z) * 3,
             5 => (base_idx + 1 + stride_z) * 3 + 1,
-            6 => (base_idx + stride_y + stride_z) * 3 + 0,
+            6 => (base_idx + stride_y + stride_z) * 3,
             7 => (base_idx + stride_z) * 3 + 1,
             8 => base_idx * 3 + 2,
             9 => (base_idx + 1) * 3 + 2,

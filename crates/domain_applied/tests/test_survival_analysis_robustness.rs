@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_applied::applied::clinical_trials::survival_analysis::{
     Observation, try_estimate_hazard_ratio,
 };

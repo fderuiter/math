@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
 use std::fmt;
 

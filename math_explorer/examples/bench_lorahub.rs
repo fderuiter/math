@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
 use std::time::Instant;

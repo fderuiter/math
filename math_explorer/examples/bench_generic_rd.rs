@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::biology::diffusion::FiniteDifference1D;
 use math_explorer::biology::morphogenesis::SchnakenbergKinetics;
 use math_explorer::biology::reaction_diffusion::ReactionDiffusionSystem;

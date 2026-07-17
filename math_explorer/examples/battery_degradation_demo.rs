@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::applied::battery_degradation::{Cycles, DepthOfDischarge, PowerLawModel};
 
 fn main() {

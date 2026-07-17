@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::biology::morphogenesis::TuringSystem;
 use std::time::Instant;
 

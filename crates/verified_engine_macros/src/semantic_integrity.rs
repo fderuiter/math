@@ -29,9 +29,7 @@ impl<'ast> Visit<'ast> for RustOpVisitor {
 
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
         let method_name = node.method.to_string();
-        if method_name == "powi" || method_name == "powf" {
-            self.ops.insert(MathOp::Pow);
-        } else if method_name == "exp" {
+        if method_name == "powi" || method_name == "powf" || method_name == "exp" {
             self.ops.insert(MathOp::Pow);
         }
         syn::visit::visit_expr_method_call(self, node);

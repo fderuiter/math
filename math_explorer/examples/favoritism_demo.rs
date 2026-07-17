@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 fn main() {

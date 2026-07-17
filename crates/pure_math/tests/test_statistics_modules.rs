@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 //! Integration tests for new statistics modules
 
 #[cfg(test)]

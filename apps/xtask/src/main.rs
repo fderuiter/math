@@ -45,9 +45,50 @@ fn setup() {
     println!("=== Math Explorer Setup Script ===");
     run_cmd("cargo", &["build"]);
     run_cmd("cargo", &["test"]);
+    install_pre_commit_hook();
+    println!("=== Setup Complete ===");
+}
 
+fn install_pre_commit_hook() {
     let hook_path = ".git/hooks/pre-commit";
-    let hook_content = r#"#!/bin/sh
+    let hook_content = get_hook_content();
+
+    if std::path::Path::new(hook_path).exists() {
+        let existing = fs::read_to_string(hook_path).unwrap_or_default();
+        if !existing.contains("auto-generated pre-commit hook") {
+            println!(
+                "Warning: A custom pre-commit hook exists at {}. Please merge the verification check manually or remove it to allow auto-installation.",
+                hook_path
+            );
+        } else {
+            fs::write(hook_path, hook_content).unwrap();
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = fs::metadata(hook_path).unwrap().permissions();
+                perms.set_mode(0o755);
+                fs::set_permissions(hook_path, perms).unwrap();
+            }
+            println!("Pre-commit hook updated.");
+        }
+    } else {
+        if let Some(parent) = std::path::Path::new(hook_path).parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+        fs::write(hook_path, hook_content).unwrap();
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = fs::metadata(hook_path).unwrap().permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions(hook_path, perms).unwrap();
+        }
+        println!("Pre-commit hook installed.");
+    }
+}
+
+fn get_hook_content() -> &'static str {
+    r#"#!/bin/sh
 # auto-generated pre-commit hook
 
 for profile in "$HOME/.bash_profile" "$HOME/.zprofile" "$HOME/.bashrc" "$HOME/.zshrc"; do
@@ -84,42 +125,7 @@ case "$OUTPUT" in
 esac
 
 exit 0
-"#;
-
-    if std::path::Path::new(hook_path).exists() {
-        let existing = fs::read_to_string(hook_path).unwrap_or_default();
-        if !existing.contains("auto-generated pre-commit hook") {
-            println!(
-                "Warning: A custom pre-commit hook exists at {}. Please merge the verification check manually or remove it to allow auto-installation.",
-                hook_path
-            );
-        } else {
-            fs::write(hook_path, hook_content).unwrap();
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                let mut perms = fs::metadata(hook_path).unwrap().permissions();
-                perms.set_mode(0o755);
-                fs::set_permissions(hook_path, perms).unwrap();
-            }
-            println!("Pre-commit hook updated.");
-        }
-    } else {
-        if let Some(parent) = std::path::Path::new(hook_path).parent() {
-            fs::create_dir_all(parent).unwrap();
-        }
-        fs::write(hook_path, hook_content).unwrap();
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut perms = fs::metadata(hook_path).unwrap().permissions();
-            perms.set_mode(0o755);
-            fs::set_permissions(hook_path, perms).unwrap();
-        }
-        println!("Pre-commit hook installed.");
-    }
-
-    println!("=== Setup Complete ===");
+"#
 }
 
 fn test_features(args: &[String]) {

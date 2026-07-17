@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_biology::biology::diffusion::FiniteDifference1D;
 use domain_biology::biology::morphogenesis::{ReactionKinetics, TuringSystem};
 

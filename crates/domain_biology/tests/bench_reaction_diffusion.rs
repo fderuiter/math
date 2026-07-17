@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_biology::biology::diffusion::FiniteDifference2D;
 use domain_biology::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
 use std::time::Instant;

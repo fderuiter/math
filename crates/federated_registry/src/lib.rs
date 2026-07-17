@@ -60,7 +60,7 @@ impl FederatedRegistry {
 
     #[allow(missing_docs)]
     pub fn emit(&self, event: TelemetryEvent) {
-        if let Err(_) = self.sender.send(event.clone()) {
+        if self.sender.send(event.clone()).is_err() {
             eprintln!("[{}] {} (Source: {}, Metadata: {:?})", event.severity, event.message, event.source, event.metadata);
         }
     }
@@ -95,13 +95,13 @@ pub fn global_registry() -> &'static FederatedRegistry {
             let source = event.metadata.get("source")
                 .cloned()
                 .unwrap_or_else(|| "diagnostics".to_string());
-            if let Err(_) = sender.send(TelemetryEvent {
+            if sender.send(TelemetryEvent {
                 source: source.clone(),
                 severity: event.severity.clone(),
                 message: event.message.clone(),
                 metadata: event.metadata.clone(),
                 thread_name: event.thread_name.clone(),
-            }) {
+            }).is_err() {
                 eprintln!("[{}] {} (Source: {}, Metadata: {:?})", event.severity, event.message, source, event.metadata);
             }
         });

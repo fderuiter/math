@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::applied::grpo::formulas::{
     clipped_surrogate_objective, response_level_advantage,
 };

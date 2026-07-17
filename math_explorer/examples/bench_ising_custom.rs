@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::physics::stat_mech::KB;
 use math_explorer::physics::stat_mech::ising::SpinLattice;
 use std::time::Instant;

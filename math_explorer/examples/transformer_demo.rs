@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::ai::transformer::Encoder;
 use nalgebra::DMatrix;
 

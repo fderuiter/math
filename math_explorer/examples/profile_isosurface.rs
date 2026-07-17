@@ -1,3 +1,4 @@
+//! Benchmark for isosurface extraction.
 use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 use std::time::Instant;
 

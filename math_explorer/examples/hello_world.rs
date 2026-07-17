@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::physics::quantum::clebsch_gordan;
 use std::fmt;
 

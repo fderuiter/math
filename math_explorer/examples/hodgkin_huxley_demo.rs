@@ -1,3 +1,4 @@
+//! Example usage.
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
 
 fn main() {
