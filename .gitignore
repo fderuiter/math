@@ -1,7 +1,14 @@
 # Rust
 /target
+**/target/
 **/*.rs.bk
-Cargo.lock
+**/Cargo.lock
+!/Cargo.lock
+
+# Build & Model Artifacts
+*.orig
+*.obj
+*.txt
 
 # IDE / Editor
 .idea/
