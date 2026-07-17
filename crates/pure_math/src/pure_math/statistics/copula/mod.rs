@@ -105,4 +105,4 @@ pub use transforms::{
     NormalTransform, ProbabilityTransform, inverse_standard_normal, standard_normal_cdf,
 };
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

@@ -198,7 +198,7 @@ impl InteractiveTool for TokenizationTool {
     }
 }
 
-// [cite:algorithmic_information_rust]
+// [cite:battery_degradation]
 
 
 inventory::submit! {

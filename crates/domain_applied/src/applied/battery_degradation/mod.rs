@@ -45,7 +45,7 @@ pub fn cycles_to_capacity(target_capacity: f64, d: f64) -> f64 {
         ) / Cycles::new_clamped(1.0)
 }
 
-// [cite:algorithmic_information_rust]
+// [cite:battery_degradation]
 
 use pure_math::theory_verification;
 

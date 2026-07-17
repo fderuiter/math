@@ -103,4 +103,4 @@ pub mod regression;
 pub mod tda;
 pub mod zip_regression;
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

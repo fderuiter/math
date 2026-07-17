@@ -165,7 +165,7 @@ impl InteractiveTool for IsingModelTool {
     }
 }
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]
 
 
 inventory::submit! {

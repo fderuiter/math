@@ -114,7 +114,7 @@ pub fn concentration_superposition(params: &PKParameters, dose_times: &[f64], t:
     model.concentration(t)
 }
 
-// [cite:quantum_mechanics]
+// [cite:pharmacokinetics]
 
 use pure_math::theory_verification;
 

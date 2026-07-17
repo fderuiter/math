@@ -113,7 +113,7 @@ impl InteractiveTool for UalbfWidget {
     }
 }
 
-// [cite:ualbf_quasiperfect]
+// [cite:ualbf_quasiperfect_mod]
 
 
 inventory::submit! {

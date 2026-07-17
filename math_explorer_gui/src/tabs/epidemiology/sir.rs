@@ -126,7 +126,7 @@ impl InteractiveTool for SirTool {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:epidemiology]
 
 
 inventory::submit! {

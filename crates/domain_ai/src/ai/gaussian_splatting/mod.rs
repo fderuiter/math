@@ -99,4 +99,4 @@ pub mod structs;
 
 pub use structs::{Gaussian2D, Gaussian3D, Scene};
 
-// [cite:gaussian_splatting]
+// [cite:gaussian_splatting_mod]

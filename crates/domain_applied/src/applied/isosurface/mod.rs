@@ -54,7 +54,7 @@ pub use gradients::{CentralDifferenceEstimator, GradientEstimator};
 pub use marching_cubes::extract_isosurface;
 pub use types::{Mesh, Point3D, Triangle, VoxelGrid};
 
-// [cite:isosurface_extraction]
+// [cite:isosurface]
 
 use pure_math::theory_verification;
 

@@ -345,7 +345,7 @@ impl InteractiveTool for ReplicatorDynamicsTool {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:game_theory]
 
 
 inventory::submit! {

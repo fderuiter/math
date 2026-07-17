@@ -224,7 +224,7 @@ impl InteractiveTool for NetworkMetricsTool {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 
 inventory::submit! {

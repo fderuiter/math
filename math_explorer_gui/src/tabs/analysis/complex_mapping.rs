@@ -254,7 +254,7 @@ impl InteractiveTool for ComplexMappingTool {
     }
 }
 
-// [cite:partitions_implementation]
+// [cite:partitions_implementation_mod]
 
 
 inventory::submit! {

@@ -137,8 +137,20 @@ fn discover_code_dirs() -> Vec<String> {
 
     for member in members {
         if let Some(member_str) = member.as_str() {
+            let is_verified_crate = member_str.starts_with("crates/domain_") 
+                || member_str == "crates/pure_math" 
+                || member_str.starts_with("math_explorer");
+
+            if !is_verified_crate {
+                continue;
+            }
+
             let member_path = std::path::PathBuf::from(root_prefix).join(member_str);
-            let src_path = member_path.join("src");
+            let mut src_path = member_path.join("src");
+            
+            if member_str == "math_explorer_gui" {
+                src_path = src_path.join("tabs");
+            }
             
             if src_path.exists() && src_path.is_dir() {
                 let mut stack = vec![src_path.clone()];

@@ -326,4 +326,4 @@ pub use hmm::HiddenMarkovModel;
 pub use tensor::TransitionTensor;
 pub use time_index::TimeIndex;
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

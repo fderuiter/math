@@ -242,4 +242,4 @@ impl ExplorerTab for TraceabilityTab {
         });
     }
 }
-// [cite:essay]
+// [cite:math_commons]

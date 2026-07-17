@@ -152,7 +152,7 @@ impl InteractiveTool for AttractorPlotter {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:chaos]
 
 
 inventory::submit! {

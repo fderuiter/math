@@ -14,4 +14,4 @@ pub mod temperature;
 pub mod training;
 pub mod types;
 
-// [cite:self_calibration_paper]
+// [cite:domain_physics]

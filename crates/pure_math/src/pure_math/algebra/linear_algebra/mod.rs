@@ -3,4 +3,4 @@ pub mod decomposition;
 pub mod eigen;
 pub mod numerical;
 
-// [cite:advanced_linear_algebra]
+// [cite:pure_math]

@@ -1,6 +1,6 @@
 pub mod sensing;
 
-// [cite:graph_parameters_rust]
+// [cite:optics]
 
 use pure_math::theory_verification;
 

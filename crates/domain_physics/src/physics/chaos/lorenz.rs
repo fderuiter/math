@@ -231,7 +231,7 @@ impl TheoryDescribable for LorenzSystem {
     }
 
     fn theory_citation(&self) -> String {
-        "[cite:chaos_theory]".to_string()
+        "[cite:chaos_theory_mod]".to_string()
     }
 
     fn available_descriptions(&self) -> HashMap<String, String> {

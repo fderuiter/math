@@ -1,3 +1,4 @@
+
 use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::{SimCommand, StateSnapshot};
 use eframe::egui::ColorImage;
@@ -144,6 +145,7 @@ fn initialize_system(
     }
 }
 
+#[verified_engine::verified(opt_out = "GUI utility")]
 fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
     let mut pixels = Vec::with_capacity(width * height * 4);
 

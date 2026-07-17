@@ -129,7 +129,7 @@ impl InteractiveTool for RewardPlotsTool {
     }
 }
 
-// [cite:modular_polynomials_review]
+// [cite:modular_polynomials_review_mod]
 
 
 inventory::submit! {

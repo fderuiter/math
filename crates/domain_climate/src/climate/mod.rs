@@ -109,7 +109,7 @@ pub mod predictor;
 pub mod tensor_ops;
 pub mod training;
 
-// [cite:graph_parameters_rust]
+// [cite:climate]
 
 use pure_math::theory_verification;
 theory_verification!(

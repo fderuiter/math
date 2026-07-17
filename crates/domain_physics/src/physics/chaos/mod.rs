@@ -231,7 +231,7 @@ mod tests {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:chaos]
 
 use pure_math::theory_verification;
 

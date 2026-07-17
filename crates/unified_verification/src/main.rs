@@ -54,7 +54,7 @@ fn main() {
                 std::process::exit(1);
             }
         },
-        "traceability" => traceability(),
+        "traceability" => traceability(&args[2..]),
         "verify-suite" => verify_suite(&args[2..]),
         "regenerate-baseline" => api_drift::regenerate_baseline(),
         "check-duplicates" => {
@@ -155,13 +155,18 @@ fn verify_records() -> bool {
     true
 }
 
-fn traceability() {
+fn traceability(args: &[String]) {
     println!("=== Traceability Report ===");
     println!("Delegating to unified Rust Traceability Engine...");
 
-    let status = Command::new("cargo")
-        .args(["run", "--bin", "traceability_cli"])
-        .status()
+    let mut cmd = Command::new("cargo");
+    cmd.args(["run", "--bin", "traceability_cli"]);
+    if args.contains(&"--auto-fix".to_string()) {
+        cmd.arg("--");
+        cmd.arg("--auto-fix");
+    }
+    
+    let status = cmd.status()
         .expect("Failed to run traceability_cli");
 
     if !status.success() {

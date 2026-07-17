@@ -13,7 +13,7 @@ pub mod uart;
 pub use cnc::*;
 pub use uart::*;
 
-// [cite:graph_parameters_rust]
+// [cite:engineering]
 
 use pure_math::theory_verification;
 

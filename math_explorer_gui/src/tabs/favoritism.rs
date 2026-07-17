@@ -321,4 +321,4 @@ impl ExplorerTab for FavoritismTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

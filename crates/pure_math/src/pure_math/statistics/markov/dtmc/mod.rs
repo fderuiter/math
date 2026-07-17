@@ -495,4 +495,4 @@ impl<T: RealField + Copy + ToPrimitive> MarkovChain<T> {
 #[cfg(test)]
 mod tests;
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

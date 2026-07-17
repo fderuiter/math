@@ -65,7 +65,7 @@ pub mod mean_field;
 pub mod mechanism_design;
 
 /// Errors for Game Theory calculations.
-// [cite:graph_parameters_rust]
+// [cite:game_theory]
 use pure_math::theory_verification;
 
 theory_verification!(

@@ -7,4 +7,4 @@ pub mod operators;
 #[allow(missing_docs)]
 pub mod surface;
 
-// [cite:modular_polynomials_review]
+// [cite:modular_polynomials_review_mod]

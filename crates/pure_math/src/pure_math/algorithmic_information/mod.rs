@@ -67,4 +67,4 @@ pub mod geometry;
 #[allow(missing_docs)]
 pub mod kolmogorov;
 
-// [cite:algorithmic_information_rust]
+// [cite:battery_degradation]

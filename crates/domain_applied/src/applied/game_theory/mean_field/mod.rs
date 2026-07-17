@@ -164,4 +164,4 @@ mod tests {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:game_theory]

@@ -49,7 +49,7 @@ impl TheoryDescribable for QuantumState {
 
     #[verified_engine::verified]
     fn theory_citation(&self) -> String {
-        "[cite:quantum_mechanics]".to_string()
+        "[cite:quantum]".to_string()
     }
 
     #[verified_engine::verified]

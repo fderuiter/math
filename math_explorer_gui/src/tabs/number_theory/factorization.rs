@@ -112,7 +112,7 @@ impl InteractiveTool for FactorizationTool {
     }
 }
 
-// [cite:algorithmic_information_rust]
+// [cite:battery_degradation]
 
 
 inventory::submit! {

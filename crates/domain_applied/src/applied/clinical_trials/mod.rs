@@ -79,7 +79,7 @@ pub mod sample_size;
 pub mod survival_analysis;
 pub mod types;
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]
 
 use pure_math::theory_verification;
 

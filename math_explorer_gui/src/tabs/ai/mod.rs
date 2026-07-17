@@ -34,4 +34,4 @@ impl ExplorerTab for AiTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

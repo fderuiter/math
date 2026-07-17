@@ -27,4 +27,4 @@ impl ExplorerTab for FinancialMathTab {
     }
 }
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

@@ -262,4 +262,4 @@ pub use core::{Point2D, PointCloud, Simplex};
 pub use homology::{betti_number_0, betti_number_1, betti_numbers};
 pub use persistence::{PersistenceBarcode, PersistenceInterval, compute_persistence};
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

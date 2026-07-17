@@ -96,7 +96,7 @@ pub use types::{
     SocialParams, TimeParams,
 };
 
-// [cite:favorite_child]
+// [cite:favoritism]
 
 use pure_math::theory_verification;
 

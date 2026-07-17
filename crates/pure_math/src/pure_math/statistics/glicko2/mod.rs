@@ -198,7 +198,7 @@ pub use core::{
 };
 pub use rating::{increase_rd_for_inactivity, update_rating};
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]
 
 #[cfg(test)]
 mod tests;

@@ -1,7 +1,9 @@
+
 use math_explorer::pure_math::differential_geometry::surface::ParametricSurface;
 use oxidize_core::mesh::{Mesh, Point3D};
 use std::f64::consts::PI;
 
+#[verified_engine::verified(opt_out = "GUI utility")]
 pub fn surface_to_mesh(surface: &dyn ParametricSurface, u_res: usize, v_res: usize) -> Mesh {
     let num_vertices = (u_res + 1) * (v_res + 1);
     let num_triangles = u_res * v_res * 2;

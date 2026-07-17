@@ -99,7 +99,7 @@ pub use general_relativity::SchwarzschildBlackHole;
 
 // Re-export Error type
 
-// [cite:dwarf_galaxy_empirical_dependencies]
+// [cite:high_energy]
 
 use pure_math::theory_verification;
 

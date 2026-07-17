@@ -99,7 +99,7 @@ pub use q_function::TabularQFunction;
 pub use strategies::{EpsilonGreedy, ExplorationStrategy};
 pub use types::{Action, MarkovDecisionProcess, Policy, QFunction, State};
 
-// [cite:algorithmic_information_rust]
+// [cite:battery_degradation]
 #[allow(missing_docs)]
 pub mod grid_world;
 pub use grid_world::*;

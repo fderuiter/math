@@ -13,4 +13,4 @@ pub use kinetics::{GatingKinetics, StandardKinetics};
 pub use model::HodgkinHuxleyModel;
 pub use types::{HodgkinHuxleyParameters, HodgkinHuxleyState};
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

@@ -175,7 +175,7 @@ impl InteractiveTool for GridWorldTool {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 
 inventory::submit! {

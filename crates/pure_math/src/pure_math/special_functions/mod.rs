@@ -13,4 +13,4 @@ pub mod legendre;
 #[allow(missing_docs)]
 pub mod polynomials;
 
-// [cite:attention_is_all_you_need_rust]
+// [cite:attention_is_all_you_need_rust_mod]

@@ -112,4 +112,4 @@ pub enum ReactionDiffusionError {
 #[cfg(test)]
 mod tests;
 
-// [cite:partitions_implementation]
+// [cite:partitions_implementation_mod]

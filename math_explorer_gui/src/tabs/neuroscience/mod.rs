@@ -29,4 +29,4 @@ impl ExplorerTab for NeuroscienceTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

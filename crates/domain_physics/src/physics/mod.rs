@@ -15,4 +15,4 @@ pub mod solid_state;
 pub mod standard_model;
 pub mod stat_mech;
 
-// [cite:favorite_child]
+// [cite:nuclear]

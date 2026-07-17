@@ -38,4 +38,4 @@ pub use state::{ArrayState, VecState};
 pub use stepper::TimeStepper;
 pub use traits::{OdeSystem, Solver, SolverExt, VectorOperations};
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

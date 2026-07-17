@@ -42,7 +42,7 @@ impl InteractiveTool for TemperatureAnomaliesTool {
     }
 }
 
-// [cite:dwarf_galaxy_empirical_dependencies]
+// [cite:high_energy]
 
 
 inventory::submit! {

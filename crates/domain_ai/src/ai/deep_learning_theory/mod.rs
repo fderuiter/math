@@ -102,4 +102,4 @@ pub mod model;
 #[allow(missing_docs)]
 pub mod probability;
 
-// [cite:dwarf_galaxy_empirical_dependencies]
+// [cite:high_energy]

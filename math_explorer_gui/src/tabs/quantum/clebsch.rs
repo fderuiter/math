@@ -56,7 +56,7 @@ impl TheoryDescribable for ClebschGordanTool {
     }
 
     fn theory_citation(&self) -> String {
-        "[cite:quantum_mechanics]".to_string()
+        "[cite:quantum]".to_string()
     }
 
     fn available_descriptions(&self) -> HashMap<String, String> {
@@ -216,7 +216,7 @@ impl InteractiveTool for ClebschGordanTool {
     }
 }
 
-// [cite:quantum_mechanics]
+// [cite:quantum]
 
 
 inventory::submit! {

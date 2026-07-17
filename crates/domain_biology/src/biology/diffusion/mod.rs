@@ -69,4 +69,4 @@ pub trait SpatialDiffusion<const N: usize> {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

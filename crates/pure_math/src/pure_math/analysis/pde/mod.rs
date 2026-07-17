@@ -87,4 +87,4 @@ pub mod laplace;
 #[allow(missing_docs)]
 pub mod wave;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

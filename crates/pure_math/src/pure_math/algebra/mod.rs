@@ -86,4 +86,4 @@ pub use group::{CyclicElement, Permutation, Zn};
 pub use polynomial::Polynomial;
 pub use traits::{EuclideanDomain, Field, Group, Monoid, Ring, Semigroup};
 
-// [cite:advanced_linear_algebra]
+// [cite:pure_math]

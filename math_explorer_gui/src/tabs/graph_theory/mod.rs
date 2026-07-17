@@ -28,4 +28,4 @@ impl ExplorerTab for GraphTheoryTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

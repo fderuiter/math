@@ -54,7 +54,7 @@ impl InteractiveTool for Co2ProjectionsTool {
     }
 }
 
-// [cite:isosurface_extraction]
+// [cite:isosurface]
 
 
 inventory::submit! {

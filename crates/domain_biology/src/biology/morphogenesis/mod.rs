@@ -396,4 +396,4 @@ mod tests {
     }
 }
 
-// [cite:dwarf_galaxy_empirical_dependencies]
+// [cite:high_energy]

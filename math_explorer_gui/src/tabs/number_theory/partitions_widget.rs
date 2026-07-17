@@ -182,7 +182,7 @@ impl InteractiveTool for PartitionsWidget {
     }
 }
 
-// [cite:partitions_implementation]
+// [cite:partitions_implementation_mod]
 
 
 inventory::submit! {

@@ -124,7 +124,7 @@ pub mod types;
 #[cfg(test)]
 mod tests;
 
-// [cite:dwarf_galaxy_empirical_dependencies]
+// [cite:fluid_dynamics]
 
 use pure_math::theory_verification;
 

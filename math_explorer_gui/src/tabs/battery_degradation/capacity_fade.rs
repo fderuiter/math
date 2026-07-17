@@ -112,7 +112,7 @@ impl InteractiveTool for CapacityFadeTool {
     }
 }
 
-// [cite:mmwave_radiotherapy_setup]
+// [cite:solid_state]
 
 
 inventory::submit! {

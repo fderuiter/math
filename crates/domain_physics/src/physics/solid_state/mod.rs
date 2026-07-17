@@ -26,7 +26,7 @@ pub mod second_quantization;
 #[allow(missing_docs)]
 pub mod types;
 
-// [cite:mmwave_radiotherapy_setup]
+// [cite:solid_state]
 
 use pure_math::theory_verification;
 

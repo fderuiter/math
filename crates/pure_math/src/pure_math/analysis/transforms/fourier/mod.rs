@@ -15,4 +15,4 @@ pub use continuous::*;
 pub use discrete::FastFourierTransform;
 pub use traits::{SpectralTransform, TransformError};
 
-// [cite:attention_is_all_you_need_rust]
+// [cite:attention_is_all_you_need_rust_mod]

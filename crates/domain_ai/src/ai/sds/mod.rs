@@ -50,4 +50,4 @@ pub mod score;
 #[allow(missing_docs)]
 pub mod training;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

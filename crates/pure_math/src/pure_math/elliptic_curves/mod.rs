@@ -235,4 +235,4 @@ pub fn theorem_1_2_bounds(n: u64, i: u64, j: u64) -> Result<Theorem12Bounds, Ell
     })
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

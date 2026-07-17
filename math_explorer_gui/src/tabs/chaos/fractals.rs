@@ -57,7 +57,7 @@ impl TheoryDescribable for FractalViewer {
     }
 
     fn theory_citation(&self) -> String {
-        "[cite:graph_parameters_rust]".to_string()
+        "[cite:chaos]".to_string()
     }
 
     fn available_descriptions(&self) -> HashMap<String, String> {
@@ -341,7 +341,7 @@ impl FractalViewer {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:chaos]
 
 
 inventory::submit! {

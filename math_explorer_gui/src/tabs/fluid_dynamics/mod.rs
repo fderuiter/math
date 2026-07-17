@@ -29,4 +29,4 @@ impl ExplorerTab for FluidDynamicsTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

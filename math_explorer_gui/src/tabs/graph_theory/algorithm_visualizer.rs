@@ -358,7 +358,7 @@ impl InteractiveTool for AlgorithmVisualizerTool {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 
 inventory::submit! {

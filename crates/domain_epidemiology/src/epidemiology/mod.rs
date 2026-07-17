@@ -80,7 +80,7 @@ pub mod stochastic;
 // Re-exports for easier access
 pub use compartmental::{SEIRModel, SEIRState, SIRModel, SIRState};
 
-// [cite:graph_parameters_rust]
+// [cite:epidemiology]
 
 use pure_math::theory_verification;
 theory_verification!(

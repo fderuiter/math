@@ -161,7 +161,7 @@ impl InteractiveTool for SurvivalAnalysisTool {
     }
 }
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]
 
 
 inventory::submit! {

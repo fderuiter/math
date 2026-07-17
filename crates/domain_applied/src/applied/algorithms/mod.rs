@@ -99,7 +99,7 @@
 pub mod kalman;
 pub mod sorting;
 
-// [cite:algorithmic_information_rust]
+// [cite:algorithms]
 
 use pure_math::theory_verification;
 

@@ -5,5 +5,5 @@ pub mod graph;
 #[allow(missing_docs)]
 pub mod parameters;
 
-// [cite:graph_parameters_rust]
-// [cite:dijkstra]
+// [cite:stat_mech]
+// [cite:dijkstra_mod]

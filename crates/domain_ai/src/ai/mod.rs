@@ -108,7 +108,7 @@ pub use transformer::attention;
 pub use transformer::feed_forward;
 pub use transformer::positional_encoding;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 use pure_math::stochastic_signature_verification;
 stochastic_signature_verification!(

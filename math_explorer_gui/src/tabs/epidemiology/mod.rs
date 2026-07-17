@@ -28,4 +28,4 @@ impl ExplorerTab for EpidemiologyTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:epidemiology]

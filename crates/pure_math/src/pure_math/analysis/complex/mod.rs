@@ -7,4 +7,4 @@ pub mod mapping;
 #[allow(missing_docs)]
 pub mod surfaces;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

@@ -180,4 +180,4 @@ impl ExplorerTab for MriTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

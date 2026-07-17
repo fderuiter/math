@@ -212,7 +212,7 @@ impl PotentialFlowTool {
     }
 }
 
-// [cite:modular_polynomials_review]
+// [cite:modular_polynomials_review_mod]
 
 
 inventory::submit! {

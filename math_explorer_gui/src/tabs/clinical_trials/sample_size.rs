@@ -186,7 +186,7 @@ impl InteractiveTool for SampleSizeCalculatorTool {
     }
 }
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]
 
 
 inventory::submit! {

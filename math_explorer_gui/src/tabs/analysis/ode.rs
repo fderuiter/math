@@ -369,7 +369,7 @@ impl InteractiveTool for OdeSolverTool {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 
 inventory::submit! {

@@ -29,4 +29,4 @@ impl ExplorerTab for QuantumTab {
     }
 }
 
-// [cite:quantum_mechanics]
+// [cite:quantum]

@@ -171,7 +171,7 @@ impl InteractiveTool for VietorisRipsTool {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 
 inventory::submit! {

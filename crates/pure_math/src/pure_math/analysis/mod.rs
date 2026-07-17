@@ -11,4 +11,4 @@ pub mod stochastic;
 #[allow(missing_docs)]
 pub mod transforms;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

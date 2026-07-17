@@ -15,7 +15,7 @@ pub mod ising;
 #[allow(missing_docs)]
 pub mod quantum_stats;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 use pure_math::theory_verification;
 

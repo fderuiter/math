@@ -77,7 +77,7 @@ pub mod evolution;
 /// Generic reaction-diffusion framework.
 pub mod reaction_diffusion;
 
-// [cite:favorite_child]
+// [cite:biology]
 
 use pure_math::theory_verification;
 theory_verification!(

@@ -7,4 +7,4 @@ pub mod network_metrics;
 #[allow(missing_docs)]
 pub mod treewidth;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

@@ -201,4 +201,4 @@ pub use criterion::{
     expected_growth_rate, expected_value, fractional_kelly, kelly_fraction, variants,
 };
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

@@ -29,4 +29,4 @@ impl ExplorerTab for ClinicalTrialsTab {
     }
 }
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

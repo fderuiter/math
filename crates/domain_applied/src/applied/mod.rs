@@ -55,4 +55,4 @@ pub mod clinical_trials;
 pub mod algorithms;
 pub mod engineering;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]

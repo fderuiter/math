@@ -191,7 +191,7 @@ impl InteractiveTool for BankrollGrowthTool {
     }
 }
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]
 
 
 inventory::submit! {

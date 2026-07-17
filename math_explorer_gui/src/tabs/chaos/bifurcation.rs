@@ -46,7 +46,7 @@ impl TheoryDescribable for BifurcationDiagram {
     }
 
     fn theory_citation(&self) -> String {
-        "[cite:algorithmic_information_rust]".to_string()
+        "[cite:battery_degradation]".to_string()
     }
 
     fn available_descriptions(&self) -> HashMap<String, String> {
@@ -115,7 +115,7 @@ impl InteractiveTool for BifurcationDiagram {
     }
 }
 
-// [cite:algorithmic_information_rust]
+// [cite:battery_degradation]
 
 
 inventory::submit! {

@@ -123,7 +123,7 @@ impl PrimeSpiralWidget {
     }
 }
 
-// [cite:mmwave_radiotherapy_setup]
+// [cite:solid_state]
 
 
 inventory::submit! {

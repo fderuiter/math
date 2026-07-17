@@ -273,7 +273,7 @@ impl InteractiveTool for CurvatureHeatmap {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 
 inventory::submit! {

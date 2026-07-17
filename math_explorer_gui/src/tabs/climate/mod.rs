@@ -28,4 +28,4 @@ impl ExplorerTab for ClimateTab {
     }
 }
 
-// [cite:graph_parameters_rust]
+// [cite:climate]

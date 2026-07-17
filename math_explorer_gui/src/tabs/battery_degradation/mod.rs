@@ -28,4 +28,4 @@ impl ExplorerTab for BatteryDegradationTab {
     }
 }
 
-// [cite:algorithmic_information_rust]
+// [cite:battery_degradation]

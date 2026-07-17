@@ -12,4 +12,4 @@ mod tests;
 
 pub use model::HiddenMarkovModel;
 
-// [cite:clinical_trials_statistics]
+// [cite:clinical_trials]

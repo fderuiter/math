@@ -114,7 +114,7 @@ impl InteractiveTool for BandStructureTool {
     }
 }
 
-// [cite:mmwave_radiotherapy_setup]
+// [cite:solid_state]
 
 
 inventory::submit! {

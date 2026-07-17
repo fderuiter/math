@@ -124,7 +124,7 @@ impl InteractiveTool for CeraTool {
     }
 }
 
-// [cite:cera_framework]
+// [cite:cera_framework_mod]
 
 
 inventory::submit! {

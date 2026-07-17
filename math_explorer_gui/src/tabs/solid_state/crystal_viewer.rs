@@ -182,7 +182,7 @@ impl InteractiveTool for CrystalViewer {
     }
 }
 
-// [cite:modular_polynomials_review]
+// [cite:modular_polynomials_review_mod]
 
 
 inventory::submit! {

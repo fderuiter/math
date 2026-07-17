@@ -167,7 +167,7 @@ mod tests {
     }
 }
 
-// [cite:favorite_child]
+// [cite:nuclear]
 
 use pure_math::theory_verification;
 

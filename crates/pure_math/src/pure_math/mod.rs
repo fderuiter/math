@@ -56,7 +56,7 @@ pub mod tensor;
 #[allow(missing_docs)]
 pub mod vector_calculus;
 
-// [cite:graph_parameters_rust]
+// [cite:stat_mech]
 
 crate::theory_verification!(
     module = "pure_math",
