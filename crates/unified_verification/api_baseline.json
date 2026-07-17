@@ -7,7 +7,8 @@
     "pub fn init_panic_hook ()",
     "pub struct DiagnosticBus",
     "pub struct DiagnosticEvent",
-    "pub trait Diagnostic"
+    "pub trait Diagnostic",
+    "pub type ListenerFn = Arc < dyn Fn (& DiagnosticEvent) + Send + Sync + 'static >"
   ],
   "crates/domain_ai/src/ai/activations.rs": [
     "pub fn relu (matrix : & mut DMatrix < f64 >)",
@@ -117,7 +118,7 @@
     "pub fn render_image < M : NeRFModel + ? Sized > (ctx : & mut RenderContext , bundle : & RayBundle , model : & M , t_near : f64 , t_far : f64 , n_samples : usize ,) -> DMatrix < Vector3 < f64 > >",
     "pub fn render_image_with_rng < M : NeRFModel + ? Sized , R : Rng + ? Sized > (ctx : & mut RenderContext , bundle : & RayBundle , model : & M , t_near : f64 , t_far : f64 , n_samples : usize , rng : & mut R ,) -> DMatrix < Vector3 < f64 > >",
     "pub fn stratified_sampling (t_near : f64 , t_far : f64 , n_samples : usize , out : & mut [f64])",
-    "pub fn stratified_sampling_with_rng < R : Rng + ? Sized > (t_near : f64 , t_far : f64 , n_samples : usize , rng : & mut R , out : & mut [f64])",
+    "pub fn stratified_sampling_with_rng < R : Rng + ? Sized > (t_near : f64 , t_far : f64 , n_samples : usize , rng : & mut R , out : & mut [f64] ,)",
     "pub fn volume_integration (densities : & [f64] , colors : & [Vector3 < f64 >] , deltas : & [f64] ,) -> Vector3 < f64 >",
     "pub struct Ray",
     "pub struct RayBundle",
@@ -650,7 +651,7 @@
     "pub fn conv_transpose1d < S : Storage < f32 , Dyn , Dyn > > (input : & Matrix < f32 , Dyn , Dyn , S > , kernel : & DMatrix < f32 > , bias : & DVector < f32 > ,) -> DMatrix < f32 >"
   ],
   "crates/domain_climate/src/climate/training.rs": [
-    "pub struct CeraTrainer < 'a , A : AutoencoderModel + Trainable < f32 > , P : PredictorModel + Trainable < f32 > , O : Optimizer < f32 > >"
+    "pub struct CeraTrainer < 'a , A : AutoencoderModel + Trainable < f32 > , P : PredictorModel + Trainable < f32 > , O : Optimizer < f32 > , >"
   ],
   "crates/domain_epidemiology/src/epidemiology/analytics.rs": [
     "pub fn calculate_final_size (r0 : f64 , s0 : f64 , n : f64) -> Result < f64 , String >"
@@ -1672,6 +1673,6 @@
     "pub fn verified (attr : TokenStream , item : TokenStream) -> TokenStream"
   ],
   "crates/verified_engine_macros/src/semantic_integrity.rs": [
-    "pub fn verify_semantic_integrity (latex_str : & str , rust_fn : & syn :: ItemFn ,) -> Result < () , String >"
+    "pub fn verify_semantic_integrity (latex_str : & str , rust_fn : & syn :: ItemFn) -> Result < () , String >"
   ]
 }

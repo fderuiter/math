@@ -206,7 +206,7 @@ mod tests {
             UnitInterval::new(0.5).unwrap(),
             Some(42),
         );
-        
+
         let state = GridState::Start;
         let actions = [Move::Forward, Move::Stay];
 

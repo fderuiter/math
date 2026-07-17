@@ -4,20 +4,27 @@ use crate::climate::autoencoder::AutoencoderModel;
 use crate::climate::cera::Cera;
 use crate::climate::loss::{cera_loss, earth_movers_distance, mse_loss};
 use crate::climate::predictor::PredictorModel;
-use pure_math::pure_math::analysis::optimization::{ModelOptimizer as Optimizer, SGD};
 use nalgebra::DMatrix;
+use pure_math::pure_math::analysis::optimization::{ModelOptimizer as Optimizer, SGD};
 
 use pure_math::pure_math::analysis::optimization::Trainable;
 
 /// A trainer for the CERA model.
-pub struct CeraTrainer<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32>, O: Optimizer<f32>> {
+pub struct CeraTrainer<
+    'a,
+    A: AutoencoderModel + Trainable<f32>,
+    P: PredictorModel + Trainable<f32>,
+    O: Optimizer<f32>,
+> {
     #[allow(missing_docs)]
     pub model: &'a mut Cera<A, P>,
     /// The optimizer strategy (e.g., SGD, Adam).
     pub optimizer: O,
 }
 
-impl<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32>> CeraTrainer<'a, A, P, SGD<f32>> {
+impl<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32>>
+    CeraTrainer<'a, A, P, SGD<f32>>
+{
     /// Creates a new CeraTrainer with default SGD optimizer.
     #[verified_engine::verified]
     pub fn new(model: &'a mut Cera<A, P>) -> Self {
@@ -28,7 +35,13 @@ impl<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32
     }
 }
 
-impl<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32>, O: Optimizer<f32>> CeraTrainer<'a, A, P, O> {
+impl<
+    'a,
+    A: AutoencoderModel + Trainable<f32>,
+    P: PredictorModel + Trainable<f32>,
+    O: Optimizer<f32>,
+> CeraTrainer<'a, A, P, O>
+{
     /// Creates a new CeraTrainer with a custom optimizer.
     #[verified_engine::verified]
     pub fn new_with_optimizer(model: &'a mut Cera<A, P>, optimizer: O) -> Self {
@@ -44,18 +57,24 @@ impl<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32
     /// A full implementation would require a proper autograd engine to compute
     /// gradients and an optimizer (e.g., Adam) to update the weights.
     #[verified_engine::verified]
-    fn optimizer_step(&mut self) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
+    fn optimizer_step(
+        &mut self,
+    ) -> Result<(), pure_math::pure_math::analysis::optimization::OptimizationError> {
         use nalgebra::DVector;
 
         // The autoencoder backpropagation is not implemented and will panic as explicitly required.
-        // We trigger it using dummy gradients because the architecture is designed to fail explicitly 
+        // We trigger it using dummy gradients because the architecture is designed to fail explicitly
         // when complex autoencoder steps are invoked.
         let dummy_vec = DVector::from_element(1, 0.0);
-        self.model.autoencoder.backward_update(&dummy_vec, &dummy_vec, &mut self.optimizer)?;
+        self.model
+            .autoencoder
+            .backward_update(&dummy_vec, &dummy_vec, &mut self.optimizer)?;
 
         // For the predictor, this trainer's batch logic does not natively support Trainable's single-sample
         // stochastic interface, but it's not reached anyway due to the autoencoder failure.
-        self.model.predictor.backward_update(&dummy_vec, &dummy_vec, &mut self.optimizer)?;
+        self.model
+            .predictor
+            .backward_update(&dummy_vec, &dummy_vec, &mut self.optimizer)?;
 
         Ok(())
     }
@@ -101,7 +120,8 @@ impl<'a, A: AutoencoderModel + Trainable<f32>, P: PredictorModel + Trainable<f32
                 // --- Forward pass ---
                 let (control_latent, control_recon) =
                     AutoencoderModel::forward(&self.model.autoencoder, &control_input_batch);
-                let (warm_latent, warm_recon) = AutoencoderModel::forward(&self.model.autoencoder, &warm_input_batch);
+                let (warm_latent, warm_recon) =
+                    AutoencoderModel::forward(&self.model.autoencoder, &warm_input_batch);
 
                 // --- Reshape and predict ---
                 let control_aligned_latent = control_latent.columns(0, aligned_channels);

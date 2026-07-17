@@ -4,11 +4,21 @@ use std::pin::Pin;
 #[allow(missing_docs)]
 pub trait VirtualFileSystem {
     #[allow(missing_docs)]
-    fn read_to_string(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>>;
+    fn read_to_string(
+        &self,
+        path: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>>;
     #[allow(missing_docs)]
-    fn write_to_file(&self, path: &str, content: &[u8]) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>>;
+    fn write_to_file(
+        &self,
+        path: &str,
+        content: &[u8],
+    ) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>>;
     #[allow(missing_docs)]
-    fn list_dir(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>>;
+    fn list_dir(
+        &self,
+        path: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>>;
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -17,18 +27,28 @@ pub struct DefaultVfs;
 
 #[cfg(not(target_arch = "wasm32"))]
 impl VirtualFileSystem for DefaultVfs {
-    fn read_to_string(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>> {
+    fn read_to_string(
+        &self,
+        path: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>> {
         let path = path.to_string();
         Box::pin(async move { std::fs::read_to_string(&path) })
     }
 
-    fn write_to_file(&self, path: &str, content: &[u8]) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>> {
+    fn write_to_file(
+        &self,
+        path: &str,
+        content: &[u8],
+    ) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>> {
         let path = path.to_string();
         let content = content.to_vec();
         Box::pin(async move { std::fs::write(&path, content) })
     }
 
-    fn list_dir(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>> {
+    fn list_dir(
+        &self,
+        path: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>> {
         let path = path.to_string();
         Box::pin(async move {
             let mut files = Vec::new();
@@ -55,12 +75,16 @@ pub struct WasmVfs;
 
 #[cfg(target_arch = "wasm32")]
 impl VirtualFileSystem for WasmVfs {
-    fn read_to_string(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>> {
+    fn read_to_string(
+        &self,
+        path: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, std::io::Error>> + '_>> {
         let path = path.to_string();
         Box::pin(async move {
             use wasm_bindgen::JsCast;
             use wasm_bindgen_futures::JsFuture;
-            let window = web_sys::window().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "No window"))?;
+            let window = web_sys::window()
+                .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "No window"))?;
             let mut url = path.clone();
             // ensure it can be fetched
             if !url.starts_with("http") && !url.starts_with('/') {
@@ -69,20 +93,32 @@ impl VirtualFileSystem for WasmVfs {
             let response_value = JsFuture::from(window.fetch_with_str(&url))
                 .await
                 .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Fetch failed"))?;
-            let response: web_sys::Response = response_value.dyn_into()
+            let response: web_sys::Response = response_value
+                .dyn_into()
                 .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Invalid response"))?;
             if !response.ok() {
-                return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "File not found via fetch"));
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "File not found via fetch",
+                ));
             }
-            let text_value = JsFuture::from(response.text().map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "No text in response"))?)
-                .await
-                .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Text extraction failed"))?;
+            let text_value = JsFuture::from(response.text().map_err(|_| {
+                std::io::Error::new(std::io::ErrorKind::Other, "No text in response")
+            })?)
+            .await
+            .map_err(|_| {
+                std::io::Error::new(std::io::ErrorKind::Other, "Text extraction failed")
+            })?;
             let content = text_value.as_string().unwrap_or_default();
             Ok(content)
         })
     }
 
-    fn write_to_file(&self, path: &str, content: &[u8]) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>> {
+    fn write_to_file(
+        &self,
+        path: &str,
+        content: &[u8],
+    ) -> Pin<Box<dyn Future<Output = Result<(), std::io::Error>> + '_>> {
         let path = path.to_string();
         let content = content.to_vec();
         Box::pin(async move {
@@ -91,7 +127,10 @@ impl VirtualFileSystem for WasmVfs {
         })
     }
 
-    fn list_dir(&self, path: &str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>> {
+    fn list_dir(
+        &self,
+        path: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<String>, std::io::Error>> + '_>> {
         let path = path.to_string();
         Box::pin(async move {
             if let Some(children) = get_dir_children(&path) {

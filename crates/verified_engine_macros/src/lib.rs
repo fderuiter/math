@@ -184,9 +184,7 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     if !is_opt_out {
         if let Some(span) = visitor.direct_recursion {
-            let diag = format!(
-                r#"{{"severity":"FATAL","message":"VIOLATION: Direct recursion is not allowed in high-integrity verified modules (NASA Power of 10 Rule 1). Use #[verified(opt_out = \"reason\")] to bypass.","metadata":{{}},"thread_name":null}}"#
-            );
+            let diag = r#"{"severity":"FATAL","message":"VIOLATION: Direct recursion is not allowed in high-integrity verified modules (NASA Power of 10 Rule 1). Use #[verified(opt_out = \"reason\")] to bypass.","metadata":{},"thread_name":null}"#.to_string();
             return syn::Error::new(span, diag).to_compile_error().into();
         }
 
@@ -195,10 +193,9 @@ pub fn verified(attr: TokenStream, item: TokenStream) -> TokenStream {
                 r#"{{"severity":"FATAL","message":"VIOLATION: Function exceeds 60 statements (NASA Power of 10 Rule 4) - length: {} statements","metadata":{{}},"thread_name":null}}"#,
                 visitor.statements
             );
-            return syn::Error::new_spanned(
-                &input_fn.sig.ident,
-                diag
-            ).to_compile_error().into();
+            return syn::Error::new_spanned(&input_fn.sig.ident, diag)
+                .to_compile_error()
+                .into();
         }
     }
 

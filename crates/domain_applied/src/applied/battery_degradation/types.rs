@@ -1,7 +1,7 @@
 use crate::error::BatteryError;
 
 use std::fmt;
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Div, Mul, Sub};
 
 macro_rules! impl_math_ops {
     ($name:ident) => {
@@ -102,7 +102,7 @@ macro_rules! impl_math_ops {
                 self.0 / rhs.0
             }
         }
-        
+
         impl From<$name> for f64 {
             fn from(val: $name) -> Self {
                 val.0
@@ -212,4 +212,3 @@ impl fmt::Display for Cycles {
 }
 
 impl_math_ops!(Cycles);
-

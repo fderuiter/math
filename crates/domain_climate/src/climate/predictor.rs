@@ -1,9 +1,8 @@
 //! This module defines the predictor model for the CERA framework.
 
-
 use crate::climate::autoencoder::{ConvLayer, leaky_relu};
-use pure_math::pure_math::analysis::optimization::{ModelOptimizer as Optimizer, ParamType};
 use nalgebra::{DMatrix, Dyn, Matrix, Storage};
+use pure_math::pure_math::analysis::optimization::{ModelOptimizer as Optimizer, ParamType};
 
 /// A trait representing the predictor model interface.
 /// This allows for different predictor architectures and decouples the training loop.
@@ -133,7 +132,7 @@ impl pure_math::pure_math::analysis::optimization::Trainable<f32> for Predictor 
 
         for i in (0..self.layers.len()).rev() {
             let a_prev = &activations[i];
-            
+
             let d_w = &d_z * a_prev.transpose();
             let d_b = d_z.clone();
 
@@ -159,10 +158,10 @@ impl pure_math::pure_math::analysis::optimization::Trainable<f32> for Predictor 
 
 #[cfg(test)]
 mod tests {
-    use rand::Rng;
     use super::*;
-    use pure_math::pure_math::analysis::optimization::SGD;
     use nalgebra::DMatrix;
+    use pure_math::pure_math::analysis::optimization::SGD;
+    use rand::Rng;
 
     #[test]
     #[verified_engine::verified]
@@ -186,8 +185,8 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_predictor_update_weights_with_optimizer() {
-        use pure_math::pure_math::analysis::optimization::Trainable;
         use nalgebra::DVector;
+        use pure_math::pure_math::analysis::optimization::Trainable;
         let input_size = 10;
         let output_size = 5;
         let mut predictor = Predictor::new(input_size, output_size);

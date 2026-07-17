@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use domain_applied::applied::battery_degradation::{Capacity, DepthOfDischarge, PowerLawModel, Cycles};
+    use domain_applied::applied::battery_degradation::{
+        Capacity, Cycles, DepthOfDischarge, PowerLawModel,
+    };
     #[allow(deprecated)]
     use domain_applied::applied::battery_degradation::{capacity, cycles_to_capacity, n70};
 
@@ -30,11 +32,15 @@ mod tests {
         assert!(((cycles / Cycles::new_clamped(1.0)) - 600.0).abs() < 50.0);
 
         let cap = model.capacity(cycles, dod);
-        assert!(((cap / Capacity::new_clamped(1.0)) - 0.7).abs() < math_commons::registry::TOLERANCE_FAST);
+        assert!(
+            ((cap / Capacity::new_clamped(1.0)) - 0.7).abs()
+                < math_commons::registry::TOLERANCE_FAST
+        );
 
         let calculated_cycles = model.cycles_to_capacity(Capacity::new(0.7).unwrap(), dod);
         assert!(
-            ((calculated_cycles / Cycles::new_clamped(1.0)) - (cycles / Cycles::new_clamped(1.0))).abs()
+            ((calculated_cycles / Cycles::new_clamped(1.0)) - (cycles / Cycles::new_clamped(1.0)))
+                .abs()
                 < math_commons::registry::TOLERANCE_FAST
         );
     }

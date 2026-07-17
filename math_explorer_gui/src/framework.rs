@@ -308,7 +308,6 @@ impl Camera3D {
 
         if let Some(touch) = multi_touch {
             if touch.zoom_delta != 1.0 {
-                // Dampen zoom velocity
                 let zoom_factor = 1.0 + (touch.zoom_delta - 1.0) * 0.5;
                 self.zoom *= zoom_factor;
                 self.zoom = self.zoom.clamp(0.01, 100.0);
@@ -330,61 +329,75 @@ impl Camera3D {
         }
 
         if response.has_focus() {
-            let mut yaw_delta = 0.0;
-            let mut pitch_delta = 0.0;
-            let mut zoom_factor = 1.0;
-            if ui.input(|i| i.key_down(egui::Key::A)) {
-                yaw_delta += 0.05;
-            }
-            if ui.input(|i| i.key_down(egui::Key::D)) {
-                yaw_delta -= 0.05;
-            }
-            if ui.input(|i| i.key_down(egui::Key::W)) {
-                pitch_delta += 0.05;
-            }
-            if ui.input(|i| i.key_down(egui::Key::S)) {
-                pitch_delta -= 0.05;
-            }
-            if ui.input(|i| i.key_down(egui::Key::Q)) {
-                zoom_factor *= 1.05;
-            }
-            if ui.input(|i| i.key_down(egui::Key::E)) {
-                zoom_factor /= 1.05;
-            }
-            self.yaw -= yaw_delta;
-            self.pitch -= pitch_delta;
-            self.zoom *= zoom_factor;
-            self.zoom = self.zoom.clamp(0.01, 100.0);
-            
-            // Register keys in the command registry for help menu display
-            ui.ctx().data_mut(|d| {
-                let mut registry = d
-                    .get_temp::<egui_plot::commands::CommandRegistryData>(egui::Id::new("CMD_REGISTRY"))
-                    .unwrap_or_default();
+            self.handle_keyboard_interaction(ui);
+        }
+    }
 
-                let commands = [
-                    (egui::Key::W, "Pitch Up", "Rotate camera pitch upwards"),
-                    (egui::Key::S, "Pitch Down", "Rotate camera pitch downwards"),
-                    (egui::Key::A, "Yaw Left", "Rotate camera yaw left"),
-                    (egui::Key::D, "Yaw Right", "Rotate camera yaw right"),
-                    (egui::Key::Q, "Zoom Out", "Zoom camera out"),
-                    (egui::Key::E, "Zoom In", "Zoom camera in"),
-                ];
+    fn handle_keyboard_interaction(&mut self, ui: &egui::Ui) {
+        let mut yaw_delta = 0.0;
+        let mut pitch_delta = 0.0;
+        let mut zoom_factor = 1.0;
+        if ui.input(|i| i.key_down(egui::Key::A)) {
+            yaw_delta += 0.05;
+        }
+        if ui.input(|i| i.key_down(egui::Key::D)) {
+            yaw_delta -= 0.05;
+        }
+        if ui.input(|i| i.key_down(egui::Key::W)) {
+            pitch_delta += 0.05;
+        }
+        if ui.input(|i| i.key_down(egui::Key::S)) {
+            pitch_delta -= 0.05;
+        }
+        if ui.input(|i| i.key_down(egui::Key::Q)) {
+            zoom_factor *= 1.05;
+        }
+        if ui.input(|i| i.key_down(egui::Key::E)) {
+            zoom_factor /= 1.05;
+        }
 
-                for (key, name, desc) in commands {
-                    if !registry.commands.iter().any(|c| c.name == name && c.context == "Camera 3D") {
-                        registry.commands.push(egui_plot::commands::CommandMetadata {
+        self.yaw -= yaw_delta;
+        self.pitch -= pitch_delta;
+        self.zoom *= zoom_factor;
+        self.zoom = self.zoom.clamp(0.01, 100.0);
+
+        self.register_camera_commands(ui);
+    }
+
+    fn register_camera_commands(&self, ui: &egui::Ui) {
+        ui.ctx().data_mut(|d| {
+            let mut registry = d
+                .get_temp::<egui_plot::commands::CommandRegistryData>(egui::Id::new("CMD_REGISTRY"))
+                .unwrap_or_default();
+
+            let commands = [
+                (egui::Key::W, "Pitch Up", "Rotate camera pitch upwards"),
+                (egui::Key::S, "Pitch Down", "Rotate camera pitch downwards"),
+                (egui::Key::A, "Yaw Left", "Rotate camera yaw left"),
+                (egui::Key::D, "Yaw Right", "Rotate camera yaw right"),
+                (egui::Key::Q, "Zoom Out", "Zoom camera out"),
+                (egui::Key::E, "Zoom In", "Zoom camera in"),
+            ];
+
+            for (key, name, desc) in commands {
+                if !registry
+                    .commands
+                    .iter()
+                    .any(|c| c.name == name && c.context == "Camera 3D")
+                {
+                    registry
+                        .commands
+                        .push(egui_plot::commands::CommandMetadata {
                             name: name.to_string(),
                             description: desc.to_string(),
                             trigger: egui_plot::commands::CommandTrigger::Key(key),
                             desktop_only: true,
                             context: "Camera 3D".to_string(),
                         });
-                    }
                 }
-                d.insert_temp(egui::Id::new("CMD_REGISTRY"), registry);
-            });
-        }
+            }
+            d.insert_temp(egui::Id::new("CMD_REGISTRY"), registry);
+        });
     }
 
     #[allow(missing_docs)]

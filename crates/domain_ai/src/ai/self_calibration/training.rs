@@ -67,7 +67,7 @@ pub fn calculate_kl_divergence_loss(
             math_commons::error::MathError::DimensionMismatch {
                 expected: math_commons::math_kernel::types::Dimension(predicted_dist.len()),
                 actual: math_commons::math_kernel::types::Dimension(responses.len()),
-            }
+            },
         ));
     }
     if responses.is_empty() {

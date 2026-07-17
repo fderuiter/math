@@ -264,13 +264,19 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     if let Ok(func) = syn::parse2::<syn::ItemFn>(item.clone()) {
         for label in &args.labels {
             if let Some(label_str) = extract_label(&tex_content, label) {
-                if let Err(e) = crate::semantic_integrity::verify_semantic_integrity(&label_str, &func) {
-                    return syn::Error::new_spanned(&func.sig.ident, format!("Semantic Integrity Violation: {}", e)).to_compile_error();
+                #[allow(clippy::collapsible_if)]
+                if let Err(e) =
+                    crate::semantic_integrity::verify_semantic_integrity(&label_str, &func)
+                {
+                    return syn::Error::new_spanned(
+                        &func.sig.ident,
+                        format!("Semantic Integrity Violation: {}", e),
+                    )
+                    .to_compile_error();
                 }
             }
         }
     }
-
 
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     canonical_path_str.hash(&mut hasher);
