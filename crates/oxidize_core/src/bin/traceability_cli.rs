@@ -111,6 +111,74 @@ fn print_dashboard(report: &oxidize_core::traceability::TraceabilityReport) {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+fn discover_code_dirs() -> Vec<String> {
+    let mut cargo_toml_path = "Cargo.toml";
+    let mut content = std::fs::read_to_string(cargo_toml_path).unwrap_or_default();
+    
+    // If we're inside a crate, the local Cargo.toml won't have a workspace section.
+    // Try to fallback to the root Cargo.toml.
+    if !content.contains("[workspace]") {
+        cargo_toml_path = "../../Cargo.toml";
+        content = std::fs::read_to_string(cargo_toml_path).expect("Failed to read workspace Cargo.toml");
+    }
+
+    let table = content.parse::<toml::Table>().expect("Failed to parse Cargo.toml");
+    
+    let members = table
+        .get("workspace")
+        .and_then(|w| w.as_table())
+        .and_then(|w| w.get("members"))
+        .and_then(|m| m.as_array())
+        .expect("Could not find workspace.members array in Cargo.toml");
+
+    let mut code_dirs = Vec::new();
+    let is_root = cargo_toml_path == "Cargo.toml";
+    let root_prefix = if is_root { "" } else { "../../" };
+
+    for member in members {
+        if let Some(member_str) = member.as_str() {
+            let member_path = std::path::PathBuf::from(root_prefix).join(member_str);
+            let src_path = member_path.join("src");
+            
+            if src_path.exists() && src_path.is_dir() {
+                let mut stack = vec![src_path.clone()];
+                
+                while let Some(dir) = stack.pop() {
+                    if let Ok(entries) = std::fs::read_dir(&dir) {
+                        let mut has_rs_files = false;
+                        for entry in entries.flatten() {
+                            if let Ok(file_type) = entry.file_type() {
+                                if file_type.is_dir() {
+                                    stack.push(entry.path());
+                                } else if file_type.is_file() {
+                                    if let Some(ext) = entry.path().extension() {
+                                        if ext == "rs" {
+                                            has_rs_files = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if has_rs_files {
+                            let mut target_dir = dir.to_string_lossy().to_string();
+                            if !is_root {
+                                if target_dir.starts_with("../../") {
+                                    target_dir = target_dir.trim_start_matches("../../").to_string();
+                                }
+                            }
+                            // Convert windows backslashes to forward slashes just in case
+                            target_dir = target_dir.replace("\\", "/");
+                            code_dirs.push(target_dir);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    code_dirs
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let auto_fix = args.iter().any(|arg| arg == "--auto-fix");
@@ -118,17 +186,7 @@ fn main() {
     let vfs = DefaultVfs;
     let engine = TraceabilityEngine::new(vfs);
 
-    let code_dirs = vec![
-        "math_explorer/src".to_string(),
-        "math_explorer_gui/src/tabs".to_string(),
-        "crates/domain_ai/src".to_string(),
-        "crates/domain_applied/src".to_string(),
-        "crates/domain_biology/src".to_string(),
-        "crates/domain_climate/src".to_string(),
-        "crates/domain_epidemiology/src".to_string(),
-        "crates/domain_physics/src".to_string(),
-        "crates/pure_math/src".to_string(),
-    ];
+    let code_dirs = discover_code_dirs();
 
     let all_dirs: Vec<&str> = code_dirs.iter().map(|s| s.as_str()).collect();
 
