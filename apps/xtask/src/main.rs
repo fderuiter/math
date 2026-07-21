@@ -5,12 +5,13 @@ use std::process::{Command, exit};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        println!("Usage: xtask <command> [args...]");
-        println!(
-            "Commands: setup, test-features, verify-suite, verify-records, compile-papers, traceability, check-file-lengths, regenerate-baseline"
-        );
-        exit(1);
+    if args.len() < 2 || args[1] == "-h" || args[1] == "--help" {
+        print_help();
+        if args.len() < 2 {
+            exit(1);
+        } else {
+            exit(0);
+        }
     }
     match args[1].as_str() {
         "setup" => setup(),
@@ -27,6 +28,21 @@ fn main() {
             exit(1);
         }
     }
+}
+
+fn print_help() {
+    println!("Usage: xtask <command> [args...]\n");
+    println!("Active Quality Gates:");
+    println!("  check-file-lengths       - Run centralized verification suite for file-length constraints");
+    println!("  check-staged-duplicates  - Run staged duplicates check");
+    println!("  test-features            - Run tests across feature combinations");
+    println!("  traceability             - Generate traceability report");
+    println!("  verify-records           - Verify verification records");
+    println!("  verify-suite             - Run high-integrity verified suite\n");
+    println!("Legacy Utility Tasks:");
+    println!("  compile-papers           - Compile academic papers with Tectonic");
+    println!("  regenerate-baseline      - Regenerate public API baseline");
+    println!("  setup                    - Run setup script and install pre-commit hook");
 }
 
 fn run_cmd(cmd: &str, args: &[&str]) {
