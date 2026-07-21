@@ -1,0 +1,38 @@
+[[dead_code]]
+file = "crates/oxidize_core/src/lib.rs"
+identifier = "tests"
+
+[[dead_code]]
+file = "crates/oxidize_core/src/path_utils.rs"
+identifier = "normalize_path"
+
+[[dead_code]]
+file = "crates/oxidize_core/src/path_utils.rs"
+identifier = "strip_and_normalize"
+
+[[dead_code]]
+file = "crates/oxidize_core/src/path_utils.rs"
+identifier = "join_and_normalize"
+
+[[dead_code]]
+file = "crates/domain_climate/src/climate/autoencoder.rs"
+identifier = "in_channels"
+
+[[dead_code]]
+file = "crates/domain_climate/src/climate/autoencoder.rs"
+identifier = "out_channels"
+
+[[dead_code]]
+file = "crates/domain_climate/src/climate/predictor.rs"
+identifier = "input_size"
+
+[[dead_code]]
+file = "crates/domain_climate/src/climate/predictor.rs"
+identifier = "output_size"
+
+[[dead_code]]
+file = "math_explorer/examples/bench_rk4_alloc.rs"
+identifier = "new"
+
+[[dead_code]]
+file = "math_explorer_gui/src/tabs/geometry_topology/export_utils.rs"

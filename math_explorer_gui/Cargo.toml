@@ -33,7 +33,6 @@ oxidize_core = { path = "../crates/oxidize_core" }
 math_explorer = { path = "../math_explorer", optional = true }
 math_commons = { path = "../crates/math_commons" }
 diagnostics = { path = "../crates/diagnostics" }
-verified_engine = { path = "../crates/verified_engine" }
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"
