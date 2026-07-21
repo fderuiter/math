@@ -1,3 +1,4 @@
+//! Example bench_stochastic.rs
 use math_explorer::epidemiology::compartmental::SIRModel;
 use math_explorer::epidemiology::stochastic::GillespieSolver;
 use verified_engine::engine::VerifiedEngine;

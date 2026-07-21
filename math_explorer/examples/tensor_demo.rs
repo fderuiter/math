@@ -1,3 +1,4 @@
+//! Example tensor_demo.rs
 use math_explorer::pure_math::tensor::{RiemannianMetric, christoffel_symbols};
 use nalgebra::{DMatrix, DVector};
 

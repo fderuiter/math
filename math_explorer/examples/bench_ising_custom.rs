@@ -1,3 +1,4 @@
+//! Example bench_ising_custom.rs
 use math_explorer::physics::stat_mech::KB;
 use math_explorer::physics::stat_mech::ising::SpinLattice;
 use std::time::Instant;

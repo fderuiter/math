@@ -1,3 +1,4 @@
+//! Example bench_morphogenesis.rs
 use math_explorer::biology::morphogenesis::TuringSystem;
 use std::time::Instant;
 

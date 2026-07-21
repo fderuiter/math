@@ -1,3 +1,4 @@
+//! Test partitions.rs
 use pure_math::pure_math::number_theory::partitions::*;
 
 #[test]

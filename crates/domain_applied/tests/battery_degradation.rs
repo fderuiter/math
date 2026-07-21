@@ -1,3 +1,4 @@
+//! Test battery_degradation.rs
 use domain_applied::applied::battery_degradation;
 
 const TOLERANCE: f64 = 0.3;

@@ -1,3 +1,4 @@
+//! Test fluid_dynamics_potential.rs
 use domain_physics::physics::fluid_dynamics::potential_flow::{
     Doublet, FlowElement, PotentialFlowField, UniformFlow,
 };

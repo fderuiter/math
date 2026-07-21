@@ -1,3 +1,4 @@
+//! Test test_clinical_trials_security.rs
 use domain_applied::applied::clinical_trials::types::{ClinicalTrialError, GroupData};
 
 #[test]

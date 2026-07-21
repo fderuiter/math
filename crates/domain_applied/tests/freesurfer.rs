@@ -1,3 +1,4 @@
+//! Test freesurfer.rs
 use domain_applied::applied::freesurfer::*;
 use nalgebra::{DMatrix, DVector};
 

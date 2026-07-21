@@ -1,3 +1,4 @@
+//! Test algorithmic_information.rs
 use pure_math::pure_math::algorithmic_information::combinatorics::*;
 use std::collections::{HashMap, HashSet};
 

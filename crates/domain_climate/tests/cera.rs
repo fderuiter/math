@@ -1,3 +1,4 @@
+//! Test cera.rs
 use domain_climate::climate::cera::{Cera, CeraConfig};
 use domain_climate::climate::training::CeraTrainer;
 use nalgebra::DMatrix;

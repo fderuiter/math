@@ -1,3 +1,4 @@
+//! Example algebra_demo.rs
 use math_explorer::pure_math::algebra::{Fp, Polynomial};
 
 fn main() {

@@ -1,3 +1,4 @@
+//! Example bench_mfg.rs
 use math_explorer::applied::game_theory::mean_field::{Density, MeanFieldGame1D, Position};
 use std::time::Instant;
 

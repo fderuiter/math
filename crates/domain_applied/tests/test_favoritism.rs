@@ -1,3 +1,4 @@
+//! Test test_favoritism.rs
 use domain_applied::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 #[test]

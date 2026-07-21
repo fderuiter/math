@@ -1,3 +1,4 @@
+//! Test test_neuroscience_solver.rs
 use domain_biology::biology::neuroscience::neuron::HodgkinHuxleyNeuron;
 use domain_biology::biology::neuroscience::types::HodgkinHuxleyState;
 use pure_math::pure_math::analysis::ode::RungeKutta4;

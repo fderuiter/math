@@ -1,3 +1,4 @@
+//! Test cannibalism.rs
 use domain_applied::applied::cannibalism;
 
 #[test]

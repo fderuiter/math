@@ -1,3 +1,4 @@
+//! Test fluid_dynamics_lbm.rs
 use approx::assert_relative_eq;
 use domain_physics::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
 

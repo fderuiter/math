@@ -1,3 +1,4 @@
+//! Test test_quantum.rs
 use approx::assert_relative_eq;
 use domain_physics::physics::quantum::{
     QuantumOperator, QuantumState, dft_operator, sigma_x, sigma_y, sigma_z,

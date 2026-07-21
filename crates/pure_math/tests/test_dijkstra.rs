@@ -1,3 +1,4 @@
+//! Test test_dijkstra.rs
 #[cfg(test)]
 mod tests {
     use petgraph::graph::Graph;

@@ -1,3 +1,4 @@
+//! Example hodgkin_huxley_demo.rs
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
 
 fn main() {

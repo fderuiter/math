@@ -1,3 +1,4 @@
+//! Example bench_replicator.rs
 use math_explorer::applied::game_theory::evolutionary::ReplicatorDynamics;
 use math_explorer::pure_math::analysis::ode::RungeKutta4;
 use nalgebra::{DMatrix, DVector};

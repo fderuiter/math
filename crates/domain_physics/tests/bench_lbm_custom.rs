@@ -1,3 +1,4 @@
+//! Test bench_lbm_custom.rs
 use domain_physics::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
 use std::time::Instant;
 

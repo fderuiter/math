@@ -1,3 +1,4 @@
+//! Example glicko2_demo.rs
 use math_explorer::pure_math::statistics::glicko2::{
     GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility, update_rating,
 };
