@@ -96,10 +96,11 @@ fn scan_local_tabs(
             if let Some(feat) = &feature {
                 generated_mods.push_str(&format!("#[cfg(feature = \"{}\")]\n", feat));
             }
-            let abs_path = env::current_dir().unwrap().join(&target_file);
-            let abs_path_str = abs_path.to_string_lossy().replace('\\', "\\\\");
-            generated_mods.push_str(&format!("#[path = \"{}\"]\n", abs_path_str));
-            generated_mods.push_str(&format!("mod {};\n", mod_name));
+            let rel_path_str = target_file.to_string_lossy().replace('\\', "/");
+            generated_mods.push_str(&format!(
+                "pub mod {} {{\n    include!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/\", \"{}\"));\n}}\n",
+                mod_name, rel_path_str
+            ));
 
             let instantiation = format!("{}::{}::default()", mod_name, s_name);
             discovered_tabs.push((instantiation, feature, order));
