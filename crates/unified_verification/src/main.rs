@@ -12,6 +12,7 @@ mod report;
 mod utils;
 mod vulnerabilities;
 mod workflow_linter;
+mod policy_audit;
 use utils::{check_file_lengths, check_staged_duplicates};
 fn get_workspace_members() -> Vec<String> {
     let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
@@ -52,6 +53,13 @@ fn main() {
             }
         }
         "check-staged-duplicates" => check_staged_duplicates(),
+        "test-policy-audit" => {
+            let members = get_workspace_members();
+            let member_refs: Vec<&str> = members.iter().map(|s| s.as_str()).collect();
+            if !policy_audit::run_policy_audit(&member_refs) {
+                std::process::exit(1);
+            }
+        }
         "check-entropy" => {
             let members = get_workspace_members();
             let debt = entropy_guard::check_entropy(&members);
@@ -190,6 +198,10 @@ fn verify_suite(args: &[String]) {
     }
 
     if !ast_visitor::run_clone_detector() {
+        passed_security = false;
+    }
+
+    if !policy_audit::run_policy_audit(&member_refs) {
         passed_security = false;
     }
 
