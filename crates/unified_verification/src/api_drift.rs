@@ -3,17 +3,104 @@ use std::fs;
 use std::path::PathBuf;
 use syn::visit::Visit;
 use walkdir::WalkDir;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ApiItem {
+    pub signature: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deprecation_expires: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum ApiItemShim {
+    Simple(String),
+    Detailed {
+        signature: String,
+        deprecation_expires: Option<String>,
+    },
+}
+
+impl From<ApiItemShim> for ApiItem {
+    fn from(shim: ApiItemShim) -> Self {
+        match shim {
+            ApiItemShim::Simple(sig) => ApiItem {
+                signature: sig,
+                deprecation_expires: None,
+            },
+            ApiItemShim::Detailed { signature, deprecation_expires } => ApiItem {
+                signature,
+                deprecation_expires,
+            },
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for ApiItem {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let shim = ApiItemShim::deserialize(deserializer)?;
+        Ok(ApiItem::from(shim))
+    }
+}
+
+fn extract_expiration_date(attrs: &[syn::Attribute]) -> Option<String> {
+    for attr in attrs {
+        if attr.path().is_ident("deprecated") {
+            let attr_str = quote::quote!(#attr).to_string();
+            if let Some(pos) = attr_str.find("expires") {
+                if let Some(date) = find_date_pattern(&attr_str[pos..]) {
+                    return Some(date);
+                }
+            }
+            if let Some(pos) = attr_str.find("expiry") {
+                if let Some(date) = find_date_pattern(&attr_str[pos..]) {
+                    return Some(date);
+                }
+            }
+            if let Some(date) = find_date_pattern(&attr_str) {
+                return Some(date);
+            }
+        }
+    }
+    None
+}
+
+fn find_date_pattern(s: &str) -> Option<String> {
+    let bytes = s.as_bytes();
+    if bytes.len() < 10 {
+        return None;
+    }
+    for i in 0..=(bytes.len() - 10) {
+        let is_digit = |b: u8| b.is_ascii_digit();
+        if is_digit(bytes[i]) && is_digit(bytes[i+1]) && is_digit(bytes[i+2]) && is_digit(bytes[i+3])
+            && bytes[i+4] == b'-'
+            && is_digit(bytes[i+5]) && is_digit(bytes[i+6])
+            && bytes[i+7] == b'-'
+            && is_digit(bytes[i+8]) && is_digit(bytes[i+9])
+        {
+            return Some(s[i..i+10].to_string());
+        }
+    }
+    None
+}
 
 #[derive(Default)]
 struct ApiVisitor {
-    pub items: Vec<String>,
+    pub items: Vec<ApiItem>,
 }
 
 impl<'ast> Visit<'ast> for ApiVisitor {
     fn visit_item_fn(&mut self, i: &'ast syn::ItemFn) {
         if matches!(i.vis, syn::Visibility::Public(_)) {
             let sig = &i.sig;
-            self.items.push(quote::quote!(pub #sig).to_string());
+            self.items.push(ApiItem {
+                signature: quote::quote!(pub #sig).to_string(),
+                deprecation_expires: extract_expiration_date(&i.attrs),
+            });
         }
         syn::visit::visit_item_fn(self, i);
     }
@@ -22,8 +109,10 @@ impl<'ast> Visit<'ast> for ApiVisitor {
         if matches!(i.vis, syn::Visibility::Public(_)) {
             let ident = &i.ident;
             let generics = &i.generics;
-            self.items
-                .push(quote::quote!(pub struct #ident #generics).to_string());
+            self.items.push(ApiItem {
+                signature: quote::quote!(pub struct #ident #generics).to_string(),
+                deprecation_expires: extract_expiration_date(&i.attrs),
+            });
         }
         syn::visit::visit_item_struct(self, i);
     }
@@ -32,8 +121,10 @@ impl<'ast> Visit<'ast> for ApiVisitor {
         if matches!(i.vis, syn::Visibility::Public(_)) {
             let ident = &i.ident;
             let generics = &i.generics;
-            self.items
-                .push(quote::quote!(pub enum #ident #generics).to_string());
+            self.items.push(ApiItem {
+                signature: quote::quote!(pub enum #ident #generics).to_string(),
+                deprecation_expires: extract_expiration_date(&i.attrs),
+            });
         }
         syn::visit::visit_item_enum(self, i);
     }
@@ -42,8 +133,10 @@ impl<'ast> Visit<'ast> for ApiVisitor {
         if matches!(i.vis, syn::Visibility::Public(_)) {
             let ident = &i.ident;
             let generics = &i.generics;
-            self.items
-                .push(quote::quote!(pub trait #ident #generics).to_string());
+            self.items.push(ApiItem {
+                signature: quote::quote!(pub trait #ident #generics).to_string(),
+                deprecation_expires: extract_expiration_date(&i.attrs),
+            });
         }
         syn::visit::visit_item_trait(self, i);
     }
@@ -53,14 +146,17 @@ impl<'ast> Visit<'ast> for ApiVisitor {
             let ident = &i.ident;
             let generics = &i.generics;
             let ty = &i.ty;
-            self.items
-                .push(quote::quote!(pub type #ident #generics = #ty).to_string());
+            self.items.push(ApiItem {
+                signature: quote::quote!(pub type #ident #generics = #ty).to_string(),
+                deprecation_expires: extract_expiration_date(&i.attrs),
+            });
         }
         syn::visit::visit_item_type(self, i);
     }
 }
 
-pub fn extract_apis() -> BTreeMap<String, Vec<String>> {
+
+pub fn extract_apis() -> BTreeMap<String, Vec<ApiItem>> {
     let mut apis = BTreeMap::new();
     let mut dirs_to_scan = vec![PathBuf::from("math_explorer/src")];
 
@@ -114,25 +210,49 @@ pub fn regenerate_baseline() {
 pub fn check_api_drift() -> bool {
     let current_apis = extract_apis();
     let baseline_content = fs::read_to_string(BASELINE_PATH).unwrap_or_else(|_| "{}".to_string());
-    let baseline_apis: BTreeMap<String, Vec<String>> =
+    let baseline_apis: BTreeMap<String, Vec<ApiItem>> =
         serde_json::from_str(&baseline_content).unwrap_or_default();
 
+    let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
     let mut changed = false;
 
+    // Check current APIs against baseline
     for (path, items) in &current_apis {
+        // Find if any currently existing API is past its expiration
+        for item in items {
+            if let Some(ref date) = item.deprecation_expires {
+                if date.as_str() <= today.as_str() {
+                    println!("API Expired: {} in {} (Expired: {})", item.signature, path, date);
+                    println!("  This deprecated API has passed its expiration target and must be removed.");
+                    changed = true;
+                }
+            }
+        }
+
         if let Some(base_items) = baseline_apis.get(path) {
-            if items != base_items {
+            // Check for added/removed
+            let mut local_changed = false;
+            for item in items {
+                if !base_items.iter().any(|b| b.signature == item.signature) {
+                    println!("  + {}", item.signature);
+                    local_changed = true;
+                }
+            }
+            for item in base_items {
+                if !items.iter().any(|c| c.signature == item.signature) {
+                    // Item was deleted. Check if it's a valid bypass.
+                    if let Some(ref date) = item.deprecation_expires {
+                        if date.as_str() <= today.as_str() {
+                            println!("  ~ {} (Deleted, bypassed drift check due to expired deprecation)", item.signature);
+                            continue; // Skip flagging as changed!
+                        }
+                    }
+                    println!("  - {}", item.signature);
+                    local_changed = true;
+                }
+            }
+            if local_changed {
                 println!("API Drift detected in {}:", path);
-                for item in items {
-                    if !base_items.contains(item) {
-                        println!("  + {}", item);
-                    }
-                }
-                for item in base_items {
-                    if !items.contains(item) {
-                        println!("  - {}", item);
-                    }
-                }
                 changed = true;
             }
         } else {
@@ -141,10 +261,24 @@ pub fn check_api_drift() -> bool {
         }
     }
 
-    for (path, _) in &baseline_apis {
+    // Check files that were completely removed
+    for (path, base_items) in &baseline_apis {
         if !current_apis.contains_key(path) {
-            println!("API Drift: File with public API removed: {}", path);
-            changed = true;
+            let mut all_bypassed = true;
+            for item in base_items {
+                if let Some(ref date) = item.deprecation_expires {
+                    if date.as_str() <= today.as_str() {
+                        // bypassed
+                        println!("  ~ {} in {} (File deleted, bypassed due to expired deprecation)", item.signature, path);
+                        continue;
+                    }
+                }
+                all_bypassed = false;
+            }
+            if !all_bypassed {
+                println!("API Drift: File with public API removed: {}", path);
+                changed = true;
+            }
         }
     }
 
