@@ -152,10 +152,7 @@ fn discover_code_dirs() -> Vec<String> {
                             if let Ok(file_type) = entry.file_type() {
                                 if file_type.is_dir() {
                                     stack.push(entry.path());
-                                } else if file_type.is_file()
-                                    && let Some(ext) = entry.path().extension()
-                                    && ext == "rs"
-                                {
+                                } else if file_type.is_file() && entry.path().extension().and_then(|s| s.to_str()) == Some("rs") {
                                     has_rs_files = true;
                                 }
                             }

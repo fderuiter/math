@@ -132,7 +132,12 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         cites
     }
 
-    async fn scan_papers(&self, papers_dir: &str, valid_papers: &mut HashSet<String>, report: &mut TraceabilityReport) {
+    async fn scan_papers(
+        &self,
+        papers_dir: &str,
+        valid_papers: &mut HashSet<String>,
+        report: &mut TraceabilityReport,
+    ) {
         let normalized_papers_dir = crate::path_utils::normalize_path(papers_dir);
         if let Ok(entries) = self.vfs.list_dir(&normalized_papers_dir).await {
             for name in entries {
@@ -145,7 +150,11 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         }
     }
 
-    async fn read_registry(&self, registered_modules: &mut HashSet<String>, registry_links: &mut HashMap<String, String>) {
+    async fn read_registry(
+        &self,
+        registered_modules: &mut HashSet<String>,
+        registry_links: &mut HashMap<String, String>,
+    ) {
         if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml").await
             && let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
@@ -159,8 +168,11 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         }
     }
 
-    async fn discover_code_files(&self, code_dirs: &[&str]) -> Vec<String> {
-        let mut active_files = HashSet::new();
+    async fn discover_code_files(
+        &self,
+        code_dirs: &[&str],
+        active_files: &mut HashSet<String>,
+    ) {
         for dir in code_dirs {
             let normalized = crate::path_utils::normalize_path(dir);
             let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
@@ -168,11 +180,11 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
             let mut has_entrypoint = false;
             
             if self.vfs.read_to_string(&lib).await.is_ok() {
-                self.parse_module_tree(&lib, &mut active_files).await;
+                self.parse_module_tree(&lib, active_files).await;
                 has_entrypoint = true;
             }
             if self.vfs.read_to_string(&main).await.is_ok() {
-                self.parse_module_tree(&main, &mut active_files).await;
+                self.parse_module_tree(&main, active_files).await;
                 has_entrypoint = true;
             }
             
@@ -193,9 +205,6 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
                 }
             }
         }
-        let mut code_files: Vec<String> = active_files.into_iter().collect();
-        code_files.sort();
-        code_files
     }
 
     #[allow(missing_docs)]
@@ -208,17 +217,21 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         let mut valid_papers = HashSet::new();
         let mut report = TraceabilityReport::default();
 
+        // 1. Scan papers
         self.scan_papers(papers_dir, &mut valid_papers, &mut report).await;
 
         // 2. Read registry
-        self.verify_and_link_registry(&valid_papers, &mut report)
-            .await;
+        self.verify_and_link_registry(&valid_papers, &mut report).await;
 
         let mut registered_modules = HashSet::new();
         let mut registry_links = HashMap::new();
         self.read_registry(&mut registered_modules, &mut registry_links).await;
 
-        let code_files = self.discover_code_files(code_dirs).await;
+        let mut active_files = HashSet::new();
+        self.discover_code_files(code_dirs, &mut active_files).await;
+
+        let mut code_files: Vec<String> = active_files.into_iter().collect();
+        code_files.sort();
 
         self.process_code_files(
             code_files,

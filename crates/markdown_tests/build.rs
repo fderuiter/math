@@ -14,7 +14,7 @@ fn get_markdown_files(dir: &Path, files: &mut Vec<PathBuf>, dirs: &mut Vec<PathB
                 let path = entry.path();
                 if path.is_dir() {
                     let name = path.file_name().unwrap().to_string_lossy();
-                    if name == "target" || name == ".git" || name == "node_modules" {
+                    if name == "target" || name == ".git" || name == "node_modules" || name == ".cargo" || name == ".rustup" {
                         continue;
                     }
                     get_markdown_files(&path, files, dirs);
