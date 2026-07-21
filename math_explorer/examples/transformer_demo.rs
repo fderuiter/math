@@ -1,4 +1,4 @@
-//! Example transformer_demo.rs
+#![allow(missing_docs)]
 use math_explorer::ai::transformer::Encoder;
 use nalgebra::DMatrix;
 

@@ -1,4 +1,4 @@
-//! Test battery_degradation.rs
+#![allow(missing_docs)]
 use domain_applied::applied::battery_degradation;
 
 const TOLERANCE: f64 = 0.3;

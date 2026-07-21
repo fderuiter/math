@@ -1,4 +1,4 @@
-//! Test test_music_safety.rs
+#![allow(missing_docs)]
 use domain_physics::error::RadarError;
 use domain_physics::physics::medical::radar_gating::super_resolution::MusicEstimator;
 use num_complex::Complex;

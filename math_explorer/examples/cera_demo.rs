@@ -1,4 +1,4 @@
-//! Example cera_demo.rs
+#![allow(missing_docs)]
 use math_explorer::climate::cera::Cera;
 use math_explorer::climate::config::CeraConfig;
 use math_explorer::climate::training::CeraTrainer;

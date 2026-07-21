@@ -1,4 +1,4 @@
-//! Example hodgkin_huxley_demo.rs
+#![allow(missing_docs)]
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
 
 fn main() {

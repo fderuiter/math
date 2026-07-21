@@ -1,4 +1,4 @@
-//! Example bench_mfg.rs
+#![allow(missing_docs)]
 use math_explorer::applied::game_theory::mean_field::{Density, MeanFieldGame1D, Position};
 use std::time::Instant;
 

@@ -1,4 +1,4 @@
-//! Test security_lbm_validation.rs
+#![allow(missing_docs)]
 use domain_physics::physics::fluid_dynamics::lattice_boltzmann::{
     CollisionModel, Lattice2D, LatticeBoltzmann,
 };

@@ -1,4 +1,4 @@
-//! Example isosurface_torus.rs
+#![allow(missing_docs)]
 use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 use std::fmt;
 use std::fs::File;

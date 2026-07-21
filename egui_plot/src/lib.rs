@@ -8,6 +8,8 @@
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 //!
 
+#![allow(missing_docs)]
+
 mod axis;
 pub mod commands;
 mod items;
@@ -798,7 +800,6 @@ impl<'a> Plot<'a> {
         self.show_dyn(ui, Box::new(build_fn))
     }
 
-    #[expect(clippy::too_many_lines)] // TODO(emilk): shorten this function
     fn show_dyn<'b, R>(
         self,
         ui: &mut Ui,

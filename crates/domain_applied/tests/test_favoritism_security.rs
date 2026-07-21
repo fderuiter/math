@@ -1,4 +1,4 @@
-//! Test test_favoritism_security.rs
+#![allow(missing_docs)]
 use domain_applied::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 #[test]

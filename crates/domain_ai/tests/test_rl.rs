@@ -1,4 +1,4 @@
-//! Test test_rl.rs
+#![allow(missing_docs)]
 #[cfg(test)]
 mod tests {
     use domain_ai::ai::reinforcement_learning::algorithms::TabularQAgent;

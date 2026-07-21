@@ -1,4 +1,4 @@
-//! Test test_dijkstra.rs
+#![allow(missing_docs)]
 #[cfg(test)]
 mod tests {
     use petgraph::graph::Graph;

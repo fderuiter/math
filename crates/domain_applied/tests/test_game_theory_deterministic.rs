@@ -1,4 +1,4 @@
-//! Test test_game_theory_deterministic.rs
+#![allow(missing_docs)]
 use domain_applied::applied::game_theory::mechanism_design::simulate_optimal_revenue_with_rng;
 use statrs::distribution::Uniform;
 

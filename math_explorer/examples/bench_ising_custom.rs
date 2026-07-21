@@ -1,4 +1,4 @@
-//! Example bench_ising_custom.rs
+#![allow(missing_docs)]
 use math_explorer::physics::stat_mech::KB;
 use math_explorer::physics::stat_mech::ising::SpinLattice;
 use std::time::Instant;

@@ -1,4 +1,4 @@
-//! Test cannibalism.rs
+#![allow(missing_docs)]
 use domain_applied::applied::cannibalism;
 
 #[test]

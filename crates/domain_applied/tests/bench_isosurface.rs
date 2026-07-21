@@ -1,4 +1,4 @@
-//! Test bench_isosurface.rs
+#![allow(missing_docs)]
 use domain_applied::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 use std::time::Instant;
 

@@ -1,4 +1,4 @@
-//! Test test_clinical_trials_security.rs
+#![allow(missing_docs)]
 use domain_applied::applied::clinical_trials::types::{ClinicalTrialError, GroupData};
 
 #[test]

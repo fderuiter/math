@@ -1,4 +1,4 @@
-//! Test test_clinical_trials_deterministic.rs
+#![allow(missing_docs)]
 use domain_applied::applied::clinical_trials::design::{
     AllocationStrategy, BlockRandomizer, Group, SimpleRandomizer,
 };

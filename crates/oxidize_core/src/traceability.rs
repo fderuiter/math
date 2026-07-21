@@ -132,7 +132,7 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         cites
     }
 
-    async fn scan_papers(
+    async fn scan_papers_dir(
         &self,
         papers_dir: &str,
         valid_papers: &mut HashSet<String>,
@@ -150,7 +150,7 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         }
     }
 
-    async fn read_registry(
+    async fn load_registry_modules(
         &self,
         registered_modules: &mut HashSet<String>,
         registry_links: &mut HashMap<String, String>,
@@ -168,7 +168,7 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         }
     }
 
-    async fn discover_code_files(
+    async fn gather_active_files(
         &self,
         code_dirs: &[&str],
         active_files: &mut HashSet<String>,
@@ -189,22 +189,40 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
             }
             
             if !has_entrypoint {
-                // Direct file listing fallback!
-                let mut stack = vec![normalized];
-                while let Some(current_dir) = stack.pop() {
-                    if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
-                        for name in entries {
-                            let path = crate::path_utils::join_and_normalize(&current_dir, &name);
-                            if name.ends_with(".rs") {
-                                active_files.insert(path);
-                            } else if !name.contains('.') {
-                                stack.push(path);
-                            }
-                        }
+                self.gather_files_fallback(&normalized, active_files).await;
+            }
+        }
+    }
+
+    async fn gather_files_fallback(
+        &self,
+        start_dir: &str,
+        active_files: &mut HashSet<String>,
+    ) {
+        let mut stack = vec![start_dir.to_string()];
+        while let Some(current_dir) = stack.pop() {
+            if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
+                for name in entries {
+                    let path = crate::path_utils::join_and_normalize(&current_dir, &name);
+                    if name.ends_with(".rs") {
+                        active_files.insert(path);
+                    } else if !name.contains('.') {
+                        stack.push(path);
                     }
                 }
             }
         }
+    }
+
+    fn finalize_report_orphans(report: &mut TraceabilityReport) {
+        for (name, linked_code) in &report.paper_coverage {
+            if linked_code.is_empty() {
+                report.orphaned_papers.push(name.clone());
+            }
+        }
+        report.orphaned_papers.sort();
+        report.unlinked_code.sort();
+        report.invalid_links.sort();
     }
 
     #[allow(missing_docs)]
@@ -217,18 +235,16 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         let mut valid_papers = HashSet::new();
         let mut report = TraceabilityReport::default();
 
-        // 1. Scan papers
-        self.scan_papers(papers_dir, &mut valid_papers, &mut report).await;
+        self.scan_papers_dir(papers_dir, &mut valid_papers, &mut report).await;
 
-        // 2. Read registry
         self.verify_and_link_registry(&valid_papers, &mut report).await;
 
         let mut registered_modules = HashSet::new();
         let mut registry_links = HashMap::new();
-        self.read_registry(&mut registered_modules, &mut registry_links).await;
+        self.load_registry_modules(&mut registered_modules, &mut registry_links).await;
 
         let mut active_files = HashSet::new();
-        self.discover_code_files(code_dirs, &mut active_files).await;
+        self.gather_active_files(code_dirs, &mut active_files).await;
 
         let mut code_files: Vec<String> = active_files.into_iter().collect();
         code_files.sort();
@@ -242,15 +258,7 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         )
         .await;
 
-        // 4. Find orphans
-        for (name, linked_code) in &report.paper_coverage {
-            if linked_code.is_empty() {
-                report.orphaned_papers.push(name.clone());
-            }
-        }
-        report.orphaned_papers.sort();
-        report.unlinked_code.sort();
-        report.invalid_links.sort();
+        Self::finalize_report_orphans(&mut report);
 
         Ok(report)
     }

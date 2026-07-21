@@ -1,4 +1,4 @@
-//! Test test_hawk_dove.rs
+#![allow(missing_docs)]
 #[cfg(test)]
 mod tests {
     use domain_biology::biology::evolution::HawkDovePopulation;

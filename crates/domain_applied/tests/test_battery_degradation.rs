@@ -1,4 +1,4 @@
-//! Test test_battery_degradation.rs
+#![allow(missing_docs)]
 #[cfg(test)]
 mod tests {
     use domain_applied::applied::battery_degradation::{

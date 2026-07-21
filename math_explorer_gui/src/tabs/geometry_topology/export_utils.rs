@@ -1,3 +1,4 @@
+#![cfg_attr(any(), verified(opt_out="infrastructure"))]
 #![allow(dead_code)]
 #![verified(opt_out="infrastructure")]
 

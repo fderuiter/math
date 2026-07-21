@@ -1,4 +1,4 @@
-//! Test test_transformer_architecture.rs
+#![allow(missing_docs)]
 use domain_ai::ai::transformer::traits::NormalizationLayer;
 use domain_ai::ai::transformer::{EncoderLayer, FeedForward, MultiHeadAttention};
 use nalgebra::DMatrix;

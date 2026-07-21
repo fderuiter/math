@@ -1,4 +1,4 @@
-//! Test partitions.rs
+#![allow(missing_docs)]
 use pure_math::pure_math::number_theory::partitions::*;
 
 #[test]

@@ -1,4 +1,4 @@
-//! Test graph_theory.rs
+#![allow(missing_docs)]
 use petgraph::graph::NodeIndex;
 use petgraph::visit::EdgeRef;
 use pure_math::pure_math::graph_theory::{

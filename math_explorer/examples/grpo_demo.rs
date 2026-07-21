@@ -1,4 +1,9 @@
-//! Example grpo_demo.rs
+//! GRPO (Group Relative Policy Optimization) Demo
+//!
+//! This example demonstrates how to use the GRPO formulas provided by
+//! `math_explorer::applied::grpo::formulas` to compute response-level
+//! advantages and a clipped surrogate objective.
+
 use math_explorer::applied::grpo::formulas::{
     clipped_surrogate_objective, response_level_advantage,
 };

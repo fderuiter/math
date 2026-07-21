@@ -1,4 +1,4 @@
-//! Example lorenz_chaos.rs
+#![allow(missing_docs)]
 use math_explorer::physics::chaos::lorenz::{LorenzBuilder, LorenzState};
 use std::fmt;
 

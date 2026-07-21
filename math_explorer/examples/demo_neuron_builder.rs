@@ -1,4 +1,4 @@
-//! Example demo_neuron_builder.rs
+#![allow(missing_docs)]
 use math_explorer::biology::neuroscience::neuron::HodgkinHuxleyNeuron;
 
 fn main() {

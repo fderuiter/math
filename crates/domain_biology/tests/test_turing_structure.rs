@@ -1,4 +1,4 @@
-//! Test test_turing_structure.rs
+#![allow(missing_docs)]
 #[cfg(test)]
 mod tests {
     use domain_biology::biology::morphogenesis::{

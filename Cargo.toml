@@ -19,6 +19,7 @@ members = [
     "apps/xtask",
     "crates/unified_verification"
 ]
+exclude = ["egui_plot"]
 resolver = "2"
 
 [workspace.lints.rust]

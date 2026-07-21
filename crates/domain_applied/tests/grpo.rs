@@ -1,4 +1,4 @@
-//! Test grpo.rs
+#![allow(missing_docs)]
 use domain_applied::applied::grpo::formulas::*;
 
 #[test]

@@ -1,4 +1,4 @@
-//! Test elliptic_curves.rs
+#![allow(missing_docs)]
 use pure_math::pure_math::elliptic_curves::*;
 use std::collections::HashMap;
 

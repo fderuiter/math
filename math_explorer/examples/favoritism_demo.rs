@@ -1,4 +1,4 @@
-//! Example favoritism_demo.rs
+#![allow(missing_docs)]
 use math_explorer::applied::favoritism::{FavoritismInputs, calculate_favoritism_score};
 
 fn main() {

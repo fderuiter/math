@@ -1,4 +1,4 @@
-//! Test test_isosurface.rs
+#![allow(missing_docs)]
 #[cfg(test)]
 mod tests {
     use domain_applied::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};

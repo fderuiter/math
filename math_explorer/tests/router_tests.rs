@@ -1,4 +1,4 @@
-//! Test router_tests.rs
+#![allow(missing_docs)]
 #[cfg(feature = "pure_math")]
 #[test]
 fn test_primality_routing() {

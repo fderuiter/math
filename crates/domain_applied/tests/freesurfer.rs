@@ -1,4 +1,4 @@
-//! Test freesurfer.rs
+#![allow(missing_docs)]
 use domain_applied::applied::freesurfer::*;
 use nalgebra::{DMatrix, DVector};
 

@@ -1,4 +1,4 @@
-//! Test test_optical_motion.rs
+#![allow(missing_docs)]
 use domain_physics::physics::medical::optical_motion::{
     calibration::LinearCalibrator,
     physics::{

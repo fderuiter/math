@@ -1,4 +1,4 @@
-//! Test test_ode_vecstate.rs
+#![allow(missing_docs)]
 use pure_math::pure_math::analysis::ode::{OdeSystem, RungeKutta4, SolverExt, VecState};
 
 /// A simple decay model: dy/dt = -y

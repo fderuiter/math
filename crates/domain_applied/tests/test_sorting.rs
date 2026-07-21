@@ -1,4 +1,4 @@
-//! Test test_sorting.rs
+#![allow(missing_docs)]
 use domain_applied::applied::algorithms::sorting::*;
 
 // Helper to test strategy composition

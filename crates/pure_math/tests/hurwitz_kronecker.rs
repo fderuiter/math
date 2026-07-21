@@ -1,4 +1,4 @@
-//! Test hurwitz_kronecker.rs
+#![allow(missing_docs)]
 use pure_math::pure_math::number_theory::class_number::class_number;
 use pure_math::pure_math::number_theory::hurwitz_kronecker::{
     hurwitz_class_number, verify_summation_formula, weighted_class_number,
