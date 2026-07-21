@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#![verified(opt_out="infrastructure")]
+
 use math_explorer::pure_math::differential_geometry::surface::ParametricSurface;
 use oxidize_core::mesh::{Mesh, Point3D};
 use std::f64::consts::PI;
