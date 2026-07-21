@@ -1,5 +1,7 @@
 name: Rust CI
 
+permissions: read-all
+
 on:
   push:
     branches: [ "main", "master" ]
@@ -72,6 +74,9 @@ jobs:
 
       - name: Build Unified Verification Tool
         run: cargo build -p unified_verification --release
+
+      - name: Lint CI Workflows
+        run: cargo run -p unified_verification --release -- lint-workflows
 
       - name: Verify Architectural Records Updates
         run: cargo run -p unified_verification --release -- verify-records

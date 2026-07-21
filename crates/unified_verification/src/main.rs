@@ -11,6 +11,7 @@ mod profile;
 mod report;
 mod utils;
 mod vulnerabilities;
+mod workflow_linter;
 use utils::{check_file_lengths, check_staged_duplicates};
 fn get_workspace_members() -> Vec<String> {
     let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
@@ -69,6 +70,11 @@ fn main() {
                 std::process::exit(1);
             } else {
                 std::process::exit(0);
+            }
+        }
+        "lint-workflows" => {
+            if !workflow_linter::lint_workflows() {
+                std::process::exit(1);
             }
         }
         _ => {
