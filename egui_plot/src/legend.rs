@@ -370,9 +370,10 @@ impl Widget for &mut LegendWidget {
                     .show(ui, |ui| {
                         // always show on top of the legend - so we need to use a new scope
                         if main_dir == Direction::TopDown
-                            && let Some(title) = &config.title {
-                                ui.heading(title);
-                            }
+                            && let Some(title) = &config.title
+                        {
+                            ui.heading(title);
+                        }
                         let mut focus_on_item = None;
 
                         let response_union = entries
@@ -402,9 +403,10 @@ impl Widget for &mut LegendWidget {
                             .expect("No entries in the legend");
 
                         if main_dir == Direction::BottomUp
-                            && let Some(title) = &config.title {
-                                ui.heading(title);
-                            }
+                            && let Some(title) = &config.title
+                        {
+                            ui.heading(title);
+                        }
 
                         if let Some(focus_on_item) = focus_on_item {
                             handle_focus_on_legend_item(&focus_on_item, entries);
