@@ -114,16 +114,19 @@ fn print_dashboard(report: &oxidize_core::traceability::TraceabilityReport) {
 fn discover_code_dirs() -> Vec<String> {
     let mut cargo_toml_path = "Cargo.toml";
     let mut content = std::fs::read_to_string(cargo_toml_path).unwrap_or_default();
-    
+
     // If we're inside a crate, the local Cargo.toml won't have a workspace section.
     // Try to fallback to the root Cargo.toml.
     if !content.contains("[workspace]") {
         cargo_toml_path = "../../Cargo.toml";
-        content = std::fs::read_to_string(cargo_toml_path).expect("Failed to read workspace Cargo.toml");
+        content =
+            std::fs::read_to_string(cargo_toml_path).expect("Failed to read workspace Cargo.toml");
     }
 
-    let table = content.parse::<toml::Table>().expect("Failed to parse Cargo.toml");
-    
+    let table = content
+        .parse::<toml::Table>()
+        .expect("Failed to parse Cargo.toml");
+
     let members = table
         .get("workspace")
         .and_then(|w| w.as_table())
@@ -137,14 +140,29 @@ fn discover_code_dirs() -> Vec<String> {
 
     for member in members {
         if let Some(member_str) = member.as_str() {
-            let ignore_list = ["crates/unified_verification", "crates/diagnostics", "crates/federated_registry", "crates/oxidize_core", "crates/verified_engine", "crates/verified_engine_macros", "apps/xtask", "crates/math_commons"];
-            if ignore_list.contains(&member_str) { continue; }
+            let ignore_list = [
+                "crates/unified_verification",
+                "crates/diagnostics",
+                "crates/federated_registry",
+                "crates/oxidize_core",
+                "crates/verified_engine",
+                "crates/verified_engine_macros",
+                "apps/xtask",
+                "crates/math_commons",
+            ];
+            if ignore_list.contains(&member_str) {
+                continue;
+            }
             let member_path = std::path::PathBuf::from(root_prefix).join(member_str);
-            let src_path = if member_str == "math_explorer_gui" { member_path.join("src").join("tabs") } else { member_path.join("src") };
-            
+            let src_path = if member_str == "math_explorer_gui" {
+                member_path.join("src").join("tabs")
+            } else {
+                member_path.join("src")
+            };
+
             if src_path.exists() && src_path.is_dir() {
                 let mut stack = vec![src_path.clone()];
-                
+
                 while let Some(dir) = stack.pop() {
                     if let Ok(entries) = std::fs::read_dir(&dir) {
                         let mut has_rs_files = false;
@@ -152,21 +170,17 @@ fn discover_code_dirs() -> Vec<String> {
                             if let Ok(file_type) = entry.file_type() {
                                 if file_type.is_dir() {
                                     stack.push(entry.path());
-                                } else if file_type.is_file() {
-                                    if let Some(ext) = entry.path().extension() {
-                                        if ext == "rs" {
-                                            has_rs_files = true;
-                                        }
-                                    }
+                                } else if file_type.is_file()
+                                    && entry.path().extension().is_some_and(|ext| ext == "rs")
+                                {
+                                    has_rs_files = true;
                                 }
                             }
                         }
                         if has_rs_files {
                             let mut target_dir = dir.to_string_lossy().to_string();
-                            if !is_root {
-                                if target_dir.starts_with("../../") {
-                                    target_dir = target_dir.trim_start_matches("../../").to_string();
-                                }
+                            if !is_root && target_dir.starts_with("../../") {
+                                target_dir = target_dir.trim_start_matches("../../").to_string();
                             }
                             // Convert windows backslashes to forward slashes just in case
                             target_dir = target_dir.replace("\\", "/");

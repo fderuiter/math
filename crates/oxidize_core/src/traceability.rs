@@ -172,39 +172,7 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
             }
         }
 
-        let mut active_files = HashSet::new();
-        for dir in code_dirs {
-            let normalized = crate::path_utils::normalize_path(dir);
-            let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
-            let main = crate::path_utils::join_and_normalize(&normalized, "main.rs");
-            let mut has_entrypoint = false;
-            
-            if self.vfs.read_to_string(&lib).await.is_ok() {
-                self.parse_module_tree(&lib, &mut active_files).await;
-                has_entrypoint = true;
-            }
-            if self.vfs.read_to_string(&main).await.is_ok() {
-                self.parse_module_tree(&main, &mut active_files).await;
-                has_entrypoint = true;
-            }
-            
-            if !has_entrypoint {
-                // Direct file listing fallback!
-                let mut stack = vec![normalized];
-                while let Some(current_dir) = stack.pop() {
-                    if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
-                        for name in entries {
-                            let path = crate::path_utils::join_and_normalize(&current_dir, &name);
-                            if name.ends_with(".rs") {
-                                active_files.insert(path);
-                            } else if !name.contains('.') {
-                                stack.push(path);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        let active_files = self.collect_active_files(code_dirs).await;
 
         let mut code_files: Vec<String> = active_files.into_iter().collect();
         code_files.sort();
@@ -229,6 +197,43 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         report.invalid_links.sort();
 
         Ok(report)
+    }
+
+    async fn collect_active_files(&self, code_dirs: &[&str]) -> HashSet<String> {
+        let mut active_files = HashSet::new();
+        for dir in code_dirs {
+            let normalized = crate::path_utils::normalize_path(dir);
+            let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
+            let main = crate::path_utils::join_and_normalize(&normalized, "main.rs");
+            let mut has_entrypoint = false;
+
+            if self.vfs.read_to_string(&lib).await.is_ok() {
+                self.parse_module_tree(&lib, &mut active_files).await;
+                has_entrypoint = true;
+            }
+            if self.vfs.read_to_string(&main).await.is_ok() {
+                self.parse_module_tree(&main, &mut active_files).await;
+                has_entrypoint = true;
+            }
+
+            if !has_entrypoint {
+                // Direct file listing fallback!
+                let mut stack = vec![normalized];
+                while let Some(current_dir) = stack.pop() {
+                    if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
+                        for name in entries {
+                            let path = crate::path_utils::join_and_normalize(&current_dir, &name);
+                            if name.ends_with(".rs") {
+                                active_files.insert(path);
+                            } else if !name.contains('.') {
+                                stack.push(path);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        active_files
     }
 
     async fn process_code_files(
