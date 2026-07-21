@@ -111,12 +111,10 @@ fn print_dashboard(report: &oxidize_core::traceability::TraceabilityReport) {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn discover_code_dirs() -> Vec<String> {
+fn get_workspace_members() -> (bool, Vec<String>) {
     let mut cargo_toml_path = "Cargo.toml";
     let mut content = std::fs::read_to_string(cargo_toml_path).unwrap_or_default();
 
-    // If we're inside a crate, the local Cargo.toml won't have a workspace section.
-    // Try to fallback to the root Cargo.toml.
     if !content.contains("[workspace]") {
         cargo_toml_path = "../../Cargo.toml";
         content =
@@ -132,63 +130,75 @@ fn discover_code_dirs() -> Vec<String> {
         .and_then(|w| w.as_table())
         .and_then(|w| w.get("members"))
         .and_then(|m| m.as_array())
-        .expect("Could not find workspace.members array in Cargo.toml");
+        .expect("Could not find workspace.members array in Cargo.toml")
+        .iter()
+        .filter_map(|v| v.as_str().map(String::from))
+        .collect();
 
-    let mut code_dirs = Vec::new();
     let is_root = cargo_toml_path == "Cargo.toml";
-    let root_prefix = if is_root { "" } else { "../../" };
+    (is_root, members)
+}
 
-    for member in members {
-        if let Some(member_str) = member.as_str() {
-            let ignore_list = [
-                "crates/unified_verification",
-                "crates/diagnostics",
-                "crates/federated_registry",
-                "crates/oxidize_core",
-                "crates/verified_engine",
-                "crates/verified_engine_macros",
-                "apps/xtask",
-                "crates/math_commons",
-            ];
-            if ignore_list.contains(&member_str) {
-                continue;
-            }
-            let member_path = std::path::PathBuf::from(root_prefix).join(member_str);
-            let src_path = if member_str == "math_explorer_gui" {
-                member_path.join("src").join("tabs")
-            } else {
-                member_path.join("src")
-            };
+#[cfg(not(target_arch = "wasm32"))]
+fn scan_src_dir(src_path: std::path::PathBuf, is_root: bool, code_dirs: &mut Vec<String>) {
+    let mut stack = vec![src_path];
 
-            if src_path.exists() && src_path.is_dir() {
-                let mut stack = vec![src_path.clone()];
-
-                while let Some(dir) = stack.pop() {
-                    if let Ok(entries) = std::fs::read_dir(&dir) {
-                        let mut has_rs_files = false;
-                        for entry in entries.flatten() {
-                            if let Ok(file_type) = entry.file_type() {
-                                if file_type.is_dir() {
-                                    stack.push(entry.path());
-                                } else if file_type.is_file()
-                                    && entry.path().extension().is_some_and(|ext| ext == "rs")
-                                {
-                                    has_rs_files = true;
-                                }
-                            }
-                        }
-                        if has_rs_files {
-                            let mut target_dir = dir.to_string_lossy().to_string();
-                            if !is_root && target_dir.starts_with("../../") {
-                                target_dir = target_dir.trim_start_matches("../../").to_string();
-                            }
-                            // Convert windows backslashes to forward slashes just in case
-                            target_dir = target_dir.replace("\\", "/");
-                            code_dirs.push(target_dir);
-                        }
+    while let Some(dir) = stack.pop() {
+        if let Ok(entries) = std::fs::read_dir(&dir) {
+            let mut has_rs_files = false;
+            for entry in entries.flatten() {
+                if let Ok(file_type) = entry.file_type() {
+                    if file_type.is_dir() {
+                        stack.push(entry.path());
+                    } else if file_type.is_file()
+                        && entry.path().extension().is_some_and(|ext| ext == "rs")
+                    {
+                        has_rs_files = true;
                     }
                 }
             }
+            if has_rs_files {
+                let mut target_dir = dir.to_string_lossy().to_string();
+                if !is_root && target_dir.starts_with("../../") {
+                    target_dir = target_dir.trim_start_matches("../../").to_string();
+                }
+                // Convert windows backslashes to forward slashes just in case
+                target_dir = target_dir.replace("\\", "/");
+                code_dirs.push(target_dir);
+            }
+        }
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn discover_code_dirs() -> Vec<String> {
+    let (is_root, members) = get_workspace_members();
+    let mut code_dirs = Vec::new();
+    let root_prefix = if is_root { "" } else { "../../" };
+
+    for member_str in members {
+        let ignore_list = [
+            "crates/unified_verification",
+            "crates/diagnostics",
+            "crates/federated_registry",
+            "crates/oxidize_core",
+            "crates/verified_engine",
+            "crates/verified_engine_macros",
+            "apps/xtask",
+            "crates/math_commons",
+        ];
+        if ignore_list.contains(&member_str.as_str()) {
+            continue;
+        }
+        let member_path = std::path::PathBuf::from(root_prefix).join(&member_str);
+        let src_path = if member_str == "math_explorer_gui" {
+            member_path.join("src").join("tabs")
+        } else {
+            member_path.join("src")
+        };
+
+        if src_path.exists() && src_path.is_dir() {
+            scan_src_dir(src_path, is_root, &mut code_dirs);
         }
     }
     code_dirs
