@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_applied::applied::win_ratio::pair_comparison::{
     ComparisonResult, HigherIsBetter, LowerIsBetter, ThresholdComparator, WinRatioAnalysis,
 };

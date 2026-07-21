@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::pure_math::algebra::{Fp, Polynomial};
 
 fn main() {

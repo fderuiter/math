@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::ai::gaussian_splatting::rendering::blend_gaussians;
 use math_explorer::ai::gaussian_splatting::structs::Gaussian2D;
 use nalgebra::{Matrix2, Point2, Vector3};

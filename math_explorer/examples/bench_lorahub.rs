@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
 use std::time::Instant;

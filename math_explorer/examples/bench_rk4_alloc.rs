@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::pure_math::analysis::ode::{OdeSystem, VectorOperations};
 use std::ops::{Add, AddAssign, Mul, MulAssign};
 use std::time::Instant;

@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::pure_math::tensor::{RiemannianMetric, christoffel_symbols};
 use nalgebra::{DMatrix, DVector};
 
