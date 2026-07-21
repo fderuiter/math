@@ -1,4 +1,5 @@
 #![allow(missing_docs)]
+use domain_applied::applied::win_ratio::pair_comparison::{WinRatioAnalysis, HigherIsBetter};
 use domain_applied::applied::win_ratio::{
     bmi, pair_comparison, probability_win_ratio, sample_win_ratio, simulation,
 };
@@ -16,8 +17,11 @@ fn get_test_data() -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
 #[verified_engine::verified]
 fn test_matched_pairs() {
     let (group1, group2) = get_test_data();
-    #[allow(deprecated)]
-    let (wins, losses) = pair_comparison::matched_pairs(&group1, &group2);
+    let mut analysis = WinRatioAnalysis::new();
+    for _ in 0..group1[0].len() {
+        analysis = analysis.add_strategy(Box::new(HigherIsBetter));
+    }
+    let (wins, losses) = analysis.matched_pairs(&group1, &group2);
 
     // Let's trace the comparisons:
     // (1,0,1) vs (0,1,0) -> win
@@ -59,7 +63,11 @@ fn test_matched_pairs() {
 fn test_unmatched_pairs() {
     let (group1, group2) = get_test_data();
     #[allow(deprecated)]
-    let (wins, losses) = pair_comparison::unmatched_pairs(&group1, &group2);
+    let mut analysis = WinRatioAnalysis::new();
+    for _ in 0..group1[0].len() {
+        analysis = analysis.add_strategy(Box::new(HigherIsBetter));
+    }
+    let (wins, losses) = analysis.unmatched_pairs(&group1, &group2);
 
     // After re-tracing, wins=8, losses=1.
     assert_eq!(wins, 8);

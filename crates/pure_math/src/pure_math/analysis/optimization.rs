@@ -328,33 +328,8 @@ pub enum ParamType {
     Bias,
 }
 
-/// Legacy Adapter Trait to maintain backward compatibility for models.
-/// The `Optimizer` uses a generic `Key`, but old code expects `(usize, ParamType)`.
-pub trait ModelOptimizer<T: RealField + Copy>: Optimizer<T, (usize, ParamType)> {
-    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
-    #[allow(missing_docs)]
-    #[verified_engine::verified]
-    fn update_matrix_legacy(
-        &mut self,
-        layer_idx: usize,
-        param: &mut DMatrix<T>,
-        grad: &DMatrix<T>,
-    ) -> Result<(), OptimizationError> {
-        self.update_matrix((layer_idx, ParamType::Weight), param, grad)
-    }
-
-    #[deprecated(note = "Migrate to verified alternatives/high-integrity mathematical modules")]
-    #[allow(missing_docs)]
-    #[verified_engine::verified]
-    fn update_vector_legacy(
-        &mut self,
-        layer_idx: usize,
-        param: &mut DVector<T>,
-        grad: &DVector<T>,
-    ) -> Result<(), OptimizationError> {
-        self.update_vector((layer_idx, ParamType::Bias), param, grad)
-    }
-}
+/// Adapter Trait for model optimizers.
+pub trait ModelOptimizer<T: RealField + Copy>: Optimizer<T, (usize, ParamType)> {}
 
 impl<T: RealField + Copy, O> ModelOptimizer<T> for O where O: Optimizer<T, (usize, ParamType)> {}
 

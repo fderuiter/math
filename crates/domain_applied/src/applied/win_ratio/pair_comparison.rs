@@ -210,18 +210,6 @@ impl<T> WinRatioAnalysis<T> {
         strategy.evaluate(self, group1, group2)
     }
 
-    /// Performs an Unmatched Pair comparison (All-Pairs).
-    #[verified_engine::verified]
-    pub fn unmatched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-        self.evaluate_pairs(group1, group2, &UnmatchedPairing)
-    }
-
-    /// Performs a Matched Pair comparison.
-    #[verified_engine::verified]
-    pub fn matched_pairs(&self, group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-        self.evaluate_pairs(group1, group2, &MatchedPairing)
-    }
-}
 
 impl<T: PartialOrd + 'static> Default for WinRatioAnalysis<T> {
     #[verified_engine::verified]
@@ -236,62 +224,8 @@ impl<T: PartialOrd + 'static> Default for WinRatioAnalysis<T> {
     }
 }
 
-/// Compares two subjects outcome-by-outcome based on a hierarchy of events.
-///
-/// **DEPRECATED**: Use `WinRatioAnalysis` for more flexibility.
-/// This function assumes "Higher is Better" for all outcomes.
-#[deprecated(note = "Use WinRatioAnalysis to configure comparison strategies per outcome.")]
-#[verified_engine::verified]
-pub fn compare_outcomes<T: PartialOrd>(subject1: &[T], subject2: &[T]) -> ComparisonResult {
-    for (outcome1, outcome2) in subject1.iter().zip(subject2.iter()) {
-        if outcome1 > outcome2 {
-            return ComparisonResult::Win;
-        } else if outcome1 < outcome2 {
-            return ComparisonResult::Loss;
-        }
-    }
-    ComparisonResult::Tie
-}
 
-/// Performs an Unmatched Pair comparison (All-Pairs).
-///
-/// **DEPRECATED**: Use `WinRatioAnalysis::unmatched_pairs`.
-#[deprecated(note = "Use WinRatioAnalysis::unmatched_pairs.")]
-#[verified_engine::verified]
-pub fn unmatched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-    // This assumes the length of the first vector is the number of outcomes.
-    // If group1 or group1[0] is empty, this returns early gracefully via min(length).
-    let mut analysis = WinRatioAnalysis::new();
-    if let Some(first) = group1.first() {
-        for _ in 0..first.len() {
-            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
-        }
-    } else if let Some(first) = group2.first() {
-        for _ in 0..first.len() {
-            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
-        }
-    }
-    analysis.unmatched_pairs(group1, group2)
-}
 
-/// Performs a Matched Pair comparison.
-///
-/// **DEPRECATED**: Use `WinRatioAnalysis::matched_pairs`.
-#[deprecated(note = "Use WinRatioAnalysis::matched_pairs.")]
-#[verified_engine::verified]
-pub fn matched_pairs<T: PartialOrd>(group1: &[Vec<T>], group2: &[Vec<T>]) -> (i32, i32) {
-    let mut analysis = WinRatioAnalysis::new();
-    if let Some(first) = group1.first() {
-        for _ in 0..first.len() {
-            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
-        }
-    } else if let Some(first) = group2.first() {
-        for _ in 0..first.len() {
-            analysis = analysis.add_strategy(Box::new(HigherIsBetter));
-        }
-    }
-    analysis.matched_pairs(group1, group2)
-}
 
 /// Calculates the raw Win Ratio.
 ///

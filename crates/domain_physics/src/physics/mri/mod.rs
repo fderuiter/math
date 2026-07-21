@@ -108,10 +108,9 @@ mod tests {
     }
 
     #[test]
-    #[allow(deprecated)]
     #[verified_engine::verified]
-    fn test_bloch_relaxation_legacy() {
-        // Test T2 relaxation using legacy API
+    fn test_bloch_relaxation_modern() {
+        // Test T2 relaxation using modern API
         // Initialize M = [0, 1, 0], B = 0 (no precession), T1 = inf, T2 = 1.0
         let initial_m = Vector3::new(0.0, 1.0, 0.0);
         let m0 = 1.0;
@@ -122,17 +121,20 @@ mod tests {
         let t1 = 1e9; // Long T1
         let b_field = Vector3::zeros(); // No B field to isolate relaxation
 
+        bloch.set_b_field(b_field);
+        bloch.set_relaxation(t1, t2);
+
         // Step for a total of 0.5 seconds (1 * T2)
         // M_y should decay to 1/e * initial
         let steps = (t2 / dt) as usize;
         for _ in 0..steps {
-            bloch.step(dt, b_field, t1, t2);
+            <BlochSimulator as TimeStepper<Vector3<f64>>>::step(&mut bloch, dt);
         }
 
         let expected_y = (-1.0_f64).exp(); // e^-1 approx 0.3678
 
-        // Euler integration is an approximation, so allow some error
-        assert_relative_eq!(bloch.magnetization.y, expected_y, epsilon = 0.02);
+        // RK4 is highly accurate, so error should be small
+        assert_relative_eq!(bloch.magnetization.y, expected_y, epsilon = 1e-5);
         assert_relative_eq!(bloch.magnetization.x, 0.0);
         // z should recover towards m0=1 from 0? No, initial z=0.
         // dMz/dt = (M0 - Mz)/T1 approx 0.
@@ -144,10 +146,9 @@ mod tests {
     }
 
     #[test]
-    #[allow(deprecated)]
     #[verified_engine::verified]
-    fn test_bloch_rk4_accuracy_legacy() {
-        // T2 relaxation with RK4 using legacy API
+    fn test_bloch_rk4_accuracy_modern() {
+        // T2 relaxation with RK4 using modern API
         let initial_m = Vector3::new(0.0, 1.0, 0.0);
         let m0 = 1.0;
         let mut bloch = BlochSimulator::new(initial_m, m0);
@@ -157,16 +158,18 @@ mod tests {
         let t1 = 1e9;
         let b_field = Vector3::zeros();
 
+        bloch.set_b_field(b_field);
+        bloch.set_relaxation(t1, t2);
+
         // 1 second simulation
         let steps = (1.0 / dt) as usize;
-        let mut solver = RungeKutta4::new(&bloch.magnetization);
         for _ in 0..steps {
-            bloch.step_with(dt, b_field, t1, t2, &mut solver);
+            <BlochSimulator as TimeStepper<Vector3<f64>>>::step(&mut bloch, dt);
         }
 
         let expected_y = (-1.0_f64).exp();
 
-        // With dt=0.1, Euler error is visible. RK4 should be very close.
+        // With dt=0.1, RK4 should be very close.
         assert_relative_eq!(bloch.magnetization.y, expected_y, epsilon = 1e-5);
     }
 
