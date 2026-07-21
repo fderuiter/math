@@ -37,21 +37,19 @@ fn main() {
     get_markdown_files(workspace_dir, &mut files, &mut dirs);
 
     for dir in dirs {
-        let abs_dir = fs::canonicalize(&dir).unwrap();
-        let abs_dir_str = path_utils::normalize_path(&abs_dir);
-        println!("cargo:rerun-if-changed={}", abs_dir_str);
+        let rel_dir_str = path_utils::normalize_path(&dir);
+        println!("cargo:rerun-if-changed={}", rel_dir_str);
     }
 
     let mut generated_code = String::new();
     for (i, path) in files.iter().enumerate() {
-        let abs_path = fs::canonicalize(path).unwrap();
-        let abs_path_str = path_utils::normalize_path(&abs_path);
+        let rel_path_str = path_utils::normalize_path(path);
 
-        println!("cargo:rerun-if-changed={}", abs_path_str);
+        println!("cargo:rerun-if-changed={}", rel_path_str);
 
         generated_code.push_str(&format!(
-            "#[doc = include_str!(\"{}\")]\npub mod md_test_{} {{}}\n",
-            abs_path_str, i
+            "#[doc = include_str!(concat!(env!(\"CARGO_MANIFEST_DIR\"), \"/\", \"{}\"))]\npub mod md_test_{} {{}}\n",
+            rel_path_str, i
         ));
     }
 

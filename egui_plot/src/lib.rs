@@ -8,6 +8,8 @@
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 //!
 
+#![allow(missing_docs)]
+
 mod axis;
 pub mod commands;
 mod items;
