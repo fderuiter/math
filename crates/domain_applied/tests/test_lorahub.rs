@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_applied::applied::lorahub::{LoraEnsemble, LoraStateDict};
 use nalgebra::DMatrix;
 

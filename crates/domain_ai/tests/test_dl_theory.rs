@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_ai::ai::deep_learning_theory::cycle::TrainingLoop;
 use domain_ai::ai::deep_learning_theory::model::TwoLayerMLP;
 use domain_ai::ai::optimization::SGD;

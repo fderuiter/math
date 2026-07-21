@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::pure_math::statistics::glicko2::{
     GlickoPlayer, MatchResult, Rating, RatingDeviation, SystemConstant, Volatility, update_rating,
 };

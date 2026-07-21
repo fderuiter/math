@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_physics::physics::mri::reconstruction::{inverse_dft_2d, simulate_signal_2d};
 use nalgebra::DMatrix;
 use num_complex::Complex;

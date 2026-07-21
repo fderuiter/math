@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::physics::quantum::clebsch_gordan;
 use std::fmt;
 

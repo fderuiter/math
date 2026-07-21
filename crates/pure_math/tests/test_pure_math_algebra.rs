@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use pure_math::pure_math::algebra::group::{
     Permutation, Zn, generate_right_coset, is_normal_subgroup, is_subgroup,
 };

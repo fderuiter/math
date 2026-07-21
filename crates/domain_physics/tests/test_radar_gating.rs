@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use approx::assert_relative_eq;
 use domain_physics::physics::medical::radar_gating::{
     C,

@@ -1,3 +1,7 @@
+//! Profile Isosurface Demo
+//!
+//! This example benchmarks the isosurface extraction process.
+
 use math_explorer::applied::isosurface::{Point3D, VoxelGrid, extract_isosurface};
 use std::time::Instant;
 

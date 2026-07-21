@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use math_explorer::physics::fluid_dynamics::lattice_boltzmann::LatticeBoltzmannD2Q9;
 
 fn main() {

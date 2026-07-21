@@ -132,17 +132,12 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         cites
     }
 
-    #[allow(missing_docs)]
-    pub async fn scan_repository(
+    async fn scan_papers_dir(
         &self,
-        code_dirs: &[&str],
         papers_dir: &str,
-        auto_fix: bool,
-    ) -> Result<TraceabilityReport, std::io::Error> {
-        let mut valid_papers = HashSet::new();
-        let mut report = TraceabilityReport::default();
-
-        // 1. Scan papers
+        valid_papers: &mut HashSet<String>,
+        report: &mut TraceabilityReport,
+    ) {
         let normalized_papers_dir = crate::path_utils::normalize_path(papers_dir);
         if let Ok(entries) = self.vfs.list_dir(&normalized_papers_dir).await {
             for name in entries {
@@ -153,39 +148,13 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
                 }
             }
         }
-
-        // 2. Read registry
-        self.verify_and_link_registry(&valid_papers, &mut report)
-            .await;
-
-        let (registered_modules, registry_links) = self.read_registry_links().await;
-        let code_files = self.discover_code_files(code_dirs).await;
-
-        self.process_code_files(
-            code_files,
-            &registered_modules,
-            &registry_links,
-            &mut report,
-            auto_fix,
-        )
-        .await;
-
-        // 4. Find orphans
-        for (name, linked_code) in &report.paper_coverage {
-            if linked_code.is_empty() {
-                report.orphaned_papers.push(name.clone());
-            }
-        }
-        report.orphaned_papers.sort();
-        report.unlinked_code.sort();
-        report.invalid_links.sort();
-
-        Ok(report)
     }
 
-    async fn read_registry_links(&self) -> (HashSet<String>, HashMap<String, String>) {
-        let mut registered_modules = HashSet::new();
-        let mut registry_links = HashMap::new();
+    async fn load_registry_modules(
+        &self,
+        registered_modules: &mut HashSet<String>,
+        registry_links: &mut HashMap<String, String>,
+    ) {
         if let Ok(registry_content) = self.vfs.read_to_string("traceability.toml").await
             && let Ok(value) = registry_content.parse::<toml::Table>()
             && let Some(links) = value.get("links").and_then(|v| v.as_table())
@@ -197,11 +166,13 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
                 }
             }
         }
-        (registered_modules, registry_links)
     }
 
-    async fn discover_code_files(&self, code_dirs: &[&str]) -> Vec<String> {
-        let mut active_files = HashSet::new();
+    async fn gather_active_files(
+        &self,
+        code_dirs: &[&str],
+        active_files: &mut HashSet<String>,
+    ) {
         for dir in code_dirs {
             let normalized = crate::path_utils::normalize_path(dir);
             let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
@@ -209,35 +180,87 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
             let mut has_entrypoint = false;
             
             if self.vfs.read_to_string(&lib).await.is_ok() {
-                self.parse_module_tree(&lib, &mut active_files).await;
+                self.parse_module_tree(&lib, active_files).await;
                 has_entrypoint = true;
             }
             if self.vfs.read_to_string(&main).await.is_ok() {
-                self.parse_module_tree(&main, &mut active_files).await;
+                self.parse_module_tree(&main, active_files).await;
                 has_entrypoint = true;
             }
             
             if !has_entrypoint {
-                // Direct file listing fallback!
-                let mut stack = vec![normalized];
-                while let Some(current_dir) = stack.pop() {
-                    if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
-                        for name in entries {
-                            let path = crate::path_utils::join_and_normalize(&current_dir, &name);
-                            if name.ends_with(".rs") {
-                                active_files.insert(path);
-                            } else if !name.contains('.') {
-                                stack.push(path);
-                            }
-                        }
+                self.gather_files_fallback(&normalized, active_files).await;
+            }
+        }
+    }
+
+    async fn gather_files_fallback(
+        &self,
+        start_dir: &str,
+        active_files: &mut HashSet<String>,
+    ) {
+        let mut stack = vec![start_dir.to_string()];
+        while let Some(current_dir) = stack.pop() {
+            if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
+                for name in entries {
+                    let path = crate::path_utils::join_and_normalize(&current_dir, &name);
+                    if name.ends_with(".rs") {
+                        active_files.insert(path);
+                    } else if !name.contains('.') {
+                        stack.push(path);
                     }
                 }
             }
         }
+    }
+
+    fn finalize_report_orphans(report: &mut TraceabilityReport) {
+        for (name, linked_code) in &report.paper_coverage {
+            if linked_code.is_empty() {
+                report.orphaned_papers.push(name.clone());
+            }
+        }
+        report.orphaned_papers.sort();
+        report.unlinked_code.sort();
+        report.invalid_links.sort();
+    }
+
+    #[allow(missing_docs)]
+    pub async fn scan_repository(
+        &self,
+        code_dirs: &[&str],
+        papers_dir: &str,
+        auto_fix: bool,
+    ) -> Result<TraceabilityReport, std::io::Error> {
+        let mut valid_papers = HashSet::new();
+        let mut report = TraceabilityReport::default();
+
+        self.scan_papers_dir(papers_dir, &mut valid_papers, &mut report).await;
+
+        self.verify_and_link_registry(&valid_papers, &mut report).await;
+
+        let mut registered_modules = HashSet::new();
+        let mut registry_links = HashMap::new();
+        self.load_registry_modules(&mut registered_modules, &mut registry_links).await;
+
+        let mut active_files = HashSet::new();
+        self.gather_active_files(code_dirs, &mut active_files).await;
 
         let mut code_files: Vec<String> = active_files.into_iter().collect();
         code_files.sort();
-        code_files
+
+        self.process_code_files(
+            code_files,
+            &registered_modules,
+            &registry_links,
+            &mut report,
+            auto_fix,
+        )
+        .await;
+
+        Self::finalize_report_orphans(&mut report);
+
+        Ok(report)
     }
 
     async fn process_code_files(

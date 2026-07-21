@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use domain_biology::biology::evolution::HawkDovePopulation;
 
 #[test]
