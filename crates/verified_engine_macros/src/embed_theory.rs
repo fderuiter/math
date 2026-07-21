@@ -151,24 +151,27 @@ fn check_shadow_mirroring(attrs: &[syn::Attribute]) -> Result<(), syn::Error> {
     Ok(())
 }
 
-fn resolve_tex_path(file_path: &str) -> Result<PathBuf, String> {
+fn resolve_tex_path(file_path: &str) -> Result<(PathBuf, proc_macro2::TokenStream), String> {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
     let mut abs_path = PathBuf::from(&manifest_dir);
     abs_path.push("../../");
     abs_path.push(file_path);
 
     if abs_path.exists() {
-        return Ok(abs_path);
+        let ts = quote::quote! { concat!(env!("CARGO_MANIFEST_DIR"), "/../../", #file_path) };
+        return Ok((abs_path, ts));
     }
 
     let fallback = PathBuf::from(&manifest_dir).join(file_path);
     if fallback.exists() {
-        return Ok(fallback);
+        let ts = quote::quote! { concat!(env!("CARGO_MANIFEST_DIR"), "/", #file_path) };
+        return Ok((fallback, ts));
     }
 
     let abs_direct = PathBuf::from(file_path);
     if abs_direct.exists() {
-        return Ok(abs_direct);
+        let ts = quote::quote! { #file_path };
+        return Ok((abs_direct, ts));
     }
 
     Err(format!("LaTeX file not found: {}", file_path))
@@ -219,13 +222,7 @@ fn get_item_attrs(item: &TokenStream) -> Option<Vec<syn::Attribute>> {
     }
 }
 
-fn normalize_path(path: &std::path::Path) -> String {
-    let mut path_str = path.to_string_lossy().to_string();
-    if path_str.starts_with(r"\\?\") {
-        path_str = path_str[4..].to_string();
-    }
-    path_str.replace('\\', "/")
-}
+
 
 pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = match syn::parse2::<EmbedTheoryArgs>(attr) {
@@ -233,17 +230,12 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => return e.to_compile_error(),
     };
 
-    let abs_path = match resolve_tex_path(&args.file_path) {
+    let (abs_path, include_expr) = match resolve_tex_path(&args.file_path) {
         Ok(p) => p,
         Err(e) => return syn::Error::new(proc_macro2::Span::call_site(), e).to_compile_error(),
     };
 
-    // Ensure the path is absolute and clean.
-    // Use canonicalize to resolve `..` if possible, but safely normalize the result for include_str!
-    let canonical_path = abs_path.canonicalize().unwrap_or(abs_path.clone());
-    let canonical_path_str = normalize_path(&canonical_path);
-
-    let tex_content = match fs::read_to_string(&canonical_path) {
+    let tex_content = match fs::read_to_string(&abs_path) {
         Ok(c) => c,
         Err(e) => {
             let err_msg = format!("Failed to read {}: {}", args.file_path, e);
@@ -279,7 +271,7 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    canonical_path_str.hash(&mut hasher);
+    args.file_path.hash(&mut hasher);
     for l in &args.labels {
         l.hash(&mut hasher);
     }
@@ -289,33 +281,8 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
         #[doc = #doc_str]
         #item
         #[allow(dead_code)]
-        const #track_ident: &str = include_str!(#canonical_path_str);
+        const #track_ident: &str = include_str!(#include_expr);
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::path::Path;
 
-    #[test]
-    fn test_normalize_windows_extended_path() {
-        let windows_path = Path::new(r"\\?\C:\Users\runner\work\papers\theory.tex");
-        let normalized = normalize_path(windows_path);
-        assert_eq!(normalized, "C:/Users/runner/work/papers/theory.tex");
-    }
-
-    #[test]
-    fn test_normalize_standard_windows_path() {
-        let windows_path = Path::new(r"C:\Users\runner\work\papers\theory.tex");
-        let normalized = normalize_path(windows_path);
-        assert_eq!(normalized, "C:/Users/runner/work/papers/theory.tex");
-    }
-
-    #[test]
-    fn test_normalize_unix_path() {
-        let unix_path = Path::new("/app/papers/theory.tex");
-        let normalized = normalize_path(unix_path);
-        assert_eq!(normalized, "/app/papers/theory.tex");
-    }
-}
