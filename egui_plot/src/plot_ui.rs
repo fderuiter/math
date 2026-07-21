@@ -4,7 +4,6 @@ use egui::{Color32, Pos2, Response, Vec2, Vec2b, epaint::Hsva};
 
 use crate::{BoundsModification, PlotBounds, PlotItem, PlotPoint, PlotTransform};
 
-#[expect(unused_imports)] // for links in docstrings
 use crate::Plot;
 
 /// Provides methods to interact with a plot while building it. It is the single argument of the closure
