@@ -4,17 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-regex = "1.10"
-walkdir = "2.4"
-quote = "1.0"
-syn = { version = "2.0.118", features = ["full", "visit"] }
-toml = "1.1.2"
-proc-macro2 = { version = "1.0.106", features = ["span-locations"] }
-serde_yaml = "0.9"
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+regex = { workspace = true }
+walkdir = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true, features = ["full", "visit"] }
+toml = { workspace = true }
+serde_yaml = { workspace = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-ureq = { version = "2.9.6", features = ["json"] }
+ureq = { workspace = true, features = ["json"] }
 
 [lints]
 workspace = true

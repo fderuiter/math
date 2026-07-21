@@ -29,9 +29,53 @@ missing_docs = "warn"
 too_many_lines = "deny"
 cognitive_complexity = "deny"
 
+[workspace.dependencies]
+approx = "0.5.1"
+async-recursion = "1.0"
+console_error_panic_hook = "0.1.7"
+dashu = { version = "0.4.4", features = ["num-traits_v02"] }
+eframe = "0.33.3"
+egui = "0.33"
+futures = "0.3"
+getrandom = { version = "0.2.17", features = ["js"] }
+inventory = "0.3.24"
+js-sys = "0.3.60"
+muda = "0.19.3"
+nalgebra = "0.34.0"
+num-complex = "0.4.6"
+num-traits = "0.2.19"
+obj-exporter = "0.2.0"
+petgraph = "0.6.4"
+proc-macro2 = { version = "1.0.106", features = ["span-locations"] }
+quadrature = "0.1.2"
+quote = "1.0.45"
+rand = { version = "0.8.6", default-features = false, features = ["std", "alloc"] }
+rand_chacha = { version = "0.3.1", default-features = false, features = ["std"] }
+rand_distr = "0.4.3"
+regex = "1.10"
+rfd = "0.17.2"
+rustfft = "6.2.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+serde_yaml = "0.9"
+statrs = "0.17.0"
+syn = { version = "2.0.117", features = ["full", "fold", "visit-mut", "visit"] }
+thiserror = "2.0.18"
+toml = "1.1.2"
+ureq = { version = "2.9.6", features = ["json"] }
+walkdir = "2.4"
+wasm-bindgen = "0.2.100"
+wasm-bindgen-futures = "0.4.72"
+web-sys = { version = "0.3.60", features = ["Window", "Document", "HtmlCanvasElement", "Element", "Node", "Worker", "MessageEvent", "DedicatedWorkerGlobalScope", "ErrorEvent"] }
+
 
 [patch.crates-io]
 egui_plot = { path = "egui_plot" }
+
+[workspace.dependencies.criterion]
+version = "0.5.1"
+default-features = false
+features = ["html_reports"]
 
 [profile.release]
 opt-level = 3

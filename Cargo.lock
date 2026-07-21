@@ -1065,18 +1065,10 @@ dependencies = [
  "diagnostics",
  "math_commons",
  "nalgebra 0.34.2",
- "num-complex",
- "num-traits",
  "oxidize_core",
- "petgraph",
  "pure_math",
- "quadrature",
  "rand",
  "rand_distr",
- "rustfft",
- "serde",
- "serde_json",
- "statrs",
  "thiserror 2.0.18",
  "verified_engine",
 ]
@@ -1089,17 +1081,9 @@ dependencies = [
  "diagnostics",
  "math_commons",
  "nalgebra 0.34.2",
- "num-complex",
- "num-traits",
  "oxidize_core",
- "petgraph",
  "pure_math",
- "quadrature",
  "rand",
- "rand_distr",
- "rustfft",
- "serde",
- "serde_json",
  "statrs",
  "thiserror 2.0.18",
  "verified_engine",
@@ -1114,18 +1098,9 @@ dependencies = [
  "domain_applied",
  "math_commons",
  "nalgebra 0.34.2",
- "num-complex",
- "num-traits",
  "oxidize_core",
- "petgraph",
  "pure_math",
- "quadrature",
  "rand",
- "rand_distr",
- "rustfft",
- "serde",
- "serde_json",
- "statrs",
  "thiserror 2.0.18",
  "verified_engine",
 ]
@@ -1135,22 +1110,11 @@ name = "domain_climate"
 version = "0.4.0"
 dependencies = [
  "approx",
- "diagnostics",
  "math_commons",
  "nalgebra 0.34.2",
- "num-complex",
- "num-traits",
  "oxidize_core",
- "petgraph",
  "pure_math",
- "quadrature",
  "rand",
- "rand_distr",
- "rustfft",
- "serde",
- "serde_json",
- "statrs",
- "thiserror 2.0.18",
  "verified_engine",
 ]
 
@@ -1162,19 +1126,9 @@ dependencies = [
  "diagnostics",
  "math_commons",
  "nalgebra 0.34.2",
- "num-complex",
- "num-traits",
  "oxidize_core",
- "petgraph",
  "pure_math",
- "quadrature",
  "rand",
- "rand_distr",
- "rustfft",
- "serde",
- "serde_json",
- "statrs",
- "thiserror 2.0.18",
  "verified_engine",
 ]
 
@@ -1188,17 +1142,11 @@ dependencies = [
  "math_commons",
  "nalgebra 0.34.2",
  "num-complex",
- "num-traits",
  "oxidize_core",
- "petgraph",
  "pure_math",
- "quadrature",
  "rand",
- "rand_distr",
  "rustfft",
  "serde",
- "serde_json",
- "statrs",
  "thiserror 2.0.18",
  "verified_engine",
 ]
@@ -2494,12 +2442,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
-name = "lazy_static"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
-
-[[package]]
 name = "libc"
 version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2618,7 +2560,7 @@ dependencies = [
  "oxidize_core",
  "pure_math",
  "rand",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "verified_engine",
  "verified_engine_macros",
 ]
@@ -2629,18 +2571,6 @@ version = "0.4.0"
 dependencies = [
  "approx",
  "diagnostics",
- "nalgebra 0.34.2",
- "num-complex",
- "num-traits",
- "oxidize_core",
- "petgraph",
- "quadrature",
- "rand",
- "rand_distr",
- "rustfft",
- "serde",
- "serde_json",
- "statrs",
  "thiserror 2.0.18",
  "verified_engine",
 ]
@@ -3012,16 +2942,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "obj-exporter"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d133460dfa7bb530c954eb6c98c4c4ac983cc2ec70840f3a9cf9bf6cf3bee824"
-dependencies = [
- "lazy_static",
- "wavefront_obj",
-]
-
-[[package]]
 name = "objc"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3360,8 +3280,6 @@ dependencies = [
  "async-recursion",
  "futures",
  "js-sys",
- "obj-exporter",
- "proc-macro2",
  "quote",
  "rand",
  "rand_chacha",
@@ -3672,7 +3590,6 @@ dependencies = [
  "rand_distr",
  "rustfft",
  "serde",
- "serde_json",
  "statrs",
  "thiserror 2.0.18",
  "verified_engine",
@@ -4701,7 +4618,6 @@ checksum = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
 name = "unified_verification"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "regex",
  "serde",
@@ -4778,7 +4694,6 @@ version = "0.1.0"
 dependencies = [
  "approx",
  "serde",
- "serde_json",
  "verified_engine_macros",
 ]
 
@@ -4883,12 +4798,6 @@ checksum = "dc1b4cb0cc549fcf58d7dfc081778139b3d283a081644e833e84682ad71cea24"
 dependencies = [
  "unicode-ident",
 ]
-
-[[package]]
-name = "wavefront_obj"
-version = "5.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33c9cbb65c5aac6493000cdabe11f49588d19b547ccd7501f44fc96a6b9406ff"
 
 [[package]]
 name = "wayland-backend"

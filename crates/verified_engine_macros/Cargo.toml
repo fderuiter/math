@@ -4,14 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-proc-macro2 = { version = "1.0.106", features = ["span-locations"] }
-quote = "1.0.45"
-syn = { version = "2.0.117", features = ["full", "fold", "visit-mut", "visit"] }
+proc-macro2 = { workspace = true, features = ["span-locations"] }
+quote = { workspace = true }
+syn = { workspace = true, features = ["full", "fold", "visit-mut", "visit"] }
 
 [lib]
 proc-macro = true
 [dev-dependencies]
-approx = "0.5.1"
+approx = { workspace = true }
 
 [lints]
 workspace = true

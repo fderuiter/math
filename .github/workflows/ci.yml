@@ -87,6 +87,9 @@ jobs:
       - name: Check Traceability
         run: cargo run -p unified_verification --release -- traceability
 
+      - name: Check Unused Dependencies
+        uses: bnjbvr/cargo-machete@main
+
       - name: Check Formatting
         run: cargo fmt --all -- --check
 
