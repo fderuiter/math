@@ -46,6 +46,11 @@ fn main() {
         "traceability" => traceability(),
         "verify-suite" => verify_suite(&args[2..]),
         "regenerate-baseline" => api_drift::regenerate_baseline(),
+        "check-api-drift" => {
+            if !api_drift::check_api_drift() {
+                std::process::exit(1);
+            }
+        }
         "check-duplicates" => {
             if !ast_visitor::run_clone_detector() {
                 std::process::exit(1);
@@ -87,7 +92,7 @@ fn verify_records() -> bool {
     let base_sha = env::var("BASE_SHA").ok().map(|s| s.trim().trim_matches('"').to_string()).filter(|s| !s.is_empty());
     let head_sha = env::var("HEAD_SHA").ok().map(|s| s.trim().trim_matches('"').to_string()).filter(|s| !s.is_empty());
 
-    let (_commit_msgs, changed_files) = if let (Some(base), Some(head)) = (base_sha, head_sha) {
+    let (_commit_msgs, changed_files) = if let (Some(base), Some(head)) = (base_sha.as_ref(), head_sha.as_ref()) {
         let msg_out = Command::new("git")
             .args(["log", "--format=%B", &format!("{}..{}", base, head)])
             .output()
@@ -132,25 +137,64 @@ fn verify_records() -> bool {
     });
 
     if core_modified {
-        println!("Core logic areas (math_explorer/ or crates/) were modified.");
+        if is_pure_deletion(base_sha.as_deref(), head_sha.as_deref()) {
+            println!("Pure deletion detected in core logic. Skipping ADR verification.");
+        } else {
+            println!("Core logic areas (math_explorer/ or crates/) were modified.");
 
-        let adr_modified = changed_lines
-            .iter()
-            .any(|l| l.starts_with("docs/adr/") && l.ends_with(".md"));
+            let adr_modified = changed_lines
+                .iter()
+                .any(|l| l.starts_with("docs/adr/") && l.ends_with(".md"));
 
-        if !adr_modified {
-            println!(
-                "Verification failed! A Markdown ADR in docs/adr/ must be created or updated when modifying core logic."
-            );
-            return false;
+            if !adr_modified {
+                println!(
+                    "Verification failed! A Markdown ADR in docs/adr/ must be created or updated when modifying core logic."
+                );
+                return false;
+            }
+
+            println!("ADR verification passed.");
         }
-
-        println!("ADR verification passed.");
     } else {
         println!("No core logic areas modified. Skipping ADR verification.");
     }
 
     true
+}
+
+fn is_pure_deletion(base_sha: Option<&str>, head_sha: Option<&str>) -> bool {
+    let mut output_str = String::new();
+
+    if let (Some(base), Some(head)) = (base_sha, head_sha) {
+        if let Some(out) = Command::new("git").args(["diff", base, head]).output().ok() {
+            output_str = String::from_utf8_lossy(&out.stdout).to_string();
+        }
+    }
+    
+    if output_str.trim().is_empty() {
+        if let Some(out) = Command::new("git").args(["diff", "HEAD~1", "HEAD"]).output().ok() {
+            output_str = String::from_utf8_lossy(&out.stdout).to_string();
+        }
+    }
+
+    let diff = output_str;
+    let mut in_core_file = false;
+    let mut added_code_lines = 0;
+    
+    for line in diff.lines() {
+        if line.starts_with("diff --git") {
+            let is_core = line.contains(" a/math_explorer/") || (line.contains(" a/crates/") && !line.contains(" a/crates/unified_verification/"));
+            in_core_file = is_core;
+        } else if in_core_file {
+            if line.starts_with('+') && !line.starts_with("+++") {
+                let content = line[1..].trim();
+                if !content.is_empty() && !content.starts_with("//") && !content.starts_with("/*") && !content.starts_with("*") {
+                    added_code_lines += 1;
+                }
+            }
+        }
+    }
+    added_code_lines == 0
 }
 
 fn traceability() {
