@@ -1,5 +1,6 @@
 #![allow(missing_docs)]
-use math_explorer::applied::game_theory::mean_field::{Density, MeanFieldGame1D, Position};
+use math_explorer::applied::game_theory::mean_field::{Density, MFGConfigBuilder, FixedPointSolver, MFGSolver, Position};
+use std::num::NonZeroUsize;
 use std::time::Instant;
 
 fn main() {
@@ -21,7 +22,17 @@ fn main() {
         grid_points, time_steps, iterations
     );
 
-    let mfg = MeanFieldGame1D::new(0.1, 1.0, grid_points, time_steps, -2.0, 2.0);
+    let config = MFGConfigBuilder::new()
+        .viscosity(0.1)
+        .time_horizon(1.0)
+        .grid_points(NonZeroUsize::new(grid_points).unwrap())
+        .time_steps(NonZeroUsize::new(time_steps).unwrap())
+        .space_bounds(-2.0, 2.0)
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let solver = FixedPointSolver::new(iterations);
 
     let cost_fn = |p: Position, d: Density| -> f64 { d.0 + p.0 * p.0 };
     let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
@@ -29,7 +40,7 @@ fn main() {
 
     println!("Starting solve...");
     let start = Instant::now();
-    let (u, m) = mfg.solve(cost_fn, term_fn, init_dist, iterations);
+    let (u, m) = solver.solve(&config, &cost_fn, &term_fn, &init_dist);
     let duration = start.elapsed();
 
     println!("Solve completed in {:.2?}", duration);
