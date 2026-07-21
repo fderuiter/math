@@ -43,7 +43,7 @@ fn main() {
 
     let mut generated_code = String::new();
     for (i, path) in files.iter().enumerate() {
-        let rel_path_str = path_utils::normalize_path(&path);
+        let rel_path_str = path_utils::normalize_path(path);
 
         println!("cargo:rerun-if-changed={}", rel_path_str);
 
