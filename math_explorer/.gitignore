@@ -1,6 +1,0 @@
-/target
-**/target/
-Cargo.lock
-*.orig
-*.obj
-*.txt
