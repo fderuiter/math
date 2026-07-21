@@ -9,9 +9,6 @@ use crate::physics::solid_state::types::ElectronVolts;
 pub enum ChaosError {
     /// The simulation parameters are invalid (e.g., negative time step).
     InvalidParameter(String),
-    /// Deprecated: use `Math` variant instead.
-    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
-    CalculationError(String),
     /// Wrapped centralized mathematical error.
     Math(math_commons::error::MathError),
 }
@@ -83,12 +80,6 @@ pub enum DoseFluenceError {
 #[derive(Error, Debug, Clone, PartialEq)]
 #[allow(missing_docs)]
 pub enum RadarError {
-    /// Deprecated: use `Math` variant instead.
-    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
-    #[error("Chirp length {actual} does not match expected {expected}")]
-    #[allow(missing_docs)]
-    ChirpLengthMismatch { expected: usize, actual: usize },
-
     /// Insufficient snapshots for MUSIC algorithm.
     #[error("Not enough snapshots to compute stable Covariance Matrix: {actual} < {required}")]
     #[allow(missing_docs)]
@@ -102,11 +93,6 @@ pub enum RadarError {
     /// Invalid configuration parameters.
     #[error("Invalid configuration: {0}")]
     InvalidConfiguration(String),
-
-    /// Deprecated: use `Math` variant instead.
-    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
-    #[error("Numerical instability detected: {0}")]
-    NumericalInstability(String),
 
     /// Wrapped centralized mathematical error.
     #[error("Mathematical error: {0}")]
@@ -148,10 +134,6 @@ pub enum HighEnergyError {
     /// Invalid statistics parameters (e.g. negative counts).
     #[allow(missing_docs)]
     InvalidStatisticsParams { reason: String },
-    /// Deprecated: use `Math` variant instead.
-    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
-    #[allow(missing_docs)]
-    CalculationError { reason: String },
     /// Wrapped centralized mathematical error.
     Math(math_commons::error::MathError),
 }
@@ -181,9 +163,6 @@ pub enum StatMechError {
         #[allow(missing_docs)]
         reason: String,
     },
-    /// Deprecated: use `Math` variant instead.
-    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
-    NumericalInstability(String),
     /// Wrapped centralized mathematical error.
     Math(math_commons::error::MathError),
 }
