@@ -1,3 +1,11 @@
+Simple plotting library for [`egui`](https://github.com/emilk/egui).
+
+Check out [`Plot`] for how to get started.
+
+[**Looking for maintainer!**](https://github.com/emilk/egui/issues/4705)
+
+## Feature flags
+
 # egui_plot
 
 [<img alt="github" src="https://img.shields.io/badge/github-emilk/egui_plot-8da0cb?logo=github" height="20">](https://github.com/emilk/egui_plot)

@@ -1,4 +1,4 @@
-//! Legacy crate.
+#![doc = include_str!("../README.md")]
 use serde::{Deserialize, Serialize};
 
 #[allow(missing_docs)]

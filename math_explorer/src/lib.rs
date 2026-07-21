@@ -1,4 +1,4 @@
-//! Legacy crate.
+#![doc = include_str!("../README.md")]
 #[cfg(feature = "ai")]
 pub use domain_ai::ai;
 

@@ -1,10 +1,4 @@
-//! Simple plotting library for [`egui`](https://github.com/emilk/egui).
-//!
-//! Check out [`Plot`] for how to get started.
-//!
-//! [**Looking for maintainer!**](https://github.com/emilk/egui/issues/4705)
-//!
-//! ## Feature flags
+#![doc = include_str!("../README.md")]
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 //!
 

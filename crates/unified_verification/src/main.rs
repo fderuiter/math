@@ -1,4 +1,4 @@
-//! Legacy crate.
+#![doc = include_str!("../README.md")]
 #![allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 #![allow(clippy::all)]
 use std::env;
