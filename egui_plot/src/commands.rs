@@ -1,4 +1,4 @@
-use egui::{Key, Modifiers, Response, Ui, Context, Id};
+use egui::{Context, Id, Key, Modifiers, Response, Ui};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CommandTrigger {
@@ -32,10 +32,17 @@ impl CommandRegistryData {
         ui: Option<&Ui>,
         response: Option<&Response>,
     ) -> bool {
-        let mut data = ctx.data_mut(|d| d.get_temp::<Self>(Id::new("CMD_REGISTRY")).unwrap_or_default());
-        
+        let mut data = ctx.data_mut(|d| {
+            d.get_temp::<Self>(Id::new("CMD_REGISTRY"))
+                .unwrap_or_default()
+        });
+
         // Avoid duplicates in the same frame
-        if !data.commands.iter().any(|c| c.name == name && c.context == context_name) {
+        if !data
+            .commands
+            .iter()
+            .any(|c| c.name == name && c.context == context_name)
+        {
             data.commands.push(CommandMetadata {
                 name: name.to_owned(),
                 description: description.to_owned(),
@@ -46,13 +53,16 @@ impl CommandRegistryData {
             ctx.data_mut(|d| d.insert_temp(Id::new("CMD_REGISTRY"), data));
         }
 
-        let input_mode = ctx.data(|d| d.get_temp::<bool>(Id::new("INPUT_MODE_TOUCH")).unwrap_or(false));
+        let input_mode = ctx.data(|d| {
+            d.get_temp::<bool>(Id::new("INPUT_MODE_TOUCH"))
+                .unwrap_or(false)
+        });
         if desktop_only && input_mode {
             return false;
         }
 
         let mut triggered = false;
-        
+
         match trigger {
             CommandTrigger::Key(k) => {
                 if let Some(ui) = ui {
@@ -68,15 +78,19 @@ impl CommandRegistryData {
                     if ui.input_mut(|i| i.consume_shortcut(&egui::KeyboardShortcut::new(mods, k))) {
                         triggered = true;
                     }
-                } else if ctx.input_mut(|i| i.consume_shortcut(&egui::KeyboardShortcut::new(mods, k))) {
+                } else if ctx
+                    .input_mut(|i| i.consume_shortcut(&egui::KeyboardShortcut::new(mods, k)))
+                {
                     triggered = true;
                 }
             }
             CommandTrigger::AltClick => {
                 if let (Some(ui), Some(resp)) = (ui, response)
-                    && resp.clicked() && ui.input(|i| i.modifiers.alt) {
-                        triggered = true;
-                    }
+                    && resp.clicked()
+                    && ui.input(|i| i.modifiers.alt)
+                {
+                    triggered = true;
+                }
             }
         }
 
