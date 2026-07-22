@@ -8,6 +8,9 @@ pub fn check_file_lengths(members: &[String]) -> Vec<String> {
     let mut exceeding = Vec::new();
 
     for dir in members {
+        if dir == "egui_plot" {
+            continue;
+        }
         if Path::new(dir).exists() {
             for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
                 let path_str = entry.path().to_string_lossy();

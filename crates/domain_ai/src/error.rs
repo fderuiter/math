@@ -19,12 +19,6 @@ pub enum AIError {
     #[allow(missing_docs)]
     UninitializedState { name: String },
 
-    /// Mismatched data distribution lengths.
-    #[deprecated(since = "0.1.0", note = "Use `Math` instead")]
-    #[error("Distributions have different lengths: expected {expected}, got {got}")]
-    #[allow(missing_docs)]
-    DistributionLengthMismatch { expected: usize, got: usize },
-
     #[error(transparent)]
     #[allow(missing_docs)]
     Math(#[from] math_commons::error::MathError),

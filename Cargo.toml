@@ -17,9 +17,9 @@ members = [
     "math_explorer_gui",
     "crates/markdown_tests",
     "apps/xtask",
-    "crates/unified_verification"
+    "crates/unified_verification",
+    "egui_plot"
 ]
-exclude = ["egui_plot"]
 resolver = "2"
 
 [workspace.lints.rust]

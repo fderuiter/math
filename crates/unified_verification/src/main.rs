@@ -84,8 +84,14 @@ fn main() {
     }
 }
 fn verify_records() -> bool {
-    let base_sha = env::var("BASE_SHA").ok().map(|s| s.trim().trim_matches('"').to_string()).filter(|s| !s.is_empty());
-    let head_sha = env::var("HEAD_SHA").ok().map(|s| s.trim().trim_matches('"').to_string()).filter(|s| !s.is_empty());
+    let base_sha = env::var("BASE_SHA")
+        .ok()
+        .map(|s| s.trim().trim_matches('"').to_string())
+        .filter(|s| !s.is_empty());
+    let head_sha = env::var("HEAD_SHA")
+        .ok()
+        .map(|s| s.trim().trim_matches('"').to_string())
+        .filter(|s| !s.is_empty());
 
     let (_commit_msgs, changed_files) = if let (Some(base), Some(head)) = (base_sha, head_sha) {
         let msg_out = Command::new("git")
