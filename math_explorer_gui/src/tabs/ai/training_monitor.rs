@@ -240,7 +240,9 @@ fn generate_spiral_data(points_per_class: usize) -> Vec<(Vector, Vector)> {
             let r = i as f64 / n as f64; // Radius
             let t = 2.5 * r * 2.0 * PI + (class_idx as f64 * PI); // Angle
 
+            // allow(entropy_guard)
             let x = r * t.sin() + rand::random::<f64>() * 0.1; // Add noise
+            // allow(entropy_guard)
             let y = r * t.cos() + rand::random::<f64>() * 0.1;
 
             let input = Vector::from_vec(vec![x, y]);

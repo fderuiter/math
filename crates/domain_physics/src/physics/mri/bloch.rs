@@ -2,7 +2,7 @@
 
 use super::proton;
 use nalgebra::Vector3;
-use pure_math::pure_math::analysis::ode::{Euler, OdeSystem, Solver, SolverExt, TimeStepper};
+use pure_math::pure_math::analysis::ode::{OdeSystem, TimeStepper};
 
 /// Classical Dynamics Simulator using Bloch Equations.
 pub struct BlochSimulator {
@@ -64,11 +64,6 @@ impl TimeStepper<Vector3<f64>> for BlochSimulator {
 
 impl BlochSimulator {
     /// Creates a new BlochSimulator.
-    ///
-    /// # Arguments
-    /// * `initial_magnetization` - Initial state of $\vec{M}$.
-    /// * `m0` - Equilibrium magnetization.
-    #[verified_engine::verified]
     pub fn new(initial_magnetization: Vector3<f64>, m0: f64) -> Self {
         Self {
             magnetization: initial_magnetization,
@@ -94,56 +89,7 @@ impl BlochSimulator {
         self.t2 = t2;
     }
 
-    /// Performs a time-step update of the magnetization vector using a provided solver.
-    ///
-    /// This method allows dependency injection of the numerical integration strategy (e.g., Euler, RK4).
-    ///
-    /// # Arguments
-    /// * `dt` - Time step in seconds.
-    /// * `b_field` - Magnetic field vector $\vec{B}$ in Tesla.
-    /// * `t1` - Longitudinal relaxation time in seconds.
-    /// * `t2` - Transverse relaxation time in seconds.
-    /// * `solver` - The numerical solver strategy to use.
-    #[deprecated(
-        since = "0.2.0",
-        note = "Use set_parameters() then solver.step() or TimeStepper::step()"
-    )]
-    #[verified_engine::verified]
-    pub fn step_with<S>(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64, solver: &mut S)
-    where
-        S: Solver<Vector3<f64>>,
-    {
-        self.set_b_field(b_field);
-        self.set_relaxation(t1, t2);
-
-        let new_state = solver.solve(self, 0.0, &self.magnetization, dt);
-        self.magnetization = new_state;
     }
-
-    /// Performs a time-step update of the magnetization vector using the Bloch equations.
-    ///
-    /// The coupled differential equations are:
-    /// $\frac{d\vec{M}}{dt} = \vec{M} \times (\gamma \vec{B}) - \frac{M_x \hat{i} + M_y \hat{j}}{T_2} - \frac{(M_z - M_0)\hat{k}}{T_1}$
-    ///
-    /// Uses Euler integration for backward compatibility.
-    ///
-    /// # Arguments
-    /// * `dt` - Time step in seconds.
-    /// * `b_field` - Magnetic field vector $\vec{B}$ in Tesla.
-    /// * `t1` - Longitudinal relaxation time in seconds.
-    /// * `t2` - Transverse relaxation time in seconds.
-    #[deprecated(
-        since = "0.2.0",
-        note = "Use set_parameters() then TimeStepper::step()"
-    )]
-    #[verified_engine::verified]
-    pub fn step(&mut self, dt: f64, b_field: Vector3<f64>, t1: f64, t2: f64) {
-        // Create a solver with the current magnetization structure
-        let mut solver = Euler::new(&self.magnetization);
-        #[allow(deprecated)]
-        self.step_with(dt, b_field, t1, t2, &mut solver)
-    }
-}
 
 use oxidize_core::{ModelConfig, ModelState, SimulationModel};
 use serde::{Deserialize, Serialize};

@@ -152,9 +152,6 @@ impl KineticsModel for HillKinetics {
 }
 
 // Backward compatibility
-#[deprecated(note = "Use MichaelisMenten instead")]
-#[allow(missing_docs)]
-pub type EnzymeReaction = MichaelisMenten;
 
 #[cfg(test)]
 mod tests {
@@ -163,8 +160,7 @@ mod tests {
     #[test]
     #[verified_engine::verified]
     fn test_original_behavior() {
-        #[allow(deprecated)]
-        let reaction = EnzymeReaction::new(100.0, 50.0).unwrap();
+                let reaction = MichaelisMenten::new(100.0, 50.0).unwrap();
         // At [S] = Km, v = Vmax / 2
         let v = reaction.reaction_velocity(50.0).unwrap();
         assert!((v - 50.0).abs() < math_commons::registry::TOLERANCE_FAST);

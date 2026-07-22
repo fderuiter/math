@@ -1,26 +1,29 @@
 #![allow(missing_docs)]
+use domain_applied::applied::clinical_trials::design::{AllocationStrategy, SimpleRandomizer, BlockRandomizer};
 use domain_applied::applied::clinical_trials::types::{ContingencyTable, GroupData, SurvivalTime};
 use domain_applied::applied::clinical_trials::{
     analysis, design, hypothesis_testing, sample_size, survival_analysis,
 };
 
 #[test]
-#[allow(deprecated)]
 #[verified_engine::verified]
 fn test_simple_randomization() {
     let n = 100;
-    let assignments = design::simple_randomization(n);
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
+    let strategy = SimpleRandomizer;
+    let assignments = strategy.assign(&mut rng, n).unwrap();
     assert_eq!(assignments.len(), n);
     // Cannot assert exact split due to randomness, but can check it runs.
 }
 
 #[test]
-#[allow(deprecated)]
 #[verified_engine::verified]
 fn test_block_randomization() {
     let n = 20;
     let block_size = 4;
-    let assignments = design::block_randomization(n, block_size).unwrap();
+    let mut rng = oxidize_core::rng::OxidizeRng::default();
+    let strategy = BlockRandomizer::new(block_size).unwrap();
+    let assignments = strategy.assign(&mut rng, n).unwrap();
     assert_eq!(assignments.len(), n);
 
     // Check overall balance

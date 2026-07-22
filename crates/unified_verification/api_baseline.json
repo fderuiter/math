@@ -264,9 +264,6 @@
   ],
   "crates/domain_applied/src/applied/clinical_trials/design.rs": [
     "pub enum Group",
-    "pub fn block_randomization (n_patients : usize , block_size : usize) -> Result < Vec < Group > , String >",
-    "pub fn simple_randomization (n_patients : usize) -> Vec < Group >",
-    "pub fn stratified_randomization (patients : & [Patient] , block_size : usize ,) -> Result < HashMap < String , Group > , String >",
     "pub struct BlockRandomizer",
     "pub struct Patient",
     "pub struct SimpleRandomizer",
@@ -286,7 +283,6 @@
     "pub fn calculate_sample_size_proportions (alpha : f64 , power : f64 , p1 : f64 , p2 : f64 ,) -> Result < usize , ClinicalTrialError >"
   ],
   "crates/domain_applied/src/applied/clinical_trials/survival_analysis.rs": [
-    "pub fn estimate_hazard_ratio_simple (group1 : & [Observation] , group2 : & [Observation]) -> f64",
     "pub fn kaplan_meier (observations : & [Observation]) -> Vec < TimePoint >",
     "pub fn try_estimate_hazard_ratio (group1 : & [Observation] , group2 : & [Observation] ,) -> Result < f64 , ClinicalTrialError >",
     "pub struct Observation",
@@ -483,9 +479,6 @@
     "pub enum ComparisonResult",
     "pub fn calculate_statistics (wins : i32 , losses : i32) -> Option < WinRatioStats >",
     "pub fn calculate_win_ratio (wins : i32 , losses : i32) -> f64",
-    "pub fn compare_outcomes < T : PartialOrd > (subject1 : & [T] , subject2 : & [T]) -> ComparisonResult",
-    "pub fn matched_pairs < T : PartialOrd > (group1 : & [Vec < T >] , group2 : & [Vec < T >]) -> (i32 , i32)",
-    "pub fn unmatched_pairs < T : PartialOrd > (group1 : & [Vec < T >] , group2 : & [Vec < T >]) -> (i32 , i32)",
     "pub struct HigherIsBetter",
     "pub struct LowerIsBetter",
     "pub struct MatchedPairing",
@@ -558,8 +551,7 @@
     "pub enum KineticsError",
     "pub struct HillKinetics",
     "pub struct MichaelisMenten",
-    "pub trait KineticsModel",
-    "pub type EnzymeReaction = MichaelisMenten"
+    "pub trait KineticsModel"
   ],
   "crates/domain_biology/src/biology/morphogenesis/mod.rs": [
     "pub struct DiffusionCoeff",
@@ -696,12 +688,6 @@
     "pub enum StatMechError"
   ],
   "crates/domain_physics/src/physics/astrophysics/galaxies.rs": [
-    "pub enum GalaxyType",
-    "pub fn calculate_apparent_magnitude_from_distance (distance : f64 , model : & impl GalaxyModel ,) -> Option < f64 >",
-    "pub fn calculate_log_mass_from_absolute_magnitude (absolute_magnitude_v : f64 , model : & impl GalaxyModel ,) -> f64",
-    "pub fn calculate_log_mass_from_distance (distance : f64 , model : & impl GalaxyModel) -> f64",
-    "pub fn calculate_redshift_from_log_mass (log_mass_solar : f64 , model : & impl GalaxyModel) -> f64",
-    "pub struct Galaxy",
     "pub struct GeneralIrregular",
     "pub struct Magnitude",
     "pub struct Mpc",
@@ -732,7 +718,6 @@
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/analysis.rs": [
     "pub fn bernoulli_constant (state : & FlowState , properties : & FluidProperties , height : f64 , gravity : f64 ,) -> f64",
-    "pub fn flow_regime (re : f64) -> FlowRegime",
     "pub fn reynolds_number (properties : & FluidProperties , velocity_magnitude : f64 , characteristic_length : f64 ,) -> f64",
     "pub fn shear_stress (properties : & FluidProperties , velocity_gradient_normal : f64) -> f64"
   ],

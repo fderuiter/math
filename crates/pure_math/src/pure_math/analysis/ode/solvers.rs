@@ -122,54 +122,6 @@ impl<State: Clone> RungeKutta4<State> {
         }
     }
 
-    /// Performs a single integration step using a temporary solver.
-    ///
-    /// # Deprecation Notice
-    /// This static method performs 3 redundant heap allocations (clones) per call,
-    /// significantly slowing down high-frequency simulation loops.
-    ///
-    /// **Migration Guide**
-    /// To achieve zero-allocation performance, instantiate a solver once
-    /// and reuse its internal buffers for all subsequent steps using the [`Solver`] trait.
-    ///
-    /// **Old (Deprecated):**
-    /// ```rust,ignore
-    /// let new_state = RungeKutta4::step(system, 0.0, state, 0.01);
-    /// ```
-    ///
-    /// **New (Recommended):**
-    /// ```rust,ignore
-    /// let mut solver = RungeKutta4::new(state);
-    /// // In your simulation loop:
-    /// solver.step(system, t, state, 0.01);
-    /// ```
-    #[deprecated(
-        note = "This method performs 3 redundant heap allocations (clones) per call. Please instantiate a solver instance and use the `Solver` trait for zero-allocation performance."
-    )]
-    #[doc(hidden)]
-    #[verified_engine::verified]
-    pub fn step<S>(system: &S, t: f64, state: &State, dt: f64) -> State
-    where
-        State: VectorOperations,
-        S: OdeSystem<State> + ?Sized,
-    {
-        // Optimization: Avoid constructing a full `RungeKutta4` struct and delegating to `solve`.
-        // Instead, implement the RK4 logic directly here using minimal allocations.
-        // We only need 3 buffers: y_new (accumulator), k (derivative), tmp (argument).
-        // We avoid allocating `initial_state` by using the immutable `state` argument directly.
-
-        // 1. Allocate output state (y_acc) initialized with y_n
-        let mut y_acc = state.clone();
-
-        // 2. Allocate k and tmp buffers
-        let mut k = state.clone();
-        let mut tmp = state.clone();
-
-        // Use shared kernel
-        rk4_kernel(system, t, dt, state, &mut y_acc, &mut k, &mut tmp);
-
-        y_acc
-    }
 }
 
 impl<State: VectorOperations> Solver<State> for RungeKutta4<State> {

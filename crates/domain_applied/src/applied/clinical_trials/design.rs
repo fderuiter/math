@@ -181,38 +181,3 @@ impl<S: AllocationStrategy> StratifiedRandomizer<S> {
     }
 }
 
-// --- Legacy Wrappers ---
-
-#[deprecated(since = "0.2.0", note = "Use SimpleRandomizer struct instead")]
-#[allow(missing_docs)]
-#[verified_engine::verified]
-pub fn simple_randomization(n_patients: usize) -> Vec<Group> {
-    let mut rng = oxidize_core::rng::OxidizeRng::default();
-    SimpleRandomizer.assign(&mut rng, n_patients).unwrap()
-}
-
-#[deprecated(since = "0.2.0", note = "Use BlockRandomizer struct instead")]
-#[allow(missing_docs)]
-#[verified_engine::verified]
-pub fn block_randomization(n_patients: usize, block_size: usize) -> Result<Vec<Group>, String> {
-    let mut rng = oxidize_core::rng::OxidizeRng::default();
-    let randomizer = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
-    randomizer
-        .assign(&mut rng, n_patients)
-        .map_err(|e| e.to_string())
-}
-
-#[deprecated(since = "0.2.0", note = "Use StratifiedRandomizer struct instead")]
-#[allow(missing_docs)]
-#[verified_engine::verified]
-pub fn stratified_randomization(
-    patients: &[Patient],
-    block_size: usize,
-) -> Result<HashMap<String, Group>, String> {
-    let mut rng = oxidize_core::rng::OxidizeRng::default();
-    let base_strategy = BlockRandomizer::new(block_size).map_err(|e| e.to_string())?;
-    let randomizer = StratifiedRandomizer::new(base_strategy);
-    randomizer
-        .assign_stratified(&mut rng, patients)
-        .map_err(|e| e.to_string())
-}

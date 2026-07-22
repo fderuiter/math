@@ -37,7 +37,7 @@
 //!
 //! ```rust
 //! use domain_applied::applied::win_ratio::pair_comparison::{
-//!     WinRatioAnalysis, HigherIsBetter, calculate_statistics
+//!     WinRatioAnalysis, HigherIsBetter, calculate_statistics, UnmatchedPairing
 //! };
 //!
 //! // Define outcomes for two groups.
@@ -65,7 +65,7 @@
 //!     .add_strategy(Box::new(HigherIsBetter));
 //!
 //! // 1. Compare every patient in Treatment vs every patient in Control
-//! let (wins, losses) = analysis.unmatched_pairs(&group_treatment, &group_control);
+//! let (wins, losses) = analysis.evaluate_pairs(&group_treatment, &group_control, &UnmatchedPairing);
 //!
 //! // 2. Calculate Statistics
 //! if let Some(stats) = calculate_statistics(wins, losses) {

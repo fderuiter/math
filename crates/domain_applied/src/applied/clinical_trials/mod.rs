@@ -34,7 +34,8 @@
 //! ## Example: Full Trial Simulation
 //!
 //! ```rust
-//! use domain_applied::applied::clinical_trials::design::{simple_randomization, Group};
+//! use domain_applied::applied::clinical_trials::design::{SimpleRandomizer, AllocationStrategy, Group};
+//! use oxidize_core::rng::OxidizeRng;
 //! use domain_applied::applied::clinical_trials::sample_size::calculate_sample_size_means;
 //! use domain_applied::applied::clinical_trials::analysis::calculate_risk_metrics;
 //! use domain_applied::applied::clinical_trials::types::ContingencyTable;
@@ -48,7 +49,8 @@
 //!     // 2. Design: Randomize patients
 //!     // We need 2 * n_per_group total patients
 //!     let total_patients = n_per_group * 2;
-//!     let assignments = simple_randomization(total_patients);
+//!     let mut rng = OxidizeRng::default();
+//!     let assignments = SimpleRandomizer.assign(&mut rng, total_patients).unwrap();
 //!
 //!     // ... Conduct trial ...
 //!

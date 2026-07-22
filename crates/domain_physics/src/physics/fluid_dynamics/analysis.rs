@@ -1,6 +1,6 @@
 //! Analytical tools and derived quantities for Fluid Dynamics.
 
-use super::regimes::{FlowClassifier, FlowRegime, PipeFlowClassifier};
+
 use super::types::{FlowState, FluidProperties};
 
 /// Calculates the Reynolds Number ($Re$).
@@ -18,22 +18,6 @@ pub fn reynolds_number(
 ) -> f64 {
     (properties.density() * velocity_magnitude * characteristic_length)
         / properties.dynamic_viscosity()
-}
-
-/// Determines the flow regime from the Reynolds number using the standard Pipe Flow strategy.
-///
-/// **Deprecated:** Use `PipeFlowClassifier` or another implementation of `FlowClassifier` directly.
-///
-/// * $Re < 2000$: Laminar
-/// * $2000 \le Re \le 4000$: Transitional
-/// * $Re > 4000$: Turbulent
-#[deprecated(
-    since = "0.2.0",
-    note = "Use `regimes::PipeFlowClassifier` for explicit strategy"
-)]
-#[verified_engine::verified]
-pub fn flow_regime(re: f64) -> FlowRegime {
-    PipeFlowClassifier.classify(re)
 }
 
 /// Calculates the Bernoulli constant along a streamline for steady, incompressible, inviscid flow.

@@ -31,10 +31,8 @@ physics = ["applied", "pure_math", "dep:domain_physics"]
 [dev-dependencies]
 approx = { workspace = true }
 num-complex = { workspace = true }
-petgraph = { workspace = true }
 rand = { workspace = true }
 serde_json = { workspace = true }
-statrs = { workspace = true }
 verified_engine = { path = "../crates/verified_engine" }
 criterion = { workspace = true }
 

@@ -209,10 +209,3 @@ pub fn try_estimate_hazard_ratio(
     Ok(rate1 / rate2)
 }
 
-/// Legacy wrapper for `try_estimate_hazard_ratio`.
-/// Returns `f64::NAN` on error.
-#[deprecated(since = "0.2.0", note = "Use try_estimate_hazard_ratio instead")]
-#[verified_engine::verified]
-pub fn estimate_hazard_ratio_simple(group1: &[Observation], group2: &[Observation]) -> f64 {
-    try_estimate_hazard_ratio(group1, group2).unwrap_or(f64::NAN)
-}
