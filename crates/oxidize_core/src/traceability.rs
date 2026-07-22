@@ -168,17 +168,13 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         }
     }
 
-    async fn gather_active_files(
-        &self,
-        code_dirs: &[&str],
-        active_files: &mut HashSet<String>,
-    ) {
+    async fn gather_active_files(&self, code_dirs: &[&str], active_files: &mut HashSet<String>) {
         for dir in code_dirs {
             let normalized = crate::path_utils::normalize_path(dir);
             let lib = crate::path_utils::join_and_normalize(&normalized, "lib.rs");
             let main = crate::path_utils::join_and_normalize(&normalized, "main.rs");
             let mut has_entrypoint = false;
-            
+
             if self.vfs.read_to_string(&lib).await.is_ok() {
                 self.parse_module_tree(&lib, active_files).await;
                 has_entrypoint = true;
@@ -187,18 +183,14 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
                 self.parse_module_tree(&main, active_files).await;
                 has_entrypoint = true;
             }
-            
+
             if !has_entrypoint {
                 self.gather_files_fallback(&normalized, active_files).await;
             }
         }
     }
 
-    async fn gather_files_fallback(
-        &self,
-        start_dir: &str,
-        active_files: &mut HashSet<String>,
-    ) {
+    async fn gather_files_fallback(&self, start_dir: &str, active_files: &mut HashSet<String>) {
         let mut stack = vec![start_dir.to_string()];
         while let Some(current_dir) = stack.pop() {
             if let Ok(entries) = self.vfs.list_dir(&current_dir).await {
@@ -235,13 +227,16 @@ impl<V: VirtualFileSystem> TraceabilityEngine<V> {
         let mut valid_papers = HashSet::new();
         let mut report = TraceabilityReport::default();
 
-        self.scan_papers_dir(papers_dir, &mut valid_papers, &mut report).await;
+        self.scan_papers_dir(papers_dir, &mut valid_papers, &mut report)
+            .await;
 
-        self.verify_and_link_registry(&valid_papers, &mut report).await;
+        self.verify_and_link_registry(&valid_papers, &mut report)
+            .await;
 
         let mut registered_modules = HashSet::new();
         let mut registry_links = HashMap::new();
-        self.load_registry_modules(&mut registered_modules, &mut registry_links).await;
+        self.load_registry_modules(&mut registered_modules, &mut registry_links)
+            .await;
 
         let mut active_files = HashSet::new();
         self.gather_active_files(code_dirs, &mut active_files).await;

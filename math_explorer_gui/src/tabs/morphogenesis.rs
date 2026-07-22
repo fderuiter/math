@@ -1,30 +1,27 @@
-#![cfg_attr(any(), verified(opt_out="infrastructure"))]
-use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
-use crate::async_sim::{SimCommand, StateSnapshot};
+use crate::tabs::ExplorerTab;
+use eframe::egui;
 use eframe::egui::ColorImage;
 use math_commons::math_kernel::colormap::heatmap_color;
-use math_commons::theory::{ParameterConstraint, TheoryDescribable};
 use math_explorer::biology::diffusion::FiniteDifference2D;
 use math_explorer::biology::morphogenesis::{SchnakenbergKinetics, TuringSystem};
-use math_explorer::biology::reaction_diffusion::ReactionDiffusionModel;
-use std::collections::HashMap;
-use std::sync::Arc;
 
-pub struct MorphogenesisUnified {
+pub struct MorphogenesisTab {
     system: TuringSystem<2, SchnakenbergKinetics, FiniteDifference2D>,
-    dt: f64,
     width: usize,
     height: usize,
+    dt: f64,
+    paused: bool,
+    texture: Option<egui::TextureHandle>,
 }
 
-impl UnifiedModel for MorphogenesisUnified {
-    fn new(params: &HashMap<String, f64>) -> Self {
+impl Default for MorphogenesisTab {
+    fn default() -> Self {
         let width = 100;
         let height = 100;
-        let a = *params.get("a").unwrap_or(&0.1);
-        let b = *params.get("b").unwrap_or(&0.9);
-        let d_u = *params.get("d_u").unwrap_or(&1.0);
-        let d_v = *params.get("d_v").unwrap_or(&100.0);
+        let a = 0.1;
+        let b = 0.9;
+        let d_u = 1.0;
+        let d_v = 100.0;
         
         let kinetics = SchnakenbergKinetics { a, b };
         let diffusion = FiniteDifference2D::new(
@@ -46,83 +43,70 @@ impl UnifiedModel for MorphogenesisUnified {
 
         Self {
             system,
-            dt: 0.05,
             width,
             height,
+            dt: 0.05,
+            paused: false,
+            texture: None,
         }
     }
+}
 
-    fn step(&mut self, params: &HashMap<String, f64>) {
-        self.system.kinetics.a = *params.get("a").unwrap_or(&0.1);
-        self.system.kinetics.b = *params.get("b").unwrap_or(&0.9);
-        self.system.diffusion_coeffs[0] = *params.get("d_u").unwrap_or(&1.0);
-        self.system.diffusion_coeffs[1] = *params.get("d_v").unwrap_or(&100.0);
-        self.system.step(self.dt);
+impl ExplorerTab for MorphogenesisTab {
+    fn name(&self) -> &'static str {
+        "Morphogenesis"
     }
 
-    fn get_snapshot(&self) -> StateSnapshot {
-        let image = plot_concentration(self.system.u(), self.width, self.height);
-        let pixels = Arc::new(std::sync::RwLock::new(
-            image
-                .pixels
-                .iter()
-                .map(|c| eframe::egui::Color32::from_rgba_unmultiplied(c[0], c[1], c[2], c[3]))
-                .collect()),
-        );
-        StateSnapshot {
-            width: self.width,
-            height: self.height,
-            pixels,
-            custom_data: Vec::new(),
-            structured_data: None,
+    fn show(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if !self.paused {
+            self.system.step(self.dt);
+            ctx.request_repaint();
         }
-    }
 
-    fn process_command(&mut self, cmd: SimCommand, _params: &HashMap<String, f64>) {
-        if let SimCommand::Reset = cmd {
-            initialize_system(&mut self.system, self.width, self.height);
-        } else if let SimCommand::Custom(action) = cmd {
-            if action == "Reset Map" {
-                initialize_system(&mut self.system, self.width, self.height);
+        egui::SidePanel::left("morphogenesis_controls").show(ctx, |ui| {
+            ui.heading("Morphogenesis Controls");
+            ui.separator();
+
+            ui.add(egui::Slider::new(&mut self.system.kinetics.a, 0.0..=1.0).text("a"));
+            ui.add(egui::Slider::new(&mut self.system.kinetics.b, 0.0..=2.0).text("b"));
+            ui.add(egui::Slider::new(&mut self.system.diffusion_coeffs[0], 0.1..=5.0).text("D_u"));
+            ui.add(egui::Slider::new(&mut self.system.diffusion_coeffs[1], 10.0..=200.0).text("D_v"));
+
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                if ui.button(if self.paused { "▶ Resume" } else { "⏸ Pause" }).clicked() {
+                    self.paused = !self.paused;
+                }
+                
+                if ui.button("↻ Reset").clicked() {
+                    initialize_system(&mut self.system, self.width, self.height);
+                }
+            });
+            
+            ui.separator();
+            ui.label("Presets:");
+            if ui.button("Spots").clicked() {
+                self.system.kinetics.a = 0.1;
+                self.system.kinetics.b = 0.9;
+                self.system.diffusion_coeffs[0] = 1.0;
+                self.system.diffusion_coeffs[1] = 100.0;
             }
-        }
-    }
+            if ui.button("Stripes").clicked() {
+                self.system.kinetics.a = 0.14;
+                self.system.kinetics.b = 0.86;
+                self.system.diffusion_coeffs[0] = 1.0;
+                self.system.diffusion_coeffs[1] = 50.0;
+            }
+        });
 
-    fn parameters() -> HashMap<String, ParameterConstraint> {
-        let mut map = HashMap::new();
-        map.insert("a".to_string(), ParameterConstraint { min: 0.0, max: 1.0, step: 0.01 });
-        map.insert("b".to_string(), ParameterConstraint { min: 0.0, max: 2.0, step: 0.01 });
-        map.insert("d_u".to_string(), ParameterConstraint { min: 0.1, max: 5.0, step: 0.1 });
-        map.insert("d_v".to_string(), ParameterConstraint { min: 10.0, max: 200.0, step: 1.0 });
-        map
-    }
-
-    fn presets() -> Vec<(&'static str, HashMap<String, f64>)> {
-        let mut p = Vec::new();
-        
-        let mut spots = HashMap::new();
-        spots.insert("a".to_string(), 0.1);
-        spots.insert("b".to_string(), 0.9);
-        spots.insert("d_u".to_string(), 1.0);
-        spots.insert("d_v".to_string(), 100.0);
-        p.push(("Spots", spots));
-
-        let mut stripes = HashMap::new();
-        stripes.insert("a".to_string(), 0.14);
-        stripes.insert("b".to_string(), 0.86);
-        stripes.insert("d_u".to_string(), 1.0);
-        stripes.insert("d_v".to_string(), 50.0);
-        p.push(("Stripes", stripes));
-
-        p
-    }
-
-    fn custom_actions() -> Vec<&'static str> {
-        vec!["Reset Map"]
-    }
-
-    fn name() -> &'static str {
-        "Morphogenesis (Turing Patterns)"
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let image = plot_concentration(self.system.u(), self.width, self.height);
+            let texture = ctx.load_texture("morphogenesis_tex", image, egui::TextureOptions::NEAREST);
+            self.texture = Some(texture.clone());
+            
+            ui.add(egui::Image::new(&texture).fit_to_exact_size(ui.available_size()));
+        });
     }
 }
 
@@ -189,68 +173,5 @@ impl SimpleRng {
 
     fn range(&mut self, min: f64, max: f64) -> f64 {
         min + self.next_f64() * (max - min)
-    }
-}
-
-inventory::submit! {
-    crate::framework::ToolMetadata {
-        name: "MorphogenesisTool",
-        domain: "morphogenesis",
-        tags: &[],
-        build: || Box::new(UnifiedSimTool::<MorphogenesisUnified>::new()),
-    }
-}
-
-impl TheoryDescribable for MorphogenesisUnified {
-    fn theory_description(&self) -> String {
-        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
-            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
-            diffusion: FiniteDifference2D::new(
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::StepSize(1.0),
-                math_explorer::math_kernel::types::StepSize(1.0),
-            ),
-            diffusion_coeffs: vec![],
-        }.theory_description()
-    }
-    
-    fn phonetic_description(&self) -> String {
-        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
-            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
-            diffusion: FiniteDifference2D::new(
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::StepSize(1.0),
-                math_explorer::math_kernel::types::StepSize(1.0),
-            ),
-            diffusion_coeffs: vec![],
-        }.phonetic_description()
-    }
-    
-    fn theory_citation(&self) -> String {
-        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
-            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
-            diffusion: FiniteDifference2D::new(
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::StepSize(1.0),
-                math_explorer::math_kernel::types::StepSize(1.0),
-            ),
-            diffusion_coeffs: vec![],
-        }.theory_citation()
-    }
-    
-    fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
-        ReactionDiffusionModel::<SchnakenbergKinetics, FiniteDifference2D> {
-            reaction: SchnakenbergKinetics { a: 1.0, b: 1.0 },
-            diffusion: FiniteDifference2D::new(
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::Dimension(1),
-                math_explorer::math_kernel::types::StepSize(1.0),
-                math_explorer::math_kernel::types::StepSize(1.0),
-            ),
-            diffusion_coeffs: vec![],
-        }.available_descriptions()
     }
 }
