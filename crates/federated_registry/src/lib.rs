@@ -1,4 +1,4 @@
-//! Legacy crate.
+#![doc = include_str!("../README.md")]
 use std::collections::HashMap;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex, OnceLock};
