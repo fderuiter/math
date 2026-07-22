@@ -39,7 +39,7 @@ impl Default for MorphogenesisTab {
             diffusion,
         );
 
-        initialize_system(&mut system, width, height);
+        Self::initialize_system(&mut system, width, height);
 
         Self {
             system,
@@ -80,7 +80,7 @@ impl ExplorerTab for MorphogenesisTab {
                 }
                 
                 if ui.button("↻ Reset").clicked() {
-                    initialize_system(&mut self.system, self.width, self.height);
+                    Self::initialize_system(&mut self.system, self.width, self.height);
                 }
             });
             
@@ -101,7 +101,7 @@ impl ExplorerTab for MorphogenesisTab {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            let image = plot_concentration(self.system.u(), self.width, self.height);
+            let image = Self::plot_concentration(self.system.u(), self.width, self.height);
             let texture = ctx.load_texture("morphogenesis_tex", image, egui::TextureOptions::NEAREST);
             self.texture = Some(texture.clone());
             
@@ -110,47 +110,49 @@ impl ExplorerTab for MorphogenesisTab {
     }
 }
 
-fn initialize_system(
-    system: &mut TuringSystem<2, SchnakenbergKinetics, FiniteDifference2D>,
-    width: usize,
-    height: usize,
-) {
-    let n = width * height;
-    let mut rng = SimpleRng::new(12345);
+impl MorphogenesisTab {
+    fn initialize_system(
+        system: &mut TuringSystem<2, SchnakenbergKinetics, FiniteDifference2D>,
+        width: usize,
+        height: usize,
+    ) {
+        let n = width * height;
+        let mut rng = SimpleRng::new(12345);
 
-    let a = system.kinetics.a;
-    let b = system.kinetics.b;
-    let u_eq = a + b;
-    let v_eq = b / (u_eq * u_eq);
+        let a = system.kinetics.a;
+        let b = system.kinetics.b;
+        let u_eq = a + b;
+        let v_eq = b / (u_eq * u_eq);
 
-    for i in 0..n {
-        system.u_mut()[i] = u_eq + rng.range(-0.1, 0.1);
-        system.v_mut()[i] = v_eq + rng.range(-0.1, 0.1);
-    }
-}
-
-fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
-    let mut pixels = Vec::with_capacity(width * height * 4);
-
-    let (min, max) = data
-        .iter()
-        .fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), &val| {
-            (min.min(val), max.max(val))
-        });
-
-    let range = max - min;
-    let inv_range = if range > 1e-6 { 1.0 / range } else { 1.0 };
-
-    for &val in data {
-        let norm = (val - min) * inv_range;
-        let rgb = heatmap_color(norm);
-        pixels.push(rgb[0]);
-        pixels.push(rgb[1]);
-        pixels.push(rgb[2]);
-        pixels.push(255);
+        for i in 0..n {
+            system.u_mut()[i] = u_eq + rng.range(-0.1, 0.1);
+            system.v_mut()[i] = v_eq + rng.range(-0.1, 0.1);
+        }
     }
 
-    ColorImage::from_rgba_unmultiplied([width, height], &pixels)
+    fn plot_concentration(data: &[f64], width: usize, height: usize) -> ColorImage {
+        let mut pixels = Vec::with_capacity(width * height * 4);
+
+        let (min, max) = data
+            .iter()
+            .fold((f64::INFINITY, f64::NEG_INFINITY), |(min, max), &val| {
+                (min.min(val), max.max(val))
+            });
+
+        let range = max - min;
+        let inv_range = if range > 1e-6 { 1.0 / range } else { 1.0 };
+
+        for &val in data {
+            let norm = (val - min) * inv_range;
+            let rgb = heatmap_color(norm);
+            pixels.push(rgb[0]);
+            pixels.push(rgb[1]);
+            pixels.push(rgb[2]);
+            pixels.push(255);
+        }
+
+        ColorImage::from_rgba_unmultiplied([width, height], &pixels)
+    }
 }
 
 struct SimpleRng {
