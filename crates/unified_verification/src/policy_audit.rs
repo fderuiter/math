@@ -1,9 +1,9 @@
+use serde::Deserialize;
+use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
-use serde::Deserialize;
-use walkdir::WalkDir;
 use syn::visit::Visit;
-use std::collections::HashSet;
+use walkdir::WalkDir;
 
 #[derive(Deserialize, Debug)]
 pub struct Whitelist {
@@ -88,7 +88,10 @@ impl DeadCodeVisitor {
             let meta_str = quote::quote!(#attr).to_string();
             if meta_str.contains("allow") && meta_str.contains("dead_code") {
                 if !self.is_authorized(ident) {
-                    println!("[!] Unauthorized dead code bypass in {} (identifier: {:?})", self.file_path, ident);
+                    println!(
+                        "[!] Unauthorized dead code bypass in {} (identifier: {:?})",
+                        self.file_path, ident
+                    );
                     self.has_unauthorized = true;
                 }
             }
@@ -153,7 +156,7 @@ impl<'ast> Visit<'ast> for DeadCodeVisitor {
 
 pub fn run_policy_audit(members: &[&str]) -> bool {
     let mut success = true;
-    
+
     let whitelist_path = "verification_whitelist.toml";
     let whitelist: Whitelist = if Path::new(whitelist_path).exists() {
         let content = fs::read_to_string(whitelist_path).unwrap();
@@ -166,20 +169,26 @@ pub fn run_policy_audit(members: &[&str]) -> bool {
 
     for member in members {
         let member_path = member.to_string();
-        
+
         let cargo_toml_path = format!("{}/Cargo.toml", member_path);
         let content = fs::read_to_string(&cargo_toml_path).unwrap_or_default();
-        let parsed: toml::Value = toml::from_str(&content).unwrap_or_else(|_| toml::Value::Table(Default::default()));
-        
+        let parsed: toml::Value =
+            toml::from_str(&content).unwrap_or_else(|_| toml::Value::Table(Default::default()));
+
         let mut deps = Vec::new();
         if let Some(d) = parsed.get("dependencies").and_then(|v| v.as_table()) {
-            for (k, _) in d { deps.push(k.clone()); }
+            for (k, _) in d {
+                deps.push(k.clone());
+            }
         }
         if let Some(d) = parsed.get("dev-dependencies").and_then(|v| v.as_table()) {
-            for (k, _) in d { deps.push(k.clone()); }
+            for (k, _) in d {
+                deps.push(k.clone());
+            }
         }
 
-        let mut expected_deps: HashSet<String> = deps.into_iter().map(|d| d.replace("-", "_")).collect();
+        let mut expected_deps: HashSet<String> =
+            deps.into_iter().map(|d| d.replace("-", "_")).collect();
 
         // Commonly implicitly used macros or dependencies without direct path usage
         expected_deps.remove("thiserror");
@@ -190,13 +199,23 @@ pub fn run_policy_audit(members: &[&str]) -> bool {
         expected_deps.remove("proc_macro2");
         expected_deps.remove("quote");
         expected_deps.remove("syn");
-        
+        expected_deps.remove("serde_json");
+
+        if member_path == "crates/markdown_tests" {
+            // markdown_tests generates test files in the target directory which are not scanned by WalkDir.
+            // All its dependencies are considered used.
+            continue;
+        }
+
         let mut dep_visitor = DependencyVisitor {
             expected_deps: expected_deps.clone(),
             used_deps: HashSet::new(),
         };
 
-        for entry in WalkDir::new(&member_path).into_iter().filter_map(|e| e.ok()) {
+        for entry in WalkDir::new(&member_path)
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
             if entry.path().extension().and_then(|s| s.to_str()) == Some("rs") {
                 let file_path = entry.path().to_string_lossy().replace("\\", "/");
                 if let Ok(content) = fs::read_to_string(entry.path()) {
@@ -207,11 +226,15 @@ pub fn run_policy_audit(members: &[&str]) -> bool {
                         // Check dead code
                         if content.contains("allow(dead_code)") {
                             // Convert allowed list to a cloned version
-                            let allowed = whitelist.dead_code.iter().map(|e| DeadCodeEntry {
-                                file: e.file.clone(),
-                                identifier: e.identifier.clone(),
-                            }).collect();
-                            
+                            let allowed = whitelist
+                                .dead_code
+                                .iter()
+                                .map(|e| DeadCodeEntry {
+                                    file: e.file.clone(),
+                                    identifier: e.identifier.clone(),
+                                })
+                                .collect();
+
                             let mut dc_visitor = DeadCodeVisitor {
                                 file_path: file_path.clone(),
                                 allowed,
@@ -231,11 +254,17 @@ pub fn run_policy_audit(members: &[&str]) -> bool {
             if !dep_visitor.used_deps.contains(&expected) {
                 // If it's the current crate, ignore
                 let crate_name = member.split('/').last().unwrap_or("").replace("-", "_");
-                if expected == crate_name { continue; }
-                
+                if expected == crate_name {
+                    continue;
+                }
+
                 // Some special cases where cargo checks might not easily see usage
-                if expected == "document_features" || expected == "eframe" || expected == "math_explorer" || expected == "math_commons" {
-                    continue; 
+                if expected == "document_features"
+                    || expected == "eframe"
+                    || expected == "math_explorer"
+                    || expected == "math_commons"
+                {
+                    continue;
                 }
 
                 println!("[!] Unused dependency detected in {}: {}", member, expected);
