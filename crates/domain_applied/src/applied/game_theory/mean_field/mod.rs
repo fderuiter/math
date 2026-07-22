@@ -56,85 +56,9 @@ pub use physics::{Hamiltonian, QuadraticHamiltonian};
 pub use solver::{FixedPointSolver, MFGSolver};
 pub use types::{Density, MFGConfig, MFGConfigBuilder, Position};
 
-// Re-export for backward compatibility, though the API has changed slightly (requires solver struct).
-// We can provide a type alias if MeanFieldGame1D was just a struct.
-// But it had methods. So we can re-create the struct as a wrapper.
-
-/// Legacy wrapper for backward compatibility.
-///
-/// Wraps `MFGConfig` and uses `FixedPointSolver` by default.
-///
-/// ```rust
-/// use std::num::NonZeroUsize;
-/// use domain_applied::applied::game_theory::mean_field::{MeanFieldGame1D, MFGConfigBuilder};
-/// let mfg = MeanFieldGame1D::new(0.1, 1.0, 50, 100, -2.0, 2.0);
-/// ```
-pub struct MeanFieldGame1D {
-    config: MFGConfig,
-}
-
-impl MeanFieldGame1D {
-    #[allow(missing_docs)]
-    #[verified_engine::verified]
-    pub fn new(
-        viscosity: f64,
-        time_horizon: f64,
-        grid_points: usize,
-        time_steps: usize,
-        space_min: f64,
-        space_max: f64,
-    ) -> Self {
-        use std::num::NonZeroUsize;
-        Self {
-            config: MFGConfigBuilder::new()
-                .viscosity(viscosity)
-                .time_horizon(time_horizon)
-                .grid_points(NonZeroUsize::new(grid_points).expect("Grid points must be non-zero"))
-                .time_steps(NonZeroUsize::new(time_steps).expect("Time steps must be non-zero"))
-                .space_bounds(space_min, space_max)
-                .expect("Failed to configure space bounds")
-                .build()
-                .expect("Failed to build MFGConfig with given parameters"),
-        }
-    }
-
-    #[allow(missing_docs)]
-    #[verified_engine::verified]
-    pub fn solve(
-        &self,
-        cost_function: impl Fn(Position, Density) -> f64,
-        terminal_cost: impl Fn(Position, Density) -> f64,
-        initial_distribution: impl Fn(Position) -> f64,
-        iterations: usize,
-    ) -> (nalgebra::DMatrix<f64>, nalgebra::DMatrix<f64>) {
-        let solver = FixedPointSolver::new(iterations);
-        solver.solve(
-            &self.config,
-            &cost_function,
-            &terminal_cost,
-            &initial_distribution,
-        )
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    #[verified_engine::verified]
-    fn test_mfg_run_legacy() {
-        let mfg = MeanFieldGame1D::new(0.1, 1.0, 50, 100, -2.0, 2.0);
-
-        let cost_fn = |p: Position, d: Density| -> f64 { d.0 + p.0 * p.0 };
-        let term_fn = |p: Position, _d: Density| -> f64 { p.0 * p.0 };
-        let init_dist = |p: Position| -> f64 { (-p.0 * p.0 * 5.0).exp() };
-
-        let (u, _m) = mfg.solve(cost_fn, term_fn, init_dist, 5);
-
-        assert_eq!(u.nrows(), 50);
-        assert_eq!(u.ncols(), 101);
-    }
 
     #[test]
     #[verified_engine::verified]

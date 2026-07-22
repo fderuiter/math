@@ -114,7 +114,9 @@ pub trait PlotItem {
 
     fn color(&self) -> Color32;
 
-    fn extract_points(&self) -> Vec<[f64; 2]> { vec![] }
+    fn extract_points(&self) -> Vec<[f64; 2]> {
+        vec![]
+    }
 
     fn highlight(&mut self) {
         self.base_mut().highlight = true;
@@ -496,7 +498,9 @@ fn y_intersection(p1: &Pos2, p2: &Pos2, y: f32) -> Option<f32> {
 }
 
 impl PlotItem for Line<'_> {
-    fn extract_points(&self) -> Vec<[f64; 2]> { self.series.points().iter().map(|p| [p.x, p.y]).collect() }
+    fn extract_points(&self) -> Vec<[f64; 2]> {
+        self.series.points().iter().map(|p| [p.x, p.y]).collect()
+    }
     fn shapes(&self, _ui: &Ui, transform: &PlotTransform, shapes: &mut Vec<Shape>) {
         let Self {
             base,
@@ -666,7 +670,9 @@ impl<'a> Polygon<'a> {
 }
 
 impl PlotItem for Polygon<'_> {
-    fn extract_points(&self) -> Vec<[f64; 2]> { self.series.points().iter().map(|p| [p.x, p.y]).collect() }
+    fn extract_points(&self) -> Vec<[f64; 2]> {
+        self.series.points().iter().map(|p| [p.x, p.y]).collect()
+    }
     fn shapes(&self, _ui: &Ui, transform: &PlotTransform, shapes: &mut Vec<Shape>) {
         let Self {
             base,
@@ -890,7 +896,9 @@ impl<'a> Points<'a> {
 }
 
 impl PlotItem for Points<'_> {
-    fn extract_points(&self) -> Vec<[f64; 2]> { self.series.points().iter().map(|p| [p.x, p.y]).collect() }
+    fn extract_points(&self) -> Vec<[f64; 2]> {
+        self.series.points().iter().map(|p| [p.x, p.y]).collect()
+    }
     fn shapes(&self, _ui: &Ui, transform: &PlotTransform, shapes: &mut Vec<Shape>) {
         let sqrt_3 = 3_f32.sqrt();
         let frac_sqrt_3_2 = 3_f32.sqrt() / 2.0;

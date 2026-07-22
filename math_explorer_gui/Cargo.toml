@@ -13,8 +13,7 @@ out-dir = "dist"
 formats = ["wix", "dmg", "deb"]
 
 [features]
-default = ["domain_logic", "ai", "applied", "biology", "climate", "epidemiology", "physics", "pure_math"]
-domain_logic = ["dep:math_explorer"]
+default = ["math_explorer", "ai", "applied", "biology", "climate", "epidemiology", "physics", "pure_math"]
 pure_math = ["math_explorer/pure_math"]
 applied = ["math_explorer/applied", "pure_math"]
 ai = ["math_explorer/ai", "pure_math"]
@@ -34,7 +33,6 @@ oxidize_core = { path = "../crates/oxidize_core" }
 math_explorer = { path = "../math_explorer", optional = true }
 math_commons = { path = "../crates/math_commons" }
 diagnostics = { path = "../crates/diagnostics" }
-verified_engine = { path = "../crates/verified_engine" }
 num-complex = "0.4.6"
 rand = "0.8.5"
 petgraph = "0.6.5"
