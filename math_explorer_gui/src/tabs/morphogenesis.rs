@@ -1,3 +1,4 @@
+#![allow(clippy::opt_out)]
 use crate::tabs::ExplorerTab;
 use eframe::egui;
 use eframe::egui::ColorImage;
