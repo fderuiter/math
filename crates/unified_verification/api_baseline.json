@@ -480,6 +480,20 @@
   "crates/domain_applied/src/applied/win_ratio/bmi.rs": [
     "pub fn calculate_bmi (weight_kg : f64 , height_m : f64) -> f64"
   ],
+  "crates/domain_applied/src/applied/win_ratio/pair_comparison.rs": [
+    "pub enum ComparisonResult",
+    "pub fn calculate_statistics (wins : i32 , losses : i32) -> Option < WinRatioStats >",
+    "pub fn calculate_win_ratio (wins : i32 , losses : i32) -> f64",
+    "pub struct HigherIsBetter",
+    "pub struct LowerIsBetter",
+    "pub struct MatchedPairing",
+    "pub struct ThresholdComparator",
+    "pub struct UnmatchedPairing",
+    "pub struct WinRatioAnalysis < T >",
+    "pub struct WinRatioStats",
+    "pub trait OutcomeComparator < T : ? Sized >",
+    "pub trait PairingStrategy < T >"
+  ],
   "crates/domain_applied/src/applied/win_ratio/probability_win_ratio.rs": [
     "pub fn calculate_probability_win_ratio (win_probability : f64 , loss_probability : f64) -> f64",
     "pub struct ProbabilityWinRatioContext"
