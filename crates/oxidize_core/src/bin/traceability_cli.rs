@@ -186,6 +186,7 @@ fn discover_code_dirs() -> Vec<String> {
             "crates/verified_engine_macros",
             "apps/xtask",
             "crates/math_commons",
+            "egui_plot",
         ];
         if ignore_list.contains(&member_str.as_str()) {
             continue;

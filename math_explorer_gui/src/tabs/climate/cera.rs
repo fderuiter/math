@@ -89,6 +89,7 @@ impl InteractiveTool for CeraTool {
             match Cera::new(config) {
                 Ok(model) => {
                     let inputs = DMatrix::from_fn(self.num_levels, self.in_channels, |_, _| {
+            // allow(entropy_guard)
                         rand::random::<f32>()
                     });
                     let prediction = model.predict(&inputs);

@@ -87,6 +87,9 @@ jobs:
       - name: Check Traceability
         run: cargo run -p unified_verification --release -- traceability
 
+      - name: Check Unused Dependencies
+        uses: bnjbvr/cargo-machete@main
+
       - name: Check Formatting
         run: cargo fmt --all -- --check
 
@@ -161,10 +164,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Tectonic
+      - name: Install TeXLive
         run: |
-          curl -sL "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz" | tar xz
-          sudo mv tectonic /usr/local/bin/
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-base texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra texlive-science
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@nightly

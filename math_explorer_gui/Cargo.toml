@@ -23,33 +23,35 @@ epidemiology = ["math_explorer/epidemiology", "pure_math"]
 physics = ["math_explorer/physics", "applied", "pure_math"]
 
 [dependencies]
-futures = "0.3"
+futures = { workspace = true }
 federated_registry = { path = "../crates/federated_registry" }
-eframe = "0.33.3"
+eframe = { workspace = true }
 egui_plot = "0.34.1"
-rfd = "0.17.2"
-nalgebra = "0.34.0"
+rfd = { workspace = true }
+nalgebra = { workspace = true }
 oxidize_core = { path = "../crates/oxidize_core" }
 math_explorer = { path = "../math_explorer", optional = true }
 math_commons = { path = "../crates/math_commons" }
 diagnostics = { path = "../crates/diagnostics" }
-num-complex = "0.4.6"
-rand = "0.8.5"
-petgraph = "0.6.5"
-inventory = "0.3.24"
+num-complex = { workspace = true }
+rand = { workspace = true }
+petgraph = { workspace = true }
+inventory = { workspace = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-muda = "0.19.3"
+muda = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-console_error_panic_hook = "0.1.7"
-getrandom = { version = "0.2.17", features = ["js"] }
-wasm-bindgen = "0.2.100"
-js-sys = "0.3.60"
-web-sys = { version = "0.3.60", features = ["Window", "Document", "HtmlCanvasElement", "Element", "Node", "Worker", "MessageEvent", "DedicatedWorkerGlobalScope", "ErrorEvent"] }
+console_error_panic_hook = { workspace = true }
+getrandom = { workspace = true, features = ["js"] }
+wasm-bindgen = { workspace = true }
+js-sys = { workspace = true }
+web-sys = { workspace = true, features = ["Window", "Document", "HtmlCanvasElement", "Element", "Node", "Worker", "MessageEvent", "DedicatedWorkerGlobalScope", "ErrorEvent"] }
 
 [target.wasm32-unknown-unknown.dependencies]
-wasm-bindgen-futures = "0.4.72"
+wasm-bindgen-futures = { workspace = true }
+
+[package.metadata.cargo-machete]
 
 [lints]
 workspace = true

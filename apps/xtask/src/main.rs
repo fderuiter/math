@@ -1,4 +1,4 @@
-//! Legacy crate.
+#![doc = include_str!("../README.md")]
 use std::env;
 use std::fs;
 use std::process::{Command, exit};
@@ -230,18 +230,15 @@ fn verify_records() {
 }
 
 fn compile_papers() {
-    println!("=== Compiling Papers with Tectonic ===");
+    println!("=== Compiling Papers with pdflatex ===");
 
-    let check = Command::new("tectonic").arg("--version").output();
+    let check = Command::new("pdflatex").arg("--version").output();
     match check {
         Ok(output) if output.status.success() => {}
         _ => {
-            eprintln!("Error: Tectonic is not installed or not in PATH.");
-            eprintln!("Please install Tectonic 0.15.0 to compile academic papers:");
-            eprintln!(
-                "curl -sL \"https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz\" | tar xz"
-            );
-            eprintln!("sudo mv tectonic /usr/local/bin/");
+            eprintln!("Error: pdflatex is not installed or not in PATH.");
+            eprintln!("Please install TeXLive to compile academic papers:");
+            eprintln!("sudo apt-get install -y texlive-latex-base texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra texlive-science");
             exit(1);
         }
     }
@@ -258,10 +255,10 @@ fn compile_papers() {
         let path = entry.path();
         if path.is_file() && path.extension().is_some_and(|ext| ext == "tex") {
             println!("Compiling {:?}", path);
-            let status = Command::new("tectonic")
-                .arg("-X")
-                .arg("compile")
-                .arg("--outdir")
+            let status = Command::new("pdflatex")
+                .arg("-interaction=nonstopmode")
+                .arg("-halt-on-error")
+                .arg("-output-directory")
                 .arg(output_dir)
                 .arg(&path)
                 .status();

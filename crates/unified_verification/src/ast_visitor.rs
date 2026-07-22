@@ -157,7 +157,10 @@ pub fn run_clone_detector() -> bool {
         for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
             if entry.path().extension().and_then(|s| s.to_str()) == Some("rs") {
                 let path_str = entry.path().to_string_lossy().replace("\\", "/");
-                if path_str.contains("/target/") || path_str.contains("/egui_plot/") || path_str.starts_with("egui_plot/") {
+                if path_str.contains("/target/")
+                    || path_str.contains("/egui_plot/")
+                    || path_str.starts_with("egui_plot/")
+                {
                     continue;
                 }
                 if path_str.contains("unified_verification")

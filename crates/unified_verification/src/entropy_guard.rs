@@ -85,6 +85,8 @@ impl<'a, 'ast> Visit<'ast> for SecurityVisitor<'a> {
     fn visit_expr_call(&mut self, i: &'ast syn::ExprCall) {
         if let syn::Expr::Path(p) = &*i.func {
             let resolved = resolve_path(&p.path, &self.aliases);
+            // The .start() method on proc_macro2::Span requires the "span-locations" feature.
+            // This is why proc-macro2 is explicitly included in Cargo.toml and ignored by cargo-machete.
             let line = i.func.span().start().line;
 
             if resolved.contains("thread_rng")
@@ -110,6 +112,7 @@ impl<'a, 'ast> Visit<'ast> for SecurityVisitor<'a> {
 
     fn visit_lit_str(&mut self, lit: &'ast syn::LitStr) {
         let value = lit.value();
+        // See previous comment regarding proc-macro2 and span-locations feature.
         let line = lit.span().start().line;
 
         if (value.contains("-----BEGIN ") && value.contains("PRIVATE KEY-----"))
@@ -156,7 +159,10 @@ pub fn check_entropy(members: &[String]) -> Vec<String> {
         }
         for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
             let path_str = entry.path().to_string_lossy().replace("\\", "/");
-            if path_str.contains("/target/") || path_str.contains("/egui_plot/") || path_str.starts_with("egui_plot/") {
+            if path_str.contains("/target/")
+                || path_str.contains("/egui_plot/")
+                || path_str.starts_with("egui_plot/")
+            {
                 continue;
             }
             if entry.path().extension().and_then(|s| s.to_str()) == Some("rs") {

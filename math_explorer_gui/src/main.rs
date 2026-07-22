@@ -1,4 +1,4 @@
-//! Legacy crate.
+#![doc = include_str!("../README.md")]
 #[allow(missing_docs)]
 pub mod accessibility;
 mod app;

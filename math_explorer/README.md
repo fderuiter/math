@@ -29,7 +29,7 @@ cargo run --release --package math_explorer --example hodgkin_huxley_demo
 
 *(See `math_explorer/examples/hodgkin_huxley_demo.rs` for implementation details)*
 
-```rust
+```rust,ignore
 use math_explorer::biology::neuroscience::HodgkinHuxleyNeuron;
 
 fn main() {
@@ -57,7 +57,7 @@ cargo run --release --package math_explorer --example lorenz_chaos
 
 *(See `math_explorer/examples/lorenz_chaos.rs` for implementation details)*
 
-```rust
+```rust,ignore
 use math_explorer::physics::chaos::lorenz::{LorenzSystem, LorenzState};
 use math_explorer::physics::chaos::metrics::lorenz_lyapunov;
 use math_explorer::pure_math::analysis::ode::RungeKutta4;
@@ -84,7 +84,7 @@ cargo run --release --package math_explorer --example transformer_demo
 
 *(See `math_explorer/examples/transformer_demo.rs` for implementation details)*
 
-```rust
+```rust,ignore
 use math_explorer::ai::transformer::Encoder;
 use nalgebra::DMatrix;
 

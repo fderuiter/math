@@ -1,4 +1,4 @@
-//! Legacy crate.
+#![doc = include_str!("../README.md")]
 #![allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 #![allow(clippy::all)]
 use std::env;
@@ -7,12 +7,12 @@ use std::process::Command;
 mod api_drift;
 mod ast_visitor;
 mod entropy_guard;
+mod policy_audit;
 mod profile;
 mod report;
 mod utils;
 mod vulnerabilities;
 mod workflow_linter;
-mod policy_audit;
 use utils::{check_file_lengths, check_staged_duplicates};
 fn get_workspace_members() -> Vec<String> {
     let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
