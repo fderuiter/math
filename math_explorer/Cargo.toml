@@ -33,6 +33,7 @@ serde_json = "1.0.150"
 approx = "0.5.1"
 num-complex = "0.4"
 rand = "0.8.6"
+serde_json = "1.0.150"
 verified_engine = { path = "../crates/verified_engine" }
 
 [dev-dependencies.criterion]
