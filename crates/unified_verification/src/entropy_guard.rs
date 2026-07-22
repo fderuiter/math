@@ -155,8 +155,8 @@ pub fn check_entropy(members: &[String]) -> Vec<String> {
             continue;
         }
         for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-            let path_str = entry.path().to_string_lossy();
-            if path_str.contains("/target/") || path_str.contains("\\target\\") {
+            let path_str = entry.path().to_string_lossy().replace("\\", "/");
+            if path_str.contains("/target/") {
                 continue;
             }
             if entry.path().extension().and_then(|s| s.to_str()) == Some("rs") {
