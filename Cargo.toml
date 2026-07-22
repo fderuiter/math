@@ -30,6 +30,7 @@ too_many_lines = "deny"
 cognitive_complexity = "deny"
 
 [workspace.dependencies]
+chrono = "0.4"
 approx = "0.5.1"
 async-recursion = "1.0"
 console_error_panic_hook = "0.1.7"

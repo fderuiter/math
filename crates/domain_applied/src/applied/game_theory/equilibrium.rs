@@ -105,26 +105,6 @@ pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64
     correspondence.is_in_image(point, point)
 }
 
-/// Verifies if a point is a fixed point for the given correspondence.
-#[deprecated(
-    since = "0.2.0",
-    note = "FixedPointVerifier struct is deprecated. Use the module-level is_fixed_point function directly."
-)]
-pub struct FixedPointVerifier;
-
-#[allow(deprecated)]
-impl FixedPointVerifier {
-    #[deprecated(
-        since = "0.2.0",
-        note = "Use the module-level is_fixed_point function directly."
-    )]
-    #[allow(missing_docs)]
-    #[verified_engine::verified(opt_out = "Legacy wrapper")]
-    pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64>) -> bool {
-        is_fixed_point(correspondence, point)
-    }
-}
-
 /// Example: Best Response correspondence in a simplified 2-player game.
 ///
 /// This is a utility to demonstrate how one might wrap a Nash equilibrium check.
