@@ -106,40 +106,41 @@ fn verify_records() -> bool {
         .map(|s| s.trim().trim_matches('"').to_string())
         .filter(|s| !s.is_empty());
 
-    let (_commit_msgs, changed_files) = if let (Some(base), Some(head)) = (base_sha.as_ref(), head_sha.as_ref()) {
-        let msg_out = Command::new("git")
-            .args(["log", "--format=%B", &format!("{}..{}", base, head)])
-            .output()
-            .unwrap();
-        let msgs = String::from_utf8_lossy(&msg_out.stdout).to_string();
+    let (_commit_msgs, changed_files) =
+        if let (Some(base), Some(head)) = (base_sha.as_ref(), head_sha.as_ref()) {
+            let msg_out = Command::new("git")
+                .args(["log", "--format=%B", &format!("{}..{}", base, head)])
+                .output()
+                .unwrap();
+            let msgs = String::from_utf8_lossy(&msg_out.stdout).to_string();
 
-        let diff_out = Command::new("git")
-            .args(["diff", "--name-only", &base, &head])
-            .output()
-            .unwrap();
-        let mut diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
-        if diffs.trim().is_empty() {
+            let diff_out = Command::new("git")
+                .args(["diff", "--name-only", &format!("{}...{}", base, head)])
+                .output()
+                .unwrap();
+            let mut diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
+            if diffs.trim().is_empty() {
+                let diff_out = Command::new("git")
+                    .args(["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
+                    .output()
+                    .unwrap();
+                diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
+            }
+            (msgs, diffs)
+        } else {
+            let msg_out = Command::new("git")
+                .args(["log", "-1", "--pretty=%B"])
+                .output()
+                .unwrap();
+            let msgs = String::from_utf8_lossy(&msg_out.stdout).to_string();
+
             let diff_out = Command::new("git")
                 .args(["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
                 .output()
                 .unwrap();
-            diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
-        }
-        (msgs, diffs)
-    } else {
-        let msg_out = Command::new("git")
-            .args(["log", "-1", "--pretty=%B"])
-            .output()
-            .unwrap();
-        let msgs = String::from_utf8_lossy(&msg_out.stdout).to_string();
-
-        let diff_out = Command::new("git")
-            .args(["diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"])
-            .output()
-            .unwrap();
-        let diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
-        (msgs, diffs)
-    };
+            let diffs = String::from_utf8_lossy(&diff_out.stdout).to_string();
+            (msgs, diffs)
+        };
 
     let changed_files = changed_files.replace("\\", "/");
     println!("Changed files:\n{}", changed_files);
@@ -180,13 +181,21 @@ fn is_pure_deletion(base_sha: Option<&str>, head_sha: Option<&str>) -> bool {
     let mut output_str = String::new();
 
     if let (Some(base), Some(head)) = (base_sha, head_sha) {
-        if let Some(out) = Command::new("git").args(["diff", base, head]).output().ok() {
+        if let Some(out) = Command::new("git")
+            .args(["diff", &format!("{}...{}", base, head)])
+            .output()
+            .ok()
+        {
             output_str = String::from_utf8_lossy(&out.stdout).to_string();
         }
     }
-    
+
     if output_str.trim().is_empty() {
-        if let Some(out) = Command::new("git").args(["diff", "HEAD~1", "HEAD"]).output().ok() {
+        if let Some(out) = Command::new("git")
+            .args(["diff", "HEAD~1", "HEAD"])
+            .output()
+            .ok()
+        {
             output_str = String::from_utf8_lossy(&out.stdout).to_string();
         }
     }
@@ -194,15 +203,21 @@ fn is_pure_deletion(base_sha: Option<&str>, head_sha: Option<&str>) -> bool {
     let diff = output_str;
     let mut in_core_file = false;
     let mut added_code_lines = 0;
-    
+
     for line in diff.lines() {
         if line.starts_with("diff --git") {
-            let is_core = line.contains(" a/math_explorer/") || (line.contains(" a/crates/") && !line.contains(" a/crates/unified_verification/"));
+            let is_core = line.contains(" a/math_explorer/")
+                || (line.contains(" a/crates/")
+                    && !line.contains(" a/crates/unified_verification/"));
             in_core_file = is_core;
         } else if in_core_file {
             if line.starts_with('+') && !line.starts_with("+++") {
                 let content = line[1..].trim();
-                if !content.is_empty() && !content.starts_with("//") && !content.starts_with("/*") && !content.starts_with("*") {
+                if !content.is_empty()
+                    && !content.starts_with("//")
+                    && !content.starts_with("/*")
+                    && !content.starts_with("*")
+                {
                     added_code_lines += 1;
                 }
             }
