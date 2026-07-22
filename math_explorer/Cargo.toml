@@ -29,12 +29,10 @@ epidemiology = ["pure_math", "dep:domain_epidemiology"]
 physics = ["applied", "pure_math", "dep:domain_physics"]
 
 [dev-dependencies]
+serde_json = "1.0.150"
 approx = "0.5.1"
 num-complex = "0.4"
-petgraph = "0.6"
 rand = "0.8.6"
-serde_json = "1.0.150"
-statrs = "0.17"
 verified_engine = { path = "../crates/verified_engine" }
 
 [dev-dependencies.criterion]

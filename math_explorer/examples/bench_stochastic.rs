@@ -42,5 +42,5 @@ fn main() {
     });
 
     println!("Deterministic Metrics:");
-    println!("{}", serde_json::to_string_pretty(&metrics).unwrap());
+    println!("{:#?}", metrics);
 }

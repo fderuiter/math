@@ -13,8 +13,8 @@ pub fn check_file_lengths(members: &[String]) -> Vec<String> {
         }
         if Path::new(dir).exists() {
             for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
-                let path_str = entry.path().to_string_lossy();
-                if path_str.contains("/target/") || path_str.contains("\\target\\") || path_str.contains("egui_plot") {
+                let path_str = entry.path().to_string_lossy().replace("\\", "/");
+                if path_str.contains("/target/") || path_str.contains("/egui_plot/") || path_str.starts_with("egui_plot/") {
                     continue;
                 }
                 if entry.file_type().is_file()

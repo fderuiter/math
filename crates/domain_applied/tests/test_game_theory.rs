@@ -1,17 +1,17 @@
 #![allow(missing_docs)]
-#[allow(deprecated)]
 use domain_applied::applied::game_theory::equilibrium::{
-    BestResponseCorrespondence, BoxSet, ConvexSet, FixedPointVerifier,
+    BestResponseCorrespondence, BoxSet, ConvexSet, is_fixed_point,
 };
 use domain_applied::applied::game_theory::evolutionary::ReplicatorDynamics;
-use domain_applied::applied::game_theory::mean_field::{Density, MeanFieldGame1D, Position};
-#[allow(deprecated)]
-use domain_applied::applied::game_theory::mechanism_design::MechanismDesign;
+use domain_applied::applied::game_theory::mean_field::{
+    Density, FixedPointSolver, MFGConfigBuilder, MFGSolver, Position,
+};
+use domain_applied::applied::game_theory::mechanism_design::optimal_reserve_price;
 use nalgebra::{DMatrix, DVector};
 use statrs::distribution::Uniform;
+use std::num::NonZeroUsize;
 
 #[test]
-#[allow(deprecated)]
 #[verified_engine::verified]
 fn test_equilibrium_integration() {
     let box_set = BoxSet::new(vec![0.0], vec![1.0]);
@@ -22,7 +22,7 @@ fn test_equilibrium_integration() {
         mapping: Box::new(|x| x.clone()),
         tolerance: math_commons::registry::TOLERANCE_FAST,
     };
-    assert!(FixedPointVerifier::is_fixed_point(
+    assert!(is_fixed_point(
         &correspondence,
         &DVector::from_vec(vec![0.5])
     ));
@@ -31,13 +31,22 @@ fn test_equilibrium_integration() {
 #[test]
 #[verified_engine::verified]
 fn test_mean_field_integration() {
-    let mfg = MeanFieldGame1D::new(0.1, 1.0, 10, 10, -1.0, 1.0);
-    // Just ensure it runs without panic
-    let _res = mfg.solve(
-        |_p: Position, d: Density| d.0 * d.0,
-        |_p: Position, _d: Density| 0.0,
-        |_p: Position| 1.0,
-        2,
+    let config = MFGConfigBuilder::new()
+        .viscosity(0.1)
+        .time_horizon(1.0)
+        .grid_points(NonZeroUsize::new(10).unwrap())
+        .time_steps(NonZeroUsize::new(10).unwrap())
+        .space_bounds(-1.0, 1.0)
+        .expect("Space bounds must be valid")
+        .build()
+        .expect("Config should build");
+
+    let solver = FixedPointSolver::new(2);
+    let _res = solver.solve(
+        &config,
+        &|_p: Position, d: Density| d.0 * d.0,
+        &|_p: Position, _d: Density| 0.0,
+        &|_p: Position| 1.0,
     );
 }
 
@@ -51,10 +60,9 @@ fn test_evolutionary_integration() {
 }
 
 #[test]
-#[allow(deprecated)]
 #[verified_engine::verified]
 fn test_mechanism_integration() {
     let dist = Uniform::new(0.0, 1.0).unwrap();
-    let r = MechanismDesign::optimal_reserve_price(&dist, 0.0, 1.0);
+    let r = optimal_reserve_price(&dist, 0.0, 1.0);
     assert!((r - 0.5).abs() < 1e-2);
 }

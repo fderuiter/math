@@ -33,7 +33,9 @@ fn main() {
 fn print_help() {
     println!("Usage: xtask <command> [args...]\n");
     println!("Active Quality Gates:");
-    println!("  check-file-lengths       - Run centralized verification suite for file-length constraints");
+    println!(
+        "  check-file-lengths       - Run centralized verification suite for file-length constraints"
+    );
     println!("  check-staged-duplicates  - Run staged duplicates check");
     println!("  test-features            - Run tests across feature combinations");
     println!("  traceability             - Generate traceability report");
