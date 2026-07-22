@@ -2626,7 +2626,7 @@ dependencies = [
  "oxidize_core",
  "pure_math",
  "rand",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "verified_engine",
  "verified_engine_macros",
 ]
@@ -2659,9 +2659,11 @@ dependencies = [
  "nalgebra 0.34.2",
  "num-complex",
  "oxidize_core",
+ "petgraph",
  "pure_math",
  "rand",
  "serde_json",
+ "statrs",
  "thiserror 2.0.18",
  "verified_engine",
 ]
@@ -2688,6 +2690,7 @@ dependencies = [
  "petgraph",
  "rand",
  "rfd",
+ "verified_engine",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
