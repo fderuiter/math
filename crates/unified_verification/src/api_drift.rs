@@ -1,9 +1,9 @@
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
 use syn::visit::Visit;
 use walkdir::WalkDir;
-use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ApiItem {
@@ -29,7 +29,10 @@ impl From<ApiItemShim> for ApiItem {
                 signature: sig,
                 deprecation_expires: None,
             },
-            ApiItemShim::Detailed { signature, deprecation_expires } => ApiItem {
+            ApiItemShim::Detailed {
+                signature,
+                deprecation_expires,
+            } => ApiItem {
                 signature,
                 deprecation_expires,
             },
@@ -76,13 +79,18 @@ fn find_date_pattern(s: &str) -> Option<String> {
     }
     for i in 0..=(bytes.len() - 10) {
         let is_digit = |b: u8| b.is_ascii_digit();
-        if is_digit(bytes[i]) && is_digit(bytes[i+1]) && is_digit(bytes[i+2]) && is_digit(bytes[i+3])
-            && bytes[i+4] == b'-'
-            && is_digit(bytes[i+5]) && is_digit(bytes[i+6])
-            && bytes[i+7] == b'-'
-            && is_digit(bytes[i+8]) && is_digit(bytes[i+9])
+        if is_digit(bytes[i])
+            && is_digit(bytes[i + 1])
+            && is_digit(bytes[i + 2])
+            && is_digit(bytes[i + 3])
+            && bytes[i + 4] == b'-'
+            && is_digit(bytes[i + 5])
+            && is_digit(bytes[i + 6])
+            && bytes[i + 7] == b'-'
+            && is_digit(bytes[i + 8])
+            && is_digit(bytes[i + 9])
         {
-            return Some(s[i..i+10].to_string());
+            return Some(s[i..i + 10].to_string());
         }
     }
     None
@@ -155,7 +163,6 @@ impl<'ast> Visit<'ast> for ApiVisitor {
     }
 }
 
-
 pub fn extract_apis() -> BTreeMap<String, Vec<ApiItem>> {
     let mut apis = BTreeMap::new();
     let mut dirs_to_scan = vec![PathBuf::from("math_explorer/src")];
@@ -222,8 +229,13 @@ pub fn check_api_drift() -> bool {
         for item in items {
             if let Some(ref date) = item.deprecation_expires {
                 if date.as_str() <= today.as_str() {
-                    println!("API Expired: {} in {} (Expired: {})", item.signature, path, date);
-                    println!("  This deprecated API has passed its expiration target and must be removed.");
+                    println!(
+                        "API Expired: {} in {} (Expired: {})",
+                        item.signature, path, date
+                    );
+                    println!(
+                        "  This deprecated API has passed its expiration target and must be removed."
+                    );
                     changed = true;
                 }
             }
@@ -243,7 +255,10 @@ pub fn check_api_drift() -> bool {
                     // Item was deleted. Check if it's a valid bypass.
                     if let Some(ref date) = item.deprecation_expires {
                         if date.as_str() <= today.as_str() {
-                            println!("  ~ {} (Deleted, bypassed drift check due to expired deprecation)", item.signature);
+                            println!(
+                                "  ~ {} (Deleted, bypassed drift check due to expired deprecation)",
+                                item.signature
+                            );
                             continue; // Skip flagging as changed!
                         }
                     }
@@ -269,7 +284,10 @@ pub fn check_api_drift() -> bool {
                 if let Some(ref date) = item.deprecation_expires {
                     if date.as_str() <= today.as_str() {
                         // bypassed
-                        println!("  ~ {} in {} (File deleted, bypassed due to expired deprecation)", item.signature, path);
+                        println!(
+                            "  ~ {} in {} (File deleted, bypassed due to expired deprecation)",
+                            item.signature, path
+                        );
                         continue;
                     }
                 }
