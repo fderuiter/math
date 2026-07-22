@@ -209,6 +209,7 @@ impl<T> WinRatioAnalysis<T> {
     ) -> (i32, i32) {
         strategy.evaluate(self, group1, group2)
     }
+}
 
 
 impl<T: PartialOrd + 'static> Default for WinRatioAnalysis<T> {

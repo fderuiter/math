@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 use domain_applied::applied::win_ratio::pair_comparison::{
-    ComparisonResult, HigherIsBetter, LowerIsBetter, ThresholdComparator, WinRatioAnalysis,
+    ComparisonResult, HigherIsBetter, LowerIsBetter, ThresholdComparator, WinRatioAnalysis, UnmatchedPairing,
 };
 
 #[test]
@@ -80,7 +80,7 @@ fn test_backward_compatibility() {
     let group2 = vec![vec![5.0]];
 
     let analysis = WinRatioAnalysis::new().add_strategy(Box::new(HigherIsBetter));
-    let (wins, losses) = analysis.unmatched_pairs(&group1, &group2);
+    let (wins, losses) = analysis.evaluate_pairs(&group1, &group2, &UnmatchedPairing);
     assert_eq!(wins, 1);
     assert_eq!(losses, 0);
 }

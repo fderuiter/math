@@ -1,5 +1,5 @@
 #![allow(missing_docs)]
-use domain_applied::applied::win_ratio::pair_comparison::{WinRatioAnalysis, HigherIsBetter};
+use domain_applied::applied::win_ratio::pair_comparison::{WinRatioAnalysis, HigherIsBetter, MatchedPairing, UnmatchedPairing};
 use domain_applied::applied::win_ratio::{
     bmi, pair_comparison, probability_win_ratio, sample_win_ratio, simulation,
 };
@@ -21,7 +21,7 @@ fn test_matched_pairs() {
     for _ in 0..group1[0].len() {
         analysis = analysis.add_strategy(Box::new(HigherIsBetter));
     }
-    let (wins, losses) = analysis.matched_pairs(&group1, &group2);
+    let (wins, losses) = analysis.evaluate_pairs(&group1, &group2, &MatchedPairing);
 
     // Let's trace the comparisons:
     // (1,0,1) vs (0,1,0) -> win
@@ -67,7 +67,7 @@ fn test_unmatched_pairs() {
     for _ in 0..group1[0].len() {
         analysis = analysis.add_strategy(Box::new(HigherIsBetter));
     }
-    let (wins, losses) = analysis.unmatched_pairs(&group1, &group2);
+    let (wins, losses) = analysis.evaluate_pairs(&group1, &group2, &UnmatchedPairing);
 
     // After re-tracing, wins=8, losses=1.
     assert_eq!(wins, 8);
