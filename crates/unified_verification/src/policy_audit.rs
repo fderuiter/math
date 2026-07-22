@@ -49,6 +49,26 @@ impl<'ast> Visit<'ast> for DependencyVisitor {
         if let Some(segment) = i.path.segments.first() {
             self.check_ident(&segment.ident);
         }
+        
+        // Extract identifiers from inside the macro's token stream
+        let mut streams = vec![i.tokens.clone()];
+        while let Some(stream) = streams.pop() {
+            for token in stream {
+                match token {
+                    proc_macro2::TokenTree::Ident(ident) => {
+                        let name = ident.to_string();
+                        if self.expected_deps.contains(&name) {
+                            self.used_deps.insert(name);
+                        }
+                    }
+                    proc_macro2::TokenTree::Group(group) => {
+                        streams.push(group.stream());
+                    }
+                    _ => {}
+                }
+            }
+        }
+        
         syn::visit::visit_macro(self, i);
     }
     fn visit_item_extern_crate(&mut self, i: &'ast syn::ItemExternCrate) {
