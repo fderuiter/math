@@ -105,7 +105,6 @@ pub fn is_fixed_point<C: Correspondence>(correspondence: &C, point: &DVector<f64
     correspondence.is_in_image(point, point)
 }
 
-
 /// Example: Best Response correspondence in a simplified 2-player game.
 ///
 /// This is a utility to demonstrate how one might wrap a Nash equilibrium check.

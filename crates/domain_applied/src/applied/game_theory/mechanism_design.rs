@@ -147,7 +147,6 @@ pub fn simulate_optimal_revenue_with_rng<D: ValuationDistribution, R: Rng + ?Siz
     total_revenue / (n_simulations as f64)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

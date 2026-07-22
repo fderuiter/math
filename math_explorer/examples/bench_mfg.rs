@@ -1,5 +1,7 @@
 #![allow(missing_docs)]
-use math_explorer::applied::game_theory::mean_field::{Density, MFGConfigBuilder, FixedPointSolver, MFGSolver, Position};
+use math_explorer::applied::game_theory::mean_field::{
+    Density, FixedPointSolver, MFGConfigBuilder, MFGSolver, Position,
+};
 use std::num::NonZeroUsize;
 use std::time::Instant;
 

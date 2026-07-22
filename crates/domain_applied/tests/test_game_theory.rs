@@ -1,9 +1,11 @@
 #![allow(missing_docs)]
 use domain_applied::applied::game_theory::equilibrium::{
-    is_fixed_point, BestResponseCorrespondence, BoxSet, ConvexSet,
+    BestResponseCorrespondence, BoxSet, ConvexSet, is_fixed_point,
 };
 use domain_applied::applied::game_theory::evolutionary::ReplicatorDynamics;
-use domain_applied::applied::game_theory::mean_field::{Density, FixedPointSolver, MFGConfigBuilder, MFGSolver, Position};
+use domain_applied::applied::game_theory::mean_field::{
+    Density, FixedPointSolver, MFGConfigBuilder, MFGSolver, Position,
+};
 use domain_applied::applied::game_theory::mechanism_design::optimal_reserve_price;
 use nalgebra::{DMatrix, DVector};
 use statrs::distribution::Uniform;
