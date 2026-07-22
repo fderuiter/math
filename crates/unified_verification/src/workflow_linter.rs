@@ -1,7 +1,7 @@
+use serde_yaml::Value;
 use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
-use serde_yaml::Value;
 
 pub fn lint_workflows() -> bool {
     let workflows_dir = Path::new(".github/workflows");
@@ -12,7 +12,10 @@ pub fn lint_workflows() -> bool {
 
     let mut all_passed = true;
 
-    for entry in WalkDir::new(workflows_dir).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(workflows_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
         if entry.path().is_file() {
             let path_str = entry.path().to_string_lossy();
             if path_str.ends_with(".yml") || path_str.ends_with(".yaml") {

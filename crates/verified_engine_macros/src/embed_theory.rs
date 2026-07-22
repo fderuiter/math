@@ -222,8 +222,6 @@ fn get_item_attrs(item: &TokenStream) -> Option<Vec<syn::Attribute>> {
     }
 }
 
-
-
 pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = match syn::parse2::<EmbedTheoryArgs>(attr) {
         Ok(a) => a,
@@ -284,5 +282,3 @@ pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
         const #track_ident: &str = include_str!(#include_expr);
     }
 }
-
-

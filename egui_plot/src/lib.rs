@@ -9,6 +9,11 @@
 //!
 
 #![allow(missing_docs)]
+#![allow(
+    clippy::too_many_lines,
+    clippy::cognitive_complexity,
+    clippy::too_many_arguments
+)]
 
 mod axis;
 pub mod commands;
@@ -1170,27 +1175,28 @@ impl<'a> Plot<'a> {
                 })
                 .iter()
                 .find(|r| r.dragged_by(PointerButton::Primary))
-                    && let Some(drag_start_pos) = ui.input(|i| i.pointer.press_origin()) {
-                        let delta = axis_response.drag_delta();
+                && let Some(drag_start_pos) = ui.input(|i| i.pointer.press_origin())
+            {
+                let delta = axis_response.drag_delta();
 
-                        let axis_zoom = 1.0 + (0.02 * delta[d]).clamp(-1.0, 1.0);
+                let axis_zoom = 1.0 + (0.02 * delta[d]).clamp(-1.0, 1.0);
 
-                        let zoom = if data_aspect.is_some() {
-                            // Zoom both axes equally to maintain aspect ratio:
-                            Vec2::splat(axis_zoom)
-                        } else {
-                            let mut zoom = Vec2::splat(1.0);
-                            zoom[d] = axis_zoom;
-                            zoom
-                        };
+                let zoom = if data_aspect.is_some() {
+                    // Zoom both axes equally to maintain aspect ratio:
+                    Vec2::splat(axis_zoom)
+                } else {
+                    let mut zoom = Vec2::splat(1.0);
+                    zoom[d] = axis_zoom;
+                    zoom
+                };
 
-                        if zoom != Vec2::splat(1.0) {
-                            let mut zoom_center = plot_rect.center();
-                            zoom_center[d] = drag_start_pos[d];
-                            mem.transform.zoom(zoom, zoom_center);
-                            mem.auto_bounds = false.into();
-                        }
-                    }
+                if zoom != Vec2::splat(1.0) {
+                    let mut zoom_center = plot_rect.center();
+                    zoom_center[d] = drag_start_pos[d];
+                    mem.transform.zoom(zoom, zoom_center);
+                    mem.auto_bounds = false.into();
+                }
+            }
         }
 
         // Zooming
@@ -1327,14 +1333,13 @@ impl<'a> Plot<'a> {
             item.initialize(mem.transform.bounds().range_x());
         }
 
-        
         // --- EXTRACT DATASETS INJECTED ---
         let mut accessible_datasets: Vec<(String, Vec<[f64; 2]>)> = Vec::new();
         for item in &items {
             accessible_datasets.push((item.name().to_owned(), item.extract_points()));
         }
         // --- END EXTRACT DATASETS ---
-let prepared = PreparedPlot {
+        let prepared = PreparedPlot {
             plot_area_response: &response,
             items,
             show_x,
@@ -1400,12 +1405,6 @@ let prepared = PreparedPlot {
         }
 
         let transform = mem.transform;
-        
-        
-
-        
-
-        
 
         // --- ACCESSIBILITY LOGIC INJECTED ---
         #[derive(Clone, Default)]
@@ -1414,11 +1413,13 @@ let prepared = PreparedPlot {
             focused_item: usize,
             focused_point: usize,
         }
-        let mut access_state = ui.data_mut(|d| d.get_temp::<AccessState>(plot_id).unwrap_or_default());
+        let mut access_state =
+            ui.data_mut(|d| d.get_temp::<AccessState>(plot_id).unwrap_or_default());
 
         let focus_response = response.interact(egui::Sense::focusable_noninteractive());
-        
-        let overlay_rect = egui::Rect::from_min_size(plot_rect.min, egui::vec2(plot_rect.width(), 30.0));
+
+        let overlay_rect =
+            egui::Rect::from_min_size(plot_rect.min, egui::vec2(plot_rect.width(), 30.0));
         ui.scope_builder(egui::UiBuilder::new().max_rect(overlay_rect), |ui| {
             ui.horizontal(|ui| {
                 if ui.button("Table View").clicked() {
@@ -1442,13 +1443,22 @@ let prepared = PreparedPlot {
                         let mut first = true;
                         for (name, pts) in &accessible_datasets {
                             for p in pts {
-                                if !first { let _ = writeln!(file, ","); }
+                                if !first {
+                                    let _ = writeln!(file, ",");
+                                }
                                 first = false;
-                                let _ = writeln!(file, "{{\"dataset\": \"{}\", \"x\": {}, \"y\": {}}}", name, p[0], p[1]);
+                                let _ = writeln!(
+                                    file,
+                                    "{{\"dataset\": \"{}\", \"x\": {}, \"y\": {}}}",
+                                    name, p[0], p[1]
+                                );
                             }
                         }
-                        let _ = writeln!(file, "
-]");
+                        let _ = writeln!(
+                            file,
+                            "
+]"
+                        );
                     }
                 }
             });
@@ -1458,7 +1468,9 @@ let prepared = PreparedPlot {
             egui::Window::new(format!("Data Table - {id_source:?}")).show(ui.ctx(), |ui| {
                 egui::ScrollArea::both().show(ui, |ui| {
                     for (name, pts) in &accessible_datasets {
-                        if pts.is_empty() { continue; }
+                        if pts.is_empty() {
+                            continue;
+                        }
                         ui.heading(name);
                         for p in pts {
                             ui.label(format!("X: {:.4}, Y: {:.4}", p[0], p[1]));
@@ -1482,13 +1494,12 @@ let prepared = PreparedPlot {
                     Some(ui),
                     None,
                 );
-                if down_triggered
-                    && access_state.focused_item + 1 < num_items {
-                        access_state.focused_item += 1;
-                        access_state.focused_point = 0;
-                        changed = true;
-                    }
-                
+                if down_triggered && access_state.focused_item + 1 < num_items {
+                    access_state.focused_item += 1;
+                    access_state.focused_point = 0;
+                    changed = true;
+                }
+
                 let up_triggered = crate::commands::CommandRegistryData::register_and_check(
                     ui.ctx(),
                     "Previous Dataset",
@@ -1499,62 +1510,63 @@ let prepared = PreparedPlot {
                     Some(ui),
                     None,
                 );
-                if up_triggered
-                    && access_state.focused_item > 0 {
-                        access_state.focused_item -= 1;
-                        access_state.focused_point = 0;
-                        changed = true;
-                    }
-                
+                if up_triggered && access_state.focused_item > 0 {
+                    access_state.focused_item -= 1;
+                    access_state.focused_point = 0;
+                    changed = true;
+                }
+
                 if let Some((_, pts)) = accessible_datasets.get(access_state.focused_item) {
                     let num_pts = pts.len();
                     if num_pts > 0 {
-                        let right_triggered = crate::commands::CommandRegistryData::register_and_check(
-                            ui.ctx(),
-                            "Next Point",
-                            "Navigate to the next point in the dataset",
-                            crate::commands::CommandTrigger::Key(egui::Key::ArrowRight),
-                            false,
-                            "Plot Accessibility",
-                            Some(ui),
-                            None,
-                        );
-                        if right_triggered
-                            && access_state.focused_point + 1 < num_pts {
-                                access_state.focused_point += 1;
-                                changed = true;
-                            }
-                        
-                        let left_triggered = crate::commands::CommandRegistryData::register_and_check(
-                            ui.ctx(),
-                            "Previous Point",
-                            "Navigate to the previous point in the dataset",
-                            crate::commands::CommandTrigger::Key(egui::Key::ArrowLeft),
-                            false,
-                            "Plot Accessibility",
-                            Some(ui),
-                            None,
-                        );
-                        if left_triggered
-                            && access_state.focused_point > 0 {
-                                access_state.focused_point -= 1;
-                                changed = true;
-                            }
+                        let right_triggered =
+                            crate::commands::CommandRegistryData::register_and_check(
+                                ui.ctx(),
+                                "Next Point",
+                                "Navigate to the next point in the dataset",
+                                crate::commands::CommandTrigger::Key(egui::Key::ArrowRight),
+                                false,
+                                "Plot Accessibility",
+                                Some(ui),
+                                None,
+                            );
+                        if right_triggered && access_state.focused_point + 1 < num_pts {
+                            access_state.focused_point += 1;
+                            changed = true;
+                        }
+
+                        let left_triggered =
+                            crate::commands::CommandRegistryData::register_and_check(
+                                ui.ctx(),
+                                "Previous Point",
+                                "Navigate to the previous point in the dataset",
+                                crate::commands::CommandTrigger::Key(egui::Key::ArrowLeft),
+                                false,
+                                "Plot Accessibility",
+                                Some(ui),
+                                None,
+                            );
+                        if left_triggered && access_state.focused_point > 0 {
+                            access_state.focused_point -= 1;
+                            changed = true;
+                        }
                     }
                 }
 
                 if changed
                     && let Some((name, pts)) = accessible_datasets.get(access_state.focused_item)
-                        && let Some(p) = pts.get(access_state.focused_point) {
-                            let msg = format!("Dataset {}, Point X: {:.4}, Y: {:.4}", name, p[0], p[1]);
-                            ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("aria_live_message"), msg));
-                        }
+                    && let Some(p) = pts.get(access_state.focused_point)
+                {
+                    let msg = format!("Dataset {}, Point X: {:.4}, Y: {:.4}", name, p[0], p[1]);
+                    ui.ctx()
+                        .data_mut(|d| d.insert_temp(egui::Id::new("aria_live_message"), msg));
+                }
             }
         }
 
         ui.data_mut(|d| d.insert_temp(plot_id, access_state));
         // --- END ACCESSIBILITY LOGIC ---
-mem.store(ui.ctx(), plot_id);
+        mem.store(ui.ctx(), plot_id);
 
         let response = if show_x || show_y {
             response.on_hover_cursor(CursorIcon::Crosshair)
@@ -2094,13 +2106,14 @@ fn generate_marks(step_sizes: [f64; 3], bounds: (f64, f64)) -> Vec<GridMark> {
     let mut deduplicated: Vec<GridMark> = Vec::with_capacity(steps.len());
     for step in steps {
         if let Some(last) = deduplicated.last_mut()
-            && (last.value - step.value).abs() < eps {
-                // Keep the one with the largest step size
-                if last.step_size < step.step_size {
-                    *last = step;
-                }
-                continue;
+            && (last.value - step.value).abs() < eps
+        {
+            // Keep the one with the largest step size
+            if last.step_size < step.step_size {
+                *last = step;
             }
+            continue;
+        }
         deduplicated.push(step);
     }
 
