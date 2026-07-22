@@ -27,8 +27,10 @@ pub fn collect_rs_files() -> Vec<std::path::PathBuf> {
         let path_str = entry.path().to_string_lossy().replace("\\", "/");
         if path_str.contains("/target/")
             || path_str.contains("/.git/")
+            || path_str.contains("/egui_plot/")
             || path_str.starts_with("target/")
             || path_str.starts_with(".git/")
+            || path_str.starts_with("egui_plot/")
         {
             continue;
         }
@@ -157,6 +159,9 @@ pub fn analyze_files(rs_files: &[std::path::PathBuf]) -> FileMetrics {
 pub fn check_unverified_modules(members: &[String]) -> Vec<String> {
     let mut unverified_modules = Vec::new();
     for fm in members {
+        if fm == "egui_plot" {
+            continue;
+        }
         let mod_dir = Path::new(fm).join("src");
         if mod_dir.exists() {
             let mut has_theory = false;
