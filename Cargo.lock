@@ -2575,10 +2575,23 @@ dependencies = [
 name = "markdown_tests"
 version = "0.1.0"
 dependencies = [
+ "domain_ai",
+ "domain_applied",
+ "domain_biology",
+ "domain_climate",
+ "domain_epidemiology",
+ "domain_physics",
  "eframe",
+ "egui",
  "math_commons",
  "math_explorer",
+ "nalgebra 0.34.2",
+ "oxidize_core",
+ "pure_math",
+ "rand",
  "thiserror 1.0.69",
+ "verified_engine",
+ "verified_engine_macros",
 ]
 
 [[package]]
@@ -2611,6 +2624,7 @@ dependencies = [
  "oxidize_core",
  "pure_math",
  "rand",
+ "serde_json",
  "thiserror 2.0.18",
  "verified_engine",
 ]
