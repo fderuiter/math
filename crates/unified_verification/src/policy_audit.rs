@@ -49,7 +49,7 @@ impl<'ast> Visit<'ast> for DependencyVisitor {
         if let Some(segment) = i.path.segments.first() {
             self.check_ident(&segment.ident);
         }
-        
+
         // Extract identifiers from inside the macro's token stream
         let mut streams = vec![i.tokens.clone()];
         while let Some(stream) = streams.pop() {
@@ -68,7 +68,7 @@ impl<'ast> Visit<'ast> for DependencyVisitor {
                 }
             }
         }
-        
+
         syn::visit::visit_macro(self, i);
     }
     fn visit_item_extern_crate(&mut self, i: &'ast syn::ItemExternCrate) {
