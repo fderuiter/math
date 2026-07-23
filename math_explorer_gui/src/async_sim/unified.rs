@@ -4,12 +4,12 @@ use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui::{ColorImage, TextureOptions};
 use egui_plot::{Line, Plot, PlotImage, PlotPoint, PlotPoints};
-use math_commons::theory::ParameterConstraint;
+use scientific_metadata::theory::ParameterConstraint;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 #[allow(missing_docs)]
-pub trait UnifiedModel: Send + 'static + math_commons::theory::TheoryDescribable {
+pub trait UnifiedModel: Send + 'static + scientific_metadata::theory::TheoryDescribable {
     /// Initialize the model given the starting parameters.
     fn new(params: &HashMap<String, f64>) -> Self
     where
@@ -347,7 +347,7 @@ impl<M: UnifiedModel> UnifiedSimTool<M> {
 }
 
 impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable {
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable {
         self
     }
     fn name(&self) -> &'static str {
@@ -365,7 +365,7 @@ impl<M: UnifiedModel> InteractiveTool for UnifiedSimTool<M> {
     }
 }
 
-impl<M: UnifiedModel> math_commons::theory::TheoryDescribable for UnifiedSimTool<M> {
+impl<M: UnifiedModel> scientific_metadata::theory::TheoryDescribable for UnifiedSimTool<M> {
     fn theory_description(&self) -> String {
         self.cached_theory_desc.clone()
     }

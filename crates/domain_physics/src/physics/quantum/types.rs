@@ -1,4 +1,4 @@
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 use nalgebra::{DMatrix, DVector};
 use num_complex::Complex;
 use std::collections::HashMap;

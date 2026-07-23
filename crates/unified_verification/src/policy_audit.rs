@@ -283,6 +283,7 @@ pub fn run_policy_audit(members: &[&str]) -> bool {
                     || expected == "eframe"
                     || expected == "math_explorer"
                     || expected == "math_commons"
+                    || expected == "scientific_metadata"
                 {
                     continue;
                 }

@@ -2,7 +2,7 @@ use crate::accessibility::AccessibleTheoryHover;
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use math_commons::math_kernel::types::flatten_2d_index;
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 use math_explorer::physics::chaos::fractals::{escape_time_julia, escape_time_mandelbrot};
 use num_complex::Complex;
 use std::collections::HashMap;
@@ -68,7 +68,7 @@ impl TheoryDescribable for FractalViewer {
 }
 
 impl InteractiveTool for FractalViewer {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     
     fn name(&self) -> &'static str {
         "Fractal Viewer"

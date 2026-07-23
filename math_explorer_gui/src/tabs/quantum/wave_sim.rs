@@ -2,7 +2,7 @@ use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::{SimCommand, StateSnapshot};
 use eframe::egui;
 use egui_plot::{Legend, Line, Plot, PlotPoints};
-use math_commons::theory::ParameterConstraint;
+use scientific_metadata::theory::ParameterConstraint;
 use math_explorer::physics::quantum::{
     construct_1d_hamiltonian, evolve_state, gaussian_wavepacket, QuantumOperator, QuantumState,
 };
@@ -178,7 +178,7 @@ inventory::submit! {
     }
 }
 
-impl math_commons::theory::TheoryDescribable for WaveUnified {
+impl scientific_metadata::theory::TheoryDescribable for WaveUnified {
     fn theory_description(&self) -> String {
         "Quantum wave simulation [cite:quantum_mechanics]".to_string()
     }
