@@ -13,8 +13,61 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  pre-flight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly
+          components: clippy, rustfmt
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-preflight-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-preflight-
+
+      - name: Build Unified Verification Tool
+        run: cargo build -p unified_verification --release
+
+      - name: Lint CI Workflows
+        run: cargo run -p unified_verification --release -- lint-workflows
+
+      - name: Verify Architectural Records Updates
+        run: cargo run -p unified_verification --release -- verify-records
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check Traceability
+        run: cargo run -p unified_verification --release -- traceability
+
+      - name: Check Unused Dependencies
+        uses: bnjbvr/cargo-machete@main
+
+      - name: Check Formatting
+        run: cargo fmt --all -- --check
+
+      - name: Check File Lengths (500 lines limit)
+        run: cargo run -p unified_verification --release -- check-file-lengths
+
   build-and-test:
     name: Build and Test (${{ matrix.name }})
+    needs: pre-flight
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -75,34 +128,9 @@ jobs:
       - name: Build Unified Verification Tool
         run: cargo build -p unified_verification --release
 
-      - name: Lint CI Workflows
-        run: cargo run -p unified_verification --release -- lint-workflows
-
-      - name: Verify Architectural Records Updates
-        run: cargo run -p unified_verification --release -- verify-records
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-
-      - name: Check Traceability
-        run: cargo run -p unified_verification --release -- traceability
-
-      - name: Check Unused Dependencies
-        uses: bnjbvr/cargo-machete@main
-
-      - name: Check Formatting
-        run: cargo fmt --all -- --check
-
-      - name: Check File Lengths (500 lines limit)
-        run: cargo run -p unified_verification --release -- check-file-lengths
-
       - name: Build (Native)
         if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo build --workspace --verbose --all-features
-
-      - name: Run Tests (Native)
-        if: matrix.target != 'wasm32-unknown-unknown'
-        run: cargo test --workspace --verbose --all-features
 
       - name: Run Clippy (Native)
         if: matrix.target != 'wasm32-unknown-unknown'
@@ -119,6 +147,13 @@ jobs:
       - name: Run Integrity Verified Suite
         if: matrix.target != 'wasm32-unknown-unknown'
         run: cargo run -p unified_verification --release -- verify-suite
+
+      - name: Upload Verification Certificate
+        if: matrix.target != 'wasm32-unknown-unknown'
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-certificate-${{ matrix.artifact_name }}
+          path: Verification_Certificate.json
 
       - name: Check Workspace (WASM)
         if: matrix.target == 'wasm32-unknown-unknown'
@@ -159,6 +194,7 @@ jobs:
 
   compile-papers:
     name: Compile Academic Papers
+    needs: pre-flight
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -186,6 +222,7 @@ jobs:
 
   feature-matrix:
     name: Domain Tests (${{ matrix.feature || 'core-only' }})
+    needs: pre-flight
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
