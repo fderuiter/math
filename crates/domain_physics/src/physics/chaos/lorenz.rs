@@ -1,6 +1,6 @@
 //! Continuous Chaos (The Lorenz System)
 
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 use nalgebra::Vector3;
 use pure_math::pure_math::analysis::ode::{OdeSystem, Solver, TimeStepper};
 use std::collections::HashMap;

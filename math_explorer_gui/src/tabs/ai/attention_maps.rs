@@ -1,6 +1,6 @@
 use crate::framework::{InputMode, InteractiveTool};
 use eframe::egui;
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 use math_explorer::ai::transformer::{Decoder, Encoder, Transformer};
 use nalgebra::DMatrix;
 
@@ -131,7 +131,7 @@ impl AttentionMapsTool {
 }
 
 impl InteractiveTool for AttentionMapsTool {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Attention Maps"
     }

@@ -1,5 +1,5 @@
 use eframe::egui;
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 
 #[allow(missing_docs)]
 pub struct ToolMetadata {
@@ -177,6 +177,11 @@ impl SimulationFramework {
                         ui.separator();
 
                         let theory = tool.theory();
+                        // Requirement 4 & Acceptance Criteria 3: On-demand registration of bibliographic details when active/loaded
+                        scientific_metadata::citation_registry::CitationRegistry::register(
+                            tool.name().to_string(),
+                            theory.theory_citation()
+                        );
                         // Requirement 5: Screen readers can successfully navigate the theory text and citations
                         use crate::accessibility::AccessibleHoverText;
 
@@ -219,7 +224,13 @@ impl SimulationFramework {
                             && self.selected_tool_index != Some(i)
                         {
                             self.selected_tool_index = Some(i);
-                            self.active_tool = Some((meta.build)());
+                            let new_tool = (meta.build)();
+                            // Requirement 4 & Acceptance Criteria 3: On-demand registration of bibliographic details when active/loaded
+                            scientific_metadata::citation_registry::CitationRegistry::register(
+                                new_tool.name().to_string(),
+                                new_tool.theory().theory_citation()
+                            );
+                            self.active_tool = Some(new_tool);
                         }
                     }
                 });

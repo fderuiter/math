@@ -32,6 +32,7 @@ nalgebra = { workspace = true }
 oxidize_core = { path = "../crates/oxidize_core" }
 math_explorer = { path = "../math_explorer", optional = true }
 math_commons = { path = "../crates/math_commons" }
+scientific_metadata = { path = "../crates/scientific_metadata" }
 diagnostics = { path = "../crates/diagnostics" }
 num-complex = { workspace = true }
 rand = { workspace = true }
