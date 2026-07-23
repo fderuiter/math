@@ -53,7 +53,7 @@ impl<'ast> Visit<'ast> for RustOpVisitor {
     }
 }
 
-pub fn verify_semantic_integrity(latex_str: &str, rust_fn: &syn::ItemFn) -> Result<(), String> {
+pub(crate) fn verify_semantic_integrity(latex_str: &str, rust_fn: &syn::ItemFn) -> Result<(), String> {
     let (_, latex_ops_vec) = crate::latex_parser::parse_latex_math(latex_str);
     let mut latex_ops = HashSet::new();
     for op in latex_ops_vec {

@@ -8,7 +8,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-pub struct EmbedTheoryArgs {
+pub(crate) struct EmbedTheoryArgs {
     pub file_path: String,
     pub labels: Vec<String>,
 }
@@ -222,7 +222,7 @@ fn get_item_attrs(item: &TokenStream) -> Option<Vec<syn::Attribute>> {
     }
 }
 
-pub fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub(crate) fn embed_theory_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     let args = match syn::parse2::<EmbedTheoryArgs>(attr) {
         Ok(a) => a,
         Err(e) => return e.to_compile_error(),

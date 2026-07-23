@@ -96,76 +96,506 @@ fn find_date_pattern(s: &str) -> Option<String> {
     None
 }
 
-#[derive(Default)]
-struct ApiVisitor {
-    pub items: Vec<ApiItem>,
+#[derive(Clone, Debug)]
+pub struct ParsedModule {
+    pub file_path: PathBuf,
+    pub is_pub: bool,
+    pub pub_items: Vec<String>,
+    pub re_exports: Vec<ReExport>,
 }
 
-impl<'ast> Visit<'ast> for ApiVisitor {
+#[derive(Clone, Debug)]
+pub struct ReExport {
+    pub source_path: String,
+    pub is_glob: bool,
+}
+
+fn find_module_file(parent_file: &std::path::Path, mod_name: &str) -> Option<PathBuf> {
+    let parent_dir = parent_file.parent()?;
+    let stem = parent_file.file_stem()?.to_str()?;
+    
+    let mut candidates = Vec::new();
+    if stem == "lib" || stem == "main" || parent_file.ends_with("mod.rs") {
+        candidates.push(parent_dir.join(format!("{}.rs", mod_name)));
+        candidates.push(parent_dir.join(mod_name).join("mod.rs"));
+    } else {
+        candidates.push(parent_dir.join(stem).join(format!("{}.rs", mod_name)));
+        candidates.push(parent_dir.join(stem).join(mod_name).join("mod.rs"));
+    }
+    
+    for cb in candidates {
+        if cb.exists() {
+            return Some(cb);
+        }
+    }
+    None
+}
+
+fn resolve_path<F>(current_module: &str, path: &str, module_exists: F) -> String
+where
+    F: Fn(&str) -> bool,
+{
+    if path == "crate" {
+        return "crate".to_string();
+    }
+    if path.starts_with("crate::") {
+        return path.to_string();
+    }
+    if path.starts_with("self::") {
+        let suffix = &path[6..];
+        return if current_module == "crate" {
+            format!("crate::{}", suffix)
+        } else {
+            format!("{}::{}", current_module, suffix)
+        };
+    }
+    if path.starts_with("super::") {
+        let suffix = &path[7..];
+        if let Some(pos) = current_module.rfind("::") {
+            let parent = &current_module[..pos];
+            return format!("{}::{}", parent, suffix);
+        } else {
+            return format!("crate::{}", suffix);
+        }
+    }
+    
+    let first_segment = path.split("::").next().unwrap_or("");
+    
+    let candidate = if current_module == "crate" {
+        format!("crate::{}", first_segment)
+    } else {
+        format!("{}::{}", current_module, first_segment)
+    };
+    if module_exists(&candidate) {
+        return if current_module == "crate" {
+            format!("crate::{}", path)
+        } else {
+            format!("{}::{}", current_module, path)
+        };
+    }
+    
+    let candidate_root = format!("crate::{}", first_segment);
+    if module_exists(&candidate_root) {
+        return format!("crate::{}", path);
+    }
+    
+    if current_module == "crate" {
+        format!("crate::{}", path)
+    } else {
+        format!("{}::{}", current_module, path)
+    }
+}
+
+fn flatten_use_tree(prefix: &str, tree: &syn::UseTree, out: &mut Vec<(String, Option<String>, bool)>) {
+    match tree {
+        syn::UseTree::Name(name) => {
+            let full_path = if prefix.is_empty() {
+                name.ident.to_string()
+            } else {
+                format!("{}::{}", prefix, name.ident)
+            };
+            out.push((full_path, None, false));
+        }
+        syn::UseTree::Rename(rename) => {
+            let full_path = if prefix.is_empty() {
+                rename.ident.to_string()
+            } else {
+                format!("{}::{}", prefix, rename.ident)
+            };
+            out.push((full_path, Some(rename.rename.to_string()), false));
+        }
+        syn::UseTree::Glob(_) => {
+            out.push((prefix.to_string(), None, true));
+        }
+        syn::UseTree::Path(path) => {
+            let new_prefix = if prefix.is_empty() {
+                path.ident.to_string()
+            } else {
+                format!("{}::{}", prefix, path.ident)
+            };
+            flatten_use_tree(&new_prefix, &path.tree, out);
+        }
+        syn::UseTree::Group(group) => {
+            for item in &group.items {
+                flatten_use_tree(prefix, item, out);
+            }
+        }
+    }
+}
+
+fn has_cfg_test(attrs: &[syn::Attribute]) -> bool {
+    for attr in attrs {
+        if attr.path().is_ident("cfg") {
+            let attr_str = quote::quote!(#attr).to_string();
+            if attr_str.contains("test") {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn normalize_path_for_comparison(p: &std::path::Path) -> String {
+    let s = p.to_string_lossy().replace("\\", "/");
+    if s.starts_with("./") {
+        s[2..].to_string()
+    } else {
+        s
+    }
+}
+
+fn parse_module_recursive(
+    module_path: String,
+    file_path: PathBuf,
+    is_pub: bool,
+    module_map: &mut BTreeMap<String, ParsedModule>,
+) {
+    if !file_path.exists() {
+        return;
+    }
+    let Ok(content) = fs::read_to_string(&file_path) else {
+        return;
+    };
+    let Ok(ast) = syn::parse_file(&content) else {
+        return;
+    };
+
+    let mut pub_items = Vec::new();
+    let mut re_exports = Vec::new();
+    let mut submodules_to_parse = Vec::new();
+
+    for item in &ast.items {
+        match item {
+            syn::Item::Fn(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.sig.ident.to_string());
+                }
+            }
+            syn::Item::Struct(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Enum(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Trait(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Type(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Mod(i) => {
+                let mod_name = i.ident.to_string();
+                if mod_name == "tests" || has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                let is_mod_pub = matches!(i.vis, syn::Visibility::Public(_));
+                let sub_module_path = format!("{}::{}", module_path, mod_name);
+
+                if let Some((_, ref content)) = i.content {
+                    parse_inline_module(
+                        sub_module_path,
+                        file_path.clone(),
+                        is_mod_pub,
+                        content,
+                        module_map,
+                    );
+                } else {
+                    if let Some(sub_file) = find_module_file(&file_path, &mod_name) {
+                        submodules_to_parse.push((sub_module_path, sub_file, is_mod_pub));
+                    }
+                }
+            }
+            syn::Item::Use(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    let mut flattened = Vec::new();
+                    flatten_use_tree("", &i.tree, &mut flattened);
+                    for (path_str, _rename, is_glob) in flattened {
+                        re_exports.push(ReExport {
+                            source_path: path_str,
+                            is_glob,
+                        });
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    module_map.insert(
+        module_path.clone(),
+        ParsedModule {
+            file_path,
+            is_pub,
+            pub_items,
+            re_exports,
+        },
+    );
+
+    for (sub_path, sub_file, sub_pub) in submodules_to_parse {
+        parse_module_recursive(sub_path, sub_file, sub_pub, module_map);
+    }
+}
+
+fn parse_inline_module(
+    module_path: String,
+    file_path: PathBuf,
+    is_pub: bool,
+    items: &[syn::Item],
+    module_map: &mut BTreeMap<String, ParsedModule>,
+) {
+    let mut pub_items = Vec::new();
+    let mut re_exports = Vec::new();
+    let mut submodules_to_parse = Vec::new();
+
+    for item in items {
+        match item {
+            syn::Item::Fn(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.sig.ident.to_string());
+                }
+            }
+            syn::Item::Struct(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Enum(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Trait(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Type(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    pub_items.push(i.ident.to_string());
+                }
+            }
+            syn::Item::Mod(i) => {
+                let mod_name = i.ident.to_string();
+                if mod_name == "tests" || has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                let is_mod_pub = matches!(i.vis, syn::Visibility::Public(_));
+                let sub_module_path = format!("{}::{}", module_path, mod_name);
+
+                if let Some((_, ref content)) = i.content {
+                    parse_inline_module(
+                        sub_module_path,
+                        file_path.clone(),
+                        is_mod_pub,
+                        content,
+                        module_map,
+                    );
+                } else {
+                    if let Some(sub_file) = find_module_file(&file_path, &mod_name) {
+                        submodules_to_parse.push((sub_module_path, sub_file, is_mod_pub));
+                    }
+                }
+            }
+            syn::Item::Use(i) => {
+                if has_cfg_test(&i.attrs) {
+                    continue;
+                }
+                if matches!(i.vis, syn::Visibility::Public(_)) {
+                    let mut flattened = Vec::new();
+                    flatten_use_tree("", &i.tree, &mut flattened);
+                    for (path_str, _rename, is_glob) in flattened {
+                        re_exports.push(ReExport {
+                            source_path: path_str,
+                            is_glob,
+                        });
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    module_map.insert(
+        module_path.clone(),
+        ParsedModule {
+            file_path,
+            is_pub,
+            pub_items,
+            re_exports,
+        },
+    );
+
+    for (sub_path, sub_file, sub_pub) in submodules_to_parse {
+        parse_module_recursive(sub_path, sub_file, sub_pub, module_map);
+    }
+}
+
+fn is_direct_child(parent: &str, child: &str) -> bool {
+    if !child.starts_with(parent) {
+        return false;
+    }
+    let suffix = &child[parent.len()..];
+    suffix.starts_with("::") && !suffix[2..].contains("::")
+}
+
+struct FilePubVisitor {
+    pub_items: Vec<(String, usize, String, Option<String>, Vec<String>)>,
+    current_inline_path: Vec<String>,
+}
+
+impl<'ast> Visit<'ast> for FilePubVisitor {
+    fn visit_item_mod(&mut self, i: &'ast syn::ItemMod) {
+        let mod_name = i.ident.to_string();
+        if mod_name == "tests" || has_cfg_test(&i.attrs) {
+            return;
+        }
+        self.current_inline_path.push(mod_name);
+        syn::visit::visit_item_mod(self, i);
+        self.current_inline_path.pop();
+    }
+
     fn visit_item_fn(&mut self, i: &'ast syn::ItemFn) {
+        if has_cfg_test(&i.attrs) {
+            return;
+        }
         if matches!(i.vis, syn::Visibility::Public(_)) {
+            use syn::spanned::Spanned;
             let sig = &i.sig;
-            self.items.push(ApiItem {
-                signature: quote::quote!(pub #sig).to_string(),
-                deprecation_expires: extract_expiration_date(&i.attrs),
-            });
+            self.pub_items.push((
+                i.sig.ident.to_string(),
+                i.span().start().line,
+                quote::quote!(pub #sig).to_string(),
+                extract_expiration_date(&i.attrs),
+                self.current_inline_path.clone(),
+            ));
         }
         syn::visit::visit_item_fn(self, i);
     }
 
     fn visit_item_struct(&mut self, i: &'ast syn::ItemStruct) {
+        if has_cfg_test(&i.attrs) {
+            return;
+        }
         if matches!(i.vis, syn::Visibility::Public(_)) {
+            use syn::spanned::Spanned;
             let ident = &i.ident;
             let generics = &i.generics;
-            self.items.push(ApiItem {
-                signature: quote::quote!(pub struct #ident #generics).to_string(),
-                deprecation_expires: extract_expiration_date(&i.attrs),
-            });
+            self.pub_items.push((
+                ident.to_string(),
+                i.span().start().line,
+                quote::quote!(pub struct #ident #generics).to_string(),
+                extract_expiration_date(&i.attrs),
+                self.current_inline_path.clone(),
+            ));
         }
         syn::visit::visit_item_struct(self, i);
     }
 
     fn visit_item_enum(&mut self, i: &'ast syn::ItemEnum) {
+        if has_cfg_test(&i.attrs) {
+            return;
+        }
         if matches!(i.vis, syn::Visibility::Public(_)) {
+            use syn::spanned::Spanned;
             let ident = &i.ident;
             let generics = &i.generics;
-            self.items.push(ApiItem {
-                signature: quote::quote!(pub enum #ident #generics).to_string(),
-                deprecation_expires: extract_expiration_date(&i.attrs),
-            });
+            self.pub_items.push((
+                ident.to_string(),
+                i.span().start().line,
+                quote::quote!(pub enum #ident #generics).to_string(),
+                extract_expiration_date(&i.attrs),
+                self.current_inline_path.clone(),
+            ));
         }
         syn::visit::visit_item_enum(self, i);
     }
 
     fn visit_item_trait(&mut self, i: &'ast syn::ItemTrait) {
+        if has_cfg_test(&i.attrs) {
+            return;
+        }
         if matches!(i.vis, syn::Visibility::Public(_)) {
+            use syn::spanned::Spanned;
             let ident = &i.ident;
             let generics = &i.generics;
-            self.items.push(ApiItem {
-                signature: quote::quote!(pub trait #ident #generics).to_string(),
-                deprecation_expires: extract_expiration_date(&i.attrs),
-            });
+            self.pub_items.push((
+                ident.to_string(),
+                i.span().start().line,
+                quote::quote!(pub trait #ident #generics).to_string(),
+                extract_expiration_date(&i.attrs),
+                self.current_inline_path.clone(),
+            ));
         }
         syn::visit::visit_item_trait(self, i);
     }
 
     fn visit_item_type(&mut self, i: &'ast syn::ItemType) {
+        if has_cfg_test(&i.attrs) {
+            return;
+        }
         if matches!(i.vis, syn::Visibility::Public(_)) {
+            use syn::spanned::Spanned;
             let ident = &i.ident;
             let generics = &i.generics;
             let ty = &i.ty;
-            self.items.push(ApiItem {
-                signature: quote::quote!(pub type #ident #generics = #ty).to_string(),
-                deprecation_expires: extract_expiration_date(&i.attrs),
-            });
+            self.pub_items.push((
+                ident.to_string(),
+                i.span().start().line,
+                quote::quote!(pub type #ident #generics = #ty).to_string(),
+                extract_expiration_date(&i.attrs),
+                self.current_inline_path.clone(),
+            ));
         }
         syn::visit::visit_item_type(self, i);
     }
 }
 
-pub fn extract_apis() -> BTreeMap<String, Vec<ApiItem>> {
-    let mut apis = BTreeMap::new();
-    let mut dirs_to_scan = vec![PathBuf::from("math_explorer/src")];
+pub fn scan_workspace_apis() -> (BTreeMap<String, Vec<ApiItem>>, Vec<(String, usize, String)>) {
+    let mut reachable_apis = BTreeMap::new();
+    let mut unreachable_apis = Vec::new();
+
+    let mut package_src_dirs = vec![PathBuf::from("math_explorer/src")];
 
     if let Ok(entries) = fs::read_dir("crates") {
         for entry in entries.flatten() {
@@ -173,36 +603,168 @@ pub fn extract_apis() -> BTreeMap<String, Vec<ApiItem>> {
             if path.is_dir() {
                 let name = path.file_name().unwrap_or_default().to_string_lossy();
                 if name != "unified_verification" {
-                    dirs_to_scan.push(path.join("src"));
+                    package_src_dirs.push(path.join("src"));
                 }
             }
         }
     }
 
-    for dir in dirs_to_scan {
-        if !dir.exists() {
+    for src_dir in package_src_dirs {
+        if !src_dir.exists() {
             continue;
         }
-        for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+
+        let mut root_file = src_dir.join("lib.rs");
+        if !root_file.exists() {
+            root_file = src_dir.join("main.rs");
+        }
+        if !root_file.exists() {
+            continue;
+        }
+
+        let mut module_map = BTreeMap::new();
+        parse_module_recursive(
+            "crate".to_string(),
+            root_file.clone(),
+            true,
+            &mut module_map,
+        );
+
+        let mut reachable_modules = std::collections::BTreeSet::new();
+        reachable_modules.insert("crate".to_string());
+
+        let mut reachable_items = std::collections::BTreeSet::new();
+
+        let mut changed = true;
+        while changed {
+            changed = false;
+            let current_modules: Vec<String> = reachable_modules.iter().cloned().collect();
+
+            for m in &current_modules {
+                if let Some(parsed_mod) = module_map.get(m) {
+                    for (key, sub_mod) in &module_map {
+                        if is_direct_child(m, key) && sub_mod.is_pub {
+                            if reachable_modules.insert(key.clone()) {
+                                changed = true;
+                            }
+                        }
+                    }
+
+                    for item in &parsed_mod.pub_items {
+                        let item_path = if m == "crate" {
+                            format!("crate::{}", item)
+                        } else {
+                            format!("{}::{}", m, item)
+                        };
+                        if reachable_items.insert(item_path) {
+                            changed = true;
+                        }
+                    }
+
+                    for re_exp in &parsed_mod.re_exports {
+                        let resolved = resolve_path(m, &re_exp.source_path, |path| module_map.contains_key(path));
+
+                        if re_exp.is_glob {
+                            if module_map.contains_key(&resolved) {
+                                if reachable_modules.insert(resolved.clone()) {
+                                    changed = true;
+                                }
+                            }
+                        } else {
+                            if module_map.contains_key(&resolved) {
+                                if reachable_modules.insert(resolved.clone()) {
+                                    changed = true;
+                                }
+                            } else {
+                                if reachable_items.insert(resolved.clone()) {
+                                    changed = true;
+                                }
+                                if let Some(pos) = resolved.rfind("::") {
+                                    let parent_mod = &resolved[..pos];
+                                    let item_name = &resolved[pos + 2..];
+                                    if let Some(parent_parsed) = module_map.get(parent_mod) {
+                                        if parent_parsed.pub_items.iter().any(|i| i == item_name) {
+                                            if reachable_items.insert(resolved.clone()) {
+                                                changed = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for entry in WalkDir::new(&src_dir).into_iter().filter_map(|e| e.ok()) {
             if entry.file_type().is_file()
                 && entry.path().extension().and_then(|s| s.to_str()) == Some("rs")
             {
+                let norm_path = entry.path().to_string_lossy().replace("\\", "/");
+                
                 if let Ok(content) = fs::read_to_string(entry.path()) {
                     if let Ok(ast) = syn::parse_file(&content) {
-                        let mut visitor = ApiVisitor::default();
+                        let mut visitor = FilePubVisitor {
+                            pub_items: Vec::new(),
+                            current_inline_path: Vec::new(),
+                        };
                         visitor.visit_file(&ast);
-                        if !visitor.items.is_empty() {
-                            let mut items = visitor.items;
-                            items.sort();
-                            let norm_path = entry.path().to_string_lossy().replace("\\", "/");
-                            apis.insert(norm_path, items);
+
+                        let mut matching_modules = Vec::new();
+                        let norm_entry_path = normalize_path_for_comparison(entry.path());
+                        for (m_path, parsed_m) in &module_map {
+                            if normalize_path_for_comparison(&parsed_m.file_path) == norm_entry_path {
+                                matching_modules.push(m_path.clone());
+                            }
+                        }
+
+                        let mut file_reachable_items = Vec::new();
+
+                        for (name, line, signature, deprecation_expires, inline_segs) in visitor.pub_items {
+                            let mut is_reachable = false;
+                            for m in &matching_modules {
+                                let mut item_m = m.clone();
+                                for seg in &inline_segs {
+                                    item_m = format!("{}::{}", item_m, seg);
+                                }
+                                let item_path = if item_m == "crate" {
+                                    format!("crate::{}", name)
+                                } else {
+                                    format!("{}::{}", item_m, name)
+                                };
+                                if reachable_items.contains(&item_path) {
+                                    is_reachable = true;
+                                    break;
+                                }
+                            }
+
+                            if is_reachable {
+                                file_reachable_items.push(ApiItem {
+                                    signature,
+                                    deprecation_expires,
+                                });
+                            } else {
+                                unreachable_apis.push((norm_path.clone(), line, signature));
+                            }
+                        }
+
+                        if !file_reachable_items.is_empty() {
+                            file_reachable_items.sort();
+                            reachable_apis.insert(norm_path, file_reachable_items);
                         }
                     }
                 }
             }
         }
     }
-    apis
+
+    (reachable_apis, unreachable_apis)
+}
+
+pub fn extract_apis() -> BTreeMap<String, Vec<ApiItem>> {
+    let (reachable, _) = scan_workspace_apis();
+    reachable
 }
 
 const BASELINE_PATH: &str = "crates/unified_verification/api_baseline.json";
@@ -215,7 +777,17 @@ pub fn regenerate_baseline() {
 }
 
 pub fn check_api_drift() -> bool {
-    let current_apis = extract_apis();
+    let (current_apis, unreachable_apis) = scan_workspace_apis();
+    if !unreachable_apis.is_empty() {
+        println!("Error: Found unreachable public declarations in the workspace!");
+        println!("Public items must be reachable from their package entry points, or have restricted visibility (e.g. pub(crate)).");
+        for (file_path, line, signature) in &unreachable_apis {
+            println!("  -> {} (at {}:{})", signature, file_path, line);
+        }
+        println!("Please restrict visibility of these items or make them reachable.");
+        return false;
+    }
+
     let baseline_content = fs::read_to_string(BASELINE_PATH).unwrap_or_else(|_| "{}".to_string());
     let baseline_apis: BTreeMap<String, Vec<ApiItem>> =
         serde_json::from_str(&baseline_content).unwrap_or_default();

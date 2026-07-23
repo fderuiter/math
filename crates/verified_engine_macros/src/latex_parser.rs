@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum MathOp {
+pub(crate) enum MathOp {
     Add,
     Sub,
     Mul,
@@ -7,7 +7,7 @@ pub enum MathOp {
     Pow,
 }
 
-pub fn parse_latex_math(latex: &str) -> (Vec<String>, Vec<MathOp>) {
+pub(crate) fn parse_latex_math(latex: &str) -> (Vec<String>, Vec<MathOp>) {
     let mut vars = Vec::new();
     let mut ops = Vec::new();
 
