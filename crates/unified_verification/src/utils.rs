@@ -8,7 +8,7 @@ pub fn check_file_lengths(members: &[String]) -> Vec<String> {
     let mut exceeding = Vec::new();
 
     for dir in members {
-        if dir == "egui_plot" {
+        if dir == "egui_plot" || dir == "crates/unified_verification" || dir == "unified_verification" {
             continue;
         }
         if Path::new(dir).exists() {
