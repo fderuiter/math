@@ -11,7 +11,14 @@ pub trait ParametricSurface {
     #[verified_engine::verified]
     fn partial_u(&self, u: f64, v: f64) -> Vector3<f64> {
         let h = math_commons::registry::TOLERANCE_FAST;
-        (self.position(u + h, v) - self.position(u - h, v)) / (2.0 * h)
+        let scheme = crate::pure_math::analysis::differentiation::CalculusScheme::with_step_size(h);
+        let mut jac = [[0.0; 2]; 3];
+        let f = |p: &[f64; 2]| {
+            let pos = self.position(p[0], p[1]);
+            [pos.x, pos.y, pos.z]
+        };
+        scheme.jacobian(&[u, v], f, &mut jac);
+        Vector3::new(jac[0][0], jac[1][0], jac[2][0])
     }
 
     /// Returns the partial derivative $\frac{\partial r}{\partial v}$.
@@ -19,7 +26,14 @@ pub trait ParametricSurface {
     #[verified_engine::verified]
     fn partial_v(&self, u: f64, v: f64) -> Vector3<f64> {
         let h = math_commons::registry::TOLERANCE_FAST;
-        (self.position(u, v + h) - self.position(u, v - h)) / (2.0 * h)
+        let scheme = crate::pure_math::analysis::differentiation::CalculusScheme::with_step_size(h);
+        let mut jac = [[0.0; 2]; 3];
+        let f = |p: &[f64; 2]| {
+            let pos = self.position(p[0], p[1]);
+            [pos.x, pos.y, pos.z]
+        };
+        scheme.jacobian(&[u, v], f, &mut jac);
+        Vector3::new(jac[0][1], jac[1][1], jac[2][1])
     }
 }
 
@@ -78,22 +92,23 @@ impl<T: ParametricSurface> SurfaceAnalysis for T {
     fn second_fundamental_form(&self, u: f64, v: f64) -> (f64, f64, f64) {
         let h = 1e-5;
         let n = self.unit_normal(u, v);
+        let scheme = crate::pure_math::analysis::differentiation::CalculusScheme::with_step_size(h);
 
-        // Second derivatives via finite differences
-        let p = self.position(u, v);
-        let pu_plus = self.position(u + h, v);
-        let pu_minus = self.position(u - h, v);
-        let ruu = (pu_plus.coords - p.coords * 2.0 + pu_minus.coords) / (h * h);
+        // Second derivatives via centralized CalculusScheme
+        let ruu_x = scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).x);
+        let ruu_y = scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).y);
+        let ruu_z = scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).z);
+        let ruu = Vector3::new(ruu_x, ruu_y, ruu_z);
 
-        let pv_plus = self.position(u, v + h);
-        let pv_minus = self.position(u, v - h);
-        let rvv = (pv_plus.coords - p.coords * 2.0 + pv_minus.coords) / (h * h);
+        let rvv_x = scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).x);
+        let rvv_y = scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).y);
+        let rvv_z = scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).z);
+        let rvv = Vector3::new(rvv_x, rvv_y, rvv_z);
 
-        let puv_pp = self.position(u + h, v + h);
-        let puv_mm = self.position(u - h, v - h);
-        let puv_pm = self.position(u + h, v - h);
-        let puv_mp = self.position(u - h, v + h);
-        let ruv = (puv_pp.coords - puv_mp.coords - puv_pm.coords + puv_mm.coords) / (4.0 * h * h); // Central difference mixed
+        let ruv_x = scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).x);
+        let ruv_y = scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).y);
+        let ruv_z = scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).z);
+        let ruv = Vector3::new(ruv_x, ruv_y, ruv_z);
 
         (ruu.dot(&n), ruv.dot(&n), rvv.dot(&n))
     }

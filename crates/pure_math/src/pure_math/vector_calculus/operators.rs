@@ -10,11 +10,12 @@ fn partial_derivative<F>(i: usize, point: &Vector3<f64>, f: F) -> f64
 where
     F: Fn(&Vector3<f64>) -> f64,
 {
-    let mut p_plus = *point;
-    p_plus[i] += H;
-    let mut p_minus = *point;
-    p_minus[i] -= H;
-    (f(&p_plus) - f(&p_minus)) / (2.0 * H)
+    let point_arr = [point[0], point[1], point[2]];
+    let scheme = crate::pure_math::analysis::differentiation::CalculusScheme::with_step_size(H);
+    scheme.partial_derivative(i, &point_arr, |p_arr| {
+        let p_vec = Vector3::new(p_arr[0], p_arr[1], p_arr[2]);
+        f(&p_vec)
+    })
 }
 
 /// Computes the gradient of a scalar field $\nabla \Phi$.

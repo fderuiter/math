@@ -1,5 +1,6 @@
 #[allow(missing_docs)]
 pub mod complex;
+pub mod differentiation;
 pub mod evolution;
 pub mod integration;
 pub mod ode;

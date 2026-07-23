@@ -293,10 +293,9 @@ impl RootFinder for NewtonRaphson {
         // Use midpoint as initial guess
         let guess = (min + max) / 2.0;
 
-        // Numerical derivative step size
-        let h = 1e-7;
-
-        let derivative = |x: f64| (f(x + h) - f(x - h)) / (2.0 * h);
+        // Centralized CalculusScheme with custom step size
+        let scheme = super::differentiation::CalculusScheme::with_step_size(1e-7);
+        let derivative = |x: f64| scheme.derivative1d(x, &f);
 
         // We use the specialized method with our numerical derivative
         self.find_root_with_derivative(&f, derivative, guess)
