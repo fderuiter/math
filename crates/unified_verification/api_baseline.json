@@ -1,1658 +1,3610 @@
 {
   "crates/diagnostics/src/lib.rs": [
-    "pub enum Severity",
-    "pub fn emit (event : DiagnosticEvent)",
-    "pub fn emit_error < E : Diagnostic > (err : & E)",
-    "pub fn global_bus () -> & 'static DiagnosticBus",
-    "pub fn init_panic_hook ()",
-    "pub struct DiagnosticBus",
-    "pub struct DiagnosticEvent",
-    "pub trait Diagnostic",
-    "pub type ListenerFn = Arc < dyn Fn (& DiagnosticEvent) + Send + Sync + 'static >"
+    {
+      "signature": "pub enum Severity"
+    },
+    {
+      "signature": "pub fn emit (event : DiagnosticEvent)"
+    },
+    {
+      "signature": "pub fn emit_error < E : Diagnostic > (err : & E)"
+    },
+    {
+      "signature": "pub fn global_bus () -> & 'static DiagnosticBus"
+    },
+    {
+      "signature": "pub fn init_panic_hook ()"
+    },
+    {
+      "signature": "pub struct DiagnosticBus"
+    },
+    {
+      "signature": "pub struct DiagnosticEvent"
+    },
+    {
+      "signature": "pub trait Diagnostic"
+    },
+    {
+      "signature": "pub type ListenerFn = Arc < dyn Fn (& DiagnosticEvent) + Send + Sync + 'static >"
+    }
   ],
   "crates/domain_ai/src/ai/activations.rs": [
-    "pub fn relu (matrix : & mut DMatrix < f64 >)",
-    "pub fn softmax_row_wise (matrix : & DMatrix < f64 >) -> DMatrix < f64 >"
+    {
+      "signature": "pub fn relu (matrix : & mut DMatrix < f64 >)"
+    },
+    {
+      "signature": "pub fn softmax_row_wise (matrix : & DMatrix < f64 >) -> DMatrix < f64 >"
+    }
   ],
   "crates/domain_ai/src/ai/deep_learning_theory/calculus.rs": [
-    "pub fn activation_backward < F > (grad_a : & Vector , z : & Vector , prime_fn : F) -> Vector where F : Fn (& Vector) -> Vector ,",
-    "pub fn gelu (z : & Vector) -> Vector",
-    "pub fn gelu_prime (z : & Vector) -> Vector",
-    "pub fn linear_backward (grad_z : & Vector , x : & Vector , w : & Matrix) -> (Vector , Matrix , Vector)",
-    "pub fn relu (z : & Vector) -> Vector",
-    "pub fn relu_prime (z : & Vector) -> Vector",
-    "pub fn sigmoid (z : & Vector) -> Vector",
-    "pub fn sigmoid_prime (z : & Vector) -> Vector",
-    "pub fn tanh (z : & Vector) -> Vector",
-    "pub fn tanh_prime (z : & Vector) -> Vector"
+    {
+      "signature": "pub fn activation_backward < F > (grad_a : & Vector , z : & Vector , prime_fn : F) -> Vector where F : Fn (& Vector) -> Vector ,"
+    },
+    {
+      "signature": "pub fn gelu (z : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub fn gelu_prime (z : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub fn linear_backward (grad_z : & Vector , x : & Vector , w : & Matrix) -> (Vector , Matrix , Vector)"
+    },
+    {
+      "signature": "pub fn relu (z : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub fn relu_prime (z : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub fn sigmoid (z : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub fn sigmoid_prime (z : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub fn tanh (z : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub fn tanh_prime (z : & Vector) -> Vector"
+    }
   ],
   "crates/domain_ai/src/ai/deep_learning_theory/cycle.rs": [
-    "pub struct TrainingLoop < M : Trainable < f64 > = TwoLayerMLP >"
+    {
+      "signature": "pub struct TrainingLoop < M : Trainable < f64 > = TwoLayerMLP >"
+    }
   ],
   "crates/domain_ai/src/ai/deep_learning_theory/linear_algebra.rs": [
-    "pub fn dot_product (a : & Vector , b : & Vector) -> Scalar",
-    "pub fn linear_transformation (x : & Vector , w : & Matrix , b : & Vector) -> Vector",
-    "pub struct DenseLayer",
-    "pub type Matrix = DMatrix < f64 >",
-    "pub type Scalar = f64",
-    "pub type Vector = DVector < f64 >"
+    {
+      "signature": "pub fn dot_product (a : & Vector , b : & Vector) -> Scalar"
+    },
+    {
+      "signature": "pub fn linear_transformation (x : & Vector , w : & Matrix , b : & Vector) -> Vector"
+    },
+    {
+      "signature": "pub struct DenseLayer"
+    },
+    {
+      "signature": "pub type Matrix = DMatrix < f64 >"
+    },
+    {
+      "signature": "pub type Scalar = f64"
+    },
+    {
+      "signature": "pub type Vector = DVector < f64 >"
+    }
   ],
   "crates/domain_ai/src/ai/deep_learning_theory/model.rs": [
-    "pub struct TwoLayerMLP"
+    {
+      "signature": "pub struct TwoLayerMLP"
+    }
   ],
   "crates/domain_ai/src/ai/deep_learning_theory/probability.rs": [
-    "pub fn mle_explanation () -> & 'static str",
-    "pub fn softmax (z : & Vector) -> Vector"
+    {
+      "signature": "pub fn mle_explanation () -> & 'static str"
+    },
+    {
+      "signature": "pub fn softmax (z : & Vector) -> Vector"
+    }
   ],
   "crates/domain_ai/src/ai/gaussian_splatting/optimization.rs": [
-    "pub enum DensityAction",
-    "pub fn determine_density_action (grad_magnitude : f64 , scale_max : f64 , opacity : f64 , grad_threshold : f64 , scale_threshold : f64 , opacity_threshold : f64 ,) -> DensityAction"
+    {
+      "signature": "pub enum DensityAction"
+    },
+    {
+      "signature": "pub fn determine_density_action (grad_magnitude : f64 , scale_max : f64 , opacity : f64 , grad_threshold : f64 , scale_threshold : f64 , opacity_threshold : f64 ,) -> DensityAction"
+    }
   ],
   "crates/domain_ai/src/ai/gaussian_splatting/projection.rs": [
-    "pub fn compute_jacobian (t : & Vector3 < f64 > , focal_x : f64 , focal_y : f64) -> SMatrix < f64 , 2 , 3 >",
-    "pub fn project_covariance (cov3d : & Matrix3 < f64 > , view_matrix : & Matrix4 < f64 > , jacobian : & SMatrix < f64 , 2 , 3 > ,) -> Matrix2 < f64 >"
+    {
+      "signature": "pub fn compute_jacobian (t : & Vector3 < f64 > , focal_x : f64 , focal_y : f64) -> SMatrix < f64 , 2 , 3 >"
+    },
+    {
+      "signature": "pub fn project_covariance (cov3d : & Matrix3 < f64 > , view_matrix : & Matrix4 < f64 > , jacobian : & SMatrix < f64 , 2 , 3 > ,) -> Matrix2 < f64 >"
+    }
   ],
   "crates/domain_ai/src/ai/gaussian_splatting/rendering.rs": [
-    "pub fn blend_gaussians (sorted_gaussians : & [Gaussian2D] , pixel_coord : & nalgebra :: Point2 < f64 > ,) -> Vector3 < f64 >",
-    "pub fn evaluate_gaussian_opacity (gaussian : & Gaussian2D , point : & nalgebra :: Point2 < f64 >) -> f64"
+    {
+      "signature": "pub fn blend_gaussians (sorted_gaussians : & [Gaussian2D] , pixel_coord : & nalgebra :: Point2 < f64 > ,) -> Vector3 < f64 >"
+    },
+    {
+      "signature": "pub fn evaluate_gaussian_opacity (gaussian : & Gaussian2D , point : & nalgebra :: Point2 < f64 >) -> f64"
+    }
   ],
   "crates/domain_ai/src/ai/gaussian_splatting/structs.rs": [
-    "pub struct Gaussian2D",
-    "pub struct Gaussian3D",
-    "pub struct Scene"
+    {
+      "signature": "pub struct Gaussian2D"
+    },
+    {
+      "signature": "pub struct Gaussian3D"
+    },
+    {
+      "signature": "pub struct Scene"
+    }
   ],
   "crates/domain_ai/src/ai/optimization.rs": [
-    "pub fn cross_entropy_loss < T : RealField + Copy > (y_pred : & DVector < T > , y_true : & DVector < T > ,) -> Result < T , AIError >",
-    "pub fn cross_entropy_softmax_prime < T : RealField + Copy > (z_logits : & DVector < T > , y_true : & DVector < T > ,) -> DVector < T >",
-    "pub fn mean_squared_error < T : RealField + Copy > (y_pred : & DVector < T > , y_true : & DVector < T > ,) -> Result < T , AIError >",
-    "pub fn mse_prime < T : RealField + Copy > (y_pred : & DVector < T > , y_true : & DVector < T > ,) -> Result < DVector < T > , AIError >",
-    "pub type Adam < T > = GenericAdam < T , (usize , ParamType) >"
+    {
+      "signature": "pub fn cross_entropy_loss < T : RealField + Copy > (y_pred : & DVector < T > , y_true : & DVector < T > ,) -> Result < T , AIError >"
+    },
+    {
+      "signature": "pub fn cross_entropy_softmax_prime < T : RealField + Copy > (z_logits : & DVector < T > , y_true : & DVector < T > ,) -> DVector < T >"
+    },
+    {
+      "signature": "pub fn mean_squared_error < T : RealField + Copy > (y_pred : & DVector < T > , y_true : & DVector < T > ,) -> Result < T , AIError >"
+    },
+    {
+      "signature": "pub fn mse_prime < T : RealField + Copy > (y_pred : & DVector < T > , y_true : & DVector < T > ,) -> Result < DVector < T > , AIError >"
+    },
+    {
+      "signature": "pub type Adam < T > = GenericAdam < T , (usize , ParamType) >"
+    }
   ],
   "crates/domain_ai/src/ai/reinforcement_learning/algorithms.rs": [
-    "pub fn policy_gradient_step (return_gt : f64 , grad_log_pi : & [f64] , learning_rate : UnitInterval ,) -> Vec < f64 >",
-    "pub fn q_learning_update (current_q : f64 , reward : f64 , max_next_q : f64 , alpha : UnitInterval , gamma : UnitInterval ,) -> f64",
-    "pub struct QLearningAgent < S , A , Q >",
-    "pub type TabularQAgent < S , A > = QLearningAgent < S , A , TabularQFunction < S , A > >"
+    {
+      "signature": "pub fn policy_gradient_step (return_gt : f64 , grad_log_pi : & [f64] , learning_rate : UnitInterval ,) -> Vec < f64 >"
+    },
+    {
+      "signature": "pub fn q_learning_update (current_q : f64 , reward : f64 , max_next_q : f64 , alpha : UnitInterval , gamma : UnitInterval ,) -> f64"
+    },
+    {
+      "signature": "pub struct QLearningAgent < S , A , Q >"
+    },
+    {
+      "signature": "pub type TabularQAgent < S , A > = QLearningAgent < S , A , TabularQFunction < S , A > >"
+    }
   ],
   "crates/domain_ai/src/ai/reinforcement_learning/bellman.rs": [
-    "pub fn action_value_bellman_equation < M > (mdp : & M , state : & M :: S , action : & M :: A , next_states : & [M :: S] , v_function : impl Fn (& M :: S) -> f64 ,) -> f64 where M : MarkovDecisionProcess ,",
-    "pub fn bellman_optimality_value < M > (mdp : & M , state : & M :: S , next_states : & [M :: S] , v_star : impl Fn (& M :: S) -> f64 ,) -> f64 where M : MarkovDecisionProcess ,",
-    "pub fn state_value_bellman_equation < M > (mdp : & M , policy : & impl Policy < M :: S , M :: A > , state : & M :: S , next_states : & [M :: S] , v_function : impl Fn (& M :: S) -> f64 ,) -> f64 where M : MarkovDecisionProcess ,"
+    {
+      "signature": "pub fn action_value_bellman_equation < M > (mdp : & M , state : & M :: S , action : & M :: A , next_states : & [M :: S] , v_function : impl Fn (& M :: S) -> f64 ,) -> f64 where M : MarkovDecisionProcess ,"
+    },
+    {
+      "signature": "pub fn bellman_optimality_value < M > (mdp : & M , state : & M :: S , next_states : & [M :: S] , v_star : impl Fn (& M :: S) -> f64 ,) -> f64 where M : MarkovDecisionProcess ,"
+    },
+    {
+      "signature": "pub fn state_value_bellman_equation < M > (mdp : & M , policy : & impl Policy < M :: S , M :: A > , state : & M :: S , next_states : & [M :: S] , v_function : impl Fn (& M :: S) -> f64 ,) -> f64 where M : MarkovDecisionProcess ,"
+    }
   ],
   "crates/domain_ai/src/ai/reinforcement_learning/grid_world.rs": [
-    "pub enum Move",
-    "pub struct GridState",
-    "pub struct GridWorldEnv"
+    {
+      "signature": "pub enum Move"
+    },
+    {
+      "signature": "pub struct GridState"
+    },
+    {
+      "signature": "pub struct GridWorldEnv"
+    }
   ],
   "crates/domain_ai/src/ai/reinforcement_learning/q_function.rs": [
-    "pub struct TabularQFunction < S , A >"
+    {
+      "signature": "pub struct TabularQFunction < S , A >"
+    }
   ],
   "crates/domain_ai/src/ai/reinforcement_learning/strategies.rs": [
-    "pub struct EpsilonGreedy",
-    "pub trait ExplorationStrategy < S , A >"
+    {
+      "signature": "pub struct EpsilonGreedy"
+    },
+    {
+      "signature": "pub trait ExplorationStrategy < S , A >"
+    }
   ],
   "crates/domain_ai/src/ai/reinforcement_learning/types.rs": [
-    "pub trait Action",
-    "pub trait MarkovDecisionProcess",
-    "pub trait Policy < S : State , A : Action >",
-    "pub trait QFunction < S : State , A : Action >",
-    "pub trait State"
+    {
+      "signature": "pub trait Action"
+    },
+    {
+      "signature": "pub trait MarkovDecisionProcess"
+    },
+    {
+      "signature": "pub trait Policy < S : State , A : Action >"
+    },
+    {
+      "signature": "pub trait QFunction < S : State , A : Action >"
+    },
+    {
+      "signature": "pub trait State"
+    }
   ],
   "crates/domain_ai/src/ai/sds/diffusion.rs": [
-    "pub fn generate_noise (rows : usize , cols : usize) -> Result < DMatrix < f64 > , crate :: error :: AIError >",
-    "pub fn generate_noise_with_rng < R : Rng + ? Sized > (rows : usize , cols : usize , rng : & mut R ,) -> Result < DMatrix < f64 > , crate :: error :: AIError >",
-    "pub fn inject_noise (image : & DMatrix < f64 > , noise : & DMatrix < f64 > , signal_scale : f64 , noise_scale : f64 ,) -> DMatrix < f64 >",
-    "pub fn sample_timestep (max_timesteps : usize) -> usize",
-    "pub fn sample_timestep_with_rng < R : Rng + ? Sized > (max_timesteps : usize , rng : & mut R) -> usize",
-    "pub struct NoiseSchedule"
+    {
+      "signature": "pub fn generate_noise (rows : usize , cols : usize) -> Result < DMatrix < f64 > , crate :: error :: AIError >"
+    },
+    {
+      "signature": "pub fn generate_noise_with_rng < R : Rng + ? Sized > (rows : usize , cols : usize , rng : & mut R ,) -> Result < DMatrix < f64 > , crate :: error :: AIError >"
+    },
+    {
+      "signature": "pub fn inject_noise (image : & DMatrix < f64 > , noise : & DMatrix < f64 > , signal_scale : f64 , noise_scale : f64 ,) -> DMatrix < f64 >"
+    },
+    {
+      "signature": "pub fn sample_timestep (max_timesteps : usize) -> usize"
+    },
+    {
+      "signature": "pub fn sample_timestep_with_rng < R : Rng + ? Sized > (max_timesteps : usize , rng : & mut R) -> usize"
+    },
+    {
+      "signature": "pub struct NoiseSchedule"
+    }
   ],
   "crates/domain_ai/src/ai/sds/gradient.rs": [
-    "pub fn apply_weighting (residual : & DMatrix < f64 > , weight : f64) -> DMatrix < f64 >",
-    "pub fn compute_residual (predicted_noise : & DMatrix < f64 > , added_noise : & DMatrix < f64 > ,) -> DMatrix < f64 >",
-    "pub fn compute_sds_gradient (predicted_noise : & DMatrix < f64 > , added_noise : & DMatrix < f64 > , weight : f64 ,) -> DMatrix < f64 >",
-    "pub fn detach (tensor : DMatrix < f64 >) -> DMatrix < f64 >"
+    {
+      "signature": "pub fn apply_weighting (residual : & DMatrix < f64 > , weight : f64) -> DMatrix < f64 >"
+    },
+    {
+      "signature": "pub fn compute_residual (predicted_noise : & DMatrix < f64 > , added_noise : & DMatrix < f64 > ,) -> DMatrix < f64 >"
+    },
+    {
+      "signature": "pub fn compute_sds_gradient (predicted_noise : & DMatrix < f64 > , added_noise : & DMatrix < f64 > , weight : f64 ,) -> DMatrix < f64 >"
+    },
+    {
+      "signature": "pub fn detach (tensor : DMatrix < f64 >) -> DMatrix < f64 >"
+    }
   ],
   "crates/domain_ai/src/ai/sds/rendering.rs": [
-    "pub fn generate_ray_bundle (pose : & Matrix4 < f64 > , width : usize , height : usize , fov_y : f64 ,) -> RayBundle",
-    "pub fn positional_encoding (p : f64 , l : usize) -> Vec < f64 >",
-    "pub fn render_image < M : NeRFModel + ? Sized > (ctx : & mut RenderContext , bundle : & RayBundle , model : & M , t_near : f64 , t_far : f64 , n_samples : usize ,) -> DMatrix < Vector3 < f64 > >",
-    "pub fn render_image_with_rng < M : NeRFModel + ? Sized , R : Rng + ? Sized > (ctx : & mut RenderContext , bundle : & RayBundle , model : & M , t_near : f64 , t_far : f64 , n_samples : usize , rng : & mut R ,) -> DMatrix < Vector3 < f64 > >",
-    "pub fn stratified_sampling (t_near : f64 , t_far : f64 , n_samples : usize , out : & mut [f64])",
-    "pub fn stratified_sampling_with_rng < R : Rng + ? Sized > (t_near : f64 , t_far : f64 , n_samples : usize , rng : & mut R , out : & mut [f64] ,)",
-    "pub fn volume_integration (densities : & [f64] , colors : & [Vector3 < f64 >] , deltas : & [f64] ,) -> Vector3 < f64 >",
-    "pub struct Ray",
-    "pub struct RayBundle",
-    "pub struct RenderContext",
-    "pub trait NeRFModel"
+    {
+      "signature": "pub fn generate_ray_bundle (pose : & Matrix4 < f64 > , width : usize , height : usize , fov_y : f64 ,) -> RayBundle"
+    },
+    {
+      "signature": "pub fn positional_encoding (p : f64 , l : usize) -> Vec < f64 >"
+    },
+    {
+      "signature": "pub fn render_image < M : NeRFModel + ? Sized > (ctx : & mut RenderContext , bundle : & RayBundle , model : & M , t_near : f64 , t_far : f64 , n_samples : usize ,) -> DMatrix < Vector3 < f64 > >"
+    },
+    {
+      "signature": "pub fn render_image_with_rng < M : NeRFModel + ? Sized , R : Rng + ? Sized > (ctx : & mut RenderContext , bundle : & RayBundle , model : & M , t_near : f64 , t_far : f64 , n_samples : usize , rng : & mut R ,) -> DMatrix < Vector3 < f64 > >"
+    },
+    {
+      "signature": "pub fn stratified_sampling (t_near : f64 , t_far : f64 , n_samples : usize , out : & mut [f64])"
+    },
+    {
+      "signature": "pub fn stratified_sampling_with_rng < R : Rng + ? Sized > (t_near : f64 , t_far : f64 , n_samples : usize , rng : & mut R , out : & mut [f64] ,)"
+    },
+    {
+      "signature": "pub fn volume_integration (densities : & [f64] , colors : & [Vector3 < f64 >] , deltas : & [f64] ,) -> Vector3 < f64 >"
+    },
+    {
+      "signature": "pub struct Ray"
+    },
+    {
+      "signature": "pub struct RayBundle"
+    },
+    {
+      "signature": "pub struct RenderContext"
+    },
+    {
+      "signature": "pub trait NeRFModel"
+    }
   ],
   "crates/domain_ai/src/ai/sds/score.rs": [
-    "pub fn classifier_free_guidance (noise_cond : & DMatrix < f64 > , noise_uncond : & DMatrix < f64 > , guidance_scale : f64 ,) -> DMatrix < f64 >",
-    "pub trait DiffusionModel",
-    "pub trait TextEncoder"
+    {
+      "signature": "pub fn classifier_free_guidance (noise_cond : & DMatrix < f64 > , noise_uncond : & DMatrix < f64 > , guidance_scale : f64 ,) -> DMatrix < f64 >"
+    },
+    {
+      "signature": "pub trait DiffusionModel"
+    },
+    {
+      "signature": "pub trait TextEncoder"
+    }
   ],
   "crates/domain_ai/src/ai/sds/training.rs": [
-    "pub struct AdamOptimizer",
-    "pub struct SgdOptimizer",
-    "pub trait DifferentiableNeRF",
-    "pub trait Optimizer"
+    {
+      "signature": "pub struct AdamOptimizer"
+    },
+    {
+      "signature": "pub struct SgdOptimizer"
+    },
+    {
+      "signature": "pub trait DifferentiableNeRF"
+    },
+    {
+      "signature": "pub trait Optimizer"
+    }
   ],
   "crates/domain_ai/src/ai/self_calibration/scoring.rs": [
-    "pub fn calculate_soft_self_consistency_scores (responses : & [Response]) -> Vec < f64 >"
+    {
+      "signature": "pub fn calculate_soft_self_consistency_scores (responses : & [Response]) -> Vec < f64 >"
+    }
   ],
   "crates/domain_ai/src/ai/self_calibration/temperature.rs": [
-    "pub fn calculate_answer_entropy (responses : & [Response]) -> f64",
-    "pub fn map_entropy_to_temperature (entropy : f64) -> f64"
+    {
+      "signature": "pub fn calculate_answer_entropy (responses : & [Response]) -> f64"
+    },
+    {
+      "signature": "pub fn map_entropy_to_temperature (entropy : f64) -> f64"
+    }
   ],
   "crates/domain_ai/src/ai/self_calibration/training.rs": [
-    "pub fn calculate_kl_divergence_loss (responses : & [Response] , predicted_dist : & [f64] ,) -> Result < f64 , AIError >"
+    {
+      "signature": "pub fn calculate_kl_divergence_loss (responses : & [Response] , predicted_dist : & [f64] ,) -> Result < f64 , AIError >"
+    }
   ],
   "crates/domain_ai/src/ai/self_calibration/types.rs": [
-    "pub struct Response",
-    "pub type Answer = String"
+    {
+      "signature": "pub struct Response"
+    },
+    {
+      "signature": "pub type Answer = String"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/attention.rs": [
-    "pub fn scaled_dot_product_attention (q : & DMatrix < f64 > , k : & DMatrix < f64 > , v : & DMatrix < f64 > , mask : Option < & DMatrix < f64 > > ,) -> (DMatrix < f64 > , DMatrix < f64 >)",
-    "pub struct MultiHeadAttention"
+    {
+      "signature": "pub fn scaled_dot_product_attention (q : & DMatrix < f64 > , k : & DMatrix < f64 > , v : & DMatrix < f64 > , mask : Option < & DMatrix < f64 > > ,) -> (DMatrix < f64 > , DMatrix < f64 >)"
+    },
+    {
+      "signature": "pub struct MultiHeadAttention"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/decoder.rs": [
-    "pub struct Decoder < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >",
-    "pub struct DecoderLayer < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    {
+      "signature": "pub struct Decoder < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    },
+    {
+      "signature": "pub struct DecoderLayer < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/encoder.rs": [
-    "pub struct Encoder < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >",
-    "pub struct EncoderLayer < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    {
+      "signature": "pub struct Encoder < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    },
+    {
+      "signature": "pub struct EncoderLayer < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/feed_forward.rs": [
-    "pub struct FeedForward"
+    {
+      "signature": "pub struct FeedForward"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/layer_norm.rs": [
-    "pub struct LayerNorm"
+    {
+      "signature": "pub struct LayerNorm"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/model.rs": [
-    "pub struct Transformer < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    {
+      "signature": "pub struct Transformer < A : AttentionMechanism = MultiHeadAttention , F : FeedForwardNetwork = FeedForward , N : NormalizationLayer = LayerNorm , >"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/positional_encoding.rs": [
-    "pub fn generate_positional_encoding (sequence_length : usize , d_model : usize) -> DMatrix < f64 >"
+    {
+      "signature": "pub fn generate_positional_encoding (sequence_length : usize , d_model : usize) -> DMatrix < f64 >"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/tokenization.rs": [
-    "pub struct CharTokenizer",
-    "pub struct PseudoEmbedding",
-    "pub struct WordTokenizer",
-    "pub trait Tokenizer"
+    {
+      "signature": "pub struct CharTokenizer"
+    },
+    {
+      "signature": "pub struct PseudoEmbedding"
+    },
+    {
+      "signature": "pub struct WordTokenizer"
+    },
+    {
+      "signature": "pub trait Tokenizer"
+    }
   ],
   "crates/domain_ai/src/ai/transformer/traits.rs": [
-    "pub trait AttentionMechanism",
-    "pub trait FeedForwardNetwork",
-    "pub trait NormalizationLayer"
+    {
+      "signature": "pub trait AttentionMechanism"
+    },
+    {
+      "signature": "pub trait FeedForwardNetwork"
+    },
+    {
+      "signature": "pub trait NormalizationLayer"
+    }
   ],
   "crates/domain_ai/src/ai/utils.rs": [
-    "pub trait AddRowVector"
+    {
+      "signature": "pub trait AddRowVector"
+    }
   ],
   "crates/domain_ai/src/error.rs": [
-    "pub enum AIError",
-    "pub type Result < T > = math_commons :: error :: MathResult < T >"
+    {
+      "signature": "pub enum AIError"
+    },
+    {
+      "signature": "pub type Result < T > = math_commons :: error :: MathResult < T >"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/kalman.rs": [
-    "pub enum KalmanError",
-    "pub struct KalmanFilter < T : RealField + Copy , M : KalmanSystem < T > >",
-    "pub struct KalmanFilterBuilder < T : RealField + Copy , M : KalmanSystem < T > >",
-    "pub trait KalmanModel < T : RealField + Copy >",
-    "pub trait KalmanSystem < T : RealField + Copy >"
+    {
+      "signature": "pub enum KalmanError"
+    },
+    {
+      "signature": "pub struct KalmanFilter < T : RealField + Copy , M : KalmanSystem < T > >"
+    },
+    {
+      "signature": "pub struct KalmanFilterBuilder < T : RealField + Copy , M : KalmanSystem < T > >"
+    },
+    {
+      "signature": "pub trait KalmanModel < T : RealField + Copy >"
+    },
+    {
+      "signature": "pub trait KalmanSystem < T : RealField + Copy >"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/sorting/divide_conquer.rs": [
-    "pub fn merge_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >",
-    "pub fn quick_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >",
-    "pub struct MergeSorter",
-    "pub struct QuickSorter"
+    {
+      "signature": "pub fn merge_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >"
+    },
+    {
+      "signature": "pub fn quick_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >"
+    },
+    {
+      "signature": "pub struct MergeSorter"
+    },
+    {
+      "signature": "pub struct QuickSorter"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/sorting/elementary.rs": [
-    "pub fn bubble_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >",
-    "pub fn insertion_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >",
-    "pub struct BubbleSorter",
-    "pub struct InsertionSorter"
+    {
+      "signature": "pub fn bubble_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >"
+    },
+    {
+      "signature": "pub fn insertion_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >"
+    },
+    {
+      "signature": "pub struct BubbleSorter"
+    },
+    {
+      "signature": "pub struct InsertionSorter"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/sorting/heap.rs": [
-    "pub fn heap_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >",
-    "pub struct HeapSorter"
+    {
+      "signature": "pub fn heap_sort < T : Ord + Clone > (data : & [T]) -> SortingResult < T >"
+    },
+    {
+      "signature": "pub struct HeapSorter"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/sorting/linear.rs": [
-    "pub fn radix_sort (data : & [u64]) -> SortingResult < u64 >",
-    "pub struct RadixSorter"
+    {
+      "signature": "pub fn radix_sort (data : & [u64]) -> SortingResult < u64 >"
+    },
+    {
+      "signature": "pub struct RadixSorter"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/sorting/stats.rs": [
-    "pub struct SortingResult < T >",
-    "pub struct SortingStats"
+    {
+      "signature": "pub struct SortingResult < T >"
+    },
+    {
+      "signature": "pub struct SortingStats"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/sorting/strategy.rs": [
-    "pub trait Sorter < T >"
+    {
+      "signature": "pub trait Sorter < T >"
+    }
   ],
   "crates/domain_applied/src/applied/algorithms/sorting/theory.rs": [
-    "pub fn information_theoretic_bound (n : u64) -> f64",
-    "pub fn stirling_approximation_ln_factorial (n : u64) -> f64"
+    {
+      "signature": "pub fn information_theoretic_bound (n : u64) -> f64"
+    },
+    {
+      "signature": "pub fn stirling_approximation_ln_factorial (n : u64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/battery_degradation/mod.rs": [
-    "pub fn capacity (n : f64 , d : f64) -> f64",
-    "pub fn cycles_to_capacity (target_capacity : f64 , d : f64) -> f64",
-    "pub fn n70 (d : f64) -> f64"
+    {
+      "signature": "pub fn capacity (n : f64 , d : f64) -> f64"
+    },
+    {
+      "signature": "pub fn cycles_to_capacity (target_capacity : f64 , d : f64) -> f64"
+    },
+    {
+      "signature": "pub fn n70 (d : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/battery_degradation/model.rs": [
-    "pub struct PowerLawModel",
-    "pub trait DegradationModel"
+    {
+      "signature": "pub struct PowerLawModel"
+    },
+    {
+      "signature": "pub trait DegradationModel"
+    }
   ],
   "crates/domain_applied/src/applied/battery_degradation/types.rs": [
-    "pub struct Capacity",
-    "pub struct Cycles",
-    "pub struct DepthOfDischarge"
+    {
+      "signature": "pub struct Capacity"
+    },
+    {
+      "signature": "pub struct Cycles"
+    },
+    {
+      "signature": "pub struct DepthOfDischarge"
+    }
   ],
   "crates/domain_applied/src/applied/cannibalism/death_rate.rs": [
-    "pub fn death_rate (nu_a : f64 , c_a : f64 , k_t : f64 , phi_c_t : f64) -> f64"
+    {
+      "signature": "pub fn death_rate (nu_a : f64 , c_a : f64 , k_t : f64 , phi_c_t : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/cannibalism/juvenile_adult_dynamics.rs": [
-    "pub fn adult_dynamics (n_t_alpha : f64 , f_i_t : f64 , a_t : f64) -> f64",
-    "pub fn juvenile_dynamics (i_t : f64 , c_a : f64 , a_t : f64 , n_t_a : f64) -> f64"
+    {
+      "signature": "pub fn adult_dynamics (n_t_alpha : f64 , f_i_t : f64 , a_t : f64) -> f64"
+    },
+    {
+      "signature": "pub fn juvenile_dynamics (i_t : f64 , c_a : f64 , a_t : f64 , n_t_a : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/cannibalism/mckendrick_von_foerster.rs": [
-    "pub fn birth_rate (_t : f64) -> f64",
-    "pub fn mckendrick_von_foerster (_t : f64 , _a : f64 , mu : f64 , n : f64) -> f64"
+    {
+      "signature": "pub fn birth_rate (_t : f64) -> f64"
+    },
+    {
+      "signature": "pub fn mckendrick_von_foerster (_t : f64 , _a : f64 , mu : f64 , n : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/cannibalism/two_dimensional_ode.rs": [
-    "pub struct CannibalismModel"
+    {
+      "signature": "pub struct CannibalismModel"
+    }
   ],
   "crates/domain_applied/src/applied/clinical_trials/analysis.rs": [
-    "pub fn calculate_risk_metrics (table : & ContingencyTable , alpha : f64 ,) -> Result < RiskMetrics , ClinicalTrialError >",
-    "pub struct RiskMetrics"
+    {
+      "signature": "pub fn calculate_risk_metrics (table : & ContingencyTable , alpha : f64 ,) -> Result < RiskMetrics , ClinicalTrialError >"
+    },
+    {
+      "signature": "pub struct RiskMetrics"
+    }
   ],
   "crates/domain_applied/src/applied/clinical_trials/design.rs": [
-    "pub enum Group",
-    "pub struct BlockRandomizer",
-    "pub struct Patient",
-    "pub struct SimpleRandomizer",
-    "pub struct StratifiedRandomizer < S : AllocationStrategy >",
-    "pub trait AllocationStrategy"
+    {
+      "signature": "pub enum Group"
+    },
+    {
+      "signature": "pub struct BlockRandomizer"
+    },
+    {
+      "signature": "pub struct Patient"
+    },
+    {
+      "signature": "pub struct SimpleRandomizer"
+    },
+    {
+      "signature": "pub struct StratifiedRandomizer < S : AllocationStrategy >"
+    },
+    {
+      "signature": "pub trait AllocationStrategy"
+    }
   ],
   "crates/domain_applied/src/applied/clinical_trials/hypothesis_testing.rs": [
-    "pub fn chi_square_2x2 (table : & ContingencyTable , alpha : f64 ,) -> Result < TestResult , ClinicalTrialError >",
-    "pub fn t_test_independent (group1 : & GroupData , group2 : & GroupData , alpha : f64 ,) -> Result < TestResult , ClinicalTrialError >",
-    "pub struct ChiSquare2x2",
-    "pub struct TTestIndependent",
-    "pub struct TestResult",
-    "pub trait HypothesisTest < Input >"
+    {
+      "signature": "pub fn chi_square_2x2 (table : & ContingencyTable , alpha : f64 ,) -> Result < TestResult , ClinicalTrialError >"
+    },
+    {
+      "signature": "pub fn t_test_independent (group1 : & GroupData , group2 : & GroupData , alpha : f64 ,) -> Result < TestResult , ClinicalTrialError >"
+    },
+    {
+      "signature": "pub struct ChiSquare2x2"
+    },
+    {
+      "signature": "pub struct TTestIndependent"
+    },
+    {
+      "signature": "pub struct TestResult"
+    },
+    {
+      "signature": "pub trait HypothesisTest < Input >"
+    }
   ],
   "crates/domain_applied/src/applied/clinical_trials/sample_size.rs": [
-    "pub fn calculate_sample_size_means (alpha : f64 , power : f64 , delta : f64 , sigma : f64 ,) -> Result < usize , ClinicalTrialError >",
-    "pub fn calculate_sample_size_proportions (alpha : f64 , power : f64 , p1 : f64 , p2 : f64 ,) -> Result < usize , ClinicalTrialError >"
+    {
+      "signature": "pub fn calculate_sample_size_means (alpha : f64 , power : f64 , delta : f64 , sigma : f64 ,) -> Result < usize , ClinicalTrialError >"
+    },
+    {
+      "signature": "pub fn calculate_sample_size_proportions (alpha : f64 , power : f64 , p1 : f64 , p2 : f64 ,) -> Result < usize , ClinicalTrialError >"
+    }
   ],
   "crates/domain_applied/src/applied/clinical_trials/survival_analysis.rs": [
-    "pub fn kaplan_meier (observations : & [Observation]) -> Vec < TimePoint >",
-    "pub fn try_estimate_hazard_ratio (group1 : & [Observation] , group2 : & [Observation] ,) -> Result < f64 , ClinicalTrialError >",
-    "pub struct Observation",
-    "pub struct TimePoint"
+    {
+      "signature": "pub fn kaplan_meier (observations : & [Observation]) -> Vec < TimePoint >"
+    },
+    {
+      "signature": "pub fn try_estimate_hazard_ratio (group1 : & [Observation] , group2 : & [Observation] ,) -> Result < f64 , ClinicalTrialError >"
+    },
+    {
+      "signature": "pub struct Observation"
+    },
+    {
+      "signature": "pub struct TimePoint"
+    }
   ],
   "crates/domain_applied/src/applied/clinical_trials/types.rs": [
-    "pub enum ClinicalTrialError",
-    "pub struct ContingencyTable",
-    "pub struct GroupData",
-    "pub struct SurvivalTime"
+    {
+      "signature": "pub enum ClinicalTrialError"
+    },
+    {
+      "signature": "pub struct ContingencyTable"
+    },
+    {
+      "signature": "pub struct GroupData"
+    },
+    {
+      "signature": "pub struct SurvivalTime"
+    }
   ],
   "crates/domain_applied/src/applied/engineering/cnc.rs": [
-    "pub fn calculate_taylor_tool_life (cutting_speed : CuttingSpeed , constant_c : MaterialConstant , exponent_n : ToolExponent ,) -> ToolLife",
-    "pub fn taylor_tool_life (cutting_speed : f64 , constant_c : f64 , exponent_n : f64) -> f64",
-    "pub struct CuttingSpeed",
-    "pub struct MaterialConstant",
-    "pub struct ToolExponent",
-    "pub struct ToolLife"
+    {
+      "signature": "pub fn calculate_taylor_tool_life (cutting_speed : CuttingSpeed , constant_c : MaterialConstant , exponent_n : ToolExponent ,) -> ToolLife"
+    },
+    {
+      "signature": "pub fn taylor_tool_life (cutting_speed : f64 , constant_c : f64 , exponent_n : f64) -> f64"
+    },
+    {
+      "signature": "pub struct CuttingSpeed"
+    },
+    {
+      "signature": "pub struct MaterialConstant"
+    },
+    {
+      "signature": "pub struct ToolExponent"
+    },
+    {
+      "signature": "pub struct ToolLife"
+    }
   ],
   "crates/domain_applied/src/applied/engineering/uart.rs": [
-    "pub fn calculate_uart_throughput (baud_rate : BaudRate , data_bits : DataBits , total_bits : TotalBits ,) -> f64",
-    "pub fn uart_effective_throughput (baud_rate : u32 , data_bits : u32 , total_bits : u32) -> f64",
-    "pub struct BaudRate",
-    "pub struct DataBits",
-    "pub struct TotalBits"
+    {
+      "signature": "pub fn calculate_uart_throughput (baud_rate : BaudRate , data_bits : DataBits , total_bits : TotalBits ,) -> f64"
+    },
+    {
+      "signature": "pub fn uart_effective_throughput (baud_rate : u32 , data_bits : u32 , total_bits : u32) -> f64"
+    },
+    {
+      "signature": "pub struct BaudRate"
+    },
+    {
+      "signature": "pub struct DataBits"
+    },
+    {
+      "signature": "pub struct TotalBits"
+    }
   ],
   "crates/domain_applied/src/applied/favoritism/favorite_child.rs": [
-    "pub fn find_favorite_child (children : & [Child]) -> Option < & Child >",
-    "pub struct Child"
+    {
+      "signature": "pub fn find_favorite_child (children : & [Child]) -> Option < & Child >"
+    },
+    {
+      "signature": "pub struct Child"
+    }
   ],
   "crates/domain_applied/src/applied/favoritism/scoring.rs": [
-    "pub fn calculate_favoritism_score (inputs : & FavoritismInputs) -> f64",
-    "pub fn calculate_favoritism_score_full < R : Rng , I : Integrator + ? Sized > (inputs : & FavoritismInputs , rng : & mut R , integrator : & I ,) -> f64",
-    "pub fn calculate_favoritism_score_with_rng < R : Rng > (inputs : & FavoritismInputs , rng : & mut R) -> f64"
+    {
+      "signature": "pub fn calculate_favoritism_score (inputs : & FavoritismInputs) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_favoritism_score_full < R : Rng , I : Integrator + ? Sized > (inputs : & FavoritismInputs , rng : & mut R , integrator : & I ,) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_favoritism_score_with_rng < R : Rng > (inputs : & FavoritismInputs , rng : & mut R) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/favoritism/strategies.rs": [
-    "pub struct ComplimentStrategy",
-    "pub struct ContactFrequencyStrategy",
-    "pub struct DecayStrategy",
-    "pub struct EmotionalSupportStrategy",
-    "pub struct GiftStrategy",
-    "pub struct PersonalityStrategy",
-    "pub struct ProximityStrategy",
-    "pub struct ScoringContext < 'a , I : Integrator + ? Sized >",
-    "pub struct SiblingCompetitionStrategy",
-    "pub struct SocialMultiplierStrategy",
-    "pub struct StochasticStrategy",
-    "pub struct UnifiedFavoritismModel < I : Integrator + ? Sized >",
-    "pub trait ScoringStrategy < I : Integrator + ? Sized >"
+    {
+      "signature": "pub struct ComplimentStrategy"
+    },
+    {
+      "signature": "pub struct ContactFrequencyStrategy"
+    },
+    {
+      "signature": "pub struct DecayStrategy"
+    },
+    {
+      "signature": "pub struct EmotionalSupportStrategy"
+    },
+    {
+      "signature": "pub struct GiftStrategy"
+    },
+    {
+      "signature": "pub struct PersonalityStrategy"
+    },
+    {
+      "signature": "pub struct ProximityStrategy"
+    },
+    {
+      "signature": "pub struct ScoringContext < 'a , I : Integrator + ? Sized >"
+    },
+    {
+      "signature": "pub struct SiblingCompetitionStrategy"
+    },
+    {
+      "signature": "pub struct SocialMultiplierStrategy"
+    },
+    {
+      "signature": "pub struct StochasticStrategy"
+    },
+    {
+      "signature": "pub struct UnifiedFavoritismModel < I : Integrator + ? Sized >"
+    },
+    {
+      "signature": "pub trait ScoringStrategy < I : Integrator + ? Sized >"
+    }
   ],
   "crates/domain_applied/src/applied/favoritism/types.rs": [
-    "pub struct ComplimentParams",
-    "pub struct ContactParams",
-    "pub struct FamilyParams",
-    "pub struct FavoritismInputs",
-    "pub struct GiftParams",
-    "pub struct PersonalityParams",
-    "pub struct SocialParams",
-    "pub struct TimeParams"
+    {
+      "signature": "pub struct ComplimentParams"
+    },
+    {
+      "signature": "pub struct ContactParams"
+    },
+    {
+      "signature": "pub struct FamilyParams"
+    },
+    {
+      "signature": "pub struct FavoritismInputs"
+    },
+    {
+      "signature": "pub struct GiftParams"
+    },
+    {
+      "signature": "pub struct PersonalityParams"
+    },
+    {
+      "signature": "pub struct SocialParams"
+    },
+    {
+      "signature": "pub struct TimeParams"
+    }
   ],
   "crates/domain_applied/src/applied/freesurfer/glm.rs": [
-    "pub fn estimate_beta < T : RealField > (x : & DMatrix < T > , y : & DVector < T > ,) -> Result < DVector < T > , & 'static str >",
-    "pub fn t_statistic < T : RealField + Copy > (c : & DVector < T > , beta : & DVector < T > , x : & DMatrix < T > , residual_variance : T ,) -> Result < T , & 'static str >"
+    {
+      "signature": "pub fn estimate_beta < T : RealField > (x : & DMatrix < T > , y : & DVector < T > ,) -> Result < DVector < T > , & 'static str >"
+    },
+    {
+      "signature": "pub fn t_statistic < T : RealField + Copy > (c : & DVector < T > , beta : & DVector < T > , x : & DMatrix < T > , residual_variance : T ,) -> Result < T , & 'static str >"
+    }
   ],
   "crates/domain_applied/src/applied/freesurfer/segmentation.rs": [
-    "pub fn bayesian_classification (likelihood : f64 , prior : f64) -> f64"
+    {
+      "signature": "pub fn bayesian_classification (likelihood : f64 , prior : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/freesurfer/surface.rs": [
-    "pub fn evolve_surface (surface : & mut Surface , learning_rate : f64 , gradient_strength : f64)",
-    "pub fn external_energy (surface : & Surface , image_gradient_strength : f64) -> f64",
-    "pub fn internal_energy (surface : & Surface , alpha : f64 , beta : f64) -> f64",
-    "pub struct Surface"
+    {
+      "signature": "pub fn evolve_surface (surface : & mut Surface , learning_rate : f64 , gradient_strength : f64)"
+    },
+    {
+      "signature": "pub fn external_energy (surface : & Surface , image_gradient_strength : f64) -> f64"
+    },
+    {
+      "signature": "pub fn internal_energy (surface : & Surface , alpha : f64 , beta : f64) -> f64"
+    },
+    {
+      "signature": "pub struct Surface"
+    }
   ],
   "crates/domain_applied/src/applied/freesurfer/thickness.rs": [
-    "pub fn cortical_thickness (v_w : & [f64 ; 3] , v_p : & [f64 ; 3] , white_surface : & Surface , pial_surface : & Surface ,) -> f64"
+    {
+      "signature": "pub fn cortical_thickness (v_w : & [f64 ; 3] , v_p : & [f64 ; 3] , white_surface : & Surface , pial_surface : & Surface ,) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/equilibrium.rs": [
-    "pub fn is_fixed_point < C : Correspondence > (correspondence : & C , point : & DVector < f64 >) -> bool",
-    "pub struct BestResponseCorrespondence",
-    "pub struct BoxSet",
-    "pub trait ConvexSet",
-    "pub trait Correspondence"
+    {
+      "signature": "pub fn is_fixed_point < C : Correspondence > (correspondence : & C , point : & DVector < f64 >) -> bool"
+    },
+    {
+      "signature": "pub struct BestResponseCorrespondence"
+    },
+    {
+      "signature": "pub struct BoxSet"
+    },
+    {
+      "signature": "pub trait ConvexSet"
+    },
+    {
+      "signature": "pub trait Correspondence"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/evolutionary/replicator.rs": [
-    "pub struct ReplicatorDynamics < S : FitnessStrategy = MatrixPayoff >"
+    {
+      "signature": "pub struct ReplicatorDynamics < S : FitnessStrategy = MatrixPayoff >"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/evolutionary/strategies.rs": [
-    "pub struct MatrixPayoff"
+    {
+      "signature": "pub struct MatrixPayoff"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/evolutionary/traits.rs": [
-    "pub trait FitnessStrategy"
+    {
+      "signature": "pub trait FitnessStrategy"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/mean_field/physics.rs": [
-    "pub struct QuadraticHamiltonian",
-    "pub trait Hamiltonian"
+    {
+      "signature": "pub struct QuadraticHamiltonian"
+    },
+    {
+      "signature": "pub trait Hamiltonian"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/mean_field/solver.rs": [
-    "pub struct FixedPointSolver < H : Hamiltonian >",
-    "pub trait MFGSolver"
+    {
+      "signature": "pub struct FixedPointSolver < H : Hamiltonian >"
+    },
+    {
+      "signature": "pub trait MFGSolver"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/mean_field/types.rs": [
-    "pub struct Density",
-    "pub struct MFGConfig",
-    "pub struct MFGConfigBuilder < V , T , G , TS , S >",
-    "pub struct Position",
-    "pub struct WithGridPoints",
-    "pub struct WithSpaceBounds",
-    "pub struct WithTimeHorizon",
-    "pub struct WithTimeSteps",
-    "pub struct WithViscosity",
-    "pub struct WithoutGridPoints",
-    "pub struct WithoutSpaceBounds",
-    "pub struct WithoutTimeHorizon",
-    "pub struct WithoutTimeSteps",
-    "pub struct WithoutViscosity"
+    {
+      "signature": "pub struct Density"
+    },
+    {
+      "signature": "pub struct MFGConfig"
+    },
+    {
+      "signature": "pub struct MFGConfigBuilder < V , T , G , TS , S >"
+    },
+    {
+      "signature": "pub struct Position"
+    },
+    {
+      "signature": "pub struct WithGridPoints"
+    },
+    {
+      "signature": "pub struct WithSpaceBounds"
+    },
+    {
+      "signature": "pub struct WithTimeHorizon"
+    },
+    {
+      "signature": "pub struct WithTimeSteps"
+    },
+    {
+      "signature": "pub struct WithViscosity"
+    },
+    {
+      "signature": "pub struct WithoutGridPoints"
+    },
+    {
+      "signature": "pub struct WithoutSpaceBounds"
+    },
+    {
+      "signature": "pub struct WithoutTimeHorizon"
+    },
+    {
+      "signature": "pub struct WithoutTimeSteps"
+    },
+    {
+      "signature": "pub struct WithoutViscosity"
+    }
   ],
   "crates/domain_applied/src/applied/game_theory/mechanism_design.rs": [
-    "pub fn optimal_reserve_price < D : ValuationDistribution > (dist : & D , lower_bound : f64 , upper_bound : f64 ,) -> f64",
-    "pub fn optimal_reserve_price_with_solver < D : ValuationDistribution , S : RootFinder > (dist : & D , lower_bound : f64 , upper_bound : f64 , solver : & S ,) -> Result < f64 , AnalysisError >",
-    "pub fn simulate_optimal_revenue < D : ValuationDistribution > (dist : & D , n_bidders : usize , n_simulations : usize ,) -> f64",
-    "pub fn simulate_optimal_revenue_with_rng < D : ValuationDistribution , R : Rng + ? Sized > (dist : & D , n_bidders : usize , n_simulations : usize , rng : & mut R ,) -> f64",
-    "pub trait ValuationDistribution"
+    {
+      "signature": "pub fn optimal_reserve_price < D : ValuationDistribution > (dist : & D , lower_bound : f64 , upper_bound : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn optimal_reserve_price_with_solver < D : ValuationDistribution , S : RootFinder > (dist : & D , lower_bound : f64 , upper_bound : f64 , solver : & S ,) -> Result < f64 , AnalysisError >"
+    },
+    {
+      "signature": "pub fn simulate_optimal_revenue < D : ValuationDistribution > (dist : & D , n_bidders : usize , n_simulations : usize ,) -> f64"
+    },
+    {
+      "signature": "pub fn simulate_optimal_revenue_with_rng < D : ValuationDistribution , R : Rng + ? Sized > (dist : & D , n_bidders : usize , n_simulations : usize , rng : & mut R ,) -> f64"
+    },
+    {
+      "signature": "pub trait ValuationDistribution"
+    }
   ],
   "crates/domain_applied/src/applied/grpo/formulas.rs": [
-    "pub fn clipped_surrogate_objective (pi_thetas : & [f64] , pi_theta_olds : & [f64] , advantages : & [f64] , epsilon : f64 , beta : f64 , kl_divergence : f64 ,) -> f64",
-    "pub fn kl_divergence_lower_bound (p : f64 , beta : f64) -> f64",
-    "pub fn response_level_advantage (rewards : & [f64] , reward_i : f64) -> f64",
-    "pub fn solver_empirical_accuracy (responses : & [String] , pseudo_label : & str) -> f64"
+    {
+      "signature": "pub fn clipped_surrogate_objective (pi_thetas : & [f64] , pi_theta_olds : & [f64] , advantages : & [f64] , epsilon : f64 , beta : f64 , kl_divergence : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn kl_divergence_lower_bound (p : f64 , beta : f64) -> f64"
+    },
+    {
+      "signature": "pub fn response_level_advantage (rewards : & [f64] , reward_i : f64) -> f64"
+    },
+    {
+      "signature": "pub fn solver_empirical_accuracy (responses : & [String] , pseudo_label : & str) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/grpo/metrics.rs": [
-    "pub fn pairwise_distance_bleu (question_i : & str , question_j : & str) -> f64"
+    {
+      "signature": "pub fn pairwise_distance_bleu (question_i : & str , question_j : & str) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/grpo/rewards.rs": [
-    "pub fn binary_reward (satisfies_check : bool) -> i32",
-    "pub fn composite_reward (uncertainty_reward : f64 , repetition_penalty : f64) -> f64",
-    "pub fn repetition_penalty (cluster_size : usize , batch_size : usize , lambda : f64) -> f64",
-    "pub fn uncertainty_reward (p_hat : f64) -> f64"
+    {
+      "signature": "pub fn binary_reward (satisfies_check : bool) -> i32"
+    },
+    {
+      "signature": "pub fn composite_reward (uncertainty_reward : f64 , repetition_penalty : f64) -> f64"
+    },
+    {
+      "signature": "pub fn repetition_penalty (cluster_size : usize , batch_size : usize , lambda : f64) -> f64"
+    },
+    {
+      "signature": "pub fn uncertainty_reward (p_hat : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/isosurface/gradients.rs": [
-    "pub struct CentralDifferenceEstimator",
-    "pub trait GradientEstimator"
+    {
+      "signature": "pub struct CentralDifferenceEstimator"
+    },
+    {
+      "signature": "pub trait GradientEstimator"
+    }
   ],
   "crates/domain_applied/src/applied/isosurface/marching_cubes.rs": [
-    "pub fn extract_isosurface (grid : & VoxelGrid , threshold : f32) -> Result < Mesh , IsosurfaceError >",
-    "pub struct MarchingCubes < 'a , G : GradientEstimator >"
+    {
+      "signature": "pub fn extract_isosurface (grid : & VoxelGrid , threshold : f32) -> Result < Mesh , IsosurfaceError >"
+    },
+    {
+      "signature": "pub struct MarchingCubes < 'a , G : GradientEstimator >"
+    }
   ],
   "crates/domain_applied/src/applied/isosurface/types.rs": [
-    "pub enum VoxelGridError",
-    "pub struct VoxelGrid",
-    "pub struct VoxelGridBuilder"
+    {
+      "signature": "pub enum VoxelGridError"
+    },
+    {
+      "signature": "pub struct VoxelGrid"
+    },
+    {
+      "signature": "pub struct VoxelGridBuilder"
+    }
   ],
   "crates/domain_applied/src/applied/lorahub/ensemble.rs": [
-    "pub struct LoraEnsemble < C = LinearCombinationStrategy , O = L1RegularizationStrategy >"
+    {
+      "signature": "pub struct LoraEnsemble < C = LinearCombinationStrategy , O = L1RegularizationStrategy >"
+    }
   ],
   "crates/domain_applied/src/applied/lorahub/strategies.rs": [
-    "pub struct L1RegularizationStrategy",
-    "pub struct LinearCombinationStrategy",
-    "pub trait CombinationStrategy",
-    "pub trait ObjectiveStrategy"
+    {
+      "signature": "pub struct L1RegularizationStrategy"
+    },
+    {
+      "signature": "pub struct LinearCombinationStrategy"
+    },
+    {
+      "signature": "pub trait CombinationStrategy"
+    },
+    {
+      "signature": "pub trait ObjectiveStrategy"
+    }
   ],
   "crates/domain_applied/src/applied/lorahub/types.rs": [
-    "pub struct LoraStateDict"
+    {
+      "signature": "pub struct LoraStateDict"
+    }
   ],
   "crates/domain_applied/src/applied/pharmacokinetics/bateman.rs": [
-    "pub fn half_life (ke : f64) -> f64",
-    "pub fn solve_ka (t_max_target : f64 , ke : f64 , initial_guess : f64 , max_iter : usize , tolerance : f64 ,) -> Result < f64 , PharmacokineticsError >",
-    "pub fn t_max (ka : f64 , ke : f64) -> f64",
-    "pub struct BatemanModel"
+    {
+      "signature": "pub fn half_life (ke : f64) -> f64"
+    },
+    {
+      "signature": "pub fn solve_ka (t_max_target : f64 , ke : f64 , initial_guess : f64 , max_iter : usize , tolerance : f64 ,) -> Result < f64 , PharmacokineticsError >"
+    },
+    {
+      "signature": "pub fn t_max (ka : f64 , ke : f64) -> f64"
+    },
+    {
+      "signature": "pub struct BatemanModel"
+    }
   ],
   "crates/domain_applied/src/applied/pharmacokinetics/enantiomer.rs": [
-    "pub struct EnantiomerModel"
+    {
+      "signature": "pub struct EnantiomerModel"
+    }
   ],
   "crates/domain_applied/src/applied/pharmacokinetics/mod.rs": [
-    "pub fn concentration_bateman (params : & PKParameters , t : f64) -> f64",
-    "pub fn concentration_superposition (params : & PKParameters , dose_times : & [f64] , t : f64) -> f64"
+    {
+      "signature": "pub fn concentration_bateman (params : & PKParameters , t : f64) -> f64"
+    },
+    {
+      "signature": "pub fn concentration_superposition (params : & PKParameters , dose_times : & [f64] , t : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/pharmacokinetics/parameters.rs": [
-    "pub struct PKParameters",
-    "pub struct PKParametersBuilder"
+    {
+      "signature": "pub struct PKParameters"
+    },
+    {
+      "signature": "pub struct PKParametersBuilder"
+    }
   ],
   "crates/domain_applied/src/applied/pharmacokinetics/superposition.rs": [
-    "pub struct SuperpositionModel < M >"
+    {
+      "signature": "pub struct SuperpositionModel < M >"
+    }
   ],
   "crates/domain_applied/src/applied/pharmacokinetics/traits.rs": [
-    "pub trait PharmacokineticModel"
+    {
+      "signature": "pub trait PharmacokineticModel"
+    }
   ],
   "crates/domain_applied/src/applied/pharmacokinetics/two_pulse.rs": [
-    "pub struct TwoPulseModel < M >"
+    {
+      "signature": "pub struct TwoPulseModel < M >"
+    }
   ],
   "crates/domain_applied/src/applied/win_ratio/bmi.rs": [
-    "pub fn calculate_bmi (weight_kg : f64 , height_m : f64) -> f64"
+    {
+      "signature": "pub fn calculate_bmi (weight_kg : f64 , height_m : f64) -> f64"
+    }
   ],
   "crates/domain_applied/src/applied/win_ratio/pair_comparison.rs": [
-    "pub enum ComparisonResult",
-    "pub fn calculate_statistics (wins : i32 , losses : i32) -> Option < WinRatioStats >",
-    "pub fn calculate_win_ratio (wins : i32 , losses : i32) -> f64",
-    "pub struct HigherIsBetter",
-    "pub struct LowerIsBetter",
-    "pub struct MatchedPairing",
-    "pub struct ThresholdComparator",
-    "pub struct UnmatchedPairing",
-    "pub struct WinRatioAnalysis < T >",
-    "pub struct WinRatioStats",
-    "pub trait OutcomeComparator < T : ? Sized >",
-    "pub trait PairingStrategy < T >"
+    {
+      "signature": "pub enum ComparisonResult"
+    },
+    {
+      "signature": "pub fn calculate_statistics (wins : i32 , losses : i32) -> Option < WinRatioStats >"
+    },
+    {
+      "signature": "pub fn calculate_win_ratio (wins : i32 , losses : i32) -> f64"
+    },
+    {
+      "signature": "pub struct HigherIsBetter"
+    },
+    {
+      "signature": "pub struct LowerIsBetter"
+    },
+    {
+      "signature": "pub struct MatchedPairing"
+    },
+    {
+      "signature": "pub struct ThresholdComparator"
+    },
+    {
+      "signature": "pub struct UnmatchedPairing"
+    },
+    {
+      "signature": "pub struct WinRatioAnalysis < T >"
+    },
+    {
+      "signature": "pub struct WinRatioStats"
+    },
+    {
+      "signature": "pub trait OutcomeComparator < T : ? Sized >"
+    },
+    {
+      "signature": "pub trait PairingStrategy < T >"
+    }
   ],
   "crates/domain_applied/src/applied/win_ratio/probability_win_ratio.rs": [
-    "pub fn calculate_probability_win_ratio (win_probability : f64 , loss_probability : f64) -> f64",
-    "pub struct ProbabilityWinRatioContext"
+    {
+      "signature": "pub fn calculate_probability_win_ratio (win_probability : f64 , loss_probability : f64) -> f64"
+    },
+    {
+      "signature": "pub struct ProbabilityWinRatioContext"
+    }
   ],
   "crates/domain_applied/src/applied/win_ratio/sample_win_ratio.rs": [
-    "pub fn calculate_confidence_interval (n_w : u32 , n_l : u32) -> (f64 , f64)",
-    "pub fn calculate_sample_win_ratio (counts : & WinLossCounts) -> f64",
-    "pub fn calculate_significance_test_statistic (n_w : u32 , n_l : u32) -> f64",
-    "pub fn calculate_win_proportion (n_w : u32 , n_l : u32) -> f64",
-    "pub struct WinLossCounts"
+    {
+      "signature": "pub fn calculate_confidence_interval (n_w : u32 , n_l : u32) -> (f64 , f64)"
+    },
+    {
+      "signature": "pub fn calculate_sample_win_ratio (counts : & WinLossCounts) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_significance_test_statistic (n_w : u32 , n_l : u32) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_win_proportion (n_w : u32 , n_l : u32) -> f64"
+    },
+    {
+      "signature": "pub struct WinLossCounts"
+    }
   ],
   "crates/domain_applied/src/applied/win_ratio/simulation.rs": [
-    "pub fn conditional_survival_x_given_t_control (x : f64 , c : f64 , params : & SimulationParams) -> f64",
-    "pub fn conditional_survival_x_given_t_treatment (x : f64 , c : f64 , params : & SimulationParams) -> f64",
-    "pub fn joint_survival_function_control (t : f64 , x : f64 , params : & SimulationParams) -> f64",
-    "pub fn joint_survival_function_treatment (t : f64 , x : f64 , params : & SimulationParams) -> f64",
-    "pub fn marginal_survival_t_control (t : f64 , params : & SimulationParams) -> f64",
-    "pub fn marginal_survival_t_treatment (t : f64 , params : & SimulationParams) -> f64",
-    "pub fn pdf_t_control (t : f64 , params : & SimulationParams) -> f64",
-    "pub fn pdf_t_treatment (t : f64 , params : & SimulationParams) -> f64",
-    "pub fn pdf_x_given_t_control (x : f64 , c : f64 , params : & SimulationParams) -> f64",
-    "pub fn pdf_x_given_t_treatment (x : f64 , c : f64 , params : & SimulationParams) -> f64",
-    "pub fn win_ratio_parameter (params : & SimulationParams) -> f64",
-    "pub struct BivariateWeibullModel",
-    "pub struct SimulationParams"
+    {
+      "signature": "pub fn conditional_survival_x_given_t_control (x : f64 , c : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn conditional_survival_x_given_t_treatment (x : f64 , c : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn joint_survival_function_control (t : f64 , x : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn joint_survival_function_treatment (t : f64 , x : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn marginal_survival_t_control (t : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn marginal_survival_t_treatment (t : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn pdf_t_control (t : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn pdf_t_treatment (t : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn pdf_x_given_t_control (x : f64 , c : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn pdf_x_given_t_treatment (x : f64 , c : f64 , params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub fn win_ratio_parameter (params : & SimulationParams) -> f64"
+    },
+    {
+      "signature": "pub struct BivariateWeibullModel"
+    },
+    {
+      "signature": "pub struct SimulationParams"
+    }
   ],
   "crates/domain_applied/src/error.rs": [
-    "pub enum BatteryError",
-    "pub enum EngineeringError",
-    "pub enum GameTheoryError",
-    "pub enum IsosurfaceError",
-    "pub enum LoraError",
-    "pub enum PharmacokineticsError"
+    {
+      "signature": "pub enum BatteryError"
+    },
+    {
+      "signature": "pub enum EngineeringError"
+    },
+    {
+      "signature": "pub enum GameTheoryError"
+    },
+    {
+      "signature": "pub enum IsosurfaceError"
+    },
+    {
+      "signature": "pub enum LoraError"
+    },
+    {
+      "signature": "pub enum PharmacokineticsError"
+    }
   ],
   "crates/domain_biology/src/biology/diffusion/fd1d.rs": [
-    "pub struct FiniteDifference1D"
+    {
+      "signature": "pub struct FiniteDifference1D"
+    }
   ],
   "crates/domain_biology/src/biology/diffusion/fd2d/boundary.rs": [
-    "pub struct NeumannBoundary",
-    "pub trait BoundaryStrategy"
+    {
+      "signature": "pub struct NeumannBoundary"
+    },
+    {
+      "signature": "pub trait BoundaryStrategy"
+    }
   ],
   "crates/domain_biology/src/biology/diffusion/fd2d/geometry.rs": [
-    "pub struct Cartesian2D",
-    "pub trait GeometryStrategy"
+    {
+      "signature": "pub struct Cartesian2D"
+    },
+    {
+      "signature": "pub trait GeometryStrategy"
+    }
   ],
   "crates/domain_biology/src/biology/diffusion/fd2d/iteration.rs": [
-    "pub struct LoopSplittingIteration",
-    "pub trait IterationStrategy"
+    {
+      "signature": "pub struct LoopSplittingIteration"
+    },
+    {
+      "signature": "pub trait IterationStrategy"
+    }
   ],
   "crates/domain_biology/src/biology/diffusion/fd2d/mod.rs": [
-    "pub struct FiniteDifference2D"
+    {
+      "signature": "pub struct FiniteDifference2D"
+    }
   ],
   "crates/domain_biology/src/biology/diffusion/mod.rs": [
-    "pub trait SpatialDiffusion < const N : usize >"
+    {
+      "signature": "pub trait SpatialDiffusion < const N : usize >"
+    }
   ],
   "crates/domain_biology/src/biology/evolution.rs": [
-    "pub struct HawkDovePopulation"
+    {
+      "signature": "pub struct HawkDovePopulation"
+    }
   ],
   "crates/domain_biology/src/biology/kinetics.rs": [
-    "pub enum KineticsError",
-    "pub struct HillKinetics",
-    "pub struct MichaelisMenten",
-    "pub trait KineticsModel"
+    {
+      "signature": "pub enum KineticsError"
+    },
+    {
+      "signature": "pub struct HillKinetics"
+    },
+    {
+      "signature": "pub struct MichaelisMenten"
+    },
+    {
+      "signature": "pub trait KineticsModel"
+    }
   ],
   "crates/domain_biology/src/biology/morphogenesis/mod.rs": [
-    "pub struct DiffusionCoeff",
-    "pub struct TuringSystem < const N : usize = 2 , K : ReactionKinetics < N > = SchnakenbergKinetics , D : SpatialDiffusion < N > = FiniteDifference1D , S : TuringSolverStrategy < N > = FusedEulerSolver , >"
+    {
+      "signature": "pub struct DiffusionCoeff"
+    },
+    {
+      "signature": "pub struct TuringSystem < const N : usize = 2 , K : ReactionKinetics < N > = SchnakenbergKinetics , D : SpatialDiffusion < N > = FiniteDifference1D , S : TuringSolverStrategy < N > = FusedEulerSolver , >"
+    }
   ],
   "crates/domain_biology/src/biology/morphogenesis/reaction.rs": [
-    "pub struct SchnakenbergKinetics",
-    "pub trait ReactionKinetics < const N : usize = 2 >"
+    {
+      "signature": "pub struct SchnakenbergKinetics"
+    },
+    {
+      "signature": "pub trait ReactionKinetics < const N : usize = 2 >"
+    }
   ],
   "crates/domain_biology/src/biology/morphogenesis/solvers.rs": [
-    "pub struct FusedEulerEvolution < 'a , const N : usize , K , D >",
-    "pub struct FusedEulerSolver",
-    "pub struct StandardSolverAdapter < S >",
-    "pub struct TuringDynamics < 'a , const N : usize , K , D >",
-    "pub trait TuringSolverStrategy < const N : usize = 2 >"
+    {
+      "signature": "pub struct FusedEulerEvolution < 'a , const N : usize , K , D >"
+    },
+    {
+      "signature": "pub struct FusedEulerSolver"
+    },
+    {
+      "signature": "pub struct StandardSolverAdapter < S >"
+    },
+    {
+      "signature": "pub struct TuringDynamics < 'a , const N : usize , K , D >"
+    },
+    {
+      "signature": "pub trait TuringSolverStrategy < const N : usize = 2 >"
+    }
   ],
   "crates/domain_biology/src/biology/morphogenesis/state.rs": [
-    "pub struct TuringState < const N : usize = 2 >"
+    {
+      "signature": "pub struct TuringState < const N : usize = 2 >"
+    }
   ],
   "crates/domain_biology/src/biology/neuroscience/kinetics.rs": [
-    "pub struct StandardKinetics",
-    "pub trait GatingKinetics"
+    {
+      "signature": "pub struct StandardKinetics"
+    },
+    {
+      "signature": "pub trait GatingKinetics"
+    }
   ],
   "crates/domain_biology/src/biology/neuroscience/model.rs": [
-    "pub struct HodgkinHuxleyModel"
+    {
+      "signature": "pub struct HodgkinHuxleyModel"
+    }
   ],
   "crates/domain_biology/src/biology/neuroscience/neuron.rs": [
-    "pub struct HodgkinHuxleyNeuron",
-    "pub struct HodgkinHuxleyNeuronBuilder"
+    {
+      "signature": "pub struct HodgkinHuxleyNeuron"
+    },
+    {
+      "signature": "pub struct HodgkinHuxleyNeuronBuilder"
+    }
   ],
   "crates/domain_biology/src/biology/neuroscience/types.rs": [
-    "pub struct HodgkinHuxleyParameters",
-    "pub struct HodgkinHuxleyState"
+    {
+      "signature": "pub struct HodgkinHuxleyParameters"
+    },
+    {
+      "signature": "pub struct HodgkinHuxleyState"
+    }
   ],
   "crates/domain_biology/src/biology/reaction_diffusion/mod.rs": [
-    "pub enum ReactionDiffusionError"
+    {
+      "signature": "pub enum ReactionDiffusionError"
+    }
   ],
   "crates/domain_biology/src/biology/reaction_diffusion/model.rs": [
-    "pub struct ReactionDiffusionModel < R , D >",
-    "pub struct ReactionDiffusionSystem < R : ReactionModel , D : DiffusionModel , S : Solver < ChemicalState > = Euler < ChemicalState > , >",
-    "pub struct ReactionDiffusionSystemBuilder < R , D , S >"
+    {
+      "signature": "pub struct ReactionDiffusionModel < R , D >"
+    },
+    {
+      "signature": "pub struct ReactionDiffusionSystem < R : ReactionModel , D : DiffusionModel , S : Solver < ChemicalState > = Euler < ChemicalState > , >"
+    },
+    {
+      "signature": "pub struct ReactionDiffusionSystemBuilder < R , D , S >"
+    }
   ],
   "crates/domain_biology/src/biology/reaction_diffusion/state.rs": [
-    "pub struct ChemicalState"
+    {
+      "signature": "pub struct ChemicalState"
+    }
   ],
   "crates/domain_biology/src/biology/reaction_diffusion/traits.rs": [
-    "pub trait DiffusionModel",
-    "pub trait ReactionModel"
+    {
+      "signature": "pub trait DiffusionModel"
+    },
+    {
+      "signature": "pub trait ReactionModel"
+    }
   ],
   "crates/domain_biology/src/error.rs": [
-    "pub enum HodgkinHuxleyError"
+    {
+      "signature": "pub enum HodgkinHuxleyError"
+    }
   ],
   "crates/domain_climate/src/climate/autoencoder.rs": [
-    "pub fn leaky_relu (x : & mut DMatrix < f32 > , alpha : f32)",
-    "pub struct Autoencoder",
-    "pub struct ConvLayer",
-    "pub struct Decoder",
-    "pub struct Encoder",
-    "pub trait AutoencoderModel"
+    {
+      "signature": "pub fn leaky_relu (x : & mut DMatrix < f32 > , alpha : f32)"
+    },
+    {
+      "signature": "pub struct Autoencoder"
+    },
+    {
+      "signature": "pub struct ConvLayer"
+    },
+    {
+      "signature": "pub struct Decoder"
+    },
+    {
+      "signature": "pub struct Encoder"
+    },
+    {
+      "signature": "pub trait AutoencoderModel"
+    }
   ],
   "crates/domain_climate/src/climate/cera.rs": [
-    "pub struct Cera < A : AutoencoderModel , P : PredictorModel >"
+    {
+      "signature": "pub struct Cera < A : AutoencoderModel , P : PredictorModel >"
+    }
   ],
   "crates/domain_climate/src/climate/config.rs": [
-    "pub struct CeraConfig"
+    {
+      "signature": "pub struct CeraConfig"
+    }
   ],
   "crates/domain_climate/src/climate/dataset.rs": [
-    "pub fn get_co2_projections (reduction_scenario : f64) -> (Vec < [f64 ; 2] > , Vec < [f64 ; 2] >)",
-    "pub fn get_co2_projections_with_rng < R : Rng + ? Sized > (rng : & mut R , reduction_scenario : f64 ,) -> (Vec < [f64 ; 2] > , Vec < [f64 ; 2] >)",
-    "pub fn get_temperature_anomalies () -> Vec < [f64 ; 2] >",
-    "pub fn get_temperature_anomalies_with_rng < R : Rng + ? Sized > (rng : & mut R) -> Vec < [f64 ; 2] >"
+    {
+      "signature": "pub fn get_co2_projections (reduction_scenario : f64) -> (Vec < [f64 ; 2] > , Vec < [f64 ; 2] >)"
+    },
+    {
+      "signature": "pub fn get_co2_projections_with_rng < R : Rng + ? Sized > (rng : & mut R , reduction_scenario : f64 ,) -> (Vec < [f64 ; 2] > , Vec < [f64 ; 2] >)"
+    },
+    {
+      "signature": "pub fn get_temperature_anomalies () -> Vec < [f64 ; 2] >"
+    },
+    {
+      "signature": "pub fn get_temperature_anomalies_with_rng < R : Rng + ? Sized > (rng : & mut R) -> Vec < [f64 ; 2] >"
+    }
   ],
   "crates/domain_climate/src/climate/loss.rs": [
-    "pub fn cera_loss (reconstruction_loss : f32 , prediction_loss : f32 , emd_loss : f32 , lambda_pred : f32 , lambda_emd : f32 ,) -> f32",
-    "pub fn earth_movers_distance < S1 : Storage < f32 , Dyn , Dyn > , S2 : Storage < f32 , Dyn , Dyn > > (z1 : & Matrix < f32 , Dyn , Dyn , S1 > , z2 : & Matrix < f32 , Dyn , Dyn , S2 > ,) -> f32",
-    "pub fn mse_loss < S1 : Storage < f32 , Dyn , Dyn > , S2 : Storage < f32 , Dyn , Dyn > > (y_true : & Matrix < f32 , Dyn , Dyn , S1 > , y_pred : & Matrix < f32 , Dyn , Dyn , S2 > ,) -> f32"
+    {
+      "signature": "pub fn cera_loss (reconstruction_loss : f32 , prediction_loss : f32 , emd_loss : f32 , lambda_pred : f32 , lambda_emd : f32 ,) -> f32"
+    },
+    {
+      "signature": "pub fn earth_movers_distance < S1 : Storage < f32 , Dyn , Dyn > , S2 : Storage < f32 , Dyn , Dyn > > (z1 : & Matrix < f32 , Dyn , Dyn , S1 > , z2 : & Matrix < f32 , Dyn , Dyn , S2 > ,) -> f32"
+    },
+    {
+      "signature": "pub fn mse_loss < S1 : Storage < f32 , Dyn , Dyn > , S2 : Storage < f32 , Dyn , Dyn > > (y_true : & Matrix < f32 , Dyn , Dyn , S1 > , y_pred : & Matrix < f32 , Dyn , Dyn , S2 > ,) -> f32"
+    }
   ],
   "crates/domain_climate/src/climate/predictor.rs": [
-    "pub struct Predictor",
-    "pub trait PredictorModel"
+    {
+      "signature": "pub struct Predictor"
+    },
+    {
+      "signature": "pub trait PredictorModel"
+    }
   ],
   "crates/domain_climate/src/climate/tensor_ops.rs": [
-    "pub fn conv1d < S : Storage < f32 , Dyn , Dyn > > (input : & Matrix < f32 , Dyn , Dyn , S > , kernel : & DMatrix < f32 > , bias : & DVector < f32 > ,) -> DMatrix < f32 >",
-    "pub fn conv_transpose1d < S : Storage < f32 , Dyn , Dyn > > (input : & Matrix < f32 , Dyn , Dyn , S > , kernel : & DMatrix < f32 > , bias : & DVector < f32 > ,) -> DMatrix < f32 >"
+    {
+      "signature": "pub fn conv1d < S : Storage < f32 , Dyn , Dyn > > (input : & Matrix < f32 , Dyn , Dyn , S > , kernel : & DMatrix < f32 > , bias : & DVector < f32 > ,) -> DMatrix < f32 >"
+    },
+    {
+      "signature": "pub fn conv_transpose1d < S : Storage < f32 , Dyn , Dyn > > (input : & Matrix < f32 , Dyn , Dyn , S > , kernel : & DMatrix < f32 > , bias : & DVector < f32 > ,) -> DMatrix < f32 >"
+    }
   ],
   "crates/domain_climate/src/climate/training.rs": [
-    "pub struct CeraTrainer < 'a , A : AutoencoderModel + Trainable < f32 > , P : PredictorModel + Trainable < f32 > , O : Optimizer < f32 > , >"
+    {
+      "signature": "pub struct CeraTrainer < 'a , A : AutoencoderModel + Trainable < f32 > , P : PredictorModel + Trainable < f32 > , O : Optimizer < f32 > , >"
+    }
   ],
   "crates/domain_epidemiology/src/epidemiology/analytics.rs": [
-    "pub fn calculate_final_size (r0 : f64 , s0 : f64 , n : f64) -> Result < f64 , String >"
+    {
+      "signature": "pub fn calculate_final_size (r0 : f64 , s0 : f64 , n : f64) -> Result < f64 , String >"
+    }
   ],
   "crates/domain_epidemiology/src/epidemiology/compartmental/common.rs": [
-    "pub fn basic_reproduction_number (beta : f64 , gamma : f64) -> f64",
-    "pub fn validate_initial_infected (i0 : f64 , n : f64) -> Result < () , EpidemiologyError >",
-    "pub fn validate_population (n : f64) -> Result < () , EpidemiologyError >",
-    "pub fn validate_rate (name : & str , value : f64) -> Result < () , EpidemiologyError >"
+    {
+      "signature": "pub fn basic_reproduction_number (beta : f64 , gamma : f64) -> f64"
+    },
+    {
+      "signature": "pub fn validate_initial_infected (i0 : f64 , n : f64) -> Result < () , EpidemiologyError >"
+    },
+    {
+      "signature": "pub fn validate_population (n : f64) -> Result < () , EpidemiologyError >"
+    },
+    {
+      "signature": "pub fn validate_rate (name : & str , value : f64) -> Result < () , EpidemiologyError >"
+    }
   ],
   "crates/domain_epidemiology/src/epidemiology/compartmental/seir.rs": [
-    "pub struct SEIRDynamics",
-    "pub struct SEIRModel < S : Solver < SEIRState > = RungeKutta4 < SEIRState > >",
-    "pub struct SEIRModelBuilder",
-    "pub struct SEIRState"
+    {
+      "signature": "pub struct SEIRDynamics"
+    },
+    {
+      "signature": "pub struct SEIRModel < S : Solver < SEIRState > = RungeKutta4 < SEIRState > >"
+    },
+    {
+      "signature": "pub struct SEIRModelBuilder"
+    },
+    {
+      "signature": "pub struct SEIRState"
+    }
   ],
   "crates/domain_epidemiology/src/epidemiology/compartmental/sir.rs": [
-    "pub struct SIRDynamics",
-    "pub struct SIRModel < S : Solver < SIRState > = RungeKutta4 < SIRState > >",
-    "pub struct SIRModelBuilder",
-    "pub struct SIRState"
+    {
+      "signature": "pub struct SIRDynamics"
+    },
+    {
+      "signature": "pub struct SIRModel < S : Solver < SIRState > = RungeKutta4 < SIRState > >"
+    },
+    {
+      "signature": "pub struct SIRModelBuilder"
+    },
+    {
+      "signature": "pub struct SIRState"
+    }
   ],
   "crates/domain_epidemiology/src/epidemiology/matrix_dynamics.rs": [
-    "pub fn calculate_r0_matrix (f_mat : & DMatrix < f64 > , v_mat : & DMatrix < f64 > ,) -> Result < f64 , EpidemiologyError >"
+    {
+      "signature": "pub fn calculate_r0_matrix (f_mat : & DMatrix < f64 > , v_mat : & DMatrix < f64 > ,) -> Result < f64 , EpidemiologyError >"
+    }
   ],
   "crates/domain_epidemiology/src/epidemiology/networks.rs": [
-    "pub enum NetworkModelError",
-    "pub enum NodeState",
-    "pub fn heterogeneous_r0 (beta : f64 , gamma : f64 , mean_degree : f64 , degree_variance : f64) -> f64",
-    "pub struct NetworkEpidemicModel",
-    "pub struct NetworkEpidemicModelBuilder"
+    {
+      "signature": "pub enum NetworkModelError"
+    },
+    {
+      "signature": "pub enum NodeState"
+    },
+    {
+      "signature": "pub fn heterogeneous_r0 (beta : f64 , gamma : f64 , mean_degree : f64 , degree_variance : f64) -> f64"
+    },
+    {
+      "signature": "pub struct NetworkEpidemicModel"
+    },
+    {
+      "signature": "pub struct NetworkEpidemicModelBuilder"
+    }
   ],
   "crates/domain_epidemiology/src/epidemiology/stochastic.rs": [
-    "pub fn probability_of_extinction (r0 : f64 , initial_cases : f64) -> f64"
+    {
+      "signature": "pub fn probability_of_extinction (r0 : f64 , initial_cases : f64) -> f64"
+    }
   ],
   "crates/domain_epidemiology/src/error.rs": [
-    "pub enum EpidemiologyError"
+    {
+      "signature": "pub enum EpidemiologyError"
+    }
   ],
   "crates/domain_physics/src/error.rs": [
-    "pub enum ChaosError",
-    "pub enum DoseFluenceError",
-    "pub enum FluidError",
-    "pub enum HighEnergyError",
-    "pub enum RadarError",
-    "pub enum SolidStateError",
-    "pub enum StandardModelError",
-    "pub enum StatMechError"
+    {
+      "signature": "pub enum ChaosError"
+    },
+    {
+      "signature": "pub enum DoseFluenceError"
+    },
+    {
+      "signature": "pub enum FluidError"
+    },
+    {
+      "signature": "pub enum HighEnergyError"
+    },
+    {
+      "signature": "pub enum RadarError"
+    },
+    {
+      "signature": "pub enum SolidStateError"
+    },
+    {
+      "signature": "pub enum StandardModelError"
+    },
+    {
+      "signature": "pub enum StatMechError"
+    }
   ],
   "crates/domain_physics/src/physics/astrophysics/galaxies.rs": [
-    "pub struct GeneralIrregular",
-    "pub struct Magnitude",
-    "pub struct Mpc",
-    "pub struct Redshift",
-    "pub struct SolarMassLog",
-    "pub struct TypeCode10",
-    "pub struct TypeCode95To99",
-    "pub trait GalaxyModel"
+    {
+      "signature": "pub struct GeneralIrregular"
+    },
+    {
+      "signature": "pub struct Magnitude"
+    },
+    {
+      "signature": "pub struct Mpc"
+    },
+    {
+      "signature": "pub struct Redshift"
+    },
+    {
+      "signature": "pub struct SolarMassLog"
+    },
+    {
+      "signature": "pub struct TypeCode10"
+    },
+    {
+      "signature": "pub struct TypeCode95To99"
+    },
+    {
+      "signature": "pub trait GalaxyModel"
+    }
   ],
   "crates/domain_physics/src/physics/chaos/fractals.rs": [
-    "pub fn correlation_dimension (trajectory : & [Vector3 < f64 >] , epsilon : f64) -> f64",
-    "pub fn escape_time_julia (z : Complex < f64 > , c : Complex < f64 > , max_iter : u32) -> u32",
-    "pub fn escape_time_mandelbrot (c : Complex < f64 > , max_iter : u32) -> u32"
+    {
+      "signature": "pub fn correlation_dimension (trajectory : & [Vector3 < f64 >] , epsilon : f64) -> f64"
+    },
+    {
+      "signature": "pub fn escape_time_julia (z : Complex < f64 > , c : Complex < f64 > , max_iter : u32) -> u32"
+    },
+    {
+      "signature": "pub fn escape_time_mandelbrot (c : Complex < f64 > , max_iter : u32) -> u32"
+    }
   ],
   "crates/domain_physics/src/physics/chaos/logistic.rs": [
-    "pub fn generate_bifurcation_diagram (r_start : f64 , r_end : f64 , steps : usize) -> Vec < (f64 , f64) >",
-    "pub struct LogisticMap"
+    {
+      "signature": "pub fn generate_bifurcation_diagram (r_start : f64 , r_end : f64 , steps : usize) -> Vec < (f64 , f64) >"
+    },
+    {
+      "signature": "pub struct LogisticMap"
+    }
   ],
   "crates/domain_physics/src/physics/chaos/lorenz.rs": [
-    "pub struct LorenzBuilder",
-    "pub struct LorenzConfig",
-    "pub struct LorenzState",
-    "pub struct LorenzSystem"
+    {
+      "signature": "pub struct LorenzBuilder"
+    },
+    {
+      "signature": "pub struct LorenzConfig"
+    },
+    {
+      "signature": "pub struct LorenzState"
+    },
+    {
+      "signature": "pub struct LorenzSystem"
+    }
   ],
   "crates/domain_physics/src/physics/chaos/metrics.rs": [
-    "pub fn logistic_lyapunov (r : f64 , x0 : f64 , n : usize) -> f64",
-    "pub fn lorenz_lyapunov < S , Sol > (system : & S , solver : & mut Sol , initial_state : Vector3 < f64 > , time_step : f64 , iterations : usize , evolution_time : f64 ,) -> Result < f64 , ChaosError > where S : OdeSystem < Vector3 < f64 > > + ? Sized , Sol : Solver < Vector3 < f64 > > ,"
+    {
+      "signature": "pub fn logistic_lyapunov (r : f64 , x0 : f64 , n : usize) -> f64"
+    },
+    {
+      "signature": "pub fn lorenz_lyapunov < S , Sol > (system : & S , solver : & mut Sol , initial_state : Vector3 < f64 > , time_step : f64 , iterations : usize , evolution_time : f64 ,) -> Result < f64 , ChaosError > where S : OdeSystem < Vector3 < f64 > > + ? Sized , Sol : Solver < Vector3 < f64 > > ,"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/analysis.rs": [
-    "pub fn bernoulli_constant (state : & FlowState , properties : & FluidProperties , height : f64 , gravity : f64 ,) -> f64",
-    "pub fn reynolds_number (properties : & FluidProperties , velocity_magnitude : f64 , characteristic_length : f64 ,) -> f64",
-    "pub fn shear_stress (properties : & FluidProperties , velocity_gradient_normal : f64) -> f64"
+    {
+      "signature": "pub fn bernoulli_constant (state : & FlowState , properties : & FluidProperties , height : f64 , gravity : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn reynolds_number (properties : & FluidProperties , velocity_magnitude : f64 , characteristic_length : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn shear_stress (properties : & FluidProperties , velocity_gradient_normal : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/conservation.rs": [
-    "pub fn continuity_divergence (velocity_divergence : f64) -> f64",
-    "pub fn euler_time_derivative (rho : f64 , state : & FlowState , velocity_gradient : & nalgebra :: Matrix3 < f64 > , pressure_gradient : Vector3 < f64 > , body_force_accel : Vector3 < f64 > ,) -> Result < Vector3 < f64 > , FluidError >",
-    "pub fn material_derivative_scalar (local_change : f64 , velocity : Vector3 < f64 > , gradient : Vector3 < f64 > ,) -> f64",
-    "pub fn material_derivative_vector (local_change : Vector3 < f64 > , velocity : Vector3 < f64 > , gradient_tensor : & nalgebra :: Matrix3 < f64 > ,) -> Vector3 < f64 >",
-    "pub fn navier_stokes_time_derivative (properties : & FluidProperties , state : & FlowState , velocity_gradient : & nalgebra :: Matrix3 < f64 > , pressure_gradient : Vector3 < f64 > , laplacian_velocity : Vector3 < f64 > , body_force_accel : Vector3 < f64 > ,) -> Vector3 < f64 >",
-    "pub struct Euler",
-    "pub struct NavierStokes",
-    "pub trait MomentumEquation"
+    {
+      "signature": "pub fn continuity_divergence (velocity_divergence : f64) -> f64"
+    },
+    {
+      "signature": "pub fn euler_time_derivative (rho : f64 , state : & FlowState , velocity_gradient : & nalgebra :: Matrix3 < f64 > , pressure_gradient : Vector3 < f64 > , body_force_accel : Vector3 < f64 > ,) -> Result < Vector3 < f64 > , FluidError >"
+    },
+    {
+      "signature": "pub fn material_derivative_scalar (local_change : f64 , velocity : Vector3 < f64 > , gradient : Vector3 < f64 > ,) -> f64"
+    },
+    {
+      "signature": "pub fn material_derivative_vector (local_change : Vector3 < f64 > , velocity : Vector3 < f64 > , gradient_tensor : & nalgebra :: Matrix3 < f64 > ,) -> Vector3 < f64 >"
+    },
+    {
+      "signature": "pub fn navier_stokes_time_derivative (properties : & FluidProperties , state : & FlowState , velocity_gradient : & nalgebra :: Matrix3 < f64 > , pressure_gradient : Vector3 < f64 > , laplacian_velocity : Vector3 < f64 > , body_force_accel : Vector3 < f64 > ,) -> Vector3 < f64 >"
+    },
+    {
+      "signature": "pub struct Euler"
+    },
+    {
+      "signature": "pub struct NavierStokes"
+    },
+    {
+      "signature": "pub trait MomentumEquation"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/lattice_boltzmann/algorithms.rs": [
-    "pub struct LbmConfig"
+    {
+      "signature": "pub struct LbmConfig"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/lattice_boltzmann/model.rs": [
-    "pub struct BgkCollision",
-    "pub struct D2Q9",
-    "pub struct LatticeBoltzmann < const Q : usize , L : Lattice2D < Q > , C : CollisionModel < Q , L > >",
-    "pub trait CollisionModel < const Q : usize , L : Lattice2D < Q > >",
-    "pub trait Lattice2D < const Q : usize >",
-    "pub type LatticeBoltzmannD2Q9 < C > = LatticeBoltzmann < 9 , D2Q9 , C >"
+    {
+      "signature": "pub struct BgkCollision"
+    },
+    {
+      "signature": "pub struct D2Q9"
+    },
+    {
+      "signature": "pub struct LatticeBoltzmann < const Q : usize , L : Lattice2D < Q > , C : CollisionModel < Q , L > >"
+    },
+    {
+      "signature": "pub trait CollisionModel < const Q : usize , L : Lattice2D < Q > >"
+    },
+    {
+      "signature": "pub trait Lattice2D < const Q : usize >"
+    },
+    {
+      "signature": "pub type LatticeBoltzmannD2Q9 < C > = LatticeBoltzmann < 9 , D2Q9 , C >"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/lattice_boltzmann/state.rs": [
-    "pub struct LatticeState < const Q : usize >"
+    {
+      "signature": "pub struct LatticeState < const Q : usize >"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/potential_flow.rs": [
-    "pub struct Doublet",
-    "pub struct PotentialFlowField",
-    "pub struct Source",
-    "pub struct UniformFlow",
-    "pub struct Vortex",
-    "pub trait FlowElement"
+    {
+      "signature": "pub struct Doublet"
+    },
+    {
+      "signature": "pub struct PotentialFlowField"
+    },
+    {
+      "signature": "pub struct Source"
+    },
+    {
+      "signature": "pub struct UniformFlow"
+    },
+    {
+      "signature": "pub struct Vortex"
+    },
+    {
+      "signature": "pub trait FlowElement"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/regimes.rs": [
-    "pub enum FlowRegime",
-    "pub struct FlatPlateClassifier",
-    "pub struct PipeFlowClassifier",
-    "pub trait FlowClassifier"
+    {
+      "signature": "pub enum FlowRegime"
+    },
+    {
+      "signature": "pub struct FlatPlateClassifier"
+    },
+    {
+      "signature": "pub struct PipeFlowClassifier"
+    },
+    {
+      "signature": "pub trait FlowClassifier"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/solver.rs": [
-    "pub struct FluidParticleSystem < 'a , M : MomentumEquation >"
+    {
+      "signature": "pub struct FluidParticleSystem < 'a , M : MomentumEquation >"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/turbulence.rs": [
-    "pub struct ReynoldsDecomposition",
-    "pub struct ReynoldsStressTensor"
+    {
+      "signature": "pub struct ReynoldsDecomposition"
+    },
+    {
+      "signature": "pub struct ReynoldsStressTensor"
+    }
   ],
   "crates/domain_physics/src/physics/fluid_dynamics/types.rs": [
-    "pub struct FlowState",
-    "pub struct FluidProperties",
-    "pub struct FluidPropertiesBuilder",
-    "pub struct SpatialGradients"
+    {
+      "signature": "pub struct FlowState"
+    },
+    {
+      "signature": "pub struct FluidProperties"
+    },
+    {
+      "signature": "pub struct FluidPropertiesBuilder"
+    },
+    {
+      "signature": "pub struct SpatialGradients"
+    }
   ],
   "crates/domain_physics/src/physics/high_energy/fluid_dynamics.rs": [
-    "pub fn shock_compression_ratio (adiabatic_index : f64) -> Result < f64 , HighEnergyError >",
-    "pub fn specific_enthalpy (adiabatic_index : f64 , pressure : f64 , density : f64 ,) -> Result < f64 , HighEnergyError >"
+    {
+      "signature": "pub fn shock_compression_ratio (adiabatic_index : f64) -> Result < f64 , HighEnergyError >"
+    },
+    {
+      "signature": "pub fn specific_enthalpy (adiabatic_index : f64 , pressure : f64 , density : f64 ,) -> Result < f64 , HighEnergyError >"
+    }
   ],
   "crates/domain_physics/src/physics/high_energy/general_relativity.rs": [
-    "pub struct SchwarzschildBlackHole"
+    {
+      "signature": "pub struct SchwarzschildBlackHole"
+    }
   ],
   "crates/domain_physics/src/physics/high_energy/observer.rs": [
-    "pub fn calculate_lorentz_factor (v : f64) -> Result < f64 , HighEnergyError >",
-    "pub struct FourVector"
+    {
+      "signature": "pub fn calculate_lorentz_factor (v : f64) -> Result < f64 , HighEnergyError >"
+    },
+    {
+      "signature": "pub struct FourVector"
+    }
   ],
   "crates/domain_physics/src/physics/high_energy/radiation.rs": [
-    "pub fn inverse_compton_spectral_index (p : f64) -> Result < f64 , HighEnergyError >",
-    "pub fn synchrotron_power (u_b : f64 , beta : f64 , gamma : f64) -> Result < f64 , HighEnergyError >"
+    {
+      "signature": "pub fn inverse_compton_spectral_index (p : f64) -> Result < f64 , HighEnergyError >"
+    },
+    {
+      "signature": "pub fn synchrotron_power (u_b : f64 , beta : f64 , gamma : f64) -> Result < f64 , HighEnergyError >"
+    }
   ],
   "crates/domain_physics/src/physics/high_energy/statistics.rs": [
-    "pub fn li_ma_significance (n_on : f64 , n_off : f64 , alpha : f64) -> Result < f64 , HighEnergyError >"
+    {
+      "signature": "pub fn li_ma_significance (n_on : f64 , n_off : f64 , alpha : f64) -> Result < f64 , HighEnergyError >"
+    }
   ],
   "crates/domain_physics/src/physics/medical/accelerator.rs": [
-    "pub fn beam_loading_energy (beam_current : f64) -> f64"
+    {
+      "signature": "pub fn beam_loading_energy (beam_current : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/medical/calibration.rs": [
-    "pub fn hu_to_density (hu : f64) -> Result < NonNegativeFloat , String >"
+    {
+      "signature": "pub fn hu_to_density (hu : f64) -> Result < NonNegativeFloat , String >"
+    }
   ],
   "crates/domain_physics/src/physics/medical/dose/algorithm.rs": [
-    "pub fn calculate_terma (incident_fluence : f64 , mu : f64 , depth : f64 ,) -> Result < f64 , DoseFluenceError >"
+    {
+      "signature": "pub fn calculate_terma (incident_fluence : f64 , mu : f64 , depth : f64 ,) -> Result < f64 , DoseFluenceError >"
+    }
   ],
   "crates/domain_physics/src/physics/medical/dose/kernel.rs": [
-    "pub struct ExponentialKernel",
-    "pub trait DoseKernel"
+    {
+      "signature": "pub struct ExponentialKernel"
+    },
+    {
+      "signature": "pub trait DoseKernel"
+    }
   ],
   "crates/domain_physics/src/physics/medical/evaluation.rs": [
-    "pub fn pearson_correlation (x : & [f64] , y : & [f64]) -> Option < f64 >",
-    "pub fn root_mean_square_error (predicted : & [f64] , observed : & [f64]) -> Option < f64 >",
-    "pub fn spatial_accuracy_error (measured : f64 , reference : f64) -> f64"
+    {
+      "signature": "pub fn pearson_correlation (x : & [f64] , y : & [f64]) -> Option < f64 >"
+    },
+    {
+      "signature": "pub fn root_mean_square_error (predicted : & [f64] , observed : & [f64]) -> Option < f64 >"
+    },
+    {
+      "signature": "pub fn spatial_accuracy_error (measured : f64 , reference : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/medical/imaging.rs": [
-    "pub fn tracking_error (target_center : f64 , field_centroid : f64) -> f64"
+    {
+      "signature": "pub fn tracking_error (target_center : f64 , field_centroid : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/medical/optical_motion/calibration.rs": [
-    "pub struct LinearCalibrator"
+    {
+      "signature": "pub struct LinearCalibrator"
+    }
   ],
   "crates/domain_physics/src/physics/medical/optical_motion/physics.rs": [
-    "pub fn calculate_lambertian_order (phi_half : f64) -> f64",
-    "pub fn calculate_photocurrent (p_r : f64 , i_d : f64 , r_pd : f64) -> f64",
-    "pub fn calculate_received_power (n : f64 , a : f64 , p_t : f64 , d : f64 , phi : f64 , theta : f64 , gamma : f64 ,) -> f64",
-    "pub fn calculate_tia_output (i_pd : f64 , g_pd : f64) -> f64"
+    {
+      "signature": "pub fn calculate_lambertian_order (phi_half : f64) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_photocurrent (p_r : f64 , i_d : f64 , r_pd : f64) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_received_power (n : f64 , a : f64 , p_t : f64 , d : f64 , phi : f64 , theta : f64 , gamma : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_tia_output (i_pd : f64 , g_pd : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/medical/optical_motion/processing.rs": [
-    "pub fn calculate_time_delay (signal_1 : & [f64] , signal_2 : & [f64] , sample_rate : f64) -> f64",
-    "pub fn lock_in_phase_sensitive_detection (v_s : f64 , v_r : f64 , delta_omega : f64 , delta_phi : f64 , sum_omega : f64 , sum_phi : f64 , t : f64 ,) -> f64",
-    "pub fn optical_flow_velocity (spatial_gradient : (f64 , f64) , temporal_gradient : f64) -> (f64 , f64)",
-    "pub fn snr_improvement_factor (n_mesh : usize) -> f64",
-    "pub fn weighted_average_height (vertices : & [Point3 < f64 >]) -> f64",
-    "pub struct LockInAmplifier"
+    {
+      "signature": "pub fn calculate_time_delay (signal_1 : & [f64] , signal_2 : & [f64] , sample_rate : f64) -> f64"
+    },
+    {
+      "signature": "pub fn lock_in_phase_sensitive_detection (v_s : f64 , v_r : f64 , delta_omega : f64 , delta_phi : f64 , sum_omega : f64 , sum_phi : f64 , t : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn optical_flow_velocity (spatial_gradient : (f64 , f64) , temporal_gradient : f64) -> (f64 , f64)"
+    },
+    {
+      "signature": "pub fn snr_improvement_factor (n_mesh : usize) -> f64"
+    },
+    {
+      "signature": "pub fn weighted_average_height (vertices : & [Point3 < f64 >]) -> f64"
+    },
+    {
+      "signature": "pub struct LockInAmplifier"
+    }
   ],
   "crates/domain_physics/src/physics/medical/optical_motion/simulation.rs": [
-    "pub fn cosine_respiratory_curve (t : f64 , amplitude : f64 , period : f64) -> f64",
-    "pub fn translation_stage_motion (t : f64 , half_period : f64 , coefficient_a : f64 , coefficient_b : f64 ,) -> f64"
+    {
+      "signature": "pub fn cosine_respiratory_curve (t : f64 , amplitude : f64 , period : f64) -> f64"
+    },
+    {
+      "signature": "pub fn translation_stage_motion (t : f64 , half_period : f64 , coefficient_a : f64 , coefficient_b : f64 ,) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/medical/optical_motion/validation.rs": [
-    "pub fn dice_similarity_coefficient (set_a : & [bool] , set_b : & [bool]) -> f64",
-    "pub fn pearson_correlation (x : & [f64] , y : & [f64]) -> f64",
-    "pub fn percentage_error (measured : f64 , reference : f64) -> f64",
-    "pub fn root_mean_square_error (measured : & [f64] , reference : & [f64]) -> f64",
-    "pub fn time_shift_error (measured : & [f64] , reference : & [f64]) -> f64"
+    {
+      "signature": "pub fn dice_similarity_coefficient (set_a : & [bool] , set_b : & [bool]) -> f64"
+    },
+    {
+      "signature": "pub fn pearson_correlation (x : & [f64] , y : & [f64]) -> f64"
+    },
+    {
+      "signature": "pub fn percentage_error (measured : f64 , reference : f64) -> f64"
+    },
+    {
+      "signature": "pub fn root_mean_square_error (measured : & [f64] , reference : & [f64]) -> f64"
+    },
+    {
+      "signature": "pub fn time_shift_error (measured : & [f64] , reference : & [f64]) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/medical/optimization.rs": [
-    "pub fn calculate_cost (current_dose : & DVector < f64 > , tumor_indices : & [usize] , organ_indices : & [usize] , prescription : f64 , limit : f64 , alpha : f64 , beta : f64 ,) -> f64",
-    "pub fn update_weights (current_weights : & DVector < f64 > , gradient : & DVector < f64 > , eta : f64 ,) -> DVector < f64 >"
+    {
+      "signature": "pub fn calculate_cost (current_dose : & DVector < f64 > , tumor_indices : & [usize] , organ_indices : & [usize] , prescription : f64 , limit : f64 , alpha : f64 , beta : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn update_weights (current_weights : & DVector < f64 > , gradient : & DVector < f64 > , eta : f64 ,) -> DVector < f64 >"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/clutter.rs": [
-    "pub fn ca_cfar_noise_level (reference_cells : & [f64]) -> f64",
-    "pub struct EllipticalFilter"
+    {
+      "signature": "pub fn ca_cfar_noise_level (reference_cells : & [f64]) -> f64"
+    },
+    {
+      "signature": "pub struct EllipticalFilter"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/czt.rs": [
-    "pub fn chirp_z_transform (signal : & [Complex < f64 >] , start_freq : f64 , bandwidth : f64 , sample_rate : f64 , output_bins : usize ,) -> Vec < Complex < f64 > >",
-    "pub struct SpatialCztConfig"
+    {
+      "signature": "pub fn chirp_z_transform (signal : & [Complex < f64 >] , start_freq : f64 , bandwidth : f64 , sample_rate : f64 , output_bins : usize ,) -> Vec < Complex < f64 > >"
+    },
+    {
+      "signature": "pub struct SpatialCztConfig"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/gating.rs": [
-    "pub struct GatingLogic"
+    {
+      "signature": "pub struct GatingLogic"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/geometry.rs": [
-    "pub fn angle_of_arrival (wavelength : f64 , phase_difference : f64 , antenna_distance : f64 ,) -> Option < f64 >",
-    "pub fn angle_resolution (wavelength : f64 , num_rx_antennas : usize , antenna_distance : f64 , angle : f64 ,) -> f64",
-    "pub fn required_angular_separation (vertical_distance : f64 , range : f64) -> f64",
-    "pub struct AngleFftConfig",
-    "pub struct SensorToPatientTransform",
-    "pub struct SphericalPoint"
+    {
+      "signature": "pub fn angle_of_arrival (wavelength : f64 , phase_difference : f64 , antenna_distance : f64 ,) -> Option < f64 >"
+    },
+    {
+      "signature": "pub fn angle_resolution (wavelength : f64 , num_rx_antennas : usize , antenna_distance : f64 , angle : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn required_angular_separation (vertical_distance : f64 , range : f64) -> f64"
+    },
+    {
+      "signature": "pub struct AngleFftConfig"
+    },
+    {
+      "signature": "pub struct SensorToPatientTransform"
+    },
+    {
+      "signature": "pub struct SphericalPoint"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/mimo.rs": [
-    "pub struct Beamformer"
+    {
+      "signature": "pub struct Beamformer"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/phase.rs": [
-    "pub struct PhaseUnwrapper"
+    {
+      "signature": "pub struct PhaseUnwrapper"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/physics.rs": [
-    "pub struct FmcwConfig"
+    {
+      "signature": "pub struct FmcwConfig"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/super_resolution.rs": [
-    "pub struct MusicEstimator"
+    {
+      "signature": "pub struct MusicEstimator"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/surface.rs": [
-    "pub fn weighted_average_height (vertices : & [Point3 < f64 >]) -> f64",
-    "pub struct BiQuadraticSurface"
+    {
+      "signature": "pub fn weighted_average_height (vertices : & [Point3 < f64 >]) -> f64"
+    },
+    {
+      "signature": "pub struct BiQuadraticSurface"
+    }
   ],
   "crates/domain_physics/src/physics/medical/radar_gating/tracking.rs": [
-    "pub struct ConstantVelocityModel",
-    "pub struct TrackingFilter"
+    {
+      "signature": "pub struct ConstantVelocityModel"
+    },
+    {
+      "signature": "pub struct TrackingFilter"
+    }
   ],
   "crates/domain_physics/src/physics/medical/signal.rs": [
-    "pub fn dirac_pulse_count (t_on : f64 , t_off : f64 , delta_t : f64) -> usize",
-    "pub fn signal_front_delay (phase_slope_high_freq : f64) -> f64"
+    {
+      "signature": "pub fn dirac_pulse_count (t_on : f64 , t_off : f64 , delta_t : f64) -> usize"
+    },
+    {
+      "signature": "pub fn signal_front_delay (phase_slope_high_freq : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/medical/thermodynamics.rs": [
-    "pub fn bio_heat_transfer_rate (density : f64 , specific_heat : f64 , thermal_conductivity : f64 , second_derivative_t : f64 , heat_deposition : f64 ,) -> f64",
-    "pub fn debye_permittivity (epsilon_inf : f64 , epsilon_s : f64 , relaxation_time : f64 , sigma_i : f64 , frequency : f64 ,) -> (f64 , f64)"
+    {
+      "signature": "pub fn bio_heat_transfer_rate (density : f64 , specific_heat : f64 , thermal_conductivity : f64 , second_derivative_t : f64 , heat_deposition : f64 ,) -> f64"
+    },
+    {
+      "signature": "pub fn debye_permittivity (epsilon_inf : f64 , epsilon_s : f64 , relaxation_time : f64 , sigma_i : f64 , frequency : f64 ,) -> (f64 , f64)"
+    }
   ],
   "crates/domain_physics/src/physics/mri/bloch.rs": [
-    "pub struct BlochConfig",
-    "pub struct BlochSimulator",
-    "pub struct BlochState"
+    {
+      "signature": "pub struct BlochConfig"
+    },
+    {
+      "signature": "pub struct BlochSimulator"
+    },
+    {
+      "signature": "pub struct BlochState"
+    }
   ],
   "crates/domain_physics/src/physics/mri/proton.rs": [
-    "pub fn boltzmann_ratio (temperature : f64 , b0 : f64) -> Result < f64 , String >",
-    "pub fn larmor_frequency (b0 : f64) -> f64"
+    {
+      "signature": "pub fn boltzmann_ratio (temperature : f64 , b0 : f64) -> Result < f64 , String >"
+    },
+    {
+      "signature": "pub fn larmor_frequency (b0 : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/mri/reconstruction.rs": [
-    "pub fn inverse_dft_2d (k_space : & DMatrix < Complex < f64 > >) -> DMatrix < Complex < f64 > >",
-    "pub fn simulate_signal_2d (density : & DMatrix < Complex < f64 > >) -> DMatrix < Complex < f64 > >"
+    {
+      "signature": "pub fn inverse_dft_2d (k_space : & DMatrix < Complex < f64 > >) -> DMatrix < Complex < f64 > >"
+    },
+    {
+      "signature": "pub fn simulate_signal_2d (density : & DMatrix < Complex < f64 > >) -> DMatrix < Complex < f64 > >"
+    }
   ],
   "crates/domain_physics/src/physics/mri/scanner.rs": [
-    "pub fn accumulated_phase (position : Vector3 < f64 > , gradient_integral : Vector3 < f64 >) -> f64",
-    "pub fn k_space_coordinate (gradient_integral : Vector3 < f64 >) -> Vector3 < f64 >"
+    {
+      "signature": "pub fn accumulated_phase (position : Vector3 < f64 > , gradient_integral : Vector3 < f64 >) -> f64"
+    },
+    {
+      "signature": "pub fn k_space_coordinate (gradient_integral : Vector3 < f64 >) -> Vector3 < f64 >"
+    }
   ],
   "crates/domain_physics/src/physics/nuclear/decay.rs": [
-    "pub fn calculate_remaining (initial_quantity : f64 , half_life : f64 , time : f64 ,) -> Result < f64 , NuclearError >",
-    "pub fn gamow_factor (z_daughter : AtomicNumber , z_alpha : AtomicNumber , velocity : f64 ,) -> Result < f64 , NuclearError >"
+    {
+      "signature": "pub fn calculate_remaining (initial_quantity : f64 , half_life : f64 , time : f64 ,) -> Result < f64 , NuclearError >"
+    },
+    {
+      "signature": "pub fn gamow_factor (z_daughter : AtomicNumber , z_alpha : AtomicNumber , velocity : f64 ,) -> Result < f64 , NuclearError >"
+    }
   ],
   "crates/domain_physics/src/physics/nuclear/mod.rs": [
-    "pub fn binding_energy (atomic_number : AtomicNumber , mass_number : MassNumber ,) -> Result < f64 , NuclearError >",
-    "pub fn binding_energy_per_nucleon (atomic_number : AtomicNumber , mass_number : MassNumber ,) -> Result < f64 , NuclearError >",
-    "pub fn spin_orbit_coupling (l : f64 , s : f64 , j : f64) -> f64"
+    {
+      "signature": "pub fn binding_energy (atomic_number : AtomicNumber , mass_number : MassNumber ,) -> Result < f64 , NuclearError >"
+    },
+    {
+      "signature": "pub fn binding_energy_per_nucleon (atomic_number : AtomicNumber , mass_number : MassNumber ,) -> Result < f64 , NuclearError >"
+    },
+    {
+      "signature": "pub fn spin_orbit_coupling (l : f64 , s : f64 , j : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/nuclear/models.rs": [
-    "pub fn spin_orbit_coupling (l : f64 , s : f64 , j : f64) -> f64",
-    "pub struct LiquidDropModel",
-    "pub trait BindingEnergyModel"
+    {
+      "signature": "pub fn spin_orbit_coupling (l : f64 , s : f64 , j : f64) -> f64"
+    },
+    {
+      "signature": "pub struct LiquidDropModel"
+    },
+    {
+      "signature": "pub trait BindingEnergyModel"
+    }
   ],
   "crates/domain_physics/src/physics/nuclear/properties.rs": [
-    "pub fn calculate_nucleon_density (mass_number : MassNumber) -> Result < f64 , NuclearError >",
-    "pub fn calculate_radius (mass_number : MassNumber) -> f64"
+    {
+      "signature": "pub fn calculate_nucleon_density (mass_number : MassNumber) -> Result < f64 , NuclearError >"
+    },
+    {
+      "signature": "pub fn calculate_radius (mass_number : MassNumber) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/nuclear/reactions.rs": [
-    "pub fn breit_wigner (energy : f64 , resonance_energy : f64 , gamma_width : f64 ,) -> Result < f64 , NuclearError >",
-    "pub fn q_value (input_masses : & [f64] , output_masses : & [f64]) -> f64"
+    {
+      "signature": "pub fn breit_wigner (energy : f64 , resonance_energy : f64 , gamma_width : f64 ,) -> Result < f64 , NuclearError >"
+    },
+    {
+      "signature": "pub fn q_value (input_masses : & [f64] , output_masses : & [f64]) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/nuclear/types.rs": [
-    "pub enum NuclearError",
-    "pub struct AtomicNumber",
-    "pub struct MassNumber"
+    {
+      "signature": "pub enum NuclearError"
+    },
+    {
+      "signature": "pub struct AtomicNumber"
+    },
+    {
+      "signature": "pub struct MassNumber"
+    }
   ],
   "crates/domain_physics/src/physics/optics/sensing.rs": [
-    "pub fn lambertian_intensity (power_tx : f64 , distance : f64 , angle : f64 , mode_n : f64) -> f64",
-    "pub fn lws_range_resolution (r0 : f64 , delta_r_max : f64 , bits : u32) -> f64"
+    {
+      "signature": "pub fn lambertian_intensity (power_tx : f64 , distance : f64 , angle : f64 , mode_n : f64) -> f64"
+    },
+    {
+      "signature": "pub fn lws_range_resolution (r0 : f64 , delta_r_max : f64 , bits : u32) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/quantum/coupling.rs": [
-    "pub fn clebsch_gordan (j1 : f64 , m1 : f64 , j2 : f64 , m2 : f64 , j : f64 , m : f64) -> f64"
+    {
+      "signature": "pub fn clebsch_gordan (j1 : f64 , m1 : f64 , j2 : f64 , m2 : f64 , j : f64 , m : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/quantum/fourier.rs": [
-    "pub fn dft_operator (n : usize) -> QuantumOperator",
-    "pub fn idft_operator (n : usize) -> QuantumOperator"
+    {
+      "signature": "pub fn dft_operator (n : usize) -> QuantumOperator"
+    },
+    {
+      "signature": "pub fn idft_operator (n : usize) -> QuantumOperator"
+    }
   ],
   "crates/domain_physics/src/physics/quantum/hamiltonian.rs": [
-    "pub fn construct_1d_hamiltonian (potential : & DVector < f64 > , dx : f64 , mass : f64 , h_bar : f64 ,) -> QuantumOperator",
-    "pub fn gaussian_wavepacket (x_grid : & [f64] , x0 : f64 , k0 : f64 , sigma : f64) -> QuantumState"
+    {
+      "signature": "pub fn construct_1d_hamiltonian (potential : & DVector < f64 > , dx : f64 , mass : f64 , h_bar : f64 ,) -> QuantumOperator"
+    },
+    {
+      "signature": "pub fn gaussian_wavepacket (x_grid : & [f64] , x0 : f64 , k0 : f64 , sigma : f64) -> QuantumState"
+    }
   ],
   "crates/domain_physics/src/physics/quantum/schrodinger.rs": [
-    "pub fn evolve_state (state : & QuantumState , hamiltonian : & QuantumOperator , t : f64 , h_bar : f64 ,) -> QuantumState",
-    "pub fn time_evolution_operator (hamiltonian : & QuantumOperator , t : f64 , h_bar : f64 ,) -> QuantumOperator"
+    {
+      "signature": "pub fn evolve_state (state : & QuantumState , hamiltonian : & QuantumOperator , t : f64 , h_bar : f64 ,) -> QuantumState"
+    },
+    {
+      "signature": "pub fn time_evolution_operator (hamiltonian : & QuantumOperator , t : f64 , h_bar : f64 ,) -> QuantumOperator"
+    }
   ],
   "crates/domain_physics/src/physics/quantum/spin.rs": [
-    "pub fn sigma_x () -> QuantumOperator",
-    "pub fn sigma_y () -> QuantumOperator",
-    "pub fn sigma_z () -> QuantumOperator"
+    {
+      "signature": "pub fn sigma_x () -> QuantumOperator"
+    },
+    {
+      "signature": "pub fn sigma_y () -> QuantumOperator"
+    },
+    {
+      "signature": "pub fn sigma_z () -> QuantumOperator"
+    }
   ],
   "crates/domain_physics/src/physics/quantum/types.rs": [
-    "pub struct QuantumOperator",
-    "pub struct QuantumState"
+    {
+      "signature": "pub struct QuantumOperator"
+    },
+    {
+      "signature": "pub struct QuantumState"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/band_theory.rs": [
-    "pub fn free_electron_1d (k : f64 , hbar : f64 , m : f64) -> f64",
-    "pub fn tight_binding_1d (k : f64 , e0 : f64 , t : f64 , a : f64) -> f64"
+    {
+      "signature": "pub fn free_electron_1d (k : f64 , hbar : f64 , m : f64) -> f64"
+    },
+    {
+      "signature": "pub fn tight_binding_1d (k : f64 , e0 : f64 , t : f64 , a : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/bcs.rs": [
-    "pub fn coherence_factors (xi_k : f64 , delta : f64) -> Result < (f64 , f64) , String >",
-    "pub fn coherence_factors_strong (xi_k : ElectronVolts , delta : ElectronVolts ,) -> Result < (f64 , f64) , String >",
-    "pub fn solve_gap_equation (energies_xi : & [f64] , potential_v_magnitude : f64 , debye_energy : f64 , iterations : usize ,) -> Result < f64 , String >",
-    "pub struct BcsGapSolver",
-    "pub struct IsotropicBCSModel",
-    "pub trait GapEquation"
+    {
+      "signature": "pub fn coherence_factors (xi_k : f64 , delta : f64) -> Result < (f64 , f64) , String >"
+    },
+    {
+      "signature": "pub fn coherence_factors_strong (xi_k : ElectronVolts , delta : ElectronVolts ,) -> Result < (f64 , f64) , String >"
+    },
+    {
+      "signature": "pub fn solve_gap_equation (energies_xi : & [f64] , potential_v_magnitude : f64 , debye_energy : f64 , iterations : usize ,) -> Result < f64 , String >"
+    },
+    {
+      "signature": "pub struct BcsGapSolver"
+    },
+    {
+      "signature": "pub struct IsotropicBCSModel"
+    },
+    {
+      "signature": "pub trait GapEquation"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/interactions.rs": [
-    "pub struct FrohlichVertex"
+    {
+      "signature": "pub struct FrohlichVertex"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/lattice.rs": [
-    "pub struct BodyCenteredCubic",
-    "pub struct FaceCenteredCubic",
-    "pub struct SimpleCubic",
-    "pub struct UnitCell",
-    "pub trait CrystalSystem"
+    {
+      "signature": "pub struct BodyCenteredCubic"
+    },
+    {
+      "signature": "pub struct FaceCenteredCubic"
+    },
+    {
+      "signature": "pub struct SimpleCubic"
+    },
+    {
+      "signature": "pub struct UnitCell"
+    },
+    {
+      "signature": "pub trait CrystalSystem"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/magnetism.rs": [
-    "pub fn calculate_heisenberg_energy (j : f64 , spins : & [Vector3 < f64 >] , neighbors : & [(usize , usize)] ,) -> f64",
-    "pub fn magnon_dispersion (k : f64 , j : f64 , s : f64 , a : f64) -> f64"
+    {
+      "signature": "pub fn calculate_heisenberg_energy (j : f64 , spins : & [Vector3 < f64 >] , neighbors : & [(usize , usize)] ,) -> f64"
+    },
+    {
+      "signature": "pub fn magnon_dispersion (k : f64 , j : f64 , s : f64 , a : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/phonons.rs": [
-    "pub fn acoustic_dispersion (k : f64 , v_s : f64) -> f64",
-    "pub fn debye_heat_capacity_low_temp (t : f64 , theta_d : f64 , n_atoms : f64 , k_b : f64) -> f64",
-    "pub fn optical_dispersion (_k : f64 , w_e : f64) -> f64"
+    {
+      "signature": "pub fn acoustic_dispersion (k : f64 , v_s : f64) -> f64"
+    },
+    {
+      "signature": "pub fn debye_heat_capacity_low_temp (t : f64 , theta_d : f64 , n_atoms : f64 , k_b : f64) -> f64"
+    },
+    {
+      "signature": "pub fn optical_dispersion (_k : f64 , w_e : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/screening.rs": [
-    "pub fn thomas_fermi_dielectric (q : f64 , k_tf : f64) -> f64",
-    "pub fn yukawa_potential (r : f64 , k_tf : f64) -> f64"
+    {
+      "signature": "pub fn thomas_fermi_dielectric (q : f64 , k_tf : f64) -> f64"
+    },
+    {
+      "signature": "pub fn yukawa_potential (r : f64 , k_tf : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/second_quantization.rs": [
-    "pub enum QuantumOperatorType",
-    "pub fn check_commutation < P : ParticleStatistics > (op1 : & Operator , op2 : & Operator) -> f64",
-    "pub struct Boson",
-    "pub struct Fermion",
-    "pub struct FockState",
-    "pub struct Operator",
-    "pub trait ParticleStatistics"
+    {
+      "signature": "pub enum QuantumOperatorType"
+    },
+    {
+      "signature": "pub fn check_commutation < P : ParticleStatistics > (op1 : & Operator , op2 : & Operator) -> f64"
+    },
+    {
+      "signature": "pub struct Boson"
+    },
+    {
+      "signature": "pub struct Fermion"
+    },
+    {
+      "signature": "pub struct FockState"
+    },
+    {
+      "signature": "pub struct Operator"
+    },
+    {
+      "signature": "pub trait ParticleStatistics"
+    }
   ],
   "crates/domain_physics/src/physics/solid_state/types.rs": [
-    "pub struct ElectronVolts",
-    "pub struct Kelvin"
+    {
+      "signature": "pub struct ElectronVolts"
+    },
+    {
+      "signature": "pub struct Kelvin"
+    }
   ],
   "crates/domain_physics/src/physics/standard_model/flavor.rs": [
-    "pub fn construct_ckm (theta12 : f64 , theta23 : f64 , theta13 : f64 , delta : f64 ,) -> Matrix3 < Complex < f64 > >"
+    {
+      "signature": "pub fn construct_ckm (theta12 : f64 , theta23 : f64 , theta13 : f64 , delta : f64 ,) -> Matrix3 < Complex < f64 > >"
+    }
   ],
   "crates/domain_physics/src/physics/standard_model/gauge.rs": [
-    "pub struct GaugeCouplings"
+    {
+      "signature": "pub struct GaugeCouplings"
+    }
   ],
   "crates/domain_physics/src/physics/standard_model/higgs.rs": [
-    "pub fn boson_masses (vev : f64 , couplings : & GaugeCouplings) -> (f64 , f64)",
-    "pub struct HiggsPotential"
+    {
+      "signature": "pub fn boson_masses (vev : f64 , couplings : & GaugeCouplings) -> (f64 , f64)"
+    },
+    {
+      "signature": "pub struct HiggsPotential"
+    }
   ],
   "crates/domain_physics/src/physics/standard_model/neutrinos.rs": [
-    "pub fn oscillation_prob (theta : f64 , delta_m2 : f64 , l_km : f64 , e_gev : f64) -> f64"
+    {
+      "signature": "pub fn oscillation_prob (theta : f64 , delta_m2 : f64 , l_km : f64 , e_gev : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/standard_model/qcd.rs": [
-    "pub fn running_coupling (mu : f64 , alpha_mu : f64 , q : f64 , nf : f64 ,) -> Result < f64 , StandardModelError >"
+    {
+      "signature": "pub fn running_coupling (mu : f64 , alpha_mu : f64 , q : f64 , nf : f64 ,) -> Result < f64 , StandardModelError >"
+    }
   ],
   "crates/domain_physics/src/physics/stat_mech/dynamics.rs": [
-    "pub fn estimate_diffusion_coefficient (num_walks : usize , time_steps : usize) -> f64",
-    "pub fn estimate_diffusion_coefficient_with_rng < R : Rng + ? Sized > (num_walks : usize , time_steps : usize , rng : & mut R ,) -> f64",
-    "pub fn random_walk_1d (steps : usize) -> f64",
-    "pub fn random_walk_1d_with_rng < R : Rng + ? Sized > (steps : usize , rng : & mut R) -> f64"
+    {
+      "signature": "pub fn estimate_diffusion_coefficient (num_walks : usize , time_steps : usize) -> f64"
+    },
+    {
+      "signature": "pub fn estimate_diffusion_coefficient_with_rng < R : Rng + ? Sized > (num_walks : usize , time_steps : usize , rng : & mut R ,) -> f64"
+    },
+    {
+      "signature": "pub fn random_walk_1d (steps : usize) -> f64"
+    },
+    {
+      "signature": "pub fn random_walk_1d_with_rng < R : Rng + ? Sized > (steps : usize , rng : & mut R) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/stat_mech/ensembles.rs": [
-    "pub fn average_energy (energies : & [f64] , temperature : f64) -> f64",
-    "pub fn boltzmann_factor (energy : f64 , temperature : f64) -> f64",
-    "pub fn calculate_partition_function (energies : & [f64] , temperature : f64) -> f64",
-    "pub fn entropy (internal_energy : f64 , free_energy : f64 , temperature : f64) -> f64",
-    "pub fn helmholtz_free_energy (partition_function : f64 , temperature : f64) -> f64"
+    {
+      "signature": "pub fn average_energy (energies : & [f64] , temperature : f64) -> f64"
+    },
+    {
+      "signature": "pub fn boltzmann_factor (energy : f64 , temperature : f64) -> f64"
+    },
+    {
+      "signature": "pub fn calculate_partition_function (energies : & [f64] , temperature : f64) -> f64"
+    },
+    {
+      "signature": "pub fn entropy (internal_energy : f64 , free_energy : f64 , temperature : f64) -> f64"
+    },
+    {
+      "signature": "pub fn helmholtz_free_energy (partition_function : f64 , temperature : f64) -> f64"
+    }
   ],
   "crates/domain_physics/src/physics/stat_mech/ising.rs": [
-    "pub struct SpinLattice"
+    {
+      "signature": "pub struct SpinLattice"
+    }
   ],
   "crates/domain_physics/src/physics/stat_mech/quantum_stats.rs": [
-    "pub enum ParticleType",
-    "pub fn calculate_occupancy < D : StatisticalDistribution > (distribution : D , energy : f64 , chemical_potential : f64 , temperature : f64 ,) -> Result < f64 , StatMechError >",
-    "pub fn occupancy_probability (particle_type : ParticleType , energy : f64 , chemical_potential : f64 , temperature : f64 ,) -> Result < f64 , StatMechError >",
-    "pub struct BoseEinstein",
-    "pub struct FermiDirac",
-    "pub struct MaxwellBoltzmann",
-    "pub trait StatisticalDistribution"
+    {
+      "signature": "pub enum ParticleType"
+    },
+    {
+      "signature": "pub fn calculate_occupancy < D : StatisticalDistribution > (distribution : D , energy : f64 , chemical_potential : f64 , temperature : f64 ,) -> Result < f64 , StatMechError >"
+    },
+    {
+      "signature": "pub fn occupancy_probability (particle_type : ParticleType , energy : f64 , chemical_potential : f64 , temperature : f64 ,) -> Result < f64 , StatMechError >"
+    },
+    {
+      "signature": "pub struct BoseEinstein"
+    },
+    {
+      "signature": "pub struct FermiDirac"
+    },
+    {
+      "signature": "pub struct MaxwellBoltzmann"
+    },
+    {
+      "signature": "pub trait StatisticalDistribution"
+    }
   ],
   "crates/federated_registry/src/lib.rs": [
-    "pub fn global_registry () -> & 'static FederatedRegistry",
-    "pub fn init_panic_hook ()",
-    "pub struct FederatedRegistry",
-    "pub struct TelemetryEvent"
+    {
+      "signature": "pub fn global_registry () -> & 'static FederatedRegistry"
+    },
+    {
+      "signature": "pub fn init_panic_hook ()"
+    },
+    {
+      "signature": "pub struct FederatedRegistry"
+    },
+    {
+      "signature": "pub struct TelemetryEvent"
+    }
   ],
   "crates/math_commons/src/citation_registry.rs": [
-    "pub struct CitationRegistry"
+    {
+      "signature": "pub struct CitationRegistry"
+    }
   ],
   "crates/math_commons/src/error.rs": [
-    "pub enum MathError",
-    "pub type MathResult < T > = std :: result :: Result < T , MathError >"
+    {
+      "signature": "pub enum MathError"
+    },
+    {
+      "signature": "pub type MathResult < T > = std :: result :: Result < T , MathError >"
+    }
   ],
   "crates/math_commons/src/math_kernel/colormap.rs": [
-    "pub fn cyclic_cosine_palette (n : f64) -> [u8 ; 3]",
-    "pub fn heatmap_color (mut t : f64) -> [u8 ; 3]",
-    "pub fn mapped_gradient (value : f64 , min_val : f64 , max_val : f64) -> [u8 ; 3]"
+    {
+      "signature": "pub fn cyclic_cosine_palette (n : f64) -> [u8 ; 3]"
+    },
+    {
+      "signature": "pub fn heatmap_color (mut t : f64) -> [u8 ; 3]"
+    },
+    {
+      "signature": "pub fn mapped_gradient (value : f64 , min_val : f64 , max_val : f64) -> [u8 ; 3]"
+    }
   ],
   "crates/math_commons/src/math_kernel/types.rs": [
-    "pub fn flatten_2d_index (x : usize , y : usize , width : usize) -> usize",
-    "pub struct Dimension",
-    "pub struct GridIndex",
-    "pub struct StepSize"
+    {
+      "signature": "pub fn flatten_2d_index (x : usize , y : usize , width : usize) -> usize"
+    },
+    {
+      "signature": "pub struct Dimension"
+    },
+    {
+      "signature": "pub struct GridIndex"
+    },
+    {
+      "signature": "pub struct StepSize"
+    }
   ],
   "crates/math_commons/src/theory.rs": [
-    "pub struct ParameterConstraint",
-    "pub trait TheoryDescribable"
+    {
+      "signature": "pub struct ParameterConstraint"
+    },
+    {
+      "signature": "pub trait TheoryDescribable"
+    }
   ],
   "crates/math_commons/src/wigner/mod.rs": [
-    "pub struct ClebschGordan"
+    {
+      "signature": "pub struct ClebschGordan"
+    }
   ],
   "crates/oxidize_core/src/ast_visitor.rs": [
-    "pub struct AstVisitor"
+    {
+      "signature": "pub struct AstVisitor"
+    }
   ],
   "crates/oxidize_core/src/boundary.rs": [
-    "pub struct BounceBackBoundary",
-    "pub struct NeumannBoundary",
-    "pub struct PeriodicBoundary",
-    "pub trait BoundaryCondition"
+    {
+      "signature": "pub struct BounceBackBoundary"
+    },
+    {
+      "signature": "pub struct NeumannBoundary"
+    },
+    {
+      "signature": "pub struct PeriodicBoundary"
+    },
+    {
+      "signature": "pub trait BoundaryCondition"
+    }
   ],
   "crates/oxidize_core/src/double_buffer.rs": [
-    "pub trait DoubleBufferedSimulationModel",
-    "pub trait DoubleBufferedState"
+    {
+      "signature": "pub trait DoubleBufferedSimulationModel"
+    },
+    {
+      "signature": "pub trait DoubleBufferedState"
+    }
   ],
   "crates/oxidize_core/src/grid.rs": [
-    "pub struct Grid2D < T >"
+    {
+      "signature": "pub struct Grid2D < T >"
+    }
   ],
   "crates/oxidize_core/src/iteration.rs": [
-    "pub struct IterationPattern"
+    {
+      "signature": "pub struct IterationPattern"
+    }
   ],
   "crates/oxidize_core/src/lib.rs": [
-    "pub enum SimulationError",
-    "pub struct BooleanMaskConfig",
-    "pub struct BooleanMaskSimulation",
-    "pub struct BooleanMaskState",
-    "pub trait ModelConfig",
-    "pub trait ModelState",
-    "pub trait SimulationModel"
+    {
+      "signature": "pub enum SimulationError"
+    },
+    {
+      "signature": "pub struct BooleanMaskConfig"
+    },
+    {
+      "signature": "pub struct BooleanMaskSimulation"
+    },
+    {
+      "signature": "pub struct BooleanMaskState"
+    },
+    {
+      "signature": "pub trait ModelConfig"
+    },
+    {
+      "signature": "pub trait ModelState"
+    },
+    {
+      "signature": "pub trait SimulationModel"
+    }
   ],
   "crates/oxidize_core/src/mesh/export.rs": [
-    "pub fn export_mesh_to_obj_string (mesh : & Mesh) -> Result < String , std :: io :: Error >"
+    {
+      "signature": "pub fn export_mesh_to_obj_string (mesh : & Mesh) -> Result < String , std :: io :: Error >"
+    }
   ],
   "crates/oxidize_core/src/mesh/types.rs": [
-    "pub struct Mesh",
-    "pub struct Point3D",
-    "pub struct Triangle"
+    {
+      "signature": "pub struct Mesh"
+    },
+    {
+      "signature": "pub struct Point3D"
+    },
+    {
+      "signature": "pub struct Triangle"
+    }
   ],
   "crates/oxidize_core/src/path_utils.rs": [
-    "pub fn join_and_normalize < P : AsRef < Path > , B : AsRef < Path > > (base : P , suffix : B) -> String",
-    "pub fn normalize_path < P : AsRef < Path > > (path : P) -> String",
-    "pub fn strip_and_normalize < P : AsRef < Path > , B : AsRef < Path > > (path : P , prefix : B) -> Option < String >"
+    {
+      "signature": "pub fn join_and_normalize < P : AsRef < Path > , B : AsRef < Path > > (base : P , suffix : B) -> String"
+    },
+    {
+      "signature": "pub fn normalize_path < P : AsRef < Path > > (path : P) -> String"
+    },
+    {
+      "signature": "pub fn strip_and_normalize < P : AsRef < Path > , B : AsRef < Path > > (path : P , prefix : B) -> Option < String >"
+    }
   ],
   "crates/oxidize_core/src/rng.rs": [
-    "pub struct OxidizeRng"
+    {
+      "signature": "pub struct OxidizeRng"
+    }
   ],
   "crates/oxidize_core/src/traceability.rs": [
-    "pub struct TraceabilityEngine < V : VirtualFileSystem >",
-    "pub struct TraceabilityReport"
+    {
+      "signature": "pub struct TraceabilityEngine < V : VirtualFileSystem >"
+    },
+    {
+      "signature": "pub struct TraceabilityReport"
+    }
   ],
   "crates/oxidize_core/src/vfs.rs": [
-    "pub fn trigger_download (filename : & str , content : & [u8])",
-    "pub struct DefaultVfs",
-    "pub struct WasmVfs",
-    "pub trait VirtualFileSystem"
+    {
+      "signature": "pub fn trigger_download (filename : & str , content : & [u8])"
+    },
+    {
+      "signature": "pub struct DefaultVfs"
+    },
+    {
+      "signature": "pub struct WasmVfs"
+    },
+    {
+      "signature": "pub trait VirtualFileSystem"
+    }
   ],
   "crates/pure_math/src/error.rs": [
-    "pub enum CopulaError",
-    "pub enum Glicko2Error",
-    "pub enum KellyError",
-    "pub enum MarkovError",
-    "pub enum NumberTheoryError",
-    "pub enum OuError",
-    "pub enum TdaError",
-    "pub enum ZipError",
-    "pub type Result < T > = math_commons :: error :: MathResult < T >"
+    {
+      "signature": "pub enum CopulaError"
+    },
+    {
+      "signature": "pub enum Glicko2Error"
+    },
+    {
+      "signature": "pub enum KellyError"
+    },
+    {
+      "signature": "pub enum MarkovError"
+    },
+    {
+      "signature": "pub enum NumberTheoryError"
+    },
+    {
+      "signature": "pub enum OuError"
+    },
+    {
+      "signature": "pub enum TdaError"
+    },
+    {
+      "signature": "pub enum ZipError"
+    },
+    {
+      "signature": "pub type Result < T > = math_commons :: error :: MathResult < T >"
+    }
   ],
   "crates/pure_math/src/math_types.rs": [
-    "pub struct Float",
-    "pub struct Integer",
-    "pub struct Rational",
-    "pub trait Pow < Rhs >",
-    "pub trait RemRounding < Rhs >"
+    {
+      "signature": "pub struct Float"
+    },
+    {
+      "signature": "pub struct Integer"
+    },
+    {
+      "signature": "pub struct Rational"
+    },
+    {
+      "signature": "pub trait Pow < Rhs >"
+    },
+    {
+      "signature": "pub trait RemRounding < Rhs >"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/fields.rs": [
-    "pub struct Fp < const P : i64 >"
+    {
+      "signature": "pub struct Fp < const P : i64 >"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/group.rs": [
-    "pub fn generate_left_coset < G : Group > (subgroup : & [G] , a : & G) -> Vec < G >",
-    "pub fn generate_right_coset < G : Group > (subgroup : & [G] , a : & G) -> Vec < G >",
-    "pub fn is_normal_subgroup < G : Group + Eq + Hash > (group : & [G] , subgroup : & [G]) -> bool",
-    "pub fn is_subgroup < G : Group + Eq + Hash > (subgroup : & [G]) -> bool",
-    "pub struct CyclicElement",
-    "pub struct Permutation",
-    "pub struct Zn < const N : usize >"
+    {
+      "signature": "pub fn generate_left_coset < G : Group > (subgroup : & [G] , a : & G) -> Vec < G >"
+    },
+    {
+      "signature": "pub fn generate_right_coset < G : Group > (subgroup : & [G] , a : & G) -> Vec < G >"
+    },
+    {
+      "signature": "pub fn is_normal_subgroup < G : Group + Eq + Hash > (group : & [G] , subgroup : & [G]) -> bool"
+    },
+    {
+      "signature": "pub fn is_subgroup < G : Group + Eq + Hash > (subgroup : & [G]) -> bool"
+    },
+    {
+      "signature": "pub struct CyclicElement"
+    },
+    {
+      "signature": "pub struct Permutation"
+    },
+    {
+      "signature": "pub struct Zn < const N : usize >"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/linear_algebra/canonical.rs": [
-    "pub struct CompanionMatrix",
-    "pub struct JordanBlock"
+    {
+      "signature": "pub struct CompanionMatrix"
+    },
+    {
+      "signature": "pub struct JordanBlock"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/linear_algebra/decomposition.rs": [
-    "pub fn effective_rank (matrix : & DMatrix < f64 > , tolerance : Option < f64 >) -> usize",
-    "pub fn low_rank_approximation (matrix : & DMatrix < f64 > , k : usize) -> DMatrix < f64 >"
+    {
+      "signature": "pub fn effective_rank (matrix : & DMatrix < f64 > , tolerance : Option < f64 >) -> usize"
+    },
+    {
+      "signature": "pub fn low_rank_approximation (matrix : & DMatrix < f64 > , k : usize) -> DMatrix < f64 >"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/linear_algebra/eigen.rs": [
-    "pub fn is_stable (matrix : & DMatrix < f64 >) -> bool",
-    "pub fn natural_frequencies (matrix : & DMatrix < f64 >) -> Vec < f64 >"
+    {
+      "signature": "pub fn is_stable (matrix : & DMatrix < f64 >) -> bool"
+    },
+    {
+      "signature": "pub fn natural_frequencies (matrix : & DMatrix < f64 >) -> Vec < f64 >"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/linear_algebra/numerical.rs": [
-    "pub enum LinearAlgebraError",
-    "pub fn moore_penrose_pseudoinverse (matrix : & DMatrix < f64 > , epsilon : f64) -> DMatrix < f64 >",
-    "pub fn solve_linear_system (a : & DMatrix < f64 > , b : & DVector < f64 > ,) -> Result < DVector < f64 > , LinearAlgebraError >",
-    "pub fn solve_normal_equation (a : & DMatrix < f64 > , b : & DVector < f64 > ,) -> Result < DVector < f64 > , LinearAlgebraError >"
+    {
+      "signature": "pub enum LinearAlgebraError"
+    },
+    {
+      "signature": "pub fn moore_penrose_pseudoinverse (matrix : & DMatrix < f64 > , epsilon : f64) -> DMatrix < f64 >"
+    },
+    {
+      "signature": "pub fn solve_linear_system (a : & DMatrix < f64 > , b : & DVector < f64 > ,) -> Result < DVector < f64 > , LinearAlgebraError >"
+    },
+    {
+      "signature": "pub fn solve_normal_equation (a : & DMatrix < f64 > , b : & DVector < f64 > ,) -> Result < DVector < f64 > , LinearAlgebraError >"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/polynomial.rs": [
-    "pub struct Polynomial < T : Ring >"
+    {
+      "signature": "pub struct Polynomial < T : Ring >"
+    }
   ],
   "crates/pure_math/src/pure_math/algebra/traits.rs": [
-    "pub trait AbelianGroup",
-    "pub trait EuclideanDomain",
-    "pub trait Field",
-    "pub trait Group",
-    "pub trait Monoid",
-    "pub trait Ring",
-    "pub trait Semigroup"
+    {
+      "signature": "pub trait AbelianGroup"
+    },
+    {
+      "signature": "pub trait EuclideanDomain"
+    },
+    {
+      "signature": "pub trait Field"
+    },
+    {
+      "signature": "pub trait Group"
+    },
+    {
+      "signature": "pub trait Monoid"
+    },
+    {
+      "signature": "pub trait Ring"
+    },
+    {
+      "signature": "pub trait Semigroup"
+    }
   ],
   "crates/pure_math/src/pure_math/algorithmic_information/combinatorics.rs": [
-    "pub fn combinatorial_lemma < T , U > (x_set : & HashSet < T > , v_set : & HashSet < U > , n_v : & HashMap < U , HashSet < T > > , sim : & HashMap < T , SimilarityFn < U > > , alpha : f64 ,) -> Option < (U , U) > where T : Eq + Hash + Clone , U : Eq + Hash + Clone ,",
-    "pub type SimilarityFn < U > = Box < dyn Fn (& U , & U) -> bool >"
+    {
+      "signature": "pub fn combinatorial_lemma < T , U > (x_set : & HashSet < T > , v_set : & HashSet < U > , n_v : & HashMap < U , HashSet < T > > , sim : & HashMap < T , SimilarityFn < U > > , alpha : f64 ,) -> Option < (U , U) > where T : Eq + Hash + Clone , U : Eq + Hash + Clone ,"
+    },
+    {
+      "signature": "pub type SimilarityFn < U > = Box < dyn Fn (& U , & U) -> bool >"
+    }
   ],
   "crates/pure_math/src/pure_math/algorithmic_information/fractran.rs": [
-    "pub struct FractranProgram",
-    "pub struct FractranState"
+    {
+      "signature": "pub struct FractranProgram"
+    },
+    {
+      "signature": "pub struct FractranState"
+    }
   ],
   "crates/pure_math/src/pure_math/algorithmic_information/geometry.rs": [
-    "pub struct DyadicRational"
+    {
+      "signature": "pub struct DyadicRational"
+    }
   ],
   "crates/pure_math/src/pure_math/algorithmic_information/kolmogorov.rs": [
-    "pub fn kolmogorov_complexity (_n : & Integer) -> u64"
+    {
+      "signature": "pub fn kolmogorov_complexity (_n : & Integer) -> u64"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/complex/continuation.rs": [
-    "pub fn schwarz_reflect < F > (f : F , z : Complex64) -> Complex64 where F : Fn (Complex64) -> Complex64 ,"
+    {
+      "signature": "pub fn schwarz_reflect < F > (f : F , z : Complex64) -> Complex64 where F : Fn (Complex64) -> Complex64 ,"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/complex/integration.rs": [
-    "pub fn cauchy_derivative < F > (f : F , z0 : Complex64 , n : usize , contour_center : Complex64 , radius : f64 , steps : usize ,) -> Complex64 where F : Fn (Complex64) -> Complex64 ,",
-    "pub fn cauchy_integral_value < F > (f : F , z0 : Complex64 , contour_center : Complex64 , radius : f64 , steps : usize ,) -> Complex64 where F : Fn (Complex64) -> Complex64 ,",
-    "pub fn path_integrate < F , G , DG > (f : F , gamma : G , dgamma : DG , t_start : f64 , t_end : f64 , steps : usize ,) -> Complex64 where F : Fn (Complex64) -> Complex64 , G : Fn (f64) -> Complex64 , DG : Fn (f64) -> Complex64 ,",
-    "pub fn residue_simple_limit < F > (f : F , z0 : Complex64 , epsilon : f64) -> Complex64 where F : Fn (Complex64) -> Complex64 ,",
-    "pub fn residue_via_integral < F > (f : F , z0 : Complex64 , r : f64 , steps : usize) -> Complex64 where F : Fn (Complex64) -> Complex64 ,"
+    {
+      "signature": "pub fn cauchy_derivative < F > (f : F , z0 : Complex64 , n : usize , contour_center : Complex64 , radius : f64 , steps : usize ,) -> Complex64 where F : Fn (Complex64) -> Complex64 ,"
+    },
+    {
+      "signature": "pub fn cauchy_integral_value < F > (f : F , z0 : Complex64 , contour_center : Complex64 , radius : f64 , steps : usize ,) -> Complex64 where F : Fn (Complex64) -> Complex64 ,"
+    },
+    {
+      "signature": "pub fn path_integrate < F , G , DG > (f : F , gamma : G , dgamma : DG , t_start : f64 , t_end : f64 , steps : usize ,) -> Complex64 where F : Fn (Complex64) -> Complex64 , G : Fn (f64) -> Complex64 , DG : Fn (f64) -> Complex64 ,"
+    },
+    {
+      "signature": "pub fn residue_simple_limit < F > (f : F , z0 : Complex64 , epsilon : f64) -> Complex64 where F : Fn (Complex64) -> Complex64 ,"
+    },
+    {
+      "signature": "pub fn residue_via_integral < F > (f : F , z0 : Complex64 , r : f64 , steps : usize) -> Complex64 where F : Fn (Complex64) -> Complex64 ,"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/complex/mapping.rs": [
-    "pub fn area_magnification < F > (derivative_f : F , z0 : Complex64) -> f64 where F : Fn (Complex64) -> Complex64 ,",
-    "pub fn conformal_scale_factor < F > (derivative_f : F , z0 : Complex64) -> f64 where F : Fn (Complex64) -> Complex64 ,",
-    "pub struct SchwarzChristoffel"
+    {
+      "signature": "pub fn area_magnification < F > (derivative_f : F , z0 : Complex64) -> f64 where F : Fn (Complex64) -> Complex64 ,"
+    },
+    {
+      "signature": "pub fn conformal_scale_factor < F > (derivative_f : F , z0 : Complex64) -> f64 where F : Fn (Complex64) -> Complex64 ,"
+    },
+    {
+      "signature": "pub struct SchwarzChristoffel"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/complex/surfaces.rs": [
-    "pub struct LogSurface",
-    "pub struct NthRootSurface",
-    "pub trait RiemannSurface"
+    {
+      "signature": "pub struct LogSurface"
+    },
+    {
+      "signature": "pub struct NthRootSurface"
+    },
+    {
+      "signature": "pub trait RiemannSurface"
+    }
+  ],
+  "crates/pure_math/src/pure_math/analysis/differentiation.rs": [
+    {
+      "signature": "pub struct CalculusScheme"
+    },
+    {
+      "signature": "pub struct DifferentiationConfig"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/evolution.rs": [
-    "pub enum EvolutionError",
-    "pub struct SystemEvolver < Sys , Sol >",
-    "pub trait DoubleBufferedEvolutionEngine < State : DoubleBufferedState , AuxState >",
-    "pub trait DoubleBufferedState",
-    "pub trait EvolutionEngine < State , AuxState >"
+    {
+      "signature": "pub enum EvolutionError"
+    },
+    {
+      "signature": "pub struct SystemEvolver < Sys , Sol >"
+    },
+    {
+      "signature": "pub trait DoubleBufferedEvolutionEngine < State : DoubleBufferedState , AuxState >"
+    },
+    {
+      "signature": "pub trait DoubleBufferedState"
+    },
+    {
+      "signature": "pub trait EvolutionEngine < State , AuxState >"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/integration.rs": [
-    "pub struct ClenshawCurtis",
-    "pub struct IntegrationResult",
-    "pub struct Trapezoidal",
-    "pub trait Integrator"
+    {
+      "signature": "pub struct ClenshawCurtis"
+    },
+    {
+      "signature": "pub struct IntegrationResult"
+    },
+    {
+      "signature": "pub struct Trapezoidal"
+    },
+    {
+      "signature": "pub trait Integrator"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/ode/mod.rs": [
-    "pub enum IntegrationMethod"
+    {
+      "signature": "pub enum IntegrationMethod"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/ode/model.rs": [
-    "pub struct OdeModel < State , Dynamics , S >"
+    {
+      "signature": "pub struct OdeModel < State , Dynamics , S >"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/ode/solvers.rs": [
-    "pub struct Euler < State >",
-    "pub struct RungeKutta4 < State >"
+    {
+      "signature": "pub struct Euler < State >"
+    },
+    {
+      "signature": "pub struct RungeKutta4 < State >"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/ode/state.rs": [
-    "pub struct ArrayState < const N : usize >",
-    "pub struct VecState"
+    {
+      "signature": "pub struct ArrayState < const N : usize >"
+    },
+    {
+      "signature": "pub struct VecState"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/ode/stepper.rs": [
-    "pub trait TimeStepper < State : VectorOperations >"
+    {
+      "signature": "pub trait TimeStepper < State : VectorOperations >"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/ode/traits.rs": [
-    "pub trait OdeSystem < State : VectorOperations >",
-    "pub trait Solver < State : VectorOperations >",
-    "pub trait SolverExt < State : VectorOperations >",
-    "pub trait VectorOperations"
+    {
+      "signature": "pub trait OdeSystem < State : VectorOperations >"
+    },
+    {
+      "signature": "pub trait Solver < State : VectorOperations >"
+    },
+    {
+      "signature": "pub trait SolverExt < State : VectorOperations >"
+    },
+    {
+      "signature": "pub trait VectorOperations"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/optimization.rs": [
-    "pub enum OptimizationError",
-    "pub enum ParamType",
-    "pub struct Adam < T , Key >",
-    "pub struct AdamState < T >",
-    "pub struct L1RegularizedLeastSquares",
-    "pub struct SGD < T >",
-    "pub trait ModelOptimizer < T : RealField + Copy >",
-    "pub trait Optimizer < T : RealField + Copy , Key = u64 >",
-    "pub trait Trainable < T : nalgebra :: RealField + Copy = f64 >"
+    {
+      "signature": "pub enum OptimizationError"
+    },
+    {
+      "signature": "pub enum ParamType"
+    },
+    {
+      "signature": "pub struct Adam < T , Key >"
+    },
+    {
+      "signature": "pub struct AdamState < T >"
+    },
+    {
+      "signature": "pub struct L1RegularizedLeastSquares"
+    },
+    {
+      "signature": "pub struct SGD < T >"
+    },
+    {
+      "signature": "pub trait ModelOptimizer < T : RealField + Copy >"
+    },
+    {
+      "signature": "pub trait Optimizer < T : RealField + Copy , Key = u64 >"
+    },
+    {
+      "signature": "pub trait Trainable < T : nalgebra :: RealField + Copy = f64 >"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/pde/fused_stepper.rs": [
-    "pub struct FusedStencilStepper",
-    "pub struct StencilOperators"
+    {
+      "signature": "pub struct FusedStencilStepper"
+    },
+    {
+      "signature": "pub struct StencilOperators"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/pde/greens.rs": [
-    "pub struct GreenFunctionSolver1D < I : Integrator >",
-    "pub struct MethodOfImages"
+    {
+      "signature": "pub struct GreenFunctionSolver1D < I : Integrator >"
+    },
+    {
+      "signature": "pub struct MethodOfImages"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/pde/heat.rs": [
-    "pub struct HeatEquation1D",
-    "pub struct HeatRodSolution"
+    {
+      "signature": "pub struct HeatEquation1D"
+    },
+    {
+      "signature": "pub struct HeatRodSolution"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/pde/laplace.rs": [
-    "pub struct LaplaceEquation2D",
-    "pub struct RectangularLaplaceSolver"
+    {
+      "signature": "pub struct LaplaceEquation2D"
+    },
+    {
+      "signature": "pub struct RectangularLaplaceSolver"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/pde/mod.rs": [
-    "pub enum PdeClassification",
-    "pub struct DirichletBoundary",
-    "pub struct NeumannBoundary",
-    "pub struct SecondOrderLinearPde2D",
-    "pub trait BoundaryCondition"
+    {
+      "signature": "pub enum PdeClassification"
+    },
+    {
+      "signature": "pub struct DirichletBoundary"
+    },
+    {
+      "signature": "pub struct NeumannBoundary"
+    },
+    {
+      "signature": "pub struct SecondOrderLinearPde2D"
+    },
+    {
+      "signature": "pub trait BoundaryCondition"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/pde/wave.rs": [
-    "pub struct StringWaveSolution",
-    "pub struct WaveEquation1D"
+    {
+      "signature": "pub struct StringWaveSolution"
+    },
+    {
+      "signature": "pub struct WaveEquation1D"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/roots.rs": [
-    "pub enum AnalysisError",
-    "pub struct Bisection",
-    "pub struct NewtonRaphson",
-    "pub trait RootFinder"
+    {
+      "signature": "pub enum AnalysisError"
+    },
+    {
+      "signature": "pub struct Bisection"
+    },
+    {
+      "signature": "pub struct NewtonRaphson"
+    },
+    {
+      "signature": "pub trait RootFinder"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/stochastic.rs": [
-    "pub enum StochasticError",
-    "pub struct GillespieSolver < R >",
-    "pub trait StochasticSystem < State >"
+    {
+      "signature": "pub enum StochasticError"
+    },
+    {
+      "signature": "pub struct GillespieSolver < R >"
+    },
+    {
+      "signature": "pub trait StochasticSystem < State >"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/transforms/fourier/continuous.rs": [
-    "pub fn calculate_fourier_coefficients_complex < F , I > (f : F , l : f64 , n_terms : usize , integrator : & I ,) -> Vec < Complex64 > where F : Fn (f64) -> f64 + Copy , I : Integrator ,",
-    "pub fn calculate_fourier_coefficients_real < F , I > (f : F , l : f64 , n_terms : usize , integrator : & I ,) -> (f64 , Vec < f64 > , Vec < f64 >) where F : Fn (f64) -> f64 + Copy , I : Integrator ,",
-    "pub fn evaluate_fourier_series_real (x : f64 , l : f64 , a0 : f64 , an : & [f64] , bn : & [f64]) -> f64",
-    "pub fn fourier_transform < F , I > (f : F , omega : f64 , bounds : (f64 , f64) , integrator : & I) -> Complex64 where F : Fn (f64) -> f64 + Copy , I : Integrator ,"
+    {
+      "signature": "pub fn calculate_fourier_coefficients_complex < F , I > (f : F , l : f64 , n_terms : usize , integrator : & I ,) -> Vec < Complex64 > where F : Fn (f64) -> f64 + Copy , I : Integrator ,"
+    },
+    {
+      "signature": "pub fn calculate_fourier_coefficients_real < F , I > (f : F , l : f64 , n_terms : usize , integrator : & I ,) -> (f64 , Vec < f64 > , Vec < f64 >) where F : Fn (f64) -> f64 + Copy , I : Integrator ,"
+    },
+    {
+      "signature": "pub fn evaluate_fourier_series_real (x : f64 , l : f64 , a0 : f64 , an : & [f64] , bn : & [f64]) -> f64"
+    },
+    {
+      "signature": "pub fn fourier_transform < F , I > (f : F , omega : f64 , bounds : (f64 , f64) , integrator : & I) -> Complex64 where F : Fn (f64) -> f64 + Copy , I : Integrator ,"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/transforms/fourier/discrete.rs": [
-    "pub struct FastFourierTransform"
+    {
+      "signature": "pub struct FastFourierTransform"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/transforms/fourier/traits.rs": [
-    "pub enum TransformError",
-    "pub trait SpectralTransform"
+    {
+      "signature": "pub enum TransformError"
+    },
+    {
+      "signature": "pub trait SpectralTransform"
+    }
   ],
   "crates/pure_math/src/pure_math/analysis/transforms/laplace.rs": [
-    "pub fn laplace_transform < F , I > (f : F , s : Complex64 , max_t : f64 , integrator : & I) -> Complex64 where F : Fn (f64) -> f64 + Copy , I : Integrator ,"
+    {
+      "signature": "pub fn laplace_transform < F , I > (f : F , s : Complex64 , max_t : f64 , integrator : & I) -> Complex64 where F : Fn (f64) -> f64 + Copy , I : Integrator ,"
+    }
   ],
   "crates/pure_math/src/pure_math/differential_geometry/heat_equation.rs": [
-    "pub struct HeatEquationSolver < 'a , S : ParametricSurface >"
+    {
+      "signature": "pub struct HeatEquationSolver < 'a , S : ParametricSurface >"
+    }
   ],
   "crates/pure_math/src/pure_math/differential_geometry/mean_curvature_flow.rs": [
-    "pub struct DiscreteSurface",
-    "pub struct MeanCurvatureFlow"
+    {
+      "signature": "pub struct DiscreteSurface"
+    },
+    {
+      "signature": "pub struct MeanCurvatureFlow"
+    }
   ],
   "crates/pure_math/src/pure_math/differential_geometry/operators.rs": [
-    "pub fn laplace_beltrami < S , F > (surface : & S , u : f64 , v : f64 , func : & F) -> f64 where S : ParametricSurface , F : Fn (f64 , f64) -> f64 ,"
+    {
+      "signature": "pub fn laplace_beltrami < S , F > (surface : & S , u : f64 , v : f64 , func : & F) -> f64 where S : ParametricSurface , F : Fn (f64 , f64) -> f64 ,"
+    }
   ],
   "crates/pure_math/src/pure_math/differential_geometry/surface.rs": [
-    "pub struct KleinBottle",
-    "pub struct Sphere",
-    "pub struct Torus",
-    "pub trait ParametricSurface",
-    "pub trait SurfaceAnalysis"
+    {
+      "signature": "pub struct KleinBottle"
+    },
+    {
+      "signature": "pub struct Sphere"
+    },
+    {
+      "signature": "pub struct Torus"
+    },
+    {
+      "signature": "pub trait ParametricSurface"
+    },
+    {
+      "signature": "pub trait SurfaceAnalysis"
+    }
   ],
   "crates/pure_math/src/pure_math/elliptic_curves/mod.rs": [
-    "pub enum EllipticCurveError",
-    "pub fn prime_factors (mut n : u64) -> HashMap < u64 , u32 >",
-    "pub fn psi (n : u64) -> u64",
-    "pub fn theorem_1_1_bounds (n : u64 , i : u64 , j : u64) -> Result < Theorem11Bounds , EllipticCurveError >",
-    "pub fn theorem_1_2_bounds (n : u64 , i : u64 , j : u64) -> Result < Theorem12Bounds , EllipticCurveError >",
-    "pub struct Theorem11Bounds",
-    "pub struct Theorem12Bounds"
+    {
+      "signature": "pub enum EllipticCurveError"
+    },
+    {
+      "signature": "pub fn prime_factors (mut n : u64) -> HashMap < u64 , u32 >"
+    },
+    {
+      "signature": "pub fn psi (n : u64) -> u64"
+    },
+    {
+      "signature": "pub fn theorem_1_1_bounds (n : u64 , i : u64 , j : u64) -> Result < Theorem11Bounds , EllipticCurveError >"
+    },
+    {
+      "signature": "pub fn theorem_1_2_bounds (n : u64 , i : u64 , j : u64) -> Result < Theorem12Bounds , EllipticCurveError >"
+    },
+    {
+      "signature": "pub struct Theorem11Bounds"
+    },
+    {
+      "signature": "pub struct Theorem12Bounds"
+    }
   ],
   "crates/pure_math/src/pure_math/graph_theory/dijkstra.rs": [
-    "pub fn dijkstra < G , W > (graph : G , start : NodeIndex) -> DijkstraResult < W > where G : IntoEdges + Visitable < NodeId = NodeIndex > + Data < EdgeWeight = W > , G :: NodeId : Eq + Hash , W : Copy + Default + Add < Output = W > + PartialOrd ,",
-    "pub struct DijkstraResult < W >"
+    {
+      "signature": "pub fn dijkstra < G , W > (graph : G , start : NodeIndex) -> DijkstraResult < W > where G : IntoEdges + Visitable < NodeId = NodeIndex > + Data < EdgeWeight = W > , G :: NodeId : Eq + Hash , W : Copy + Default + Add < Output = W > + PartialOrd ,"
+    },
+    {
+      "signature": "pub struct DijkstraResult < W >"
+    }
   ],
   "crates/pure_math/src/pure_math/graph_theory/graph.rs": [
-    "pub struct Graph < N , E >"
+    {
+      "signature": "pub struct Graph < N , E >"
+    }
   ],
   "crates/pure_math/src/pure_math/graph_theory/parameters/degree.rs": [
-    "pub fn degeneracy < N , E > (g : & Graph < N , E >) -> usize where N : Clone , E : Clone ,"
+    {
+      "signature": "pub fn degeneracy < N , E > (g : & Graph < N , E >) -> usize where N : Clone , E : Clone ,"
+    }
   ],
   "crates/pure_math/src/pure_math/graph_theory/parameters/modulator.rs": [
-    "pub fn vertex_cover < N , E > (g : & Graph < N , E >) -> HashSet < NodeIndex > where N : Clone , E : Clone ,"
+    {
+      "signature": "pub fn vertex_cover < N , E > (g : & Graph < N , E >) -> HashSet < NodeIndex > where N : Clone , E : Clone ,"
+    }
   ],
   "crates/pure_math/src/pure_math/graph_theory/parameters/network_metrics.rs": [
-    "pub fn average_clustering_coefficient < N , E > (g : & Graph < N , E >) -> f64",
-    "pub fn closeness_centrality < N , E > (g : & Graph < N , E >) -> HashMap < NodeIndex , f64 >",
-    "pub fn clustering_coefficients < N , E > (g : & Graph < N , E >) -> HashMap < NodeIndex , f64 >",
-    "pub fn degree_centrality < N , E > (g : & Graph < N , E >) -> HashMap < NodeIndex , f64 >",
-    "pub fn diameter < N , E > (g : & Graph < N , E >) -> usize"
+    {
+      "signature": "pub fn average_clustering_coefficient < N , E > (g : & Graph < N , E >) -> f64"
+    },
+    {
+      "signature": "pub fn closeness_centrality < N , E > (g : & Graph < N , E >) -> HashMap < NodeIndex , f64 >"
+    },
+    {
+      "signature": "pub fn clustering_coefficients < N , E > (g : & Graph < N , E >) -> HashMap < NodeIndex , f64 >"
+    },
+    {
+      "signature": "pub fn degree_centrality < N , E > (g : & Graph < N , E >) -> HashMap < NodeIndex , f64 >"
+    },
+    {
+      "signature": "pub fn diameter < N , E > (g : & Graph < N , E >) -> usize"
+    }
   ],
   "crates/pure_math/src/pure_math/graph_theory/parameters/treewidth.rs": [
-    "pub fn treewidth < N , E > (_g : & Graph < N , E >) -> usize"
+    {
+      "signature": "pub fn treewidth < N , E > (_g : & Graph < N , E >) -> usize"
+    }
   ],
   "crates/pure_math/src/pure_math/logic.rs": [
-    "pub fn exists < I , F > (domain : I , p : F) -> bool where I : Iterator , F : Fn (I :: Item) -> bool ,",
-    "pub fn forall < I , F > (domain : I , p : F) -> bool where I : Iterator , F : Fn (I :: Item) -> bool ,",
-    "pub fn negate_exists < I , F > (domain : I , p : F) -> bool where I : Iterator + Clone , F : Fn (I :: Item) -> bool ,",
-    "pub fn negate_forall < I , F > (domain : I , p : F) -> bool where I : Iterator + Clone , F : Fn (I :: Item) -> bool ,",
-    "pub fn verify_induction < F > (limit : usize , p : F) -> bool where F : Fn (usize) -> bool ,"
+    {
+      "signature": "pub fn exists < I , F > (domain : I , p : F) -> bool where I : Iterator , F : Fn (I :: Item) -> bool ,"
+    },
+    {
+      "signature": "pub fn forall < I , F > (domain : I , p : F) -> bool where I : Iterator , F : Fn (I :: Item) -> bool ,"
+    },
+    {
+      "signature": "pub fn negate_exists < I , F > (domain : I , p : F) -> bool where I : Iterator + Clone , F : Fn (I :: Item) -> bool ,"
+    },
+    {
+      "signature": "pub fn negate_forall < I , F > (domain : I , p : F) -> bool where I : Iterator + Clone , F : Fn (I :: Item) -> bool ,"
+    },
+    {
+      "signature": "pub fn verify_induction < F > (limit : usize , p : F) -> bool where F : Fn (usize) -> bool ,"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/alcf.rs": [
-    "pub fn alcf_search (_target_bound_log : f64 , _core_size : usize , _tail_window : usize)"
+    {
+      "signature": "pub fn alcf_search (_target_bound_log : f64 , _core_size : usize , _tail_window : usize)"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/ambs.rs": [
-    "pub enum AmbsError",
-    "pub fn modular_inverse (a : & Integer , m : & Integer) -> Option < Integer >",
-    "pub fn precompute_valid_prime_powers (limit_p : u64 , max_e : u32) -> Vec < (u64 , u32 , u64) >",
-    "pub fn prime_factors (mut n : u64) -> Vec < (u64 , u32) >",
-    "pub fn sigma (n : u64) -> u64",
-    "pub fn solve_quasiperfect_modularity (_s_l_str : & str , _n_l_str : & str , n_max_str : & str , _c_max_int_str : & str ,) -> Result < String , AmbsError >",
-    "pub struct AmbsDsp"
+    {
+      "signature": "pub enum AmbsError"
+    },
+    {
+      "signature": "pub fn modular_inverse (a : & Integer , m : & Integer) -> Option < Integer >"
+    },
+    {
+      "signature": "pub fn precompute_valid_prime_powers (limit_p : u64 , max_e : u32) -> Vec < (u64 , u32 , u64) >"
+    },
+    {
+      "signature": "pub fn prime_factors (mut n : u64) -> Vec < (u64 , u32) >"
+    },
+    {
+      "signature": "pub fn sigma (n : u64) -> u64"
+    },
+    {
+      "signature": "pub fn solve_quasiperfect_modularity (_s_l_str : & str , _n_l_str : & str , n_max_str : & str , _c_max_int_str : & str ,) -> Result < String , AmbsError >"
+    },
+    {
+      "signature": "pub struct AmbsDsp"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/class_number.rs": [
-    "pub fn class_number (d : i64) -> u64",
-    "pub struct BQF"
+    {
+      "signature": "pub fn class_number (d : i64) -> u64"
+    },
+    {
+      "signature": "pub struct BQF"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/hurwitz_kronecker.rs": [
-    "pub fn hurwitz_class_number (d : i64) -> f64",
-    "pub fn verify_summation_formula (p : u64) -> bool",
-    "pub fn weighted_class_number (d : i64) -> f64"
+    {
+      "signature": "pub fn hurwitz_class_number (d : i64) -> f64"
+    },
+    {
+      "signature": "pub fn verify_summation_formula (p : u64) -> bool"
+    },
+    {
+      "signature": "pub fn weighted_class_number (d : i64) -> f64"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/partitions.rs": [
-    "pub fn f_k (k : usize , precision : usize) -> QSeries",
-    "pub fn gen_a (precision : usize) -> QSeries",
-    "pub fn gen_b (precision : usize) -> QSeries",
-    "pub fn gen_k (precision : usize) -> QSeries",
-    "pub fn gen_l (precision : usize) -> QSeries",
-    "pub fn gen_m (precision : usize) -> QSeries",
-    "pub fn gen_p_star (precision : usize) -> QSeries",
-    "pub fn gen_t_star (precision : usize) -> QSeries",
-    "pub type QSeries = crate :: pure_math :: number_theory :: q_series :: QSeries < i64 >"
+    {
+      "signature": "pub fn f_k (k : usize , precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub fn gen_a (precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub fn gen_b (precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub fn gen_k (precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub fn gen_l (precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub fn gen_m (precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub fn gen_p_star (precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub fn gen_t_star (precision : usize) -> QSeries"
+    },
+    {
+      "signature": "pub type QSeries = crate :: pure_math :: number_theory :: q_series :: QSeries < i64 >"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/primes.rs": [
-    "pub fn is_prime (n : u64) -> bool",
-    "pub fn primes_up_to (limit : u64) -> Vec < u64 >"
+    {
+      "signature": "pub fn is_prime (n : u64) -> bool"
+    },
+    {
+      "signature": "pub fn primes_up_to (limit : u64) -> Vec < u64 >"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/q_series.rs": [
-    "pub struct QSeries < T : EuclideanDomain >"
+    {
+      "signature": "pub struct QSeries < T : EuclideanDomain >"
+    }
   ],
   "crates/pure_math/src/pure_math/number_theory/ualbf.rs": [
-    "pub enum NumberTheoryError",
-    "pub fn ualbf_search (_limit_p : u64 , _max_exponent : u32 , _stop_threshold_str : & str , _target_max_str : & str ,) -> Result < UalbfSearchResult , NumberTheoryError >",
-    "pub struct UalbfSearchResult"
+    {
+      "signature": "pub enum NumberTheoryError"
+    },
+    {
+      "signature": "pub fn ualbf_search (_limit_p : u64 , _max_exponent : u32 , _stop_threshold_str : & str , _target_max_str : & str ,) -> Result < UalbfSearchResult , NumberTheoryError >"
+    },
+    {
+      "signature": "pub struct UalbfSearchResult"
+    }
   ],
   "crates/pure_math/src/pure_math/special_functions/bessel.rs": [
-    "pub fn bessel_j (nu : f64 , x : f64) -> f64",
-    "pub fn bessel_y (_nu : f64 , _x : f64) -> f64",
-    "pub fn check_orthogonality_bessel (nu : f64 , alpha : f64 , beta : f64) -> f64",
-    "pub fn spherical_bessel_j (l : u64 , x : f64) -> f64"
+    {
+      "signature": "pub fn bessel_j (nu : f64 , x : f64) -> f64"
+    },
+    {
+      "signature": "pub fn bessel_y (_nu : f64 , _x : f64) -> f64"
+    },
+    {
+      "signature": "pub fn check_orthogonality_bessel (nu : f64 , alpha : f64 , beta : f64) -> f64"
+    },
+    {
+      "signature": "pub fn spherical_bessel_j (l : u64 , x : f64) -> f64"
+    }
   ],
   "crates/pure_math/src/pure_math/special_functions/gamma_beta.rs": [
-    "pub fn beta_function (m : f64 , n : f64) -> f64",
-    "pub fn factorial (n : u64) -> f64",
-    "pub fn gamma_function (x : f64) -> f64"
+    {
+      "signature": "pub fn beta_function (m : f64 , n : f64) -> f64"
+    },
+    {
+      "signature": "pub fn factorial (n : u64) -> f64"
+    },
+    {
+      "signature": "pub fn gamma_function (x : f64) -> f64"
+    }
   ],
   "crates/pure_math/src/pure_math/special_functions/legendre.rs": [
-    "pub fn check_orthogonality_legendre (l : u64 , k : u64) -> f64",
-    "pub fn legendre_p (l : u64 , x : f64) -> f64",
-    "pub fn legendre_p_associated (l : u64 , m : i64 , x : f64) -> f64"
+    {
+      "signature": "pub fn check_orthogonality_legendre (l : u64 , k : u64) -> f64"
+    },
+    {
+      "signature": "pub fn legendre_p (l : u64 , x : f64) -> f64"
+    },
+    {
+      "signature": "pub fn legendre_p_associated (l : u64 , m : i64 , x : f64) -> f64"
+    }
   ],
   "crates/pure_math/src/pure_math/special_functions/polynomials.rs": [
-    "pub fn hermite (n : u64 , x : f64) -> f64",
-    "pub fn laguerre (n : u64 , x : f64) -> f64"
+    {
+      "signature": "pub fn hermite (n : u64 , x : f64) -> f64"
+    },
+    {
+      "signature": "pub fn laguerre (n : u64 , x : f64) -> f64"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/copula/core.rs": [
-    "pub struct Correlation",
-    "pub struct CorrelationMatrix",
-    "pub struct Probability"
+    {
+      "signature": "pub struct Correlation"
+    },
+    {
+      "signature": "pub struct CorrelationMatrix"
+    },
+    {
+      "signature": "pub struct Probability"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/copula/gaussian.rs": [
-    "pub fn sgp_joint_probability (marginals : & [Probability] , correlation_matrix : & CorrelationMatrix ,) -> Result < Probability , CopulaError >",
-    "pub struct GaussianCopula"
+    {
+      "signature": "pub fn sgp_joint_probability (marginals : & [Probability] , correlation_matrix : & CorrelationMatrix ,) -> Result < Probability , CopulaError >"
+    },
+    {
+      "signature": "pub struct GaussianCopula"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/copula/transforms.rs": [
-    "pub fn inverse_standard_normal (u : Probability) -> Result < f64 , CopulaError >",
-    "pub fn standard_normal_cdf (z : f64) -> Result < Probability , CopulaError >",
-    "pub struct NormalTransform",
-    "pub trait ProbabilityTransform"
+    {
+      "signature": "pub fn inverse_standard_normal (u : Probability) -> Result < f64 , CopulaError >"
+    },
+    {
+      "signature": "pub fn standard_normal_cdf (z : f64) -> Result < Probability , CopulaError >"
+    },
+    {
+      "signature": "pub struct NormalTransform"
+    },
+    {
+      "signature": "pub trait ProbabilityTransform"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/glicko2/core.rs": [
-    "pub fn expected_outcome (mu : f64 , mu_j : f64 , phi_j : f64) -> f64",
-    "pub fn g_function (phi : f64) -> f64",
-    "pub struct GlickoPlayer",
-    "pub struct MatchResult",
-    "pub struct Rating",
-    "pub struct RatingDeviation",
-    "pub struct SystemConstant",
-    "pub struct Volatility"
+    {
+      "signature": "pub fn expected_outcome (mu : f64 , mu_j : f64 , phi_j : f64) -> f64"
+    },
+    {
+      "signature": "pub fn g_function (phi : f64) -> f64"
+    },
+    {
+      "signature": "pub struct GlickoPlayer"
+    },
+    {
+      "signature": "pub struct MatchResult"
+    },
+    {
+      "signature": "pub struct Rating"
+    },
+    {
+      "signature": "pub struct RatingDeviation"
+    },
+    {
+      "signature": "pub struct SystemConstant"
+    },
+    {
+      "signature": "pub struct Volatility"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/glicko2/rating.rs": [
-    "pub fn increase_rd_for_inactivity (player : & GlickoPlayer) -> GlickoPlayer",
-    "pub fn update_rating (player : & GlickoPlayer , results : & [MatchResult] , tau : & SystemConstant ,) -> Result < GlickoPlayer , Glicko2Error >"
+    {
+      "signature": "pub fn increase_rd_for_inactivity (player : & GlickoPlayer) -> GlickoPlayer"
+    },
+    {
+      "signature": "pub fn update_rating (player : & GlickoPlayer , results : & [MatchResult] , tau : & SystemConstant ,) -> Result < GlickoPlayer , Glicko2Error >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/kelly/core.rs": [
-    "pub struct BankrollFraction",
-    "pub struct Odds"
+    {
+      "signature": "pub struct BankrollFraction"
+    },
+    {
+      "signature": "pub struct Odds"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/kelly/criterion.rs": [
-    "pub fn expected_growth_rate (probability : & UnitInterval , odds : & Odds , fraction : & BankrollFraction ,) -> f64",
-    "pub fn expected_value (probability : & UnitInterval , odds : & Odds) -> f64",
-    "pub fn fractional_kelly (probability : & UnitInterval , odds : & Odds , fraction : f64 ,) -> Result < BankrollFraction , KellyError >",
-    "pub fn half_kelly (probability : & UnitInterval , odds : & Odds ,) -> Result < BankrollFraction , KellyError >",
-    "pub fn kelly_fraction (probability : & UnitInterval , odds : & Odds ,) -> Result < BankrollFraction , KellyError >",
-    "pub fn quarter_kelly (probability : & UnitInterval , odds : & Odds ,) -> Result < BankrollFraction , KellyError >"
+    {
+      "signature": "pub fn expected_growth_rate (probability : & UnitInterval , odds : & Odds , fraction : & BankrollFraction ,) -> f64"
+    },
+    {
+      "signature": "pub fn expected_value (probability : & UnitInterval , odds : & Odds) -> f64"
+    },
+    {
+      "signature": "pub fn fractional_kelly (probability : & UnitInterval , odds : & Odds , fraction : f64 ,) -> Result < BankrollFraction , KellyError >"
+    },
+    {
+      "signature": "pub fn half_kelly (probability : & UnitInterval , odds : & Odds ,) -> Result < BankrollFraction , KellyError >"
+    },
+    {
+      "signature": "pub fn kelly_fraction (probability : & UnitInterval , odds : & Odds ,) -> Result < BankrollFraction , KellyError >"
+    },
+    {
+      "signature": "pub fn quarter_kelly (probability : & UnitInterval , odds : & Odds ,) -> Result < BankrollFraction , KellyError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/ctmc/mod.rs": [
-    "pub struct ContinuousMarkovChain < T : RealField + Copy + ToPrimitive >",
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub struct ContinuousMarkovChain < T : RealField + Copy + ToPrimitive >"
+    },
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/dtmc/mod.rs": [
-    "pub struct MarkovChain < T : RealField + Copy + ToPrimitive >",
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub struct MarkovChain < T : RealField + Copy + ToPrimitive >"
+    },
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/dtmc/types.rs": [
-    "pub enum StateType"
+    {
+      "signature": "pub enum StateType"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/hmm/forward_backward.rs": [
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/hmm/generation.rs": [
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/hmm/model.rs": [
-    "pub struct HiddenMarkovModel < T : RealField + Copy + ToPrimitive >",
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub struct HiddenMarkovModel < T : RealField + Copy + ToPrimitive >"
+    },
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/hmm/viterbi.rs": [
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/mod.rs": [
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/tensor.rs": [
-    "pub struct TransitionTensor < T : RealField + Copy + ToPrimitive >",
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub struct TransitionTensor < T : RealField + Copy + ToPrimitive >"
+    },
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/time_index.rs": [
-    "pub struct TimeIndex < T : RealField + Copy + ToPrimitive >"
+    {
+      "signature": "pub struct TimeIndex < T : RealField + Copy + ToPrimitive >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/markov/validation.rs": [
-    "pub fn validate_generator_matrix < T : RealField + Copy + ToPrimitive > (generator : & DMatrix < T > ,) -> Result < () >",
-    "pub fn validate_probability_vector < T : RealField + Copy + ToPrimitive > (vec : & DVector < T > ,) -> Result < () >",
-    "pub fn validate_stochastic_matrix < T : RealField + Copy + ToPrimitive > (matrix : & DMatrix < T > ,) -> Result < () >",
-    "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    {
+      "signature": "pub fn validate_generator_matrix < T : RealField + Copy + ToPrimitive > (generator : & DMatrix < T > ,) -> Result < () >"
+    },
+    {
+      "signature": "pub fn validate_probability_vector < T : RealField + Copy + ToPrimitive > (vec : & DVector < T > ,) -> Result < () >"
+    },
+    {
+      "signature": "pub fn validate_stochastic_matrix < T : RealField + Copy + ToPrimitive > (matrix : & DMatrix < T > ,) -> Result < () >"
+    },
+    {
+      "signature": "pub type Result < T > = std :: result :: Result < T , MarkovError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/ou_process/analysis.rs": [
-    "pub enum MomentumType",
-    "pub fn estimate_ou_params (observations : & [f64] , dt : f64) -> Result < OuParams , OuError >",
-    "pub struct OuAnalyzer",
-    "pub struct PerformanceStats"
+    {
+      "signature": "pub enum MomentumType"
+    },
+    {
+      "signature": "pub fn estimate_ou_params (observations : & [f64] , dt : f64) -> Result < OuParams , OuError >"
+    },
+    {
+      "signature": "pub struct OuAnalyzer"
+    },
+    {
+      "signature": "pub struct PerformanceStats"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/ou_process/core.rs": [
-    "pub struct LongTermMean",
-    "pub struct OuParams"
+    {
+      "signature": "pub struct LongTermMean"
+    },
+    {
+      "signature": "pub struct OuParams"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/ou_process/solver.rs": [
-    "pub struct EulerMaruyama",
-    "pub struct TimeStep"
+    {
+      "signature": "pub struct EulerMaruyama"
+    },
+    {
+      "signature": "pub struct TimeStep"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/regression.rs": [
-    "pub fn multivariate_linear_regression (features : & DMatrix < f64 > , targets : & DVector < f64 > ,) -> Option < DVector < f64 > >"
+    {
+      "signature": "pub fn multivariate_linear_regression (features : & DMatrix < f64 > , targets : & DVector < f64 > ,) -> Option < DVector < f64 > >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/tda/complex.rs": [
-    "pub fn vietoris_rips_complex (cloud : & PointCloud , radius : f64 ,) -> Result < SimplicialComplex , TdaError >",
-    "pub struct SimplicialComplex"
+    {
+      "signature": "pub fn vietoris_rips_complex (cloud : & PointCloud , radius : f64 ,) -> Result < SimplicialComplex , TdaError >"
+    },
+    {
+      "signature": "pub struct SimplicialComplex"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/tda/core.rs": [
-    "pub struct Point2D",
-    "pub struct PointCloud",
-    "pub struct Simplex"
+    {
+      "signature": "pub struct Point2D"
+    },
+    {
+      "signature": "pub struct PointCloud"
+    },
+    {
+      "signature": "pub struct Simplex"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/tda/homology.rs": [
-    "pub fn betti_number_0 (complex : & SimplicialComplex) -> Result < usize , TdaError >",
-    "pub fn betti_number_1 (complex : & SimplicialComplex) -> Result < usize , TdaError >",
-    "pub fn betti_numbers (complex : & SimplicialComplex) -> Result < (usize , usize) , TdaError >"
+    {
+      "signature": "pub fn betti_number_0 (complex : & SimplicialComplex) -> Result < usize , TdaError >"
+    },
+    {
+      "signature": "pub fn betti_number_1 (complex : & SimplicialComplex) -> Result < usize , TdaError >"
+    },
+    {
+      "signature": "pub fn betti_numbers (complex : & SimplicialComplex) -> Result < (usize , usize) , TdaError >"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/tda/persistence.rs": [
-    "pub fn compute_persistence (cloud : & PointCloud , radii : & [f64] ,) -> Result < PersistenceBarcode , TdaError >",
-    "pub struct PersistenceBarcode",
-    "pub struct PersistenceInterval"
+    {
+      "signature": "pub fn compute_persistence (cloud : & PointCloud , radii : & [f64] ,) -> Result < PersistenceBarcode , TdaError >"
+    },
+    {
+      "signature": "pub struct PersistenceBarcode"
+    },
+    {
+      "signature": "pub struct PersistenceInterval"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/zip_regression/core.rs": [
-    "pub struct Count",
-    "pub struct PoissonRate",
-    "pub struct ZeroInflation",
-    "pub struct ZipParams"
+    {
+      "signature": "pub struct Count"
+    },
+    {
+      "signature": "pub struct PoissonRate"
+    },
+    {
+      "signature": "pub struct ZeroInflation"
+    },
+    {
+      "signature": "pub struct ZipParams"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/zip_regression/distribution.rs": [
-    "pub struct ZipDistribution"
+    {
+      "signature": "pub struct ZipDistribution"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/zip_regression/link_functions.rs": [
-    "pub struct LogLink",
-    "pub struct LogitLink"
+    {
+      "signature": "pub struct LogLink"
+    },
+    {
+      "signature": "pub struct LogitLink"
+    }
   ],
   "crates/pure_math/src/pure_math/statistics/zip_regression/regression.rs": [
-    "pub fn simple_zip_fit (counts : & [Count]) -> Result < ZipParams , ZipError >",
-    "pub struct ZipRegression"
+    {
+      "signature": "pub fn simple_zip_fit (counts : & [Count]) -> Result < ZipParams , ZipError >"
+    },
+    {
+      "signature": "pub struct ZipRegression"
+    }
   ],
   "crates/pure_math/src/pure_math/tensor/christoffel.rs": [
-    "pub fn christoffel_symbols (metric : & impl Metric , point : & DVector < f64 > ,) -> Result < Vec < DMatrix < f64 > > , TensorError >"
+    {
+      "signature": "pub fn christoffel_symbols (metric : & impl Metric , point : & DVector < f64 > ,) -> Result < Vec < DMatrix < f64 > > , TensorError >"
+    }
   ],
   "crates/pure_math/src/pure_math/tensor/differentiation.rs": [
-    "pub fn covariant_derivative_contravariant < F > (field : F , metric : & impl Metric , point : & DVector < f64 > ,) -> Result < Rank2Tensor , TensorError > where F : Fn (& DVector < f64 >) -> ContravariantVector ,",
-    "pub fn covariant_derivative_covariant < F > (field : F , metric : & impl Metric , point : & DVector < f64 > ,) -> Result < Rank2Tensor , TensorError > where F : Fn (& DVector < f64 >) -> CovariantVector ,"
+    {
+      "signature": "pub fn covariant_derivative_contravariant < F > (field : F , metric : & impl Metric , point : & DVector < f64 > ,) -> Result < Rank2Tensor , TensorError > where F : Fn (& DVector < f64 >) -> ContravariantVector ,"
+    },
+    {
+      "signature": "pub fn covariant_derivative_covariant < F > (field : F , metric : & impl Metric , point : & DVector < f64 > ,) -> Result < Rank2Tensor , TensorError > where F : Fn (& DVector < f64 >) -> CovariantVector ,"
+    }
   ],
   "crates/pure_math/src/pure_math/tensor/metric.rs": [
-    "pub struct RiemannianMetric < F >",
-    "pub trait Metric"
+    {
+      "signature": "pub struct RiemannianMetric < F >"
+    },
+    {
+      "signature": "pub trait Metric"
+    }
   ],
   "crates/pure_math/src/pure_math/tensor/types.rs": [
-    "pub enum TensorError",
-    "pub struct ContravariantVector",
-    "pub struct CovariantVector",
-    "pub struct Rank2Tensor"
+    {
+      "signature": "pub enum TensorError"
+    },
+    {
+      "signature": "pub struct ContravariantVector"
+    },
+    {
+      "signature": "pub struct CovariantVector"
+    },
+    {
+      "signature": "pub struct Rank2Tensor"
+    }
   ],
   "crates/pure_math/src/pure_math/vector_calculus/coordinates.rs": [
-    "pub struct Cartesian",
-    "pub struct Cylindrical",
-    "pub struct Spherical",
-    "pub trait OrthogonalCoordinateSystem"
+    {
+      "signature": "pub struct Cartesian"
+    },
+    {
+      "signature": "pub struct Cylindrical"
+    },
+    {
+      "signature": "pub struct Spherical"
+    },
+    {
+      "signature": "pub trait OrthogonalCoordinateSystem"
+    }
   ],
   "crates/pure_math/src/pure_math/vector_calculus/operators.rs": [
-    "pub fn curl < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> Vector3 < f64 > where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> Vector3 < f64 > ,",
-    "pub fn divergence < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> f64 where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> Vector3 < f64 > ,",
-    "pub fn gradient < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> Vector3 < f64 > where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> f64 ,",
-    "pub fn laplacian < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> f64 where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> f64 ,"
+    {
+      "signature": "pub fn curl < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> Vector3 < f64 > where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> Vector3 < f64 > ,"
+    },
+    {
+      "signature": "pub fn divergence < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> f64 where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> Vector3 < f64 > ,"
+    },
+    {
+      "signature": "pub fn gradient < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> Vector3 < f64 > where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> f64 ,"
+    },
+    {
+      "signature": "pub fn laplacian < S , F > (coords : & S , field : F , point : & Vector3 < f64 >) -> f64 where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> f64 ,"
+    }
   ],
   "crates/pure_math/src/pure_math/vector_calculus/theorems.rs": [
-    "pub fn verify_divergence_theorem < S , F > (coords : & S , domain : & Domain , field : F , steps : usize ,) -> (f64 , f64 , f64) where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> Vector3 < f64 > + Copy ,",
-    "pub struct Domain"
+    {
+      "signature": "pub fn verify_divergence_theorem < S , F > (coords : & S , domain : & Domain , field : F , steps : usize ,) -> (f64 , f64 , f64) where S : OrthogonalCoordinateSystem , F : Fn (& Vector3 < f64 >) -> Vector3 < f64 > + Copy ,"
+    },
+    {
+      "signature": "pub struct Domain"
+    }
   ],
   "crates/verified_engine/src/allocator.rs": [
-    "pub fn lock_allocations ()",
-    "pub fn unlock_allocations ()",
-    "pub struct VerifiedAllocator"
+    {
+      "signature": "pub fn lock_allocations ()"
+    },
+    {
+      "signature": "pub fn unlock_allocations ()"
+    },
+    {
+      "signature": "pub struct VerifiedAllocator"
+    }
   ],
   "crates/verified_engine/src/engine.rs": [
-    "pub fn register_cpp_dependency (dep : & str)",
-    "pub struct VerifiedEngine"
+    {
+      "signature": "pub fn register_cpp_dependency (dep : & str)"
+    },
+    {
+      "signature": "pub struct VerifiedEngine"
+    }
   ],
   "crates/verified_engine/src/metrics.rs": [
-    "pub fn disable_verification ()",
-    "pub fn enable_verification ()",
-    "pub fn get_metrics () -> ComplexityMetrics",
-    "pub fn increment_arithmetic (count : u64)",
-    "pub fn increment_calls ()",
-    "pub fn increment_memory_loads (count : u64)",
-    "pub fn is_verification_enabled () -> bool",
-    "pub fn reset_metrics ()",
-    "pub struct ComplexityMetrics"
+    {
+      "signature": "pub fn disable_verification ()"
+    },
+    {
+      "signature": "pub fn enable_verification ()"
+    },
+    {
+      "signature": "pub fn get_metrics () -> ComplexityMetrics"
+    },
+    {
+      "signature": "pub fn increment_arithmetic (count : u64)"
+    },
+    {
+      "signature": "pub fn increment_calls ()"
+    },
+    {
+      "signature": "pub fn increment_memory_loads (count : u64)"
+    },
+    {
+      "signature": "pub fn is_verification_enabled () -> bool"
+    },
+    {
+      "signature": "pub fn reset_metrics ()"
+    },
+    {
+      "signature": "pub struct ComplexityMetrics"
+    }
   ],
   "crates/verified_engine_macros/src/embed_theory.rs": [
-    "pub fn embed_theory_impl (attr : TokenStream , item : TokenStream) -> TokenStream",
-    "pub struct EmbedTheoryArgs"
+    {
+      "signature": "pub fn embed_theory_impl (attr : TokenStream , item : TokenStream) -> TokenStream"
+    },
+    {
+      "signature": "pub struct EmbedTheoryArgs"
+    }
   ],
   "crates/verified_engine_macros/src/latex_parser.rs": [
-    "pub enum MathOp",
-    "pub fn parse_latex_math (latex : & str) -> (Vec < String > , Vec < MathOp >)"
+    {
+      "signature": "pub enum MathOp"
+    },
+    {
+      "signature": "pub fn parse_latex_math (latex : & str) -> (Vec < String > , Vec < MathOp >)"
+    }
   ],
   "crates/verified_engine_macros/src/lib.rs": [
-    "pub fn derive_theory (input : TokenStream) -> TokenStream",
-    "pub fn embed_theory (attr : TokenStream , item : TokenStream) -> TokenStream",
-    "pub fn runtime_violation (input : TokenStream) -> TokenStream",
-    "pub fn verified (attr : TokenStream , item : TokenStream) -> TokenStream"
+    {
+      "signature": "pub fn derive_theory (input : TokenStream) -> TokenStream"
+    },
+    {
+      "signature": "pub fn embed_theory (attr : TokenStream , item : TokenStream) -> TokenStream"
+    },
+    {
+      "signature": "pub fn runtime_violation (input : TokenStream) -> TokenStream"
+    },
+    {
+      "signature": "pub fn verified (attr : TokenStream , item : TokenStream) -> TokenStream"
+    }
   ],
   "crates/verified_engine_macros/src/semantic_integrity.rs": [
-    "pub fn verify_semantic_integrity (latex_str : & str , rust_fn : & syn :: ItemFn) -> Result < () , String >"
+    {
+      "signature": "pub fn verify_semantic_integrity (latex_str : & str , rust_fn : & syn :: ItemFn) -> Result < () , String >"
+    }
   ]
 }
