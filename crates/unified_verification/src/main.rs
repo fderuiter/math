@@ -13,6 +13,7 @@ mod report;
 mod utils;
 mod vulnerabilities;
 mod workflow_linter;
+mod latex_linter;
 use utils::{check_file_lengths, check_staged_duplicates};
 fn get_workspace_members() -> Vec<String> {
     let content = fs::read_to_string("Cargo.toml").unwrap_or_default();
@@ -87,6 +88,11 @@ fn main() {
         }
         "lint-workflows" => {
             if !workflow_linter::lint_workflows() {
+                std::process::exit(1);
+            }
+        }
+        "lint-latex" => {
+            if !latex_linter::lint_latex() {
                 std::process::exit(1);
             }
         }
@@ -267,6 +273,10 @@ fn verify_suite(args: &[String]) {
     }
 
     if !policy_audit::run_policy_audit(&member_refs) {
+        passed_security = false;
+    }
+
+    if !latex_linter::lint_latex() {
         passed_security = false;
     }
 
