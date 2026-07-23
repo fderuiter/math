@@ -1,6 +1,6 @@
 use crate::accessibility::AccessibleHoverText;
 use eframe::egui;
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 
 /// Renders a UI parameter directly from the theoretical constraints.
 pub fn render_theory_parameter<T: TheoryDescribable>(
@@ -40,7 +40,7 @@ pub fn render_theory_parameter<T: TheoryDescribable>(
 pub fn get_theory_constraint<T: TheoryDescribable>(
     model: &T,
     param_name: &str,
-) -> math_commons::theory::ParameterConstraint {
+) -> scientific_metadata::theory::ParameterConstraint {
     model
         .theory_parameters()
         .get(param_name)

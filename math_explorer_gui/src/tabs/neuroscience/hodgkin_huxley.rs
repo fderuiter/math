@@ -1,6 +1,6 @@
 use crate::async_sim::unified::{UnifiedModel, UnifiedSimTool};
 use crate::async_sim::StateSnapshot;
-use math_commons::theory::ParameterConstraint;
+use scientific_metadata::theory::ParameterConstraint;
 use math_explorer::biology::neuroscience::{
     HodgkinHuxleyNeuron, HodgkinHuxleyParameters,
 };
@@ -117,7 +117,7 @@ inventory::submit! {
     }
 }
 
-impl math_commons::theory::TheoryDescribable for HodgkinHuxleyUnified {
+impl scientific_metadata::theory::TheoryDescribable for HodgkinHuxleyUnified {
     fn theory_description(&self) -> String {
         math_explorer::biology::neuroscience::HodgkinHuxleyModel::new(math_explorer::biology::neuroscience::HodgkinHuxleyParameters::default(), 0.0).theory_description()
     }

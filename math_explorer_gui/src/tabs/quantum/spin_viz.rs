@@ -1,7 +1,7 @@
 use crate::accessibility::{AccessibleHoverText, AccessibleTheoryHover};
 use eframe::egui;
 use egui_plot::{Line, Plot, PlotPoints, Points};
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 use math_explorer::physics::quantum::{evolve_state, spin, QuantumOperator, QuantumState};
 use num_complex::Complex;
 
@@ -69,7 +69,7 @@ impl SpinVisualizer {
 }
 
 impl InteractiveTool for SpinVisualizer {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Spin Dynamics (Bloch Sphere)"
     }
@@ -225,7 +225,7 @@ inventory::submit! {
     }
 }
 
-impl math_commons::theory::TheoryDescribable for SpinVisualizer {
+impl scientific_metadata::theory::TheoryDescribable for SpinVisualizer {
     fn theory_description(&self) -> String { "Theoretical context not available.".into() }
     fn phonetic_description(&self) -> String { "Theoretical context not available.".into() }
     fn theory_citation(&self) -> String { "Uncited".into() }
