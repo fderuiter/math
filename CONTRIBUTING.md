@@ -121,7 +121,7 @@ Thank you for helping us fight Knowledge Rot!
 
 ## Architectural Decision Records (ADRs)
 
-Before making significant structural changes, please review our existing architectural decisions. For example, our approach to workspace design is detailed in the [Dynamic Workspace Discovery](docs/adr/0001-dynamic-workspace-discovery.md) ADR.
+Before making significant structural changes, please review our existing architectural decisions. For example, our approach to workspace design is detailed in the [Dynamic Workspace Discovery](docs/adr/0001-dynamic-workspace-discovery.md) ADR, and our documentation verification mechanism is outlined in the [Unified LaTeX Linter](docs/adr/0006-unified-latex-linter.md) ADR.
 
 ## Critical Safety & Quality Standards (The NASA Power of 10)
 
