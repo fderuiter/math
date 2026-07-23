@@ -8,6 +8,8 @@ pub fn check_file_lengths(members: &[String]) -> Vec<String> {
     let mut exceeding = Vec::new();
 
     for dir in members {
+        // Exclude third-party egui_plot and unified_verification tool from file length restrictions.
+        // The verification tool has extensive AST visitors and rule engines which naturally exceed the limit.
         if dir == "egui_plot" || dir == "crates/unified_verification" || dir == "unified_verification" {
             continue;
         }
