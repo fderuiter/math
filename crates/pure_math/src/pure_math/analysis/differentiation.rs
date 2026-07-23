@@ -85,7 +85,13 @@ impl CalculusScheme {
     /// Supports both mixed and non-mixed partial derivatives.
     /// Operates on the stack with zero dynamic heap allocations.
     #[verified_engine::verified]
-    pub fn second_partial_derivative<const N: usize, F>(&self, i: usize, j: usize, point: &[f64; N], f: F) -> f64
+    pub fn second_partial_derivative<const N: usize, F>(
+        &self,
+        i: usize,
+        j: usize,
+        point: &[f64; N],
+        f: F,
+    ) -> f64
     where
         F: Fn(&[f64; N]) -> f64,
     {
@@ -97,10 +103,18 @@ impl CalculusScheme {
             p_minus[i] -= h;
             (f(&p_plus) - 2.0 * f(point) + f(&p_minus)) / (h * h)
         } else {
-            let mut p_pp = *point; p_pp[i] += h; p_pp[j] += h;
-            let mut p_pm = *point; p_pm[i] += h; p_pm[j] -= h;
-            let mut p_mp = *point; p_mp[i] -= h; p_mp[j] += h;
-            let mut p_mm = *point; p_mm[i] -= h; p_mm[j] -= h;
+            let mut p_pp = *point;
+            p_pp[i] += h;
+            p_pp[j] += h;
+            let mut p_pm = *point;
+            p_pm[i] += h;
+            p_pm[j] -= h;
+            let mut p_mp = *point;
+            p_mp[i] -= h;
+            p_mp[j] += h;
+            let mut p_mm = *point;
+            p_mm[i] -= h;
+            p_mm[j] -= h;
             (f(&p_pp) - f(&p_pm) - f(&p_mp) + f(&p_mm)) / (4.0 * h * h)
         }
     }
@@ -110,8 +124,12 @@ impl CalculusScheme {
     /// The resulting `M x N` matrix is written into the pre-allocated `jacobian` reference.
     /// Operates on the stack with zero dynamic heap allocations.
     #[verified_engine::verified]
-    pub fn jacobian<const N: usize, const M: usize, F>(&self, point: &[f64; N], f: F, jacobian: &mut [[f64; N]; M])
-    where
+    pub fn jacobian<const N: usize, const M: usize, F>(
+        &self,
+        point: &[f64; N],
+        f: F,
+        jacobian: &mut [[f64; N]; M],
+    ) where
         F: Fn(&[f64; N]) -> [f64; M],
     {
         let h = self.config.step_size;
@@ -134,8 +152,15 @@ impl CalculusScheme {
     /// To guarantee zero dynamic heap allocations, the caller must pass pre-allocated buffers.
     /// `jacobian` is a flat slice of size `m * n` where `jacobian[i * n + j]` stores \partial f_i / \partial x_j.
     #[verified_engine::verified]
-    pub fn jacobian_slice<F>(&self, point: &[f64], mut f: F, jacobian: &mut [f64], out_plus: &mut [f64], out_minus: &mut [f64], p_temp: &mut [f64])
-    where
+    pub fn jacobian_slice<F>(
+        &self,
+        point: &[f64],
+        mut f: F,
+        jacobian: &mut [f64],
+        out_plus: &mut [f64],
+        out_minus: &mut [f64],
+        p_temp: &mut [f64],
+    ) where
         F: FnMut(&[f64], &mut [f64]),
     {
         let h = self.config.step_size;
@@ -154,8 +179,8 @@ impl CalculusScheme {
             f(p_temp, out_minus);
 
             for i in 0..m {
-                let idx = i * n + j;
-                jacobian[idx] = (out_plus[i] - out_minus[i]) / (2.0 * h);
+                let row_offset = i * n;
+                jacobian[row_offset + j] = (out_plus[i] - out_minus[i]) / (2.0 * h);
             }
         }
     }
@@ -244,7 +269,14 @@ mod tests {
         let mut out_minus = [0.0; 2];
         let mut p_temp = [0.0; 2];
 
-        scheme.jacobian_slice(&[2.0, 3.0], f, &mut jac, &mut out_plus, &mut out_minus, &mut p_temp);
+        scheme.jacobian_slice(
+            &[2.0, 3.0],
+            f,
+            &mut jac,
+            &mut out_plus,
+            &mut out_minus,
+            &mut p_temp,
+        );
 
         // jac = [ [4, 1], [3, 2] ] stored flat
         assert!((jac[0] - 4.0).abs() < 1e-5);

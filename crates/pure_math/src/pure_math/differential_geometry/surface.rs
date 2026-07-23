@@ -95,19 +95,28 @@ impl<T: ParametricSurface> SurfaceAnalysis for T {
         let scheme = crate::pure_math::analysis::differentiation::CalculusScheme::with_step_size(h);
 
         // Second derivatives via centralized CalculusScheme
-        let ruu_x = scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).x);
-        let ruu_y = scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).y);
-        let ruu_z = scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).z);
+        let ruu_x =
+            scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).x);
+        let ruu_y =
+            scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).y);
+        let ruu_z =
+            scheme.second_partial_derivative(0, 0, &[u, v], |p| self.position(p[0], p[1]).z);
         let ruu = Vector3::new(ruu_x, ruu_y, ruu_z);
 
-        let rvv_x = scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).x);
-        let rvv_y = scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).y);
-        let rvv_z = scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).z);
+        let rvv_x =
+            scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).x);
+        let rvv_y =
+            scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).y);
+        let rvv_z =
+            scheme.second_partial_derivative(1, 1, &[u, v], |p| self.position(p[0], p[1]).z);
         let rvv = Vector3::new(rvv_x, rvv_y, rvv_z);
 
-        let ruv_x = scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).x);
-        let ruv_y = scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).y);
-        let ruv_z = scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).z);
+        let ruv_x =
+            scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).x);
+        let ruv_y =
+            scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).y);
+        let ruv_z =
+            scheme.second_partial_derivative(0, 1, &[u, v], |p| self.position(p[0], p[1]).z);
         let ruv = Vector3::new(ruv_x, ruv_y, ruv_z);
 
         (ruu.dot(&n), ruv.dot(&n), rvv.dot(&n))
