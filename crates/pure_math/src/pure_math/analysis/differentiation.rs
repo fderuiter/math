@@ -154,7 +154,8 @@ impl CalculusScheme {
             f(p_temp, out_minus);
 
             for i in 0..m {
-                jacobian[i * n + j] = (out_plus[i] - out_minus[i]) / (2.0 * h);
+                let idx = i * n + j;
+                jacobian[idx] = (out_plus[i] - out_minus[i]) / (2.0 * h);
             }
         }
     }
