@@ -293,7 +293,7 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
                     let max = max_val.unwrap_or(1.0);
                     let step = step_val.unwrap_or(0.1);
                     field_params.push(quote::quote! {
-                        map.insert(#field_name.to_string(), math_commons::theory::ParameterConstraint {
+                        map.insert(#field_name.to_string(), scientific_metadata::theory::ParameterConstraint {
                             min: #min,
                             max: #max,
                             step: #step,
@@ -315,7 +315,7 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
     }
 
     let expanded = quote! {
-        impl #impl_generics math_commons::theory::TheoryDescribable for #name #ty_generics #where_clause {
+        impl #impl_generics scientific_metadata::theory::TheoryDescribable for #name #ty_generics #where_clause {
             fn theory_description(&self) -> String {
                 #description.to_string()
             }
@@ -323,7 +323,6 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
                 #phonetic.to_string()
             }
             fn theory_citation(&self) -> String {
-                math_commons::citation_registry::CitationRegistry::register(stringify!(#name).to_string(), #citation.to_string());
                 #citation.to_string()
             }
             fn available_descriptions(&self) -> std::collections::HashMap<String, String> {
@@ -331,7 +330,7 @@ pub fn derive_theory(input: TokenStream) -> TokenStream {
                 map.insert("default".to_string(), #description.to_string());
                 map
             }
-            fn theory_parameters(&self) -> std::collections::HashMap<String, math_commons::theory::ParameterConstraint> {
+            fn theory_parameters(&self) -> std::collections::HashMap<String, scientific_metadata::theory::ParameterConstraint> {
                 let mut map = std::collections::HashMap::new();
                 #(#field_params)*
                 map

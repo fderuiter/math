@@ -3,7 +3,7 @@ use crate::async_sim::{SimCommand, StateSnapshot};
 use eframe::egui::Color32;
 use math_commons::math_kernel::types::flatten_2d_index;
 use math_commons::math_kernel::colormap::heatmap_color;
-use math_commons::theory::{ParameterConstraint, TheoryDescribable};
+use scientific_metadata::theory::{ParameterConstraint, TheoryDescribable};
 use math_explorer::physics::fluid_dynamics::lattice_boltzmann::{
     BgkCollision, LatticeBoltzmannD2Q9,
 };

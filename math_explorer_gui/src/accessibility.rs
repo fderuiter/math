@@ -1,5 +1,5 @@
 use eframe::egui::{Response, WidgetText};
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 
 #[cfg(target_arch = "wasm32")]
 // theory_verification!

@@ -1,7 +1,7 @@
 use crate::accessibility::AccessibleTheoryHover;
 use eframe::egui;
 use egui_plot::{Bar, BarChart, Plot};
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 use math_explorer::physics::quantum::clebsch_gordan;
 use std::collections::HashMap;
 
@@ -70,7 +70,7 @@ impl TheoryDescribable for ClebschGordanTool {
 }
 
 impl InteractiveTool for ClebschGordanTool {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     
     fn name(&self) -> &'static str {
         "Clebsch-Gordan"

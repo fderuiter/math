@@ -114,7 +114,7 @@ impl NetworkMetricsTool {
 }
 
 impl InteractiveTool for NetworkMetricsTool {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Network Metrics"
     }
@@ -236,7 +236,7 @@ inventory::submit! {
     }
 }
 
-impl math_commons::theory::TheoryDescribable for NetworkMetricsTool {
+impl scientific_metadata::theory::TheoryDescribable for NetworkMetricsTool {
     fn theory_description(&self) -> String { "Theoretical context not available.".into() }
     fn phonetic_description(&self) -> String { "Theoretical context not available.".into() }
     fn theory_citation(&self) -> String { "Uncited".into() }
