@@ -78,7 +78,7 @@ impl GridWorldTool {
 }
 
 impl InteractiveTool for GridWorldTool {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Grid World (RL)"
     }
@@ -187,7 +187,7 @@ inventory::submit! {
     }
 }
 
-impl math_commons::theory::TheoryDescribable for GridWorldTool {
+impl scientific_metadata::theory::TheoryDescribable for GridWorldTool {
     fn theory_description(&self) -> String {
         "Reinforcement Learning involves an agent that interacts with its environment to learn optimal actions, aiming to maximize a cumulative reward based on the Bellman equation.".into()
     }

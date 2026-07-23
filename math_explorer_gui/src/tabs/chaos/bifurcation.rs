@@ -2,7 +2,7 @@ use crate::accessibility::{AccessibleHoverText, AccessibleTheoryHover};
 use crate::framework::InteractiveTool;
 use eframe::egui;
 use egui_plot::{Plot, PlotPoints, Points};
-use math_commons::theory::TheoryDescribable;
+use scientific_metadata::theory::TheoryDescribable;
 use math_explorer::physics::chaos::logistic;
 use std::collections::HashMap;
 
@@ -60,7 +60,7 @@ impl TheoryDescribable for BifurcationDiagram {
 }
 
 impl InteractiveTool for BifurcationDiagram {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     
     fn name(&self) -> &'static str {
         "Bifurcation Diagram"

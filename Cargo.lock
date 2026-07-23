@@ -1087,6 +1087,7 @@ dependencies = [
  "pure_math",
  "rand",
  "rand_distr",
+ "scientific_metadata",
  "serde",
  "thiserror 2.0.18",
  "verified_engine",
@@ -1103,6 +1104,7 @@ dependencies = [
  "oxidize_core",
  "pure_math",
  "rand",
+ "scientific_metadata",
  "serde",
  "statrs",
  "thiserror 2.0.18",
@@ -1121,6 +1123,7 @@ dependencies = [
  "oxidize_core",
  "pure_math",
  "rand",
+ "scientific_metadata",
  "serde",
  "thiserror 2.0.18",
  "verified_engine",
@@ -1136,6 +1139,7 @@ dependencies = [
  "oxidize_core",
  "pure_math",
  "rand",
+ "scientific_metadata",
  "serde",
  "thiserror 2.0.18",
  "verified_engine",
@@ -1152,6 +1156,7 @@ dependencies = [
  "oxidize_core",
  "pure_math",
  "rand",
+ "scientific_metadata",
  "serde",
  "thiserror 2.0.18",
  "verified_engine",
@@ -1171,6 +1176,7 @@ dependencies = [
  "pure_math",
  "rand",
  "rustfft",
+ "scientific_metadata",
  "serde",
  "thiserror 2.0.18",
  "verified_engine",
@@ -2690,6 +2696,7 @@ dependencies = [
  "petgraph",
  "rand",
  "rfd",
+ "scientific_metadata",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -3655,6 +3662,7 @@ dependencies = [
  "rand",
  "rand_distr",
  "rustfft",
+ "scientific_metadata",
  "serde",
  "statrs",
  "thiserror 2.0.18",
@@ -3995,6 +4003,10 @@ checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
 ]
+
+[[package]]
+name = "scientific_metadata"
+version = "0.4.0"
 
 [[package]]
 name = "scoped-tls"

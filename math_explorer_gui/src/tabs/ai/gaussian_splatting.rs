@@ -7,7 +7,7 @@ pub struct GaussianSplattingTool {
 }
 
 impl InteractiveTool for GaussianSplattingTool {
-    fn theory(&self) -> &dyn math_commons::theory::TheoryDescribable { self }
+    fn theory(&self) -> &dyn scientific_metadata::theory::TheoryDescribable { self }
     fn name(&self) -> &'static str {
         "Gaussian Splatting"
     }
@@ -26,7 +26,7 @@ impl InteractiveTool for GaussianSplattingTool {
     }
 }
 
-impl math_commons::theory::TheoryDescribable for GaussianSplattingTool {
+impl scientific_metadata::theory::TheoryDescribable for GaussianSplattingTool {
     fn theory_description(&self) -> String {
         "3D Gaussian Splatting is a rasterization-based technique for real-time rendering of radiance fields, using explicit 3D Gaussians to represent scenes instead of implicit neural representations.".into()
     }

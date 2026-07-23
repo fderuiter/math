@@ -2305,11 +2305,6 @@
       "signature": "pub struct TelemetryEvent"
     }
   ],
-  "crates/math_commons/src/citation_registry.rs": [
-    {
-      "signature": "pub struct CitationRegistry"
-    }
-  ],
   "crates/math_commons/src/error.rs": [
     {
       "signature": "pub enum MathError"
@@ -2341,14 +2336,6 @@
     },
     {
       "signature": "pub struct StepSize"
-    }
-  ],
-  "crates/math_commons/src/theory.rs": [
-    {
-      "signature": "pub struct ParameterConstraint"
-    },
-    {
-      "signature": "pub trait TheoryDescribable"
     }
   ],
   "crates/math_commons/src/wigner/mod.rs": [
@@ -3502,6 +3489,19 @@
     },
     {
       "signature": "pub struct Domain"
+    }
+  ],
+  "crates/scientific_metadata/src/citation_registry.rs": [
+    {
+      "signature": "pub struct CitationRegistry"
+    }
+  ],
+  "crates/scientific_metadata/src/theory.rs": [
+    {
+      "signature": "pub struct ParameterConstraint"
+    },
+    {
+      "signature": "pub trait TheoryDescribable"
     }
   ],
   "crates/verified_engine/src/allocator.rs": [
